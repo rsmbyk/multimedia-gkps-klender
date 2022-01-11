@@ -57,7 +57,7 @@ class Song(models.Model):
     def __str__(self):
         if self.book.is_hymn_book:
             return f'{self.book_number} ({self.title})'
-        return f'{self.title} ({self.book}'
+        return f'{self.title} ({self.book})'
 
     class Meta:
         ordering = ['book', 'number', 'sub_number']
