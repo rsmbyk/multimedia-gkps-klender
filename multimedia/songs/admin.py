@@ -17,6 +17,7 @@ class SongAdmin(admin.ModelAdmin):
 
 @admin.register(models.Verse)
 class VerseAdmin(admin.ModelAdmin):
+    list_filter = ['song__book']
     autocomplete_fields = ['song']
     search_fields = [
         'song__book__name',
