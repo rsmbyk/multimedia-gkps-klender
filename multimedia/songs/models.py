@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from multimedia.songs.validators import BookShortNameUniqueValidator
@@ -61,3 +62,23 @@ class Song(models.Model):
     class Meta:
         ordering = ['book', 'number', 'sub_number']
         unique_together = ['book', 'number', 'sub_number']
+
+
+class Verse(models.Model):
+    song = models.ForeignKey(Song, models.CASCADE)
+    number = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    lyric = models.TextField()
+
+    @property
+    def song_name(self):
+        if self.song.book.is_hymn_book:
+            return self.song.book_number
+        return self.song
+
+    def __str__(self):
+        trailing_verse = f' : {self.number}' if self.song.verse_set.count() > 1 else ''
+        return f'{self.song_name}{trailing_verse}'
+
+    class Meta:
+        ordering = ['song', 'number']
+        unique_together = ['song', 'number']
