@@ -19,4 +19,3 @@ class SongBookmarkItemAdmin(admin.ModelAdmin):
         'song__number',
         'song__sub_number',
     ]
-
