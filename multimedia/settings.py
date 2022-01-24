@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'multimedia.songs',
     'multimedia.bookmarks',
+    'multimedia.obs',
 ]
 
 MIDDLEWARE = [
