@@ -1,0 +1,77 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>OBS Song Plugin</title>
+
+    <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'common/icomoon/style.css' %}">
+    <link rel="stylesheet" href="{% static 'obs/songs/css/styles.css' %}">
+
+    <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
+    <script src="{% static 'common/axios/axios.js' %}"></script>
+    <script src="{% static 'common/fomantic/semantic.js' %}"></script>
+    <script src="{% static 'helpers/local-storage.js' %}"></script>
+    <script src="{% static 'helpers/dropdown-state-value.js' %}"></script>
+    <script src="{% static 'helpers/tab-manager.js' %}"></script>
+    <script src="{% static 'obs/songs/js/local-storage-keys.js' %}"></script>
+    <script src="{% static 'obs/songs/js/tabs/songbooks.tab.js' %}"></script>
+    <script src="{% static 'obs/songs/js/modals/song-detail.js' %}"></script>
+</head>
+<body>
+    <section style="background-color: #393939">
+
+        <div class="ui inverted bottom fixed four item menu" id="tab-menu">
+
+            <a class="green item" data-tab="tab-songbooks" id="tab-menu-songbooks">
+                <i class="icomoon-note icon"></i>
+                <span class="mobile hidden">SongBooks</span>
+            </a>
+            <a class="green item" data-tab="tab-search" id="tab-menu-search">
+                <i class="search icon"></i>
+                <span class="mobile hidden">Search</span>
+            </a>
+            <a class="green item active" data-tab="tab-display">
+                <i class="tv icon"></i>
+                <span class="mobile hidden">Display</span>
+            </a>
+            <a class="green item" data-tab="tab-bookmark">
+                <i class="bookmark icon"></i>
+                <span class="mobile hidden">Bookmark</span>
+            </a>
+        </div>
+
+        <div class="ui tab" data-tab="tab-songbooks">
+            {% include 'dock/tabs/songbooks.html' %}
+        </div>
+
+        <div class="ui tab" data-tab="tab-search">
+        </div>
+
+        <div class="ui tab" data-tab="tab-display">
+        </div>
+
+        <div class="ui tab" data-tab="tab-bookmark">
+        </div>
+
+        {% include 'dock/modals/song-detail.html' %}
+
+    </section>
+
+    <script>
+        const tabManager = TabManager()
+        const songbooksTab = SongBooksTab()
+        const songDetailModal = SongDetailModal()
+
+        $(window).on('load', () => {
+            $('.has-popup').popup()
+            tabManager.initialize()
+            songbooksTab.loadBooks(songDetailModal)
+        })
+    </script>
+</body>
+</html>
