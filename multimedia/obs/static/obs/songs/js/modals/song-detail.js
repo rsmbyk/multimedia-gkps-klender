@@ -4,13 +4,13 @@ const SongDetailModal = () => {
 
     const openSong = (songId) => {
         const updateSongInfo = (song, book, verses) => {
-            const createButton = (text, icon, color, data_value) => {
+            const createButton = (text, icon, color, value) => {
                 const button = document.createElement('button')
                 button.classList.add('ui', color, 'tiny', 'button')
-                button.setAttribute('value', data_value)
+                button.setAttribute('value', value)
 
                 const buttonIcon = document.createElement('i')
-                buttonIcon.classList.add(icon, 'icon')
+                buttonIcon.classList.add(...icon, 'icon')
 
                 const buttonText = document.createElement('span')
                 buttonText.classList.add('text')
@@ -37,9 +37,24 @@ const SongDetailModal = () => {
                 extra.classList.add('extra')
                 content.append(extra)
 
-                const btnBookmark = createButton('Bookmark', 'bookmark', 'basic', verse.id)
-                const btnDisplay = createButton('Display', 'desktop', 'primary', verse.id)
-                extra.append(btnBookmark, btnDisplay)
+                const btnBookmarkInactive = createButton('Bookmark', ['bookmark', 'outline'], 'basic', verse.id)
+                const btnBookmarkActive = createButton('Bookmarked', ['bookmark'], 'teal', verse.id)
+                const bookmarkToggleButton = new ToggleButton(btnBookmarkActive, btnBookmarkInactive)
+                bookmarkToggleButton.hide()
+
+                const btnDisplay = createButton('Display', ['desktop'], 'primary', verse.id)
+                btnDisplay.classList.add('right', 'floated')
+                $(btnDisplay).hide()
+
+                extra.append(btnBookmarkInactive, btnBookmarkActive, btnDisplay)
+
+                $(item).hover(() => {
+                    bookmarkToggleButton.show()
+                    $(btnDisplay).show()
+                }, () => {
+                    if (!bookmarkToggleButton.isActive) bookmarkToggleButton.hide()
+                    $(btnDisplay).hide()
+                })
 
                 return item
             }
@@ -49,13 +64,12 @@ const SongDetailModal = () => {
 
             const verseList = $('#modal-song-detail-verse-list')
             verseList.empty()
-
             verses.forEach((verse) => verseList.append(createVerseItem(verse)))
+
             songDetailModal.modal('show')
         }
 
         const retrieveSongInfo = (song) => {
-            console.log(song.data)
             const promises = [
                 axios.get(`/api/songs/books/${song.data.book}`),
                 axios.get(`/api/songs/verses?song=${song.data.id}`),

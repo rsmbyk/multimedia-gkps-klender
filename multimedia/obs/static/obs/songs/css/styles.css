@@ -26,13 +26,23 @@
     border-bottom: none;
 }
 
+.ui.top-actions.modal > .header {
+    border-bottom: 0;
+}
+
+.ui.top-actions.modal > .actions {
+    background: transparent;
+    border-top: 0;
+    border-bottom: 1px solid rgba(34, 36, 38, 0.15);
+}
+
+.ui.top-actions.modal > .content {
+    border-top: 1px solid rgba(34, 36, 38, 0.15);
+}
+
 .ui.list.items > .item {
     padding: 1em 0;
 }
-
-/*.ui.list.items > .item:first-child {*/
-/*    margin-top: 0.6em !important;*/
-/*}*/
 
 .ui.list.items > .item:before {
     margin-top: 0.6em !important;
