@@ -54,7 +54,8 @@
         <div class="ui tab" data-tab="tab-display">
         </div>
 
-        <div class="ui tab" data-tab="tab-bookmark">
+        <div class="ui tab" data-tab="tab-bookmarks">
+            {% include 'dock/tabs/bookmarks.html' %}
         </div>
 
         {% include 'dock/modals/song-detail.html' %}
@@ -64,12 +65,14 @@
     <script>
         const tabManager = TabManager()
         const songbooksTab = SongBooksTab()
+        const bookmarksTab = BookmarksTab()
         const songDetailModal = SongDetailModal()
 
         $(window).on('load', () => {
             $('.has-popup').popup()
             tabManager.initialize()
             songbooksTab.loadBooks(songDetailModal)
+            bookmarksTab.init()
         })
     </script>
 </body>
