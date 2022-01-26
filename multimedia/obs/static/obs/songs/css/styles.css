@@ -5,6 +5,18 @@
     background-color: #3a393a;
 }
 
+@media only screen and (min-width: 767px) {
+    .ui.mobile.icon.menu .item > i.icon {
+        margin: 0 0.35714286em 0 0 !important;
+    }
+}
+
+@media only screen and (max-width: 767px) {
+    .ui.mobile.icon.menu .item > .text {
+        display: None !important;
+    }
+}
+
 .ui.flat.segment,
 .ui.flat.segments {
     border: none;
