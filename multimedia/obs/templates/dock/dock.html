@@ -19,9 +19,13 @@
     <script src="{% static 'helpers/dropdown-state-value.js' %}"></script>
     <script src="{% static 'helpers/tab-manager.js' %}"></script>
     <script src="{% static 'helpers/buttons.js' %}"></script>
+    <script src="{% static 'helpers/doms.js' %}"></script>
     <script src="{% static 'obs/songs/js/local-storage-keys.js' %}"></script>
-    <script src="{% static 'obs/songs/js/tabs/songbooks.tab.js' %}"></script>
+    <script src="{% static 'obs/songs/js/tabs/songbooks.js' %}"></script>
+    <script src="{% static 'obs/songs/js/tabs/bookmarks.js' %}"></script>
     <script src="{% static 'obs/songs/js/modals/song-detail.js' %}"></script>
+    <script src="{% static 'obs/songs/js/modals/create-bookmark.js' %}"></script>
+    <script src="{% static 'obs/songs/js/modals/delete-bookmark.js' %}"></script>
 </head>
 <body>
     <section style="background-color: #393939">
@@ -60,17 +64,24 @@
 
         {% include 'dock/modals/song-detail.html' %}
 
+        {% include 'dock/modals/create-bookmark.html' %}
+
+        {% include 'dock/modals/delete-bookmark.html' %}
+
     </section>
 
     <script>
         const tabManager = TabManager()
         const songbooksTab = SongBooksTab()
-        const bookmarksTab = BookmarksTab()
         const songDetailModal = SongDetailModal()
+        const createBookmarkModal = CreateBookmarkModal()
+        const deleteBookmarkModal = DeleteBookmarkModal()
+        const bookmarksTab = BookmarksTab(createBookmarkModal, deleteBookmarkModal)
 
         $(window).on('load', () => {
             $('.has-popup').popup()
             tabManager.initialize()
+            createBookmarkModal.init(bookmarksTab.refresh)
             songbooksTab.loadBooks(songDetailModal)
             bookmarksTab.init()
         })

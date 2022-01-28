@@ -73,6 +73,11 @@
     color: rgba(0, 0, 0, 0.4);
 }
 
+.ui.list:not(.items) > .item .extra {
+    margin: 0.5em 0 0;
+    color: rgba(0, 0, 0, 0.4);
+}
+
 /*.column {*/
 /*    border: 1px white;*/
 /*}*/
