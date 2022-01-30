@@ -26,6 +26,8 @@
     <script src="{% static 'obs/songs/js/modals/song-detail.js' %}"></script>
     <script src="{% static 'obs/songs/js/modals/create-bookmark.js' %}"></script>
     <script src="{% static 'obs/songs/js/modals/delete-bookmark.js' %}"></script>
+    <script src="{% static 'obs/songs/js/modals/bookmark-detail.js' %}"></script>
+    <script src="{% static 'obs/songs/js/modals/delete-bookmark-item.js' %}"></script>
 </head>
 <body>
     <section style="background-color: #393939">
@@ -68,6 +70,10 @@
 
         {% include 'dock/modals/delete-bookmark.html' %}
 
+        {% include 'dock/modals/bookmark-detail.html' %}
+
+        {% include 'dock/modals/delete-bookmark-item.html' %}
+
     </section>
 
     <script>
@@ -76,7 +82,9 @@
         const songDetailModal = SongDetailModal()
         const createBookmarkModal = CreateBookmarkModal()
         const deleteBookmarkModal = DeleteBookmarkModal()
-        const bookmarksTab = BookmarksTab(createBookmarkModal, deleteBookmarkModal)
+        const deleteBookmarkItemModal = DeleteBookmarkItemModal()
+        const bookmarkDetailModal = BookmarkDetailModal(deleteBookmarkItemModal)
+        const bookmarksTab = BookmarksTab(createBookmarkModal, deleteBookmarkModal, bookmarkDetailModal)
 
         $(window).on('load', () => {
             $('.has-popup').popup()

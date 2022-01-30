@@ -1,4 +1,4 @@
-const BookmarksTab = (createBookmarkModal, deleteBookmarkModal) => {
+const BookmarksTab = (createBookmarkModal, deleteBookmarkModal, bookmarkDetailModal) => {
     const currentDate = new Date()
     let activeBookmark = 1
 
@@ -104,7 +104,7 @@ const BookmarksTab = (createBookmarkModal, deleteBookmarkModal) => {
         })
 
         buttonEdit.click(() => {
-            // editBookmarkModal.open(bookmark)
+            bookmarkDetailModal.open(bookmark.id)
         })
 
         buttonDelete.click(() => {
