@@ -15,12 +15,15 @@
     <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
     <script src="{% static 'common/axios/axios.js' %}"></script>
     <script src="{% static 'common/fomantic/semantic.js' %}"></script>
+    <script src="{% static 'common/rxjs/rxjs.umd.js' %}"></script>
     <script src="{% static 'helpers/local-storage.js' %}"></script>
     <script src="{% static 'helpers/dropdown-state-value.js' %}"></script>
     <script src="{% static 'helpers/tab-manager.js' %}"></script>
     <script src="{% static 'helpers/buttons.js' %}"></script>
     <script src="{% static 'helpers/doms.js' %}"></script>
     <script src="{% static 'obs/songs/js/local-storage-keys.js' %}"></script>
+    <script src="{% static 'obs/songs/js/bookmark-storage.js' %}"></script>
+    <script src="{% static 'obs/songs/js/bookmark-manager.js' %}"></script>
     <script src="{% static 'obs/songs/js/tabs/songbooks.js' %}"></script>
     <script src="{% static 'obs/songs/js/tabs/bookmarks.js' %}"></script>
     <script src="{% static 'obs/songs/js/modals/song-detail.js' %}"></script>
@@ -78,13 +81,15 @@
 
     <script>
         const tabManager = TabManager()
+        const bookmarkStorage = BookmarkStorage()
+        const bookmarkManager = BookmarkManager(bookmarkStorage)
         const songbooksTab = SongBooksTab()
         const songDetailModal = SongDetailModal()
         const createBookmarkModal = CreateBookmarkModal()
         const deleteBookmarkModal = DeleteBookmarkModal()
         const deleteBookmarkItemModal = DeleteBookmarkItemModal()
         const bookmarkDetailModal = BookmarkDetailModal(deleteBookmarkItemModal)
-        const bookmarksTab = BookmarksTab(createBookmarkModal, deleteBookmarkModal, bookmarkDetailModal)
+        const bookmarksTab = BookmarksTab(bookmarkManager, createBookmarkModal, deleteBookmarkModal, bookmarkDetailModal)
 
         $(window).on('load', () => {
             $('.has-popup').popup()

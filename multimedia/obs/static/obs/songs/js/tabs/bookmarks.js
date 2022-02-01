@@ -1,6 +1,10 @@
-const BookmarksTab = (createBookmarkModal, deleteBookmarkModal, bookmarkDetailModal) => {
+const BookmarksTab = (bookmarkManager, createBookmarkModal, deleteBookmarkModal, bookmarkDetailModal) => {
     const currentDate = new Date()
-    let activeBookmark = 1
+    let activeBookmark = undefined
+
+    bookmarkManager.activeBookmark.subscribe(value => {
+        activeBookmark = value
+    })
 
     const filterDateButton = $('#button-filter-calendar')
     filterDateButton.calendar({
@@ -85,14 +89,15 @@ const BookmarksTab = (createBookmarkModal, deleteBookmarkModal, bookmarkDetailMo
         const buttonDelete = extraButtons.find('.btnDelete')
 
         $(item).hover(() => {
-            if (bookmark.id === activeBookmark) iconCheck.show()  // TODO: Active bookmark check
+            if (bookmark.id === activeBookmark) iconCheck.show()
             extraButtons.show()
         }, () => {
-            if (bookmark.id !== activeBookmark) iconCheck.hide()  // TODO: Active bookmark check
+            if (bookmark.id !== activeBookmark) iconCheck.hide()
             extraButtons.hide()
         })
 
-        if (bookmark.id !== activeBookmark) iconCheck.hide()  // TODO: Active bookmark check
+        if (bookmark.id === activeBookmark) buttonActivate.hide()
+        else iconCheck.hide()
         extraButtons.hide()
 
         buttonActivate.click(() => {
@@ -100,7 +105,7 @@ const BookmarksTab = (createBookmarkModal, deleteBookmarkModal, bookmarkDetailMo
             buttonActivate.hide()
             $('#bookmark-list .icoCheck').hide()
             iconCheck.show()
-            activeBookmark = bookmark.id
+            bookmarkManager.activateBookmark(bookmark)
         })
 
         buttonEdit.click(() => {
@@ -109,6 +114,7 @@ const BookmarksTab = (createBookmarkModal, deleteBookmarkModal, bookmarkDetailMo
 
         buttonDelete.click(() => {
             deleteBookmarkModal.open(bookmark, refresh, () => console.log('error'))
+            bookmarkManager.deactivate()
         })
 
         return item

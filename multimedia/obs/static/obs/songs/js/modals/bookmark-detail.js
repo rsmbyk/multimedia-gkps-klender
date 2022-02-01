@@ -35,31 +35,18 @@ const BookmarkDetailModal = (deleteBookmarkItemModal) => {
                 })
 
                 const buttonDelete = $(item).find('.btnDelete')
+                buttonDelete.click(() => {
+                    deleteBookmarkItemModal.open(
+                        bookmark,
+                        bookmarkItem,
+                        bookmarkItem.song_info.book_number,
+                        () => retrieveBookmarkItems(bookmark),
+                        console.log,
+                    )
+                })
 
                 const content = $(item).find('.content:not(.right.floated)')
-                axios.get(`/api/songs/songs/${bookmarkItem.song}`)
-                    .then((songResult) => {
-                        axios.get(`/api/songs/books/${songResult.data.book}`)
-                        .then((bookResult) => {
-                            let contentText
-                            if (bookResult.data.is_hymn_book)
-                                contentText = `${bookResult.data.short_name} ${songResult.data.number}${songResult.data.sub_number} : ${bookmarkItem.verse}`
-                            else
-                                contentText = `${songResult.data.title}`
-
-                            content.text(contentText)
-
-                            buttonDelete.click(() => {
-                                deleteBookmarkItemModal.open(
-                                    bookmark,
-                                    bookmarkItem,
-                                    contentText,
-                                    () => retrieveBookmarkItems(bookmark),
-                                    console.log,
-                                )
-                            })
-                        })
-                    })
+                content.text(`${bookmarkItem.song_info.book_number} : ${bookmarkItem.verse}`)
 
                 return item
             }
@@ -75,7 +62,7 @@ const BookmarkDetailModal = (deleteBookmarkItemModal) => {
         }
 
         const retrieveBookmarkItems = (bookmark) => {
-            axios.get(`/api/bookmarks/songs/items?bookmark=${bookmark.id}`)
+            axios.get(`/api/bookmarks/songs/items?bookmark=${bookmark.id}&omit=verse_info`)
                 .then(result => updateBookmarkInfo(bookmark, result.data))
         }
 

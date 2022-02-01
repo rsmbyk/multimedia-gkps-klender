@@ -9,9 +9,9 @@ const DeleteBookmarkItemModal = () => {
                 onSuccess(response)
                 modal.modal('hide')
                 $('body').toast({
-                    class: 'success centered',
+                    class: 'success',
                     message: 'Item deleted successfully',
-                    position: 'top attached',
+                    position: 'bottom right',
                 })
             },
             error: (error) => {
