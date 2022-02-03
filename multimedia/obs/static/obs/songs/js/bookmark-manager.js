@@ -5,10 +5,13 @@ const BookmarkManager = (bookmarkStorage) => {
     const activeBookmarkItems = new BehaviorSubject(bookmarkStorage.loadBookmarkItems())
 
     const activateBookmark = (bookmark) => {
-        bookmarkStorage.saveBookmark(bookmark.id)
-        activeBookmark.next(bookmark.id)
+        if (bookmark.hasOwnProperty('id'))
+            bookmark = bookmark.id
 
-        axios.get(`/api/bookmarks/songs/items?bookmark=${bookmark.id}`)
+        bookmarkStorage.saveBookmark(bookmark)
+        activeBookmark.next(bookmark)
+
+        axios.get(`/api/bookmarks/songs/items?bookmark=${bookmark}`)
             .then(result => activateBookmarkItems(result.data))
     }
 

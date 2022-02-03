@@ -89,10 +89,24 @@ const BookmarksTab = (bookmarkManager, createBookmarkModal, deleteBookmarkModal,
         const buttonDelete = extraButtons.find('.btnDelete')
 
         $(item).hover(() => {
-            if (bookmark.id === activeBookmark) iconCheck.show()
+            if (bookmark.id === activeBookmark) {
+                iconCheck.show()
+                buttonActivate.hide()
+            }
+            else {
+                iconCheck.hide()
+                buttonActivate.show()
+            }
             extraButtons.show()
         }, () => {
-            if (bookmark.id !== activeBookmark) iconCheck.hide()
+            if (bookmark.id !== activeBookmark) {
+                iconCheck.hide()
+                buttonActivate.show()
+            }
+            else {
+                iconCheck.show()
+                buttonActivate.hide()
+            }
             extraButtons.hide()
         })
 

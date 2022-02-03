@@ -1,9 +1,7 @@
-class ToggleButton {
+class ManualToggleButton {
     constructor(btnActive, btnInactive, onActive, onInactive,) {
         this.btnActive = $(btnActive)
         this.btnInactive = $(btnInactive)
-        this.btnActive.click(() => this.setInactive())
-        this.btnInactive.click(() => this.setActive())
         this.onActive = onActive
         this.onInactive = onInactive
 
@@ -42,5 +40,13 @@ class ToggleButton {
         this.btnActive.hide()
         this.btnInactive.hide()
         this.isShown = false
+    }
+}
+
+class ToggleButton extends ManualToggleButton {
+    constructor(btnActive, btnInactive, onActive, onInactive,) {
+        super(btnActive, btnInactive, onActive, onInactive);
+        this.btnActive.click(() => this.setInactive())
+        this.btnInactive.click(() => this.setActive())
     }
 }

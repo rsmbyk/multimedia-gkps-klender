@@ -16,6 +16,7 @@
     <script src="{% static 'common/axios/axios.js' %}"></script>
     <script src="{% static 'common/fomantic/semantic.js' %}"></script>
     <script src="{% static 'common/rxjs/rxjs.umd.js' %}"></script>
+    <script src="{% static 'helpers/arrays.js' %}"></script>
     <script src="{% static 'helpers/local-storage.js' %}"></script>
     <script src="{% static 'helpers/dropdown-state-value.js' %}"></script>
     <script src="{% static 'helpers/tab-manager.js' %}"></script>
@@ -84,7 +85,7 @@
         const bookmarkStorage = BookmarkStorage()
         const bookmarkManager = BookmarkManager(bookmarkStorage)
         const songbooksTab = SongBooksTab()
-        const songDetailModal = SongDetailModal()
+        const songDetailModal = SongDetailModal(bookmarkManager)
         const createBookmarkModal = CreateBookmarkModal()
         const deleteBookmarkModal = DeleteBookmarkModal()
         const deleteBookmarkItemModal = DeleteBookmarkItemModal()

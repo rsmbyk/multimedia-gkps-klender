@@ -1,70 +1,251 @@
-const SongDetailModal = () => {
+const { merge, map, scan } = rxjs
+
+const SongDetailModal = (bookmarkManager) => {
     const songDetailModal = $('#modal-song-detail')
-    songDetailModal.modal('setting', 'closable', false)
+
+    let activeBookmark
+    bookmarkManager.activeBookmark.subscribe(value => activeBookmark = value)
+
+    let activeBookmarkItems
+    bookmarkManager.activeBookmarkItems.subscribe(value => activeBookmarkItems = value)
+
+    let savedVerseSelection = null
+
+    const verseSelection = new BehaviorSubject([])
+        .pipe(
+            scan((selection, next) => {
+                if (next.constructor === Array) return next
+                if (next === 0) return []
+                if (next > 0) return selection.concat(next)
+                return selection.filter(x => x !== -next)
+            }),
+            map(selection => selection.sort())
+        )
+
+    let bookmarkedVerses
+    verseSelection.subscribe(value => bookmarkedVerses = value)
+
+    let mBook = null
+    let mSong = null
+    let mVerses = null
+    let bookmarkItemId = null
+
+    const header = $('#modal-song-detail-header')
+    const subheader = $('#modal-song-detail-subheader')
+    const verseList = $('#modal-song-detail-verse-list')
+    const buttonSave = $('#modal-song-detail-btn-save')
+    const buttonDelete = $('#modal-song-detail-btn-delete')
+    const buttonDisplay = $('#modal-song-detail-btn-display')
+
+    const actionToggleButton = new ManualToggleButton(buttonSave, buttonDelete)
+
+    const evaluateActionButtonState = () => {
+        if (activeBookmark === null) {
+            actionToggleButton.setInactive()
+            actionToggleButton.hide()
+        }
+        else if (bookmarkedVerses.equals(savedVerseSelection)) {
+            actionToggleButton.setActive()
+            actionToggleButton.hide()
+        }
+        else if (bookmarkedVerses.length === 0) {
+            actionToggleButton.setInactive()
+            actionToggleButton.show()
+        }
+        else {
+            actionToggleButton.setActive()
+            actionToggleButton.show()
+        }
+    }
+
+    verseSelection.subscribe(evaluateActionButtonState)
+
+    buttonSave.click(() => {
+        if (savedVerseSelection.length === 0)
+            sendCreateBookmarkItemRequest()
+        else
+            sendEditBookmarkItemRequest()
+    })
+
+    buttonDelete.click(() => {
+        sendDeleteBookmarkItemRequest()
+    })
+
+    buttonDisplay.click(() => {
+        let book_number
+        if (mBook.is_hymn_book) book_number = `${mBook.short_name} ${mSong.number}`
+        else book_number = null
+
+        bookmarkManager.deactivate()
+        bookmarkManager.activateBookmarkItems([{
+            song_info: {
+                book_number: book_number,
+                title: mSong.title,
+            },
+            verses_info: mVerses,
+        }])
+
+        songDetailModal.modal('hide')
+    })
+
+    const sendCreateBookmarkItemRequest = () => {
+        $.ajax({
+            url: '/api/bookmarks/songs/items',
+            method: 'POST',
+            data: {
+                bookmark: activeBookmark,
+                song: mSong.id,
+                verse: JSON.stringify(bookmarkedVerses).slice(1, -1),
+            },
+            success: () => {
+                bookmarkManager.activateBookmark(activeBookmark)
+                songDetailModal.modal('hide')
+            },
+            error: () => {
+
+            },
+        })
+    }
+
+    const sendEditBookmarkItemRequest = () => {
+        $.ajax({
+            url: `/api/bookmarks/songs/items/${bookmarkItemId}`,
+            method: 'PATCH',
+            data: {
+                verse: JSON.stringify(bookmarkedVerses).slice(1, -1),
+            },
+            success: () => {
+                bookmarkManager.activateBookmark(activeBookmark)
+                songDetailModal.modal('hide')
+            },
+            error: () => {
+
+            },
+        })
+    }
+
+    const sendDeleteBookmarkItemRequest = () => {
+        $.ajax({
+            url: `/api/bookmarks/songs/items/${bookmarkItemId}`,
+            method: 'DELETE',
+            success: () => {
+                bookmarkManager.activateBookmark(activeBookmark)
+                songDetailModal.modal('hide')
+            },
+            error: () => {
+
+            },
+        })
+    }
 
     const openSong = (songId) => {
         const updateSongInfo = (song, book, verses) => {
-            const createButton = (text, icon, color, value) => {
-                const button = document.createElement('button')
-                button.classList.add('ui', color, 'tiny', 'button')
-                button.setAttribute('value', value)
-
-                const buttonIcon = document.createElement('i')
-                buttonIcon.classList.add(...icon, 'icon')
-
-                const buttonText = document.createElement('span')
-                buttonText.classList.add('text')
-                buttonText.innerText = text
-
-                button.append(buttonIcon, buttonText)
-                return button
-            }
-
             const createVerseItem = (verse) => {
-                const item = document.createElement('div')
-                item.classList.add('item')
+                const item = createDOMFromJSON({
+                    tag: 'div',
+                    classList: ['item'],
+                    children: [
+                        {
+                            tag: 'div',
+                            classList: ['content'],
+                            children: [
+                                {
+                                    tag: 'div',
+                                    classList: ['description'],
+                                    innerText: verse.lyric,
+                                },
+                                {
+                                    tag: 'div',
+                                    classList: ['extra'],
+                                    children: [
+                                        {
+                                            tag: 'div',
+                                            classList: ['ui', 'right', 'floated', 'tiny', 'basic', 'button', 'btnAddToBookmark'],
+                                            children: [
+                                                {
+                                                    tag: 'i',
+                                                    classList: ['bookmark', 'outline', 'icon'],
+                                                },
+                                                {
+                                                    tag: 'span',
+                                                    classList: ['text'],
+                                                    innerText: 'Add to Bookmark',
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            tag: 'div',
+                                            classList: ['ui', 'right', 'floated', 'tiny', 'teal', 'button', 'btnBookmarked'],
+                                            children: [
+                                                {
+                                                    tag: 'i',
+                                                    classList: ['bookmark', 'icon'],
+                                                },
+                                                {
+                                                    tag: 'span',
+                                                    classList: ['text'],
+                                                    innerText: 'Bookmarked',
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                })
 
-                const content = document.createElement('div')
-                content.classList.add('content')
-                item.append(content)
+                const buttonAddToBookmark = $(item).find('.btnAddToBookmark')
+                const buttonBookmarked = $(item).find('.btnBookmarked')
 
-                const description = document.createElement('div')
-                description.classList.add('description')
-                description.innerText = verse.lyric
-                content.append(description)
+                buttonAddToBookmark.click(() => verseSelection.next(verse.number))
+                buttonBookmarked.click(() => verseSelection.next(-verse.number))
 
-                const extra = document.createElement('div')
-                extra.classList.add('extra')
-                content.append(extra)
+                const bookmarkToggleButton = new ToggleButton(buttonBookmarked, buttonAddToBookmark)
 
-                const btnBookmarkInactive = createButton('Bookmark', ['bookmark', 'outline'], 'basic', verse.id)
-                const btnBookmarkActive = createButton('Bookmarked', ['bookmark'], 'teal', verse.id)
-                const bookmarkToggleButton = new ToggleButton(btnBookmarkActive, btnBookmarkInactive)
-                bookmarkToggleButton.hide()
-
-                const btnDisplay = createButton('Display', ['desktop'], 'primary', verse.id)
-                btnDisplay.classList.add('right', 'floated')
-                $(btnDisplay).hide()
-
-                extra.append(btnBookmarkInactive, btnBookmarkActive, btnDisplay)
+                if (savedVerseSelection.includes(verse.number)) {
+                    bookmarkToggleButton.setActive()
+                    bookmarkToggleButton.show()
+                }
+                else {
+                    bookmarkToggleButton.setInactive()
+                    bookmarkToggleButton.hide()
+                }
 
                 $(item).hover(() => {
-                    bookmarkToggleButton.show()
-                    $(btnDisplay).show()
+                    if (activeBookmark !== null) bookmarkToggleButton.show()
                 }, () => {
                     if (!bookmarkToggleButton.isActive) bookmarkToggleButton.hide()
-                    $(btnDisplay).hide()
                 })
 
                 return item
             }
 
-            $('#modal-song-detail-header').text(song.title)
-            $('#modal-song-detail-subheader').text(book.name)
+            bookmarkItemId = null
+            savedVerseSelection = []
+            verseSelection.next(0)
 
-            const verseList = $('#modal-song-detail-verse-list')
+            if (activeBookmark !== null && activeBookmarkItems !== null) {
+                const songItem = activeBookmarkItems.filter(item => item.song === song.id)
+                if (songItem.length === 1) {
+                    bookmarkItemId = songItem[0].id
+                    savedVerseSelection = songItem[0].verse_info.map(v => v.number)
+                    verseSelection.next(savedVerseSelection)
+                }
+            }
+
+            mSong = song
+            mBook = book
+            mVerses = verses
+
+            header.text(song.title)
+            subheader.text(book.name)
+
             verseList.empty()
             verses.forEach((verse) => verseList.append(createVerseItem(verse)))
+
+            if (activeBookmark === null) buttonSave.css('visibility', 'hidden')
+            else buttonSave.css('visibility', 'visible')
 
             songDetailModal.modal('show')
         }
@@ -84,6 +265,6 @@ const SongDetailModal = () => {
     }
 
     return {
-        openSong
+        openSong,
     }
 }

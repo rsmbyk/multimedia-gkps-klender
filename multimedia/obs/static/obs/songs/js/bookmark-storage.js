@@ -7,7 +7,9 @@ const BookmarkStorage = () => {
     }
 
     const loadBookmark = () => {
-        return parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_BOOKMARK))
+        let val = localStorage.getItem(LOCAL_STORAGE_KEY_BOOKMARK)
+        if (val !== null) val = parseInt(val)
+        return val
     }
 
     const removeBookmark = () => {
@@ -19,7 +21,7 @@ const BookmarkStorage = () => {
     }
 
     const loadBookmarkItems = () => {
-        return localStorage.getItem(LOCAL_STORAGE_KEY_BOOKMARK_ITEMS)
+        return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_BOOKMARK_ITEMS))
     }
 
     const removeBookmarkItems = () => {
