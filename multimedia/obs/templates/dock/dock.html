@@ -26,6 +26,7 @@
     <script src="{% static 'obs/songs/js/bookmark-storage.js' %}"></script>
     <script src="{% static 'obs/songs/js/bookmark-manager.js' %}"></script>
     <script src="{% static 'obs/songs/js/tabs/songbooks.js' %}"></script>
+    <script src="{% static 'obs/songs/js/tabs/display.js' %}"></script>
     <script src="{% static 'obs/songs/js/tabs/bookmarks.js' %}"></script>
     <script src="{% static 'obs/songs/js/modals/song-detail.js' %}"></script>
     <script src="{% static 'obs/songs/js/modals/create-bookmark.js' %}"></script>
@@ -62,6 +63,7 @@
         </div>
 
         <div class="ui tab" data-tab="tab-display">
+            {% include 'dock/tabs/display.html' %}
         </div>
 
         <div class="ui tab" data-tab="tab-bookmarks">
@@ -85,6 +87,7 @@
         const bookmarkStorage = BookmarkStorage()
         const bookmarkManager = BookmarkManager(bookmarkStorage)
         const songbooksTab = SongBooksTab()
+        const displayTab = DisplayTab()
         const songDetailModal = SongDetailModal(bookmarkManager)
         const createBookmarkModal = CreateBookmarkModal()
         const deleteBookmarkModal = DeleteBookmarkModal()
