@@ -82,7 +82,7 @@ const SongDetailModal = (bookmarkManager) => {
                 book_number: book_number,
                 title: mSong.title,
             },
-            verses_info: mVerses,
+            verse_info: mVerses,
         }])
 
         songDetailModal.modal('hide')
@@ -118,9 +118,7 @@ const SongDetailModal = (bookmarkManager) => {
                 bookmarkManager.activateBookmark(activeBookmark)
                 songDetailModal.modal('hide')
             },
-            error: () => {
-
-            },
+            error: console.log,
         })
     }
 

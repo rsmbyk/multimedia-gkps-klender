@@ -16,6 +16,7 @@ const CreateBookmarkModal = () => {
             const val = {
                 name: values.name.trim(),
                 date: `${values.date.getFullYear()}-${values.date.getMonth()+1}-${values.date.getDate()}`,
+                is_active: true,
             }
 
             $.post('/api/bookmarks/songs/bookmarks', val, (response) => {

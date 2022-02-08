@@ -141,7 +141,7 @@ const BookmarksTab = (bookmarkManager, createBookmarkModal, deleteBookmarkModal,
     }
 
     const retrieveBookmarks = (date) => {
-        axios.get(`/api/bookmarks/songs/bookmarks?month=${date.getMonth()+1}&year=${date.getFullYear()}`)
+        axios.get(`/api/bookmarks/songs/bookmarks?is_active=true&month=${date.getMonth()+1}&year=${date.getFullYear()}`)
             .then((response) => updateBookmarkList(response.data))
             .catch(console.log)
 

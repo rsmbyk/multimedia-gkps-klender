@@ -4,7 +4,10 @@ const DeleteBookmarkModal = () => {
     const sendDeleteRequest = (bookmark, onSuccess, onError) => {
         $.ajax({
             url: `/api/bookmarks/songs/bookmarks/${bookmark.id}`,
-            method: 'DELETE',
+            method: 'PATCH',
+            data: {
+                is_active: false,
+            },
             success: () => {
                 onSuccess()
                 modal.modal('hide')
@@ -14,7 +17,8 @@ const DeleteBookmarkModal = () => {
                     position: 'top attached',
                 })
             },
-            error: () => {
+            error: (a) => {
+                console.log(a)
                 onError()
                 $('body').toast({
                     class: 'error centered',
