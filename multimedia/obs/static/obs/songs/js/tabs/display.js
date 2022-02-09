@@ -1,4 +1,6 @@
 const DisplayTab = () => {
+    const bc = BC()
+
     const songBookNumber = $('#display-song-book-number')
     const songTitle      = $('#display-song-title')
     const songVerses     = $('#display-song-verses')
@@ -218,6 +220,15 @@ const DisplayTab = () => {
         else button.addClass('disabled')
     }
 
+    const postSongInfo = () => {
+        bc.postSongInfoMessage(
+            activeSong.song_info.book_number,
+            activeVerses[activeVerseIndex].number,
+            activeSong.song_info.title,
+            activeLyrics[activeLyricIndex],
+        )
+    }
+
     const evaluateButtonStatusActive = activeBookmarkItems =>
         evaluateButton(btnStatusActive, activeBookmarkItems !== null)
     const evaluateButtonStatusInactive = activeBookmarkItems =>
@@ -241,7 +252,7 @@ const DisplayTab = () => {
     bookmarkManager.activeBookmarkItems.subscribe(value => activeBookmarkItems = value)
     bookmarkManager.activeBookmarkItems.subscribe(update)
 
-    new ToggleButton(btnStatusActive, btnStatusInactive)
+    new ToggleButton(btnStatusActive, btnStatusInactive, () => bc.postStatusMessage(true), () => bc.postStatusMessage(false))
 
     btnNextSong.click(nextSong)
     btnPrevSong.click(prevSong)
@@ -265,4 +276,6 @@ const DisplayTab = () => {
     activeLyricIndexSubject.subscribe(updateActiveLyricMarker)
     activeLyricIndexSubject.subscribe(evaluateButtonNextLyric)
     activeLyricIndexSubject.subscribe(evaluateButtonPrevLyric)
+
+    activeLyricIndexSubject.subscribe(postSongInfo)
 }
