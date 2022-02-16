@@ -1,11 +1,11 @@
-const createDOMFromJSON = (data) => {
-    const element = document.createElement(data.tag)
-    element.classList.add(...data.classList)
+export const createDOMFromJSON = ({ tag, classList, children, innerText}) => {
+    const element = document.createElement(tag)
+    element.classList.add(...classList)
 
-    if (data.children)
-        element.append(...data.children.map((child, _) => createDOMFromJSON(child)))
-    else if (data.innerText)
-        element.innerText = data.innerText
+    if (children)
+        $(element).append(...children.map(createDOMFromJSON))
+    else if (innerText)
+        element.innerText = innerText
 
-    return element
+    return $(element)
 }

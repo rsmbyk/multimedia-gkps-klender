@@ -5,6 +5,32 @@
     background-color: #3a393a;
 }
 
+.ui.tab {
+    height: 100vh;
+    /* .ui.menu min-height (2.85714286em) * .ui.tiny.menu font-size (0.85714286rem) */
+    padding-bottom: calc(2.85714286em * 0.85714286);
+}
+
+.growingChild {
+    display: flex !important;
+    flex-direction: column;
+    height: 100%;
+}
+
+.growingChild > .fillRemaining {
+    overflow: hidden;
+    height: 100%;
+}
+
+.scrolling.fillRemaining {
+    overflow: auto;
+}
+
+.ui.padded.container {
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
 @media only screen and (min-width: 767px) {
     .ui.mobile.icon.menu .item > i.icon {
         margin: 0 0.35714286em 0 0 !important;

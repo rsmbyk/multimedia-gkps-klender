@@ -1,59 +1,35 @@
-<div class="ui middle aligned padded grid" style="height: 100vh">
+<div class="ui middle aligned padded grid" style="height: 100%">
     <div class="column">
-        <div class="ui segment">
+        <div class="ui inverted segment">
             <div class="ui center aligned compact one column grid">
                 <div class="column">
-                    <div class="ui center aligned tiny icon header">
-                        <i class="circular green icomoon-note icon"></i>
+                    <div class="ui inverted center aligned tiny icon header">
+                        <i class="circular inverted green icomoon-note icon"></i>
                     </div>
                 </div>
+
                 <div class="column">
-                    <div class="ui fluid floating small dropdown button" id="dropdown-songbooks">
+                    <div class="ui fluid inverted small search selection dropdown" id="dropdown-books">
+                        <i class="dropdown icon"></i>
+
                         <span class="default text">Buku Lagu</span>
-                        <div class="menu" id="menu-songbooks">
 
-                            {% for book in books %}
-
-                                <div class="item" data-value="{{ book.id }}">
-
-                                    {% if book.lang.id == 2 %}
-                                        <i class="id flag"></i>
-                                    {% else %}
-                                        <i class="language icon"></i>
-                                    {% endif %}
-
-                                    <span class="description">{{ book.lang.name }}</span>
-                                    <span class="text">{{ book.name }}</span>
-                                </div>
-
-                            {% endfor %}
-
-                        </div>
+                        <div class="scrollhint menu"></div>
                     </div>
                 </div>
 
                 <div class="column">
-                    <div class="ui fluid floating small labeled icon dropdown button"
-                         id="dropdown-songs">
+                    <div class="ui fluid inverted small search long selection dropdown" id="dropdown-songs">
+                        <i class="dropdown icon"></i>
 
-                        <i class="list ol icon"></i>
                         <span class="text">Lagu</span>
 
-                        <div class="menu">
-                            <div class="ui small search icon input">
-                                <i class="search icon"></i>
-                                <input placeholder="Cari Lagu" type="text">
-                            </div>
-
-                            <div class="scrolling menu" id="submenu-songs">
-<!--                            <div class="item" data-value="mrk">Markus</div>-->
-                            </div>
-                        </div>
+                        <div class="menu"></div>
                     </div>
                 </div>
 
                 <div class="eight wide column">
-                    <button class="ui fluid mini primary disabled button" id="button-open-song">
+                    <button class="ui fluid inverted mini primary disabled button" id="button-open-song">
                         <i class="external alternate icon"></i>
                         <span class="text">Buka</span>
                     </button>

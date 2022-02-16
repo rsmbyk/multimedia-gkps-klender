@@ -1,27 +1,46 @@
-<div class="ui overlay fullscreen longer modal" id="modal-create-bookmark">
+<div class="ui overlay fullscreen modal" id="modal-create-bookmark">
     <i class="close icon"></i>
+
     <div class="header">
         Create Bookmark
     </div>
 
-    <div class="content">
+    <div class="scrolling content">
         <div class="ui form" id="form-create-bookmark">
             <div class="required field">
-                <label>Name</label>
-                <input type="text" name="name" placeholder="Enter bookmark name">
+                <label for="form-create-bookmark-name">Name</label>
+                <input type="text"
+                       name="name"
+                       placeholder="Enter bookmark name"
+                       id="form-create-bookmark-name">
             </div>
 
-            <div class="required field">
-                <label>Date</label>
+            <div class="inline field">
+                <div class="ui checked checkbox">
+                    <input type="checkbox"
+                           checked=""
+                           name="noDate"
+                           id="form-create-bookmark-date-checkbox">
+                    <label for="form-create-bookmark-date-checkbox">Specify date</label>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="form-create-bookmark-date">Date</label>
                 <div class="ui calendar">
                     <div class="ui input left icon">
                         <i class="calendar icon"></i>
-                        <input type="text" name="date" placeholder="Pick up a date">
+                        <input type="text"
+                               name="date"
+                               placeholder="Pick up a date"
+                               id="form-create-bookmark-date">
                     </div>
                 </div>
             </div>
 
-            <div class="ui error message"></div>
+            <div class="ui error message" id="name-error-message"></div>
+            <div class="ui error message" id="date-error-message"></div>
+            <div class="ui error message" id="non-field-error-message"></div>
         </div>
     </div>
 

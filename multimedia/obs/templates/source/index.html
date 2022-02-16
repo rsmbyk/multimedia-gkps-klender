@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>OBS Songs Source</title>
+    <title>Source - OBS Songs Plugin</title>
 
     <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
     <link rel="stylesheet" href="{% static 'common/icomoon/style.css' %}">
@@ -15,13 +15,15 @@
     <link rel="stylesheet" href="{% static 'obs/songs/css/source/themes/default.css' %}">
 
     <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
+    <script src="{% static 'common/rxjs/rxjs.umd.js' %}"></script>
     <script src="{% static 'common/fomantic/semantic.js' %}"></script>
+
     <script type="module" src="{% static 'obs/songs/js/common/bc.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/js/source/index.js' %}"></script>
 
 </head>
 <body style="background-color: transparent">
-    <div class="ui flat inverted fluid segment transition" id="song-segment">
+    <div class="ui hidden flat inverted fluid segment transition" id="song-segment">
         <a class="ui inverted huge right corner label">
             <i class="inverted icomoon-note icon"></i>
         </a>
@@ -42,7 +44,6 @@
             <div class="column">
                 <div class="ui inverted massive center aligned header" id="song-lyric">
                     Sai holong atei-Mu Jahowa, papandei au mamuji Goran-Mu.
-                    <br>
                     Sai ulang asal puas hata, ningon botul mamuji hu Bamu.
                 </div>
             </div>
