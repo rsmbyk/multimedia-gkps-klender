@@ -1,0 +1,32 @@
+const { ReplaySubject } = rxjs
+
+const BC_NAME_SONG_INFO = 'OBS-SONGS-SONG-INFO'
+const BC_NAME_STATUS = 'OBS-SONGS-STATUS'
+
+export const songInfoSubject = new ReplaySubject(1)
+export const statusSubject   = new ReplaySubject(1)
+
+const bcSongInfo = new BroadcastChannel(BC_NAME_SONG_INFO)
+const bcStatus = new BroadcastChannel(BC_NAME_STATUS)
+
+export const postSongInfoMessage = (bookNumber, verseNumber, title, lyric) => {
+    bcSongInfo.postMessage({
+        bookNumber: bookNumber,
+        verseNumber: verseNumber,
+        title: title,
+        lyric: lyric,
+    })
+}
+
+export const postStatusMessage = status => {
+    bcStatus.postMessage({
+        status: status,
+    })
+}
+
+bcSongInfo.onmessage = ({ data: songInfo }) => songInfoSubject.next(songInfo)
+
+bcStatus.onmessage = ({ data: { status } }) => statusSubject.next(status)
+
+songInfoSubject.subscribe(console.log)
+statusSubject.subscribe(console.log)

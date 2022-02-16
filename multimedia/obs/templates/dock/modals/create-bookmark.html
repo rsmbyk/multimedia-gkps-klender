@@ -1,0 +1,53 @@
+<div class="ui overlay fullscreen modal" id="modal-create-bookmark">
+    <i class="close icon"></i>
+
+    <div class="header">
+        Create Bookmark
+    </div>
+
+    <div class="scrolling content">
+        <div class="ui form" id="form-create-bookmark">
+            <div class="required field">
+                <label for="form-create-bookmark-name">Name</label>
+                <input type="text"
+                       name="name"
+                       placeholder="Enter bookmark name"
+                       id="form-create-bookmark-name">
+            </div>
+
+            <div class="inline field">
+                <div class="ui checked checkbox">
+                    <input type="checkbox"
+                           checked=""
+                           name="noDate"
+                           id="form-create-bookmark-date-checkbox">
+                    <label for="form-create-bookmark-date-checkbox">Specify date</label>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="form-create-bookmark-date">Date</label>
+                <div class="ui calendar">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text"
+                               name="date"
+                               placeholder="Pick up a date"
+                               id="form-create-bookmark-date">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui error message" id="name-error-message"></div>
+            <div class="ui error message" id="date-error-message"></div>
+            <div class="ui error message" id="non-field-error-message"></div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <div class="ui primary approve button">
+            <i class="plus icon"></i>
+            Create
+        </div>
+    </div>
+</div>
