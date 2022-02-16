@@ -5,11 +5,16 @@ from multimedia.songs.models import Song
 
 
 class SongBookmark(models.Model):
-    name = models.CharField(max_length=64, unique=True)
-    date = models.DateField()
+    name = models.CharField(max_length=32)
+    date = models.DateField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ('-date', '-created_at')
 
 
 class SongBookmarkItem(models.Model):
@@ -18,11 +23,11 @@ class SongBookmarkItem(models.Model):
     verse = models.CharField(
         max_length=64,
         validators=[validate_comma_separated_integer_list])
-    order_number = models.PositiveIntegerField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     def __str__(self):
         return f'{self.bookmark}: {self.song}'
 
     class Meta:
-        ordering = ('bookmark', 'song')
-        unique_together = (('bookmark', 'song'), ('bookmark', 'order_number'))
+        ordering = ('bookmark', 'created_at')
+        unique_together = ('bookmark', 'song')
