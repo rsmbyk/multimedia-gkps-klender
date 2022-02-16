@@ -1,12 +1,9 @@
 from django.shortcuts import render
 
-from multimedia.songs.models import Book
-
 
 def dock(request, **kwargs):
-    books = Book.objects.all()
-    return render(request, 'dock/dock.html', context={'books': books})
+    return render(request, 'dock/index.html')
 
 
 def source(request, **kwargs):
-    return render(request, '')
+    return render(request, 'source/index.html')
