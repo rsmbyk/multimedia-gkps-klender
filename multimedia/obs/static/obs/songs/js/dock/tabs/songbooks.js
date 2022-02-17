@@ -1,4 +1,4 @@
-const { BehaviorSubject } = rxjs
+const { BehaviorSubject, distinctUntilChanged } = rxjs
 import * as doms from '../../../../../helpers/doms.js'
 import * as songDetailModal from '../modals/song-detail.js'
 
@@ -16,7 +16,7 @@ let selectedSongId
 
 const booksSubject          = new BehaviorSubject()
 const songsSubject          = new BehaviorSubject()
-const selectedBookIdSubject = new BehaviorSubject()
+const selectedBookIdSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 const selectedSongIdSubject = new BehaviorSubject()
 
 const booksStateValue = new DropdownStateValue(
