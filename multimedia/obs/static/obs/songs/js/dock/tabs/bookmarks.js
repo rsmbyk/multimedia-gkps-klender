@@ -49,7 +49,7 @@ buttonFilterGeneral.click(() => {
 })
 
 buttonCreateBookmark.click(() => {
-    createBookmarkModal.open()
+    createBookmarkModal.open(retrieveBookmarks)
 })
 
 const createBookmarkItem = bookmark => {
