@@ -172,6 +172,7 @@ const updateLyricList = activeLyrics => {
 
     songLyricList.empty()
     songLyricList.append(...activeLyrics.map(createLyricTextItem))
+    songLyricList.parent().animate({ scrollTop: 0 }, 200)
 
     activeLyricIndexSubject.next(0)
 }

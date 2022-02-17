@@ -185,6 +185,7 @@ const updateBookmarkList = bookmarks => {
 
     bookmarkList.empty()
     bookmarkList.append(...bookmarks.map(createBookmarkItem))
+    bookmarkList.parent().parent().animate({ scrollTop: 0 }, 200)
 }
 
 const retrieveBookmarks = () => {
