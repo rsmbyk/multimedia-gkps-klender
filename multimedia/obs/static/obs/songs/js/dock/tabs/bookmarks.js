@@ -194,7 +194,7 @@ const retrieveBookmarks = () => {
     let requestUrl
 
     if (generalBookmark === true)
-        requestUrl ='/api/bookmarks/songs/bookmarks?is_active=true&has_date=false'
+        requestUrl ='/api/bookmarks/songs/bookmarks?is_active=true&has_date=false&ordering=name'
     else
         requestUrl = `/api/bookmarks/songs/bookmarks?is_active=true&month=${currentDate.getMonth()+1}&year=${currentDate.getFullYear()}`
 
