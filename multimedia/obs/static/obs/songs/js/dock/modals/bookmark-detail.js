@@ -13,11 +13,36 @@ const bookmarkName     = modal.find('#bookmark-name')
 const bookmarkDate     = modal.find('#bookmark-date')
 const bookmarkItemList = modal.find('#bookmark-item-list')
 
+const placeholderBookmarkInfo = modal.find('#modal-bookmark-detail-placeholder-bookmark-info')
+const placeholderBookmarkItemList = modal.find('#modal-bookmark-detail-placeholder-bookmark-item-list')
+
 let bookmark
 let bookmarkItems
 
 const bookmarkSubject = new BehaviorSubject()
 const bookmarkItemsSubject = new BehaviorSubject()
+
+const displayPlaceholder = () => {
+    bookmarkName.hide()
+    bookmarkDate.hide()
+    bookmarkItemList.hide()
+
+    placeholderBookmarkInfo.show()
+    placeholderBookmarkItemList.show()
+}
+
+const hideBookmarkInfoPlaceholder = () => {
+    bookmarkName.show()
+    bookmarkDate.show()
+
+    placeholderBookmarkInfo.hide()
+}
+
+const hideBookmarkItemListPlaceholder = () => {
+    bookmarkItemList.show()
+
+    placeholderBookmarkItemList.hide()
+}
 
 const retrieveBookmark = ({ id }) => {
     return axios.get(`/api/bookmarks/songs/bookmarks/${id}`)
@@ -34,7 +59,21 @@ const retrieveBookmarkItems = bookmark => {
         .catch(console.log)
 }
 
-const updateBookmarkInfo = bookmarkItems => {
+const updateBookmarkInfo = bookmark => {
+    if (bookmark === undefined)
+        return
+
+    hideBookmarkInfoPlaceholder()
+
+    bookmarkName.text(bookmark.name)
+
+    if (bookmark.date !== null) bookmarkDate.text(bookmark.date)
+    else bookmarkDate.text('-')
+
+    bookmarkDate.css('visibility', bookmark.date === null ? 'hidden' : 'visible')
+}
+
+const updateBookmarkItemList = bookmarkItems => {
     if (bookmarkItems === undefined)
         return
 
@@ -71,10 +110,9 @@ const updateBookmarkInfo = bookmarkItems => {
             deleteBookmarkItemModal.open(
                 bookmark,
                 bookmarkItem,
-                function(e) {
-                    console.log(e)
+                () => {
                     retrieveBookmarkItems(bookmark)
-                    if (bookmark.id === bookmarkManager.bookmark.id)
+                    if (bookmarkManager.bookmark !== null && bookmark.id === bookmarkManager.bookmark.id)
                         bookmarkManager.refreshBookmarkItems()
                 },
             )
@@ -96,25 +134,21 @@ const updateBookmarkInfo = bookmarkItems => {
         return item
     }
 
-    bookmarkName.text(bookmark.name)
-
-    if (bookmark.date !== null) bookmarkDate.text(bookmark.date)
-    else bookmarkDate.text('-')
-
-    bookmarkDate.css('visibility', bookmark.date === null ? 'hidden' : 'visible')
+    hideBookmarkItemListPlaceholder()
 
     bookmarkItemList.empty()
     bookmarkItemList.append(...bookmarkItems.map(createBookmarkItem))
-
-    modal.modal('show')
 }
 
 export const open = bookmark => {
+    displayPlaceholder()
     retrieveBookmark(bookmark)
+    modal.modal('show')
 }
 
 bookmarkSubject.subscribe(value => bookmark = value)
 bookmarkSubject.subscribe(retrieveBookmarkItems)
+bookmarkSubject.subscribe(updateBookmarkInfo)
 
 bookmarkItemsSubject.subscribe(value => bookmarkItems = value)
-bookmarkItemsSubject.subscribe(updateBookmarkInfo)
+bookmarkItemsSubject.subscribe(updateBookmarkItemList)

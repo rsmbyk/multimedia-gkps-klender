@@ -1,6 +1,7 @@
-const { BehaviorSubject } = rxjs
+const { BehaviorSubject, distinctUntilChanged } = rxjs
 import * as doms from '../../../../../helpers/doms.js'
 import * as songDetailModal from '../modals/song-detail.js'
+import * as toasts from '../../common/toasts.js'
 
 const LOCAL_STORAGE_KEY_BOOKS = 'DROPDOWN_BOOKS'
 const LOCAL_STORAGE_KEY_SONGS = 'DROPDOWN_SONGS'
@@ -16,7 +17,7 @@ let selectedSongId
 
 const booksSubject          = new BehaviorSubject()
 const songsSubject          = new BehaviorSubject()
-const selectedBookIdSubject = new BehaviorSubject()
+const selectedBookIdSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 const selectedSongIdSubject = new BehaviorSubject()
 
 const booksStateValue = new DropdownStateValue(
@@ -34,6 +35,18 @@ const songsStateValue = new DropdownStateValue(
 buttonOpenSong.click(() => {
     songDetailModal.open(songsStateValue.selectedValue)
 })
+
+const displayLoader = () => {
+    dropdownBooks.addClass('loading disabled')
+    dropdownSongs.addClass('loading disabled')
+    buttonOpenSong.addClass('loading disabled')
+}
+
+const hideLoader = () => {
+    dropdownBooks.removeClass('loading disabled')
+    dropdownSongs.removeClass('loading disabled')
+    buttonOpenSong.removeClass('loading disabled')
+}
 
 const activateOpenSongButton = selectedSongId => {
     if (selectedSongId === undefined)
@@ -62,6 +75,8 @@ const repopulateSongsDropdown = songs => {
 
     songsStateValue.init(null, songId => selectedSongIdSubject.next(songId), false)
 
+    hideLoader()
+
     if (songs.length === 0) {
         dropdownSongs.addClass('disabled')
         buttonOpenSong.addClass('disabled')
@@ -76,8 +91,15 @@ const retrieveSongs = selectedBookId => {
     if (selectedBookId === undefined)
         return
 
+    displayLoader()
+
     axios.get(`/api/songs/songs?book=${selectedBookId}`)
          .then(({ data: songs }) => songsSubject.next(songs))
+         .catch(e => {
+             console.log(e)
+             toasts.error('Failed to load song list')
+             hideLoader()
+         })
 }
 
 const populateBooksDropdown = books => {
@@ -94,11 +116,6 @@ const populateBooksDropdown = books => {
                     classList: book.lang === 2 ? ['id', 'flag'] : ['language', 'icon'],
                     innerText: '',
                 },
-                // {
-                //     tag: 'span',
-                //     classList: ['description'],
-                //     innerText: book.lang === 2 ? 'Indonesia' : 'Simalungun',
-                // },
                 {
                     tag: 'span',
                     classList: ['text'],
@@ -117,8 +134,15 @@ const populateBooksDropdown = books => {
 }
 
 const retrieveBooks = () => {
+    displayLoader()
+
     axios.get('/api/songs/books')
          .then(({ data: books }) => booksSubject.next(books))
+         .catch(e => {
+             console.log(e)
+             toasts.error('Failed to load book list')
+             hideLoader()
+         })
 }
 
 booksSubject.subscribe(v => books = v)

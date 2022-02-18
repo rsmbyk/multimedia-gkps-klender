@@ -26,8 +26,67 @@
     <div class="ui inverted fitted divider"></div>
 
     <div class="scrolling fillRemaining">
+        <div class="ui middle aligned padded grid" style="height: 100%; display: none" id="bookmarks-view-error">
+            <div class="center aligned column">
+                <div class="ui small inverted icon header">
+                    <i class="bug icon"></i>
+                    <div class="content">Network Error</div>
+                </div>
+            </div>
+        </div>
+        <div class="ui middle aligned padded grid" style="height: 100%; display: none" id="bookmarks-view-empty">
+            <div class="center aligned column">
+                <div class="ui small inverted icon header">
+                    <i class="calendar outline icon"></i>
+                    <div class="content">No Bookmarks</div>
+                </div>
+            </div>
+        </div>
         <div class="ui padded container">
-            <div class="ui inverted very relaxed divided list" id="bookmark-list" style=""></div>
+            <div class="ui inverted very relaxed divided list" id="bookmarks-placeholder-bookmark-list">
+                <div class="item">
+                    <div class="content">
+                        <div class="ui dark inverted placeholder">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui dark inverted placeholder">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui dark inverted placeholder">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui dark inverted placeholder">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui inverted very relaxed divided list" id="bookmark-list"></div>
         </div>
     </div>
 </div>
