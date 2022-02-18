@@ -1,0 +1,136 @@
+<div class="growingChild" id="tab-display">
+    <div class="ui padded one column grid">
+        <div class="right aligned column">
+            <div class="ui tiny labeled icon green button"
+                 id="display-button-status-active">
+                <i class="eye icon"></i>
+                <span class="text">Active</span>
+            </div>
+            <div class="ui tiny labeled icon inverted red button"
+                 id="display-button-status-inactive">
+                <i class="eye slash icon"></i>
+                <span class="text">Inactive</span>
+            </div>
+        </div>
+        <div class="column">
+            <div class="ui middle aligned center aligned equal width very compact grid">
+                <div class="column">
+                    <div class="ui has-popup mini inverted circular icon button"
+                         id="display-btn-prev-song"
+                         data-content="Previous Song"
+                         data-position="right center">
+                        <i class="arrow left icon"></i>
+                    </div>
+                </div>
+
+                <div class="twelve wide column">
+                    <div class="ui tiny inverted hidden header">
+
+                        <div class="ui dark inverted placeholder" id="display-placeholder-song-info">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+
+                        <div class="sub header" id="display-song-book-number">HAL 345</div>
+                        <span id="display-song-title">Na Martumpu do Hanai GanupanNa Martumpu do Hanai GanupanNa Martumpu do Hanai Ganupan</span>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="ui has-popup mini inverted circular icon button"
+                         id="display-btn-next-song"
+                         data-content="Next Song"
+                         data-position="left center">
+                        <i class="arrow right icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="center aligned column">
+            <div class="ui tiny inverted header">
+                <div class="sub header">Ayat</div>
+
+                <div class="ui dark inverted placeholder" id="display-placeholder-song-verses">
+                    <div class="header">
+                        <div class="line"></div>
+                    </div>
+                </div>
+
+                <span id="display-song-verses">1,2,<span class="ui inverted primary text">3</span>,4,5</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui container growingChild fillRemaining">
+        <div class="ui top attached tiny fluid inverted buttons">
+            <div class="ui has-popup icon button"
+                 id="display-btn-prev-verse"
+                 data-content="Previous Verse"
+                 data-position="top center">
+                <i class="angle double left icon"></i>
+            </div>
+            <div class="ui has-popup icon button"
+                 id="display-btn-prev-lyric"
+                 data-content="Previous Lyric"
+                 data-position="top center">
+                <i class="angle left icon"></i>
+            </div>
+            <div class="ui icon button">
+                <i class="cat icon"></i>
+            </div>
+            <div class="ui has-popup icon button"
+                 id="display-btn-next-lyric"
+                 data-content="Next Lyric"
+                 data-position="top center">
+                <i class="angle right icon"></i>
+            </div>
+            <div class="ui has-popup icon button"
+                 id="display-btn-next-verse"
+                 data-content="Next Verse"
+                 data-position="top center">
+                <i class="angle double right icon"></i>
+            </div>
+        </div>
+        <div class="ui attached inverted segment" style="overflow-y: auto">
+            <div class="ui small very compact inverted divided selection list" id="display-placeholder-song-lyric-list">
+                <div class="item">
+                    <div class="content">
+                        <div class="ui inverted placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui inverted placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui inverted placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui small very compact inverted divided selection list" id="display-song-lyric-list"></div>
+        </div>
+    </div>
+</div>
