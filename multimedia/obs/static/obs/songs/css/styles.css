@@ -31,6 +31,16 @@
     padding-bottom: 1em;
 }
 
+.ui.dark.inverted.placeholder,
+.ui.dark.inverted.placeholder .line,
+.ui.dark.inverted.placeholder .line:after {
+    background-color: #3a393a;
+}
+
+.ui.list {
+    margin: 0;
+}
+
 @media only screen and (min-width: 767px) {
     .ui.mobile.icon.menu .item > i.icon {
         margin: 0 0.35714286em 0 0 !important;

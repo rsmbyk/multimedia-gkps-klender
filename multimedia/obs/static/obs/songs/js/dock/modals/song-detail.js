@@ -2,6 +2,7 @@ const { map, scan, BehaviorSubject } = rxjs
 import * as bookmarkManager from '../../common/bookmark-manager.js'
 import * as tabManager from '../../common/tab-manager.js'
 import * as doms from '../../../../../helpers/doms.js'
+import * as toasts from '../../common/toasts.js'
 
 const modal = $('#modal-song-detail').modal({
     closable: false,
@@ -14,6 +15,9 @@ const verseList     = $('#modal-song-detail-verse-list')
 const buttonSave    = $('#modal-song-detail-btn-save')
 const buttonDelete  = $('#modal-song-detail-btn-delete')
 const buttonDisplay = $('#modal-song-detail-btn-display')
+
+const placeholderSongInfo = $('#modal-song-detail-placeholder-song-info')
+const placeholderVerseList = $('#modal-song-detail-placeholder-verse-list')
 
 const actionToggleButton = new ManualToggleButton(buttonSave, buttonDelete)
 
@@ -71,7 +75,6 @@ const evaluateActionButtonState = selectedVerses => {
 }
 
 buttonSave.click(() => {
-    console.log(bookmarkedVerses)
     if (bookmarkedVerses.length === 0)
         sendCreateBookmarkItemRequest()
     else
@@ -88,7 +91,49 @@ buttonDisplay.click(() => {
     tabManager.changeTab('tab-display')
 })
 
+const displayPlaceholders = () => {
+    header.hide()
+    subheader.hide()
+    verseList.hide()
+
+    placeholderSongInfo.show()
+    placeholderVerseList.show()
+}
+
+const hideSongInfoPlaceholder = () => {
+    header.show()
+    subheader.show()
+
+    placeholderSongInfo.hide()
+}
+
+const hideVerseListPlaceholder = () => {
+    verseList.show()
+
+    placeholderVerseList.hide()
+}
+
+const displayLoader = () => {
+    buttonSave.addClass('loading disabled')
+    buttonDelete.addClass('loading disabled')
+    buttonDisplay.addClass('disabled')
+
+    verseList.find('.btnAddToBookmark').addClass('disabled')
+    verseList.find('.btnBookmarked').addClass('disabled')
+}
+
+const hideLoader = () => {
+    buttonSave.removeClass('loading disabled')
+    buttonDelete.removeClass('loading disabled')
+    buttonDisplay.removeClass('disabled')
+
+    verseList.find('.btnAddToBookmark').removeClass('disabled')
+    verseList.find('.btnBookmarked').removeClass('disabled')
+}
+
 const sendCreateBookmarkItemRequest = () => {
+    displayLoader()
+
     $.ajax({
         url: '/api/bookmarks/songs/items',
         method: 'POST',
@@ -102,11 +147,17 @@ const sendCreateBookmarkItemRequest = () => {
             bookmarkManager.refreshBookmarkItems()
             modal.modal('hide')
         },
-        error: console.log,
+        error: e => {
+            console.log(e)
+            toasts.error('Failed to add to bookmark')
+            hideLoader()
+        },
     })
 }
 
 const sendEditBookmarkItemRequest = () => {
+    displayLoader()
+
     $.ajax({
         url: `/api/bookmarks/songs/items/${bookmarkItemId}`,
         method: 'PATCH',
@@ -118,11 +169,17 @@ const sendEditBookmarkItemRequest = () => {
             bookmarkManager.refreshBookmarkItems()
             modal.modal('hide')
         },
-        error: console.log,
+        error: e => {
+            console.log(e)
+            toasts.error('Failed to save changes')
+            hideLoader()
+        },
     })
 }
 
 const sendDeleteBookmarkItemRequest = () => {
+    displayLoader()
+
     $.ajax({
         url: `/api/bookmarks/songs/items/${bookmarkItemId}`,
         method: 'DELETE',
@@ -131,7 +188,12 @@ const sendDeleteBookmarkItemRequest = () => {
             bookmarkManager.refreshBookmarkItems()
             modal.modal('hide')
         },
-        error: console.log,
+
+        error: e => {
+            console.log(e)
+            toasts.error('Failed to remove from bookmark')
+            hideLoader()
+        },
     })
 }
 
@@ -139,6 +201,7 @@ const updateBookInfo = book => {
     if (book === undefined)
         return
 
+    hideSongInfoPlaceholder()
     subheader.text(book.is_hymn_book ? `${book.short_name} ${song.number}${song.sub_number}` : book.name)
 }
 
@@ -248,6 +311,8 @@ const updateVerseList = verses => {
         }
     }
 
+    hideLoader()
+    hideVerseListPlaceholder()
     verseList.empty()
     verseList.append(...verses.map(createVerseItem))
 }
@@ -272,6 +337,10 @@ const retrieveSong = songId => {
 
 export const open = songId => {
     retrieveSong(songId)
+    buttonSave.hide()
+    buttonDelete.hide()
+    displayLoader()
+    displayPlaceholders()
     modal.modal('show')
 }
 

@@ -12,6 +12,10 @@ const buttonFilterDate     = $('#button-filter-date')
 const buttonFilterGeneral  = $('#button-filter-general')
 const buttonFilterText     = $('#button-filter-text')
 
+const placeholderBookmarkList = $('#bookmarks-placeholder-bookmark-list')
+const viewError = $('#bookmarks-view-error')
+const viewEmpty = $('#bookmarks-view-empty')
+
 let bookmarks
 let currentDate
 let generalBookmark
@@ -51,6 +55,53 @@ buttonFilterGeneral.click(() => {
 buttonCreateBookmark.click(() => {
     createBookmarkModal.open(retrieveBookmarks)
 })
+
+const displayBookmarksView = () => {
+    bookmarkList.parent().show()
+}
+
+const displayEmptyView = () => {
+    viewEmpty.show()
+}
+
+const displayErrorView = () => {
+    viewError.show()
+}
+
+const displayLoader = () => {
+    bookmarkList.parent().hide()
+    viewEmpty.hide()
+    viewError.hide()
+    placeholderBookmarkList.show()
+
+    buttonCreateBookmark.addClass('disabled')
+
+    buttonFilterDate.addClass('loading disabled')
+    buttonFilterGeneral.addClass('loading disabled')
+    buttonFilterCalendar.find('.button').addClass('disabled')
+}
+
+const hideLoader = () => {
+    placeholderBookmarkList.hide()
+
+    buttonCreateBookmark.removeClass('disabled')
+
+    buttonFilterDate.removeClass('loading disabled')
+    buttonFilterGeneral.removeClass('loading disabled')
+    buttonFilterCalendar.find('.button').removeClass('disabled')
+}
+
+const displayControlButtonLoader = () => {
+    bookmarkList.find('.btnActivate').addClass('disabled')
+    bookmarkList.find('.btnEdit').addClass('disabled')
+    bookmarkList.find('.btnDelete').addClass('disabled')
+}
+
+const hideControlButtonLoader = () => {
+    bookmarkList.find('.btnActivate').removeClass('disabled')
+    bookmarkList.find('.btnEdit').removeClass('disabled')
+    bookmarkList.find('.btnDelete').removeClass('disabled')
+}
 
 const createBookmarkItem = bookmark => {
     const date = new Date(bookmark.date)
@@ -157,6 +208,7 @@ const createBookmarkItem = bookmark => {
     extraButtons.hide()
 
     buttonActivate.click(() => {
+        displayControlButtonLoader()
         $('#bookmark-list .btnActivate').show()
         buttonActivate.hide()
         $('#bookmark-list .icoCheck').hide()
@@ -183,14 +235,21 @@ const updateBookmarkList = bookmarks => {
     if (bookmarks === undefined)
         return
 
+    hideLoader()
+
+    if (bookmarks.length === 0) displayEmptyView()
+    else displayBookmarksView()
+
     bookmarkList.empty()
     bookmarkList.append(...bookmarks.map(createBookmarkItem))
-    bookmarkList.parent().parent().animate({ scrollTop: 0 }, 200)
+    bookmarkList.parent().parent().scrollTop(0)
 }
 
 const retrieveBookmarks = () => {
     if (generalBookmark === undefined && currentDate === undefined)
         return
+
+    displayLoader()
 
     let requestUrl
 
@@ -201,7 +260,11 @@ const retrieveBookmarks = () => {
 
     axios.get(requestUrl)
         .then(({ data: bookmarks }) => bookmarksSubject.next(bookmarks))
-        .catch(console.log)
+        .catch(e => {
+            console.log(e)
+            displayErrorView()
+            hideLoader()
+        })
 }
 
 const updateFilterButtonText = currentDate => {
@@ -211,6 +274,8 @@ const updateFilterButtonText = currentDate => {
 const refresh = () => {
     retrieveBookmarks()
 }
+
+bookmarkManager.bookmarkItemsSubject.subscribe(hideControlButtonLoader)
 
 bookmarksSubject.subscribe(value => bookmarks = value)
 bookmarksSubject.subscribe(updateBookmarkList)

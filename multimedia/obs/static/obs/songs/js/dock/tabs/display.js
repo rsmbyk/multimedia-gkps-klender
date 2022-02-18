@@ -18,6 +18,10 @@ const btnNextVerse = $('#display-btn-next-verse')
 const btnPrevLyric = $('#display-btn-prev-lyric')
 const btnNextLyric = $('#display-btn-next-lyric')
 
+const placeholderSongInfo = $('#display-placeholder-song-info')
+const placeholderSongVerses = $('#display-placeholder-song-verses')
+const placeholderSongLyricList = $('#display-placeholder-song-lyric-list')
+
 let activeSong
 let activeVerses
 let activeLyrics
@@ -48,18 +52,35 @@ const update = bookmarkItems => {
 
 const setIdle = () => {
     toggleButtonStatus.setInactive()
-    bc.postStatusMessage(false)
-    $('#tab-display .ui.button').addClass('disabled')
-    songBookNumber.empty()
-    songTitle.empty()
-    songVerses.empty()
-    songLyricList.empty()
+    displayPlaceholders()
 }
 
 const init = () => {
-    $('#tab-display .ui.button').addClass('disabled')
     toggleButtonStatus.setInactive()
     activeSongIndexSubject.next(0)
+    hidePlaceholders()
+}
+
+const displayPlaceholders = () => {
+    placeholderSongInfo.show()
+    placeholderSongVerses.show()
+    placeholderSongLyricList.show()
+
+    songBookNumber.hide()
+    songTitle.hide()
+    songVerses.hide()
+    songLyricList.hide()
+}
+
+const hidePlaceholders = () => {
+    songBookNumber.show()
+    songTitle.show()
+    songVerses.show()
+    songLyricList.show()
+
+    placeholderSongInfo.hide()
+    placeholderSongVerses.hide()
+    placeholderSongLyricList.hide()
 }
 
 const setSongBookNumber = value => songBookNumber.text(value)
