@@ -52,6 +52,7 @@ const update = bookmarkItems => {
 
 const setIdle = () => {
     toggleButtonStatus.setInactive()
+    resetIndices()
     displayPlaceholders()
 }
 
@@ -59,6 +60,12 @@ const init = () => {
     toggleButtonStatus.setInactive()
     activeSongIndexSubject.next(0)
     hidePlaceholders()
+}
+
+const resetIndices = () => {
+    activeSongIndexSubject.next(undefined)
+    activeVerseIndexSubject.next(undefined)
+    activeLyricIndexSubject.next(undefined)
 }
 
 const displayPlaceholders = () => {
