@@ -103,6 +103,11 @@ const hideControlButtonLoader = () => {
     bookmarkList.find('.btnDelete').removeClass('disabled')
 }
 
+const hideCheckIcons = bookmark => {
+    if (bookmark === null)
+        bookmarkList.find('.icoCheck').hide()
+}
+
 const createBookmarkItem = bookmark => {
     const date = new Date(bookmark.date)
     const dateText = generalBookmark ? '' : `${date.getDate()} ${date.toLocaleString('en-us', {month: 'long', year: 'numeric'})}`
@@ -275,6 +280,7 @@ const refresh = () => {
     retrieveBookmarks()
 }
 
+bookmarkManager.bookmarkSubject.subscribe(hideCheckIcons)
 bookmarkManager.bookmarkItemsSubject.subscribe(hideControlButtonLoader)
 
 bookmarksSubject.subscribe(value => bookmarks = value)
