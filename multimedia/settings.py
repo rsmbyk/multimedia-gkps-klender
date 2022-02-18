@@ -91,7 +91,7 @@ if DEVELOPMENT_MODE is True:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-else:
+elif not (len(sys.argv) > 1 and sys.argv[0] == 'manage.py' and sys.argv[1] == 'collectstatic'):
     if os.getenv('DATABASE_URL') is None:
         raise Exception('DATABASE_URL environment variable not defined')
     DATABASES = {
