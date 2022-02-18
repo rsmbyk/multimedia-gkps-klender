@@ -110,10 +110,9 @@ const updateBookmarkItemList = bookmarkItems => {
             deleteBookmarkItemModal.open(
                 bookmark,
                 bookmarkItem,
-                function(e) {
-                    console.log(e)
+                () => {
                     retrieveBookmarkItems(bookmark)
-                    if (bookmark.id === bookmarkManager.bookmark.id)
+                    if (bookmarkManager.bookmark !== null && bookmark.id === bookmarkManager.bookmark.id)
                         bookmarkManager.refreshBookmarkItems()
                 },
             )
