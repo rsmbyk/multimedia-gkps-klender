@@ -2,21 +2,25 @@
   {
     "lang": "Simalungun",
     "name": "Haleluya",
-    "short_name": "HAL"
+    "short_name": "HAL",
+    "is_active": true
   },
   {
     "lang": "Indonesia",
     "name": "Kidung Jemaat",
-    "short_name": "KJ"
+    "short_name": "KJ",
+    "is_active": true
   },
   {
     "lang": "Indonesia",
     "name": "Pelengkap Kidung Jemaat",
-    "short_name": "PKJ"
+    "short_name": "PKJ",
+    "is_active": true
   },
   {
     "lang": "Indonesia",
     "name": "Nyanyikanlah Kidung Baru",
-    "short_name": "NKB"
+    "short_name": "NKB",
+    "is_active": false
   }
 ]
