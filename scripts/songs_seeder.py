@@ -26,7 +26,7 @@ with open('raw/songs/books.json') as f:
     books_json = json.load(f)
 
 with transaction.atomic():
-    for book in books_json:
+    for book in filter(lambda x: x['is_active'], books_json):
         book_object, _ = Book.objects.get_or_create(
             lang=Language.objects.get(name=book['lang']),
             name=book['name'],
