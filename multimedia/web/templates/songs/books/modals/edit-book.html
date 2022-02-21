@@ -1,0 +1,59 @@
+{% load static %}
+
+<div class="ui tiny modal" id="modal-edit-book">
+    <div class="header">
+        Create Book
+    </div>
+
+    <div class="content">
+        <div class="ui form" id="form-edit-book">
+            <div class="field" style="display: none">
+                <label for="form-edit-book-id">ID</label>
+                <input type="text"
+                       name="id"
+                       placeholder="Book ID"
+                       id="form-edit-book-id">
+            </div>
+
+            <div class="required field">
+                <label for="form-edit-book-name">Name</label>
+                <input type="text"
+                       name="name"
+                       placeholder="Enter book name"
+                       id="form-edit-book-name">
+            </div>
+
+            <div class="required field">
+                <label for="form-edit-book-lang">Language</label>
+                <div class="ui selection dropdown" id="form-edit-book-lang-dropdown">
+                    <input type="hidden" name="lang" id="form-edit-book-lang">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Language</div>
+                    <div class="menu">
+                        <div class="item" data-value="1"><i class="language icon"></i>Simalungun</div>
+                        <div class="item" data-value="2"><i class="id flag"></i>Indonesia</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui error message" id="form-edit-book-error-message-name"></div>
+            <div class="ui error message" id="form-edit-book-error-message-non-field"></div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <div class="ui cancel button">
+            Cancel
+        </div>
+
+        <div class="ui primary approve button" id="modal-edit-book-button-create">
+            <i class="plus icon"></i>
+            Create
+        </div>
+
+        <div class="ui primary approve button" id="modal-edit-book-button-save">
+            <i class="save icon"></i>
+            Save
+        </div>
+    </div>
+</div>
