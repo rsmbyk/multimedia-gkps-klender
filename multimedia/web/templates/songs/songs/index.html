@@ -1,0 +1,132 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Songs - Multimedia GKPS Klender</title>
+
+    <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'web/songs/songs/css/styles.css' %}">
+
+    <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
+    <script src="{% static 'common/axios/axios.js' %}"></script>
+    <script src="{% static 'common/fomantic/semantic.js' %}"></script>
+    <script src="{% static 'common/rxjs/rxjs.umd.js' %}"></script>
+
+    <script type="module" src="{% static 'web/songs/songs/js/index.js' %}"></script>
+
+    <script>const bookId = parseInt('{{ id }}')</script>
+</head>
+<body>
+    <div style="height: 100vh">
+        <div class="growingChild">
+            <div class="ui center aligned text padded container">
+                <div class="ui fluid search" id="search-song">
+                    <div class="ui icon input">
+                        <input class="prompt" type="text" placeholder="Search">
+                        <i class="search icon"></i>
+                    </div>
+                    <div class="results"></div>
+                </div>
+            </div>
+
+            <div class="ui fitted divider"></div>
+
+            <div class="scrolling fillRemaining">
+                <div class="ui padded text container">
+                    <div class="ui breadcrumb">
+                        <a class="section" href="/songs/books">Home</a>
+                        <div class="divider"> / </div>
+                        <div class="active section" id="breadcrumb-book"></div>
+                    </div>
+
+                    <div class="ui header">
+                        <div class="ui placeholder" id="placeholder-book-name">
+                            <div class="header">
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                        <span class="content" id="book-name"></span>
+                        <div class="sub header" id="book-lang"></div>
+                    </div>
+
+                    <div class="ui primary button" id="btn-add-song">
+                        <i class="plus icon"></i>
+                        <span class="text">Tambah Lagu</span>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid" style="height: 100%" id="view-error">
+                    <div class="center aligned column">
+                        <div class="ui small inverted icon header">
+                            <i class="bug icon"></i>
+                            <div class="content">Network Error</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid" style="height: 100%" id="view-empty">
+                    <div class="center aligned column">
+                        <div class="ui small inverted icon header">
+                            <i class="frown outline icon"></i>
+                            <div class="content">No Songs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui text padded container" id="placeholder-song-list">
+                    <div class="ui very relaxed divided list">
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui padded text container" id="container-song-list">
+                    <div class="ui very relaxed divided selection list" id="song-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'songs/songs/modals/edit-song.html' %}
+
+    {% include 'songs/songs/modals/delete-song.html' %}
+
+</body>
+</html>
