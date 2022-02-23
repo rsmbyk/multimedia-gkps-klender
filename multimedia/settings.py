@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'multimedia.songs',
     'multimedia.bookmarks',
     'multimedia.obs',
+    'multimedia.web',
 ]
 
 MIDDLEWARE = [

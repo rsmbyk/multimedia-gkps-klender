@@ -1,0 +1,108 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Books - Multimedia GKPS Klender</title>
+
+    <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
+
+    <link rel="stylesheet" href="{% static 'common/css/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'common/css/semantic.css' %}">
+
+    <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
+    <script src="{% static 'common/axios/axios.js' %}"></script>
+    <script src="{% static 'common/fomantic/semantic.js' %}"></script>
+    <script src="{% static 'common/rxjs/rxjs.umd.js' %}"></script>
+
+    <script type="module" src="{% static 'web/songs/books/js/index.js' %}"></script>
+</head>
+<body>
+    <div class="fullPage">
+        <div class="growingChild">
+            <div class="scrolling fillRemaining">
+                <div class="ui padded text container">
+                    <div class="ui primary button" id="btn-add-book">
+                        <i class="plus icon"></i>
+                        <span class="text">Tambah Buku Lagu</span>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
+                    <div class="center aligned column">
+                        <div class="ui icon header">
+                            <i class="bug icon"></i>
+                            <div class="content">Network Error</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
+                    <div class="center aligned column">
+                        <div class="ui icon header">
+                            <i class="frown outline icon"></i>
+                            <div class="content">No Books</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui text padded container" id="placeholder-book-list">
+                    <div class="ui very relaxed divided list">
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui text padded container" id="container-book-list" style="display: none">
+                    <div class="ui very relaxed divided selection list" id="book-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'songs/books/modals/edit-book.html' %}
+
+    {% include 'songs/books/modals/delete-book.html' %}
+
+</body>
+</html>
