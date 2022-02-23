@@ -1,18 +1,22 @@
 const { BehaviorSubject, skipWhile } = rxjs
+
 import * as doms from '/static/helpers/doms.js'
 import * as editSongModal from '/static/web/songs/songs/js/modals/edit-song.js'
 import * as deleteSongModal from '/static/web/songs/songs/js/modals/delete-song.js'
 
-const search = $('#search-song')
-
-const breadcrumbBook = $('#breadcrumb-book')
-const bookName = $('#book-name')
-const bookLang = $('#book-lang')
-const buttonAddSong = $('#btn-add-song')
-
 const songList = $('#song-list')
 
-const placeholderBookName = $('#placeholder-book-name')
+const search = $('#search-song')
+
+const bookName = $('#book-name')
+const bookLang = $('#book-lang')
+
+const buttonAddSong = $('#btn-add-song')
+
+const breadcrumb = $('#breadcrumb')
+const breadcrumbBook = $('#breadcrumb-book')
+
+const placeholderBookInfo = $('#placeholder-book-info')
 const placeholderSongList = $('#placeholder-song-list')
 const containerSongList = $('#container-song-list')
 const viewError = $('#view-error')
@@ -28,27 +32,33 @@ buttonAddSong.click(() => {
 })
 
 const showLoader = () => {
-    buttonAddSong.addClass('disabled')
+    buttonAddSong.addClass('loading disabled')
     search.addClass('loading disabled')
 }
 
 const hideLoader = () => {
-    buttonAddSong.removeClass('disabled')
+    buttonAddSong.removeClass('loading disabled')
     search.removeClass('loading disabled')
 }
 
+const displayBookInfoPlaceholder = () => {
+    breadcrumb.hide()
+    bookName.hide()
+    bookLang.hide()
+    placeholderBookInfo.show()
+}
+
 const displayPlaceholder = () => {
+    containerSongList.hide()
     viewError.hide()
     viewEmpty.hide()
-    bookName.hide()
-    containerSongList.hide()
-    placeholderBookName.show()
     placeholderSongList.show()
 }
 
-const displayBookName = () => {
-    placeholderBookName.hide()
+const displayBookInfo = () => {
+    placeholderBookInfo.hide()
     bookName.show()
+    bookLang.show()
 }
 
 const displaySongList = () => {
@@ -67,14 +77,41 @@ const displayEmptyView = () => {
     viewEmpty.show()
 }
 
+const updateBreadcrumb = book => {
+    breadcrumbBook.text(book.name)
+
+    breadcrumb.show()
+}
+
 const updateBookInfo = book => {
     bookName.text(book.name)
     bookLang.text(book.lang === 1 ? 'Simalungun' : 'Indonesia')
-    displayBookName()
+
+    displayBookInfo()
 }
 
-const updateBreadcrumb = book => {
-    breadcrumbBook.text(book.name)
+const updateAddSongButton = book => {
+    if (book.is_hymn_book) buttonAddSong.hide()
+    else buttonAddSong.show()
+}
+
+const joinSongBookNumber = song => {
+    // by default, semantic-ui will search title and/or description fields.
+    return {
+        id: song.id,
+        title: book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title
+    }
+}
+
+const updateSearch = songs => {
+    search.search({
+        source: songs.map(joinSongBookNumber),
+        fullTextSearch: true,
+        minCharacters: 3,
+        onSelect: result => {
+            $(`#song-${result.id}`)[0].scrollIntoView()
+        }
+    })
 }
 
 const createSongListItem = song => {
@@ -159,7 +196,7 @@ const createSongListItem = song => {
     })
 
     extra.hide()
-    
+
     return item
 }
 
@@ -173,42 +210,34 @@ const updateSongList = songs => {
     else displaySongList()
 }
 
-const joinSongBookNumber = song => {
-    // by default, semantic-ui will search title and/or description fields.
-    return {
-        id: song.id,
-        title: book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title
-    }
-}
-
-const updateSearch = songs => {
-    search.search({
-        source: songs.map(joinSongBookNumber),
-        fullTextSearch: true,
-        minCharacters: 3,
-        onSelect: (result, response) => {
-            $(`#song-${result.id}`)[0].scrollIntoView()
-        }
-    })
-}
-
 const retrieveSongs = () => {
     showLoader()
     displayPlaceholder()
 
-    Promise.all([axios.get(`/api/songs/books/${bookId}`), axios.get(`/api/songs/songs?book=${bookId}`)])
-        .then(([{ data: book }, { data: songs }]) => {
+    axios.get(`/api/songs/songs?book=${bookId}`)
+        .then(({ data: songs }) => songsSubject.next(songs))
+        .catch(displayErrorView)
+}
+
+const retrieveBook = () => {
+    showLoader()
+    displayBookInfoPlaceholder()
+    displayPlaceholder()
+
+    axios.get(`/api/songs/books/${bookId}`)
+        .then(({ data: book }) => {
             bookSubject.next(book)
-            songsSubject.next(songs)
+            retrieveSongs()
         })
         .catch(displayErrorView)
 }
 
 bookSubject.subscribe(value => book = value)
-bookSubject.subscribe(updateBookInfo)
 bookSubject.subscribe(updateBreadcrumb)
+bookSubject.subscribe(updateBookInfo)
+bookSubject.subscribe(updateAddSongButton)
 
-songsSubject.subscribe(updateSongList)
 songsSubject.subscribe(updateSearch)
+songsSubject.subscribe(updateSongList)
 
-retrieveSongs()
+retrieveBook()

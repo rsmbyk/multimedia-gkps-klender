@@ -8,7 +8,9 @@
     <title>Books - Multimedia GKPS Klender</title>
 
     <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
-    <link rel="stylesheet" href="{% static 'web/songs/books/css/styles.css' %}">
+
+    <link rel="stylesheet" href="{% static 'common/css/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'common/css/semantic.css' %}">
 
     <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
     <script src="{% static 'common/axios/axios.js' %}"></script>
@@ -18,34 +20,30 @@
     <script type="module" src="{% static 'web/songs/books/js/index.js' %}"></script>
 </head>
 <body>
-    <div style="height: 100vh">
+    <div class="fullPage">
         <div class="growingChild">
-            <div class="ui padded container grid">
-                <div class="column">
+            <div class="scrolling fillRemaining">
+                <div class="ui padded text container">
                     <div class="ui primary button" id="btn-add-book">
                         <i class="plus icon"></i>
                         <span class="text">Tambah Buku Lagu</span>
                     </div>
                 </div>
-            </div>
 
-            <div class="ui fitted divider"></div>
-
-            <div class="scrolling fillRemaining">
-                <div class="ui middle aligned padded grid" style="height: 100%" id="view-error">
+                <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
                     <div class="center aligned column">
-                        <div class="ui small inverted icon header">
+                        <div class="ui icon header">
                             <i class="bug icon"></i>
                             <div class="content">Network Error</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="ui middle aligned padded grid" style="height: 100%" id="view-empty">
+                <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
                     <div class="center aligned column">
-                        <div class="ui small inverted icon header">
+                        <div class="ui icon header">
                             <i class="frown outline icon"></i>
-                            <div class="content">No Bookmarks</div>
+                            <div class="content">No Books</div>
                         </div>
                     </div>
                 </div>
@@ -95,7 +93,7 @@
                     </div>
                 </div>
 
-                <div class="ui text padded container" id="container-book-list">
+                <div class="ui text padded container" id="container-book-list" style="display: none">
                     <div class="ui very relaxed divided selection list" id="book-list"></div>
                 </div>
             </div>

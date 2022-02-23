@@ -1,9 +1,7 @@
 {% load static %}
 
 <div class="ui tiny modal" id="modal-edit-song">
-    <div class="header" id="modal-edit-song-header">
-        Create Song
-    </div>
+    <div class="header" id="modal-edit-song-header"></div>
 
     <div class="content">
         <div class="ui form" id="form-edit-song">
@@ -37,16 +35,16 @@
     </div>
 
     <div class="actions">
-        <div class="ui cancel button">
+        <div class="ui cancel button" id="modal-edit-song-button-cancel">
             Cancel
         </div>
 
-        <div class="ui primary approve button" id="modal-edit-song-button-create">
+        <div class="ui primary right labeled icon approve button" id="modal-edit-song-button-create">
             <i class="plus icon"></i>
             Create
         </div>
 
-        <div class="ui primary approve button" id="modal-edit-song-button-save">
+        <div class="ui positive right labeled icon approve button" id="modal-edit-song-button-save">
             <i class="save icon"></i>
             Save
         </div>

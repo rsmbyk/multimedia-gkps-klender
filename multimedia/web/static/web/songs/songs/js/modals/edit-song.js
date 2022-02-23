@@ -6,11 +6,12 @@ const modalHeader = $('#modal-edit-song-header')
 const form = $('#form-edit-song')
 
 const errorMessages = form.find('.ui.error.message')
-const titleErrorMessage = form.find('#modal-edit-song-error-message-title')
-const nonFieldErrorMessage = form.find('#modal-edit-song-error-message-non-field')
+const titleErrorMessage = form.find('#form-edit-song-error-message-title')
+const nonFieldErrorMessage = form.find('#form-edit-song-error-message-non-field')
 
 const buttonCreate = modal.find('#modal-edit-song-button-create')
 const buttonSave = modal.find('#modal-edit-song-button-save')
+const buttonCancel = modal.find('#modal-edit-song-button-cancel')
 
 let requestFunction
 
@@ -36,26 +37,69 @@ form.form({
         },
     },
     inline: true,
-    on: 'blur',
+    on: 'change',
 })
 
 const showLoader = () => {
-    form.addClass('loading')
+    buttonCreate.addClass('loading disabled')
+    buttonSave.addClass('loading disabled')
+    buttonCancel.addClass('disabled')
 }
 
 const hideLoader = () => {
-    form.removeClass('loading')
+    buttonCreate.removeClass('loading disabled')
+    buttonSave.removeClass('loading disabled')
+    buttonCancel.removeClass('disabled')
 }
 
-const updateModal = onSuccess => {
-    modal.modal({
-        closable: false,
-        onHide: () => {
-            form.form('clear')
+const updateFormErrorMessages = responseJSON => {
+    if (responseJSON === undefined)
+        responseJSON = {non_field_errors: ['Network Error']}
+
+    form.addClass('error')
+
+    if (responseJSON.title !== undefined)
+        titleErrorMessage.text(responseJSON.title.join('\n'))
+    if (responseJSON.non_field_errors !== undefined)
+        nonFieldErrorMessage.text(responseJSON.non_field_errors.join('\n'))
+}
+
+const sendCreateRequest = (formData, onSuccess) => {
+    $.ajax({
+        url: '/api/songs/songs',
+        method: 'POST',
+        data: formData,
+        success: response => {
+            console.log(response)
+            modal.modal('hide')
+            if (typeof onSuccess === "function") onSuccess(response)
         },
-        onApprove: () => {
-            submitForm(onSuccess)
-            return false
+        error: ({ responseJSON }) => {
+            console.log(responseJSON)
+            updateFormErrorMessages(responseJSON)
+        },
+        complete: () => {
+            hideLoader()
+        },
+    })
+}
+
+const sendEditRequest = (formData, onSuccess) => {
+    $.ajax({
+        url: `/api/songs/songs/${formData.id}`,
+        method: 'PATCH',
+        data: formData,
+        success: response => {
+            console.log(response)
+            modal.modal('hide')
+            if (typeof onSuccess === "function") onSuccess(response)
+        },
+        error: ({ responseJSON }) => {
+            console.log(responseJSON)
+            updateFormErrorMessages(responseJSON)
+        },
+        complete: () => {
+            hideLoader()
         },
     })
 }
@@ -76,50 +120,23 @@ const submitForm = onSuccess => {
         }
 
         console.log(formData)
+        showLoader()
         requestFunction(formData, onSuccess)
+    }
+    else {
+        form.form('validate form')
     }
 }
 
-const sendCreateSongRequest = (formData, onSuccess) => {
-    $.ajax({
-        url: '/api/songs/songs',
-        method: 'POST',
-        data: formData,
-        success: response => {
-            console.log(response)
-            modal.modal('hide')
-            if (typeof onSuccess === "function") onSuccess(response)
+const updateModal = onSuccess => {
+    modal.modal({
+        closable: false,
+        onHide: () => {
+            form.form('clear')
         },
-        error: ({ responseJSON }) => {
-            console.log(responseJSON)
-            form.addClass('error')
-
-            if (responseJSON.title !== undefined)
-                titleErrorMessage.text(responseJSON.title.join('\n'))
-            if (responseJSON.non_field_errors !== undefined)
-                nonFieldErrorMessage.text(responseJSON.non_field_errors.join('\n'))
-        },
-    })
-}
-
-const sendEditSongRequest = (formData, onSuccess) => {
-    $.ajax({
-        url: `/api/songs/songs/${formData.id}`,
-        method: 'PUT',
-        data: formData,
-        success: response => {
-            console.log(response)
-            modal.modal('hide')
-            if (typeof onSuccess === "function") onSuccess(response)
-        },
-        error: ({ responseJSON }) => {
-            console.log(responseJSON)
-            form.addClass('error')
-
-            if (responseJSON.title !== undefined)
-                nameErrorMessage.text(responseJSON.title.join('\n'))
-            if (responseJSON.non_field_errors !== undefined)
-                nonFieldErrorMessage.text(responseJSON.non_field_errors.join('\n'))
+        onApprove: () => {
+            submitForm(onSuccess)
+            return false
         },
     })
 }
@@ -151,8 +168,8 @@ const updateActionButtons = song => {
 }
 
 const updateRequestFunction = song => {
-    if (song === null) requestFunction = sendCreateSongRequest
-    else requestFunction = sendEditSongRequest
+    if (song === null) requestFunction = sendCreateRequest
+    else requestFunction = sendEditRequest
 }
 
 const updateModalHeader = song => {

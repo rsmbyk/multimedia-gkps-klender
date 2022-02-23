@@ -1,9 +1,7 @@
 {% load static %}
 
 <div class="ui tiny modal" id="modal-edit-book">
-    <div class="header">
-        Create Book
-    </div>
+    <div class="header" id="modal-edit-book-header"></div>
 
     <div class="content">
         <div class="ui form" id="form-edit-book">
@@ -42,16 +40,16 @@
     </div>
 
     <div class="actions">
-        <div class="ui cancel button">
+        <div class="ui cancel button"  id="modal-edit-book-button-cancel">
             Cancel
         </div>
 
-        <div class="ui primary approve button" id="modal-edit-book-button-create">
+        <div class="ui primary right labeled icon approve button" id="modal-edit-book-button-create">
             <i class="plus icon"></i>
             Create
         </div>
 
-        <div class="ui primary approve button" id="modal-edit-book-button-save">
+        <div class="ui positive right labeled icon approve button" id="modal-edit-book-button-save">
             <i class="save icon"></i>
             Save
         </div>

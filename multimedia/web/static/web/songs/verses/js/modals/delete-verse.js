@@ -5,19 +5,34 @@ const modal = $('#modal-delete-verse')
 const number = modal.find('#modal-delete-verse-number')
 const songTitle = modal.find('#modal-delete-verse-song-title')
 
+const buttonDelete = modal.find('#modal-delete-verse-button-delete')
+const buttonCancel = modal.find('#modal-delete-verse-button-cancel')
+
+const showLoader = () => {
+    buttonDelete.addClass('loading disabled')
+    buttonCancel.addClass('disabled')
+}
+
+const hideLoader = () => {
+    buttonDelete.removeClass('loading disabled')
+    buttonCancel.removeClass('disabled')
+}
+
 const sendDeleteRequest = (verse, onSuccess) => {
     $.ajax({
         url: `/api/songs/verses/${verse.id}`,
         method: 'DELETE',
         success: response => {
-            console.log(response)
             if (typeof onSuccess === "function") onSuccess(response)
             modal.modal('hide')
-            toasts.success('Verse deleted successfully')
+            toasts.success('Verse deleted', 'bottom left')
         },
         error: ({ responseJSON }) => {
             console.log(responseJSON)
-            toasts.error('Delete verse failed')
+            toasts.error('Delete verse failed', 'bottom left')
+        },
+        complete: () => {
+            hideLoader()
         },
     })
 }
@@ -34,6 +49,7 @@ const updateModalConfig = (verse, onSuccess) => {
     modal.modal({
         closable: false,
         onApprove: () => {
+            showLoader()
             sendDeleteRequest(verse, onSuccess)
             return false
         }

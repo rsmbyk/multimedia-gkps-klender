@@ -5,10 +5,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Songs - Multimedia GKPS Klender</title>
+    <title>{{ book.name }} - Multimedia GKPS Klender</title>
 
     <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
-    <link rel="stylesheet" href="{% static 'web/songs/songs/css/styles.css' %}">
+
+    <link rel="stylesheet" href="{% static 'common/css/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'common/css/semantic.css' %}">
 
     <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
     <script src="{% static 'common/axios/axios.js' %}"></script>
@@ -17,10 +19,10 @@
 
     <script type="module" src="{% static 'web/songs/songs/js/index.js' %}"></script>
 
-    <script>const bookId = parseInt('{{ id }}')</script>
+    <script>const bookId = parseInt('{{ book.id }}')</script>
 </head>
 <body>
-    <div style="height: 100vh">
+    <div class="fullPage">
         <div class="growingChild">
             <div class="ui center aligned text padded container">
                 <div class="ui fluid search" id="search-song">
@@ -34,42 +36,46 @@
 
             <div class="ui fitted divider"></div>
 
-            <div class="scrolling fillRemaining">
+            <div class="growingChild scrolling fillRemaining">
                 <div class="ui padded text container">
-                    <div class="ui breadcrumb">
-                        <a class="section" href="/songs/books">Home</a>
-                        <div class="divider"> / </div>
+                    <div class="ui breadcrumb" id="breadcrumb" style="display: none">
+                        <a class="section" href="{% url 'web-books' %}">Home</a>
+                        <i class="right chevron icon divider"></i>
                         <div class="active section" id="breadcrumb-book"></div>
                     </div>
 
                     <div class="ui header">
-                        <div class="ui placeholder" id="placeholder-book-name">
+                        <div class="ui placeholder" id="placeholder-book-info">
                             <div class="header">
+                                <div class="line"></div>
                                 <div class="line"></div>
                             </div>
                         </div>
-                        <span class="content" id="book-name"></span>
-                        <div class="sub header" id="book-lang"></div>
+
+                        <div class="content">
+                            <span id="book-name"></span>
+                            <div class="sub header" id="book-lang"></div>
+                        </div>
                     </div>
 
-                    <div class="ui primary button" id="btn-add-song">
+                    <div class="ui primary button" id="btn-add-song" style="display: none">
                         <i class="plus icon"></i>
                         <span class="text">Tambah Lagu</span>
                     </div>
                 </div>
 
-                <div class="ui middle aligned padded grid" style="height: 100%" id="view-error">
+                <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
                     <div class="center aligned column">
-                        <div class="ui small inverted icon header">
+                        <div class="ui icon header">
                             <i class="bug icon"></i>
                             <div class="content">Network Error</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="ui middle aligned padded grid" style="height: 100%" id="view-empty">
+                <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
                     <div class="center aligned column">
-                        <div class="ui small inverted icon header">
+                        <div class="ui icon header">
                             <i class="frown outline icon"></i>
                             <div class="content">No Songs</div>
                         </div>
@@ -117,7 +123,7 @@
                     </div>
                 </div>
 
-                <div class="ui padded text container" id="container-song-list">
+                <div class="ui padded text container" id="container-song-list" style="display: none">
                     <div class="ui very relaxed divided selection list" id="song-list"></div>
                 </div>
             </div>

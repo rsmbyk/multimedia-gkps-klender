@@ -8,7 +8,9 @@
     <title>{{ song.title }} ({% if song.book.is_hymn_book %}{{ song.book.short_name }} {{ song.number }}{{ song.sub_number }}{% else %}{{ song.book.name }}{% endif %}) - Multimedia GKPS Klender</title>
 
     <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
-    <link rel="stylesheet" href="{% static 'web/songs/verses/css/styles.css' %}">
+
+    <link rel="stylesheet" href="{% static 'common/css/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'common/css/semantic.css' %}">
 
     <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
     <script src="{% static 'common/axios/axios.js' %}"></script>
@@ -20,15 +22,15 @@
     <script>const songId = parseInt('{{ song.id }}')</script>
 </head>
 <body>
-    <div style="height: 100vh">
+    <div class="fullPage">
         <div class="growingChild">
-            <div class="scrolling fillRemaining">
+            <div class="growingChild scrolling fillRemaining">
                 <div class="ui padded text container">
-                    <div class="ui breadcrumb">
-                        <a class="section" href="/songs/books">Home</a>
-                        <div class="divider"> / </div>
-                        <a class="section" id="breadcrumb-book"></a>
-                        <div class="divider"> / </div>
+                    <div class="ui breadcrumb" id="breadcrumb" style="display: none">
+                        <a class="section" href="{% url 'web-books' %}">Home</a>
+                        <i class="right chevron icon divider"></i>
+                        <a class="section" href="{% url 'web-songs' song.book.id  %}" id="breadcrumb-book"></a>
+                        <i class="right chevron icon divider"></i>
                         <div class="active section" id="breadcrumb-song"></div>
                     </div>
 
@@ -36,32 +38,36 @@
                         <div class="ui placeholder" id="placeholder-song-info">
                             <div class="header">
                                 <div class="line"></div>
+                                <div class="line"></div>
                             </div>
                         </div>
-                        <span class="content" id="song-title"></span>
-                        <div class="sub header" id="song-book-number"></div>
+
+                        <div class="content">
+                            <span id="song-title"></span>
+                            <div class="sub header" id="song-book-number"></div>
+                        </div>
                     </div>
 
-                    <div class="ui primary button" id="btn-add-verse">
+                    <div class="ui primary button" id="btn-add-verse" style="display: none">
                         <i class="plus icon"></i>
                         <span class="text">Tambah Lirik</span>
                     </div>
                 </div>
 
-                <div class="ui middle aligned padded grid" style="height: 100%" id="view-error">
+                <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
                     <div class="center aligned column">
-                        <div class="ui small inverted icon header">
+                        <div class="ui icon header">
                             <i class="bug icon"></i>
                             <div class="content">Network Error</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="ui middle aligned padded grid" style="height: 100%" id="view-empty">
+                <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
                     <div class="center aligned column">
-                        <div class="ui small inverted icon header">
+                        <div class="ui icon header">
                             <i class="frown outline icon"></i>
-                            <div class="content">No Songs</div>
+                            <div class="content">No Lyrics</div>
                         </div>
                     </div>
                 </div>
@@ -119,7 +125,7 @@
                     </div>
                 </div>
 
-                <div class="ui padded text container" id="container-verse-list">
+                <div class="ui padded text container" id="container-verse-list" style="display: none">
                     <div class="ui very relaxed divided ordered list" id="verse-list"></div>
                 </div>
             </div>

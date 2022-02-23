@@ -6,13 +6,14 @@ import * as deleteVerseModal from '/static/web/songs/verses/js/modals/delete-ver
 
 const verseList = $('#verse-list')
 
-const breadcrumbBook = $('#breadcrumb-book')
-const breadcrumbSong = $('#breadcrumb-song')
-
 const songTitle = $('#song-title')
 const songBookNumber = $('#song-book-number')
 
 const buttonAddVerse = $('#btn-add-verse')
+
+const breadcrumb = $('#breadcrumb')
+const breadcrumbBook = $('#breadcrumb-book')
+const breadcrumbSong = $('#breadcrumb-song')
 
 const placeholderSongInfo = $('#placeholder-song-info')
 const placeholderVerseList = $('#placeholder-verse-list')
@@ -29,22 +30,24 @@ const versesSubject = new BehaviorSubject().pipe(skipWhile(verses => verses === 
 buttonAddVerse.click(() => editVerseModal.open(null, song, verses.length + 1, retrieveVerses))
 
 const showLoader = () => {
-    buttonAddVerse.addClass('disabled')
+    buttonAddVerse.addClass('loading disabled')
 }
 
 const hideLoader = () => {
-    buttonAddVerse.removeClass('disabled')
+    buttonAddVerse.removeClass('loading disabled')
+}
+
+const displaySongInfoPlaceholder = () => {
+    breadcrumb.hide()
+    songTitle.hide()
+    songBookNumber.hide()
+    placeholderSongInfo.show()
 }
 
 const displayPlaceholder = () => {
-    songTitle.hide()
-    songBookNumber.hide()
     containerVerseList.hide()
-
     viewError.hide()
     viewEmpty.hide()
-
-    placeholderSongInfo.show()
     placeholderVerseList.show()
 }
 
@@ -68,6 +71,25 @@ const displayErrorView = e => {
 const displayEmptyView = () => {
     placeholderVerseList.hide()
     viewEmpty.show()
+}
+
+const updateBreadcrumb = song => {
+    breadcrumbBook.text(song.book.name)
+    breadcrumbSong.text(song.book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title)
+
+    breadcrumb.show()
+}
+
+const updateSongInfo = song => {
+    songTitle.text(song.title)
+    songBookNumber.text(song.book.is_hymn_book ? `${song.book.short_name} ${song.number}${song.sub_number}` : song.book.name)
+
+    displaySongInfo()
+}
+
+const updateAddVerseButton = song => {
+    if (song.book.is_hymn_book) buttonAddVerse.hide()
+    else buttonAddVerse.show()
 }
 
 const createVerseListItem = verse => {
@@ -157,43 +179,34 @@ const updateVerseList = verses => {
     else displayVerseList()
 }
 
-const updateBreadcrumb = song => {
-    breadcrumbBook.text(song.book.name)
-    breadcrumbBook.attr('href', `/songs/books/${song.book.id}`)
-
-    breadcrumbSong.text(song.book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title)
-}
-
-const updateSongInfo = song => {
-    songTitle.text(song.title)
-    songBookNumber.text(song.book.is_hymn_book ? `${song.book.short_name} ${song.number}${song.sub_number}` : song.book.name)
-
-    displaySongInfo()
-}
-
-const updateAddVerseButton = song => {
-    if (song.book.is_hymn_book) buttonAddVerse.hide()
-    else buttonAddVerse.show()
-}
-
 const retrieveVerses = () => {
     showLoader()
     displayPlaceholder()
 
-    Promise.all([axios.get(`/api/songs/songs/${songId}`), axios.get(`/api/songs/verses?song=${songId}`)])
-        .then(([{ data: song }, { data: verses }]) => {
+    axios.get(`/api/songs/verses?song=${songId}`)
+        .then(({ data: verses }) => versesSubject.next(verses))
+        .catch(displayErrorView)
+}
+
+const retrieveSong = () => {
+    showLoader()
+    displaySongInfoPlaceholder()
+    displayPlaceholder()
+
+    axios.get(`/api/songs/songs/${songId}`)
+        .then(({ data: song }) => {
             songSubject.next(song)
-            versesSubject.next(verses)
+            retrieveVerses()
         })
         .catch(displayErrorView)
 }
 
 songSubject.subscribe(value => song = value)
-songSubject.subscribe(updateSongInfo)
 songSubject.subscribe(updateBreadcrumb)
+songSubject.subscribe(updateSongInfo)
 songSubject.subscribe(updateAddVerseButton)
 
 versesSubject.subscribe(value => verses = value)
 versesSubject.subscribe(updateVerseList)
 
-retrieveVerses()
+retrieveSong()

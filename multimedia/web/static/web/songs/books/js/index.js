@@ -1,4 +1,5 @@
 const { BehaviorSubject, skipWhile } = rxjs
+
 import * as doms from '/static/helpers/doms.js'
 import * as editBookModal from '/static/web/songs/books/js/modals/edit-book.js'
 import * as deleteBookModal from '/static/web/songs/books/js/modals/delete-book.js'
@@ -16,12 +17,12 @@ const booksSubject = new BehaviorSubject().pipe(skipWhile(books => books === und
 
 buttonAddBook.click(() => editBookModal.open(null, retrieveBooks))
 
-const displayLoader = () => {
-    buttonAddBook.addClass('disabled')
+const showLoader = () => {
+    buttonAddBook.addClass('loading disabled')
 }
 
 const hideLoader = () => {
-    buttonAddBook.removeClass('disabled')
+    buttonAddBook.removeClass('loading disabled')
 }
 
 const displayPlaceholder = () => {
@@ -128,7 +129,6 @@ const createBookListItem = book => {
     })
 
     buttonDelete.click(() => {
-        console.log('clicked')
         deleteBookModal.open(book, retrieveBooks)
     })
 
@@ -148,7 +148,7 @@ const updateBookList = books => {
 }
 
 const retrieveBooks = () => {
-    displayLoader()
+    showLoader()
     displayPlaceholder()
 
     axios.get('/api/songs/books')

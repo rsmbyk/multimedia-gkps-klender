@@ -12,6 +12,7 @@ const nonFieldErrorMessage = form.find('#form-edit-verse-error-message-non-field
 
 const buttonCreate = modal.find('#modal-edit-verse-button-create')
 const buttonSave = modal.find('#modal-edit-verse-button-save')
+const buttonCancel = modal.find('#modal-edit-verse-button-cancel')
 
 let requestFunction
 
@@ -31,25 +32,71 @@ form.form({
         },
     },
     inline: true,
+    on: 'change',
 })
 
 const showLoader = () => {
-    form.addClass('loading')
+    buttonCreate.addClass('loading disabled')
+    buttonSave.addClass('loading disabled')
+    buttonCancel.addClass('disabled')
 }
 
 const hideLoader = () => {
-    form.removeClass('loading')
+    buttonCreate.removeClass('loading disabled')
+    buttonSave.removeClass('loading disabled')
+    buttonCancel.removeClass('disabled')
 }
 
-const updateModal = onSuccess => {
-    modal.modal({
-        closable: false,
-        onHide: () => {
-            form.form('clear')
+const updateFormErrorMessages = responseJSON => {
+    if (responseJSON === undefined)
+        responseJSON = {non_field_errors: ['Network Error']}
+
+    form.addClass('error')
+
+    if (responseJSON.number !== undefined)
+        numberErrorMessage.text(responseJSON.number.join('\n'))
+    if (responseJSON.lyric !== undefined)
+        lyricErrorMessage.text(responseJSON.lyric.join('\n'))
+    if (responseJSON.non_field_errors !== undefined)
+        nonFieldErrorMessage.text(responseJSON.non_field_errors.join('\n'))
+}
+
+const sendCreateRequest = (formData, onSuccess) => {
+    $.ajax({
+        url: '/api/songs/verses',
+        method: 'POST',
+        data: formData,
+        success: response => {
+            console.log(response)
+            modal.modal('hide')
+            if (typeof onSuccess === "function") onSuccess(response)
         },
-        onApprove: () => {
-            submitForm(onSuccess)
-            return false
+        error: ({ responseJSON }) => {
+            console.log(responseJSON)
+            updateFormErrorMessages(responseJSON)
+        },
+        complete: () => {
+            hideLoader()
+        },
+    })
+}
+
+const sendEditRequest = (formData, onSuccess) => {
+    $.ajax({
+        url: `/api/songs/verses/${formData.id}`,
+        method: 'PATCH',
+        data: formData,
+        success: response => {
+            console.log(response)
+            modal.modal('hide')
+            if (typeof onSuccess === "function") onSuccess(response)
+        },
+        error: ({ responseJSON }) => {
+            console.log(responseJSON)
+            updateFormErrorMessages(responseJSON)
+        },
+        complete: () => {
+            hideLoader()
         },
     })
 }
@@ -69,6 +116,7 @@ const submitForm = onSuccess => {
         }
 
         console.log(formData)
+        showLoader()
         requestFunction(formData, onSuccess)
     }
     else {
@@ -76,50 +124,15 @@ const submitForm = onSuccess => {
     }
 }
 
-const sendCreateRequest = (formData, onSuccess) => {
-    $.ajax({
-        url: '/api/songs/verses',
-        method: 'POST',
-        data: formData,
-        success: response => {
-            console.log(response)
-            modal.modal('hide')
-            if (typeof onSuccess === "function") onSuccess(response)
+const updateModal = onSuccess => {
+    modal.modal({
+        closable: false,
+        onHide: () => {
+            form.form('clear')
         },
-        error: ({ responseJSON }) => {
-            console.log(responseJSON)
-            form.addClass('error')
-
-            if (responseJSON.number !== undefined)
-                numberErrorMessage.text(responseJSON.number.join('\n'))
-            if (responseJSON.lyric !== undefined)
-                lyricErrorMessage.text(responseJSON.lyric.join('\n'))
-            if (responseJSON.non_field_errors !== undefined)
-                nonFieldErrorMessage.text(responseJSON.non_field_errors.join('\n'))
-        },
-    })
-}
-
-const sendEditRequest = (formData, onSuccess) => {
-    $.ajax({
-        url: `/api/songs/verses/${formData.id}`,
-        method: 'PATCH',
-        data: formData,
-        success: response => {
-            console.log(response)
-            modal.modal('hide')
-            if (typeof onSuccess === "function") onSuccess(response)
-        },
-        error: ({ responseJSON }) => {
-            console.log(responseJSON)
-            form.addClass('error')
-
-            if (responseJSON.number !== undefined)
-                numberErrorMessage.text(responseJSON.number.join('\n'))
-            if (responseJSON.lyric !== undefined)
-                lyricErrorMessage.text(responseJSON.lyric.join('\n'))
-            if (responseJSON.non_field_errors !== undefined)
-                nonFieldErrorMessage.text(responseJSON.non_field_errors.join('\n'))
+        onApprove: () => {
+            submitForm(onSuccess)
+            return false
         },
     })
 }
