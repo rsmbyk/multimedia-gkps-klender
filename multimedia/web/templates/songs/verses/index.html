@@ -1,0 +1,140 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ song.title }} ({% if song.book.is_hymn_book %}{{ song.book.short_name }} {{ song.number }}{{ song.sub_number }}{% else %}{{ song.book.name }}{% endif %}) - Multimedia GKPS Klender</title>
+
+    <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
+
+    <link rel="stylesheet" href="{% static 'common/css/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'common/css/semantic.css' %}">
+
+    <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
+    <script src="{% static 'common/axios/axios.js' %}"></script>
+    <script src="{% static 'common/fomantic/semantic.js' %}"></script>
+    <script src="{% static 'common/rxjs/rxjs.umd.js' %}"></script>
+
+    <script type="module" src="{% static 'web/songs/verses/js/index.js' %}"></script>
+
+    <script>const songId = parseInt('{{ song.id }}')</script>
+</head>
+<body>
+    <div class="fullPage">
+        <div class="growingChild">
+            <div class="growingChild scrolling fillRemaining">
+                <div class="ui padded text container">
+                    <div class="ui breadcrumb" id="breadcrumb" style="display: none">
+                        <a class="section" href="{% url 'web-books' %}">Home</a>
+                        <i class="right chevron icon divider"></i>
+                        <a class="section" href="{% url 'web-songs' song.book.id  %}" id="breadcrumb-book"></a>
+                        <i class="right chevron icon divider"></i>
+                        <div class="active section" id="breadcrumb-song"></div>
+                    </div>
+
+                    <div class="ui header">
+                        <div class="ui placeholder" id="placeholder-song-info">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+
+                        <div class="content">
+                            <span id="song-title"></span>
+                            <div class="sub header" id="song-book-number"></div>
+                        </div>
+                    </div>
+
+                    <div class="ui primary button" id="btn-add-verse" style="display: none">
+                        <i class="plus icon"></i>
+                        <span class="text">Tambah Lirik</span>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
+                    <div class="center aligned column">
+                        <div class="ui icon header">
+                            <i class="bug icon"></i>
+                            <div class="content">Network Error</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
+                    <div class="center aligned column">
+                        <div class="ui icon header">
+                            <i class="frown outline icon"></i>
+                            <div class="content">No Lyrics</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui text padded container" id="placeholder-verse-list">
+                    <div class="ui very relaxed divided list">
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="paragraph">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="paragraph">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="paragraph">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="paragraph">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui padded text container" id="container-verse-list" style="display: none">
+                    <div class="ui very relaxed divided ordered list" id="verse-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'songs/verses/modals/edit-verse.html' %}
+
+    {% include 'songs/verses/modals/delete-verse.html' %}
+
+</body>
+</html>

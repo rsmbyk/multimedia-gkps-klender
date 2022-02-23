@@ -212,5 +212,4 @@ dmypy.json
 cython_debug/
 
 # Django STATIC_ROOT
-static/
 _static/

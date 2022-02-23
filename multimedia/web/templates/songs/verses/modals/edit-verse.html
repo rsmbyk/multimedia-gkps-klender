@@ -1,0 +1,61 @@
+{% load static %}
+
+<div class="ui tiny modal" id="modal-edit-verse">
+    <div class="header" id="modal-edit-verse-header"></div>
+
+    <div class="content">
+        <div class="ui form" id="form-edit-verse">
+            <div class="field" style="display: none">
+                <label for="form-edit-verse-id">ID</label>
+                <input type="text"
+                       name="id"
+                       placeholder="ID"
+                       id="form-edit-verse-id">
+            </div>
+
+            <div class="field" style="display: none">
+                <label for="form-edit-verse-song-id">Song ID</label>
+                <input type="text"
+                       name="songId"
+                       placeholder="Song ID"
+                       id="form-edit-verse-song-id">
+            </div>
+
+            <div class="field" style="display: none">
+                <label for="form-edit-verse-number">Verse Number</label>
+                <input type="text"
+                       name="number"
+                       placeholder="Verse Number"
+                       id="form-edit-verse-number">
+            </div>
+
+            <div class="required field">
+                <label for="form-edit-verse-lyric">Lyric</label>
+                <textarea type="text"
+                          name="lyric"
+                          placeholder="Enter lyric"
+                          id="form-edit-verse-lyric"></textarea>
+            </div>
+
+            <div class="ui error message" id="form-edit-verse-error-message-number"></div>
+            <div class="ui error message" id="form-edit-verse-error-message-lyric"></div>
+            <div class="ui error message" id="form-edit-verse-error-message-non-field"></div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <div class="ui cancel button" id="modal-edit-verse-button-cancel">
+            Cancel
+        </div>
+
+        <div class="ui primary right labeled icon approve button" id="modal-edit-verse-button-create">
+            <i class="plus icon"></i>
+            Create
+        </div>
+
+        <div class="ui positive right labeled icon approve button" id="modal-edit-verse-button-save">
+            <i class="save icon"></i>
+            Save
+        </div>
+    </div>
+</div>

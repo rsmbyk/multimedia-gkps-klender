@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('multimedia.api.urls')),
     path('obs/', include('multimedia.obs.urls')),
+    path('', include('multimedia.web.urls')),
 ]
