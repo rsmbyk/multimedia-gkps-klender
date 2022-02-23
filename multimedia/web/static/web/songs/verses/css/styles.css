@@ -1,0 +1,19 @@
+.growingChild {
+    display: flex !important;
+    flex-direction: column;
+    height: 100%;
+}
+
+.growingChild > .fillRemaining {
+    overflow: hidden;
+    height: 100%;
+}
+
+.scrolling.fillRemaining {
+    overflow: auto;
+}
+
+.ui.padded.container:not(.grid) {
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
