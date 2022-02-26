@@ -1,4 +1,4 @@
-class ManualToggleButton {
+export class ManualToggleButton {
     constructor(btnActive, btnInactive, onActive, onInactive,) {
         this.btnActive = $(btnActive)
         this.btnInactive = $(btnInactive)
@@ -43,7 +43,7 @@ class ManualToggleButton {
     }
 }
 
-class ToggleButton extends ManualToggleButton {
+export class ToggleButton extends ManualToggleButton {
     constructor(btnActive, btnInactive, onActive, onInactive,) {
         super(btnActive, btnInactive, onActive, onInactive);
         this.btnActive.click(() => this.setInactive())
