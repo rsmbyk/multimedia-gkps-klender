@@ -1,14 +1,8 @@
-const TabManager = () => {
-    const tabSelector = '#tab-menu.ui.menu .item'
+const defaultSelector = '.ui.menu .item'
 
-    const initialize = () =>
-        $(tabSelector).tab()
-
-    const changeTab = (name) =>
-        $(tabSelector).tab('change tab', name)
-
-    return {
-        initialize,
-        changeTab,
-    }
+export const init = (selector=null) => {
+    $(selector !== null ? selector : defaultSelector).tab()
 }
+
+export const changeTab = (name, selector=null) =>
+    $(selector !== null ? selector : defaultSelector).tab('change tab', name)

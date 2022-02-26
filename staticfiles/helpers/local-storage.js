@@ -1,4 +1,4 @@
-class LocalStorageHelper {
+export class LocalStorageHelper {
     constructor(name) {
         this.name = name
     }

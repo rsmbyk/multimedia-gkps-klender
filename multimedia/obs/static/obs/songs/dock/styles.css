@@ -1,0 +1,80 @@
+.ui.tab {
+    height: 100vh;
+    /*padding-bottom: calc(2.85714286em);*/
+    /* .ui.menu min-height (2.85714286em) * .ui.tiny.menu font-size (0.92857143rem) */
+    padding-bottom: calc(2.85714286em * 0.92857143);
+}
+
+@media only screen and (min-width: 767px) {
+    .ui.mobile.icon.menu .item > i.icon {
+        margin: 0 0.35714286em 0 0 !important;
+    }
+}
+
+@media only screen and (max-width: 767px) {
+    .ui.mobile.icon.menu .item > .text {
+        display: None !important;
+    }
+}
+
+/*
+ .centerChildren:
+ to center segment in songbooks tab (obs dock)
+ */
+
+.centerChildren {
+    display: flex;
+    align-items: center;
+}
+
+/*
+ .topActions:
+ - song-detail modal (obs dock)
+ */
+
+.ui.topActions.modal > .header {
+    border-bottom: 0;
+}
+
+.ui.topActions.modal > .actions {
+    background: transparent;
+    border-top: 0;
+    border-bottom: 1px solid rgba(34, 36, 38, 0.15);
+}
+
+.ui.topActions.modal > .content {
+    border-top: 1px solid rgba(34, 36, 38, 0.15);
+}
+
+/*
+ .growingModal:
+ - song-detail modal (obs dock)
+ - bookmark-detail modal (obs dock)
+ */
+
+.ui.modal.growingModal {
+    flex-direction: column;
+    height: 100%;
+}
+
+.ui.modal.growingModal > .content.fillRemaining {
+    overflow: hidden;
+    height: 100%;
+    min-height: auto !important;
+    max-height: 100% !important;
+}
+
+.ui.modal.growingModal > .content.scrolling.fillRemaining {
+    overflow: auto;
+}
+
+/*
+ .dark.inverted.placeholder:
+ used throughout the whole obs dock placeholders
+ */
+
+.ui.dark.inverted.placeholder,
+.ui.dark.inverted.placeholder .line,
+.ui.dark.inverted.placeholder .line:after {
+    background-color: #3a393a;
+}

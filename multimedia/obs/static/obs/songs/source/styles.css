@@ -1,0 +1,15 @@
+#song-segment {
+    position: fixed;
+    bottom: 0;
+    margin: 0 0 5vh;  /* 5% of viewport for scrolling text */
+    width: 100vw;
+}
+
+#song-lyric {
+    white-space: pre;
+}
+
+.ui.flat.segment {
+    border: none;
+    border-radius: 0;
+}

@@ -1,0 +1,37 @@
+.ui.padded.container:not(.grid) {
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+/*
+ .list.items:
+ - song-detail modal (obs dock)
+ - verse-list (web).
+ */
+
+.ui.list.items > .item {
+    flex-direction: column;
+    padding: 1em 0;
+}
+
+.ui.list.items > .item:before {
+    margin-top: 0.6em !important;
+    line-height: 1.4285em;
+}
+
+.ui.list.items > .item .description {
+    margin-top: 0.6em !important;
+    font-size: 1em;
+    line-height: 1.4285em;
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.ui.list.items > .item .extra {
+    margin: 0.5rem 0 0;
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.ui.list:not(.items) > .item .extra {
+    margin: 0.5em 0 0;
+    color: rgba(0, 0, 0, 0.4);
+}

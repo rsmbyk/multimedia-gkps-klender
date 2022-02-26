@@ -2,21 +2,21 @@
     <div class="ui padded relaxed two column grid">
         <div class="column">
             <div class="ui tiny icon buttons">
-                <div class="ui inverted button" id="button-filter-date">
+                <div class="ui inverted button" id="bookmarks-button-filter-date">
                     <i class="calendar icon"></i>
                 </div>
-                <div class="ui inverted button" id="button-filter-general">
+                <div class="ui inverted button" id="bookmarks-button-filter-general">
                     <i class="filter icon"></i>
                 </div>
-                <div class="ui calendar" id="button-filter-calendar">
+                <div class="ui calendar" id="bookmarks-calendar">
                     <div class="ui inverted button">
-                        <span id="button-filter-text"></span>
+                        <span id="bookmarks-calendar-text"></span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="right aligned column">
-            <div class="ui inverted tiny right aligned primary button" id="button-create-bookmark">
+            <div class="ui inverted tiny right aligned primary button" id="bookmarks-button-create-bookmark">
                 <i class="plus icon"></i>
                 Create
             </div>
@@ -25,45 +25,25 @@
 
     <div class="ui inverted fitted divider"></div>
 
-    <div class="scrolling fillRemaining">
-        <div class="ui middle aligned padded grid" style="height: 100%; display: none" id="bookmarks-view-error">
+    <div class="growingChild scrolling fillRemaining">
+        <div class="ui middle aligned padded grid fillRemaining" id="bookmarks-view-error" style="display: none">
             <div class="center aligned column">
-                <div class="ui small inverted icon header">
+                <div class="ui tiny inverted icon header">
                     <i class="bug icon"></i>
                     <div class="content">Network Error</div>
                 </div>
             </div>
         </div>
-        <div class="ui middle aligned padded grid" style="height: 100%; display: none" id="bookmarks-view-empty">
+        <div class="ui middle aligned padded grid fillRemaining" id="bookmarks-view-empty" style="display: none">
             <div class="center aligned column">
-                <div class="ui small inverted icon header">
-                    <i class="calendar outline icon"></i>
+                <div class="ui tiny inverted icon header">
+                    <i class="frown outline icon"></i>
                     <div class="content">No Bookmarks</div>
                 </div>
             </div>
         </div>
-        <div class="ui padded container">
-            <div class="ui inverted very relaxed divided list" id="bookmarks-placeholder-bookmark-list">
-                <div class="item">
-                    <div class="content">
-                        <div class="ui dark inverted placeholder">
-                            <div class="header">
-                                <div class="line"></div>
-                                <div class="line"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="content">
-                        <div class="ui dark inverted placeholder">
-                            <div class="header">
-                                <div class="line"></div>
-                                <div class="line"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="ui padded container fillRemaining" id="bookmarks-placeholder-bookmark-list">
+            <div class="ui inverted very relaxed divided list">
                 <div class="item">
                     <div class="content">
                         <div class="ui dark inverted placeholder">
@@ -85,8 +65,10 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="ui inverted very relaxed divided list" id="bookmark-list"></div>
+        <div class="ui padded text container" id="bookmarks-container-bookmark-list" style="display: none">
+            <div class="ui tiny inverted very relaxed divided list" id="bookmarks-bookmark-list"></div>
         </div>
     </div>
 </div>

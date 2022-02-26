@@ -1,5 +1,6 @@
-<div class="ui coupled overlay fullscreen longer top-actions modal" id="modal-song-detail">
+<div class="ui coupled overlay fullscreen longer topActions modal growingModal" id="modal-song-detail">
     <i class="close icon"></i>
+
     <div class="ui small header">
         <div class="ui placeholder" id="modal-song-detail-placeholder-song-info">
             <div class="header">
@@ -8,69 +9,83 @@
             </div>
         </div>
 
-        <span id="modal-song-detail-header"></span>
-        <div class="sub header" id="modal-song-detail-subheader"></div>
-    </div>
-    <div class="actions">
-        <div class="ui left floated tiny green button" id="modal-song-detail-btn-save">
-            <i class="save icon"></i>
-            Save
-        </div>
-        <div class="ui left floated tiny red button" id="modal-song-detail-btn-delete">
-            <i class="trash icon"></i>
-            Remove
-        </div>
-        <div class="ui tiny primary button" id="modal-song-detail-btn-display">
-            <i class="desktop icon"></i>
-            Display
+        <div class="content">
+            <span id="modal-song-detail-song-title"></span>
+            <div class="sub header" id="modal-song-detail-song-book-number"></div>
         </div>
     </div>
-    <div class="content">
-        <div class="ui divided ordered list items" id="modal-song-detail-placeholder-verse-list">
-            <div class="item">
-                <div class="content">
-                    <div class="description">
-                        <div class="ui placeholder">
-                            <div class="paragraph">
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-                <div class="content">
-                    <div class="description">
-                        <div class="ui placeholder">
-                            <div class="paragraph">
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-                <div class="content">
-                    <div class="description">
-                        <div class="ui placeholder">
-                            <div class="paragraph">
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
+    <div class="actions">
+        <div class="ui small left floated green button" id="modal-song-detail-button-save">
+            <i class="save icon"></i>
+            <span>Save</span>
+        </div>
+        <div class="ui small left floated red button" id="modal-song-detail-button-delete">
+            <i class="trash icon"></i>
+            <span>Remove</span>
+        </div>
+        <div class="ui small right labeled icon primary button" id="modal-song-detail-button-display">
+            <i class="desktop icon"></i>
+            <span>Display</span>
+        </div>
+    </div>
+
+    <div class="content fillRemaining" id="modal-song-detail-view-error" style="display: none">
+        <div class="ui middle aligned padded grid" style="height: 100%">
+            <div class="center aligned column">
+                <div class="ui tiny icon header">
+                    <i class="bug icon"></i>
+                    <div class="content">Network Error</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content fillRemaining" id="modal-song-detail-view-empty" style="display: none">
+        <div class="ui middle aligned padded grid" style="height: 100%">
+            <div class="center aligned column">
+                <div class="ui tiny icon header">
+                    <i class="frown outline icon"></i>
+                    <div class="content">No Songs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content fillRemaining" id="modal-song-detail-placeholder-verse-list">
+        <div class="ui divided list items">
+            <div class="item">
+                <div class="content">
+                    <div class="description">
+                        <div class="ui placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="item">
+                <div class="content">
+                    <div class="description">
+                        <div class="ui placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content scrolling fillRemaining" id="modal-song-detail-container-verse-list">
         <div class="ui divided ordered list items" id="modal-song-detail-verse-list"></div>
     </div>
 </div>
