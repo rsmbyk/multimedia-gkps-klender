@@ -1,4 +1,4 @@
-<div class="ui coupled overlay fullscreen modal" id="modal-bookmark-detail">
+<div class="ui coupled overlay fullscreen modal growingModal" id="modal-bookmark-detail">
     <i class="close icon"></i>
 
     <div class="ui header">
@@ -9,12 +9,36 @@
             </div>
         </div>
 
-        <span id="bookmark-name"></span>
-        <div class="sub header" id="bookmark-date"></div>
+        <div class="content">
+            <span id="modal-bookmark-detail-bookmark-name"></span>
+            <div class="sub header" id="modal-bookmark-detail-bookmark-date"></div>
+        </div>
     </div>
 
-    <div class="scrolling content">
-        <div class="ui small relaxed divided middle aligned selection list" id="modal-bookmark-detail-placeholder-bookmark-item-list">
+    <div class="content fillRemaining" id="modal-bookmark-detail-view-error" style="display: none">
+        <div class="ui middle aligned padded grid" style="height: 100%">
+            <div class="center aligned column">
+                <div class="ui tiny icon header">
+                    <i class="bug icon"></i>
+                    <div class="content">Network Error</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content fillRemaining" id="modal-bookmark-detail-view-empty" style="display: none">
+        <div class="ui middle aligned padded grid" style="height: 100%">
+            <div class="center aligned column">
+                <div class="ui tiny icon header">
+                    <i class="frown outline icon"></i>
+                    <div class="content">No Songs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content fillRemaining" id="modal-bookmark-detail-placeholder-bookmark-item-list">
+        <div class="ui relaxed divided middle aligned list">
             <div class="item">
                 <div class="content">
                     <div class="description">
@@ -60,7 +84,9 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="ui small relaxed divided middle aligned ordered selection list" id="bookmark-item-list"></div>
+    <div class="scrolling content fillRemaining" id="modal-bookmark-detail-container-bookmark-item-list">
+        <div class="ui relaxed divided middle aligned ordered selection list" id="modal-bookmark-detail-bookmark-item-list"></div>
     </div>
 </div>

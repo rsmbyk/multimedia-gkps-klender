@@ -8,38 +8,31 @@
 
     <title>Dock - OBS Songs Plugin</title>
 
-    <link rel="stylesheet" href="{% static 'common/fomantic/semantic.css' %}">
-    <link rel="stylesheet" href="{% static 'common/icomoon/style.css' %}">
-    <link rel="stylesheet" href="{% static 'obs/songs/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'libs/icomoon/style.css' %}">
 
-    <script src="{% static 'common/jquery/jquery-3.6.0.js' %}"></script>
-    <script src="{% static 'common/axios/axios.js' %}"></script>
-    <script src="{% static 'common/fomantic/semantic.js' %}"></script>
-    <script src="{% static 'common/rxjs/rxjs.umd.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'styles/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/themes/default.css' %}">
 
-    <script src="{% static 'helpers/arrays.js' %}"></script>
-    <script src="{% static 'helpers/local-storage.js' %}"></script>
-    <script src="{% static 'helpers/dropdown-state-value.js' %}"></script>
-    <script src="{% static 'helpers/tab-manager.js' %}"></script>
-    <script src="{% static 'helpers/buttons.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'obs/songs/dock/styles.css' %}">
 
-    <script type="module" src="{% static 'obs/songs/js/common/toasts.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/js/common/bookmark-storage.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/js/common/bookmark-manager.js' %}"></script>
+    <script src="{% static 'libs/jquery/jquery-3.6.0.js' %}"></script>
+    <script src="{% static 'libs/axios/axios.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.js' %}"></script>
 
-    <script type="module" src="{% static 'obs/songs/js/dock/tabs/songbooks.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/js/dock/tabs/display.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/js/dock/tabs/bookmarks.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/common/bookmark-storage.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/common/bookmark-manager.js' %}"></script>
 
-    <script type="module" src="{% static 'obs/songs/js/dock/modals/song-detail.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/js/dock/modals/create-bookmark.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/js/dock/modals/delete-bookmark.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/js/dock/modals/bookmark-detail.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/js/dock/modals/delete-bookmark-item.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/dock/index.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/dock/tabs/songbooks.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/dock/tabs/display.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/dock/tabs/bookmarks.js' %}"></script>
 </head>
 <body>
-    <section style="background-color: #393939">
-        <div class="ui inverted tiny bottom fixed four item mobile icon menu" id="tab-menu">
+    <div>
+        <div class="ui small inverted bottom fixed four item mobile icon menu" id="tab-menu">
             <a class="green item" data-tab="tab-songbooks" id="tab-menu-songbooks">
                 <i class="icomoon-note icon"></i>
                 <span class="text">SongBooks</span>
@@ -63,364 +56,7 @@
         </div>
 
         <div class="ui tab" data-tab="tab-search">
-            <div class="ui flat raised segments" id="search-segments">
-                <div class="ui dimmer">
-                    <div class="content">
-                        <div class="ui inverted header">
-                            <i class="icons">
-                                <i class="bible icon"></i>
-                                <i class="inverted corner question icon"></i>
-                            </i>
-                            No chapter selected!
-                        </div>
-                    </div>
-                </div>
 
-                <div class="ui raised fluid segment">
-                    <div class="ui middle aligned center aligned very compact grid">
-                        <div class="two wide column">
-                            <div class="ui has-popup tiny circular icon button"
-                                 id="search-button-backward"
-                                 data-content="Prev Chapter"
-                                 data-position="bottom center">
-                                <i class="icon arrow left"></i>
-                            </div>
-                        </div>
-
-                        <div class="twelve wide column">
-                            <div class="ui small header">
-                                <div class="sub header" id="search-book">Kejadian</div>
-                                <span id="search-chapter">24</span>
-                            </div>
-                        </div>
-
-                        <div class="two wide column">
-                            <div class="ui has-popup tiny circular icon button"
-                                 id="search-button-forward"
-                                 data-content="Next Chapter"
-                                 data-position="bottom center">
-                                <i class="icon arrow right"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ui fluid segment" style="height: calc(100vh - 62px - 40px); overflow-y: scroll">
-                    <div class="ui large relaxed divided selection list" id="list-verse">
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <span>(</span>
-                                    <div class="tiny header">1</div>
-                                    <span>)</span>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header"></div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    <span>On do podah ni si Salomo, anak ni si Daud, raja ni Israel,</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(2)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header"></div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    ase ibotoh halak hapentaran pakon pangajaran, ase iarusi hata hapantason,
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(3)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header"></div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    ase tarjalosi pangajaran na madear, hapintoron, uhum pakon habonaron,
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(4)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header"></div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    laho mambere hapantason bani halak sibulus uhur, habotohon pakon panimbangion bani anak garama.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(5)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header"></div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    Halak na pentar pe itangihon ma ai, ase tambah habotohon bani, anjaha halak na maruhur dapotan pangajarion,
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(6)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header"></div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    laho mangartihon podah pakon limbaga, hata ni halak na pentar pakon hutinta ni sidea.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(7)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header">Bona ni Hapentaran</div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    Biar mangidah Jahowa do parmulaan ni habotohon; halak na bodoh teos do uhurni bani hapentaran pakon pangajaran.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(8)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header"></div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    Tangihon ma, ale anakku, pangajarion ni bapamu, ulang ma buangkon podah ni inangmu.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(9)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header"></div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    Ai rudang na majenges do ai bani ulumu, anjaha sinongkok bani borgokmu.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="item">
-                            <div class="ui dimmer">
-                                <div class="content">
-                                    <button class="ui mini icon button">
-                                        <i class="bookmark icon"></i>
-                                        <span class="text">Bookmark</span>
-                                    </button>
-                                    <button class="ui mini teal icon button">
-                                        <i class="desktop icon"></i>
-                                        <span class="text">Quick Display</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ui middle aligned equal width very compact grid">
-                                <div class="left aligned four wide column">
-                                    <div class="tiny header">(10)</div>
-                                </div>
-
-                                <div class="right aligned twelve wide column">
-                                    <div class="ui tiny header">
-                                        <div class="sub header">Lumba-lumba dompak na Pakahouhon</div>
-                                    </div>
-                                </div>
-
-                                <div class="column">
-                                    Ale anakku, anggo iajar-ajari pardousa ho, ulang ma tangihon.
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="ui tab" data-tab="tab-display">
@@ -441,6 +77,6 @@
 
         {% include 'dock/modals/delete-bookmark-item.html' %}
 
-    </section>
+    </div>
 </body>
 </html>
