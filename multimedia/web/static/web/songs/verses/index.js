@@ -8,6 +8,7 @@ import * as deleteVerseModal from './modals/delete-verse.js'
 const verseList = $('#verse-list')
 
 const songTitle = $('#song-title')
+const songUntitled = $('#song-untitled')
 const songBookNumber = $('#song-book-number')
 
 const buttonAddVerse = $('#btn-add-verse')
@@ -84,6 +85,9 @@ const updateBreadcrumb = song => {
 const updateSongInfo = song => {
     songTitle.text(song.title)
     songBookNumber.text(song.book.is_hymn_book ? `${song.book.short_name} ${song.number}${song.sub_number}` : song.book.name)
+
+    if (song.is_untitled) songUntitled.show()
+    else songUntitled.hide()
 
     displaySongInfo()
 }
@@ -210,4 +214,5 @@ songSubject.subscribe(updateAddVerseButton)
 versesSubject.subscribe(value => verses = value)
 versesSubject.subscribe(updateVerseList)
 
+$('.has-popup').popup()
 retrieveSong()

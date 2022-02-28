@@ -109,7 +109,7 @@ const submitForm = onSuccess => {
     errorMessages.empty()
 
     if (form.form('is valid')) {
-        const { id, bookId, title } = form.form('get values')
+        const { id, bookId, title, no_title } = form.form('get values')
 
         const formData = {
             id: id,
@@ -117,6 +117,7 @@ const submitForm = onSuccess => {
             title: title.trim(),
             number: null,
             sub_number: '',
+            is_untitled: no_title,
         }
 
         console.log(formData)
@@ -146,6 +147,7 @@ const updateSongFormValues = song => {
         form.form('set values', {
             id: song.id,
             title: song.title,
+            no_title: song.is_untitled,
         })
     }
 
