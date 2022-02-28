@@ -96,19 +96,27 @@ const updateAddSongButton = book => {
     else buttonAddSong.show()
 }
 
-const joinSongBookNumber = song => {
+const createSongsSearchItem = song => {
     // by default, semantic-ui will search title and/or description fields.
+    const songTitle = book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title
     return {
         id: song.id,
-        title: book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title
+        title: songTitle + (song.is_untitled ? ' *' : ''),
+        songTitle: song.title,
+        songBookNumber: `${song.number}${song.sub_number}`,
     }
 }
 
 const updateSearch = songs => {
     search.search({
-        source: songs.map(joinSongBookNumber),
+        source: songs.map(createSongsSearchItem),
+        searchFields: [
+            'songTitle',
+            'songBookNumber',
+        ],
         fullTextSearch: true,
-        minCharacters: 3,
+        selectFirstResult: true,
+        minCharacters: 1,
         onSelect: result => {
             $(`#song-${result.id}`)[0].scrollIntoView()
         }
@@ -116,6 +124,10 @@ const updateSearch = songs => {
 }
 
 const createSongListItem = song => {
+    let songTitle = song.book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title
+    if (song.is_untitled)
+        songTitle += ' *'
+
     const item = doms.createDOMFromJSON({
         tag: 'div',
         classList: ['item'],
@@ -127,7 +139,7 @@ const createSongListItem = song => {
                     {
                         tag: 'div',
                         classList: ['header'],
-                        innerText: song.book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title,
+                        innerText: songTitle,
                     },
                 ],
             },

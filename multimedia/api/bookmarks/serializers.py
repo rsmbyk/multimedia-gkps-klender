@@ -33,6 +33,7 @@ class SongBookmarkItemSerializer(DynamicFieldsMixin, serializers.ModelSerializer
         return {
             'book_number': book_number,
             'title': obj.song.title,
+            'is_untitled': obj.song.is_untitled,
         }
 
     class Meta:

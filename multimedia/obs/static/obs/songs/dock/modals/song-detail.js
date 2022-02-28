@@ -209,7 +209,7 @@ const updateBookInfo = book => {
 }
 
 const updateSongInfo = song => {
-    songTitle.text(song.title)
+    songTitle.text(song.title + (song.is_untitled ? ' *' : ''))
 }
 
 const updateActionButtons = selectedVerses => {
