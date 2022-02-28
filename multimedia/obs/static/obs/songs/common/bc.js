@@ -9,11 +9,12 @@ export const statusSubject   = new ReplaySubject(1)
 const bcSongInfo = new BroadcastChannel(BC_NAME_SONG_INFO)
 const bcStatus = new BroadcastChannel(BC_NAME_STATUS)
 
-export const postSongInfoMessage = (bookNumber, verseNumber, title, lyric) => {
+export const postSongInfoMessage = (bookNumber, verseNumber, title, is_untitled, lyric) => {
     bcSongInfo.postMessage({
         bookNumber: bookNumber,
         verseNumber: verseNumber,
         title: title,
+        is_untitled: is_untitled,
         lyric: lyric,
     })
 }

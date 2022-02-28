@@ -135,7 +135,7 @@ const updateSongInfo = activeSong => {
         return
 
     setSongBookNumber(activeSong.song_info.book_number)
-    setSongTitle(activeSong.song_info.title)
+    setSongTitle(activeSong.song_info.title + (activeSong.song_info.is_untitled ? ' *' : ''))
 }
 
 const updateActiveVerseMarker = activeVerseIndex => {
@@ -278,6 +278,7 @@ const postSongInfo = activeLyricIndex => {
         activeSong.song_info.book_number,
         activeVerses[activeVerseIndex].number,
         activeSong.song_info.title,
+        activeSong.song_info.is_untitled,
         activeLyrics[activeLyricIndex],
     )
 }

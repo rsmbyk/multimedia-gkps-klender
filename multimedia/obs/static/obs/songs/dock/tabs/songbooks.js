@@ -78,6 +78,7 @@ const createSongsDropdownMenuItem = song => {
     return {
         value: song.id,
         name: song.book.is_hymn_book ? `${song.number}${song.sub_number}. ${song.title}` : song.title,
+        description: song.is_untitled ? '*' : '',
     }
 }
 
