@@ -80,6 +80,11 @@ const updateBookmarkInfo = bookmark => {
     displayBookmarkInfo()
 }
 
+const onBookmarkItemsChanged = () => {
+    if (bookmarkManager.bookmark !== null && bookmark !== undefined && bookmarkManager.bookmark.id === bookmark.id)
+        retrieveBookmarkItems(bookmark)
+}
+
 const createBookmarkItem = (bookmarkItem) => {
     const item = doms.createDOMFromJSON({
         tag: 'div',
@@ -166,6 +171,8 @@ export const open = bookmark => {
     retrieveBookmark(bookmark)
     retrieveBookmarkItems(bookmark)
 }
+
+bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsChanged)
 
 bookmarkSubject.subscribe(value => bookmark = value)
 bookmarkSubject.subscribe(retrieveBookmarkItems)
