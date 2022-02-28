@@ -5,7 +5,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>{{ song.title }} ({% if song.book.is_hymn_book %}{{ song.book.short_name }} {{ song.number }}{{ song.sub_number }}{% else %}{{ song.book.name }}{% endif %}) - Multimedia GKPS Klender</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
 
     <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.css' %}">
 
@@ -44,6 +47,11 @@
 
                         <div class="content">
                             <span id="song-title"></span>
+                            <i class="has-popup mini inverted link circular info icon"
+                               data-content="This song won't display its title in OBS"
+                               data-variation="wide basic"
+                               data-position="bottom left"
+                               id="song-untitled"></i>
                             <div class="sub header" id="song-book-number"></div>
                         </div>
                     </div>

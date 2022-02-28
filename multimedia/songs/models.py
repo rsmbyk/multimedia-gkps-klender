@@ -48,6 +48,7 @@ class Song(models.Model):
     number = models.PositiveIntegerField(blank=True, null=True)
     sub_number = models.CharField(max_length=1, blank=True)
     title = models.CharField(max_length=64)
+    is_untitled = models.BooleanField(default=False)
     key = models.CharField(max_length=4, blank=True, choices=Key.choices)
 
     @property

@@ -31,6 +31,7 @@ export const activateSingleBookmarkItem = (book, song, verses) => {
         song_info: {
             book_number: book.is_hymn_book ? `${book.short_name} ${song.number}` : null,
             title: song.title,
+            is_untitled: song.is_untitled,
         },
         verse_info: verses,
     }])
