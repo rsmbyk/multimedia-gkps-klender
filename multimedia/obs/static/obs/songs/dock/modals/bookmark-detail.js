@@ -81,6 +81,10 @@ const updateBookmarkInfo = bookmark => {
 }
 
 const createBookmarkItem = (bookmarkItem) => {
+    const { song_info: { book_number, title, is_untitled }, verse } = bookmarkItem
+    const songTitle = title + (is_untitled ? ' *' : '')
+    const songBookNumber = book_number !== null ? `${book_number} : ${verse}` : '-'
+
     const item = doms.createDOMFromJSON({
         tag: 'div',
         classList: ['item'],
@@ -103,7 +107,19 @@ const createBookmarkItem = (bookmarkItem) => {
             },
             {
                 tag: 'div',
-                classList: ['middle', 'aligned', 'content'],
+                classList: ['content'],
+                children: [
+                    {
+                        tag: 'div',
+                        classList: ['header'],
+                        innerText: songTitle,
+                    },
+                    {
+                        tag: 'div',
+                        classList: ['description'],
+                        innerText: songBookNumber,
+                    },
+                ],
             },
         ],
     })
@@ -121,17 +137,14 @@ const createBookmarkItem = (bookmarkItem) => {
         )
     })
 
-    const content = item.find('.content:not(.right.floated)')
-
-    const { song_info: { book_number, title }, verse } = bookmarkItem
-    const itemDisplayName = book_number ? `${book_number} : ${verse}` : title
-    content.text(itemDisplayName)
-
     item.click(e => {
-        if (e.target === e.currentTarget || e.target === content[0])
-            // only open song-detail-modal if clicking on
-            // bookmark's content or background
-            songDetailModal.open(bookmarkItem.song)
+        if (buttonDelete[0].contains(e.target))
+            return false
+
+        // only open song-detail-modal if clicking on
+        // bookmark's content or background (anywhere
+        // outside the delete button)
+        songDetailModal.open(bookmarkItem.song)
     })
 
     return item
