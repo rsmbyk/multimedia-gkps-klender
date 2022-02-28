@@ -42,13 +42,6 @@ const activeLyricIndexSubject = new BehaviorSubject()
 
 let numberOfLine = 2
 
-const toggleButtonStatus = new ToggleButton(
-    btnStatusActive,
-    btnStatusInactive,
-    () => bc.postStatusMessage(true),
-    () => bc.postStatusMessage(false),
-)
-
 const update = bookmarkItems => {
     if (bookmarkItems === null || bookmarkItems.length === 0) setIdle()
     else init()
@@ -270,6 +263,10 @@ const evaluateButton = (button, isValid) => {
     else button.addClass('disabled')
 }
 
+const postStatusMessage = status => {
+    bc.postStatusMessage(status)
+}
+
 const postSongInfo = activeLyricIndex => {
     if (activeLyricIndex === undefined)
         return
@@ -307,6 +304,18 @@ const evaluateButtonNextLyric = activeLyricIndex =>
     evaluateButton(btnNextLyric, activeLyricIndex !== undefined && activeLyricIndex !== activeLyrics.length - 1)
 const evaluateButtonPrevLyric = activeLyricIndex =>
     evaluateButton(btnPrevLyric, activeLyricIndex !== undefined && activeLyricIndex !== 0)
+
+const toggleButtonStatus = new ToggleButton(
+    btnStatusActive,
+    btnStatusInactive,
+    () => {
+        postStatusMessage(true)
+        postSongInfo(activeLyricIndex)
+    },
+    () => {
+        postStatusMessage(false)
+    },
+)
 
 btnNextSong.click(nextSong)
 btnPrevSong.click(prevSong)
