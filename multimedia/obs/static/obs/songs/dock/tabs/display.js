@@ -86,9 +86,11 @@ const update = bookmarkItems => {
     else init()
 }
 
+const setSongBookNumber = value => {
+    songBookNumber.text(value !== null ? value : '-')
+    songBookNumber.css('visibility', value === null ? 'hidden' : 'visible')
 }
 
-const setSongBookNumber = value => songBookNumber.text(value)
 const setSongTitle = value => songTitle.text(value)
 
 const updateSongVerseList = activeVerses => {
