@@ -81,17 +81,17 @@ const init = () => {
     hidePlaceholders()
 }
 
-const update = bookmarkItems => {
+const onBookmarkItemsUpdated = bookmarkItems => {
     if (bookmarkItems === null || bookmarkItems.length === 0) setIdle()
     else init()
 }
 
-const setSongBookNumber = value => {
+const updateSongBookNumber = value => {
     songBookNumber.text(value !== null ? value : '-')
     songBookNumber.css('visibility', value === null ? 'hidden' : 'visible')
 }
 
-const setSongTitle = value => songTitle.text(value)
+const updateSongTitle = value => songTitle.text(value)
 
 const updateSongVerseList = activeVerses => {
     const createVerseText = ({ number: verseNumber }, index) => {
@@ -127,8 +127,8 @@ const updateVerses = activeSong => {
 }
 
 const updateSongInfo = activeSong => {
-    setSongBookNumber(activeSong.song_info.book_number)
-    setSongTitle(activeSong.song_info.title + (activeSong.song_info.is_untitled ? ' *' : ''))
+    updateSongBookNumber(activeSong.song_info.book_number)
+    updateSongTitle(activeSong.song_info.title + (activeSong.song_info.is_untitled ? ' *' : ''))
 }
 
 const updateActiveVerseMarker = activeVerseIndex => {
@@ -278,10 +278,8 @@ const postSongInfo = activeLyricIndex => {
 }
 
 const updateStatusButton = status => {
-    if (status === true)
-        toggleButtonStatus.setActive()
-    else
-        toggleButtonStatus.setInactive()
+    if (status === true) toggleButtonStatus.setActive()
+    else toggleButtonStatus.setInactive()
 }
 
 const evaluateButtonStatusActive = bookmarkItems =>
@@ -321,7 +319,7 @@ btnPrevVerse.click(prevVerse)
 btnNextLyric.click(nextLyric)
 btnPrevLyric.click(prevLyric)
 
-bookmarkManager.bookmarkItemsSubject.subscribe(update)
+bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusInactive)
 
