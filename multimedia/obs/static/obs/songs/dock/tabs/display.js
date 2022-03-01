@@ -3,6 +3,7 @@ import { ToggleButton } from '/static/helpers/buttons.js'
 import * as doms from '/static/helpers/doms.js'
 
 import * as bc from '../../common/bc.js'
+import * as options from '../../common/options.js'
 import * as bookmarkManager from '../../common/bookmark-manager.js'
 
 const songBookNumber = $('#display-song-book-number')
@@ -38,8 +39,6 @@ const activeLyricsSubject = new BehaviorSubject()
 const activeSongIndexSubject = new BehaviorSubject()
 const activeVerseIndexSubject = new BehaviorSubject()
 const activeLyricIndexSubject = new BehaviorSubject()
-
-let numberOfLine = 2
 
 const displayPlaceholders = () => {
     songBookNumber.hide()
@@ -140,7 +139,7 @@ const updateActiveVerseMarker = activeVerseIndex => {
 }
 
 const buildLyrics = activeVerseIndex => {
-    if (activeVerseIndex === null)
+    if (activeVerseIndex === undefined || activeVerseIndex === null)
         return
 
     const joinAdjacentText = lyricTexts => {
@@ -151,7 +150,7 @@ const buildLyrics = activeVerseIndex => {
             if (joinedTexts.length !== 0) joinedTexts += '\n'
             joinedTexts += lyricTexts[i]
 
-            if ((i+1) % numberOfLine === 0) {
+            if ((i+1) % options.numberOfLines === 0) {
                 result.push(joinedTexts)
                 joinedTexts = ''
             }
@@ -324,6 +323,8 @@ bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusInactive)
 
 bc.statusSubject.subscribe(updateStatusButton)
+
+options.numberOfLinesSubject.subscribe(() => buildLyrics(activeVerseIndex))
 
 activeSongIndexSubject.subscribe(v => activeSongIndex = v)
 activeSongIndexSubject.subscribe(updateSong)
