@@ -6,15 +6,15 @@ import * as bc from '../../common/bc.js'
 import * as bookmarkManager from '../../common/bookmark-manager.js'
 
 const songBookNumber = $('#display-song-book-number')
-const songTitle      = $('#display-song-title')
-const songVerses     = $('#display-song-verses')
+const songTitle = $('#display-song-title')
+const songVerseList = $('#display-song-verses')
 const songLyricList  = $('#display-song-lyric-list')
 
-const btnStatusActive   = $('#display-button-status-active')
+const btnStatusActive = $('#display-button-status-active')
 const btnStatusInactive = $('#display-button-status-inactive')
 
-const btnPrevSong  = $('#display-btn-prev-song')
-const btnNextSong  = $('#display-btn-next-song')
+const btnPrevSong = $('#display-btn-prev-song')
+const btnNextSong = $('#display-btn-next-song')
 const btnPrevVerse = $('#display-btn-prev-verse')
 const btnNextVerse = $('#display-btn-next-verse')
 const btnPrevLyric = $('#display-btn-prev-lyric')
@@ -41,9 +41,26 @@ const activeLyricIndexSubject = new BehaviorSubject()
 
 let numberOfLine = 2
 
-const update = bookmarkItems => {
-    if (bookmarkItems === null || bookmarkItems.length === 0) setIdle()
-    else init()
+const displayPlaceholders = () => {
+    songBookNumber.hide()
+    songTitle.hide()
+    songVerseList.hide()
+    containerSongLyricList.hide()
+
+    placeholderSongInfo.show()
+    placeholderSongVerses.show()
+    placeholderSongLyricList.show()
+}
+
+const hidePlaceholders = () => {
+    placeholderSongInfo.hide()
+    placeholderSongVerses.hide()
+    placeholderSongLyricList.hide()
+
+    songBookNumber.show()
+    songTitle.show()
+    songVerseList.show()
+    containerSongLyricList.show()
 }
 
 const resetIndices = () => {
@@ -64,33 +81,17 @@ const init = () => {
     hidePlaceholders()
 }
 
-const displayPlaceholders = () => {
-    placeholderSongInfo.show()
-    placeholderSongVerses.show()
-    placeholderSongLyricList.show()
-
-    songBookNumber.hide()
-    songTitle.hide()
-    songVerses.hide()
-    containerSongLyricList.hide()
+const update = bookmarkItems => {
+    if (bookmarkItems === null || bookmarkItems.length === 0) setIdle()
+    else init()
 }
 
-const hidePlaceholders = () => {
-    songBookNumber.show()
-    songTitle.show()
-    songVerses.show()
-    containerSongLyricList.show()
-
-    placeholderSongInfo.hide()
-    placeholderSongVerses.hide()
-    placeholderSongLyricList.hide()
 }
 
 const setSongBookNumber = value => songBookNumber.text(value)
 const setSongTitle = value => songTitle.text(value)
 
-const setSongVerses = activeVerses => {
-
+const updateSongVerseList = activeVerses => {
     const createVerseText = ({ number: verseNumber }, index) => {
         const item = doms.createDOMFromJSON({
             tag: 'span',
@@ -107,8 +108,8 @@ const setSongVerses = activeVerses => {
         return item
     }
 
-    songVerses.empty()
-    songVerses.append(...activeVerses.map(createVerseText))
+    songVerseList.empty()
+    songVerseList.append(...activeVerses.map(createVerseText))
 }
 
 const updateSong = activeSongIndex => {
@@ -132,8 +133,8 @@ const updateActiveVerseMarker = activeVerseIndex => {
     if (activeVerseIndex === null)
         return
 
-    songVerses.children().addClass('disabled')
-    songVerses.children().eq(activeVerseIndex).removeClass('disabled')
+    songVerseList.children().addClass('disabled')
+    songVerseList.children().eq(activeVerseIndex).removeClass('disabled')
 }
 
 const buildLyrics = activeVerseIndex => {
@@ -334,7 +335,7 @@ activeSongSubject.subscribe(updateSongInfo)
 activeSongSubject.subscribe(updateVerses)
 
 activeVersesSubject.subscribe(v => activeVerses = v)
-activeVersesSubject.subscribe(setSongVerses)
+activeVersesSubject.subscribe(updateSongVerseList)
 
 activeVerseIndexSubject.subscribe(v => activeVerseIndex = v)
 activeVerseIndexSubject.subscribe(updateActiveVerseMarker)
