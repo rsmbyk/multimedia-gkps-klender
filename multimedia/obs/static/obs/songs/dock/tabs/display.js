@@ -25,6 +25,7 @@ const btnNextLyric = $('#display-btn-next-lyric')
 const placeholderSongInfo = $('#display-placeholder-song-info')
 const placeholderSongVerses = $('#display-placeholder-song-verses')
 const placeholderSongLyricList = $('#display-placeholder-song-lyric-list')
+const containerSongLyricList = $('#display-container-song-lyric-list')
 
 let activeSong
 let activeVerses
@@ -73,14 +74,14 @@ const displayPlaceholders = () => {
     songBookNumber.hide()
     songTitle.hide()
     songVerses.hide()
-    songLyricList.hide()
+    containerSongLyricList.hide()
 }
 
 const hidePlaceholders = () => {
     songBookNumber.show()
     songTitle.show()
     songVerses.show()
-    songLyricList.show()
+    containerSongLyricList.show()
 
     placeholderSongInfo.hide()
     placeholderSongVerses.hide()
@@ -197,7 +198,7 @@ const updateLyricList = activeLyrics => {
 
     songLyricList.empty()
     songLyricList.append(...activeLyrics.map(createLyricTextItem))
-    songLyricList.parent().animate({ scrollTop: 0 }, 200)
+    containerSongLyricList.animate({ scrollTop: 0 }, 200)
 
     activeLyricIndexSubject.next(0)
 }
