@@ -116,7 +116,10 @@ const updateSong = activeSongIndex => {
         return
 
     activeSongSubject.next(bookmarkManager.bookmarkItems[activeSongIndex])
-    activeVersesSubject.next(bookmarkManager.bookmarkItems[activeSongIndex].verse_info)
+}
+
+const updateVerses = activeSong => {
+    activeVersesSubject.next(activeSong.verse_info)
     activeVerseIndexSubject.next(0)
 }
 
@@ -328,6 +331,7 @@ activeSongIndexSubject.subscribe(evaluateButtonPrevSong)
 
 activeSongSubject.subscribe(v => activeSong = v)
 activeSongSubject.subscribe(updateSongInfo)
+activeSongSubject.subscribe(updateVerses)
 
 activeVersesSubject.subscribe(v => activeVerses = v)
 activeVersesSubject.subscribe(setSongVerses)
