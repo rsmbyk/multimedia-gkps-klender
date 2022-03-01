@@ -173,7 +173,7 @@ const updateLyricList = activeLyrics => {
             children: [
                 {
                     tag: 'i',
-                    classList: ['inverted', 'middle', 'aligned', 'small', 'map', 'marker', 'icon'],
+                    classList: ['inverted', 'middle', 'aligned', 'small', 'map', 'marker', 'alternate', 'icon'],
                     innerText: '',
                 },
                 {
