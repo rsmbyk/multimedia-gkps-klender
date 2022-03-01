@@ -1,7 +1,13 @@
 <div class="growingChild" id="tab-display">
     <div style="display: flex; justify-content: space-between; padding: 1rem">
-        <div class="ui inverted tiny circular icon button">
-            <i class="settings icon"></i>
+        <div class="ui tiny floating circular icon dropdown button" id="display-button-settings">
+            <i class="wrench icon"></i>
+            <div class="menu">
+                <div class="item" data-value="paste">
+                    <i class="clipboard icon"></i>
+                    <span>Quick Paste</span>
+                </div>
+            </div>
         </div>
         <div>
             <div class="ui tiny labeled icon green button"
