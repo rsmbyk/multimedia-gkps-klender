@@ -20,6 +20,7 @@ const btnPrevVerse = $('#display-btn-prev-verse')
 const btnNextVerse = $('#display-btn-next-verse')
 const btnPrevLyric = $('#display-btn-prev-lyric')
 const btnNextLyric = $('#display-btn-next-lyric')
+const btnLastLyric = $('#display-btn-last-lyric')
 
 const placeholderSongInfo = $('#display-placeholder-song-info')
 const placeholderSongVerses = $('#display-placeholder-song-verses')
@@ -157,6 +158,7 @@ const buildLyrics = activeVerseIndex => {
         }
 
         if (joinedTexts.length > 0) result.push(joinedTexts)
+        result.push('--- END ---')
         return result
     }
 
@@ -299,10 +301,27 @@ const evaluateButtonNextLyric = activeLyricIndex =>
 const evaluateButtonPrevLyric = activeLyricIndex =>
     evaluateButton(btnPrevLyric, activeLyricIndex !== null && activeLyricIndex !== 0)
 
+const onLastLyricReached = activeLyricIndex => {
+    if (activeLyricIndex !== null && activeLyricIndex === activeLyrics.length - 1) {
+        toggleButtonStatus.setInactive()
+        if (activeVerseIndex !== activeVerses.length - 1) {
+            btnNextLyric.hide()
+            btnLastLyric.show()
+        }
+    }
+    else {
+        btnLastLyric.hide()
+        btnNextLyric.show()
+    }
+}
+
 const toggleButtonStatus = new ToggleButton(
     btnStatusActive,
     btnStatusInactive,
     () => {
+        if (activeLyricIndex === activeLyrics.length - 1)
+            return false
+
         postStatusMessage(true)
         postSongInfo(activeLyricIndex)
     },
@@ -317,6 +336,7 @@ btnNextVerse.click(nextVerse)
 btnPrevVerse.click(prevVerse)
 btnNextLyric.click(nextLyric)
 btnPrevLyric.click(prevLyric)
+btnLastLyric.click(nextVerse)
 
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
@@ -351,6 +371,7 @@ activeLyricIndexSubject.subscribe(v => activeLyricIndex = v)
 activeLyricIndexSubject.subscribe(updateActiveLyricMarker)
 activeLyricIndexSubject.subscribe(evaluateButtonNextLyric)
 activeLyricIndexSubject.subscribe(evaluateButtonPrevLyric)
+activeLyricIndexSubject.subscribe(onLastLyricReached)
 activeLyricIndexSubject.subscribe(postSongInfo)
 
 $('#tab-display .ui.has-popup').popup()
