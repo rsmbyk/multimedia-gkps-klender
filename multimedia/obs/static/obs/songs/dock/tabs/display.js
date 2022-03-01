@@ -1,10 +1,8 @@
-const { BehaviorSubject } = rxjs
-
+import { BehaviorSubject } from '/static/helpers/rx.js';
 import { ToggleButton } from '/static/helpers/buttons.js'
 import * as doms from '/static/helpers/doms.js'
 
 import * as bc from '../../common/bc.js'
-
 import * as bookmarkManager from '../../common/bookmark-manager.js'
 
 const songBookNumber = $('#display-song-book-number')
@@ -48,6 +46,12 @@ const update = bookmarkItems => {
     else init()
 }
 
+const resetIndices = () => {
+    activeSongIndexSubject.next(null)
+    activeVerseIndexSubject.next(null)
+    activeLyricIndexSubject.next(null)
+}
+
 const setIdle = () => {
     toggleButtonStatus.setInactive()
     resetIndices()
@@ -58,12 +62,6 @@ const init = () => {
     toggleButtonStatus.setInactive()
     activeSongIndexSubject.next(0)
     hidePlaceholders()
-}
-
-const resetIndices = () => {
-    activeSongIndexSubject.next(undefined)
-    activeVerseIndexSubject.next(undefined)
-    activeLyricIndexSubject.next(undefined)
 }
 
 const displayPlaceholders = () => {
@@ -92,8 +90,6 @@ const setSongBookNumber = value => songBookNumber.text(value)
 const setSongTitle = value => songTitle.text(value)
 
 const setSongVerses = activeVerses => {
-    if (activeVerses === undefined)
-        return
 
     const createVerseText = ({ number: verseNumber }, index) => {
         const item = doms.createDOMFromJSON({
@@ -116,7 +112,7 @@ const setSongVerses = activeVerses => {
 }
 
 const updateSong = activeSongIndex => {
-    if (activeSongIndex === undefined)
+    if (activeSongIndex === null)
         return
 
     activeSongSubject.next(bookmarkManager.bookmarkItems[activeSongIndex])
@@ -125,15 +121,12 @@ const updateSong = activeSongIndex => {
 }
 
 const updateSongInfo = activeSong => {
-    if (activeSong === undefined)
-        return
-
     setSongBookNumber(activeSong.song_info.book_number)
     setSongTitle(activeSong.song_info.title + (activeSong.song_info.is_untitled ? ' *' : ''))
 }
 
 const updateActiveVerseMarker = activeVerseIndex => {
-    if (activeVerseIndex === undefined)
+    if (activeVerseIndex === null)
         return
 
     songVerses.children().addClass('disabled')
@@ -141,7 +134,7 @@ const updateActiveVerseMarker = activeVerseIndex => {
 }
 
 const buildLyrics = activeVerseIndex => {
-    if (activeVerseIndex === undefined)
+    if (activeVerseIndex === null)
         return
 
     const joinAdjacentText = lyricTexts => {
@@ -167,9 +160,6 @@ const buildLyrics = activeVerseIndex => {
 }
 
 const updateLyricList = activeLyrics => {
-    if (activeLyrics === undefined)
-        return
-
     const createLyricTextItem = (lyricText, index) => {
         const item = doms.createDOMFromJSON({
             tag: 'div',
@@ -204,7 +194,7 @@ const updateLyricList = activeLyrics => {
 }
 
 const updateActiveLyricMarker = activeLyricIndex => {
-    if (activeLyricIndex === undefined)
+    if (activeLyricIndex === null)
         return
 
     songLyricList.find('.item i.icon').hide()
@@ -269,7 +259,7 @@ const postStatusMessage = status => {
 }
 
 const postSongInfo = activeLyricIndex => {
-    if (activeLyricIndex === undefined)
+    if (activeLyricIndex === null)
         return
 
     bc.postSongInfoMessage(
@@ -294,17 +284,17 @@ const evaluateButtonStatusInactive = bookmarkItems =>
     evaluateButton(btnStatusInactive, bookmarkItems !== null && bookmarkItems.length !== 0)
 
 const evaluateButtonNextSong = activeSongIndex =>
-    evaluateButton(btnNextSong, activeSongIndex !== undefined && activeSongIndex !== bookmarkManager.bookmarkItems.length - 1)
+    evaluateButton(btnNextSong, activeSongIndex !== null && activeSongIndex !== bookmarkManager.bookmarkItems.length - 1)
 const evaluateButtonPrevSong = activeSongIndex =>
-    evaluateButton(btnPrevSong, activeSongIndex !== undefined && activeSongIndex !== 0)
+    evaluateButton(btnPrevSong, activeSongIndex !== null && activeSongIndex !== 0)
 const evaluateButtonNextVerse = activeVerseIndex =>
-    evaluateButton(btnNextVerse, activeVerseIndex !== undefined && activeVerseIndex !== activeVerses.length - 1)
+    evaluateButton(btnNextVerse, activeVerseIndex !== null && activeVerseIndex !== activeVerses.length - 1)
 const evaluateButtonPrevVerse = activeVerseIndex =>
-    evaluateButton(btnPrevVerse, activeVerseIndex !== undefined && activeVerseIndex !== 0)
+    evaluateButton(btnPrevVerse, activeVerseIndex !== null && activeVerseIndex !== 0)
 const evaluateButtonNextLyric = activeLyricIndex =>
-    evaluateButton(btnNextLyric, activeLyricIndex !== undefined && activeLyricIndex !== activeLyrics.length - 1)
+    evaluateButton(btnNextLyric, activeLyricIndex !== null && activeLyricIndex !== activeLyrics.length - 1)
 const evaluateButtonPrevLyric = activeLyricIndex =>
-    evaluateButton(btnPrevLyric, activeLyricIndex !== undefined && activeLyricIndex !== 0)
+    evaluateButton(btnPrevLyric, activeLyricIndex !== null && activeLyricIndex !== 0)
 
 const toggleButtonStatus = new ToggleButton(
     btnStatusActive,
