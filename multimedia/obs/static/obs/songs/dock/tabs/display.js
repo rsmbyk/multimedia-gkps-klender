@@ -11,16 +11,16 @@ const songTitle = $('#display-song-title')
 const songVerseList = $('#display-song-verses')
 const songLyricList  = $('#display-song-lyric-list')
 
-const btnStatusActive = $('#display-button-status-active')
-const btnStatusInactive = $('#display-button-status-inactive')
+const buttonStatusActive = $('#display-button-status-active')
+const buttonStatusInactive = $('#display-button-status-inactive')
 
-const btnPrevSong = $('#display-btn-prev-song')
-const btnNextSong = $('#display-btn-next-song')
-const btnPrevVerse = $('#display-btn-prev-verse')
-const btnNextVerse = $('#display-btn-next-verse')
-const btnPrevLyric = $('#display-btn-prev-lyric')
-const btnNextLyric = $('#display-btn-next-lyric')
-const btnLastLyric = $('#display-btn-last-lyric')
+const buttonPrevSong = $('#display-btn-prev-song')
+const buttonNextSong = $('#display-btn-next-song')
+const buttonPrevVerse = $('#display-btn-prev-verse')
+const buttonNextVerse = $('#display-btn-next-verse')
+const buttonPrevLyric = $('#display-btn-prev-lyric')
+const buttonNextLyric = $('#display-btn-next-lyric')
+const buttonLastLyric = $('#display-btn-last-lyric')
 
 const placeholderSongInfo = $('#display-placeholder-song-info')
 const placeholderSongVerses = $('#display-placeholder-song-verses')
@@ -284,40 +284,40 @@ const updateStatusButton = status => {
 }
 
 const evaluateButtonStatusActive = bookmarkItems =>
-    evaluateButton(btnStatusActive, bookmarkItems !== null && bookmarkItems.length !== 0)
+    evaluateButton(buttonStatusActive, bookmarkItems !== null && bookmarkItems.length !== 0)
 const evaluateButtonStatusInactive = bookmarkItems =>
-    evaluateButton(btnStatusInactive, bookmarkItems !== null && bookmarkItems.length !== 0)
+    evaluateButton(buttonStatusInactive, bookmarkItems !== null && bookmarkItems.length !== 0)
 
 const evaluateButtonNextSong = activeSongIndex =>
-    evaluateButton(btnNextSong, activeSongIndex !== null && activeSongIndex !== bookmarkManager.bookmarkItems.length - 1)
+    evaluateButton(buttonNextSong, activeSongIndex !== null && activeSongIndex !== bookmarkManager.bookmarkItems.length - 1)
 const evaluateButtonPrevSong = activeSongIndex =>
-    evaluateButton(btnPrevSong, activeSongIndex !== null && activeSongIndex !== 0)
+    evaluateButton(buttonPrevSong, activeSongIndex !== null && activeSongIndex !== 0)
 const evaluateButtonNextVerse = activeVerseIndex =>
-    evaluateButton(btnNextVerse, activeVerseIndex !== null && activeVerseIndex !== activeVerses.length - 1)
+    evaluateButton(buttonNextVerse, activeVerseIndex !== null && activeVerseIndex !== activeVerses.length - 1)
 const evaluateButtonPrevVerse = activeVerseIndex =>
-    evaluateButton(btnPrevVerse, activeVerseIndex !== null && activeVerseIndex !== 0)
+    evaluateButton(buttonPrevVerse, activeVerseIndex !== null && activeVerseIndex !== 0)
 const evaluateButtonNextLyric = activeLyricIndex =>
-    evaluateButton(btnNextLyric, activeLyricIndex !== null && activeLyricIndex !== activeLyrics.length - 1)
+    evaluateButton(buttonNextLyric, activeLyricIndex !== null && activeLyricIndex !== activeLyrics.length - 1)
 const evaluateButtonPrevLyric = activeLyricIndex =>
-    evaluateButton(btnPrevLyric, activeLyricIndex !== null && activeLyricIndex !== 0)
+    evaluateButton(buttonPrevLyric, activeLyricIndex !== null && activeLyricIndex !== 0)
 
 const onLastLyricReached = activeLyricIndex => {
     if (activeLyricIndex !== null && activeLyricIndex === activeLyrics.length - 1) {
         toggleButtonStatus.setInactive()
         if (activeVerseIndex !== activeVerses.length - 1) {
-            btnNextLyric.hide()
-            btnLastLyric.show()
+            buttonNextLyric.hide()
+            buttonLastLyric.show()
         }
     }
     else {
-        btnLastLyric.hide()
-        btnNextLyric.show()
+        buttonLastLyric.hide()
+        buttonNextLyric.show()
     }
 }
 
 const toggleButtonStatus = new ToggleButton(
-    btnStatusActive,
-    btnStatusInactive,
+    buttonStatusActive,
+    buttonStatusInactive,
     () => {
         if (activeLyricIndex === activeLyrics.length - 1)
             return false
@@ -330,13 +330,13 @@ const toggleButtonStatus = new ToggleButton(
     },
 )
 
-btnNextSong.click(nextSong)
-btnPrevSong.click(prevSong)
-btnNextVerse.click(nextVerse)
-btnPrevVerse.click(prevVerse)
-btnNextLyric.click(nextLyric)
-btnPrevLyric.click(prevLyric)
-btnLastLyric.click(nextVerse)
+buttonNextSong.click(nextSong)
+buttonPrevSong.click(prevSong)
+buttonNextVerse.click(nextVerse)
+buttonPrevVerse.click(prevVerse)
+buttonNextLyric.click(nextLyric)
+buttonPrevLyric.click(prevLyric)
+buttonLastLyric.click(nextVerse)
 
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
