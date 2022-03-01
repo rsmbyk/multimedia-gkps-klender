@@ -30,6 +30,7 @@
     <script type="module" src="{% static 'obs/songs/dock/index.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/dock/tabs/songbooks.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/dock/tabs/display.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/dock/tabs/display-settings.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/dock/tabs/bookmarks.js' %}"></script>
 </head>
 <body>
@@ -78,6 +79,8 @@
         {% include 'dock/modals/bookmark-detail.html' %}
 
         {% include 'dock/modals/delete-bookmark-item.html' %}
+
+        {% include 'dock/modals/paste.html' %}
 
     </div>
 </body>

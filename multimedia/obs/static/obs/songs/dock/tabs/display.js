@@ -1,30 +1,31 @@
-const { BehaviorSubject } = rxjs
-
+import { BehaviorSubject } from '/static/helpers/rx.js';
 import { ToggleButton } from '/static/helpers/buttons.js'
 import * as doms from '/static/helpers/doms.js'
 
 import * as bc from '../../common/bc.js'
-
+import * as options from '../../common/options.js'
 import * as bookmarkManager from '../../common/bookmark-manager.js'
 
 const songBookNumber = $('#display-song-book-number')
-const songTitle      = $('#display-song-title')
-const songVerses     = $('#display-song-verses')
+const songTitle = $('#display-song-title')
+const songVerseList = $('#display-song-verses')
 const songLyricList  = $('#display-song-lyric-list')
 
-const btnStatusActive   = $('#display-button-status-active')
-const btnStatusInactive = $('#display-button-status-inactive')
+const buttonStatusActive = $('#display-button-status-active')
+const buttonStatusInactive = $('#display-button-status-inactive')
 
-const btnPrevSong  = $('#display-btn-prev-song')
-const btnNextSong  = $('#display-btn-next-song')
-const btnPrevVerse = $('#display-btn-prev-verse')
-const btnNextVerse = $('#display-btn-next-verse')
-const btnPrevLyric = $('#display-btn-prev-lyric')
-const btnNextLyric = $('#display-btn-next-lyric')
+const buttonPrevSong = $('#display-btn-prev-song')
+const buttonNextSong = $('#display-btn-next-song')
+const buttonPrevVerse = $('#display-btn-prev-verse')
+const buttonNextVerse = $('#display-btn-next-verse')
+const buttonPrevLyric = $('#display-btn-prev-lyric')
+const buttonNextLyric = $('#display-btn-next-lyric')
+const buttonLastLyric = $('#display-btn-last-lyric')
 
 const placeholderSongInfo = $('#display-placeholder-song-info')
 const placeholderSongVerses = $('#display-placeholder-song-verses')
 const placeholderSongLyricList = $('#display-placeholder-song-lyric-list')
+const containerSongLyricList = $('#display-container-song-lyric-list')
 
 let activeSong
 let activeVerses
@@ -40,11 +41,32 @@ const activeSongIndexSubject = new BehaviorSubject()
 const activeVerseIndexSubject = new BehaviorSubject()
 const activeLyricIndexSubject = new BehaviorSubject()
 
-let numberOfLine = 2
+const displayPlaceholders = () => {
+    songBookNumber.hide()
+    songTitle.hide()
+    songVerseList.hide()
+    containerSongLyricList.hide()
 
-const update = bookmarkItems => {
-    if (bookmarkItems === null || bookmarkItems.length === 0) setIdle()
-    else init()
+    placeholderSongInfo.show()
+    placeholderSongVerses.show()
+    placeholderSongLyricList.show()
+}
+
+const hidePlaceholders = () => {
+    placeholderSongInfo.hide()
+    placeholderSongVerses.hide()
+    placeholderSongLyricList.hide()
+
+    songBookNumber.show()
+    songTitle.show()
+    songVerseList.show()
+    containerSongLyricList.show()
+}
+
+const resetIndices = () => {
+    activeSongIndexSubject.next(null)
+    activeVerseIndexSubject.next(null)
+    activeLyricIndexSubject.next(null)
 }
 
 const setIdle = () => {
@@ -59,41 +81,19 @@ const init = () => {
     hidePlaceholders()
 }
 
-const resetIndices = () => {
-    activeSongIndexSubject.next(undefined)
-    activeVerseIndexSubject.next(undefined)
-    activeLyricIndexSubject.next(undefined)
+const onBookmarkItemsUpdated = bookmarkItems => {
+    if (bookmarkItems === null || bookmarkItems.length === 0) setIdle()
+    else init()
 }
 
-const displayPlaceholders = () => {
-    placeholderSongInfo.show()
-    placeholderSongVerses.show()
-    placeholderSongLyricList.show()
-
-    songBookNumber.hide()
-    songTitle.hide()
-    songVerses.hide()
-    songLyricList.hide()
+const updateSongBookNumber = value => {
+    songBookNumber.text(value !== null ? value : '-')
+    songBookNumber.css('visibility', value === null ? 'hidden' : 'visible')
 }
 
-const hidePlaceholders = () => {
-    songBookNumber.show()
-    songTitle.show()
-    songVerses.show()
-    songLyricList.show()
+const updateSongTitle = value => songTitle.text(value)
 
-    placeholderSongInfo.hide()
-    placeholderSongVerses.hide()
-    placeholderSongLyricList.hide()
-}
-
-const setSongBookNumber = value => songBookNumber.text(value)
-const setSongTitle = value => songTitle.text(value)
-
-const setSongVerses = activeVerses => {
-    if (activeVerses === undefined)
-        return
-
+const updateSongVerseList = activeVerses => {
     const createVerseText = ({ number: verseNumber }, index) => {
         const item = doms.createDOMFromJSON({
             tag: 'span',
@@ -110,37 +110,37 @@ const setSongVerses = activeVerses => {
         return item
     }
 
-    songVerses.empty()
-    songVerses.append(...activeVerses.map(createVerseText))
+    songVerseList.empty()
+    songVerseList.append(...activeVerses.map(createVerseText))
 }
 
 const updateSong = activeSongIndex => {
-    if (activeSongIndex === undefined)
+    if (activeSongIndex === null)
         return
 
     activeSongSubject.next(bookmarkManager.bookmarkItems[activeSongIndex])
-    activeVersesSubject.next(bookmarkManager.bookmarkItems[activeSongIndex].verse_info)
+}
+
+const updateVerses = activeSong => {
+    activeVersesSubject.next(activeSong.verse_info)
     activeVerseIndexSubject.next(0)
 }
 
 const updateSongInfo = activeSong => {
-    if (activeSong === undefined)
-        return
-
-    setSongBookNumber(activeSong.song_info.book_number)
-    setSongTitle(activeSong.song_info.title + (activeSong.song_info.is_untitled ? ' *' : ''))
+    updateSongBookNumber(activeSong.song_info.book_number)
+    updateSongTitle(activeSong.song_info.title + (activeSong.song_info.is_untitled ? ' *' : ''))
 }
 
 const updateActiveVerseMarker = activeVerseIndex => {
-    if (activeVerseIndex === undefined)
+    if (activeVerseIndex === null)
         return
 
-    songVerses.children().addClass('disabled')
-    songVerses.children().eq(activeVerseIndex).removeClass('disabled')
+    songVerseList.children().addClass('disabled')
+    songVerseList.children().eq(activeVerseIndex).removeClass('disabled')
 }
 
 const buildLyrics = activeVerseIndex => {
-    if (activeVerseIndex === undefined)
+    if (activeVerseIndex === undefined || activeVerseIndex === null)
         return
 
     const joinAdjacentText = lyricTexts => {
@@ -151,13 +151,14 @@ const buildLyrics = activeVerseIndex => {
             if (joinedTexts.length !== 0) joinedTexts += '\n'
             joinedTexts += lyricTexts[i]
 
-            if ((i+1) % numberOfLine === 0) {
+            if ((i+1) % options.numberOfLines === 0) {
                 result.push(joinedTexts)
                 joinedTexts = ''
             }
         }
 
         if (joinedTexts.length > 0) result.push(joinedTexts)
+        result.push('--- END ---')
         return result
     }
 
@@ -166,9 +167,6 @@ const buildLyrics = activeVerseIndex => {
 }
 
 const updateLyricList = activeLyrics => {
-    if (activeLyrics === undefined)
-        return
-
     const createLyricTextItem = (lyricText, index) => {
         const item = doms.createDOMFromJSON({
             tag: 'div',
@@ -176,7 +174,7 @@ const updateLyricList = activeLyrics => {
             children: [
                 {
                     tag: 'i',
-                    classList: ['inverted', 'middle', 'aligned', 'small', 'map', 'marker', 'icon'],
+                    classList: ['inverted', 'middle', 'aligned', 'small', 'map', 'marker', 'alternate', 'icon'],
                     innerText: '',
                 },
                 {
@@ -197,13 +195,13 @@ const updateLyricList = activeLyrics => {
 
     songLyricList.empty()
     songLyricList.append(...activeLyrics.map(createLyricTextItem))
-    songLyricList.parent().animate({ scrollTop: 0 }, 200)
+    containerSongLyricList.animate({ scrollTop: 0 }, 200)
 
     activeLyricIndexSubject.next(0)
 }
 
 const updateActiveLyricMarker = activeLyricIndex => {
-    if (activeLyricIndex === undefined)
+    if (activeLyricIndex === null)
         return
 
     songLyricList.find('.item i.icon').hide()
@@ -268,7 +266,7 @@ const postStatusMessage = status => {
 }
 
 const postSongInfo = activeLyricIndex => {
-    if (activeLyricIndex === undefined)
+    if (activeLyricIndex === null)
         return
 
     bc.postSongInfoMessage(
@@ -281,34 +279,49 @@ const postSongInfo = activeLyricIndex => {
 }
 
 const updateStatusButton = status => {
-    if (status === true)
-        toggleButtonStatus.setActive()
-    else
-        toggleButtonStatus.setInactive()
+    if (status === true) toggleButtonStatus.setActive()
+    else toggleButtonStatus.setInactive()
 }
 
 const evaluateButtonStatusActive = bookmarkItems =>
-    evaluateButton(btnStatusActive, bookmarkItems !== null && bookmarkItems.length !== 0)
+    evaluateButton(buttonStatusActive, bookmarkItems !== null && bookmarkItems.length !== 0)
 const evaluateButtonStatusInactive = bookmarkItems =>
-    evaluateButton(btnStatusInactive, bookmarkItems !== null && bookmarkItems.length !== 0)
+    evaluateButton(buttonStatusInactive, bookmarkItems !== null && bookmarkItems.length !== 0)
 
 const evaluateButtonNextSong = activeSongIndex =>
-    evaluateButton(btnNextSong, activeSongIndex !== undefined && activeSongIndex !== bookmarkManager.bookmarkItems.length - 1)
+    evaluateButton(buttonNextSong, activeSongIndex !== null && activeSongIndex !== bookmarkManager.bookmarkItems.length - 1)
 const evaluateButtonPrevSong = activeSongIndex =>
-    evaluateButton(btnPrevSong, activeSongIndex !== undefined && activeSongIndex !== 0)
+    evaluateButton(buttonPrevSong, activeSongIndex !== null && activeSongIndex !== 0)
 const evaluateButtonNextVerse = activeVerseIndex =>
-    evaluateButton(btnNextVerse, activeVerseIndex !== undefined && activeVerseIndex !== activeVerses.length - 1)
+    evaluateButton(buttonNextVerse, activeVerseIndex !== null && activeVerseIndex !== activeVerses.length - 1)
 const evaluateButtonPrevVerse = activeVerseIndex =>
-    evaluateButton(btnPrevVerse, activeVerseIndex !== undefined && activeVerseIndex !== 0)
+    evaluateButton(buttonPrevVerse, activeVerseIndex !== null && activeVerseIndex !== 0)
 const evaluateButtonNextLyric = activeLyricIndex =>
-    evaluateButton(btnNextLyric, activeLyricIndex !== undefined && activeLyricIndex !== activeLyrics.length - 1)
+    evaluateButton(buttonNextLyric, activeLyricIndex !== null && activeLyricIndex !== activeLyrics.length - 1)
 const evaluateButtonPrevLyric = activeLyricIndex =>
-    evaluateButton(btnPrevLyric, activeLyricIndex !== undefined && activeLyricIndex !== 0)
+    evaluateButton(buttonPrevLyric, activeLyricIndex !== null && activeLyricIndex !== 0)
+
+const onLastLyricReached = activeLyricIndex => {
+    if (activeLyricIndex !== null && activeLyricIndex === activeLyrics.length - 1) {
+        toggleButtonStatus.setInactive()
+        if (activeVerseIndex !== activeVerses.length - 1) {
+            buttonNextLyric.hide()
+            buttonLastLyric.show()
+        }
+    }
+    else {
+        buttonLastLyric.hide()
+        buttonNextLyric.show()
+    }
+}
 
 const toggleButtonStatus = new ToggleButton(
-    btnStatusActive,
-    btnStatusInactive,
+    buttonStatusActive,
+    buttonStatusInactive,
     () => {
+        if (activeLyricIndex === activeLyrics.length - 1)
+            return false
+
         postStatusMessage(true)
         postSongInfo(activeLyricIndex)
     },
@@ -317,18 +330,21 @@ const toggleButtonStatus = new ToggleButton(
     },
 )
 
-btnNextSong.click(nextSong)
-btnPrevSong.click(prevSong)
-btnNextVerse.click(nextVerse)
-btnPrevVerse.click(prevVerse)
-btnNextLyric.click(nextLyric)
-btnPrevLyric.click(prevLyric)
+buttonNextSong.click(nextSong)
+buttonPrevSong.click(prevSong)
+buttonNextVerse.click(nextVerse)
+buttonPrevVerse.click(prevVerse)
+buttonNextLyric.click(nextLyric)
+buttonPrevLyric.click(prevLyric)
+buttonLastLyric.click(nextVerse)
 
-bookmarkManager.bookmarkItemsSubject.subscribe(update)
+bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusInactive)
 
 bc.statusSubject.subscribe(updateStatusButton)
+
+options.numberOfLinesSubject.subscribe(() => buildLyrics(activeVerseIndex))
 
 activeSongIndexSubject.subscribe(v => activeSongIndex = v)
 activeSongIndexSubject.subscribe(updateSong)
@@ -337,9 +353,10 @@ activeSongIndexSubject.subscribe(evaluateButtonPrevSong)
 
 activeSongSubject.subscribe(v => activeSong = v)
 activeSongSubject.subscribe(updateSongInfo)
+activeSongSubject.subscribe(updateVerses)
 
 activeVersesSubject.subscribe(v => activeVerses = v)
-activeVersesSubject.subscribe(setSongVerses)
+activeVersesSubject.subscribe(updateSongVerseList)
 
 activeVerseIndexSubject.subscribe(v => activeVerseIndex = v)
 activeVerseIndexSubject.subscribe(updateActiveVerseMarker)
@@ -354,6 +371,7 @@ activeLyricIndexSubject.subscribe(v => activeLyricIndex = v)
 activeLyricIndexSubject.subscribe(updateActiveLyricMarker)
 activeLyricIndexSubject.subscribe(evaluateButtonNextLyric)
 activeLyricIndexSubject.subscribe(evaluateButtonPrevLyric)
+activeLyricIndexSubject.subscribe(onLastLyricReached)
 activeLyricIndexSubject.subscribe(postSongInfo)
 
 $('#tab-display .ui.has-popup').popup()

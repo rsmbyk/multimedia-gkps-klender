@@ -11,22 +11,20 @@ export class ManualToggleButton {
     }
 
     setActive() {
+        if (this.onActive instanceof Function && this.onActive() === false)
+            return
+
         this.btnInactive.hide()
         if (this.isShown) this.btnActive.show()
-
-        if (this.onActive instanceof Function)
-            this.onActive()
-
         this.isActive = true
     }
 
     setInactive() {
+        if (this.onInactive instanceof Function && this.onInactive() === true)
+            return
+
         this.btnActive.hide()
         if (this.isShown) this.btnInactive.show()
-
-        if (this.onInactive instanceof Function)
-            this.onInactive()
-
         this.isActive = false
     }
 
