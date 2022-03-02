@@ -16,10 +16,10 @@ class SongSearchView(ListAPIView):
 
         search_query = serializer.data['q']
         vector = search.SearchVector('lyric')
-        query = search.SearchQuery(search_query, search_type='phrase') | search.SearchQuery(search_query)
+        query = search.SearchQuery(search_query, search_type='phrase')
         rank = search.SearchRank(vector, query)
         search_result = queryset \
-            .annotate(rank=rank) \
-            .filter(rank__gt=0) \
+            .annotate(search=vector, rank=rank) \
+            .filter(search=query) \
             .order_by('-rank')
         return search_result
