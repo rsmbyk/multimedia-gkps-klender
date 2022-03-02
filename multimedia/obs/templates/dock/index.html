@@ -29,6 +29,7 @@
 
     <script type="module" src="{% static 'obs/songs/dock/index.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/dock/tabs/songbooks.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/dock/tabs/search.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/dock/tabs/display.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/dock/tabs/display-settings.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/dock/tabs/bookmarks.js' %}"></script>
@@ -59,7 +60,7 @@
         </div>
 
         <div class="ui tab" data-tab="tab-search">
-
+            {% include 'dock/tabs/search.html' %}
         </div>
 
         <div class="ui tab" data-tab="tab-display">
