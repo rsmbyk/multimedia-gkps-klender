@@ -115,7 +115,10 @@ const retrieveSearchResult = () => {
 
     axios.get(nextUrl)
         .then(({ data: searchResults }) => updateSearchResult(searchResults))
-        .catch(displayErrorView)
+        .catch(e => {
+            hideLoader()
+            displayErrorView(e)
+        })
 }
 
 buttonLoadMore.click(retrieveSearchResult)
