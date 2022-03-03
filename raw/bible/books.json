@@ -1,0 +1,332 @@
+[
+  {
+    "name": "Kej",
+    "testament": "old",
+    "number_of_chapters": 50
+  },
+  {
+    "name": "Kel",
+    "testament": "old",
+    "number_of_chapters": 40
+  },
+  {
+    "name": "Ima",
+    "testament": "old",
+    "number_of_chapters": 27
+  },
+  {
+    "name": "Bil",
+    "testament": "old",
+    "number_of_chapters": 36
+  },
+  {
+    "name": "Ula",
+    "testament": "old",
+    "number_of_chapters": 34
+  },
+  {
+    "name": "Yos",
+    "testament": "old",
+    "number_of_chapters": 24
+  },
+  {
+    "name": "Hak",
+    "testament": "old",
+    "number_of_chapters": 21
+  },
+  {
+    "name": "Rut",
+    "testament": "old",
+    "number_of_chapters": 4
+  },
+  {
+    "name": "1Sa",
+    "testament": "old",
+    "number_of_chapters": 31
+  },
+  {
+    "name": "2Sa",
+    "testament": "old",
+    "number_of_chapters": 24
+  },
+  {
+    "name": "1Ra",
+    "testament": "old",
+    "number_of_chapters": 22
+  },
+  {
+    "name": "2Ra",
+    "testament": "old",
+    "number_of_chapters": 25
+  },
+  {
+    "name": "1Ta",
+    "testament": "old",
+    "number_of_chapters": 29
+  },
+  {
+    "name": "2Ta",
+    "testament": "old",
+    "number_of_chapters": 36
+  },
+  {
+    "name": "Ezr",
+    "testament": "old",
+    "number_of_chapters": 10
+  },
+  {
+    "name": "Neh",
+    "testament": "old",
+    "number_of_chapters": 13
+  },
+  {
+    "name": "Est",
+    "testament": "old",
+    "number_of_chapters": 10
+  },
+  {
+    "name": "Ayb",
+    "testament": "old",
+    "number_of_chapters": 42
+  },
+  {
+    "name": "Mzm",
+    "testament": "old",
+    "number_of_chapters": 150
+  },
+  {
+    "name": "Ams",
+    "testament": "old",
+    "number_of_chapters": 31
+  },
+  {
+    "name": "Pkh",
+    "testament": "old",
+    "number_of_chapters": 12
+  },
+  {
+    "name": "Kid",
+    "testament": "old",
+    "number_of_chapters": 8
+  },
+  {
+    "name": "Yes",
+    "testament": "old",
+    "number_of_chapters": 66
+  },
+  {
+    "name": "Yer",
+    "testament": "old",
+    "number_of_chapters": 52
+  },
+  {
+    "name": "Rat",
+    "testament": "old",
+    "number_of_chapters": 5
+  },
+  {
+    "name": "Yeh",
+    "testament": "old",
+    "number_of_chapters": 48
+  },
+  {
+    "name": "Dan",
+    "testament": "old",
+    "number_of_chapters": 12
+  },
+  {
+    "name": "Hos",
+    "testament": "old",
+    "number_of_chapters": 14
+  },
+  {
+    "name": "Yoe",
+    "testament": "old",
+    "number_of_chapters": 3
+  },
+  {
+    "name": "Amo",
+    "testament": "old",
+    "number_of_chapters": 9
+  },
+  {
+    "name": "Oba",
+    "testament": "old",
+    "number_of_chapters": 1
+  },
+  {
+    "name": "Yun",
+    "testament": "old",
+    "number_of_chapters": 4
+  },
+  {
+    "name": "Mik",
+    "testament": "old",
+    "number_of_chapters": 7
+  },
+  {
+    "name": "Nah",
+    "testament": "old",
+    "number_of_chapters": 3
+  },
+  {
+    "name": "Hab",
+    "testament": "old",
+    "number_of_chapters": 3
+  },
+  {
+    "name": "Zef",
+    "testament": "old",
+    "number_of_chapters": 3
+  },
+  {
+    "name": "Hag",
+    "testament": "old",
+    "number_of_chapters": 2
+  },
+  {
+    "name": "Zak",
+    "testament": "old",
+    "number_of_chapters": 14
+  },
+  {
+    "name": "Mal",
+    "testament": "old",
+    "number_of_chapters": 4
+  },
+  {
+    "name": "Mat",
+    "testament": "new",
+    "number_of_chapters": 28
+  },
+  {
+    "name": "Mrk",
+    "testament": "new",
+    "number_of_chapters": 16
+  },
+  {
+    "name": "Luk",
+    "testament": "new",
+    "number_of_chapters": 24
+  },
+  {
+    "name": "Yoh",
+    "testament": "new",
+    "number_of_chapters": 21
+  },
+  {
+    "name": "Kis",
+    "testament": "new",
+    "number_of_chapters": 28
+  },
+  {
+    "name": "Rom",
+    "testament": "new",
+    "number_of_chapters": 16
+  },
+  {
+    "name": "1Ko",
+    "testament": "new",
+    "number_of_chapters": 16
+  },
+  {
+    "name": "2Ko",
+    "testament": "new",
+    "number_of_chapters": 13
+  },
+  {
+    "name": "Gal",
+    "testament": "new",
+    "number_of_chapters": 6
+  },
+  {
+    "name": "Efe",
+    "testament": "new",
+    "number_of_chapters": 6
+  },
+  {
+    "name": "Flp",
+    "testament": "new",
+    "number_of_chapters": 4
+  },
+  {
+    "name": "Kol",
+    "testament": "new",
+    "number_of_chapters": 4
+  },
+  {
+    "name": "1Te",
+    "testament": "new",
+    "number_of_chapters": 5
+  },
+  {
+    "name": "2Te",
+    "testament": "new",
+    "number_of_chapters": 3
+  },
+  {
+    "name": "1Ti",
+    "testament": "new",
+    "number_of_chapters": 6
+  },
+  {
+    "name": "2Ti",
+    "testament": "new",
+    "number_of_chapters": 4
+  },
+  {
+    "name": "Tit",
+    "testament": "new",
+    "number_of_chapters": 3
+  },
+  {
+    "name": "Flm",
+    "testament": "new",
+    "number_of_chapters": 1
+  },
+  {
+    "name": "Ibr",
+    "testament": "new",
+    "number_of_chapters": 13
+  },
+  {
+    "name": "Yak",
+    "testament": "new",
+    "number_of_chapters": 5
+  },
+  {
+    "name": "1Pt",
+    "testament": "new",
+    "number_of_chapters": 5
+  },
+  {
+    "name": "2Pt",
+    "testament": "new",
+    "number_of_chapters": 3
+  },
+  {
+    "name": "1Yo",
+    "testament": "new",
+    "number_of_chapters": 5
+  },
+  {
+    "name": "2Yo",
+    "testament": "new",
+    "number_of_chapters": 1
+  },
+  {
+    "name": "3Yo",
+    "testament": "new",
+    "number_of_chapters": 1
+  },
+  {
+    "name": "Yud",
+    "testament": "new",
+    "number_of_chapters": 1
+  },
+  {
+    "name": "Why",
+    "testament": "new",
+    "number_of_chapters": 22
+  }
+]
