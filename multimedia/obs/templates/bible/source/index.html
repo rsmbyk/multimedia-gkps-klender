@@ -1,0 +1,51 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Source - OBS Bible Plugin</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.css' %}">
+
+    <link rel="stylesheet" href="{% static 'obs/bible/source/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'obs/bible/source/themes/default.css' %}">
+
+    <script src="{% static 'libs/jquery/jquery-3.6.0.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.js' %}"></script>
+
+</head>
+<body style="background-color: transparent">
+    <div class="ui hidden flat inverted fluid segment transition" id="passage-segment">
+        <a class="ui inverted huge right corner label">
+            <i class="inverted bible icon"></i>
+        </a>
+
+        <div class="ui very compact padded grid">
+            <div class="column">
+                <div class="ui inverted large header">
+                    <div class="sub header" id="passage-reference">
+                        <span id="book-translation">Kej</span> <span id="chapter-number">1</span> : <span id="verse-number">1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui inverted divider"></div>
+
+        <div class="ui very compact padded grid">
+            <div class="column">
+                <div class="ui inverted center aligned header" id="passage-verse">
+                    <div class="sub header" id="passage-title"></div>
+                    <span id="passage-text"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

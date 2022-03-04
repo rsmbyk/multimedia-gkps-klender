@@ -1,0 +1,65 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Dock - OBS Bible Plugin</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.css' %}">
+
+    <link rel="stylesheet" href="{% static 'styles/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/themes/default.css' %}">
+
+    <link rel="stylesheet" href="{% static 'obs/songs/dock/styles.css' %}">
+
+    <script src="{% static 'libs/jquery/jquery-3.6.0.js' %}"></script>
+    <script src="{% static 'libs/axios/axios.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.js' %}"></script>
+
+    <script type="module" src="{% static 'obs/bible/dock/index.js' %}"></script>
+    <script type="module" src="{% static 'obs/bible/dock/tabs/bible.js' %}"></script>
+</head>
+<body>
+    <div class="ui small inverted bottom fixed four item mobile icon menu" id="tab-menu">
+        <a class="blue item" data-tab="tab-bible" id="tab-menu-bible">
+            <i class="bible icon"></i>
+            <span class="text">Bible</span>
+        </a>
+        <a class="blue item" data-tab="tab-search" id="tab-menu-search">
+            <i class="search icon"></i>
+            <span class="text">Search</span>
+        </a>
+        <a class="blue item" data-tab="tab-display">
+            <i class="tv icon"></i>
+            <span class="text">Display</span>
+        </a>
+        <a class="blue item" data-tab="tab-bookmarks" id="tab-menu-bookmarks">
+            <i class="bookmark icon"></i>
+            <span class="text">Bookmarks</span>
+        </a>
+    </div>
+
+    <div class="ui tab" data-tab="tab-bible">
+        
+    </div>
+
+    <div class="ui tab" data-tab="tab-search">
+
+    </div>
+
+    <div class="ui tab" data-tab="tab-display">
+
+    </div>
+
+    <div class="ui tab" data-tab="tab-bookmarks">
+
+    </div>
+</body>
+</html>
