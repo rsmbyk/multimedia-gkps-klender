@@ -41,6 +41,7 @@ class BookTranslation(models.Model):
 
     class Meta:
         unique_together = ('version', 'book', 'translation')
+        ordering = ('version', 'book')
 
 
 class Verse(models.Model):
