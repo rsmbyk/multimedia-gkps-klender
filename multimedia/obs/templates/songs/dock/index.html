@@ -24,8 +24,8 @@
     <script src="{% static 'libs/fomantic/semantic.js' %}"></script>
     <script src="{% static 'libs/rxjs/rxjs.umd.js' %}"></script>
 
-    <script type="module" src="{% static 'obs/songs/common/bookmark-storage.js' %}"></script>
-    <script type="module" src="{% static 'obs/songs/common/bookmark-manager.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/dock/common/bookmark-storage.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/dock/common/bookmark-manager.js' %}"></script>
 
     <script type="module" src="{% static 'obs/songs/dock/index.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/dock/tabs/songbooks.js' %}"></script>
@@ -56,32 +56,32 @@
         </div>
 
         <div class="ui tab" data-tab="tab-songbooks">
-            {% include 'dock/tabs/songbooks.html' %}
+            {% include 'songs/dock/tabs/songbooks.html' %}
         </div>
 
         <div class="ui tab" data-tab="tab-search">
-            {% include 'dock/tabs/search.html' %}
+            {% include 'songs/dock/tabs/search.html' %}
         </div>
 
         <div class="ui tab" data-tab="tab-display">
-            {% include 'dock/tabs/display.html' %}
+            {% include 'songs/dock/tabs/display.html' %}
         </div>
 
         <div class="ui tab" data-tab="tab-bookmarks">
-            {% include 'dock/tabs/bookmarks.html' %}
+            {% include 'songs/dock/tabs/bookmarks.html' %}
         </div>
 
-        {% include 'dock/modals/song-detail.html' %}
+        {% include 'songs/dock/modals/song-detail.html' %}
 
-        {% include 'dock/modals/create-bookmark.html' %}
+        {% include 'songs/dock/modals/create-bookmark.html' %}
 
-        {% include 'dock/modals/delete-bookmark.html' %}
+        {% include 'songs/dock/modals/delete-bookmark.html' %}
 
-        {% include 'dock/modals/bookmark-detail.html' %}
+        {% include 'songs/dock/modals/bookmark-detail.html' %}
 
-        {% include 'dock/modals/delete-bookmark-item.html' %}
+        {% include 'songs/dock/modals/delete-bookmark-item.html' %}
 
-        {% include 'dock/modals/paste.html' %}
+        {% include 'songs/dock/modals/paste.html' %}
 
     </div>
 </body>

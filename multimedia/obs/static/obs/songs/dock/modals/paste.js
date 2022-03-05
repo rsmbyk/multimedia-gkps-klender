@@ -1,5 +1,5 @@
-import * as bookmarkManager from '../../common/bookmark-manager.js'
-import {bookmark} from "../../common/bookmark-manager.js";
+import * as bookmarkManager from '../common/bookmark-manager.js'
+import {bookmark} from "../common/bookmark-manager.js";
 
 const modal = $('#modal-paste')
 

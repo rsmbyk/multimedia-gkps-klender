@@ -1,7 +1,7 @@
 import { BehaviorSubject } from '/static/helpers/rx.js'
 import * as doms from '/static/helpers/doms.js'
 
-import * as bookmarkManager from '../../common/bookmark-manager.js'
+import * as bookmarkManager from '../common/bookmark-manager.js'
 
 import * as bookmarkDetailModal from '../modals/bookmark-detail.js'
 import * as createBookmarkModal from '../modals/create-bookmark.js'
