@@ -181,5 +181,6 @@ verseNumberSubject.subscribe(updateVerseNumber)
 verseNumberSubject.subscribe(updatePassage)
 verseNumberSubject.subscribe(updatePrevVerseButton)
 verseNumberSubject.subscribe(updateNextVerseButton)
+verseNumberSubject.subscribe(postPassage)
 
 hasPopup.popup()
