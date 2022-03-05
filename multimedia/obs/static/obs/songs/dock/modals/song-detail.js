@@ -8,7 +8,7 @@ import * as mutations from '/static/helpers/mutations.js'
 import * as toasts from '/static/helpers/toasts.js'
 import * as tabManager from '/static/helpers/tab-manager.js'
 
-import * as bookmarkManager from '../../common/bookmark-manager.js'
+import * as bookmarkManager from '../common/bookmark-manager.js'
 
 const modal = $('#modal-song-detail').modal({
     closable: false,
