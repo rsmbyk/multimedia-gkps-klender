@@ -7,6 +7,7 @@ const form = $('#search-form')
 const verseList = $('#search-verse-list')
 const buttonLoadMore = $('#search-button-load-more')
 
+const viewInitial = $('#search-view-initial')
 const viewEmpty = $('#search-view-empty')
 const viewError = $('#search-view-error')
 const containerVerseList = $('#search-container-verse-list')
@@ -27,6 +28,7 @@ const hideLoader = () => {
 const displayPlaceholder = () => {
     containerVerseList.hide()
     containerButtonLoadMore.hide()
+    viewInitial.hide()
     viewEmpty.hide()
     viewError.hide()
 }
