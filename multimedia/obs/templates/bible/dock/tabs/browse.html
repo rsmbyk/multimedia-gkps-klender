@@ -1,0 +1,113 @@
+<div class="growingChild">
+    <div class="ui padded one column grid">
+        <div class="column">
+            <div class="ui middle aligned center aligned equal width very compact grid">
+                <div class="column">
+                    <div class="ui disabled tiny inverted circular icon button hasPopup"
+                         id="browse-button-prev-chapter"
+                         data-content="Previous Chapter"
+                         data-position="right center"
+                         data-variation="inverted">
+                        <i class="arrow left icon"></i>
+                    </div>
+                </div>
+
+                <div class="twelve wide column">
+                    <div class="ui tiny inverted hidden header">
+
+                        <div class="ui dark inverted placeholder" id="browse-placeholder-chapter-info">
+                            <div class="header">
+                                <div class="full line"></div>
+                                <div class="full line"></div>
+                            </div>
+                        </div>
+
+                        <div class="content" id="browse-chapter-info" style="display: none">
+                            <div class="sub header" id="browse-book-name">Kejadian</div>
+                            <span id="browse-chapter-number">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="ui disabled tiny inverted circular icon button hasPopup"
+                         id="browse-button-next-chapter"
+                         data-content="Next Chapter"
+                         data-position="left center"
+                         data-variation="inverted">
+                        <i class="arrow right icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui inverted fitted divider"></div>
+
+    <div class="growingChild scrolling fillRemaining">
+        <div class="ui middle aligned padded grid fillRemaining" id="browse-view-error" style="display: none">
+            <div class="center aligned column">
+                <div class="ui tiny inverted icon header">
+                    <i class="bug icon"></i>
+                    <div class="content">Network Error</div>
+                </div>
+            </div>
+        </div>
+        <div class="ui middle aligned padded grid fillRemaining"
+             data-content="Select chapter from here"
+             data-position="top center"
+             data-variation="inverted"
+             id="browse-view-initial">
+            <div class="center aligned column">
+                <div class="ui tiny inverted icon header">
+                    <i class="frown outline icon"></i>
+                    <div class="content">No chapter selected</div>
+                </div>
+            </div>
+        </div>
+        <div class="ui padded text container" id="browse-placeholder-verse-list" style="display: none">
+            <div class="ui inverted divided very relaxed list">
+                <div class="item">
+                    <div class="content">
+                        <div class="ui dark inverted placeholder">
+                            <div class="header">
+                                <div class="line"></div>
+                            </div>
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui dark inverted placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui dark inverted placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui padded text container" id="browse-container-verse-list">
+            <div class="ui inverted divided selection list" id="browse-verse-list"></div>
+        </div>
+    </div>
+</div>

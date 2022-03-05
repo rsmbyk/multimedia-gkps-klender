@@ -1,0 +1,112 @@
+<div class="growingChild" id="tab-display">
+    <div class="ui right aligned padded text container">
+        <div>
+            <div class="ui tiny labeled icon green button"
+                 id="display-button-status-active">
+                <i class="eye icon"></i>
+                <span class="text">Active</span>
+            </div>
+            <div class="ui tiny labeled icon inverted red button"
+                 id="display-button-status-inactive">
+                <i class="eye slash icon"></i>
+                <span class="text">Inactive</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui center aligned padded one column grid">
+        <div class="column">
+            <div class="ui tiny inverted header">
+
+                <div class="ui dark inverted placeholder" id="display-placeholder-chapter-number">
+                    <div class="header">
+                        <div class="full line"></div>
+                        <div class="full line"></div>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <span id="display-book-name"></span>
+                    <div class="sub header" id="display-chapter-number"></div>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="ui tiny inverted header">
+                <div class="content">
+                    <div class="sub header">Ayat</div>
+                    <span id="display-verse-number"></span>
+                </div>
+
+                <div class="ui dark inverted placeholder" id="display-placeholder-verse-number">
+                    <div class="header">
+                        <div class="full line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui text container growingChild fillRemaining">
+        <div class="ui top attached tiny fluid inverted buttons">
+            <div class="ui icon button hasPopup"
+                 id="display-button-prev-verse"
+                 data-content="Previous Verse"
+                 data-position="top center"
+                 data-variation="inverted">
+                <i class="angle left icon"></i>
+            </div>
+            <div class="ui icon button">
+                <i class="dog icon"></i>
+            </div>
+            <div class="ui icon button hasPopup"
+                 id="display-button-next-verse"
+                 data-content="Next Verse"
+                 data-position="top center"
+                 data-variation="inverted">
+                <i class="angle right icon"></i>
+            </div>
+        </div>
+
+        <div class="ui attached raised inverted segment" id="display-placeholder-passage" style="overflow-y: auto">
+            <div class="ui center aligned one column compact grid">
+                <div class="column">
+                    <div class="ui inverted placeholder">
+                        <div class="header">
+                            <div class="line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="ui inverted placeholder">
+                        <div class="paragraph">
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui attached raised inverted segment" id="display-container-passage" style="overflow-y: auto">
+            <div class="ui center aligned one column compact grid">
+                <div class="column" id="display-container-verse-title">
+                    <div class="ui inverted small header">
+                        <div class="content">
+                            <div class="sub header" id="display-verse-title"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="ui inverted small header">
+                        <div class="content">
+                            <span id="display-verse-text"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

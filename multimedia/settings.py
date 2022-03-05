@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'multimedia.bible',
     'multimedia.songs',
     'multimedia.bookmarks',
     'multimedia.obs',

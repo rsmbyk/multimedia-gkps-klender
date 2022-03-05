@@ -1,0 +1,11 @@
+#passage-segment {
+    background: #1a5399;
+}
+
+#passage-segment > .corner.label {
+    border-color: #00b200;
+}
+
+.ui.header {
+    font-family: "Source Sans Pro", sans-serif !important;
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "lang": "Simalungun",
+    "name": "Bibel",
+    "abbreviation": "SIM",
+    "include": true
+  },
+  {
+    "lang": "Indonesia",
+    "name": "Terjemahan Baru",
+    "abbreviation": "TB",
+    "include": true
+  }
+]

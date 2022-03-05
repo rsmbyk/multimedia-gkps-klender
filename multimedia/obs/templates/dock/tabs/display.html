@@ -1,5 +1,5 @@
 <div class="growingChild" id="tab-display">
-    <div style="display: flex; justify-content: space-between; padding: 1rem">
+    <div class="ui padded text container" style="display: flex; justify-content: space-between">
         <div class="ui tiny floating circular icon dropdown button" id="display-button-settings">
             <i class="wrench icon"></i>
             <div class="menu">
@@ -53,7 +53,8 @@
                     <div class="ui has-popup tiny inverted circular icon button"
                          id="display-btn-prev-song"
                          data-content="Previous Song"
-                         data-position="right center">
+                         data-position="right center"
+                         data-variation="inverted">
                         <i class="arrow left icon"></i>
                     </div>
                 </div>
@@ -63,8 +64,8 @@
 
                         <div class="ui dark inverted placeholder" id="display-placeholder-song-info">
                             <div class="header">
-                                <div class="line"></div>
-                                <div class="line"></div>
+                                <div class="full line"></div>
+                                <div class="full line"></div>
                             </div>
                         </div>
 
@@ -77,7 +78,8 @@
                     <div class="ui has-popup tiny inverted circular icon button"
                          id="display-btn-next-song"
                          data-content="Next Song"
-                         data-position="left center">
+                         data-position="left center"
+                         data-variation="inverted">
                         <i class="arrow right icon"></i>
                     </div>
                 </div>
@@ -90,25 +92,27 @@
 
                 <div class="ui dark inverted placeholder" id="display-placeholder-song-verses">
                     <div class="header">
-                        <div class="line"></div>
+                        <div class="full line"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="ui container growingChild fillRemaining">
+    <div class="ui text container growingChild fillRemaining">
         <div class="ui top attached tiny fluid inverted buttons">
             <div class="ui has-popup icon button"
                  id="display-btn-prev-verse"
                  data-content="Previous Verse"
-                 data-position="top center">
+                 data-position="top center"
+                 data-variation="inverted">
                 <i class="angle double left icon"></i>
             </div>
             <div class="ui has-popup icon button"
                  id="display-btn-prev-lyric"
                  data-content="Previous Lyric"
-                 data-position="top center">
+                 data-position="top center"
+                 data-variation="inverted">
                 <i class="angle left icon"></i>
             </div>
             <div class="ui icon button">
@@ -117,19 +121,22 @@
             <div class="ui has-popup icon button"
                  id="display-btn-next-lyric"
                  data-content="Next Lyric"
-                 data-position="top center">
+                 data-position="top center"
+                 data-variation="inverted">
                 <i class="angle right icon"></i>
             </div>
             <div class="ui has-popup green icon button"
                  id="display-btn-last-lyric"
                  data-content="Next Verse"
-                 data-position="top center">
+                 data-position="top center"
+                 data-variation="inverted">
                 <i class="angle right icon"></i>
             </div>
             <div class="ui has-popup icon button"
                  id="display-btn-next-verse"
                  data-content="Next Verse"
-                 data-position="top center">
+                 data-position="top center"
+                 data-variation="inverted">
                 <i class="angle double right icon"></i>
             </div>
         </div>
