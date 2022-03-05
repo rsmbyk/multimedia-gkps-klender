@@ -1,3 +1,4 @@
+from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
 from multimedia.bible import models
@@ -23,7 +24,7 @@ class BookSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BookTranslationSerializer(serializers.ModelSerializer):
+class BookTranslationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     version = VersionSerializer()
     book = BookSerializer()
 
@@ -32,7 +33,7 @@ class BookTranslationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class VerseSerializer(serializers.ModelSerializer):
+class VerseSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     book_translation = BookTranslationSerializer()
 
     class Meta:
