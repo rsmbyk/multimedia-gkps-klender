@@ -2,7 +2,7 @@ import { BehaviorSubject } from '/static/helpers/rx.js'
 import * as doms from '/static/helpers/doms.js'
 import * as mutations from '/static/helpers/mutations.js'
 
-import * as bookmarkManager from '../../common/bookmark-manager.js'
+import * as bookmarkManager from '../common/bookmark-manager.js'
 
 import * as songDetailModal from '../modals/song-detail.js'
 import * as deleteBookmarkItemModal from '../modals/delete-bookmark-item.js'

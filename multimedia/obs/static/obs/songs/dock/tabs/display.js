@@ -4,7 +4,8 @@ import * as doms from '/static/helpers/doms.js'
 
 import * as bc from '../../common/bc.js'
 import * as options from '../../common/options.js'
-import * as bookmarkManager from '../../common/bookmark-manager.js'
+
+import * as bookmarkManager from '../common/bookmark-manager.js'
 
 const songBookNumber = $('#display-song-book-number')
 const songTitle = $('#display-song-title')
