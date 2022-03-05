@@ -5,10 +5,6 @@
     width: 100vw;
 }
 
-#passage-verse {
-    white-space: pre;
-}
-
 .ui.flat.segment {
     border: none;
     border-radius: 0;

@@ -3,3 +3,15 @@
     /*background-color: #1f1e1f;*/
     background-color: #3a393a;
 }
+
+/*
+ .dark.inverted.placeholder:
+ used throughout the whole obs dock placeholders
+ */
+
+.ui.dark.inverted.placeholder,
+.ui.dark.inverted.placeholder ::before,
+.ui.dark.inverted.placeholder .line,
+.ui.dark.inverted.placeholder .line:after {
+    background-color: #3a393a;
+}
