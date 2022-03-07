@@ -22,12 +22,21 @@ const updateSongInfo = ({ bookNumber, verseNumber, title, is_untitled, lyric }) 
     songLyric.text(lyric)
 }
 
+const doTransition = () => {
+    songLyric.transition({
+        animation: 'fade in',
+        queue: false,
+    })
+}
+
 const updateDisplayState = status => {
-    if (status === true) songSegment.removeClass('hidden')
-    else songSegment.addClass('hidden')
+    if (status === true) songSegment.transition('fade up in')
+    else songSegment.transition('hide')
 }
 
 bc.songInfoSubject.subscribe(updateSongInfo)
+bc.songInfoSubject.subscribe(doTransition)
+
 bc.statusSubject.subscribe(updateDisplayState)
 
 bc.postStatusMessage(false)
