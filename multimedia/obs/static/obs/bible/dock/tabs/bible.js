@@ -82,7 +82,7 @@ const hideLoader = () => {
     dropdownChapters.removeClass('loading disabled')
 }
 
-const displayVersionsErrorView = () => {
+const displayVersionsErrorView = (e) => {
     console.log(e)
     toasts.error('Failed to load version list', 'top center')
 
@@ -129,6 +129,15 @@ const updateChaptersDropdown = selectedBookId => {
     hideLoader()
 }
 
+const createBooksDropdownHeader = (testament, icon) => {
+    return {
+        name: testament,
+        type: 'header',
+        icon: icon,
+        iconClass: 'icon',
+    }
+}
+
 const createBooksDropdownItem = translation => {
     return {
         value: translation.book.name,
@@ -138,7 +147,13 @@ const createBooksDropdownItem = translation => {
 }
 
 const updateBooksDropdown = translations => {
-    dropdownBooks.dropdown('change values', translations.map(createBooksDropdownItem))
+    const values = [
+        createBooksDropdownHeader('Perjanjian Lama', 'fruit-apple'),
+        ...translations.filter(e => e.book.testament === 'old').map(createBooksDropdownItem),
+        createBooksDropdownHeader('Perjanjian Baru', 'cross'),
+        ...translations.filter(e => e.book.testament === 'new').map(createBooksDropdownItem),
+    ]
+    dropdownBooks.dropdown('change values', values)
     stateValueBooks.init(bookId => selectedBookIdSubject.next(bookId), true)
 }
 
