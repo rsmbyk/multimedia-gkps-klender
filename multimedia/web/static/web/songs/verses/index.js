@@ -5,6 +5,8 @@ import * as doms from '/static/helpers/doms.js'
 import * as editVerseModal from './modals/edit-verse.js'
 import * as deleteVerseModal from './modals/delete-verse.js'
 
+const hasPopup = $('.hasPopup')
+
 const verseList = $('#verse-list')
 
 const songTitle = $('#song-title')
@@ -214,5 +216,5 @@ songSubject.subscribe(updateAddVerseButton)
 versesSubject.subscribe(value => verses = value)
 versesSubject.subscribe(updateVerseList)
 
-$('.has-popup').popup()
+hasPopup.popup()
 retrieveSong()

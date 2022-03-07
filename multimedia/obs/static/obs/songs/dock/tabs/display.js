@@ -7,6 +7,8 @@ import * as options from '../../common/options.js'
 
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
+const hasPopup = $('#tab-display .hasPopup')
+
 const songBookNumber = $('#display-song-book-number')
 const songTitle = $('#display-song-title')
 const songVerseList = $('#display-song-verses')
@@ -375,4 +377,4 @@ activeLyricIndexSubject.subscribe(evaluateButtonPrevLyric)
 activeLyricIndexSubject.subscribe(onLastLyricReached)
 activeLyricIndexSubject.subscribe(postSongInfo)
 
-$('#tab-display .ui.has-popup').popup()
+hasPopup.popup()

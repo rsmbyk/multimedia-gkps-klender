@@ -7,7 +7,7 @@ import * as tabManager from '/static/helpers/tab-manager.js'
 
 import * as displayTab from './display.js'
 
-const hasPopup = $('.hasPopup')
+const hasPopup = $('#tab-browse .hasPopup')
 
 const verseList = $('#browse-verse-list')
 

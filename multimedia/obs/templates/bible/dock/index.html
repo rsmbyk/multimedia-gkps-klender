@@ -17,12 +17,9 @@
     <link rel="stylesheet" href="{% static 'styles/themes/default.css' %}">
 
     <script src="{% static 'libs/jquery/jquery-3.6.0.js' %}"></script>
-    <script src="{% static 'libs/axios/axios.js' %}"></script>
     <script src="{% static 'libs/fomantic/semantic.js' %}"></script>
+    <script src="{% static 'libs/axios/axios.js' %}"></script>
     <script src="{% static 'libs/rxjs/rxjs.umd.js' %}"></script>
-
-    <script type="module" src="{% static 'obs/bible/dock/common/history-storage.js' %}"></script>
-    <script type="module" src="{% static 'obs/bible/dock/common/history-manager.js' %}"></script>
 
     <script type="module" src="{% static 'obs/bible/dock/index.js' %}"></script>
     <script type="module" src="{% static 'obs/bible/dock/tabs/bible.js' %}"></script>
@@ -30,7 +27,7 @@
     <script type="module" src="{% static 'obs/bible/dock/tabs/history.js' %}"></script>
 </head>
 <body>
-    <div class="ui small inverted bottom fixed four item mobile icon menu" id="tab-menu">
+    <div class="ui bottom fixed inverted four item small icon mobile menu">
         <a class="blue item" data-tab="tab-bible" id="tab-menu-bible">
             <i class="bible icon"></i>
             <span class="text">Bible</span>

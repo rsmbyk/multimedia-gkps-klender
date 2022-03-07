@@ -22,22 +22,22 @@
     <script type="module" src="{% static 'obs/bible/source/index.js' %}"></script>
 </head>
 <body style="background-color: transparent">
-    <div class="ui flat inverted fluid segment transition" id="passage-segment">
-        <a class="ui inverted huge right corner label">
+    <div class="ui inverted fluid flat segment hidden transition" id="passage-segment">
+        <a class="ui inverted right corner huge label">
             <i class="inverted bible icon"></i>
         </a>
 
-        <div class="ui very compact padded grid">
+        <div class="ui padded very compact grid">
             <div class="column">
                 <div class="ui inverted medium header">
-                    <span id="passage-book-name">Kej</span> <span id="passage-chapter-number">1</span> : <span id="passage-verse-number">1</span>
+                    <span id="passage-book-name"></span> <span id="passage-chapter-number"></span> : <span id="passage-verse-number"></span>
                 </div>
             </div>
         </div>
 
         <div class="ui inverted divider"></div>
 
-        <div class="ui very compact padded grid">
+        <div class="ui padded very compact grid">
             <div class="column">
                 <div class="ui inverted large header" id="passage-verse">
                     <div class="sub header" id="passage-verse-title"></div>
