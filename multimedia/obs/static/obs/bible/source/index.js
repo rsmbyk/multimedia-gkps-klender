@@ -1,6 +1,7 @@
 import * as bc from '../common/bc.js'
 
 const passageSegment = $('#passage-segment')
+const passageVerse = $('#passage-verse')
 
 const passageBookName = $('#passage-book-name')
 const passageChapterNumber = $('#passage-chapter-number')

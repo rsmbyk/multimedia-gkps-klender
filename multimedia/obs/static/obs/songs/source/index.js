@@ -1,12 +1,13 @@
 import * as bc from '../common/bc.js';
 
-const songSegment     = $('#song-segment')
-const songInfo        = $('#song-info')
-const songBookInfo    = $('#song-book-info')
-const songBookNumber  = $('#song-book-number')
+const songSegment = $('#song-segment')
+const songInfo = $('#song-info')
+const songBookInfo = $('#song-book-info')
+
+const songBookNumber = $('#song-book-number')
 const songVerseNumber = $('#song-verse-number')
-const songTitle       = $('#song-title')
-const songLyric       = $('#song-lyric')
+const songTitle = $('#song-title')
+const songLyric = $('#song-lyric')
 
 const updateSongInfo = ({ bookNumber, verseNumber, title, is_untitled, lyric }) => {
     if (bookNumber === null) songBookInfo.hide()
