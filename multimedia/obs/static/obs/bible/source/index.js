@@ -17,12 +17,21 @@ const updatePassage = ({ bookName, chapterNumber, verseNumber, title, text }) =>
     passageVerseText.text(text)
 }
 
+const doTransition = () => {
+    passageVerse.transition({
+        animation: 'fade in',
+        queue: false,
+    })
+}
+
 const updateDisplayState = status => {
-    if (status === true) passageSegment.removeClass('hidden')
-    else passageSegment.addClass('hidden')
+    if (status === true) passageSegment.transition('fade up in')
+    else passageSegment.transition('hide')
 }
 
 bc.passageSubject.subscribe(updatePassage)
+bc.passageSubject.subscribe(doTransition)
+
 bc.statusSubject.subscribe(updateDisplayState)
 
 bc.postStatusMessage(false)
