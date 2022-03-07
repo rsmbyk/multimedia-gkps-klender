@@ -1,10 +1,10 @@
 <div class="growingChild">
-    <div class="ui center aligned text padded container">
+    <div class="ui center aligned padded text container">
         <div class="ui form" id="search-form">
             <div class="required field">
                 <div class="ui icon input">
-                    <input name="q"
-                           type="text"
+                    <input type="text"
+                           name="q"
                            placeholder="Search">
                     <i class="search icon"></i>
                 </div>
@@ -12,12 +12,12 @@
         </div>
     </div>
 
-    <div class="ui inverted fitted divider"></div>
+    <div class="ui fitted inverted divider"></div>
 
     <div class="growingChild scrolling fillRemaining">
         <div class="ui middle aligned padded grid fillRemaining" id="search-view-initial">
             <div class="center aligned column">
-                <div class="ui tiny inverted icon header">
+                <div class="ui inverted tiny icon header">
                     <i class="search icon"></i>
                     <div class="content">Search</div>
                 </div>
@@ -26,7 +26,7 @@
 
         <div class="ui middle aligned padded grid fillRemaining" id="search-view-empty" style="display: none">
             <div class="center aligned column">
-                <div class="ui tiny inverted icon header">
+                <div class="ui inverted tiny icon header">
                     <i class="frown outline icon"></i>
                     <div class="content">No Results</div>
                 </div>
@@ -35,7 +35,7 @@
 
         <div class="ui middle aligned padded grid fillRemaining" id="search-view-error" style="display: none">
             <div class="center aligned column">
-                <div class="ui tiny inverted icon header">
+                <div class="ui inverted tiny icon header">
                     <i class="bug icon"></i>
                     <div class="content">Network Error</div>
                 </div>
@@ -43,7 +43,7 @@
         </div>
 
         <div class="ui padded text container" id="search-container-verse-list" style="display: none">
-            <div class="ui tiny inverted very relaxed divided selection list" id="search-verse-list"></div>
+            <div class="ui very relaxed divided inverted tiny selection list" id="search-verse-list"></div>
         </div>
 
         <div class="ui center aligned text container" id="search-container-button-load-more" style="padding-bottom: 1em; display: none">

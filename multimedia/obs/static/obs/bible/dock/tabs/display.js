@@ -8,7 +8,7 @@ import * as bc from '../../common/bc.js'
 
 import * as historyManager from '../common/history-manager.js'
 
-const hasPopup = $('.hasPopup')
+const hasPopup = $('#tab-display .hasPopup')
 
 const textBookName = $('#display-book-name')
 const textChapterNumber = $('#display-chapter-number')
