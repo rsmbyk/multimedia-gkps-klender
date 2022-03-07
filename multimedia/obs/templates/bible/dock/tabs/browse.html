@@ -1,9 +1,9 @@
-<div class="growingChild">
+<div class="growingChild" id="tab-browse">
     <div class="ui padded one column grid">
         <div class="column">
-            <div class="ui middle aligned center aligned equal width very compact grid">
+            <div class="ui middle aligned center aligned very compact equal width grid">
                 <div class="column">
-                    <div class="ui disabled tiny inverted circular icon button hasPopup"
+                    <div class="ui inverted tiny circular icon button disabled hasPopup"
                          id="browse-button-prev-chapter"
                          data-content="Previous Chapter"
                          data-position="right center"
@@ -13,9 +13,8 @@
                 </div>
 
                 <div class="twelve wide column">
-                    <div class="ui tiny inverted hidden header">
-
-                        <div class="ui dark inverted placeholder" id="browse-placeholder-chapter-info">
+                    <div class="ui inverted tiny header">
+                        <div class="ui inverted dark placeholder" id="browse-placeholder-chapter-info">
                             <div class="header">
                                 <div class="full line"></div>
                                 <div class="full line"></div>
@@ -30,7 +29,7 @@
                 </div>
 
                 <div class="column">
-                    <div class="ui disabled tiny inverted circular icon button hasPopup"
+                    <div class="ui inverted tiny circular icon button disabled hasPopup"
                          id="browse-button-next-chapter"
                          data-content="Next Chapter"
                          data-position="left center"
@@ -47,7 +46,7 @@
     <div class="growingChild scrolling fillRemaining">
         <div class="ui middle aligned padded grid fillRemaining" id="browse-view-error" style="display: none">
             <div class="center aligned column">
-                <div class="ui tiny inverted icon header">
+                <div class="ui inverted tiny icon header">
                     <i class="bug icon"></i>
                     <div class="content">Network Error</div>
                 </div>
@@ -59,17 +58,17 @@
              data-variation="inverted"
              id="browse-view-initial">
             <div class="center aligned column">
-                <div class="ui tiny inverted icon header">
+                <div class="ui inverted tiny icon header">
                     <i class="frown outline icon"></i>
                     <div class="content">No chapter selected</div>
                 </div>
             </div>
         </div>
         <div class="ui padded text container" id="browse-placeholder-verse-list" style="display: none">
-            <div class="ui inverted divided very relaxed list">
+            <div class="ui very relaxed divided inverted list">
                 <div class="item">
                     <div class="content">
-                        <div class="ui dark inverted placeholder">
+                        <div class="ui inverted dark placeholder">
                             <div class="header">
                                 <div class="line"></div>
                             </div>
@@ -83,7 +82,7 @@
                 </div>
                 <div class="item">
                     <div class="content">
-                        <div class="ui dark inverted placeholder">
+                        <div class="ui inverted dark placeholder">
                             <div class="paragraph">
                                 <div class="line"></div>
                                 <div class="line"></div>
@@ -94,7 +93,7 @@
                 </div>
                 <div class="item">
                     <div class="content">
-                        <div class="ui dark inverted placeholder">
+                        <div class="ui inverted dark placeholder">
                             <div class="paragraph">
                                 <div class="line"></div>
                                 <div class="line"></div>
@@ -107,7 +106,7 @@
         </div>
 
         <div class="ui padded text container" id="browse-container-verse-list">
-            <div class="ui inverted divided selection list" id="browse-verse-list"></div>
+            <div class="ui divided inverted selection list" id="browse-verse-list"></div>
         </div>
     </div>
 </div>
