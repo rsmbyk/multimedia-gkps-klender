@@ -1,6 +1,6 @@
 // SO answer from https://stackoverflow.com/a/5624139/5447454
 // to convert hex to rgb and vice versa.
-export function hexToRgb(hex) {
+export const hexToRgb = hex => {
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
     // Edit: Add another group to capture optional alpha colour.
     const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])([a-f\d])?$/i;
