@@ -1,0 +1,96 @@
+<div class="ui overlay fullscreen modal growingModal" id="modal-settings">
+    <i class="close icon"></i>
+
+    <div class="header">
+        Settings
+    </div>
+
+    <div class="scrolling content fillRemaining">
+        <div class="ui form" id="modal-settings-form">
+            <div class="field">
+                <label for="modal-settings-form-title-size">Title Text Size</label>
+                <div class="ui selection dropdown" id="modal-settings-form-title-size-dropdown">
+                    <input type="hidden" id="modal-settings-form-title-size">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Title Text Size</div>
+                    <div class="menu">
+                        <div class="item" data-value="mini">Mini</div>
+                        <div class="item" data-value="tiny">Tiny</div>
+                        <div class="item" data-value="small">Small</div>
+                        <div class="item" data-value="medium">Default: Medium</div>
+                        <div class="item" data-value="large">Large</div>
+                        <div class="item" data-value="big">Big</div>
+                        <div class="item" data-value="huge">Huge</div>
+                        <div class="item" data-value="massive">Massive</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="modal-settings-form-content-size">Content Text Size</label>
+                <div class="ui selection dropdown" id="modal-settings-form-content-size-dropdown">
+                    <input type="hidden" id="modal-settings-form-content-size">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Content Text Size</div>
+                    <div class="menu">
+                        <div class="item" data-value="mini">Mini</div>
+                        <div class="item" data-value="tiny">Tiny</div>
+                        <div class="item" data-value="small">Small</div>
+                        <div class="item" data-value="medium">Medium</div>
+                        <div class="item" data-value="large">Large</div>
+                        <div class="item" data-value="big">Default: Big</div>
+                        <div class="item" data-value="huge">Huge</div>
+                        <div class="item" data-value="massive">Massive</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="modal-settings-form-background-colour">Background Colour</label>
+                <div class="ui labeled action input">
+                    <a class="ui icon label" id="modal-settings-form-background-colour-button-reset">
+                        <i class="sync alternate icon"></i>
+                    </a>
+                    <input type="text"
+                           name="backgroundColour"
+                           placeholder="Hex color (#??????)"
+                           id="modal-settings-form-background-colour">
+
+                    <div class="ui icon button" id="modal-settings-form-background-colour-button-apply">
+                        <i class="check icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="modal-settings-form-label-colour">Label Colour</label>
+                <div class="ui labeled action input">
+                    <a class="ui icon label" id="modal-settings-form-label-colour-button-reset">
+                        <i class="sync alternate icon"></i>
+                    </a>
+                    <input type="text"
+                           name="labelColour"
+                           placeholder="Hex color (#??????)"
+                           id="modal-settings-form-label-colour">
+
+                    <div class="ui icon button" id="modal-settings-form-label-colour-button-apply">
+                        <i class="check icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label for="modal-settings-form-opacity-input">Opacity</label>
+                <div class="ui labeled input">
+                    <a class="ui icon label" id="modal-settings-form-opacity-button-reset">
+                        <i class="sync alternate icon"></i>
+                    </a>
+                    <input type="text"
+                           name="opacity"
+                           id="modal-settings-form-opacity-input"
+                           readonly="">
+                </div>
+                <div class="ui bottom aligned labeled slider" id="modal-settings-form-opacity-slider"></div>
+            </div>
+        </div>
+    </div>
+</div>

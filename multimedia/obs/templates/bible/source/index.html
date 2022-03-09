@@ -20,16 +20,17 @@
     <script src="{% static 'libs/fomantic/semantic.js' %}"></script>
 
     <script type="module" src="{% static 'obs/bible/source/index.js' %}"></script>
+    <script type="module" src="{% static 'obs/bible/source/settings.js' %}"></script>
 </head>
 <body style="background-color: transparent">
-    <div class="ui inverted fluid flat segment hidden transition" id="passage-segment">
+    <div class="ui inverted raised fluid flat segment hidden transition" id="passage-segment">
         <a class="ui inverted right corner huge label">
             <i class="inverted bible icon"></i>
         </a>
 
         <div class="ui padded very compact grid">
             <div class="column">
-                <div class="ui inverted medium header">
+                <div class="ui inverted medium header" id="passage-verse-reference">
                     <span id="passage-book-name"></span> <span id="passage-chapter-number"></span> : <span id="passage-verse-number"></span>
                 </div>
             </div>
