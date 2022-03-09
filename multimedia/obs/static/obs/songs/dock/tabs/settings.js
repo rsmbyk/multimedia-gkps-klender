@@ -1,4 +1,4 @@
-import * as options from '../../common/options.js'
+import * as options from '../common/options.js'
 
 import * as pasteModal from '../modals/paste.js'
 

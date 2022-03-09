@@ -3,8 +3,8 @@ import { ToggleButton } from '/static/helpers/buttons.js'
 import * as doms from '/static/helpers/doms.js'
 
 import * as bc from '../../common/bc.js'
-import * as options from '../../common/options.js'
 
+import * as options from '../common/options.js'
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
 const hasPopup = $('#tab-display .hasPopup')
@@ -154,7 +154,7 @@ const buildLyrics = activeVerseIndex => {
             if (joinedTexts.length !== 0) joinedTexts += '\n'
             joinedTexts += lyricTexts[i]
 
-            if ((i+1) % options.numberOfLines === 0) {
+            if ((i+1) % options.getNumberOfLines() === 0) {
                 result.push(joinedTexts)
                 joinedTexts = ''
             }
