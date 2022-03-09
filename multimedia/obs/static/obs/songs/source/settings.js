@@ -4,9 +4,10 @@ import * as settingsStorage from '../../common/settings-storage.js'
 
 const songSegment = $('#song-segment')
 const headerSongInfo = $('#song-info').find('.header')
-const label = songSegment.find('.corner.label')
-const divider = $('.ui.divider')
 const songLyric = $('#song-lyric')
+
+const label = songSegment.find('.ui.label')
+const divider = songSegment.find('.ui.divider')
 
 const updateTitleTextSize = titleTextSize => {
     headerSongInfo.removeClass(settingsStorage.sizes)
@@ -18,18 +19,25 @@ const updateLyricTextSize = contentTextSize => {
     songLyric.addClass(contentTextSize)
 }
 
-const updateBackgroundColour = () => {
-    const backgroundColour = settingsStorage.getBackgroundColour()
-    const { r, g, b, a } = colour.hexToRgb(backgroundColour)
+const extractColour = (hexColour) => {
+    const { r, g, b, a } = colour.hexToRgb(hexColour)
     const opacity = isNaN(a) ? settingsStorage.getOpacity() : a / 255
-    songSegment.css('background', `rgba(${r}, ${g}, ${b}, ${opacity}`)
+    return {
+        r: r,
+        g: g,
+        b: b,
+        a: opacity
+    }
+}
+
+const updateBackgroundColour = () => {
+    const { r, g, b, a } = extractColour(settingsStorage.getBackgroundColour())
+    songSegment.css('background', `rgba(${r}, ${g}, ${b}, ${a})`)
 }
 
 const updateLabelColour = () => {
-    const labelColour = settingsStorage.getLabelColour()
-    const { r, g, b, a } = colour.hexToRgb(labelColour)
-    const opacity = isNaN(a) ? settingsStorage.getOpacity() : a / 255
-    label.css('border-color', `rgba(${r}, ${g}, ${b}, ${opacity}`)
+    const { r, g, b, a } = extractColour(settingsStorage.getLabelColour())
+    label.css('border-color', `rgba(${r}, ${g}, ${b}, ${a})`)
 }
 
 const updateDividerOpacity = opacity => {
