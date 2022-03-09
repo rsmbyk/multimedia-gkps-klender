@@ -50,7 +50,9 @@ form.form({
     inline: true,
 })
 
-dropdownTitleTextSize.dropdown()
+dropdownTitleTextSize.dropdown({
+    showOnFocus: false,
+})
 dropdownTitleTextSize.dropdown('setting', 'onChange', value => {
     settingsStorage.setTitleTextSize(value)
 })
