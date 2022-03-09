@@ -25,6 +25,7 @@
     <script type="module" src="{% static 'obs/bible/dock/tabs/bible.js' %}"></script>
     <script type="module" src="{% static 'obs/bible/dock/tabs/display.js' %}"></script>
     <script type="module" src="{% static 'obs/bible/dock/tabs/history.js' %}"></script>
+    <script type="module" src="{% static 'obs/bible/dock/tabs/settings.js' %}"></script>
 </head>
 <body>
     <div class="ui bottom fixed inverted four item small icon mobile menu">
@@ -61,5 +62,8 @@
     <div class="ui tab" data-tab="tab-history">
         {% include 'bible/dock/tabs/history.html' %}
     </div>
+
+    {% include 'common/settings.html' %}
+
 </body>
 </html>
