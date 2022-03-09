@@ -1,3 +1,5 @@
+import * as settings from '../../../common/settings.js'
+
 import * as options from '../common/options.js'
 
 import * as pasteModal from '../modals/paste.js'
@@ -14,6 +16,9 @@ settingsButton
     .dropdown('setting', 'onChange', value => {
         if (value === 'paste') {
             pasteModal.open()
+        }
+        else if (value === 'settings-settings') {
+            settings.open()
         }
         else if (value.startsWith('settings')) {
             const [_, settingName, settingValue] = value.split('-')
