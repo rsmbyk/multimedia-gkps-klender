@@ -121,7 +121,6 @@ export const open = () => {
     modal.modal('show')
 }
 
-settingsStorage.setPrefix('OBS_SONGS')
 settingsStorage.titleTextSizeSubject.subscribe(updateDropdownTitleTextSize)
 settingsStorage.contentTextSizeSubject.subscribe(updateDropdownContentTextSize)
 settingsStorage.backgroundColourSubject.subscribe(updateBackgroundColourValue)

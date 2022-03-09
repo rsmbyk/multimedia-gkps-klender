@@ -1,4 +1,5 @@
 import * as settings from '../../../common/settings.js'
+import * as settingsStorage from '../../../common/settings-storage.js'
 
 import * as options from '../common/options.js'
 
@@ -33,4 +34,5 @@ settingsButton
         }
     })
 
+settingsStorage.setPrefix('OBS_SONGS')
 options.numberOfLinesSubject.subscribe(updateNumberOfLinesSelection)
