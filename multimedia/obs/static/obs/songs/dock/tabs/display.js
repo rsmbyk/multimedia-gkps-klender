@@ -24,6 +24,7 @@ const buttonNextVerse = $('#display-btn-next-verse')
 const buttonPrevLyric = $('#display-btn-prev-lyric')
 const buttonNextLyric = $('#display-btn-next-lyric')
 const buttonLastLyric = $('#display-btn-last-lyric')
+const buttonLastVerse = $('#display-btn-last-verse')
 
 const placeholderSongInfo = $('#display-placeholder-song-info')
 const placeholderSongVerses = $('#display-placeholder-song-verses')
@@ -311,9 +312,14 @@ const onLastLyricReached = activeLyricIndex => {
             buttonNextLyric.hide()
             buttonLastLyric.show()
         }
+        else if (activeSongIndex !== bookmarkManager.bookmarkItems.length - 1) {
+            buttonNextLyric.hide()
+            buttonLastVerse.show()
+        }
     }
     else {
         buttonLastLyric.hide()
+        buttonLastVerse.hide()
         buttonNextLyric.show()
     }
 }
@@ -340,6 +346,7 @@ buttonPrevVerse.click(prevVerse)
 buttonNextLyric.click(nextLyric)
 buttonPrevLyric.click(prevLyric)
 buttonLastLyric.click(nextVerse)
+buttonLastVerse.click(nextSong)
 
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
