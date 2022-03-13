@@ -18,7 +18,7 @@ export const addItem = (translation, chapterNumber, verses, verseNumber) => {
     }
 
     const index = history.findIndex(e => {
-        return e.translation.name === translation.name &&
+        return e.translation.translation === translation.translation &&
                e.chapterNumber === chapterNumber &&
                e.verseNumber === verseNumber
     })
