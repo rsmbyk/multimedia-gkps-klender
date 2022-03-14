@@ -15,6 +15,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 import dj_database_url
+from decouple import config, Csv
 from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 
 
 # Application definition
@@ -84,7 +85,7 @@ WSGI_APPLICATION = 'multimedia.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DEVELOPMENT_MODE = os.getenv('DJANGO_DEVELOPMENT_MODE', 'False') == 'True'
+DEVELOPMENT_MODE = config('DJANGO_DEVELOPMENT_MODE', default=False, cast=bool)
 
 if DEVELOPMENT_MODE is True:
     DATABASES = {
@@ -94,10 +95,11 @@ if DEVELOPMENT_MODE is True:
         }
     }
 elif not (len(sys.argv) > 1 and sys.argv[0] == 'manage.py' and sys.argv[1] == 'collectstatic'):
-    if os.getenv('DATABASE_URL') is None:
+    DATABASE_URL = config('DATABASE_URL')
+    if DATABASE_URL is None:
         raise Exception('DATABASE_URL environment variable not defined')
     DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('DATABASE_URL')),
+        'default': dj_database_url.parse(DATABASE_URL),
     }
 
 
