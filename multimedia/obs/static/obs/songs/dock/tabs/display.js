@@ -345,8 +345,16 @@ buttonNextVerse.click(nextVerse)
 buttonPrevVerse.click(prevVerse)
 buttonNextLyric.click(nextLyric)
 buttonPrevLyric.click(prevLyric)
-buttonLastLyric.click(nextVerse)
-buttonLastVerse.click(nextSong)
+
+buttonLastLyric.click(() => {
+    nextVerse()
+    toggleButtonStatus.setActive()
+})
+
+buttonLastVerse.click(() => {
+    nextSong()
+    toggleButtonStatus.setActive()
+})
 
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
