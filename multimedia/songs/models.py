@@ -61,7 +61,7 @@ class Song(models.Model):
         return f'{self.title} ({self.book})'
 
     class Meta:
-        ordering = ['book', 'number', 'sub_number']
+        ordering = ['book', 'number', 'sub_number', 'title']
         unique_together = ['book', 'number', 'sub_number']
 
 
