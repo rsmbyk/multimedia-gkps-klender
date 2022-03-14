@@ -24,7 +24,7 @@ class Book(models.Model):
         return f'{self.name} ({self.lang})'
 
     class Meta:
-        ordering = ['-is_hymn_book', 'name']
+        ordering = ['-is_hymn_book', 'name', 'lang']
         unique_together = ['lang', 'name']
 
 
