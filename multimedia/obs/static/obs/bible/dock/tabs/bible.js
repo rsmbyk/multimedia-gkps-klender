@@ -37,6 +37,7 @@ dropdownVersions
 
 dropdownBooks
     .dropdown('setting', 'hideDividers', 'empty')
+    .dropdown('setting', 'direction', 'upward')
     .dropdown('setting', 'fullTextSearch', true)
     .dropdown('setting', 'match', 'text')
     .dropdown('setting', 'forceSelection', false)
