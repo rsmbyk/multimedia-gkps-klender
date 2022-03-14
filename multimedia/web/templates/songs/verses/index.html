@@ -30,9 +30,9 @@
             <div class="growingChild scrolling fillRemaining">
                 <div class="ui padded text container">
                     <div class="ui breadcrumb" id="breadcrumb" style="display: none">
-                        <a class="section" href="{% url 'web-books' %}">Home</a>
+                        <a class="section" href="{% url 'web-songs-books' %}">Home</a>
                         <i class="right chevron icon divider"></i>
-                        <a class="section" href="{% url 'web-songs' song.book.id  %}" id="breadcrumb-book"></a>
+                        <a class="section" href="{% url 'web-songs-songs' song.book.id  %}" id="breadcrumb-book"></a>
                         <i class="right chevron icon divider"></i>
                         <div class="active section" id="breadcrumb-song"></div>
                     </div>
