@@ -10,15 +10,15 @@
 
     <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
 
-    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.min.css' %}">
 
     <link rel="stylesheet" href="{% static 'styles/multimedia.css' %}">
     <link rel="stylesheet" href="{% static 'styles/semantic.css' %}">
 
-    <script src="{% static 'libs/jquery/jquery-3.6.0.js' %}"></script>
-    <script src="{% static 'libs/axios/axios.js' %}"></script>
-    <script src="{% static 'libs/fomantic/semantic.js' %}"></script>
-    <script src="{% static 'libs/rxjs/rxjs.umd.js' %}"></script>
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'libs/axios/axios.min.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.min.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.min.js' %}"></script>
 
     <script type="module" src="{% static 'web/songs/verses/index.js' %}"></script>
 
@@ -30,9 +30,9 @@
             <div class="growingChild scrolling fillRemaining">
                 <div class="ui padded text container">
                     <div class="ui breadcrumb" id="breadcrumb" style="display: none">
-                        <a class="section" href="{% url 'web-books' %}">Home</a>
+                        <a class="section" href="{% url 'web-songs-books' %}">Home</a>
                         <i class="right chevron icon divider"></i>
-                        <a class="section" href="{% url 'web-songs' song.book.id  %}" id="breadcrumb-book"></a>
+                        <a class="section" href="{% url 'web-songs-songs' song.book.id  %}" id="breadcrumb-book"></a>
                         <i class="right chevron icon divider"></i>
                         <div class="active section" id="breadcrumb-song"></div>
                     </div>
