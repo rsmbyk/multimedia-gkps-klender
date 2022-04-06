@@ -21,7 +21,6 @@ formDateCalendar.calendar({
     type: 'date',
     selectAdjacentDays: true,
     firstDayOfWeek: 1,
-    disabledDaysOfWeek: [1, 2, 3, 4, 5],
     today: true,
     eventDates: [
         {
