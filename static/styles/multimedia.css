@@ -16,3 +16,10 @@
 .growingChild > .scrolling.fillRemaining {
     overflow: auto;
 }
+
+.unselectable {
+    -webkit-user-select: none;
+    -moz-user-select: -moz-none;
+    -ms-user-select: none;
+    user-select: none;
+}
