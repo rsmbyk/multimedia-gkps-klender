@@ -30,8 +30,8 @@ form.form({
                     type: 'maxLength[64]',
                 },
                 {
-                    type: 'regExp[/^[a-z0-9 \']+$/i]',
-                    prompt: '{name} can only contains alphanumeric, spaces and apostrophes.',
+                    type: 'regExp[/^[a-z0-9 _\'\"\/\.\?\,\(\)\&\+\:\!\*\-]+$/i]',
+                    prompt: '{name} can contain alphanumeric, spaces and these symbols only: , . / ? : \' \" ! & * ( ) - _ +',
                 },
             ],
         },

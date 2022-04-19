@@ -44,7 +44,7 @@ form.form({
                 },
                 {
                     type: 'regExp[/^[a-z0-9 ()]+$/i]',
-                    prompt: '{name} can only contains alphanumeric, spaces and parentheses.',
+                    prompt: '{name} can only contain alphanumeric, spaces and parentheses',
                 },
             ],
         },
