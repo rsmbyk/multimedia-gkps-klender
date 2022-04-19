@@ -47,3 +47,12 @@ class SongBookmarkItemSerializer(DynamicFieldsMixin, serializers.ModelSerializer
     class Meta:
         model = models.SongBookmarkItem
         fields = '__all__'
+
+
+class SongBookmarkItemReorderSerializer(serializers.Serializer):
+    item = serializers.PrimaryKeyRelatedField(queryset=models.SongBookmarkItem.objects.all())
+    order_number = serializers.IntegerField()
+
+
+class SongBookmarkReorderSerializer(serializers.Serializer):
+    items = SongBookmarkItemReorderSerializer(many=True)
