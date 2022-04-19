@@ -26,7 +26,11 @@ const doTransition = () => {
 
 const updateDisplayState = status => {
     if (status === true) passageSegment.transition('fade up in')
-    else passageSegment.transition('hide')
+    else passageSegment.transition({
+        animation: 'fade up out',
+        duration: '125ms',
+        queue: false,
+    })
 }
 
 bc.passageSubject.subscribe(updatePassage)
