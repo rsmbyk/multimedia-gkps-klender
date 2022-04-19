@@ -287,6 +287,27 @@ const updateStatusButton = status => {
     else toggleButtonStatus.setInactive()
 }
 
+const getSongButtonPopupContent = bookmarkItem => {
+    const { song_info: { book_number, title, is_untitled } } = bookmarkItem
+    const songTitle = title + (is_untitled ? ' *' : '')
+    const songBookNumber = book_number !== null ? `${book_number}` : null
+    return book_number !== null ? `${songBookNumber} (${songTitle})` : songTitle
+}
+
+const updateNextSongButtonPopup = activeSongIndex => {
+    if (activeSongIndex !== bookmarkManager.bookmarkItems.length - 1) {
+        const nextSong = bookmarkManager.bookmarkItems[activeSongIndex + 1]
+        buttonNextSong.attr('data-content', getSongButtonPopupContent(nextSong))
+    }
+}
+
+const updatePrevSongButtonPopup = activeSongIndex => {
+    if (activeSongIndex !== 0) {
+        const prevSong = bookmarkManager.bookmarkItems[activeSongIndex - 1]
+        buttonPrevSong.attr('data-content', getSongButtonPopupContent(prevSong))
+    }
+}
+
 const evaluateButtonStatusActive = bookmarkItems =>
     evaluateButton(buttonStatusActive, bookmarkItems !== null && bookmarkItems.length !== 0)
 const evaluateButtonStatusInactive = bookmarkItems =>
@@ -368,6 +389,8 @@ activeSongIndexSubject.subscribe(v => activeSongIndex = v)
 activeSongIndexSubject.subscribe(updateSong)
 activeSongIndexSubject.subscribe(evaluateButtonNextSong)
 activeSongIndexSubject.subscribe(evaluateButtonPrevSong)
+activeSongIndexSubject.subscribe(updateNextSongButtonPopup)
+activeSongIndexSubject.subscribe(updatePrevSongButtonPopup)
 
 activeSongSubject.subscribe(v => activeSong = v)
 activeSongSubject.subscribe(updateSongInfo)
