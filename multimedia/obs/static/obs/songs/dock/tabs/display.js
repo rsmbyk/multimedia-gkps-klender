@@ -295,14 +295,14 @@ const getSongButtonPopupContent = bookmarkItem => {
 }
 
 const updateNextSongButtonPopup = activeSongIndex => {
-    if (activeSongIndex !== bookmarkManager.bookmarkItems.length - 1) {
+    if (activeSongIndex !== null && activeSongIndex !== bookmarkManager.bookmarkItems.length - 1) {
         const nextSong = bookmarkManager.bookmarkItems[activeSongIndex + 1]
         buttonNextSong.attr('data-content', getSongButtonPopupContent(nextSong))
     }
 }
 
 const updatePrevSongButtonPopup = activeSongIndex => {
-    if (activeSongIndex !== 0) {
+    if (activeSongIndex !== null && activeSongIndex !== 0) {
         const prevSong = bookmarkManager.bookmarkItems[activeSongIndex - 1]
         buttonPrevSong.attr('data-content', getSongButtonPopupContent(prevSong))
     }
