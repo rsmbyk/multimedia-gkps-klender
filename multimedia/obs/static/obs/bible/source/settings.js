@@ -5,6 +5,8 @@ import * as settingsStorage from '../../common/settings-storage.js'
 const passageSegment = $('#passage-segment')
 const passageVerseReference = $('#passage-verse-reference')
 const passageVerse = $('#passage-verse')
+const passageVerseTitle = $('#passage-verse-title')
+const passageVerseText = $('#passage-verse-text')
 
 const label = passageSegment.find('.ui.label')
 const divider = passageSegment.find('.ui.divider')
@@ -19,15 +21,24 @@ const updateVerseTextSize = contentTextSize => {
     passageVerse.addClass(contentTextSize)
 }
 
-const extractColour = (hexColour) => {
+const extractColour = (hexColour, defaultOpacity=null) => {
     const { r, g, b, a } = colour.hexToRgb(hexColour)
-    const opacity = isNaN(a) ? settingsStorage.getOpacity() : a / 255
+    const opacity = isNaN(a) ? defaultOpacity !== null ? defaultOpacity : settingsStorage.getOpacity() : a / 255
     return {
         r: r,
         g: g,
         b: b,
         a: opacity
     }
+}
+
+const updateTextColour = () => {
+    // h means header, s means subheader
+    const { r: hr, g: hg, b: hb, a: ha } = extractColour(settingsStorage.getTextColour(), 1)
+    const { r: sr, g: sg, b: sb, a: sa } = extractColour(settingsStorage.getTextColour(), 0.8)
+    passageVerseReference.css('color', `rgba(${hr}, ${hg}, ${hb}, ${ha})`)
+    passageVerseText.css('color', `rgba(${hr}, ${hg}, ${hb}, ${ha})`)
+    passageVerseTitle.css('color', `rgba(${sr}, ${sg}, ${sb}, ${sa})`)
 }
 
 const updateBackgroundColour = () => {
@@ -49,6 +60,8 @@ settingsStorage.setPrefix('OBS_BIBLE')
 settingsStorage.titleTextSizeSubject.subscribe(updateTitleTextSize)
 
 settingsStorage.contentTextSizeSubject.subscribe(updateVerseTextSize)
+
+settingsStorage.textColourSubject.subscribe(updateTextColour)
 
 settingsStorage.backgroundColourSubject.subscribe(updateBackgroundColour)
 
