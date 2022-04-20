@@ -23,11 +23,12 @@ class SongBookmarkItem(models.Model):
     verse = models.CharField(
         max_length=64,
         validators=[validate_comma_separated_integer_list])
+    order_number = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     def __str__(self):
         return f'{self.bookmark}: {self.song}'
 
     class Meta:
-        ordering = ('bookmark', 'created_at')
+        ordering = ('bookmark', 'order_number')
         unique_together = ('bookmark', 'song')
