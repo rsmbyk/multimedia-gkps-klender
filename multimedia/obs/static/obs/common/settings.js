@@ -10,6 +10,9 @@ const dropdownTitleTextSize = $('#modal-settings-form-title-size-dropdown')
 
 const dropdownContentTextSize = $('#modal-settings-form-content-size-dropdown')
 
+const buttonTextColourApply = $('#modal-settings-form-text-colour-button-apply')
+const buttonTextColourReset = $('#modal-settings-form-text-colour-button-reset')
+
 const buttonBackgroundColourApply = $('#modal-settings-form-background-colour-button-apply')
 const buttonBackgroundColourReset = $('#modal-settings-form-background-colour-button-reset')
 
@@ -24,6 +27,17 @@ mutations.observeFlexModal(modal[0])
 
 form.form({
     fields: {
+        textColour: {
+            rules: [
+                {
+                    type: 'empty',
+                },
+                {
+                    type: 'regExp[/^([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i]',
+                    prompt: '{name} must be in hex colour format.',
+                },
+            ],
+        },
         backgroundColour: {
             rules: [
                 {
@@ -62,6 +76,14 @@ dropdownContentTextSize.dropdown('setting', 'onChange', value => {
     settingsStorage.setContentTextSize(value)
 })
 
+buttonTextColourApply.click(() => {
+    if (form.form('is valid', 'textColour')) {
+        settingsStorage.setTextColour(form.form('get value', 'textColour'))
+    } else {
+        form.form('validate field', 'textColour')
+    }
+})
+
 buttonBackgroundColourApply.click(() => {
     if (form.form('is valid', 'backgroundColour')) {
         settingsStorage.setBackgroundColour(form.form('get value', 'backgroundColour'))
@@ -76,6 +98,10 @@ buttonLabelColourApply.click(() => {
     } else {
         form.form('validate field', 'labelColour')
     }
+})
+
+buttonTextColourReset.click(() => {
+    settingsStorage.resetTextColour()
 })
 
 buttonBackgroundColourReset.click(() => {
@@ -107,6 +133,10 @@ const updateDropdownContentTextSize = contentTextSize => {
     dropdownContentTextSize.dropdown('set selected', contentTextSize)
 }
 
+const updateTextColourValue = textColour => {
+    form.form('set value', 'textColour', textColour)
+}
+
 const updateBackgroundColourValue = backgroundColour => {
     form.form('set value', 'backgroundColour', backgroundColour)
 }
@@ -125,6 +155,7 @@ export const open = () => {
 
 settingsStorage.titleTextSizeSubject.subscribe(updateDropdownTitleTextSize)
 settingsStorage.contentTextSizeSubject.subscribe(updateDropdownContentTextSize)
+settingsStorage.textColourSubject.subscribe(updateTextColourValue)
 settingsStorage.backgroundColourSubject.subscribe(updateBackgroundColourValue)
 settingsStorage.labelColourSubject.subscribe(updateLabelColourValue)
 settingsStorage.opacitySubject.subscribe(updateSliderOpacity)
