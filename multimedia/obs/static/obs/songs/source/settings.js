@@ -3,7 +3,7 @@ import * as colour from '/static/helpers/colour.js'
 import * as settingsStorage from '../../common/settings-storage.js'
 
 const songSegment = $('#song-segment')
-const headerSongInfo = $('#song-info').find('.header')
+const headerSongInfo = $('#song-info').find('.header:not(.sub)')
 const songBookInfo = $('#song-book-info')
 const songTitle = $('#song-title')
 const songLyric = $('#song-lyric')
@@ -12,13 +12,12 @@ const label = songSegment.find('.ui.label')
 const divider = songSegment.find('.ui.divider')
 
 const updateTitleTextSize = titleTextSize => {
-    headerSongInfo.removeClass(settingsStorage.sizes)
-    headerSongInfo.addClass(titleTextSize)
+    headerSongInfo.css('font-size', `${titleTextSize}px`)
+    headerSongInfo.find('.sub.header').css('font-size', '.6666666667em')
 }
 
 const updateLyricTextSize = contentTextSize => {
-    songLyric.removeClass(settingsStorage.sizes)
-    songLyric.addClass(contentTextSize)
+    songLyric.css('font-size', `${contentTextSize}px`)
 }
 
 const extractColour = (hexColour, defaultOpacity=null) => {

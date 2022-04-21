@@ -12,13 +12,12 @@ const label = passageSegment.find('.ui.label')
 const divider = passageSegment.find('.ui.divider')
 
 const updateTitleTextSize = titleTextSize => {
-    passageVerseReference.removeClass(settingsStorage.sizes)
-    passageVerseReference.addClass(titleTextSize)
+    passageVerseReference.css('font-size', `${titleTextSize}px`)
 }
 
 const updateVerseTextSize = contentTextSize => {
-    passageVerse.removeClass(settingsStorage.sizes)
-    passageVerse.addClass(contentTextSize)
+    passageVerse.css('font-size', `${contentTextSize}px`)
+    passageVerseTitle.css('font-size', '.6666666667em')
 }
 
 const extractColour = (hexColour, defaultOpacity=null) => {

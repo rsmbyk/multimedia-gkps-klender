@@ -6,9 +6,15 @@ const modal = $('#modal-settings')
 
 const form = $('#modal-settings-form')
 
-const dropdownTitleTextSize = $('#modal-settings-form-title-size-dropdown')
+const sliderTitleSize = $('#modal-settings-form-title-size-slider')
+const inputTitleSize = $('#modal-settings-form-title-size-input')
+const buttonTitleSizeApply = $('#modal-settings-form-title-size-button-apply')
+const buttonTitleSizeReset = $('#modal-settings-form-title-size-button-reset')
 
-const dropdownContentTextSize = $('#modal-settings-form-content-size-dropdown')
+const sliderContentSize = $('#modal-settings-form-content-size-slider')
+const inputContentSize = $('#modal-settings-form-content-size-input')
+const buttonContentSizeApply = $('#modal-settings-form-content-size-button-apply')
+const buttonContentSizeReset = $('#modal-settings-form-content-size-button-reset')
 
 const buttonTextColourApply = $('#modal-settings-form-text-colour-button-apply')
 const buttonTextColourReset = $('#modal-settings-form-text-colour-button-reset')
@@ -27,6 +33,26 @@ mutations.observeFlexModal(modal[0])
 
 form.form({
     fields: {
+        titleSize: {
+            rules: [
+                {
+                    type: 'empty',
+                },
+                {
+                    type: `integer[${settingsStorage.textSizeMinValue}..${settingsStorage.textSizeMaxValue}]`,
+                },
+            ],
+        },
+        contentSize: {
+            rules: [
+                {
+                    type: 'empty',
+                },
+                {
+                    type: `integer[${settingsStorage.textSizeMinValue}..${settingsStorage.textSizeMaxValue}]`,
+                },
+            ],
+        },
         textColour: {
             rules: [
                 {
@@ -64,16 +90,20 @@ form.form({
     inline: true,
 })
 
-dropdownTitleTextSize.dropdown({
-    showOnFocus: false,
-})
-dropdownTitleTextSize.dropdown('setting', 'onChange', value => {
-    settingsStorage.setTitleTextSize(value)
+buttonTitleSizeApply.click(() => {
+    if (form.form('is valid', 'titleSize')) {
+        settingsStorage.setTitleTextSize(form.form('get value', 'titleSize'))
+    } else {
+        form.form('validate field', 'titleSize')
+    }
 })
 
-dropdownContentTextSize.dropdown()
-dropdownContentTextSize.dropdown('setting', 'onChange', value => {
-    settingsStorage.setContentTextSize(value)
+buttonContentSizeApply.click(() => {
+    if (form.form('is valid', 'contentSize')) {
+        settingsStorage.setContentTextSize(form.form('get value', 'contentSize'))
+    } else {
+        form.form('validate field', 'contentSize')
+    }
 })
 
 buttonTextColourApply.click(() => {
@@ -100,6 +130,14 @@ buttonLabelColourApply.click(() => {
     }
 })
 
+buttonTitleSizeReset.click(() => {
+    settingsStorage.resetTitleTextSize()
+})
+
+buttonContentSizeReset.click(() => {
+    settingsStorage.resetContentTextSize()
+})
+
 buttonTextColourReset.click(() => {
     settingsStorage.resetTextColour()
 })
@@ -116,6 +154,24 @@ buttonOpacityReset.click(() => {
     settingsStorage.resetOpacity()
 })
 
+sliderTitleSize.slider({
+    min: settingsStorage.textSizeMinValue,
+    max: settingsStorage.textSizeMaxValue,
+}).slider('setting', 'onMove', value => {
+    settingsStorage.setTitleTextSize(value)
+    form.form('set value', 'titleSize', value)
+    form.form('validate field', 'titleSize')
+})
+
+sliderContentSize.slider({
+    min: settingsStorage.textSizeMinValue,
+    max: settingsStorage.textSizeMaxValue,
+}).slider('setting', 'onMove', value => {
+    settingsStorage.setContentTextSize(value)
+    form.form('set value', 'contentSize', value)
+    form.form('validate field', 'contentSize')
+})
+
 sliderOpacity.slider({
     min: 0,
     max: 1,
@@ -125,12 +181,12 @@ sliderOpacity.slider({
     form.form('set value', 'opacity', value)
 })
 
-const updateDropdownTitleTextSize = titleTextSize => {
-    dropdownTitleTextSize.dropdown('set selected', titleTextSize)
+const updateTitleSizeValue = titleTextSize => {
+    sliderTitleSize.slider('set value', titleTextSize)
 }
 
-const updateDropdownContentTextSize = contentTextSize => {
-    dropdownContentTextSize.dropdown('set selected', contentTextSize)
+const updateContentSizeValue = contentTextSize => {
+    sliderContentSize.slider('set value', contentTextSize)
 }
 
 const updateTextColourValue = textColour => {
@@ -153,8 +209,8 @@ export const open = () => {
     modal.modal('show')
 }
 
-settingsStorage.titleTextSizeSubject.subscribe(updateDropdownTitleTextSize)
-settingsStorage.contentTextSizeSubject.subscribe(updateDropdownContentTextSize)
+settingsStorage.titleTextSizeSubject.subscribe(updateTitleSizeValue)
+settingsStorage.contentTextSizeSubject.subscribe(updateContentSizeValue)
 settingsStorage.textColourSubject.subscribe(updateTextColourValue)
 settingsStorage.backgroundColourSubject.subscribe(updateBackgroundColourValue)
 settingsStorage.labelColourSubject.subscribe(updateLabelColourValue)
