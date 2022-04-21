@@ -13,12 +13,15 @@ const LS_KEY_OPACITY = 'SETTINGS_OPACITY'
 
 export const sizes = ['mini', 'tiny', 'small', 'medium', 'large', 'big', 'huge', 'massive']
 
-const defaultTitleTextSize = 'medium'
-const defaultContentTextSize = 'big'
+const defaultTitleTextSize = 18
+const defaultContentTextSize = 26
 const defaultTextColour = 'ffffff'
 const defaultBackgroundColour = '1a5399'
 const defaultLabelColour = '00b200'
 const defaultOpacity = 0.89
+
+export const textSizeMinValue = 1
+export const textSizeMaxValue = 64
 
 const getSettingsValue = (key, defaultValue) => {
     let value = localStorage.getItem(key)
