@@ -31,11 +31,13 @@ const doTransition = () => {
 
 const updateDisplayState = status => {
     if (status === true) songSegment.transition('fade up in')
-    else songSegment.transition({
-        animation: 'fade up out',
-        duration: '125ms',
-        queue: false,
-    })
+    else if (songSegment.is(':visible')) {
+        songSegment.transition({
+            animation: 'fade up out',
+            duration: '125ms',
+            queue: false,
+        })
+    }
 }
 
 bc.songInfoSubject.subscribe(updateSongInfo)
