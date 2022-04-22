@@ -320,7 +320,7 @@ const createBookmarkItem = (bookmarkItem, index) => {
         // only open song-detail-modal if clicking on
         // bookmark's content or background (anywhere
         // outside the delete button)
-        songDetailModal.open(bookmarkItem.song)
+        songDetailModal.open(bookmarkItem.song, bookmarkItem)
     })
 
     if (itemsOrder !== null && itemsOrder[index].id !== bookmarkItems[index].id) {
@@ -348,7 +348,7 @@ const retrieveBookmark = ({ id }) => {
 const retrieveBookmarkItems = bookmark => {
     displayBookmarkItemListPlaceholder()
 
-    axios.get(`/api/bookmarks/songs/items?bookmark=${bookmark.id}&omit=verse_info`)
+    axios.get(`/api/bookmarks/songs/items?bookmark=${bookmark.id}`)
         .then(({ data: bookmarkItems }) => bookmarkItemsSubject.next(bookmarkItems))
         .catch(displayErrorView)
 }

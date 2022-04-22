@@ -31,4 +31,3 @@ class SongBookmarkItem(models.Model):
 
     class Meta:
         ordering = ('bookmark', 'order_number')
-        unique_together = ('bookmark', 'song')
