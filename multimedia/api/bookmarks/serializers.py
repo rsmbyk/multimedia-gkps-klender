@@ -1,7 +1,7 @@
+from django.db.models import Max
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 
-import multimedia.songs.models
 from multimedia.api.bookmarks import validators
 from multimedia.bookmarks import models
 
@@ -19,6 +19,7 @@ class SongBookmarkSerializer(serializers.ModelSerializer):
 class SongBookmarkItemSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     verse_info = serializers.SerializerMethodField(read_only=True)
     song_info = serializers.SerializerMethodField(read_only=True)
+    order_number = serializers.IntegerField(read_only=True)
 
     def get_verse_info(self, obj):
         verse_numbers = list(map(int, obj.verse.split(',')))
@@ -36,6 +37,22 @@ class SongBookmarkItemSerializer(DynamicFieldsMixin, serializers.ModelSerializer
             'is_untitled': obj.song.is_untitled,
         }
 
+    def create(self, validated_data):
+        bookmark = models.SongBookmark.objects.get(id=validated_data['bookmark'].id)
+        max_order_number_aggr = bookmark.songbookmarkitem_set.aggregate(Max('order_number'))['order_number__max']
+        max_order_number = max_order_number_aggr or 0
+        data = {**validated_data, 'order_number': max_order_number + 1}
+        return models.SongBookmarkItem.objects.create(**data)
+
     class Meta:
         model = models.SongBookmarkItem
         fields = '__all__'
+
+
+class SongBookmarkItemReorderSerializer(serializers.Serializer):
+    item = serializers.PrimaryKeyRelatedField(queryset=models.SongBookmarkItem.objects.all())
+    order_number = serializers.IntegerField()
+
+
+class SongBookmarkReorderSerializer(serializers.Serializer):
+    items = SongBookmarkItemReorderSerializer(many=True)

@@ -236,6 +236,19 @@ const updateDisplayButton = verses => {
     else buttonDisplay.show()
 }
 
+const updateBookmarkItem = (bookmarkItem) => {
+    if (!bookmarkItem) {
+        bookmarkItemId = null
+        bookmarkedVerses = []
+        selectedVersesSubject.next(0)
+    } else {
+        console.log(bookmarkItem)
+        bookmarkItemId = bookmarkItem.id
+        bookmarkedVerses = bookmarkItem.verse_info.map(v => v.number)
+        selectedVersesSubject.next(bookmarkedVerses)
+    }
+}
+
 const createVerseListItem = verse => {
     const item = doms.createDOMFromJSON({
         tag: 'div',
@@ -317,20 +330,6 @@ const createVerseListItem = verse => {
 }
 
 const updateVerseList = verses => {
-    bookmarkItemId = null
-    bookmarkedVerses = []
-    selectedVersesSubject.next(0)
-
-    if (bookmarkManager.bookmark !== null && bookmarkManager.bookmarkItems !== null) {
-        const songItem = bookmarkManager.bookmarkItems.filter(item => item.song === song.id)
-        if (songItem.length === 1) {
-            // the opened song is included in the active bookmark
-            bookmarkItemId = songItem[0].id
-            bookmarkedVerses = songItem[0].verse_info.map(v => v.number)
-            selectedVersesSubject.next(bookmarkedVerses)
-        }
-    }
-
     verseList.empty()
     verseList.append(...verses.map(createVerseListItem))
 
@@ -356,13 +355,14 @@ const retrieveSong = songId => {
         .catch(displayErrorView)
 }
 
-export const open = songId => {
+export const open = (songId, bookmarkItem) => {
     buttonSave.hide()
     buttonDelete.hide()
     showLoader()
     displayPlaceholders()
     modal.modal('show')
     retrieveSong(songId)
+    updateBookmarkItem(bookmarkItem)
 }
 
 songSubject.subscribe(value => song = value)
