@@ -14,3 +14,7 @@
     border: none;
     border-radius: 0;
 }
+
+.ui.divider {
+    margin: 0.6rem 0;
+}
