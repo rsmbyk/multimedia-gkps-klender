@@ -22,6 +22,9 @@ const buttonTextColourReset = $('#modal-settings-form-text-colour-button-reset')
 const buttonBackgroundColourApply = $('#modal-settings-form-background-colour-button-apply')
 const buttonBackgroundColourReset = $('#modal-settings-form-background-colour-button-reset')
 
+const buttonLabelIconColourApply = $('#modal-settings-form-label-icon-colour-button-apply')
+const buttonLabelIconColourReset = $('#modal-settings-form-label-icon-colour-button-reset')
+
 const buttonLabelBackgroundColourApply = $('#modal-settings-form-label-background-colour-button-apply')
 const buttonLabelBackgroundColourReset = $('#modal-settings-form-label-background-colour-button-reset')
 
@@ -65,6 +68,17 @@ form.form({
             ],
         },
         backgroundColour: {
+            rules: [
+                {
+                    type: 'empty',
+                },
+                {
+                    type: 'regExp[/^([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i]',
+                    prompt: '{name} must be in hex colour format.',
+                },
+            ],
+        },
+        labelIconColour: {
             rules: [
                 {
                     type: 'empty',
@@ -122,6 +136,14 @@ buttonBackgroundColourApply.click(() => {
     }
 })
 
+buttonLabelIconColourApply.click(() => {
+    if (form.form('is valid', 'labelIconColour')) {
+        settingsStorage.setLabelIconColour(form.form('get value', 'labelIconColour'))
+    } else {
+        form.form('validate field', 'labelIconColour')
+    }
+})
+
 buttonLabelBackgroundColourApply.click(() => {
     if (form.form('is valid', 'labelBackgroundColour')) {
         settingsStorage.setLabelBackgroundColour(form.form('get value', 'labelBackgroundColour'))
@@ -144,6 +166,10 @@ buttonTextColourReset.click(() => {
 
 buttonBackgroundColourReset.click(() => {
     settingsStorage.resetBackgroundColour()
+})
+
+buttonLabelIconColourReset.click(() => {
+    settingsStorage.resetLabelIconColour()
 })
 
 buttonLabelBackgroundColourReset.click(() => {
@@ -197,6 +223,10 @@ const updateBackgroundColourValue = backgroundColour => {
     form.form('set value', 'backgroundColour', backgroundColour)
 }
 
+const updateLabelIconColourValue = labelIconColour => {
+    form.form('set value', 'labelIconColour', labelIconColour)
+}
+
 const updateLabelBackgroundColourValue = labelBackgroundColour => {
     form.form('set value', 'labelBackgroundColour', labelBackgroundColour)
 }
@@ -213,5 +243,6 @@ settingsStorage.titleTextSizeSubject.subscribe(updateTitleSizeValue)
 settingsStorage.contentTextSizeSubject.subscribe(updateContentSizeValue)
 settingsStorage.textColourSubject.subscribe(updateTextColourValue)
 settingsStorage.backgroundColourSubject.subscribe(updateBackgroundColourValue)
+settingsStorage.labelIconColourSubject.subscribe(updateLabelIconColourValue)
 settingsStorage.labelBackgroundColourSubject.subscribe(updateLabelBackgroundColourValue)
 settingsStorage.opacitySubject.subscribe(updateSliderOpacity)

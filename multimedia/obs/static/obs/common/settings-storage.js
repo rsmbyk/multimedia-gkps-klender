@@ -8,6 +8,7 @@ const LS_KEY_TITLE_TEXT_SIZE = 'SETTINGS_TITLE_TEXT_SIZE'
 const LS_KEY_CONTENT_TEXT_SIZE = 'SETTINGS_CONTENT_TEXT_SIZE'
 const LS_KEY_TEXT_COLOUR = 'SETTINGS_TEXT_COLOUR'
 const LS_KEY_BACKGROUND_COLOUR = 'SETTINGS_BACKGROUND_COLOUR'
+const LS_KEY_LABEL_ICON_COLOUR = 'SETTINGS_LABEL_ICON_COLOUR'
 const LS_KEY_LABEL_BACKGROUND_COLOUR = 'SETTINGS_LABEL_BACKGROUND_COLOUR'
 const LS_KEY_OPACITY = 'SETTINGS_OPACITY'
 
@@ -17,6 +18,7 @@ const defaultTitleTextSize = 18
 const defaultContentTextSize = 26
 const defaultTextColour = 'ffffff'
 const defaultBackgroundColour = '1a5399'
+const defaultLabelIconColour = 'ffffff'
 const defaultLabelBackgroundColour = '00b200'
 const defaultOpacity = 0.89
 
@@ -40,6 +42,7 @@ export const setPrefix = prefix => {
     contentTextSizeSubject.next(getContentTextSize())
     textColourSubject.next(getTextColour())
     backgroundColourSubject.next(getBackgroundColour())
+    labelIconColourSubject.next(getLabelIconColour())
     labelBackgroundColourSubject.next(getLabelBackgroundColour())
     opacitySubject.next(getOpacity())
 }
@@ -67,6 +70,10 @@ export const getBackgroundColour = () => getSettingsValue(getLSKey(LS_KEY_BACKGR
 export const setBackgroundColour = (value) => setSettingsValue(getLSKey(LS_KEY_BACKGROUND_COLOUR), value, backgroundColourSubject)
 export const resetBackgroundColour = () => setSettingsValue(getLSKey(LS_KEY_BACKGROUND_COLOUR), defaultBackgroundColour, backgroundColourSubject)
 
+export const getLabelIconColour = () => getSettingsValue(getLSKey(LS_KEY_LABEL_ICON_COLOUR), defaultLabelIconColour)
+export const setLabelIconColour = (value) => setSettingsValue(getLSKey(LS_KEY_LABEL_ICON_COLOUR), value, labelIconColourSubject)
+export const resetLabelIconColour = () => setSettingsValue(getLSKey(LS_KEY_LABEL_ICON_COLOUR), defaultLabelIconColour, labelIconColourSubject)
+
 export const getLabelBackgroundColour = () => getSettingsValue(getLSKey(LS_KEY_LABEL_BACKGROUND_COLOUR), defaultLabelBackgroundColour)
 export const setLabelBackgroundColour = (value) => setSettingsValue(getLSKey(LS_KEY_LABEL_BACKGROUND_COLOUR), value, labelBackgroundColourSubject)
 export const resetLabelBackgroundColour = () => setSettingsValue(getLSKey(LS_KEY_LABEL_BACKGROUND_COLOUR), defaultLabelBackgroundColour, labelBackgroundColourSubject)
@@ -79,6 +86,7 @@ export const titleTextSizeSubject = new BehaviorSubject().pipe(distinctUntilChan
 export const contentTextSizeSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 export const textColourSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 export const backgroundColourSubject = new BehaviorSubject().pipe(distinctUntilChanged())
+export const labelIconColourSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 export const labelBackgroundColourSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 export const opacitySubject = new BehaviorSubject().pipe(distinctUntilChanged())
 
@@ -97,6 +105,9 @@ window.addEventListener('storage', ({ key, newValue }) => {
 
     else if (key === getLSKey(LS_KEY_BACKGROUND_COLOUR))
         backgroundColourSubject.next(newValue)
+
+    else if (key === getLSKey(LS_KEY_LABEL_ICON_COLOUR))
+        labelIconColourSubject.next(newValue)
 
     else if (key === getLSKey(LS_KEY_LABEL_BACKGROUND_COLOUR))
         labelBackgroundColourSubject.next(newValue)
