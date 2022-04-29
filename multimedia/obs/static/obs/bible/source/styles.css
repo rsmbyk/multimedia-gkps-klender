@@ -2,6 +2,7 @@
     position: fixed;
     bottom: 0;
     margin: 0 0 5vh;  /* 5% of viewport for scrolling text */
+    padding: 0.8em 0.8em;
     width: 100vw;
 }
 
