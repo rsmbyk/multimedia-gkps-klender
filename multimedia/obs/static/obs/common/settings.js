@@ -22,8 +22,8 @@ const buttonTextColourReset = $('#modal-settings-form-text-colour-button-reset')
 const buttonBackgroundColourApply = $('#modal-settings-form-background-colour-button-apply')
 const buttonBackgroundColourReset = $('#modal-settings-form-background-colour-button-reset')
 
-const buttonLabelColourApply = $('#modal-settings-form-label-colour-button-apply')
-const buttonLabelColourReset = $('#modal-settings-form-label-colour-button-reset')
+const buttonLabelBackgroundColourApply = $('#modal-settings-form-label-background-colour-button-apply')
+const buttonLabelBackgroundColourReset = $('#modal-settings-form-label-background-colour-button-reset')
 
 const sliderOpacity = $('#modal-settings-form-opacity-slider')
 const inputOpacity = $('#modal-settings-form-opacity-input')
@@ -75,7 +75,7 @@ form.form({
                 },
             ],
         },
-        labelColour: {
+        labelBackgroundColour: {
             rules: [
                 {
                     type: 'empty',
@@ -122,11 +122,11 @@ buttonBackgroundColourApply.click(() => {
     }
 })
 
-buttonLabelColourApply.click(() => {
-    if (form.form('is valid', 'labelColour')) {
-        settingsStorage.setLabelColour(form.form('get value', 'labelColour'))
+buttonLabelBackgroundColourApply.click(() => {
+    if (form.form('is valid', 'labelBackgroundColour')) {
+        settingsStorage.setLabelBackgroundColour(form.form('get value', 'labelBackgroundColour'))
     } else {
-        form.form('validate field', 'labelColour')
+        form.form('validate field', 'labelBackgroundColour')
     }
 })
 
@@ -146,8 +146,8 @@ buttonBackgroundColourReset.click(() => {
     settingsStorage.resetBackgroundColour()
 })
 
-buttonLabelColourReset.click(() => {
-    settingsStorage.resetLabelColour()
+buttonLabelBackgroundColourReset.click(() => {
+    settingsStorage.resetLabelBackgroundColour()
 })
 
 buttonOpacityReset.click(() => {
@@ -197,8 +197,8 @@ const updateBackgroundColourValue = backgroundColour => {
     form.form('set value', 'backgroundColour', backgroundColour)
 }
 
-const updateLabelColourValue = labelColour => {
-    form.form('set value', 'labelColour', labelColour)
+const updateLabelBackgroundColourValue = labelBackgroundColour => {
+    form.form('set value', 'labelBackgroundColour', labelBackgroundColour)
 }
 
 const updateSliderOpacity = opacity => {
@@ -213,5 +213,5 @@ settingsStorage.titleTextSizeSubject.subscribe(updateTitleSizeValue)
 settingsStorage.contentTextSizeSubject.subscribe(updateContentSizeValue)
 settingsStorage.textColourSubject.subscribe(updateTextColourValue)
 settingsStorage.backgroundColourSubject.subscribe(updateBackgroundColourValue)
-settingsStorage.labelColourSubject.subscribe(updateLabelColourValue)
+settingsStorage.labelBackgroundColourSubject.subscribe(updateLabelBackgroundColourValue)
 settingsStorage.opacitySubject.subscribe(updateSliderOpacity)
