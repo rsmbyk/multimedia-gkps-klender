@@ -1,0 +1,11 @@
+#tatib-segment {
+    background: #1a5399;
+}
+
+#tatib-segment > .corner.label {
+    border-color: #00b200;
+}
+
+.ui.header {
+    font-family: "Source Sans Pro", sans-serif !important;
+}
