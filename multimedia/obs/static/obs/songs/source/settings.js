@@ -45,8 +45,13 @@ const updateBackgroundColour = () => {
     songSegment.css('background', `rgba(${r}, ${g}, ${b}, ${a})`)
 }
 
-const updateLabelColour = () => {
-    const { r, g, b, a } = extractColour(settingsStorage.getLabelColour())
+const updateLabelIconColour = () => {
+    const { r, g, b, a } = extractColour(settingsStorage.getLabelIconColour())
+    label.find('.icon').css('color', `rgba(${r}, ${g}, ${b}, ${a})`)
+}
+
+const updateLabelBackgroundColour = () => {
+    const { r, g, b, a } = extractColour(settingsStorage.getLabelBackgroundColour())
     label.css('border-color', `rgba(${r}, ${g}, ${b}, ${a})`)
 }
 
@@ -64,8 +69,11 @@ settingsStorage.textColourSubject.subscribe(updateTextColour)
 
 settingsStorage.backgroundColourSubject.subscribe(updateBackgroundColour)
 
-settingsStorage.labelColourSubject.subscribe(updateLabelColour)
+settingsStorage.labelIconColourSubject.subscribe(updateLabelIconColour)
+
+settingsStorage.labelBackgroundColourSubject.subscribe(updateLabelBackgroundColour)
 
 settingsStorage.opacitySubject.subscribe(updateBackgroundColour)
-settingsStorage.opacitySubject.subscribe(updateLabelColour)
+settingsStorage.opacitySubject.subscribe(updateLabelIconColour)
+settingsStorage.opacitySubject.subscribe(updateLabelBackgroundColour)
 settingsStorage.opacitySubject.subscribe(updateDividerOpacity)

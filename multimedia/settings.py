@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_filters',
     'multimedia.bible',
     'multimedia.songs',
+    'multimedia.tatib',
     'multimedia.bookmarks',
     'multimedia.obs',
     'multimedia.web',

@@ -1,0 +1,59 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Dock - OBS Bible Plugin</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'styles/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/themes/default.css' %}">
+
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.min.js' %}"></script>
+    <script src="{% static 'libs/axios/axios.min.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.min.js' %}"></script>
+
+    <script type="module" src="{% static 'obs/tatib/dock/index.js' %}"></script>
+    <script type="module" src="{% static 'obs/tatib/dock/tabs/tatibs.js' %}"></script>
+    <script type="module" src="{% static 'obs/tatib/dock/tabs/display.js' %}"></script>
+    <script type="module" src="{% static 'obs/tatib/dock/tabs/display/settings.js' %}"></script>
+    <script type="module" src="{% static 'obs/tatib/dock/modals/tatib-detail.js' %}"></script>
+    <script type="module" src="{% static 'obs/tatib/dock/modals/paste.js' %}"></script>
+</head>
+<body>
+    <div class="ui bottom fixed inverted two item small icon mobile menu">
+        <a class="violet item" data-tab="tab-tatib">
+            <i class="bible icon"></i>
+            <span class="text">Tata Ibadah</span>
+        </a>
+
+        <a class="violet item" data-tab="tab-display">
+            <i class="tv icon"></i>
+            <span class="text">Display</span>
+        </a>
+    </div>
+
+    <div class="ui tab" data-tab="tab-tatib">
+        {% include 'tatib/dock/tabs/tatibs.html' %}
+    </div>
+
+    <div class="ui tab" data-tab="tab-display">
+        {% include 'tatib/dock/tabs/display.html' %}
+    </div>
+
+    {% include 'common/settings.html' %}
+
+    {% include 'tatib/dock/modals/tatib-detail.html' %}
+
+    {% include 'tatib/dock/modals/paste.html' %}
+
+</body>
+</html>

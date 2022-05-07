@@ -22,8 +22,11 @@ const buttonTextColourReset = $('#modal-settings-form-text-colour-button-reset')
 const buttonBackgroundColourApply = $('#modal-settings-form-background-colour-button-apply')
 const buttonBackgroundColourReset = $('#modal-settings-form-background-colour-button-reset')
 
-const buttonLabelColourApply = $('#modal-settings-form-label-colour-button-apply')
-const buttonLabelColourReset = $('#modal-settings-form-label-colour-button-reset')
+const buttonLabelIconColourApply = $('#modal-settings-form-label-icon-colour-button-apply')
+const buttonLabelIconColourReset = $('#modal-settings-form-label-icon-colour-button-reset')
+
+const buttonLabelBackgroundColourApply = $('#modal-settings-form-label-background-colour-button-apply')
+const buttonLabelBackgroundColourReset = $('#modal-settings-form-label-background-colour-button-reset')
 
 const sliderOpacity = $('#modal-settings-form-opacity-slider')
 const inputOpacity = $('#modal-settings-form-opacity-input')
@@ -75,7 +78,18 @@ form.form({
                 },
             ],
         },
-        labelColour: {
+        labelIconColour: {
+            rules: [
+                {
+                    type: 'empty',
+                },
+                {
+                    type: 'regExp[/^([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i]',
+                    prompt: '{name} must be in hex colour format.',
+                },
+            ],
+        },
+        labelBackgroundColour: {
             rules: [
                 {
                     type: 'empty',
@@ -122,11 +136,19 @@ buttonBackgroundColourApply.click(() => {
     }
 })
 
-buttonLabelColourApply.click(() => {
-    if (form.form('is valid', 'labelColour')) {
-        settingsStorage.setLabelColour(form.form('get value', 'labelColour'))
+buttonLabelIconColourApply.click(() => {
+    if (form.form('is valid', 'labelIconColour')) {
+        settingsStorage.setLabelIconColour(form.form('get value', 'labelIconColour'))
     } else {
-        form.form('validate field', 'labelColour')
+        form.form('validate field', 'labelIconColour')
+    }
+})
+
+buttonLabelBackgroundColourApply.click(() => {
+    if (form.form('is valid', 'labelBackgroundColour')) {
+        settingsStorage.setLabelBackgroundColour(form.form('get value', 'labelBackgroundColour'))
+    } else {
+        form.form('validate field', 'labelBackgroundColour')
     }
 })
 
@@ -146,8 +168,12 @@ buttonBackgroundColourReset.click(() => {
     settingsStorage.resetBackgroundColour()
 })
 
-buttonLabelColourReset.click(() => {
-    settingsStorage.resetLabelColour()
+buttonLabelIconColourReset.click(() => {
+    settingsStorage.resetLabelIconColour()
+})
+
+buttonLabelBackgroundColourReset.click(() => {
+    settingsStorage.resetLabelBackgroundColour()
 })
 
 buttonOpacityReset.click(() => {
@@ -197,8 +223,12 @@ const updateBackgroundColourValue = backgroundColour => {
     form.form('set value', 'backgroundColour', backgroundColour)
 }
 
-const updateLabelColourValue = labelColour => {
-    form.form('set value', 'labelColour', labelColour)
+const updateLabelIconColourValue = labelIconColour => {
+    form.form('set value', 'labelIconColour', labelIconColour)
+}
+
+const updateLabelBackgroundColourValue = labelBackgroundColour => {
+    form.form('set value', 'labelBackgroundColour', labelBackgroundColour)
 }
 
 const updateSliderOpacity = opacity => {
@@ -213,5 +243,6 @@ settingsStorage.titleTextSizeSubject.subscribe(updateTitleSizeValue)
 settingsStorage.contentTextSizeSubject.subscribe(updateContentSizeValue)
 settingsStorage.textColourSubject.subscribe(updateTextColourValue)
 settingsStorage.backgroundColourSubject.subscribe(updateBackgroundColourValue)
-settingsStorage.labelColourSubject.subscribe(updateLabelColourValue)
+settingsStorage.labelIconColourSubject.subscribe(updateLabelIconColourValue)
+settingsStorage.labelBackgroundColourSubject.subscribe(updateLabelBackgroundColourValue)
 settingsStorage.opacitySubject.subscribe(updateSliderOpacity)

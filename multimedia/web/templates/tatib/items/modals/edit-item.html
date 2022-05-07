@@ -1,0 +1,52 @@
+{% load static %}
+
+<div class="ui tiny modal" id="modal-edit-item">
+    <div class="header" id="modal-edit-item-header"></div>
+
+    <div class="content">
+        <div class="ui form" id="modal-edit-item-form">
+            <div class="field" style="display: none">
+                <label for="form-edit-item-id">ID</label>
+                <input type="text"
+                       name="id"
+                       placeholder="ID"
+                       id="form-edit-item-id">
+            </div>
+
+            <div class="field" style="display: none">
+                <label for="form-edit-item-tatib-id">Tatib ID</label>
+                <input type="text"
+                       name="tatibId"
+                       placeholder="Tatib ID"
+                       id="form-edit-item-tatib-id">
+            </div>
+
+            <div class="required field">
+                <label for="form-edit-item-text">Text</label>
+                <textarea type="text"
+                          name="text"
+                          placeholder="Enter text"
+                          id="form-edit-item-text"></textarea>
+            </div>
+
+            <div class="ui error message" id="form-edit-item-error-message-text"></div>
+            <div class="ui error message" id="form-edit-item-error-message-non-field"></div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <div class="ui cancel button" id="modal-edit-item-button-cancel">
+            <span>Cancel</span>
+        </div>
+
+        <div class="ui right labeled primary approve icon button" id="modal-edit-item-button-create">
+            <i class="plus icon"></i>
+            <span>Create</span>
+        </div>
+
+        <div class="ui right labeled green approve icon button" id="modal-edit-item-button-save">
+            <i class="save icon"></i>
+            <span>Save</span>
+        </div>
+    </div>
+</div>

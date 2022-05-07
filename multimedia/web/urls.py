@@ -1,7 +1,9 @@
 from django.urls import path, include
-from django.views.generic import RedirectView
+
+from multimedia.web import views
 
 urlpatterns = [
-    path('', RedirectView.as_view(pattern_name='web-songs-books'), name='web-root'),
+    path('', views.WebRootView.as_view(), name='web-root'),
     path('songs/', include('multimedia.web.songs.urls')),
+    path('tatib/', include('multimedia.web.tatib.urls')),
 ]

@@ -1,0 +1,48 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Multimedia GKPS Klender</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.min.css' %}">
+    <link rel="stylesheet" href="{% static 'libs/icomoon/style.css' %}">
+
+    <link rel="stylesheet" href="{% static 'styles/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'web/styles.css' %}">
+
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'libs/axios/axios.min.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.min.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.min.js' %}"></script>
+</head>
+<body>
+    <div class="fullPage">
+        <div class="growingChild">
+            <div class="growingChild fillRemaining">
+                <div class="ui middle aligned padded centered stackable two column very compact grid fillRemaining">
+                    <div class="center aligned column">
+                        <a class="ui inverted very massive green icon button" href="{% url 'web-songs-root' %}">
+                            <i class="icomoon-note icon"></i>
+                            <span>Songs</span>
+                        </a>
+                    </div>
+
+                    <div class="center aligned column">
+                        <a class="ui inverted very massive violet icon button" href="{% url 'web-tatib-root' %}">
+                            <i class="cross icon"></i>
+                            <span>Tata Ibadah</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

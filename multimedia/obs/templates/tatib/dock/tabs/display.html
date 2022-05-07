@@ -1,0 +1,114 @@
+<div class="growingChild" id="tab-display">
+    <div class="ui padded text container" style="display: flex; justify-content: space-between">
+        <div class="ui tiny floating circular icon dropdown button" id="display-button-settings">
+            <i class="wrench icon"></i>
+            <div class="menu">
+                <div class="item" data-value="paste">
+                    <i class="clipboard icon"></i>
+                    <span>Quick Paste</span>
+                </div>
+                <div class="ui divider"></div>
+                <div class="item" data-settings="settings" data-value="settings-settings">More settings</div>
+            </div>
+        </div>
+        <div>
+            <div class="ui labeled tiny green icon button"
+                 id="display-button-status-active">
+                <i class="eye icon"></i>
+                <span class="text">Active</span>
+            </div>
+            <div class="ui inverted labeled tiny red icon button"
+                 id="display-button-status-inactive">
+                <i class="eye slash icon"></i>
+                <span class="text">Inactive</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui center aligned padded one column grid unselectable">
+        <div class="column">
+            <div class="ui inverted tiny header">
+                <div class="ui dark inverted placeholder" id="display-placeholder-tatib-name">
+                    <div class="header">
+                        <div class="full line"></div>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <span id="display-tatib-name"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui text container growingChild fillRemaining">
+        <div class="ui top attached tiny fluid inverted buttons">
+            <div class="ui icon button hasPopup"
+                 id="display-button-prev-item"
+                 data-content="Previous Item"
+                 data-position="top center"
+                 data-variation="inverted">
+                <i class="angle left icon"></i>
+            </div>
+            <div class="ui icon button">
+                <i class="cross icon"></i>
+            </div>
+            <div class="ui icon button hasPopup"
+                 id="display-button-next-item"
+                 data-content="Next Item"
+                 data-position="top center"
+                 data-variation="inverted">
+                <i class="angle right icon"></i>
+            </div>
+            <div class="ui green icon button hasPopup"
+                 id="display-button-next-item-activate"
+                 data-content="Next Item (Activate)"
+                 data-position="top center"
+                 data-variation="inverted">
+                <i class="angle right icon"></i>
+            </div>
+        </div>
+
+        <div class="ui attached inverted segment" id="display-placeholder-tatib-item-list" style="overflow-y: auto">
+            <div class="ui inverted divided very compact small selection list">
+                <div class="item">
+                    <div class="content">
+                        <div class="ui inverted placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui inverted placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui inverted placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui attached inverted segment" id="display-container-tatib-item-list" style="overflow-y: auto">
+            <div class="ui inverted divided very compact small selection list unselectable" id="display-tatib-item-list"></div>
+        </div>
+    </div>
+</div>
