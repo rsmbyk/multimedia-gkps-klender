@@ -1,0 +1,148 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{ tatib.name }} ({{ tatib.date }}) - Multimedia GKPS Klender</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'styles/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/semantic.css' %}">
+
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'libs/axios/axios.min.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.min.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.min.js' %}"></script>
+
+    <script type="module" src="{% static 'web/tatib/items/index.js' %}"></script>
+
+    <script>const tatibId = parseInt('{{ tatib.id }}')</script>
+</head>
+<body>
+    <div class="fullPage">
+        <div class="growingChild">
+            <div class="growingChild scrolling fillRemaining">
+                <div class="ui padded text container">
+                    <div class="ui breadcrumb" id="breadcrumb" style="display: none">
+                        <a class="section" href="{% url 'web-tatib-tatibs' %}">Home</a>
+                        <i class="right chevron icon divider"></i>
+                        <div class="active section" id="breadcrumb-tatib"></div>
+                    </div>
+
+                    <div class="ui header">
+                        <div class="ui placeholder" id="placeholder-tatib-info">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+
+                        <div class="content">
+                            <span id="tatib-name"></span>
+                            <div class="sub header" id="tatib-date"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui padded text container" id="container-action-buttons" style="display: none">
+                    <div class="ui primary button" id="btn-add-item">
+                        <i class="plus icon"></i>
+                        <span class="text">Add Item</span>
+                    </div>
+
+                    <div class="ui secondary button" id="btn-add-eos">
+                        <i class="plus icon"></i>
+                        <span class="text">Insert End of Section</span>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
+                    <div class="center aligned column">
+                        <div class="ui icon header">
+                            <i class="bug icon"></i>
+                            <div class="content">Network Error</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
+                    <div class="center aligned column">
+                        <div class="ui icon header">
+                            <i class="frown outline icon"></i>
+                            <div class="content">No Items</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui padded text container" id="placeholder-item-list">
+                    <div class="ui very relaxed divided list">
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="paragraph">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="paragraph">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="paragraph">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="paragraph">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui padded text container" id="container-item-list" style="display: none">
+                    <div class="ui divided ordered list items" id="item-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'tatib/items/modals/edit-item.html' %}
+
+    {% include 'tatib/items/modals/delete-item.html' %}
+
+</body>
+</html>
