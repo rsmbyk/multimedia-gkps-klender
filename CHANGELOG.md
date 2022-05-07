@@ -2,6 +2,26 @@
 
 ---
 
+## Version `0.3.6`
+
+### App Versions
+
+- Django: `v0.3.dj2`
+- Songs: `v0.3.s25`
+- Bible: `v0.3.b11`
+- Tatib: `v0.3.t0`
+
+### Changes
+
+- `[s24, b10]` Reduced Source Segment's height by the following methods:
+  - Reducing segment's padding.
+  - Reducing divider's margin.
+  - Changing label's size to big.
+- `[s25, b11]` Added an option to change the colour of Source's Label Icon.
+- `[t0]` Added a new app: Tatib
+
+---
+
 ## Version `0.3.5`
 
 ### App Versions
