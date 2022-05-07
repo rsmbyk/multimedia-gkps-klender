@@ -1,0 +1,127 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Tata Ibadah - Multimedia GKPS Klender</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'styles/multimedia.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/semantic.css' %}">
+
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'libs/axios/axios.min.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.min.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.min.js' %}"></script>
+
+    <script type="module" src="{% static 'web/tatib/tatibs/index.js' %}"></script>
+</head>
+<body>
+    <div class="fullPage">
+        <div class="growingChild">
+            <div class="scrolling fillRemaining">
+                <div class="ui padded text container">
+                    <div class="ui secondary icon buttons">
+                        <div class="ui button" id="button-filter-date">
+                            <i class="calendar icon"></i>
+                        </div>
+                        <div class="ui button" id="button-filter-general">
+                            <i class="filter icon"></i>
+                        </div>
+                        <div class="ui calendar" id="calendar">
+                            <div class="ui button">
+                                <span id="calendar-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui padded text container">
+                    <div class="ui primary button" id="btn-add-tatib">
+                        <i class="plus icon"></i>
+                        <span class="text">Create Tata Ibadah</span>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
+                    <div class="center aligned column">
+                        <div class="ui icon header">
+                            <i class="bug icon"></i>
+                            <div class="content">Network Error</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
+                    <div class="center aligned column">
+                        <div class="ui icon header">
+                            <i class="frown outline icon"></i>
+                            <div class="content">Nothing here</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui text padded container" id="placeholder-tatib-list">
+                    <div class="ui very relaxed divided list">
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="content">
+                                <div class="ui placeholder">
+                                    <div class="header">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui padded text container" id="container-tatib-list" style="display: none">
+                    <div class="ui very relaxed divided selection list" id="tatib-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'tatib/tatibs/modals/edit-tatib.html' %}
+
+    {% include 'tatib/tatibs/modals/delete-tatib.html' %}
+
+</body>
+</html>

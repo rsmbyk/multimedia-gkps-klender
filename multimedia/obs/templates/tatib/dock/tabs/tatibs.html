@@ -1,0 +1,70 @@
+<div class="growingChild">
+    <div class="ui padded relaxed two column grid">
+        <div class="column">
+            <div class="ui tiny icon buttons">
+                <div class="ui inverted button" id="tatibs-button-filter-date">
+                    <i class="calendar icon"></i>
+                </div>
+                <div class="ui inverted button" id="tatibs-button-filter-general">
+                    <i class="filter icon"></i>
+                </div>
+                <div class="ui calendar" id="tatibs-calendar">
+                    <div class="ui inverted button">
+                        <span id="tatibs-calendar-text"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui fitted inverted divider"></div>
+
+    <div class="growingChild scrolling fillRemaining">
+        <div class="ui middle aligned padded grid fillRemaining" id="tatibs-view-error" style="display: none">
+            <div class="center aligned column">
+                <div class="ui inverted tiny icon header">
+                    <i class="bug icon"></i>
+                    <div class="content">Network Error</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui middle aligned padded grid fillRemaining" id="tatibs-view-empty" style="display: none">
+            <div class="center aligned column">
+                <div class="ui inverted tiny icon header">
+                    <i class="frown outline icon"></i>
+                    <div class="content">Nothing here</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui padded container fillRemaining" id="tatibs-placeholder-tatib-list">
+            <div class="ui very relaxed inverted divided list">
+                <div class="item">
+                    <div class="content">
+                        <div class="ui inverted dark placeholder">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="content">
+                        <div class="ui inverted dark placeholder">
+                            <div class="header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui padded text container" id="tatibs-container-tatib-list" style="display: none">
+            <div class="ui very relaxed divided inverted tiny selection list" id="tatibs-tatib-list"></div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Source - OBS TatIb Plugin</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+
+    <link rel="stylesheet" href="{% static 'libs/fomantic/semantic.min.css' %}">
+    <link rel="stylesheet" href="{% static 'libs/icomoon/style.css' %}">
+
+    <link rel="stylesheet" href="{% static 'obs/tatib/source/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'obs/tatib/source/themes/default.css' %}">
+
+    <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'libs/rxjs/rxjs.umd.min.js' %}"></script>
+    <script src="{% static 'libs/fomantic/semantic.min.js' %}"></script>
+
+    <script type="module" src="{% static 'obs/tatib/common/bc.js' %}"></script>
+
+    <script type="module" src="{% static 'obs/tatib/source/index.js' %}"></script>
+    <script type="module" src="{% static 'obs/tatib/source/settings.js' %}"></script>
+</head>
+<body style="background-color: transparent">
+    <div class="ui inverted raised fluid flat segment hidden transition" id="tatib-segment">
+        <a class="ui inverted big right corner label">
+            <i class="inverted cross icon"></i>
+        </a>
+
+        <div class="ui padded very compact grid">
+            <div class="column">
+                <div class="ui center aligned inverted header" id="tatib-text"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
