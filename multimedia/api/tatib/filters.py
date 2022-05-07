@@ -11,3 +11,9 @@ class TataIbadahFilterSet(django_filters.FilterSet):
     class Meta:
         model = models.TataIbadah
         fields = ('month', 'year', 'is_active', 'has_date')
+
+
+class TataIbadahItemFilterSet(django_filters.FilterSet):
+    class Meta:
+        model = models.TataIbadahItem
+        fields = ('tatib',)
