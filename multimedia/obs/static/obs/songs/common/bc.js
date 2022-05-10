@@ -1,13 +1,11 @@
 const { distinctUntilChanged } = rxjs
 
-import {BehaviorSubject} from '/static/helpers/rx.js'
-
-const { ReplaySubject } = rxjs
+import { BehaviorSubject } from '/static/helpers/rx.js'
 
 const BC_NAME_SONG_INFO = 'OBS-SONGS-SONG-INFO'
 const BC_NAME_STATUS = 'OBS-SONGS-STATUS'
 
-export const songInfoSubject = new ReplaySubject(1)
+export const songInfoSubject = new BehaviorSubject()
 export const statusSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 
 const bcSongInfo = new BroadcastChannel(BC_NAME_SONG_INFO)
