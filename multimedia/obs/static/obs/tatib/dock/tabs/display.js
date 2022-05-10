@@ -225,7 +225,7 @@ buttonNextItemActivate.click(() => {
     toggleButtonStatus.setActive()
 })
 
-focusManager.registerFocusChange('violet')
+focusManager.registerFocusChange('red')
 
 tatibManager.tatibSubject.subscribe(updateTatibName)
 
