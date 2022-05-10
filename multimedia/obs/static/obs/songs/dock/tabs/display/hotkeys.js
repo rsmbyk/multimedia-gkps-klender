@@ -14,7 +14,7 @@ const buttonLastVerse = $('#display-btn-last-verse')
 
 hotkeys('left', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
-        if (!buttonPrevLyric.is(':disabled')) {
+        if (!buttonPrevLyric.hasClass('disabled')) {
             buttonPrevLyric.click()
         }
     }
@@ -26,7 +26,7 @@ hotkeys('right', () => {
             buttonLastVerse.click()
         } else if (buttonLastLyric.is(':visible')) {
             buttonLastLyric.click()
-        } else if (!buttonNextLyric.is(':disabled')) {
+        } else if (!buttonNextLyric.hasClass('disabled')) {
             buttonNextLyric.click()
         }
     }
@@ -34,7 +34,7 @@ hotkeys('right', () => {
 
 hotkeys('ctrl+left', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
-        if (!buttonPrevVerse.is('disabled')) {
+        if (!buttonPrevVerse.hasClass('disabled')) {
             buttonPrevVerse.click()
         }
     }
@@ -42,7 +42,7 @@ hotkeys('ctrl+left', () => {
 
 hotkeys('ctrl+right', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
-        if (!buttonNextVerse.is('disabled')) {
+        if (!buttonNextVerse.hasClass('disabled')) {
             buttonNextVerse.click()
         }
     }
@@ -50,7 +50,7 @@ hotkeys('ctrl+right', () => {
 
 hotkeys('shift+left', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
-        if (!buttonPrevSong.is('disabled')) {
+        if (!buttonPrevSong.hasClass('disabled')) {
             buttonPrevSong.click()
         }
     }
@@ -58,7 +58,7 @@ hotkeys('shift+left', () => {
 
 hotkeys('shift+right', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
-        if (!buttonNextSong.is('disabled')) {
+        if (!buttonNextSong.hasClass('disabled')) {
             buttonNextSong.click()
         }
     }
