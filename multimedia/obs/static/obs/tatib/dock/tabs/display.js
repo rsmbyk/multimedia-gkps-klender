@@ -240,6 +240,7 @@ tatibItemsSubject.subscribe(onTatibItemsUpdated)
 tatibItemsSubject.subscribe(updateTatibItemList)
 
 activeItemIndexSubject.subscribe(value => activeItemIndex = value)
+activeItemIndexSubject.subscribe(postTatibItem)
 activeItemIndexSubject.subscribe(updateActiveItemMarker)
 activeItemIndexSubject.subscribe(evaluateButtonPrevItem)
 activeItemIndexSubject.subscribe(evaluateButtonNextItem)
