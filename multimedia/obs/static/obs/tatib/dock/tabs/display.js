@@ -85,6 +85,9 @@ const appendEndOfTatib = tatibItems => {
 }
 
 const updateTatibName = tatib => {
+    if (tatib === null)
+        return
+
     tatibName.text(tatib.name)
 }
 
