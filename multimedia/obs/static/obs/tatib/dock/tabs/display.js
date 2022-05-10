@@ -33,7 +33,6 @@ const activeItemIndexSubject = new BehaviorSubject()
 
 const displayTatibItemListPlaceholder = () => {
     containerTatibItemList.hide()
-    viewEmpty.hide()
     placeholderTatibItemList.show()
 }
 
@@ -50,11 +49,6 @@ const displayTatibName = () => {
 const displayTatibItemList = () => {
     placeholderTatibItemList.hide()
     containerTatibItemList.show()
-}
-
-const displayEmptyView = () => {
-    placeholderTatibItemList.hide()
-    viewEmpty.show()
 }
 
 const setIdle = () => {
