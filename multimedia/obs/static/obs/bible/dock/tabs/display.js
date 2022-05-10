@@ -4,6 +4,8 @@ import { BehaviorSubject } from '/static/helpers/rx.js'
 import { ToggleButton } from '/static/helpers/buttons.js'
 import * as tabManager from '/static/helpers/tab-manager.js'
 
+import * as focusManager from '../../../common/focusManager.js'
+
 import * as bc from '../../common/bc.js'
 
 import * as historyManager from '../common/history-manager.js'
@@ -163,6 +165,8 @@ const toggleButtonStatus = new ToggleButton(
         postStatusMessage(false)
     },
 )
+
+focusManager.registerFocusChange('blue')
 
 setIdle()
 

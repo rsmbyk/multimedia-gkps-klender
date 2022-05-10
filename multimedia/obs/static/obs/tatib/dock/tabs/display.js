@@ -2,6 +2,8 @@ import { BehaviorSubject } from '/static/helpers/rx.js';
 import { ToggleButton } from '/static/helpers/buttons.js'
 import * as doms from '/static/helpers/doms.js'
 
+import * as focusManager from '../../../common/focusManager.js'
+
 import * as bc from '../../common/bc.js'
 
 import * as tatibManager from '../common/tatib-manager.js'
@@ -222,6 +224,8 @@ buttonNextItemActivate.click(() => {
     nextItem()
     toggleButtonStatus.setActive()
 })
+
+focusManager.registerFocusChange('violet')
 
 tatibManager.tatibSubject.subscribe(updateTatibName)
 
