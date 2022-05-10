@@ -2,6 +2,8 @@ import { BehaviorSubject } from '/static/helpers/rx.js';
 import { ToggleButton } from '/static/helpers/buttons.js'
 import * as doms from '/static/helpers/doms.js'
 
+import * as focusManager from '../../../common/focusManager.js'
+
 import * as bc from '../../common/bc.js'
 
 import * as options from '../common/options.js'
@@ -376,6 +378,8 @@ buttonLastVerse.click(() => {
     nextSong()
     toggleButtonStatus.setActive()
 })
+
+focusManager.registerFocusChange('green')
 
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
