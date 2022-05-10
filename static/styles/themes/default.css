@@ -1,7 +1,7 @@
 .ui.tab {
     /*background-color: #393939;*/
     /*background-color: #1f1e1f;*/
-    background-color: #3a393a;
+    background-color: #3f4041;
 }
 
 /*
@@ -13,5 +13,5 @@
 .ui.dark.inverted.placeholder ::before,
 .ui.dark.inverted.placeholder .line,
 .ui.dark.inverted.placeholder .line:after {
-    background-color: #3a393a;
+    background-color: #3f4041;
 }
