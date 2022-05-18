@@ -11,6 +11,8 @@ import * as bookmarkManager from '../common/bookmark-manager.js'
 
 const hasPopup = $('#tab-display .hasPopup')
 
+const dropdownSongs = $('#display-dropdown-songs')
+
 const songBookNumber = $('#display-song-book-number')
 const songTitle = $('#display-song-title')
 const songVerseList = $('#display-song-verses')
@@ -48,6 +50,7 @@ const activeVerseIndexSubject = new BehaviorSubject()
 const activeLyricIndexSubject = new BehaviorSubject()
 
 const displayPlaceholders = () => {
+    dropdownSongs.hide()
     songBookNumber.hide()
     songTitle.hide()
     songVerseList.hide()
@@ -63,6 +66,7 @@ const hidePlaceholders = () => {
     placeholderSongVerses.hide()
     placeholderSongLyricList.hide()
 
+    dropdownSongs.show()
     songBookNumber.show()
     songTitle.show()
     songVerseList.show()
@@ -90,6 +94,28 @@ const init = () => {
 const onBookmarkItemsUpdated = bookmarkItems => {
     if (bookmarkItems === null || bookmarkItems.length === 0) setIdle()
     else init()
+}
+
+const createSongsDropdownMenuItem = (bookmarkItem, index) => {
+    return {
+        value: index,
+        name: `${bookmarkItem.song_info.title} ${bookmarkItem.song_info.is_untitled ? '*' : ''}`,
+        description: bookmarkItem.song_info.book_number,
+        descriptionVertical: true,
+    }
+}
+
+const updateSongsDropdown = bookmarkItems => {
+    if (bookmarkItems === null || bookmarkItems.length === 0)
+        return
+
+    dropdownSongs
+        .dropdown('change values', bookmarkItems.map(createSongsDropdownMenuItem))
+        .dropdown('setting', 'onChange', value => {
+            if (!isNaN(parseInt(value)) && parseInt(value) !== activeSongIndex) {
+                activeSongIndexSubject.next(parseInt(value))
+            }
+        })
 }
 
 const updateSongBookNumber = value => {
@@ -382,6 +408,7 @@ buttonLastVerse.click(() => {
 focusManager.registerFocusChange('green')
 
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
+bookmarkManager.bookmarkItemsSubject.subscribe(updateSongsDropdown)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusInactive)
 
