@@ -16,3 +16,7 @@
 .ui.topActions.modal > .content {
     border-top: 1px solid rgba(34, 36, 38, 0.15);
 }
+
+.copyCursor {
+    cursor: pointer;
+}
