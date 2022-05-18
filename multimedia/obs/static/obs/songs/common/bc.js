@@ -25,6 +25,8 @@ export const postStatusMessage = status => {
     bcStatus.postMessage({
         status: status,
     })
+
+    statusSubject.next(status)
 }
 
 bcSongInfo.onmessage = ({ data: songInfo }) => songInfoSubject.next(songInfo)
