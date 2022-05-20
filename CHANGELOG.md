@@ -2,6 +2,40 @@
 
 ---
 
+## Version `0.3.7`
+
+### App Versions
+
+- Django: `v0.3.dj2`
+- Bible: `v0.3.b18`
+- Songs: `v0.3.s36`
+- Tatib: `v0.3.t14`
+
+### Changes
+
+- `[b12, s26, t1]` Added an indicator to indicate whether the Dock windows are being focused or not.
+- `[b13, t2]` Added keyboard navigation support to Bible and Tatib dock.
+- `[s27]` Fixed wrapping issue on overflowing texts in songs' Source Segment.
+- `[t3]` Added reorder functionality to Tatib web.
+- `[s28]` Fixed not-working codes to check disabled buttons.
+- `[b14, s29]` Changed indicator button's icon to cross.
+- `[t4]` Changed tatib's tab icon to cross.
+- `[b15, s30, t5]` Changed Dock's background colour.
+- `[t6]` Changed tatib's colour theme to red.
+- `[t7]` Fixed a bug where TatibItem not actually being posted to BroadcastChannel on changing active item index.
+- `[t8]` Fixed tatib's web page title.
+- `[t9]` Removed tatib's Source Segment's label.
+- `[t10]` Removed unused codes.
+- `[t11]` Fixed an error accessing Tatib's name when there is no active tab.
+- `[b16, s31, t12]` Fixed a bug where the Dock keep updating StatusButton's indefinitely when opening multiple dock windows.
+- `[s32]` Replaced ReplaySubject with BehaviorSubject.
+- `[s33]` Added more infos in string representation of Bookmark model class.
+- `[b17, s34, t13]` Fixed a bug where the Dock's display status not being updated when specifically refreshing the source.
+- `[s35, t14]` Changed Paste Modal's positive button's text to "Display".
+- `[b18, s36]` Reduced margins and paddings by a little.
+
+---
+
 ## Version `0.3.6`
 
 ### App Versions
