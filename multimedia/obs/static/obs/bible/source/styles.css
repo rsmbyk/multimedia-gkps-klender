@@ -2,7 +2,7 @@
     position: fixed;
     bottom: 0;
     margin: 0 0 5vh;  /* 5% of viewport for scrolling text */
-    padding: 0.8em 0.8em;
+    padding: 0.6em 0.6em;
     width: 100vw;
 }
 
@@ -12,5 +12,5 @@
 }
 
 .ui.divider {
-    margin: 0.8rem 0;
+    margin: 0.6rem 0;
 }

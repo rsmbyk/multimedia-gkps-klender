@@ -33,7 +33,6 @@ const activeItemIndexSubject = new BehaviorSubject()
 
 const displayTatibItemListPlaceholder = () => {
     containerTatibItemList.hide()
-    viewEmpty.hide()
     placeholderTatibItemList.show()
 }
 
@@ -50,11 +49,6 @@ const displayTatibName = () => {
 const displayTatibItemList = () => {
     placeholderTatibItemList.hide()
     containerTatibItemList.show()
-}
-
-const displayEmptyView = () => {
-    placeholderTatibItemList.hide()
-    viewEmpty.show()
 }
 
 const setIdle = () => {
@@ -91,6 +85,9 @@ const appendEndOfTatib = tatibItems => {
 }
 
 const updateTatibName = tatib => {
+    if (tatib === null)
+        return
+
     tatibName.text(tatib.name)
 }
 
@@ -225,7 +222,7 @@ buttonNextItemActivate.click(() => {
     toggleButtonStatus.setActive()
 })
 
-focusManager.registerFocusChange('violet')
+focusManager.registerFocusChange('red')
 
 tatibManager.tatibSubject.subscribe(updateTatibName)
 
@@ -240,6 +237,7 @@ tatibItemsSubject.subscribe(onTatibItemsUpdated)
 tatibItemsSubject.subscribe(updateTatibItemList)
 
 activeItemIndexSubject.subscribe(value => activeItemIndex = value)
+activeItemIndexSubject.subscribe(postTatibItem)
 activeItemIndexSubject.subscribe(updateActiveItemMarker)
 activeItemIndexSubject.subscribe(evaluateButtonPrevItem)
 activeItemIndexSubject.subscribe(evaluateButtonNextItem)
