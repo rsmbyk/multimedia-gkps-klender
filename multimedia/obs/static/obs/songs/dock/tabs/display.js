@@ -33,6 +33,8 @@ const placeholderSongVerses = $('#display-placeholder-song-verses')
 const placeholderSongLyricList = $('#display-placeholder-song-lyric-list')
 const containerSongLyricList = $('#display-container-song-lyric-list')
 
+let songTitlePopupTimer
+
 let activeSong
 let activeVerses
 let activeLyrics
@@ -378,6 +380,22 @@ buttonLastVerse.click(() => {
     nextSong()
     toggleButtonStatus.setActive()
 })
+
+songTitle.click(() => {
+    navigator.clipboard.writeText(activeSong.title)
+        .then(() => {
+            songTitle
+                .popup({
+                    on: 'manual',
+                    inverted: true,
+                })
+                .popup('show')
+
+            clearTimeout(songTitlePopupTimer)
+            songTitlePopupTimer = setTimeout(() => songTitle.popup('hide'), 800)
+        })
+})
+
 
 focusManager.registerFocusChange('green')
 
