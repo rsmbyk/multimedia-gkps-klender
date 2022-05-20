@@ -1,36 +1,42 @@
 <div class="growingChild" id="tab-display">
     <div class="ui padded text container" style="display: flex; justify-content: space-between">
-        <div class="ui tiny floating circular icon dropdown button" id="display-button-settings">
-            <i class="wrench icon"></i>
-            <div class="menu">
-                <div class="item" data-value="paste">
-                    <i class="clipboard icon"></i>
-                    <span>Quick Paste</span>
-                </div>
-                <div class="ui divider"></div>
-                <div class="header">
-                    <i class="settings icon"></i>
-                    <span>Settings</span>
-                </div>
-                <div class="item">
-                    <i class="dropdown icon"></i>
-                    <span class="text">Number of Lines</span>
-                    <div class="right menu">
-                        <div class="item" data-settings="numberOfLines" data-value="settings-numberOfLines-1">
-                            <span>1</span>
-                            <i class="check icon"></i>
-                        </div>
-                        <div class="item" data-settings="numberOfLines" data-value="settings-numberOfLines-2">
-                            <span>2</span>
-                            <i class="check icon"></i>
-                        </div>
-                        <div class="item" data-settings="numberOfLines" data-value="settings-numberOfLines-3">
-                            <span>3</span>
-                            <i class="check icon"></i>
+        <div>
+            <div class="ui tiny floating circular icon dropdown button" id="display-button-settings">
+                <i class="wrench icon"></i>
+                <div class="menu">
+                    <div class="item" data-value="paste">
+                        <i class="clipboard icon"></i>
+                        <span>Quick Paste</span>
+                    </div>
+                    <div class="ui divider"></div>
+                    <div class="header">
+                        <i class="settings icon"></i>
+                        <span>Settings</span>
+                    </div>
+                    <div class="item">
+                        <i class="dropdown icon"></i>
+                        <span class="text">Number of Lines</span>
+                        <div class="right menu">
+                            <div class="item" data-settings="numberOfLines" data-value="settings-numberOfLines-1">
+                                <span>1</span>
+                                <i class="check icon"></i>
+                            </div>
+                            <div class="item" data-settings="numberOfLines" data-value="settings-numberOfLines-2">
+                                <span>2</span>
+                                <i class="check icon"></i>
+                            </div>
+                            <div class="item" data-settings="numberOfLines" data-value="settings-numberOfLines-3">
+                                <span>3</span>
+                                <i class="check icon"></i>
+                            </div>
                         </div>
                     </div>
+                    <div class="item" data-settings="settings" data-value="settings-settings">More settings</div>
                 </div>
-                <div class="item" data-settings="settings" data-value="settings-settings">More settings</div>
+            </div>
+            <div class="ui tiny inverted floating scrolling circular icon dropdown button" id="display-dropdown-songs">
+                <i class="icomoon-note icon"></i>
+                <div class="scrollhint menu"></div>
             </div>
         </div>
         <div>
@@ -70,7 +76,12 @@
                         </div>
 
                         <div class="sub header" id="display-song-book-number"></div>
-                        <span id="display-song-title"></span>
+                        <span class="copyCursor"
+                              id="display-song-title"
+                              data-content="Copied to clipboard"
+                              data-position="bottom center"
+                              data-variation="tiny inverted">
+                        </span>
                     </div>
                 </div>
 
@@ -115,8 +126,9 @@
                  data-variation="inverted">
                 <i class="angle left icon"></i>
             </div>
-            <div class="ui icon button">
-                <i class="cat icon"></i>
+            <div class="ui icon button"
+                 id="button-focus-indicator">
+                <i class="cross icon"></i>
             </div>
             <div class="ui icon button hasPopup"
                  id="display-btn-next-lyric"

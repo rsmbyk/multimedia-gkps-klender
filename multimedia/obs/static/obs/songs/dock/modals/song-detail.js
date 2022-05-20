@@ -32,6 +32,8 @@ const viewError = $('#modal-song-detail-view-error')
 
 const actionToggleButton = new ManualToggleButton(buttonSave, buttonDelete)
 
+let songTitlePopupTimer
+
 let bookmarkItemId
 let bookmarkedVerses
 let selectedVerses
@@ -364,6 +366,21 @@ export const open = (songId, bookmarkItem) => {
     retrieveSong(songId)
     updateBookmarkItem(bookmarkItem)
 }
+
+songTitle.click(() => {
+    navigator.clipboard.writeText(song.title)
+        .then(() => {
+            songTitle
+                .popup({
+                    on: 'manual',
+                    inverted: true,
+                })
+                .popup('show')
+
+            clearTimeout(songTitlePopupTimer)
+            songTitlePopupTimer = setTimeout(() => songTitle.popup('hide'), 800)
+        })
+})
 
 songSubject.subscribe(value => song = value)
 songSubject.subscribe(retrieveAdditionalSongInfo)

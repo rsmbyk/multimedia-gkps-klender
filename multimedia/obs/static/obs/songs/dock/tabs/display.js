@@ -2,12 +2,16 @@ import { BehaviorSubject } from '/static/helpers/rx.js';
 import { ToggleButton } from '/static/helpers/buttons.js'
 import * as doms from '/static/helpers/doms.js'
 
+import * as focusManager from '../../../common/focusManager.js'
+
 import * as bc from '../../common/bc.js'
 
 import * as options from '../common/options.js'
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
 const hasPopup = $('#tab-display .hasPopup')
+
+const dropdownSongs = $('#display-dropdown-songs')
 
 const songBookNumber = $('#display-song-book-number')
 const songTitle = $('#display-song-title')
@@ -31,6 +35,8 @@ const placeholderSongVerses = $('#display-placeholder-song-verses')
 const placeholderSongLyricList = $('#display-placeholder-song-lyric-list')
 const containerSongLyricList = $('#display-container-song-lyric-list')
 
+let songTitlePopupTimer
+
 let activeSong
 let activeVerses
 let activeLyrics
@@ -46,6 +52,7 @@ const activeVerseIndexSubject = new BehaviorSubject()
 const activeLyricIndexSubject = new BehaviorSubject()
 
 const displayPlaceholders = () => {
+    dropdownSongs.hide()
     songBookNumber.hide()
     songTitle.hide()
     songVerseList.hide()
@@ -61,6 +68,7 @@ const hidePlaceholders = () => {
     placeholderSongVerses.hide()
     placeholderSongLyricList.hide()
 
+    dropdownSongs.show()
     songBookNumber.show()
     songTitle.show()
     songVerseList.show()
@@ -88,6 +96,28 @@ const init = () => {
 const onBookmarkItemsUpdated = bookmarkItems => {
     if (bookmarkItems === null || bookmarkItems.length === 0) setIdle()
     else init()
+}
+
+const createSongsDropdownMenuItem = (bookmarkItem, index) => {
+    return {
+        value: index,
+        name: `${bookmarkItem.song_info.title} ${bookmarkItem.song_info.is_untitled ? '*' : ''}`,
+        description: bookmarkItem.song_info.book_number,
+        descriptionVertical: true,
+    }
+}
+
+const updateSongsDropdown = bookmarkItems => {
+    if (bookmarkItems === null || bookmarkItems.length === 0)
+        return
+
+    dropdownSongs
+        .dropdown('change values', bookmarkItems.map(createSongsDropdownMenuItem))
+        .dropdown('setting', 'onChange', value => {
+            if (!isNaN(parseInt(value)) && parseInt(value) !== activeSongIndex) {
+                activeSongIndexSubject.next(parseInt(value))
+            }
+        })
 }
 
 const updateSongBookNumber = value => {
@@ -377,7 +407,26 @@ buttonLastVerse.click(() => {
     toggleButtonStatus.setActive()
 })
 
+songTitle.click(() => {
+    navigator.clipboard.writeText(activeSong.title)
+        .then(() => {
+            songTitle
+                .popup({
+                    on: 'manual',
+                    inverted: true,
+                })
+                .popup('show')
+
+            clearTimeout(songTitlePopupTimer)
+            songTitlePopupTimer = setTimeout(() => songTitle.popup('hide'), 800)
+        })
+})
+
+
+focusManager.registerFocusChange('green')
+
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
+bookmarkManager.bookmarkItemsSubject.subscribe(updateSongsDropdown)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusInactive)
 

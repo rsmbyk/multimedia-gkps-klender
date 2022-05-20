@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from multimedia.api.bookmarks import validators
 from multimedia.bookmarks import models
+from multimedia.songs.models import Verse
 
 
 class SongBookmarkSerializer(serializers.ModelSerializer):
@@ -21,10 +22,16 @@ class SongBookmarkItemSerializer(DynamicFieldsMixin, serializers.ModelSerializer
     song_info = serializers.SerializerMethodField(read_only=True)
     order_number = serializers.IntegerField(read_only=True)
 
-    def get_verse_info(self, obj):
+    def get_verse_info(self, obj: models.SongBookmarkItem):
+        def retrieve_verse(number):
+            try:
+                verse = obj.song.verse_set.get(number=number)
+                return {'number': verse.number, 'lyric': verse.lyric}
+            except Verse.DoesNotExist:
+                return {'number': number, 'lyric': ''}
+
         verse_numbers = list(map(int, obj.verse.split(',')))
-        verses = obj.song.verse_set.filter(number__in=verse_numbers)
-        return map(lambda x: {'number': x.number, 'lyric': x.lyric}, verses)
+        return map(retrieve_verse, verse_numbers)
 
     def get_song_info(self, obj):
         book_number = None \

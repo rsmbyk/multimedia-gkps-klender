@@ -11,7 +11,7 @@ class SongBookmark(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     def __str__(self):
-        return self.name
+        return f'{self.name} ({self.date})'
 
     class Meta:
         ordering = ('-date', '-created_at')
@@ -27,7 +27,7 @@ class SongBookmarkItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     def __str__(self):
-        return f'{self.bookmark}: {self.song}'
+        return f'{self.bookmark}: ({self.order_number} - {self.song})'
 
     class Meta:
         ordering = ('bookmark', 'order_number')

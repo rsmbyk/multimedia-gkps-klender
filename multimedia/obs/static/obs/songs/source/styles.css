@@ -2,12 +2,12 @@
     position: fixed;
     bottom: 0;
     margin: 0 0 5vh;  /* 5% of viewport for scrolling text */
-    padding: 0.6em 0.6em;
+    padding: 0.4em 0.4em;
     width: 100vw;
 }
 
 #song-lyric {
-    white-space: pre;
+    white-space: pre-wrap;
 }
 
 .ui.flat.segment {
@@ -16,5 +16,5 @@
 }
 
 .ui.divider {
-    margin: 0.6rem 0;
+    margin: 0.4rem 0;
 }

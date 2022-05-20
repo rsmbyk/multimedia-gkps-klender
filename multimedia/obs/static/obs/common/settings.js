@@ -154,30 +154,37 @@ buttonLabelBackgroundColourApply.click(() => {
 
 buttonTitleSizeReset.click(() => {
     settingsStorage.resetTitleTextSize()
+    updateTitleSizeValue(settingsStorage.defaultTitleTextSize)
 })
 
 buttonContentSizeReset.click(() => {
     settingsStorage.resetContentTextSize()
+    updateContentSizeValue(settingsStorage.defaultContentTextSize)
 })
 
 buttonTextColourReset.click(() => {
     settingsStorage.resetTextColour()
+    updateTextColourValue(settingsStorage.defaultTextColour)
 })
 
 buttonBackgroundColourReset.click(() => {
     settingsStorage.resetBackgroundColour()
+    updateBackgroundColourValue(settingsStorage.defaultBackgroundColour)
 })
 
 buttonLabelIconColourReset.click(() => {
     settingsStorage.resetLabelIconColour()
+    updateLabelIconColourValue(settingsStorage.defaultLabelIconColour)
 })
 
 buttonLabelBackgroundColourReset.click(() => {
     settingsStorage.resetLabelBackgroundColour()
+    updateLabelBackgroundColourValue(settingsStorage.defaultLabelBackgroundColour)
 })
 
 buttonOpacityReset.click(() => {
     settingsStorage.resetOpacity()
+    updateSliderOpacity(settingsStorage.defaultOpacity)
 })
 
 sliderTitleSize.slider({

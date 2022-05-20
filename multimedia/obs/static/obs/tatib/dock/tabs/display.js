@@ -2,6 +2,8 @@ import { BehaviorSubject } from '/static/helpers/rx.js';
 import { ToggleButton } from '/static/helpers/buttons.js'
 import * as doms from '/static/helpers/doms.js'
 
+import * as focusManager from '../../../common/focusManager.js'
+
 import * as bc from '../../common/bc.js'
 
 import * as tatibManager from '../common/tatib-manager.js'
@@ -31,7 +33,6 @@ const activeItemIndexSubject = new BehaviorSubject()
 
 const displayTatibItemListPlaceholder = () => {
     containerTatibItemList.hide()
-    viewEmpty.hide()
     placeholderTatibItemList.show()
 }
 
@@ -48,11 +49,6 @@ const displayTatibName = () => {
 const displayTatibItemList = () => {
     placeholderTatibItemList.hide()
     containerTatibItemList.show()
-}
-
-const displayEmptyView = () => {
-    placeholderTatibItemList.hide()
-    viewEmpty.show()
 }
 
 const setIdle = () => {
@@ -89,6 +85,9 @@ const appendEndOfTatib = tatibItems => {
 }
 
 const updateTatibName = tatib => {
+    if (tatib === null)
+        return
+
     tatibName.text(tatib.name)
 }
 
@@ -223,6 +222,8 @@ buttonNextItemActivate.click(() => {
     toggleButtonStatus.setActive()
 })
 
+focusManager.registerFocusChange('red')
+
 tatibManager.tatibSubject.subscribe(updateTatibName)
 
 tatibManager.tatibItemsSubject.subscribe(appendEndOfTatib)
@@ -236,6 +237,7 @@ tatibItemsSubject.subscribe(onTatibItemsUpdated)
 tatibItemsSubject.subscribe(updateTatibItemList)
 
 activeItemIndexSubject.subscribe(value => activeItemIndex = value)
+activeItemIndexSubject.subscribe(postTatibItem)
 activeItemIndexSubject.subscribe(updateActiveItemMarker)
 activeItemIndexSubject.subscribe(evaluateButtonPrevItem)
 activeItemIndexSubject.subscribe(evaluateButtonNextItem)

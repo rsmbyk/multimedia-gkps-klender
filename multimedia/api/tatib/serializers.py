@@ -26,3 +26,12 @@ class TataIbadahSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.TataIbadah
         fields = '__all__'
+
+
+class TataIbadahItemReorderSerializer(serializers.Serializer):
+    item = serializers.PrimaryKeyRelatedField(queryset=models.TataIbadahItem.objects.all())
+    order_number = serializers.IntegerField()
+
+
+class TataIbadahReorderSerializer(serializers.Serializer):
+    items = TataIbadahItemReorderSerializer(many=True)

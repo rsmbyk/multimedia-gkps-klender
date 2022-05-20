@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Dock - OBS Bible Plugin</title>
+    <title>Dock - OBS Tatib Plugin</title>
 
     <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
 
@@ -20,22 +20,24 @@
     <script src="{% static 'libs/fomantic/semantic.min.js' %}"></script>
     <script src="{% static 'libs/axios/axios.min.js' %}"></script>
     <script src="{% static 'libs/rxjs/rxjs.umd.min.js' %}"></script>
+    <script src="https://unpkg.com/hotkeys-js/dist/hotkeys.min.js"></script>
 
     <script type="module" src="{% static 'obs/tatib/dock/index.js' %}"></script>
     <script type="module" src="{% static 'obs/tatib/dock/tabs/tatibs.js' %}"></script>
     <script type="module" src="{% static 'obs/tatib/dock/tabs/display.js' %}"></script>
+    <script type="module" src="{% static 'obs/tatib/dock/tabs/display/hotkeys.js' %}"></script>
     <script type="module" src="{% static 'obs/tatib/dock/tabs/display/settings.js' %}"></script>
     <script type="module" src="{% static 'obs/tatib/dock/modals/tatib-detail.js' %}"></script>
     <script type="module" src="{% static 'obs/tatib/dock/modals/paste.js' %}"></script>
 </head>
 <body>
     <div class="ui bottom fixed inverted two item small icon mobile menu">
-        <a class="violet item" data-tab="tab-tatib">
-            <i class="bible icon"></i>
+        <a class="red item" data-tab="tab-tatib">
+            <i class="cross icon"></i>
             <span class="text">Tata Ibadah</span>
         </a>
 
-        <a class="violet item" data-tab="tab-display">
+        <a class="red item" data-tab="tab-display">
             <i class="tv icon"></i>
             <span class="text">Display</span>
         </a>
