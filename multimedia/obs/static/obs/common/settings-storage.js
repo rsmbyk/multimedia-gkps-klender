@@ -14,13 +14,13 @@ const LS_KEY_OPACITY = 'SETTINGS_OPACITY'
 
 export const sizes = ['mini', 'tiny', 'small', 'medium', 'large', 'big', 'huge', 'massive']
 
-const defaultTitleTextSize = 18
-const defaultContentTextSize = 26
-const defaultTextColour = 'ffffff'
-const defaultBackgroundColour = '1a5399'
-const defaultLabelIconColour = 'ffffff'
-const defaultLabelBackgroundColour = '00b200'
-const defaultOpacity = 0.89
+export const defaultTitleTextSize = 18
+export const defaultContentTextSize = 26
+export const defaultTextColour = 'ffffff'
+export const defaultBackgroundColour = '1a5399'
+export const defaultLabelIconColour = 'ffffff'
+export const defaultLabelBackgroundColour = '00b200'
+export const defaultOpacity = 0.89
 
 export const textSizeMinValue = 1
 export const textSizeMaxValue = 64
