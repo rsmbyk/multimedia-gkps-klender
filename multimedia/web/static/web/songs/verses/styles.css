@@ -1,0 +1,19 @@
+#preview-segment {
+    position: fixed;
+    bottom: 0;
+    margin: 0 0;
+    padding: 0.4em 0.4em;
+    width: 100vw;
+    cursor: pointer;
+}
+
+#preview-text {
+    white-space: pre-wrap;
+    font-size: 34px;
+    font-family: "Source Sans Pro", sans-serif !important;
+}
+
+.ui.flat.segment {
+    border: none;
+    border-radius: 0;
+}

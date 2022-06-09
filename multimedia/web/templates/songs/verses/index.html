@@ -15,12 +15,15 @@
     <link rel="stylesheet" href="{% static 'styles/multimedia.css' %}">
     <link rel="stylesheet" href="{% static 'styles/semantic.css' %}">
 
+    <link rel="stylesheet" href="{% static 'web/songs/verses/styles.css' %}">
+
     <script src="{% static 'libs/jquery/jquery-3.6.0.min.js' %}"></script>
     <script src="{% static 'libs/axios/axios.min.js' %}"></script>
     <script src="{% static 'libs/fomantic/semantic.min.js' %}"></script>
     <script src="{% static 'libs/rxjs/rxjs.umd.min.js' %}"></script>
 
     <script type="module" src="{% static 'web/songs/verses/index.js' %}"></script>
+    <script type="module" src="{% static 'web/songs/verses/PreviewManager.js' %}"></script>
 
     <script>const songId = parseInt('{{ song.id }}')</script>
 </head>
@@ -144,6 +147,22 @@
     {% include 'songs/verses/modals/edit-verse.html' %}
 
     {% include 'songs/verses/modals/delete-verse.html' %}
+
+    <div class="ui inverted raised fluid flat segment hidden transition" id="preview-segment">
+        <div class="ui padded very compact one column grid">
+            <div class="column">
+                <div class="ui inverted icon button" id="preview-button-prev-lyric">
+                    <i class="left arrow icon"></i>
+                </div>
+                <div class="ui inverted icon button" id="preview-button-next-lyric">
+                    <i class="right arrow icon"></i>
+                </div>
+            </div>
+            <div class="column">
+                <div class="ui center aligned inverted header" id="preview-text"></div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

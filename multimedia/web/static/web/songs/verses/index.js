@@ -5,6 +5,8 @@ import * as doms from '/static/helpers/doms.js'
 import * as editVerseModal from './modals/edit-verse.js'
 import * as deleteVerseModal from './modals/delete-verse.js'
 
+import * as PreviewManager from './PreviewManager.js'
+
 const hasPopup = $('.hasPopup')
 
 const verseList = $('#verse-list')
@@ -125,6 +127,16 @@ const createVerseListItem = verse => {
                         children: [
                             {
                                 tag: 'div',
+                                classList: ['ui', 'secondary', 'icon', 'button', 'btnPreview'],
+                                children: [
+                                    {
+                                        tag: 'i',
+                                        classList: ['eye', 'icon'],
+                                    },
+                                ],
+                            },
+                            {
+                                tag: 'div',
                                 classList: ['ui', 'icon', 'button', 'btnEdit'],
                                 children: [
                                     {
@@ -151,6 +163,7 @@ const createVerseListItem = verse => {
     })
 
     const extra = item.find('.extra')
+    const buttonPreview = item.find('.btnPreview')
     const buttonEdit = item.find('.btnEdit')
     const buttonDelete = item.find('.btnDelete')
 
@@ -160,6 +173,10 @@ const createVerseListItem = verse => {
     }, () => {
         extra.hide()
         buttonDelete.hide()
+    })
+
+    buttonPreview.click(() => {
+        PreviewManager.buildLyrics(verse.lyric)
     })
 
     buttonEdit.click(() => {
