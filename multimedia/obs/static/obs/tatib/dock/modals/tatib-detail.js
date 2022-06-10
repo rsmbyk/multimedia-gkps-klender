@@ -77,6 +77,11 @@ const createTatibItemListItem = tatibItem => {
                 children: [
                     {
                         tag: 'div',
+                        classList: ['header'],
+                        innerText: tatibItem.title,
+                    },
+                    {
+                        tag: 'div',
                         classList: ['description'],
                         innerText: tatibItem.item_type === 1 ? '--- END OF SECTION ---' : tatibItem.text,
                     },

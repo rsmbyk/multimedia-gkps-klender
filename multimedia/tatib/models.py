@@ -22,6 +22,7 @@ class TataIbadahItemType(models.IntegerChoices):
 class TataIbadahItem(models.Model):
     tatib = models.ForeignKey(TataIbadah, models.PROTECT)
     item_type = models.IntegerField(choices=TataIbadahItemType.choices)
+    title = models.CharField(max_length=64, blank=True)
     text = models.TextField(blank=True)
     order_number = models.PositiveIntegerField()
 

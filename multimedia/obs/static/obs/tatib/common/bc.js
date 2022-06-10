@@ -11,8 +11,9 @@ export const statusSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 const bcTatibItem = new BroadcastChannel(BC_NAME_TATIB_ITEM)
 const bcStatus = new BroadcastChannel(BC_NAME_STATUS)
 
-export const postTatibItemMessage = text => {
+export const postTatibItemMessage = (title, text) => {
     bcTatibItem.postMessage({
+        title: title,
         text: text,
     })
 }
