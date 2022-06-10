@@ -37,36 +37,36 @@
                 </div>
             </div>
 
-            <div class="ui fitted divider"></div>
+            <div class="ui padded text container">
+                <div class="ui breadcrumb" id="breadcrumb" style="display: none">
+                    <a class="section" href="{% url 'web-songs-books' %}">Home</a>
+                    <i class="right chevron icon divider"></i>
+                    <div class="active section" id="breadcrumb-book"></div>
+                </div>
 
-            <div class="growingChild scrolling fillRemaining">
-                <div class="ui padded text container">
-                    <div class="ui breadcrumb" id="breadcrumb" style="display: none">
-                        <a class="section" href="{% url 'web-songs-books' %}">Home</a>
-                        <i class="right chevron icon divider"></i>
-                        <div class="active section" id="breadcrumb-book"></div>
-                    </div>
-
-                    <div class="ui header">
-                        <div class="ui placeholder" id="placeholder-book-info">
-                            <div class="header">
-                                <div class="line"></div>
-                                <div class="line"></div>
-                            </div>
-                        </div>
-
-                        <div class="content">
-                            <span id="book-name"></span>
-                            <div class="sub header" id="book-lang"></div>
+                <div class="ui header">
+                    <div class="ui placeholder" id="placeholder-book-info">
+                        <div class="header">
+                            <div class="line"></div>
+                            <div class="line"></div>
                         </div>
                     </div>
 
-                    <div class="ui primary button" id="btn-add-song" style="display: none">
-                        <i class="plus icon"></i>
-                        <span class="text">Tambah Lagu</span>
+                    <div class="content">
+                        <span id="book-name"></span>
+                        <div class="sub header" id="book-lang"></div>
                     </div>
                 </div>
 
+                <div class="ui primary button" id="btn-add-song" style="display: none">
+                    <i class="plus icon"></i>
+                    <span class="text">Tambah Lagu</span>
+                </div>
+            </div>
+
+            <div class="ui fitted divider"></div>
+
+            <div class="growingChild scrolling fillRemaining">
                 <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
                     <div class="center aligned column">
                         <div class="ui icon header">

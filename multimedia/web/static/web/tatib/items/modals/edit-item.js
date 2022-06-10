@@ -6,6 +6,7 @@ const modalHeader = $('#modal-edit-item-header')
 const form = $('#modal-edit-item-form')
 
 const errorMessages = form.find('.ui.error.message')
+const titleErrorMessage = form.find('#form-edit-item-error-message-title')
 const textErrorMessage = form.find('#form-edit-item-error-message-text')
 const nonFieldErrorMessage = form.find('#form-edit-item-error-message-non-field')
 
@@ -21,6 +22,13 @@ const onSuccessSubject = new BehaviorSubject()
 
 form.form({
     fields: {
+        title: {
+            rules: [
+                {
+                    type: 'maxLength[64]',
+                },
+            ],
+        },
         text: {
             rules: [
                 {
@@ -51,6 +59,8 @@ const updateFormErrorMessages = responseJSON => {
 
     form.addClass('error')
 
+    if (responseJSON.title !== undefined)
+        titleErrorMessage.text(responseJSON.title.join('\n'))
     if (responseJSON.text !== undefined)
         textErrorMessage.text(responseJSON.number.join('\n'))
     if (responseJSON.non_field_errors !== undefined)
@@ -102,12 +112,13 @@ const submitForm = onSuccess => {
     errorMessages.empty()
 
     if (form.form('is valid')) {
-        const { id, tatibId, text } = form.form('get values')
+        const { id, tatibId, title, text } = form.form('get values')
 
         const formData = {
             id: id,
             tatib: tatibId,
             item_type: 0,
+            title: title,
             text: text,
         }
 
@@ -160,6 +171,7 @@ const updateFormValues = tatibItem => {
     if (tatibItem !== null) {
         form.form('set values', {
             id: tatibItem.id,
+            title: tatibItem.title,
             text: tatibItem.text,
         })
     }

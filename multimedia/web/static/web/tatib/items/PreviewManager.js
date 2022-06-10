@@ -1,7 +1,9 @@
 const previewSegment = $('#preview-segment')
+const previewTitle = $('#preview-title')
 const previewText = $('#preview-text')
 
-export const showPreviewText = text => {
+export const showPreviewText = (title, text) => {
+    previewTitle.text(title)
     previewText.text(text)
     previewSegment.transition('fade up in')
 }
