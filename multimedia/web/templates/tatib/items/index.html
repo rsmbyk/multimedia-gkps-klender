@@ -30,7 +30,7 @@
 <body>
     <div class="fullPage">
         <div class="growingChild">
-            <div class="growingChild scrolling fillRemaining">
+            <div class="growingChild fillRemaining">
                 <div class="ui padded text container">
                     <div class="ui breadcrumb" id="breadcrumb" style="display: none">
                         <a class="section" href="{% url 'web-tatib-tatibs' %}">Home</a>
@@ -79,79 +79,83 @@
                     </div>
                 </div>
 
-                <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
-                    <div class="center aligned column">
-                        <div class="ui icon header">
-                            <i class="bug icon"></i>
-                            <div class="content">Network Error</div>
-                        </div>
-                    </div>
-                </div>
+                <div class="ui fitted divider"></div>
 
-                <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
-                    <div class="center aligned column">
-                        <div class="ui icon header">
-                            <i class="frown outline icon"></i>
-                            <div class="content">No Items</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ui padded text container" id="placeholder-item-list">
-                    <div class="ui very relaxed divided list">
-                        <div class="item">
-                            <div class="content">
-                                <div class="ui placeholder">
-                                    <div class="paragraph">
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="content">
-                                <div class="ui placeholder">
-                                    <div class="paragraph">
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="content">
-                                <div class="ui placeholder">
-                                    <div class="paragraph">
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="content">
-                                <div class="ui placeholder">
-                                    <div class="paragraph">
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                        <div class="line"></div>
-                                    </div>
-                                </div>
+                <div class="growingChild scrolling fillRemaining">
+                    <div class="ui middle aligned padded grid fillRemaining" id="view-error" style="display: none">
+                        <div class="center aligned column">
+                            <div class="ui icon header">
+                                <i class="bug icon"></i>
+                                <div class="content">Network Error</div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="ui padded text container" id="container-item-list" style="display: none">
-                    <div class="ui divided ordered list items" id="item-list"></div>
+                    <div class="ui middle aligned padded grid fillRemaining" id="view-empty" style="display: none">
+                        <div class="center aligned column">
+                            <div class="ui icon header">
+                                <i class="frown outline icon"></i>
+                                <div class="content">No Items</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui padded text container" id="placeholder-item-list">
+                        <div class="ui very relaxed divided list">
+                            <div class="item">
+                                <div class="content">
+                                    <div class="ui placeholder">
+                                        <div class="paragraph">
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="content">
+                                    <div class="ui placeholder">
+                                        <div class="paragraph">
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="content">
+                                    <div class="ui placeholder">
+                                        <div class="paragraph">
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="content">
+                                    <div class="ui placeholder">
+                                        <div class="paragraph">
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui padded text container" id="container-item-list" style="display: none">
+                        <div class="ui divided ordered list items" id="item-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
