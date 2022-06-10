@@ -2,9 +2,11 @@ import * as bc from '../common/bc.js'
 
 const tatibSegment = $('#tatib-segment')
 
+const tatibTitle = $('#tatib-title')
 const tatibText = $('#tatib-text')
 
 const updateText = tatibItem => {
+    tatibTitle.text(tatibItem.title)
     tatibText.text(tatibItem.text)
 }
 

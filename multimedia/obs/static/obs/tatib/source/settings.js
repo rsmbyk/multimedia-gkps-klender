@@ -3,10 +3,15 @@ import * as colour from '/static/helpers/colour.js'
 import * as settingsStorage from '../../common/settings-storage.js'
 
 const tatibSegment = $('#tatib-segment')
+const  tatibTitle = $('#tatib-title')
 const tatibText = $('#tatib-text')
 
 const label = tatibSegment.find('.ui.label')
 const divider = tatibSegment.find('.ui.divider')
+
+const updateTatibTitleSize = titleTextSize => {
+    tatibTitle.css('font-size', `${titleTextSize}px`)
+}
 
 const updateTatibTextSize = contentTextSize => {
     tatibText.css('font-size', `${contentTextSize}px`)
@@ -25,6 +30,7 @@ const extractColour = (hexColour, defaultOpacity=null) => {
 
 const updateTextColour = () => {
     const { r, g, b, a } = extractColour(settingsStorage.getTextColour(), 1)
+    tatibTitle.css('color', `rgba(${r}, ${g}, ${b}, ${a})`)
     tatibText.css('color', `rgba(${r}, ${g}, ${b}, ${a})`)
 }
 
@@ -48,6 +54,8 @@ const updateDividerOpacity = opacity => {
 }
 
 settingsStorage.setPrefix('OBS_TATIB')
+
+settingsStorage.titleTextSizeSubject.subscribe(updateTatibTitleSize)
 
 settingsStorage.contentTextSizeSubject.subscribe(updateTatibTextSize)
 

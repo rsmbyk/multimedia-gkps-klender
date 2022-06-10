@@ -236,6 +236,11 @@ const createTatibItemListItem = (tatibItem, index) => {
                 children: [
                     {
                         tag: 'div',
+                        classList: ['description', 'tatibItemTitle'],
+                        innerText: tatibItem.title,
+                    },
+                    {
+                        tag: 'div',
                         classList: ['description'],
                         innerText: tatibItem.item_type === 1 ? '--- END OF SECTION --- ' : tatibItem.text,
                     },
@@ -286,6 +291,9 @@ const createTatibItemListItem = (tatibItem, index) => {
         ],
     })
 
+    const title = item.find('.tatibItemTitle')
+    title.css('font-weight', '700')
+
     const extra = item.find('.extra')
     const buttonPreview = item.find('.btnPreview')
     const buttonEdit = item.find('.btnEdit')
@@ -319,7 +327,7 @@ const createTatibItemListItem = (tatibItem, index) => {
     })
 
     buttonPreview.click(() => {
-        PreviewManager.showPreviewText(tatibItem.text)
+        PreviewManager.showPreviewText(tatibItem.title, tatibItem.text)
     })
 
     buttonEdit.click(() => {

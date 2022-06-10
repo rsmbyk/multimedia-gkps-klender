@@ -111,11 +111,25 @@ const createTatibItemListItem = (tatibItem, index) => {
             },
             {
                 tag: 'div',
-                classList: ['middle', 'aligned', 'content'],
-                innerText: tatibItem.item_type === 1 ? '--- END OF SECTION ---' : tatibItem.text,
+                classList: ['content'],
+                children: [
+                    {
+                        tag: 'div',
+                        classList: ['description', 'tatibItemTitle'],
+                        innerText: tatibItem.title,
+                    },
+                    {
+                        tag: 'div',
+                        classList: ['description'],
+                        innerText: tatibItem.item_type === 1 ? '--- END OF SECTION --- ' : tatibItem.text,
+                    },
+                ],
             },
         ],
     })
+
+    const title = item.find('.tatibItemTitle')
+    title.css('font-weight', '700')
 
     const iconMarker = item.find('i.icon')
     if (index !== activeItemIndex) iconMarker.hide()
@@ -196,7 +210,10 @@ const postTatibItem = activeItemIndex => {
     if (activeItemIndex === null)
         return
 
-    bc.postTatibItemMessage(tatibItems[activeItemIndex].text)
+    bc.postTatibItemMessage(
+        tatibItems[activeItemIndex].title,
+        tatibItems[activeItemIndex].text,
+    )
 }
 
 const toggleButtonStatus = new ToggleButton(
