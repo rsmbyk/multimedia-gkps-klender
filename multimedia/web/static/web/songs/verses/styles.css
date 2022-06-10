@@ -9,7 +9,7 @@
 
 #preview-text {
     white-space: pre-wrap;
-    font-size: 34px;
+    font-size: calc(100vw/1280*34);  /* 1280 is the width used in obs */
     font-family: "Source Sans Pro", sans-serif !important;
 }
 
