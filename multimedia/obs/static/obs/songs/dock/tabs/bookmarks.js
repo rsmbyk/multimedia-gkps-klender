@@ -6,6 +6,7 @@ import * as bookmarkManager from '../common/bookmark-manager.js'
 import * as bookmarkDetailModal from '../modals/bookmark-detail.js'
 import * as createBookmarkModal from '../modals/create-bookmark.js'
 import * as deleteBookmarkModal from '../modals/delete-bookmark.js'
+import * as restoreBookmarkModal from '../modals/restore-bookmark.js'
 
 const bookmarkList = $('#bookmarks-bookmark-list')
 
@@ -13,6 +14,8 @@ const calendar = $('#bookmarks-calendar')
 const calendarText = $('#bookmarks-calendar-text')
 const buttonFilterDate = $('#bookmarks-button-filter-date')
 const buttonFilterGeneral = $('#bookmarks-button-filter-general')
+const buttonFilterTrashActive = $('#bookmarks-button-filter-trash-active')
+const buttonFilterTrashInactive = $('#bookmarks-button-filter-trash-inactive')
 const buttonCreateBookmark = $('#bookmarks-button-create-bookmark')
 
 const placeholderBookmarkList = $('#bookmarks-placeholder-bookmark-list')
@@ -21,9 +24,11 @@ const viewError = $('#bookmarks-view-error')
 const viewEmpty = $('#bookmarks-view-empty')
 
 let date
+let trash
 
 const bookmarksSubject = new BehaviorSubject()
 const dateSubject = new BehaviorSubject(new Date())
+const trashSubject = new BehaviorSubject(false)
 
 // initially hide the general filter button
 buttonFilterGeneral.hide()
@@ -42,6 +47,14 @@ buttonFilterDate.click(() => {
     calendar.hide()
     buttonFilterGeneral.show()
     dateSubject.next(null)
+})
+
+buttonFilterTrashActive.click(() => {
+    trashSubject.next(false)
+})
+
+buttonFilterTrashInactive.click(() => {
+    trashSubject.next(true)
 })
 
 buttonFilterGeneral.click(() => {
@@ -72,6 +85,8 @@ const showLoader = () => {
     calendar.find('.ui.button').addClass('disabled')
     buttonFilterGeneral.addClass('loading disabled')
     buttonFilterDate.addClass('loading disabled')
+    buttonFilterTrashActive.addClass('loading disabled')
+    buttonFilterTrashInactive.addClass('loading disabled')
     buttonCreateBookmark.addClass('disabled')
 }
 
@@ -79,18 +94,24 @@ const hideLoader = () => {
     calendar.find('.ui.button').removeClass('disabled')
     buttonFilterGeneral.removeClass('loading disabled')
     buttonFilterDate.removeClass('loading disabled')
+    buttonFilterTrashActive.removeClass('loading disabled')
+    buttonFilterTrashInactive.removeClass('loading disabled')
     buttonCreateBookmark.removeClass('disabled')
 }
 
 const showControlButtonsLoader = () => {
     bookmarkList.find('.btnActivate').addClass('disabled')
+    bookmarkList.find('.btnView').addClass('disabled')
     bookmarkList.find('.btnEdit').addClass('disabled')
+    bookmarkList.find('.btnRestore').addClass('disabled')
     bookmarkList.find('.btnDelete').addClass('disabled')
 }
 
 const hideControlButtonsLoader = () => {
     bookmarkList.find('.btnActivate').removeClass('disabled')
+    bookmarkList.find('.btnView').removeClass('disabled')
     bookmarkList.find('.btnEdit').removeClass('disabled')
+    bookmarkList.find('.btnRestore').removeClass('disabled')
     bookmarkList.find('.btnDelete').removeClass('disabled')
 }
 
@@ -125,6 +146,16 @@ const hideCheckIcons = bookmark => {
 const updateFilterButtonText = date => {
     if (date !== null)
         calendarText.text(date.toLocaleString('en-us', {month:'short', year:'numeric'}))
+}
+
+const updateTrashButtons = trash => {
+    if (trash) {
+        buttonFilterTrashInactive.hide()
+        buttonFilterTrashActive.show()
+    } else {
+        buttonFilterTrashActive.hide()
+        buttonFilterTrashInactive.show()
+    }
 }
 
 const createBookmarkListItem = bookmark => {
@@ -170,11 +201,31 @@ const createBookmarkListItem = bookmark => {
                             },
                             {
                                 tag: 'div',
+                                classList: ['ui', 'inverted', 'icon', 'button', 'btnView'],
+                                children: [
+                                    {
+                                        tag: 'i',
+                                        classList: ['eye', 'icon'],
+                                    },
+                                ],
+                            },
+                            {
+                                tag: 'div',
                                 classList: ['ui', 'inverted', 'icon', 'button', 'btnEdit'],
                                 children: [
                                     {
                                         tag: 'i',
                                         classList: ['pen', 'icon'],
+                                    },
+                                ],
+                            },
+                            {
+                                tag: 'div',
+                                classList: ['ui', 'inverted', 'green', 'icon', 'button', 'btnRestore'],
+                                children: [
+                                    {
+                                        tag: 'i',
+                                        classList: ['trash', 'restore', 'icon'],
                                     },
                                 ],
                             },
@@ -198,7 +249,9 @@ const createBookmarkListItem = bookmark => {
     const iconCheck = item.find('.icoCheck')
     const extra = item.find('.extra')
     const buttonActivate = item.find('.btnActivate')
+    const buttonView = item.find('.btnView')
     const buttonEdit = item.find('.btnEdit')
+    const buttonRestore = item.find('.btnRestore')
     const buttonDelete = item.find('.btnDelete')
 
     item.hover(() => {
@@ -208,7 +261,8 @@ const createBookmarkListItem = bookmark => {
         }
         else {
             iconCheck.hide()
-            buttonActivate.show()
+            if (!trash) buttonActivate.show()
+            else buttonActivate.hide()
         }
 
         extra.show()
@@ -219,7 +273,8 @@ const createBookmarkListItem = bookmark => {
         }
         else {
             iconCheck.hide()
-            buttonActivate.show()
+            if (!trash) buttonActivate.show()
+            else buttonActivate.hide()
         }
 
         extra.hide()
@@ -229,6 +284,14 @@ const createBookmarkListItem = bookmark => {
         buttonActivate.hide()
     else
         iconCheck.hide()
+
+    if (trash) {
+        buttonEdit.hide()
+        buttonDelete.hide()
+    } else {
+        buttonView.hide()
+        buttonRestore.hide()
+    }
 
     extra.hide()
 
@@ -245,11 +308,21 @@ const createBookmarkListItem = bookmark => {
         bookmarkDetailModal.open(bookmark)
     })
 
+    buttonView.click(() => {
+        bookmarkDetailModal.open(bookmark)
+    })
+
     buttonDelete.click(() => {
         deleteBookmarkModal.open(bookmark, () => {
             if (bookmarkManager.bookmark !== null && bookmark.id === bookmarkManager.bookmark.id)
                 bookmarkManager.deactivate()
 
+            triggerRetrieveBookmarks(date)
+        })
+    })
+
+    buttonRestore.click(() => {
+        restoreBookmarkModal.open(bookmark, () => {
             triggerRetrieveBookmarks(date)
         })
     })
@@ -269,17 +342,21 @@ const updateBookmarkList = bookmarks => {
 }
 
 const retrieveGeneralBookmarks = () => {
-    retrieveBookmarks('/api/bookmarks/songs/bookmarks?is_active=true&has_date=false&ordering=name')
+    retrieveBookmarks(`/api/bookmarks/songs/bookmarks?is_active=${!trash}&has_date=false&ordering=name`)
 }
 
 const retrieveDatedBookmarks = date => {
-    const requestUrl = `/api/bookmarks/songs/bookmarks?is_active=true&month=${date.getMonth()+1}&year=${date.getFullYear()}`
+    const requestUrl = `/api/bookmarks/songs/bookmarks?is_active=${!trash}&month=${date.getMonth()+1}&year=${date.getFullYear()}`
     retrieveBookmarks(requestUrl)
 }
 
 const triggerRetrieveBookmarks = date => {
     if (date === null) retrieveGeneralBookmarks()
     else retrieveDatedBookmarks(date)
+}
+
+const toggleTrashMode = trash => {
+    triggerRetrieveBookmarks(date)
 }
 
 const retrieveBookmarks = requestUrl => {
@@ -303,3 +380,7 @@ bookmarksSubject.subscribe(updateBookmarkList)
 dateSubject.subscribe(value => date = value)
 dateSubject.subscribe(triggerRetrieveBookmarks)
 dateSubject.subscribe(updateFilterButtonText)
+
+trashSubject.subscribe(value => trash = value)
+trashSubject.subscribe(toggleTrashMode)
+trashSubject.subscribe(updateTrashButtons)

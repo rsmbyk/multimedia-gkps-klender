@@ -110,7 +110,7 @@ const displayBookmarkInfo = () => {
 const displayBookmarkItemList = () => {
     placeholderBookmarkItemList.hide()
     containerBookmarkItemList.show()
-    if (itemsOrder === null) buttonReorder.show()
+    if (itemsOrder === null && bookmark.is_active) buttonReorder.show()
     else buttonReorder.hide()
 }
 
@@ -312,6 +312,10 @@ const createBookmarkItem = (bookmarkItem, index) => {
         buttonUp.show()
         buttonDown.show()
     }
+    
+    if (!bookmark.is_active) {
+        buttonDelete.hide()
+    }
 
     item.click(e => {
         if (buttonDelete[0].contains(e.target) || itemsOrder !== null)
@@ -320,7 +324,11 @@ const createBookmarkItem = (bookmarkItem, index) => {
         // only open song-detail-modal if clicking on
         // bookmark's content or background (anywhere
         // outside the delete button)
-        songDetailModal.open(bookmarkItem.song, bookmarkItem)
+        if (bookmark.is_active) {
+            songDetailModal.open(bookmarkItem.song, bookmarkItem)
+        } else {
+            songDetailModal.open(bookmarkItem.song)
+        }
     })
 
     if (itemsOrder !== null && itemsOrder[index].id !== bookmarkItems[index].id) {

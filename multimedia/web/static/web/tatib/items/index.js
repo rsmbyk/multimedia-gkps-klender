@@ -7,6 +7,8 @@ import * as toasts from '/static/helpers/toasts.js'
 import * as editItemModal from './modals/edit-item.js'
 import * as deleteItemModal from './modals/delete-item.js'
 
+import * as PreviewManager from './PreviewManager.js'
+
 const breadcrumb = $('#breadcrumb')
 const breadcrumbTatib = $('#breadcrumb-tatib')
 
@@ -249,6 +251,16 @@ const createTatibItemListItem = (tatibItem, index) => {
                         children: [
                             {
                                 tag: 'div',
+                                classList: ['ui', 'secondary', 'icon', 'button', 'btnPreview'],
+                                children: [
+                                    {
+                                        tag: 'i',
+                                        classList: ['eye', 'icon'],
+                                    },
+                                ],
+                            },
+                            {
+                                tag: 'div',
                                 classList: ['ui', 'icon', 'button', 'btnEdit'],
                                 children: [
                                     {
@@ -275,6 +287,7 @@ const createTatibItemListItem = (tatibItem, index) => {
     })
 
     const extra = item.find('.extra')
+    const buttonPreview = item.find('.btnPreview')
     const buttonEdit = item.find('.btnEdit')
     const buttonDelete = item.find('.btnDelete')
 
@@ -294,10 +307,19 @@ const createTatibItemListItem = (tatibItem, index) => {
             extra.show()
         }
 
-        if (tatibItem.item_type === 0) buttonEdit.show()
-        else buttonEdit.hide()
+        if (tatibItem.item_type === 0) {
+            buttonPreview.show()
+            buttonEdit.show()
+        } else {
+            buttonPreview.hide()
+            buttonEdit.hide()
+        }
     }, () => {
         extra.hide()
+    })
+
+    buttonPreview.click(() => {
+        PreviewManager.showPreviewText(tatibItem.text)
     })
 
     buttonEdit.click(() => {
