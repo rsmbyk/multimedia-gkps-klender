@@ -2,6 +2,24 @@
 
 ---
 
+## Version `0.3.8`
+
+### App Versions
+
+- Django: `v0.3.dj3`
+- Bible: `v0.3.b18`
+- Songs: `v0.3.s39`
+- Tatib: `v0.3.t15`
+
+### Changes
+
+- `[s37]` NKB (Nyanyikanlah Kidung Baru) hymn book is now available.
+- `[s38, t15]` Song's Verse and TataIbadahItem can now be previewed in the web by clicking the preview button (black eye icon).
+- `[s39]` Deleted Bookmarks can now be viewed and restored to be used again.
+- `[dj3]` Added and updated some Django Model Admins.
+
+---
+
 ## Version `0.3.7`
 
 ### App Versions
