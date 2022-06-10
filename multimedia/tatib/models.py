@@ -25,5 +25,8 @@ class TataIbadahItem(models.Model):
     text = models.TextField(blank=True)
     order_number = models.PositiveIntegerField()
 
+    def __str__(self):
+        return f'{self.tatib}: {self.order_number}'
+
     class Meta:
         ordering = ('tatib', 'order_number')
