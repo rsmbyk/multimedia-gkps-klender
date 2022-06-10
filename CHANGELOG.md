@@ -8,6 +8,24 @@
 
 - Django: `v0.3.dj3`
 - Bible: `v0.3.b18`
+- Songs: `v0.3.s42`
+- Tatib: `v0.3.t19`
+
+### Changes
+
+- `[t16]` Title/Header-like can now be added to TataIbadahItem to provide additional text/info to the screen.
+- `[s40, t17]` Fixed the scaling of Web Preview font-size.
+- `[s41, t18]` Added a Button(s) to navigate back to the root URL of the web.
+- `[s42, t19]` The top layout of some pages in the web is now in fixed position to improve the QoL when navigating around and/or editing Songs/TataIbadahItems.
+
+---
+
+## Version `0.3.8`
+
+### App Versions
+
+- Django: `v0.3.dj3`
+- Bible: `v0.3.b18`
 - Songs: `v0.3.s39`
 - Tatib: `v0.3.t15`
 
