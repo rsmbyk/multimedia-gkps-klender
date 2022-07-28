@@ -40,23 +40,29 @@ const itemsSubject = new BehaviorSubject()
 const itemsOrderSubject = new BehaviorSubject(null)
 
 const showLoader = () => {
-    buttonAddText.addClass('loading disabled')
-    buttonAddEndOfSection.addClass('loading disabled')
+    buttonAddText.addClass('disabled')
+    buttonAddEndOfSection.addClass('disabled')
+    buttonReorder.addClass('disabled')
 
     buttonSave.addClass('loading disabled')
     buttonDiscard.addClass('disabled')
     itemList.find('.btnUp').addClass('disabled')
     itemList.find('.btnDown').addClass('disabled')
+
+    itemList.find('.ui.button').addClass('disabled')
 }
 
 const hideLoader = () => {
     buttonAddText.removeClass('loading disabled')
     buttonAddEndOfSection.removeClass('loading disabled')
+    buttonReorder.removeClass('disabled')
 
     buttonSave.removeClass('loading disabled')
     buttonDiscard.removeClass('disabled')
     itemList.find('.btnUp').removeClass('disabled')
     itemList.find('.btnDown').removeClass('disabled')
+
+    itemList.find('.ui.button').removeClass('disabled')
 }
 
 const displayTatibInfoPlaceholder = () => {
@@ -252,6 +258,36 @@ const createTatibItemListItem = (tatibItem, index) => {
                 children: [
                     {
                         tag: 'div',
+                        classList: ['ui', 'primary', 'button', 'btnAddItemNext'],
+                        children: [
+                            {
+                                tag: 'i',
+                                classList: ['plus', 'icon'],
+                            },
+                            {
+                                tag: 'span',
+                                classList: ['text'],
+                                innerText: 'Add Item next',
+                            },
+                        ],
+                    },
+                    {
+                        tag: 'div',
+                        classList: ['ui', 'secondary', 'button', 'btnAddEoSNext'],
+                        children: [
+                            {
+                                tag: 'i',
+                                classList: ['plus', 'icon'],
+                            },
+                            {
+                                tag: 'span',
+                                classList: ['text'],
+                                innerText: 'Add End of Section next',
+                            },
+                        ],
+                    },
+                    {
+                        tag: 'div',
                         classList: ['ui', 'right', 'floated', 'buttons'],
                         children: [
                             {
@@ -302,6 +338,9 @@ const createTatibItemListItem = (tatibItem, index) => {
     const buttonUp = item.find('.btnUp')
     const buttonDown = item.find('.btnDown')
 
+    const buttonAddItemNext = item.find('.btnAddItemNext')
+    const buttonAddEoSNext = item.find('.btnAddEoSNext')
+
     buttonUp.click(() => {
         moveItemUp(index)
     })
@@ -351,6 +390,16 @@ const createTatibItemListItem = (tatibItem, index) => {
         buttonDown.addClass('secondary')
     }
 
+    buttonAddItemNext.click(() => {
+        buttonAddItemNext.addClass('loading')
+        editItemModal.open(null, tatib, retrieveItems, tatibItem.order_number)
+    })
+
+    buttonAddEoSNext.click(() => {
+        buttonAddEoSNext.addClass('loading')
+        sendCreateEoSRequest(tatibItem.order_number)
+    })
+
     extra.hide()
 
     return item
@@ -398,23 +447,30 @@ const buildReorderRequestData = () => {
     }
 }
 
-buttonAddEndOfSection.click(() => {
+function sendCreateEoSRequest(insertAfter) {
     showLoader()
 
     const body = {
         tatib: tatibId,
         item_type: 1,
+        insert_after: insertAfter,
     }
 
     axios.post('/api/tatib/items', body)
         .then(retrieveItems)
         .catch(e => {
-            console.log(e)
+            console.log(e.response?.data)
             toasts.error('Failed to create item', 'left bottom')
         })
+}
+
+buttonAddEndOfSection.click(() => {
+    buttonAddEndOfSection.addClass('loading')
+    sendCreateEoSRequest()
 })
 
 buttonAddText.click(() => {
+    buttonAddText.addClass('loading')
     editItemModal.open(null, tatib, retrieveItems)
 })
 
