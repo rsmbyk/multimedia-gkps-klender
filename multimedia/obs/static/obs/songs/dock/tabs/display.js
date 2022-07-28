@@ -6,7 +6,7 @@ import * as focusManager from '../../../common/focusManager.js'
 
 import * as bc from '../../common/bc.js'
 
-import * as options from '../common/options.js'
+import * as options from '../../common/options.js'
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
 const hasPopup = $('#tab-display .hasPopup')
