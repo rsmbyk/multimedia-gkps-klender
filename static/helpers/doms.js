@@ -1,5 +1,9 @@
-export const createDOMFromJSON = ({ tag, classList=[], children=null, innerText=null }) => {
+export const createDOMFromJSON = ({ id, tag, classList=[], children=null, innerText=null }) => {
     const element = document.createElement(tag)
+
+    if (id !== undefined)
+        element.id = id
+
     element.classList.add(...classList)
 
     if (children !== null && innerText !== null)
