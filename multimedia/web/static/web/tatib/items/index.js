@@ -373,10 +373,12 @@ const createTatibItemListItem = (tatibItem, index) => {
     })
 
     buttonEdit.click(() => {
+        PreviewManager.closePreview()
         editItemModal.open(tatibItem, tatib, refreshItems)
     })
 
     buttonDelete.click(() => {
+        PreviewManager.closePreview()
         deleteItemModal.open(tatibItem, refreshItems)
     })
 
@@ -394,11 +396,13 @@ const createTatibItemListItem = (tatibItem, index) => {
     }
 
     buttonAddItemNext.click(() => {
+        PreviewManager.closePreview()
         editItemModal.open(null, tatib, refreshItems, tatibItem.order_number)
     })
 
     buttonAddEoSNext.click(() => {
         buttonAddEoSNext.addClass('loading')
+        PreviewManager.closePreview()
         sendCreateEoSRequest(tatibItem.order_number)
     })
 
@@ -485,14 +489,17 @@ function sendCreateEoSRequest(insertAfter) {
 
 buttonAddEndOfSection.click(() => {
     buttonAddEndOfSection.addClass('loading')
+    PreviewManager.closePreview()
     sendCreateEoSRequest()
 })
 
 buttonAddText.click(() => {
+    PreviewManager.closePreview()
     editItemModal.open(null, tatib, refreshItems)
 })
 
 buttonReorder.click(() => {
+    PreviewManager.closePreview()
     itemsOrderSubject.next(items)
 })
 
