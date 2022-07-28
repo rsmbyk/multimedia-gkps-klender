@@ -8,10 +8,16 @@ export const showPreviewText = (title, text) => {
     previewSegment.transition('fade up in')
 }
 
+export function closePreview() {
+    if (previewSegment.is(':visible')) {
+        previewSegment.transition({
+            animation: 'fade up out',
+            duration: '125ms',
+            queue: false,
+        })
+    }
+}
+
 previewSegment.click(() => {
-    previewSegment.transition({
-        animation: 'fade up out',
-        duration: '125ms',
-        queue: false,
-    })
+    closePreview()
 })

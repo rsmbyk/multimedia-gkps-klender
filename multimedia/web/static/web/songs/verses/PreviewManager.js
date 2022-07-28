@@ -56,15 +56,21 @@ const updatePreviewText = activeLyricIndex => {
     previewText.text(activeLyrics[activeLyricIndex])
 }
 
+export function closePreview() {
+    if (previewSegment.is(':visible')) {
+        previewSegment.transition({
+            animation: 'fade up out',
+            duration: '125ms',
+            queue: false,
+        })
+    }
+}
+
 previewSegment.click(e => {
     if (previewButtonNextLyric[0].contains(e.target) || previewButtonPrevLyric[0].contains(e.target))
         return false
 
-    previewSegment.transition({
-        animation: 'fade up out',
-        duration: '125ms',
-        queue: false,
-    })
+    closePreview()
 })
 
 previewButtonNextLyric.click(nextLyric)
