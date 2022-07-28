@@ -19,8 +19,8 @@ const sendDeleteRequest = (item, onSuccess) => {
     $.ajax({
         url: `/api/tatib/items/${item.id}`,
         method: 'DELETE',
-        success: response => {
-            if (typeof onSuccess === "function") onSuccess(response)
+        success: () => {
+            if (typeof onSuccess === "function") onSuccess(item.order_number - 1)
             modal.modal('hide')
             toasts.success('Item deleted', 'bottom left')
         },

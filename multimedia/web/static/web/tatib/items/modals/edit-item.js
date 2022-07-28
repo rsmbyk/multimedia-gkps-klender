@@ -77,7 +77,7 @@ const sendCreateRequest = (formData, onSuccess) => {
         success: response => {
             console.log(response)
             modal.modal('hide')
-            if (typeof onSuccess === "function") onSuccess(response)
+            if (typeof onSuccess === 'function') onSuccess(response.order_number)
         },
         error: ({ responseJSON }) => {
             console.log(responseJSON)
@@ -97,7 +97,7 @@ const sendEditRequest = (formData, onSuccess) => {
         success: response => {
             console.log(response)
             modal.modal('hide')
-            if (typeof onSuccess === "function") onSuccess(response)
+            if (typeof onSuccess === 'function') onSuccess(response.order_number)
         },
         error: ({ responseJSON }) => {
             console.log(responseJSON)

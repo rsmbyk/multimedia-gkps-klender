@@ -34,10 +34,12 @@ const viewEmpty = $('#view-empty')
 let tatib
 let items
 let itemsOrder
+let scrollPosition
 
 const tatibSubject = new BehaviorSubject()
 const itemsSubject = new BehaviorSubject()
 const itemsOrderSubject = new BehaviorSubject(null)
+const scrollPositionSubject = new BehaviorSubject(null)
 
 const showLoader = () => {
     buttonAddText.addClass('disabled')
@@ -207,6 +209,7 @@ const moveItemDown = index => {
 
 const createTatibItemListItem = (tatibItem, index) => {
     const item = doms.createDOMFromJSON({
+        id: 'tatib-item-' + tatibItem.order_number,
         tag: 'div',
         classList: ['item'],
         children: [
@@ -370,11 +373,11 @@ const createTatibItemListItem = (tatibItem, index) => {
     })
 
     buttonEdit.click(() => {
-        editItemModal.open(tatibItem, tatib, retrieveItems)
+        editItemModal.open(tatibItem, tatib, refreshItems)
     })
 
     buttonDelete.click(() => {
-        deleteItemModal.open(tatibItem, retrieveItems)
+        deleteItemModal.open(tatibItem, refreshItems)
     })
 
     if (itemsOrder === null) {
@@ -391,8 +394,7 @@ const createTatibItemListItem = (tatibItem, index) => {
     }
 
     buttonAddItemNext.click(() => {
-        buttonAddItemNext.addClass('loading')
-        editItemModal.open(null, tatib, retrieveItems, tatibItem.order_number)
+        editItemModal.open(null, tatib, refreshItems, tatibItem.order_number)
     })
 
     buttonAddEoSNext.click(() => {
@@ -405,6 +407,15 @@ const createTatibItemListItem = (tatibItem, index) => {
     return item
 }
 
+function scrollToLastSavedPosition() {
+    if (scrollPosition === null) {
+        return
+    }
+
+    document.getElementById('tatib-item-' + scrollPosition)
+        ?.scrollIntoView({behavior: 'smooth'})
+}
+
 const updateItemList = items => {
     itemList.empty()
     itemList.append(...items.map(createTatibItemListItem))
@@ -414,6 +425,8 @@ const updateItemList = items => {
 
     if (items.length === 0) displayEmptyView()
     else displayItemList()
+
+    scrollToLastSavedPosition()
 }
 
 const retrieveItems = () => {
@@ -423,6 +436,11 @@ const retrieveItems = () => {
     axios.get(`/api/tatib/items?tatib=${tatibId}&ordering=order_number`)
         .then(({ data: items }) => itemsSubject.next(items))
         .catch(displayErrorView)
+}
+
+function refreshItems(scrollToAfter) {
+    scrollPositionSubject.next(scrollToAfter)
+    retrieveItems()
 }
 
 const retrieveTatib = () => {
@@ -457,6 +475,7 @@ function sendCreateEoSRequest(insertAfter) {
     }
 
     axios.post('/api/tatib/items', body)
+        .then(({ data: item }) => scrollPositionSubject.next(item.order_number))
         .then(retrieveItems)
         .catch(e => {
             console.log(e.response?.data)
@@ -470,8 +489,7 @@ buttonAddEndOfSection.click(() => {
 })
 
 buttonAddText.click(() => {
-    buttonAddText.addClass('loading')
-    editItemModal.open(null, tatib, retrieveItems)
+    editItemModal.open(null, tatib, refreshItems)
 })
 
 buttonReorder.click(() => {
@@ -486,7 +504,8 @@ buttonSave.click(() => {
     showLoader()
 
     axios.post('/api/tatib/items/reorder', buildReorderRequestData())
-        .then(({ data }) => {
+        .then(() => scrollPositionSubject.next(null))
+        .then(() => {
             itemsOrderSubject.next(null)
             retrieveItems()
         })
@@ -507,5 +526,7 @@ itemsOrderSubject.subscribe(updateActionButtonsVisibility)
 itemsOrderSubject.subscribe(updateReorderButtonsVisibility)
 itemsOrderSubject.subscribe(updateReorderSaveButton)
 itemsOrderSubject.subscribe(updateItemListItemsClass)
+
+scrollPositionSubject.subscribe(value => scrollPosition = value)
 
 retrieveTatib()
