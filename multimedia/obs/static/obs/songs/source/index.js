@@ -1,10 +1,5 @@
 import * as bc from '../common/bc.js'
 
-const sourceDisplay = $('.sourceDisplay')
-const segmentDisplay = $('#segment-display')
-const boxDisplay = $('#box-display')
-const outlineDisplay = $('#outline-display')
-
 const songInfo = $('#song-info')
 const songBookInfo = $('#song-book-info')
 
@@ -33,20 +28,5 @@ const doTransition = () => {
     })
 }
 
-const updateDisplayState = status => {
-    if (status === true) sourceDisplay.transition('fade up in')
-    else if (sourceDisplay.is(':visible')) {
-        sourceDisplay.transition({
-            animation: 'fade up out',
-            duration: '125ms',
-            queue: false,
-        })
-    }
-}
-
 bc.songInfoSubject.subscribe(updateSongInfo)
 bc.songInfoSubject.subscribe(doTransition)
-
-bc.statusSubject.subscribe(updateDisplayState)
-
-bc.postStatusMessage(false)
