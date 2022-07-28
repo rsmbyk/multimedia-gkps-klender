@@ -15,10 +15,12 @@ const buttonSave = modal.find('#modal-edit-item-button-save')
 const buttonCancel = modal.find('#modal-edit-item-button-cancel')
 
 let requestFunction
+let insertAfter
 
 const tatibSubject = new BehaviorSubject()
 const tatibItemSubject = new BehaviorSubject()
 const onSuccessSubject = new BehaviorSubject()
+const insertAfterSubject = new BehaviorSubject()
 
 form.form({
     fields: {
@@ -120,6 +122,7 @@ const submitForm = onSuccess => {
             item_type: 0,
             title: title,
             text: text,
+            insert_after: insertAfter,
         }
 
         console.log(formData)
@@ -179,12 +182,13 @@ const updateFormValues = tatibItem => {
     hideLoader()
 }
 
-export const open = (tatibItem, tatib, onSuccess) => {
+export const open = (tatibItem, tatib, onSuccess, insertAfter=null) => {
     showLoader()
     modal.modal('show')
     tatibSubject.next(tatib)
     tatibItemSubject.next(tatibItem)
     onSuccessSubject.next(onSuccess)
+    insertAfterSubject.next(insertAfter)
 }
 
 tatibSubject.subscribe(updateFormTatibIdValue)
@@ -195,3 +199,5 @@ tatibItemSubject.subscribe(updateModalHeader)
 tatibItemSubject.subscribe(updateFormValues)
 
 onSuccessSubject.subscribe(updateModal)
+
+insertAfterSubject.subscribe(value => insertAfter = value)

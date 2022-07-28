@@ -6,11 +6,22 @@ from multimedia.tatib import models
 
 class TataIbadahItemSerializer(serializers.ModelSerializer):
     order_number = serializers.IntegerField(read_only=True)
+    insert_after = serializers.IntegerField(required=False)
 
     def create(self, validated_data):
         tatib: models.TataIbadah = validated_data['tatib']
-        max_order_number_aggr = tatib.tataibadahitem_set.aggregate(Max('order_number'))['order_number__max']
-        max_order_number = max_order_number_aggr or 0
+
+        insert_after = validated_data.pop('insert_after', None)
+        if insert_after is None:
+            max_order_number_aggr = tatib.tataibadahitem_set.aggregate(Max('order_number'))['order_number__max']
+            max_order_number = max_order_number_aggr or 0
+        else:
+            max_order_number = insert_after
+            items = models.TataIbadahItem.objects.filter(order_number__gt=insert_after)
+            for item in items:
+                item.order_number += 1
+            models.TataIbadahItem.objects.bulk_update(items, ['order_number'])
+
         data = {**validated_data, 'order_number': max_order_number + 1}
         return models.TataIbadahItem.objects.create(**data)
 
