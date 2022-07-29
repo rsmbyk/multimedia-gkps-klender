@@ -1,10 +1,10 @@
 import { BehaviorSubject } from '/static/helpers/rx.js'
 
 const previewSegment = $('#preview-segment')
-const previewText = $('#preview-text')
+const previewText = $('.previewText')
 
-const previewButtonNextLyric = $('#preview-button-next-lyric')
-const previewButtonPrevLyric = $('#preview-button-prev-lyric')
+const previewButtonPrevLyric = $('.previewButtonPrevLyric')
+const previewButtonNextLyric = $('.previewButtonNextLyric')
 
 let activeLyrics
 let activeLyricIndex
@@ -12,7 +12,7 @@ let activeLyricIndex
 const activeLyricsSubject = new BehaviorSubject()
 const activeLyricIndexSubject = new BehaviorSubject()
 
-export const buildLyrics = lyric => {
+const buildLyrics = lyric => {
     const joinAdjacentText = lyricTexts => {
         const result = []
         let joinedTexts = ''
@@ -32,8 +32,25 @@ export const buildLyrics = lyric => {
     }
 
     activeLyricsSubject.next(joinAdjacentText(lyric.split('\n')))
+
+    if (activeLyricIndex === undefined || lyric?.length === 0) {
+        activeLyricIndexSubject.next(0)
+    } else {
+        activeLyricIndexSubject.next(Math.min(activeLyricIndex, activeLyrics.length-1))
+    }
+}
+
+export function openPreview(lyric) {
+    buildLyrics(lyric)
     activeLyricIndexSubject.next(0)
     previewSegment.transition('fade up in')
+}
+
+export function openModalPreview(lyric, resetIndex=false) {
+    buildLyrics(lyric)
+    if (resetIndex) {
+        activeLyricIndexSubject.next(0)
+    }
 }
 
 const nextLyric = () => {
@@ -53,7 +70,11 @@ const prevLyric = () => {
 }
 
 const updatePreviewText = activeLyricIndex => {
-    previewText.text(activeLyrics[activeLyricIndex])
+    if (activeLyrics.length === 0) {
+        previewText.text('')
+    } else {
+        previewText.text(activeLyrics[activeLyricIndex])
+    }
 }
 
 export function closePreview() {
@@ -67,7 +88,10 @@ export function closePreview() {
 }
 
 previewSegment.click(e => {
-    if (previewButtonNextLyric[0].contains(e.target) || previewButtonPrevLyric[0].contains(e.target))
+    const clickOnPrevLyric = Array.from(previewButtonPrevLyric).some((b, _) => b.contains(e.target))
+    const clickOnNextLyric = Array.from(previewButtonNextLyric).some((b, _) => b.contains(e.target))
+
+    if (clickOnPrevLyric || clickOnNextLyric)
         return false
 
     closePreview()

@@ -179,7 +179,7 @@ const createVerseListItem = verse => {
     })
 
     buttonPreview.click(() => {
-        PreviewManager.buildLyrics(verse.lyric)
+        PreviewManager.openPreview(verse.lyric)
     })
 
     buttonEdit.click(() => {

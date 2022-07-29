@@ -369,7 +369,7 @@ const createTatibItemListItem = (tatibItem, index) => {
     })
 
     buttonPreview.click(() => {
-        PreviewManager.showPreviewText(tatibItem.title, tatibItem.text)
+        PreviewManager.openPreview(tatibItem.title, tatibItem.text)
     })
 
     buttonEdit.click(() => {
