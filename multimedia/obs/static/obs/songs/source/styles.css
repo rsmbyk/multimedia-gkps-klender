@@ -23,16 +23,22 @@
 .outlineDisplayText {
     font-weight: 900;
     line-height: 1.5;
-    text-shadow: 3px 4px #000000a0;
-    -webkit-text-stroke: 3px black;
+    text-shadow:
+        -1px -1px #000,
+        -1px 1px #000,
+        1px -1px #000,
+        1px 1px #000,
+        2px 2.5px 1px #0004,
+        3px 4px 2px #000a;
+    -webkit-text-stroke: 1.5px black;
 }
 
 .boxDisplayText {
     display: inline !important;
     font-weight: 700;
     line-height: 1.8 !important;
-    text-shadow: 3px 4px #000000a0;
-    box-shadow: 0.5em 0 0 #ffaa3b, -0.5em 0 0 #ffaa3b;
+    text-shadow: 3px 4px 2px #000a;
+    box-shadow: 0.5em 0 0 transparent, -0.5em 0 0 transparent;
     border-radius: 6px;
     padding: 0.125em 0.25em 0.25em !important;
     -webkit-box-decoration-break: clone;
