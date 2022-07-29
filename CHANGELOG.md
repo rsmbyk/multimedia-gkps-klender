@@ -2,6 +2,25 @@
 
 ---
 
+## Version `0.4`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b0`
+- Songs: `v0.4.s3`
+- Tatib: `v0.4.t4`
+
+### Changes
+
+- `[s1]` Added two display modes (Box and Outline DisplayModes) to use in Options.
+- `[dj1, t1]` Added buttons to insert TatibItems right after a specific item.
+- `[t2]` The page will now scroll to the last (detected) position before refreshing the TatibItem list.
+- `[s2, t3]` The PreviewSegment in web will now be closed when trying to do other actions.
+- `[s3, t4]` Added a PreviewSegment into the EditModals in Web that shows live preview of the currently edited items.
+
+---
+
 ## Version `0.3.9`
 
 ### App Versions
