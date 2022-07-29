@@ -1,12 +1,13 @@
-#song-segment {
-    position: fixed;
+.sourceDisplay {
+    position: fixed !important;
     bottom: 0;
-    margin: 0 0 5vh;  /* 5% of viewport for scrolling text */
-    padding: 0.4em 0.4em;
+    margin: 0 0 5vh !important;  /* 5% of viewport for scrolling text */
+    padding: 0.4em 0.4em !important;
     width: 100vw;
 }
 
-#song-lyric {
+.songLyric {
+    font-family: "Source Sans Pro", sans-serif !important;
     white-space: pre-wrap;
 }
 
@@ -17,4 +18,28 @@
 
 .ui.divider {
     margin: 0.4rem 0;
+}
+
+.outlineDisplayText {
+    font-weight: 900;
+    line-height: 1.5;
+    text-shadow:
+        -1px -1px #000,
+        -1px 1px #000,
+        1px -1px #000,
+        1px 1px #000,
+        2px 2.5px 1px #0004,
+        3px 4px 2px #000a;
+    -webkit-text-stroke: 1.5px black;
+}
+
+.boxDisplayText {
+    display: inline !important;
+    font-weight: 700;
+    line-height: 1.8 !important;
+    text-shadow: 3px 4px 2px #000a;
+    box-shadow: 0.5em 0 0 transparent, -0.5em 0 0 transparent;
+    border-radius: 6px;
+    padding: 0.125em 0.25em 0.25em !important;
+    -webkit-box-decoration-break: clone;
 }

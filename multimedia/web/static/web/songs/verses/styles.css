@@ -7,10 +7,17 @@
     cursor: pointer;
 }
 
-#preview-text {
+.previewText {
     white-space: pre-wrap;
-    font-size: calc(100vw/1280*34);  /* 1280 is the width used in obs */
     font-family: "Source Sans Pro", sans-serif !important;
+}
+
+#preview-segment .previewText {
+    font-size: calc(100vw/1280*34);  /* 1280 is the width used in obs */
+}
+
+#modal-preview-segment .previewText {
+    font-size: calc(468px/1280*34)
 }
 
 .ui.flat.segment {

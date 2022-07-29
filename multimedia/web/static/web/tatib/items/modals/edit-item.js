@@ -1,5 +1,7 @@
 import { BehaviorSubject } from '/static/helpers/rx.js'
 
+import * as PreviewManager from '../PreviewManager.js'
+
 const modal = $('#modal-edit-item')
 const modalHeader = $('#modal-edit-item-header')
 
@@ -15,10 +17,12 @@ const buttonSave = modal.find('#modal-edit-item-button-save')
 const buttonCancel = modal.find('#modal-edit-item-button-cancel')
 
 let requestFunction
+let insertAfter
 
 const tatibSubject = new BehaviorSubject()
 const tatibItemSubject = new BehaviorSubject()
 const onSuccessSubject = new BehaviorSubject()
+const insertAfterSubject = new BehaviorSubject()
 
 form.form({
     fields: {
@@ -39,6 +43,14 @@ form.form({
     },
     inline: true,
     on: 'change',
+    onValid: function() {
+        const values = form.form('get values')
+        PreviewManager.openModalPreview(values.title, values.text)
+    },
+    onInvalid: function() {
+        const values = form.form('get values')
+        PreviewManager.openModalPreview(values.title, values.text)
+    }
 })
 
 const showLoader = () => {
@@ -75,7 +87,7 @@ const sendCreateRequest = (formData, onSuccess) => {
         success: response => {
             console.log(response)
             modal.modal('hide')
-            if (typeof onSuccess === "function") onSuccess(response)
+            if (typeof onSuccess === 'function') onSuccess(response.order_number)
         },
         error: ({ responseJSON }) => {
             console.log(responseJSON)
@@ -95,7 +107,7 @@ const sendEditRequest = (formData, onSuccess) => {
         success: response => {
             console.log(response)
             modal.modal('hide')
-            if (typeof onSuccess === "function") onSuccess(response)
+            if (typeof onSuccess === 'function') onSuccess(response.order_number)
         },
         error: ({ responseJSON }) => {
             console.log(responseJSON)
@@ -120,6 +132,7 @@ const submitForm = onSuccess => {
             item_type: 0,
             title: title,
             text: text,
+            insert_after: insertAfter,
         }
 
         console.log(formData)
@@ -167,6 +180,10 @@ const updateModalHeader = tatibItem => {
     modalHeader.text(tatibItem === null ? 'Create Item' : 'Edit Item')
 }
 
+function updateModalPreview(tatibItem) {
+    PreviewManager.openModalPreview(tatibItem?.title ?? '', tatibItem?.text ?? '')
+}
+
 const updateFormValues = tatibItem => {
     if (tatibItem !== null) {
         form.form('set values', {
@@ -179,12 +196,13 @@ const updateFormValues = tatibItem => {
     hideLoader()
 }
 
-export const open = (tatibItem, tatib, onSuccess) => {
+export const open = (tatibItem, tatib, onSuccess, insertAfter=null) => {
     showLoader()
     modal.modal('show')
     tatibSubject.next(tatib)
     tatibItemSubject.next(tatibItem)
     onSuccessSubject.next(onSuccess)
+    insertAfterSubject.next(insertAfter)
 }
 
 tatibSubject.subscribe(updateFormTatibIdValue)
@@ -193,5 +211,8 @@ tatibItemSubject.subscribe(updateRequestFunction)
 tatibItemSubject.subscribe(updateActionButtons)
 tatibItemSubject.subscribe(updateModalHeader)
 tatibItemSubject.subscribe(updateFormValues)
+tatibItemSubject.subscribe(updateModalPreview)
 
 onSuccessSubject.subscribe(updateModal)
+
+insertAfterSubject.subscribe(value => insertAfter = value)

@@ -33,7 +33,10 @@ let verses
 const songSubject = new BehaviorSubject().pipe(skipWhile(song => song === undefined))
 const versesSubject = new BehaviorSubject().pipe(skipWhile(verses => verses === undefined))
 
-buttonAddVerse.click(() => editVerseModal.open(null, song, verses.length + 1, retrieveVerses))
+buttonAddVerse.click(() => {
+    PreviewManager.closePreview()
+    editVerseModal.open(null, song, verses.length + 1, retrieveVerses)
+})
 
 const showLoader = () => {
     buttonAddVerse.addClass('loading disabled')
@@ -176,14 +179,16 @@ const createVerseListItem = verse => {
     })
 
     buttonPreview.click(() => {
-        PreviewManager.buildLyrics(verse.lyric)
+        PreviewManager.openPreview(verse.lyric)
     })
 
     buttonEdit.click(() => {
+        PreviewManager.closePreview()
         editVerseModal.open(verse, song, verse.number, retrieveVerses)
     })
 
     buttonDelete.click(() => {
+        PreviewManager.closePreview()
         deleteVerseModal.open(verse, song, retrieveVerses)
     })
 

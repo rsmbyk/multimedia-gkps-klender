@@ -23,10 +23,11 @@
     <script type="module" src="{% static 'obs/songs/common/bc.js' %}"></script>
 
     <script type="module" src="{% static 'obs/songs/source/index.js' %}"></script>
+    <script type="module" src="{% static 'obs/songs/source/display.js' %}"></script>
     <script type="module" src="{% static 'obs/songs/source/settings.js' %}"></script>
 </head>
 <body style="background-color: transparent">
-    <div class="ui inverted raised fluid flat segment hidden transition" id="song-segment">
+    <div class="ui inverted raised fluid flat segment hidden transition sourceDisplay" id="segment-display">
         <a class="ui inverted right corner big label">
             <i class="inverted icomoon-note icon"></i>
         </a>
@@ -45,7 +46,23 @@
 
         <div class="ui padded very compact grid">
             <div class="column">
-                <div class="ui center aligned inverted header" id="song-lyric"></div>
+                <div class="ui center aligned inverted header songLyric displayText"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui hidden transition sourceDisplay" id="box-display">
+        <div class="ui padded very compact grid" >
+            <div class="column" style="text-align: center">
+                <div class="songLyric displayText displayBackground boxDisplayText"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui hidden transition sourceDisplay" id="outline-display">
+        <div class="ui padded very compact grid" >
+            <div class="column" style="text-align: center">
+                <div class="songLyric displayText outlineDisplayText"></div>
             </div>
         </div>
     </div>

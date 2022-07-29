@@ -6,7 +6,10 @@ const songSegment = $('#song-segment')
 const headerSongInfo = $('#song-info').find('.header:not(.sub)')
 const songBookInfo = $('#song-book-info')
 const songTitle = $('#song-title')
-const songLyric = $('#song-lyric')
+
+const displayBackground = $('.displayBackground')
+const displayText = $('.displayText')
+const boxDisplayText = $('.boxDisplayText')
 
 const label = songSegment.find('.ui.label')
 const divider = songSegment.find('.ui.divider')
@@ -17,7 +20,7 @@ const updateTitleTextSize = titleTextSize => {
 }
 
 const updateLyricTextSize = contentTextSize => {
-    songLyric.css('font-size', `${contentTextSize}px`)
+    displayText.css('font-size', `${contentTextSize}px`)
 }
 
 const extractColour = (hexColour, defaultOpacity=null) => {
@@ -35,14 +38,15 @@ const updateTextColour = () => {
     // h means header, s means subheader
     const { r: hr, g: hg, b: hb, a: ha } = extractColour(settingsStorage.getTextColour(), 1)
     const { r: sr, g: sg, b: sb, a: sa } = extractColour(settingsStorage.getTextColour(), 0.8)
-    songLyric.css('color', `rgba(${hr}, ${hg}, ${hb}, ${ha})`)
+    displayText.css('color', `rgba(${hr}, ${hg}, ${hb}, ${ha})`)
     songTitle.css('color', `rgba(${hr}, ${hg}, ${hb}, ${ha})`)
     songBookInfo.css('color', `rgba(${sr}, ${sg}, ${sb}, ${sa})`)
 }
 
 const updateBackgroundColour = () => {
     const { r, g, b, a } = extractColour(settingsStorage.getBackgroundColour())
-    songSegment.css('background', `rgba(${r}, ${g}, ${b}, ${a})`)
+    displayBackground.css('background', `rgba(${r}, ${g}, ${b}, ${a})`)
+    boxDisplayText.css('box-shadow', `0.25em 0 0 rgba(${r}, ${g}, ${b}, ${a}), -0.25em 0 0 rgba(${r}, ${g}, ${b}, ${a})`)
 }
 
 const updateLabelIconColour = () => {

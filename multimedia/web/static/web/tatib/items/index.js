@@ -34,29 +34,37 @@ const viewEmpty = $('#view-empty')
 let tatib
 let items
 let itemsOrder
+let scrollPosition
 
 const tatibSubject = new BehaviorSubject()
 const itemsSubject = new BehaviorSubject()
 const itemsOrderSubject = new BehaviorSubject(null)
+const scrollPositionSubject = new BehaviorSubject(null)
 
 const showLoader = () => {
-    buttonAddText.addClass('loading disabled')
-    buttonAddEndOfSection.addClass('loading disabled')
+    buttonAddText.addClass('disabled')
+    buttonAddEndOfSection.addClass('disabled')
+    buttonReorder.addClass('disabled')
 
     buttonSave.addClass('loading disabled')
     buttonDiscard.addClass('disabled')
     itemList.find('.btnUp').addClass('disabled')
     itemList.find('.btnDown').addClass('disabled')
+
+    itemList.find('.ui.button').addClass('disabled')
 }
 
 const hideLoader = () => {
     buttonAddText.removeClass('loading disabled')
     buttonAddEndOfSection.removeClass('loading disabled')
+    buttonReorder.removeClass('disabled')
 
     buttonSave.removeClass('loading disabled')
     buttonDiscard.removeClass('disabled')
     itemList.find('.btnUp').removeClass('disabled')
     itemList.find('.btnDown').removeClass('disabled')
+
+    itemList.find('.ui.button').removeClass('disabled')
 }
 
 const displayTatibInfoPlaceholder = () => {
@@ -201,6 +209,7 @@ const moveItemDown = index => {
 
 const createTatibItemListItem = (tatibItem, index) => {
     const item = doms.createDOMFromJSON({
+        id: 'tatib-item-' + tatibItem.order_number,
         tag: 'div',
         classList: ['item'],
         children: [
@@ -250,6 +259,36 @@ const createTatibItemListItem = (tatibItem, index) => {
                 tag: 'div',
                 classList: ['extra'],
                 children: [
+                    {
+                        tag: 'div',
+                        classList: ['ui', 'primary', 'button', 'btnAddItemNext'],
+                        children: [
+                            {
+                                tag: 'i',
+                                classList: ['plus', 'icon'],
+                            },
+                            {
+                                tag: 'span',
+                                classList: ['text'],
+                                innerText: 'Add Item next',
+                            },
+                        ],
+                    },
+                    {
+                        tag: 'div',
+                        classList: ['ui', 'secondary', 'button', 'btnAddEoSNext'],
+                        children: [
+                            {
+                                tag: 'i',
+                                classList: ['plus', 'icon'],
+                            },
+                            {
+                                tag: 'span',
+                                classList: ['text'],
+                                innerText: 'Add End of Section next',
+                            },
+                        ],
+                    },
                     {
                         tag: 'div',
                         classList: ['ui', 'right', 'floated', 'buttons'],
@@ -302,6 +341,9 @@ const createTatibItemListItem = (tatibItem, index) => {
     const buttonUp = item.find('.btnUp')
     const buttonDown = item.find('.btnDown')
 
+    const buttonAddItemNext = item.find('.btnAddItemNext')
+    const buttonAddEoSNext = item.find('.btnAddEoSNext')
+
     buttonUp.click(() => {
         moveItemUp(index)
     })
@@ -327,15 +369,17 @@ const createTatibItemListItem = (tatibItem, index) => {
     })
 
     buttonPreview.click(() => {
-        PreviewManager.showPreviewText(tatibItem.title, tatibItem.text)
+        PreviewManager.openPreview(tatibItem.title, tatibItem.text)
     })
 
     buttonEdit.click(() => {
-        editItemModal.open(tatibItem, tatib, retrieveItems)
+        PreviewManager.closePreview()
+        editItemModal.open(tatibItem, tatib, refreshItems)
     })
 
     buttonDelete.click(() => {
-        deleteItemModal.open(tatibItem, retrieveItems)
+        PreviewManager.closePreview()
+        deleteItemModal.open(tatibItem, refreshItems)
     })
 
     if (itemsOrder === null) {
@@ -351,9 +395,29 @@ const createTatibItemListItem = (tatibItem, index) => {
         buttonDown.addClass('secondary')
     }
 
+    buttonAddItemNext.click(() => {
+        PreviewManager.closePreview()
+        editItemModal.open(null, tatib, refreshItems, tatibItem.order_number)
+    })
+
+    buttonAddEoSNext.click(() => {
+        buttonAddEoSNext.addClass('loading')
+        PreviewManager.closePreview()
+        sendCreateEoSRequest(tatibItem.order_number)
+    })
+
     extra.hide()
 
     return item
+}
+
+function scrollToLastSavedPosition() {
+    if (scrollPosition === null) {
+        return
+    }
+
+    document.getElementById('tatib-item-' + scrollPosition)
+        ?.scrollIntoView({behavior: 'smooth'})
 }
 
 const updateItemList = items => {
@@ -365,6 +429,8 @@ const updateItemList = items => {
 
     if (items.length === 0) displayEmptyView()
     else displayItemList()
+
+    scrollToLastSavedPosition()
 }
 
 const retrieveItems = () => {
@@ -374,6 +440,11 @@ const retrieveItems = () => {
     axios.get(`/api/tatib/items?tatib=${tatibId}&ordering=order_number`)
         .then(({ data: items }) => itemsSubject.next(items))
         .catch(displayErrorView)
+}
+
+function refreshItems(scrollToAfter) {
+    scrollPositionSubject.next(scrollToAfter)
+    retrieveItems()
 }
 
 const retrieveTatib = () => {
@@ -398,27 +469,37 @@ const buildReorderRequestData = () => {
     }
 }
 
-buttonAddEndOfSection.click(() => {
+function sendCreateEoSRequest(insertAfter) {
     showLoader()
 
     const body = {
         tatib: tatibId,
         item_type: 1,
+        insert_after: insertAfter,
     }
 
     axios.post('/api/tatib/items', body)
+        .then(({ data: item }) => scrollPositionSubject.next(item.order_number))
         .then(retrieveItems)
         .catch(e => {
-            console.log(e)
+            console.log(e.response?.data)
             toasts.error('Failed to create item', 'left bottom')
         })
+}
+
+buttonAddEndOfSection.click(() => {
+    buttonAddEndOfSection.addClass('loading')
+    PreviewManager.closePreview()
+    sendCreateEoSRequest()
 })
 
 buttonAddText.click(() => {
-    editItemModal.open(null, tatib, retrieveItems)
+    PreviewManager.closePreview()
+    editItemModal.open(null, tatib, refreshItems)
 })
 
 buttonReorder.click(() => {
+    PreviewManager.closePreview()
     itemsOrderSubject.next(items)
 })
 
@@ -430,7 +511,8 @@ buttonSave.click(() => {
     showLoader()
 
     axios.post('/api/tatib/items/reorder', buildReorderRequestData())
-        .then(({ data }) => {
+        .then(() => scrollPositionSubject.next(null))
+        .then(() => {
             itemsOrderSubject.next(null)
             retrieveItems()
         })
@@ -451,5 +533,7 @@ itemsOrderSubject.subscribe(updateActionButtonsVisibility)
 itemsOrderSubject.subscribe(updateReorderButtonsVisibility)
 itemsOrderSubject.subscribe(updateReorderSaveButton)
 itemsOrderSubject.subscribe(updateItemListItemsClass)
+
+scrollPositionSubject.subscribe(value => scrollPosition = value)
 
 retrieveTatib()

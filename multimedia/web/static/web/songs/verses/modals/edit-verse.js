@@ -1,5 +1,7 @@
 const { BehaviorSubject, skipWhile } = rxjs
 
+import * as PreviewManager from '../PreviewManager.js'
+
 const modal = $('#modal-edit-verse')
 const modalHeader = $('#modal-edit-verse-header')
 
@@ -33,6 +35,14 @@ form.form({
     },
     inline: true,
     on: 'change',
+    onValid: function() {
+        const values = form.form('get values')
+        PreviewManager.openModalPreview(values.lyric)
+    },
+    onInvalid: function() {
+        const values = form.form('get values')
+        PreviewManager.openModalPreview(values.lyric)
+    }
 })
 
 const showLoader = () => {
@@ -137,6 +147,10 @@ const updateModal = onSuccess => {
     })
 }
 
+function updateModalPreview(verse) {
+    PreviewManager.openModalPreview(verse?.lyric ?? '', true)
+}
+
 const updateFormValues = verse => {
     if (verse !== null) {
         form.form('set values', {
@@ -189,6 +203,7 @@ verseSubject.subscribe(updateRequestFunction)
 verseSubject.subscribe(updateActionButtons)
 verseSubject.subscribe(updateFormValues)
 verseSubject.subscribe(updateModalHeader)
+verseSubject.subscribe(updateModalPreview)
 
 songSubject.subscribe(updateFormSongIDValue)
 
