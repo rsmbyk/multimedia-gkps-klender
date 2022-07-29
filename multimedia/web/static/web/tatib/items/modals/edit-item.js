@@ -1,5 +1,7 @@
 import { BehaviorSubject } from '/static/helpers/rx.js'
 
+import * as PreviewManager from '../PreviewManager.js'
+
 const modal = $('#modal-edit-item')
 const modalHeader = $('#modal-edit-item-header')
 
@@ -41,6 +43,14 @@ form.form({
     },
     inline: true,
     on: 'change',
+    onValid: function() {
+        const values = form.form('get values')
+        PreviewManager.openModalPreview(values.title, values.text)
+    },
+    onInvalid: function() {
+        const values = form.form('get values')
+        PreviewManager.openModalPreview(values.title, values.text)
+    }
 })
 
 const showLoader = () => {
@@ -170,6 +180,10 @@ const updateModalHeader = tatibItem => {
     modalHeader.text(tatibItem === null ? 'Create Item' : 'Edit Item')
 }
 
+function updateModalPreview(tatibItem) {
+    PreviewManager.openModalPreview(tatibItem?.title ?? '', tatibItem?.text ?? '')
+}
+
 const updateFormValues = tatibItem => {
     if (tatibItem !== null) {
         form.form('set values', {
@@ -197,6 +211,7 @@ tatibItemSubject.subscribe(updateRequestFunction)
 tatibItemSubject.subscribe(updateActionButtons)
 tatibItemSubject.subscribe(updateModalHeader)
 tatibItemSubject.subscribe(updateFormValues)
+tatibItemSubject.subscribe(updateModalPreview)
 
 onSuccessSubject.subscribe(updateModal)
 
