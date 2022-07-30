@@ -308,7 +308,7 @@ const postSongInfo = activeLyricIndex => {
         activeVerses[activeVerseIndex].number,
         activeSong.song_info.title,
         activeSong.song_info.is_untitled,
-        activeLyrics[activeLyricIndex],
+        activeLyricIndex !== activeLyrics.length - 1 ? activeLyrics[activeLyricIndex] : '',
     )
 }
 
