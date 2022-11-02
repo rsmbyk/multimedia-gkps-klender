@@ -2,6 +2,21 @@
 
 ---
 
+## Version `0.4.1 Hotfix`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b0`
+- Songs: `v0.4.s4`
+- Tatib: `v0.4.t4`
+
+### Hotfix Changes
+
+- `[s4]` The displayed lyrics will be set to empty string upon reaching last lyric.
+
+---
+
 ## Version `0.4`
 
 ### App Versions
