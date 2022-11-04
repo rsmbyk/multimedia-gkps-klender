@@ -31,7 +31,7 @@ export const postStatusMessage = status => {
 
 bcSongInfo.onmessage = ({ data: songInfo }) => songInfoSubject.next(songInfo)
 
-bcStatus.onmessage = ({ data: { status } }) => statusSubject.next(status)
+bcStatus.onmessage = ({ data: status }) => statusSubject.next(status)
 
 songInfoSubject.subscribe(console.log)
 statusSubject.subscribe(console.log)

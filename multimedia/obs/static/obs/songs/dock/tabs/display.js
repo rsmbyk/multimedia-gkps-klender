@@ -312,9 +312,9 @@ const postSongInfo = activeLyricIndex => {
     )
 }
 
-const updateStatusButton = status => {
     if (status === true) toggleButtonStatus.setActive()
     else toggleButtonStatus.setInactive()
+const updateStatusButton = ({ status }) => {
 }
 
 const getSongButtonPopupContent = bookmarkItem => {
