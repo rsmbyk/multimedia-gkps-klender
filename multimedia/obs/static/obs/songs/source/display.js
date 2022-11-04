@@ -49,7 +49,7 @@ function updateDisplayMode(displayMode) {
         transitionIn(activeDisplay)
 }
 
-function updateDisplayState(status) {
+function updateDisplayState({ status }) {
     if (activeDisplay === undefined)
         return
 

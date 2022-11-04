@@ -17,7 +17,7 @@ const doTransition = () => {
     })
 }
 
-const updateDisplayState = status => {
+const updateDisplayState = ({ status }) => {
     if (status === true) tatibSegment.transition('fade up in')
     else if (tatibSegment.is(':visible')) {
         tatibSegment.transition({
