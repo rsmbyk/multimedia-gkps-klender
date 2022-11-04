@@ -1,0 +1,20 @@
+#lyric-segment {
+    height: 100%;
+}
+
+#lyric-container {
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    padding: 10px;
+    height: 100%;
+}
+
+#lyric-text {
+    white-space: pre-wrap;
+    font-size: 95px;
+    text-align: center;
+    font-family: "CMG Sans", sans-serif;
+    font-weight: 700;
+    line-height: 1.31;
+}
