@@ -21,12 +21,14 @@ export const postSongInfoMessage = (bookNumber, verseNumber, title, is_untitled,
     })
 }
 
-export const postStatusMessage = status => {
+export const postStatusMessage = (status, skipUpdateSubject) => {
     bcStatus.postMessage({
         status: status,
     })
 
-    statusSubject.next(status)
+    if (!skipUpdateSubject) {
+        statusSubject.next(status)
+    }
 }
 
 bcSongInfo.onmessage = ({ data: songInfo }) => songInfoSubject.next(songInfo)

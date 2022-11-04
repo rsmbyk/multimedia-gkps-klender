@@ -18,12 +18,14 @@ export const postTatibItemMessage = (title, text) => {
     })
 }
 
-export const postStatusMessage = status => {
+export const postStatusMessage = (status, skipUpdateSubject) => {
     bcStatus.postMessage({
         status: status,
     })
 
-    statusSubject.next(status)
+    if (!skipUpdateSubject) {
+        statusSubject.next(status)
+    }
 }
 
 bcTatibItem.onmessage = ({ data: songInfo }) => tatibItemSubject.next(songInfo)
