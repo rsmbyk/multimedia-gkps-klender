@@ -147,9 +147,9 @@ const updateTatibItemList = tatibItems => {
     tatibItemList.append(...tatibItems.map(createTatibItemListItem))
 }
 
-    if (status === true) toggleButtonStatus.setActive()
-    else toggleButtonStatus.setInactive()
 const updateStatusButton = ({ status }) => {
+    if (status === true) toggleButtonStatus.setActive(true)
+    else toggleButtonStatus.setInactive(true)
 }
 
 const checkEndOfSection = activeItemIndex => {
