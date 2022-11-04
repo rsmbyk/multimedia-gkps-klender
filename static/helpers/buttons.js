@@ -10,8 +10,8 @@ export class ManualToggleButton {
         this.setInactive()
     }
 
-    setActive() {
-        if (this.onActive instanceof Function && this.onActive() === false)
+    setActive(skipToggleAction) {
+        if (!skipToggleAction && this.onActive instanceof Function && this.onActive() === false)
             return
 
         this.btnInactive.hide()
@@ -19,8 +19,8 @@ export class ManualToggleButton {
         this.isActive = true
     }
 
-    setInactive() {
-        if (this.onInactive instanceof Function && this.onInactive() === true)
+    setInactive(skipToggleAction) {
+        if (!skipToggleAction && this.onInactive instanceof Function && this.onInactive() === true)
             return
 
         this.btnActive.hide()
