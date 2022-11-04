@@ -2,6 +2,26 @@
 
 ---
 
+## Version `0.4.2`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b0`
+- Songs: `v0.4.s4`
+- Tatib: `v0.4.t4`
+- Project: `v0.4.p0`
+
+### Changes
+
+- `[b1, s5, t5]` Added an option to skip the toggle action when toggling a ToggleButton.
+- `[s6, t6]` The status broadcast message that is forwarded to the Subject will now forward the whole object instead of the status value only.
+- `[s7, t7]` The display tab will not re-broadcast the status message upon receiving a status broadcast message anymore.
+- `[s8, t8]` Added an option to not notify the Subject when sending status broadcast message.
+- `[p0]` Added a new app: `project` to show a full screen display of lyrics and tatib (and passage possibly in the future) texts. 
+
+---
+
 ## Version `0.4.1 Hotfix`
 
 ### App Versions
