@@ -9,9 +9,12 @@ import * as bc from '../../common/bc.js'
 import * as options from '../../common/options.js'
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
+import * as bookmarkDetailModal from '../modals/bookmark-detail.js'
+
 const hasPopup = $('#tab-display .hasPopup')
 
 const dropdownSongs = $('#display-dropdown-songs')
+const buttonBookmarkShortcut = $('#display-button-bookmark-shortcut')
 
 const songBookNumber = $('#display-song-book-number')
 const songTitle = $('#display-song-title')
@@ -118,6 +121,14 @@ const updateSongsDropdown = bookmarkItems => {
                 activeSongIndexSubject.next(parseInt(value))
             }
         })
+}
+
+function updateBookmarkShortcutButton(bookmark) {
+    if (bookmark === null) {
+        buttonBookmarkShortcut.hide()
+    } else {
+        buttonBookmarkShortcut.show()
+    }
 }
 
 const updateSongBookNumber = value => {
@@ -422,8 +433,14 @@ songTitle.click(() => {
         })
 })
 
+buttonBookmarkShortcut.click(() => {
+    bookmarkDetailModal.open(bookmarkManager.bookmark)
+})
+
 
 focusManager.registerFocusChange('green')
+
+bookmarkManager.bookmarkSubject.subscribe(updateBookmarkShortcutButton)
 
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(updateSongsDropdown)
