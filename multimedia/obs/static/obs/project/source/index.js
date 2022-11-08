@@ -18,8 +18,19 @@ const doTransition = () => {
     })
 }
 
+function resizeFont() {
+    let fontSize = 100
+
+    do {
+        lyricText.css('fontSize', fontSize)
+        fontSize -= 1
+    } while (lyricText.height() >= 680)
+}
+
 bcSongs.songInfoSubject.subscribe(updateSongInfo)
 bcSongs.songInfoSubject.subscribe(doTransition)
+bcSongs.songInfoSubject.subscribe(resizeFont)
 
 bcTatib.tatibItemSubject.subscribe(updateTatibInfo)
 bcTatib.tatibItemSubject.subscribe(doTransition)
+bcTatib.tatibItemSubject.subscribe(resizeFont)
