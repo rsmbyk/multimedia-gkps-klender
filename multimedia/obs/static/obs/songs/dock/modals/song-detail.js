@@ -3,6 +3,7 @@ const { map, scan } = rxjs
 import '/static/helpers/arrays.js'
 import { ToggleButton, ManualToggleButton } from '/static/helpers/buttons.js'
 import { BehaviorSubject } from '/static/helpers/rx.js'
+import * as dateUtil from '/static/helpers/date-util.js'
 import * as doms from '/static/helpers/doms.js'
 import * as mutations from '/static/helpers/mutations.js'
 import * as toasts from '/static/helpers/toasts.js'
@@ -43,6 +44,9 @@ let song
 let book
 let verses
 
+let onSave
+
+const onSaveSubject = new BehaviorSubject()
 const bookmarkSubject = new BehaviorSubject()
 const songSubject = new BehaviorSubject()
 const bookSubject = new BehaviorSubject()
@@ -152,6 +156,10 @@ const sendCreateBookmarkItemRequest = () => {
         },
         success: response => {
             console.log(response)
+            if (onSave instanceof Function) {
+                onSave()
+            }
+
             if (bookmarkManager.bookmark.id === bookmark.id) {
                 bookmarkManager.refreshBookmarkItems()
             }
@@ -177,6 +185,10 @@ const sendEditBookmarkItemRequest = () => {
         },
         success: response => {
             console.log(response)
+            if (onSave instanceof Function) {
+                onSave()
+            }
+
             if (bookmarkManager.bookmark.id === bookmark.id) {
                 bookmarkManager.refreshBookmarkItems()
             }
@@ -372,6 +384,7 @@ export const open = (songId, bookmarkItem, bookmark, onSave) => {
     displayPlaceholders()
     modal.modal('show')
     retrieveSong(songId)
+    onSaveSubject.next(onSave)
     bookmarkSubject.next(bookmark || bookmarkManager.bookmark)
     updateBookmarkItem(bookmarkItem)
 }
@@ -390,6 +403,8 @@ songTitle.click(() => {
             songTitlePopupTimer = setTimeout(() => songTitle.popup('hide'), 800)
         })
 })
+
+onSaveSubject.subscribe(value => onSave = value)
 
 bookmarkSubject.subscribe(value => bookmark = value)
 
