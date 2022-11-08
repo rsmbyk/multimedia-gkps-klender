@@ -1,7 +1,7 @@
 import * as bcSongs from '../../songs/common/bc.js'
 import * as bcTatib from '../../tatib/common/bc.js'
 
-const lyricSegment = $('#lyric-segment')
+const projectSegment = $('#project-segment')
 
 function transitionIn(element) {
     if (element === undefined)
@@ -24,7 +24,7 @@ function transitionOut(element) {
 function updateDisplayState(appName) {
     return ({ status }) => {
         if (status === true) {
-            transitionIn(lyricSegment)
+            transitionIn(projectSegment)
 
             if (appName === 'songs') {
                 bcTatib.postStatusMessage(false, true)
@@ -32,7 +32,7 @@ function updateDisplayState(appName) {
                 bcSongs.postStatusMessage(false, true)
             }
         }
-        else if (lyricSegment.is(':visible')) transitionOut(lyricSegment)
+        else if (projectSegment.is(':visible')) transitionOut(projectSegment)
     }
 }
 

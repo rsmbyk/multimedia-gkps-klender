@@ -1,36 +1,49 @@
 import * as bcSongs from '../../songs/common/bc.js'
 import * as bcTatib from '../../tatib/common/bc.js'
 
-const lyricText = $('#lyric-text')
+const title = $('#project-title')
+const text = $('#project-text')
 
 const updateSongInfo = ({ lyric }) => {
-    lyricText.text(lyric)
+    text.text(lyric)
 }
 
 function updateTatibInfo(tatibItem) {
-    lyricText.text(tatibItem.text)
+    title.text(tatibItem.title)
+    text.text(tatibItem.text)
 }
 
 const doTransition = () => {
-    lyricText.transition({
+    text.transition({
         animation: 'fade in',
         queue: false,
     })
 }
 
-function resizeFont() {
+function resizeTitleFont() {
+    let fontSize = 50
+
+    do {
+        title.css('fontSize', fontSize)
+        fontSize -= 1
+    } while (title.width() >= $(window).width() - 72)
+}
+
+function resizeTextFont() {
     let fontSize = 100
 
     do {
-        lyricText.css('fontSize', fontSize)
+        text.css('fontSize', fontSize)
         fontSize -= 1
-    } while (lyricText.height() >= 680)
+    } while (text.height() >= $(window).height() - title.height() - 72 && fontSize > 1)
 }
 
 bcSongs.songInfoSubject.subscribe(updateSongInfo)
 bcSongs.songInfoSubject.subscribe(doTransition)
-bcSongs.songInfoSubject.subscribe(resizeFont)
+bcSongs.songInfoSubject.subscribe(resizeTitleFont)
+bcSongs.songInfoSubject.subscribe(resizeTextFont)
 
 bcTatib.tatibItemSubject.subscribe(updateTatibInfo)
 bcTatib.tatibItemSubject.subscribe(doTransition)
-bcTatib.tatibItemSubject.subscribe(resizeFont)
+bcTatib.tatibItemSubject.subscribe(resizeTitleFont)
+bcTatib.tatibItemSubject.subscribe(resizeTextFont)
