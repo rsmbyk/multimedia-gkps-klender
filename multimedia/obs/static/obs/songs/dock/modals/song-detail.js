@@ -38,10 +38,12 @@ let bookmarkItemId
 let bookmarkedVerses
 let selectedVerses
 
+let bookmark
 let song
 let book
 let verses
 
+const bookmarkSubject = new BehaviorSubject()
 const songSubject = new BehaviorSubject()
 const bookSubject = new BehaviorSubject()
 const versesSubject = new BehaviorSubject()
@@ -144,13 +146,16 @@ const sendCreateBookmarkItemRequest = () => {
         url: '/api/bookmarks/songs/items',
         method: 'POST',
         data: {
-            bookmark: bookmarkManager.bookmark.id,
+            bookmark: bookmark.id,
             song: song.id,
             verse: JSON.stringify(selectedVerses).slice(1, -1),
         },
         success: response => {
             console.log(response)
-            bookmarkManager.refreshBookmarkItems()
+            if (bookmarkManager.bookmark.id === bookmark.id) {
+                bookmarkManager.refreshBookmarkItems()
+            }
+
             modal.modal('hide')
         },
         error: e => {
@@ -172,7 +177,10 @@ const sendEditBookmarkItemRequest = () => {
         },
         success: response => {
             console.log(response)
-            bookmarkManager.refreshBookmarkItems()
+            if (bookmarkManager.bookmark.id === bookmark.id) {
+                bookmarkManager.refreshBookmarkItems()
+            }
+
             modal.modal('hide')
         },
         error: e => {
@@ -215,7 +223,7 @@ const updateSongInfo = song => {
 }
 
 const updateActionButtons = selectedVerses => {
-    if (bookmarkManager.bookmark === null) {
+    if (bookmark === null) {
         actionToggleButton.setInactive()
         actionToggleButton.hide()
     }
@@ -323,7 +331,7 @@ const createVerseListItem = verse => {
     }
 
     item.hover(() => {
-        if (bookmarkManager.bookmark !== null) bookmarkToggleButton.show()
+        if (bookmark !== null) bookmarkToggleButton.show()
     }, () => {
         if (!bookmarkToggleButton.isActive) bookmarkToggleButton.hide()
     })
@@ -357,13 +365,14 @@ const retrieveSong = songId => {
         .catch(displayErrorView)
 }
 
-export const open = (songId, bookmarkItem) => {
+export const open = (songId, bookmarkItem, bookmark, onSave) => {
     buttonSave.hide()
     buttonDelete.hide()
     showLoader()
     displayPlaceholders()
     modal.modal('show')
     retrieveSong(songId)
+    bookmarkSubject.next(bookmark || bookmarkManager.bookmark)
     updateBookmarkItem(bookmarkItem)
 }
 
@@ -381,6 +390,8 @@ songTitle.click(() => {
             songTitlePopupTimer = setTimeout(() => songTitle.popup('hide'), 800)
         })
 })
+
+bookmarkSubject.subscribe(value => bookmark = value)
 
 songSubject.subscribe(value => song = value)
 songSubject.subscribe(retrieveAdditionalSongInfo)
