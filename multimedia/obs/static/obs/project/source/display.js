@@ -1,5 +1,6 @@
 import * as bcSongs from '../../songs/common/bc.js'
 import * as bcTatib from '../../tatib/common/bc.js'
+import * as bcBible from '../../bible/common/bc.js'
 
 const projectSegment = $('#project-segment')
 
@@ -28,8 +29,13 @@ function updateDisplayState(appName) {
 
             if (appName === 'songs') {
                 bcTatib.postStatusMessage(false, true)
+                bcBible.postStatusMessage(false, true)
             } else if (appName === 'tatib') {
                 bcSongs.postStatusMessage(false, true)
+                bcBible.postStatusMessage(false, true)
+            } else if (appName === 'bible') {
+                bcSongs.postStatusMessage(false, true)
+                bcTatib.postStatusMessage(false, true)
             }
         }
         else if (projectSegment.is(':visible')) transitionOut(projectSegment)
@@ -38,6 +44,8 @@ function updateDisplayState(appName) {
 
 bcSongs.statusSubject.subscribe(updateDisplayState('songs'))
 bcTatib.statusSubject.subscribe(updateDisplayState('tatib'))
+bcBible.statusSubject.subscribe(updateDisplayState('bible'))
 
 bcSongs.postStatusMessage(false)
 bcTatib.postStatusMessage(false)
+bcBible.postStatusMessage(false)

@@ -111,9 +111,9 @@ const updatePassage = verseNumber => {
     displayPassage()
 }
 
-const updateStatusButton = status => {
-    if (status === true && !toggleButtonStatus.isActive) toggleButtonStatus.setActive()
-    else if (status === false && toggleButtonStatus.isActive) toggleButtonStatus.setInactive()
+const updateStatusButton = ({ status }) => {
+    if (status === true && !toggleButtonStatus.isActive) toggleButtonStatus.setActive(true)
+    else if (status === false && toggleButtonStatus.isActive) toggleButtonStatus.setInactive(true)
 }
 
 const updatePrevVerseButton = verseNumber => {

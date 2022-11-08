@@ -1,5 +1,6 @@
 import * as bcSongs from '../../songs/common/bc.js'
 import * as bcTatib from '../../tatib/common/bc.js'
+import * as bcBible from '../../bible/common/bc.js'
 
 const title = $('#project-title')
 const text = $('#project-text')
@@ -11,6 +12,16 @@ const updateSongInfo = ({ lyric }) => {
 function updateTatibInfo(tatibItem) {
     title.text(tatibItem.title)
     text.text(tatibItem.text)
+}
+
+function updatePassageInfo({ bookName, chapterNumber, verseNumber, title: passageTitle, text: passageText }) {
+    let projectTitle = `${bookName} ${chapterNumber} : ${verseNumber}`
+    if (passageTitle.length > 0) {
+        projectTitle += '\n' + passageTitle
+    }
+
+    title.text(projectTitle)
+    text.text(passageText)
 }
 
 const doTransition = () => {
@@ -47,3 +58,8 @@ bcTatib.tatibItemSubject.subscribe(updateTatibInfo)
 bcTatib.tatibItemSubject.subscribe(doTransition)
 bcTatib.tatibItemSubject.subscribe(resizeTitleFont)
 bcTatib.tatibItemSubject.subscribe(resizeTextFont)
+
+bcBible.passageSubject.subscribe(updatePassageInfo)
+bcBible.passageSubject.subscribe(doTransition)
+bcBible.passageSubject.subscribe(resizeTitleFont)
+bcBible.passageSubject.subscribe(resizeTextFont)
