@@ -330,6 +330,22 @@ const createVerseListItem = verse => {
     const buttonBookmarked = item.find('.btnBookmarked')
     const bookmarkToggleButton = new ToggleButton(buttonBookmarked, buttonAddToBookmark)
 
+    if (bookmark !== null) {
+        buttonAddToBookmark
+            .attr('data-title', bookmark.name)
+            .attr('data-content', dateUtil.formatLongDate(bookmark.date))
+            .attr('data-position', 'left center')
+            .attr('data-variation', 'mini')
+            .popup()
+
+        buttonBookmarked
+            .attr('data-title', bookmark.name)
+            .attr('data-content', dateUtil.formatLongDate(bookmark.date))
+            .attr('data-position', 'left center')
+            .attr('data-variation', 'mini inverted')
+            .popup()
+    }
+
     buttonAddToBookmark.click(() => selectedVersesSubject.next(verse.number))
     buttonBookmarked.click(() => selectedVersesSubject.next(-verse.number))
 
