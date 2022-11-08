@@ -58,6 +58,7 @@ const activeLyricIndexSubject = new BehaviorSubject()
 
 const displayPlaceholders = () => {
     dropdownSongs.hide()
+    buttonSongShortcut.hide()
     songBookNumber.hide()
     songTitle.hide()
     songVerseList.hide()
@@ -74,6 +75,7 @@ const hidePlaceholders = () => {
     placeholderSongLyricList.hide()
 
     dropdownSongs.show()
+    buttonSongShortcut.show()
     songBookNumber.show()
     songTitle.show()
     songVerseList.show()
