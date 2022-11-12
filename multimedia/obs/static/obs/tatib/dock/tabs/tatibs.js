@@ -149,6 +149,16 @@ const createTatibListItem = tatib => {
                                 classList: ['ui', 'inverted', 'basic', 'button', 'btnActivate'],
                                 innerText: 'Activate',
                             },
+                            {
+                                tag: 'div',
+                                classList: ['ui', 'inverted', 'primary', 'icon', 'button', 'btnDisplay'],
+                                children: [
+                                    {
+                                        tag: 'i',
+                                        classList: ['desktop', 'icon'],
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -159,49 +169,36 @@ const createTatibListItem = tatib => {
     const iconCheck = item.find('.icoCheck')
     const extra = item.find('.extra')
     const buttonActivate = item.find('.btnActivate')
+    const buttonDisplay = item.find('.btnDisplay')
 
-    item.hover(() => {
-        if (tatibManager.tatib !== null && tatibManager.tatib.id === tatib.id) {
-            iconCheck.show()
-            buttonActivate.hide()
-            extra.hide()
-        } else {
-            iconCheck.hide()
-            buttonActivate.show()
-            extra.show()
-        }
-    }, () => {
-        if (tatibManager.tatib !== null && tatibManager.tatib.id === tatib.id) {
-            iconCheck.show()
-            buttonActivate.hide()
-        } else {
-            iconCheck.hide()
-            buttonActivate.show()
-        }
-
-        extra.hide()
-    })
+    console.log(tatibManager.tatib, tatib.name, tatib.id)
 
     if (tatibManager.tatib !== null && tatibManager.tatib.id === tatib.id) {
+        iconCheck.show()
         buttonActivate.hide()
+        buttonDisplay.show()
     } else {
         iconCheck.hide()
+        buttonDisplay.hide()
+        buttonActivate.show()
     }
 
-    extra.hide()
-
     buttonActivate.click(() => {
-        showControlButtonsLoader()
         tatibList.find('.btnActivate').show()
         buttonActivate.hide()
+        tatibList.find('.btnDisplay').hide()
+        buttonDisplay.show()
         tatibList.find('.icoCheck').hide()
         iconCheck.show()
         tatibManager.activateTatib(tatib)
+    })
+
+    buttonDisplay.click(() => {
         tabManager.changeTab('tab-display')
     })
 
     item.click(e => {
-        if (buttonActivate[0].contains(e.target))
+        if (buttonActivate[0].contains(e.target) || buttonDisplay[0].contains(e.target))
             return false
 
         tatibDetailModal.open(tatib)

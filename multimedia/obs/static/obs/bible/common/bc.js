@@ -21,17 +21,19 @@ export const postPassage = (bookName, chapterNumber, verseNumber, title, text) =
     })
 }
 
-export const postStatusMessage = status => {
+export const postStatusMessage = (status, skipUpdateSubject) => {
     bcStatus.postMessage({
         status: status,
     })
 
-    statusSubject.next(status)
+    if (!skipUpdateSubject) {
+        statusSubject.next(status)
+    }
 }
 
 bcPassage.onmessage = ({ data: passage }) => passageSubject.next(passage)
 
-bcStatus.onmessage = ({ data: { status } }) => statusSubject.next(status)
+bcStatus.onmessage = ({ data: status }) => statusSubject.next(status)
 
 passageSubject.subscribe(console.log)
 statusSubject.subscribe(console.log)

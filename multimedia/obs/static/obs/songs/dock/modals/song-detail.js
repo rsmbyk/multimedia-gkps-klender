@@ -3,6 +3,7 @@ const { map, scan } = rxjs
 import '/static/helpers/arrays.js'
 import { ToggleButton, ManualToggleButton } from '/static/helpers/buttons.js'
 import { BehaviorSubject } from '/static/helpers/rx.js'
+import * as dateUtil from '/static/helpers/date-util.js'
 import * as doms from '/static/helpers/doms.js'
 import * as mutations from '/static/helpers/mutations.js'
 import * as toasts from '/static/helpers/toasts.js'
@@ -22,7 +23,10 @@ const songBookNumber = $('#modal-song-detail-song-book-number')
 
 const buttonSave = $('#modal-song-detail-button-save')
 const buttonDelete = $('#modal-song-detail-button-delete')
-const buttonDisplay = $('#modal-song-detail-button-display')
+const buttonGroupDisplayAll = $('#modal-song-detail-button-group-display-all')
+const buttonGroupDisplayBookmarked = $('#modal-song-detail-button-group-display-bookmarked')
+const buttonDisplayBookmarked = $('#modal-song-detail-button-display-bookmarked')
+const buttonDisplayAll = $('.modal-song-detail-button-display-all')
 
 const placeholderSongInfo = $('#modal-song-detail-placeholder-song-info')
 const placeholderVerseList = $('#modal-song-detail-placeholder-verse-list')
@@ -38,10 +42,15 @@ let bookmarkItemId
 let bookmarkedVerses
 let selectedVerses
 
+let bookmark
 let song
 let book
 let verses
 
+let onSave
+
+const onSaveSubject = new BehaviorSubject()
+const bookmarkSubject = new BehaviorSubject()
 const songSubject = new BehaviorSubject()
 const bookSubject = new BehaviorSubject()
 const versesSubject = new BehaviorSubject()
@@ -81,7 +90,13 @@ buttonDelete.click(() => {
     sendDeleteBookmarkItemRequest()
 })
 
-buttonDisplay.click(() => {
+buttonDisplayBookmarked.click(() => {
+    bookmarkManager.activateSingleBookmarkItem(book, song, selectedVerses.map(e => verses[e-1]))
+    modal.modal('hide all')
+    tabManager.changeTab('tab-display')
+})
+
+buttonDisplayAll.click(() => {
     bookmarkManager.activateSingleBookmarkItem(book, song, verses)
     modal.modal('hide all')
     tabManager.changeTab('tab-display')
@@ -92,7 +107,8 @@ mutations.observeFlexModal(modal[0])
 const showLoader = () => {
     buttonSave.addClass('loading disabled')
     buttonDelete.addClass('loading disabled')
-    buttonDisplay.addClass('disabled')
+    buttonDisplayBookmarked.addClass('disabled')
+    buttonDisplayAll.addClass('disabled')
 
     verseList.find('.btnAddToBookmark').addClass('disabled')
     verseList.find('.btnBookmarked').addClass('disabled')
@@ -101,7 +117,8 @@ const showLoader = () => {
 const hideLoader = () => {
     buttonSave.removeClass('loading disabled')
     buttonDelete.removeClass('loading disabled')
-    buttonDisplay.removeClass('disabled')
+    buttonDisplayBookmarked.removeClass('disabled').popup()
+    buttonDisplayAll.removeClass('disabled')
 
     verseList.find('.btnAddToBookmark').removeClass('disabled')
     verseList.find('.btnBookmarked').removeClass('disabled')
@@ -144,13 +161,20 @@ const sendCreateBookmarkItemRequest = () => {
         url: '/api/bookmarks/songs/items',
         method: 'POST',
         data: {
-            bookmark: bookmarkManager.bookmark.id,
+            bookmark: bookmark.id,
             song: song.id,
             verse: JSON.stringify(selectedVerses).slice(1, -1),
         },
         success: response => {
             console.log(response)
-            bookmarkManager.refreshBookmarkItems()
+            if (onSave instanceof Function) {
+                onSave()
+            }
+
+            if (bookmarkManager.bookmark.id === bookmark.id) {
+                bookmarkManager.refreshBookmarkItems()
+            }
+
             modal.modal('hide')
         },
         error: e => {
@@ -172,7 +196,14 @@ const sendEditBookmarkItemRequest = () => {
         },
         success: response => {
             console.log(response)
-            bookmarkManager.refreshBookmarkItems()
+            if (onSave instanceof Function) {
+                onSave()
+            }
+
+            if (bookmarkManager.bookmark.id === bookmark.id) {
+                bookmarkManager.refreshBookmarkItems()
+            }
+
             modal.modal('hide')
         },
         error: e => {
@@ -215,7 +246,7 @@ const updateSongInfo = song => {
 }
 
 const updateActionButtons = selectedVerses => {
-    if (bookmarkManager.bookmark === null) {
+    if (bookmark === null) {
         actionToggleButton.setInactive()
         actionToggleButton.hide()
     }
@@ -233,9 +264,29 @@ const updateActionButtons = selectedVerses => {
     }
 }
 
-const updateDisplayButton = verses => {
-    if (verses.length === 0) buttonDisplay.hide()
-    else buttonDisplay.show()
+function updateDisplayBookmarkedButton() {
+    if (verses !== undefined && selectedVerses !== undefined && selectedVerses.length === verses.length) {
+        buttonDisplayBookmarked.removeClass('teal')
+        buttonDisplayBookmarked.addClass('primary')
+    } else {
+        buttonDisplayBookmarked.removeClass('primary')
+        buttonDisplayBookmarked.addClass('teal')
+    }
+}
+
+function updateDisplayBookmarkedButtonGroup(selectedVerses) {
+    if (selectedVerses.length === 0) {
+        buttonGroupDisplayBookmarked.hide()
+        buttonGroupDisplayAll.show()
+    } else {
+        buttonGroupDisplayAll.hide()
+        buttonGroupDisplayBookmarked.show()
+    }
+}
+
+const updateDisplayAllButton = verses => {
+    if (verses.length === 0) buttonDisplayAll.hide()
+    else buttonDisplayAll.show().popup()
 }
 
 const updateBookmarkItem = (bookmarkItem) => {
@@ -310,6 +361,22 @@ const createVerseListItem = verse => {
     const buttonBookmarked = item.find('.btnBookmarked')
     const bookmarkToggleButton = new ToggleButton(buttonBookmarked, buttonAddToBookmark)
 
+    if (bookmark !== null) {
+        buttonAddToBookmark
+            .attr('data-title', bookmark.name)
+            .attr('data-content', dateUtil.formatLongDate(bookmark.date))
+            .attr('data-position', 'left center')
+            .attr('data-variation', 'mini')
+            .popup()
+
+        buttonBookmarked
+            .attr('data-title', bookmark.name)
+            .attr('data-content', dateUtil.formatLongDate(bookmark.date))
+            .attr('data-position', 'left center')
+            .attr('data-variation', 'mini inverted')
+            .popup()
+    }
+
     buttonAddToBookmark.click(() => selectedVersesSubject.next(verse.number))
     buttonBookmarked.click(() => selectedVersesSubject.next(-verse.number))
 
@@ -322,11 +389,9 @@ const createVerseListItem = verse => {
         bookmarkToggleButton.hide()
     }
 
-    item.hover(() => {
-        if (bookmarkManager.bookmark !== null) bookmarkToggleButton.show()
-    }, () => {
-        if (!bookmarkToggleButton.isActive) bookmarkToggleButton.hide()
-    })
+    if (bookmark !== null) {
+        bookmarkToggleButton.show()
+    }
 
     return item
 }
@@ -357,13 +422,15 @@ const retrieveSong = songId => {
         .catch(displayErrorView)
 }
 
-export const open = (songId, bookmarkItem) => {
+export const open = (songId, bookmarkItem, bookmark, onSave) => {
     buttonSave.hide()
     buttonDelete.hide()
     showLoader()
     displayPlaceholders()
     modal.modal('show')
     retrieveSong(songId)
+    onSaveSubject.next(onSave)
+    bookmarkSubject.next(bookmark || bookmarkManager.bookmark)
     updateBookmarkItem(bookmarkItem)
 }
 
@@ -382,6 +449,10 @@ songTitle.click(() => {
         })
 })
 
+onSaveSubject.subscribe(value => onSave = value)
+
+bookmarkSubject.subscribe(value => bookmark = value)
+
 songSubject.subscribe(value => song = value)
 songSubject.subscribe(retrieveAdditionalSongInfo)
 songSubject.subscribe(updateSongInfo)
@@ -391,7 +462,10 @@ bookSubject.subscribe(updateBookInfo)
 
 versesSubject.subscribe(value => verses = value)
 versesSubject.subscribe(updateVerseList)
-versesSubject.subscribe(updateDisplayButton)
+versesSubject.subscribe(updateDisplayAllButton)
+versesSubject.subscribe(updateDisplayBookmarkedButton)
 
 selectedVersesSubject.subscribe(value => selectedVerses = value)
 selectedVersesSubject.subscribe(updateActionButtons)
+selectedVersesSubject.subscribe(updateDisplayBookmarkedButton)
+selectedVersesSubject.subscribe(updateDisplayBookmarkedButtonGroup)
