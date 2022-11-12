@@ -389,11 +389,9 @@ const createVerseListItem = verse => {
         bookmarkToggleButton.hide()
     }
 
-    item.hover(() => {
-        if (bookmark !== null) bookmarkToggleButton.show()
-    }, () => {
-        if (!bookmarkToggleButton.isActive) bookmarkToggleButton.hide()
-    })
+    if (bookmark !== null) {
+        bookmarkToggleButton.show()
+    }
 
     return item
 }

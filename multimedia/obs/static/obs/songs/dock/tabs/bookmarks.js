@@ -254,36 +254,15 @@ const createBookmarkListItem = bookmark => {
     const buttonRestore = item.find('.btnRestore')
     const buttonDelete = item.find('.btnDelete')
 
-    item.hover(() => {
-        if (bookmarkManager.bookmark !== null && bookmark.id === bookmarkManager.bookmark.id) {
-            iconCheck.show()
-            buttonActivate.hide()
-        }
-        else {
-            iconCheck.hide()
-            if (!trash) buttonActivate.show()
-            else buttonActivate.hide()
-        }
-
-        extra.show()
-    }, () => {
-        if (bookmarkManager.bookmark !== null && bookmark.id === bookmarkManager.bookmark.id) {
-            iconCheck.show()
-            buttonActivate.hide()
-        }
-        else {
-            iconCheck.hide()
-            if (!trash) buttonActivate.show()
-            else buttonActivate.hide()
-        }
-
-        extra.hide()
-    })
-
-    if (bookmarkManager.bookmark !== null && bookmark.id === bookmarkManager.bookmark.id)
+    if (bookmarkManager.bookmark !== null && bookmark.id === bookmarkManager.bookmark.id) {
+        iconCheck.show()
         buttonActivate.hide()
-    else
+    }
+    else {
         iconCheck.hide()
+        if (!trash) buttonActivate.show()
+        else buttonActivate.hide()
+    }
 
     if (trash) {
         buttonEdit.hide()
@@ -292,8 +271,6 @@ const createBookmarkListItem = bookmark => {
         buttonView.hide()
         buttonRestore.hide()
     }
-
-    extra.hide()
 
     buttonActivate.click(() => {
         showControlButtonsLoader()
