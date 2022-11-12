@@ -7,9 +7,9 @@
 ### App Versions
 
 - Django: `v0.4.dj1`
-- Bible: `v0.4.b0`
-- Songs: `v0.4.s4`
-- Tatib: `v0.4.t4`
+- Bible: `v0.4.b1`
+- Songs: `v0.4.s8`
+- Tatib: `v0.4.t8`
 - Project: `v0.4.p0`
 
 ### Changes
