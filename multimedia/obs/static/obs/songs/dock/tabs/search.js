@@ -90,7 +90,7 @@ const createSearchResultItem = ({ song: { id: songId, book, title, number: songN
     })
 
     item.hover(() => {
-        description.css('-webkit-line-clamp', '')
+        description.css('-webkit-line-clamp', '5')
     }, () => {
         description.css('-webkit-line-clamp', '3')
     })
