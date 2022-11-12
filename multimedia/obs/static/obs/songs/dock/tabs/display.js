@@ -9,9 +9,14 @@ import * as bc from '../../common/bc.js'
 import * as options from '../../common/options.js'
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
+import * as songDetailModal from '../modals/song-detail.js'
+import * as bookmarkDetailModal from '../modals/bookmark-detail.js'
+
 const hasPopup = $('#tab-display .hasPopup')
 
 const dropdownSongs = $('#display-dropdown-songs')
+const buttonBookmarkShortcut = $('#display-button-bookmark-shortcut')
+const buttonSongShortcut = $('#display-button-song-shortcut')
 
 const songBookNumber = $('#display-song-book-number')
 const songTitle = $('#display-song-title')
@@ -53,6 +58,7 @@ const activeLyricIndexSubject = new BehaviorSubject()
 
 const displayPlaceholders = () => {
     dropdownSongs.hide()
+    buttonSongShortcut.hide()
     songBookNumber.hide()
     songTitle.hide()
     songVerseList.hide()
@@ -69,6 +75,7 @@ const hidePlaceholders = () => {
     placeholderSongLyricList.hide()
 
     dropdownSongs.show()
+    buttonSongShortcut.show()
     songBookNumber.show()
     songTitle.show()
     songVerseList.show()
@@ -118,6 +125,14 @@ const updateSongsDropdown = bookmarkItems => {
                 activeSongIndexSubject.next(parseInt(value))
             }
         })
+}
+
+function updateBookmarkShortcutButton(bookmark) {
+    if (bookmark === null) {
+        buttonBookmarkShortcut.hide()
+    } else {
+        buttonBookmarkShortcut.show()
+    }
 }
 
 const updateSongBookNumber = value => {
@@ -422,8 +437,24 @@ songTitle.click(() => {
         })
 })
 
+buttonBookmarkShortcut.click(() => {
+    bookmarkDetailModal.open(bookmarkManager.bookmark)
+})
+
+buttonSongShortcut.click(() => {
+    if (bookmarkManager.bookmark === null) {
+        songDetailModal.open(activeSong.song)
+    } else {
+        songDetailModal.open(
+            activeSong.song,
+            bookmarkManager.bookmarkItems[activeSongIndex],
+        )
+    }
+})
 
 focusManager.registerFocusChange('green')
+
+bookmarkManager.bookmarkSubject.subscribe(updateBookmarkShortcutButton)
 
 bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(updateSongsDropdown)

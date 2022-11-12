@@ -155,11 +155,6 @@ const updateBookmarkInfo = bookmark => {
     displayBookmarkInfo()
 }
 
-const onBookmarkItemsChanged = () => {
-    if (bookmarkManager.bookmark !== null && bookmark !== undefined && bookmarkManager.bookmark.id === bookmark.id)
-        retrieveBookmarkItems(bookmark)
-}
-
 const onItemsOrderChanged = itemsOrder => {
     if (itemsOrder !== null) {
         updateBookmarkItemList(itemsOrder)
@@ -325,9 +320,9 @@ const createBookmarkItem = (bookmarkItem, index) => {
         // bookmark's content or background (anywhere
         // outside the delete button)
         if (bookmark.is_active) {
-            songDetailModal.open(bookmarkItem.song, bookmarkItem)
+            songDetailModal.open(bookmarkItem.song, bookmarkItem, bookmark, () => retrieveBookmarkItems(bookmark))
         } else {
-            songDetailModal.open(bookmarkItem.song)
+            songDetailModal.open(bookmarkItem.song, null, null, () => retrieveBookmarkItems(bookmark))
         }
     })
 
@@ -370,8 +365,6 @@ export const open = bookmark => {
     retrieveBookmark(bookmark)
     retrieveBookmarkItems(bookmark)
 }
-
-bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsChanged)
 
 bookmarkSubject.subscribe(value => bookmark = value)
 bookmarkSubject.subscribe(retrieveBookmarkItems)

@@ -28,6 +28,7 @@ const activateBookmarkItems = bookmarkItems => {
 export const activateSingleBookmarkItem = (book, song, verses) => {
     deactivate()
     activateBookmarkItems([{
+        song: song.id,
         song_info: {
             book_number: book.is_hymn_book ? `${book.short_name} ${song.number}` : null,
             title: song.title,
