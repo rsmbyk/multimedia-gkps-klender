@@ -1,20 +1,31 @@
-#lyric-segment {
+#project-segment {
     height: 100%;
 }
 
-#lyric-container {
+#project-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content:center;
-    padding: 10px;
+    justify-content: center;
+    padding: 36px;
     height: 100%;
 }
 
-#lyric-text {
+#project-title {
     white-space: pre-wrap;
-    font-size: 95px;
+    font-size: 50px;
     text-align: center;
     font-family: "CMG Sans", sans-serif;
     font-weight: 700;
-    line-height: 1.31;
+    line-height: 1.37;
+    padding-bottom: 18px;
+}
+
+#project-text {
+    white-space: pre-wrap;
+    font-size: 100px;
+    text-align: center;
+    font-family: "CMG Sans", sans-serif;
+    font-weight: 700;
+    line-height: 1.37;
 }
