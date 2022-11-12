@@ -23,7 +23,10 @@ const songBookNumber = $('#modal-song-detail-song-book-number')
 
 const buttonSave = $('#modal-song-detail-button-save')
 const buttonDelete = $('#modal-song-detail-button-delete')
-const buttonDisplay = $('#modal-song-detail-button-display')
+const buttonGroupDisplayAll = $('#modal-song-detail-button-group-display-all')
+const buttonGroupDisplayBookmarked = $('#modal-song-detail-button-group-display-bookmarked')
+const buttonDisplayBookmarked = $('#modal-song-detail-button-display-bookmarked')
+const buttonDisplayAll = $('.modal-song-detail-button-display-all')
 
 const placeholderSongInfo = $('#modal-song-detail-placeholder-song-info')
 const placeholderVerseList = $('#modal-song-detail-placeholder-verse-list')
@@ -87,7 +90,13 @@ buttonDelete.click(() => {
     sendDeleteBookmarkItemRequest()
 })
 
-buttonDisplay.click(() => {
+buttonDisplayBookmarked.click(() => {
+    bookmarkManager.activateSingleBookmarkItem(book, song, selectedVerses.map(e => verses[e-1]))
+    modal.modal('hide all')
+    tabManager.changeTab('tab-display')
+})
+
+buttonDisplayAll.click(() => {
     bookmarkManager.activateSingleBookmarkItem(book, song, verses)
     modal.modal('hide all')
     tabManager.changeTab('tab-display')
@@ -98,7 +107,8 @@ mutations.observeFlexModal(modal[0])
 const showLoader = () => {
     buttonSave.addClass('loading disabled')
     buttonDelete.addClass('loading disabled')
-    buttonDisplay.addClass('disabled')
+    buttonDisplayBookmarked.addClass('disabled')
+    buttonDisplayAll.addClass('disabled')
 
     verseList.find('.btnAddToBookmark').addClass('disabled')
     verseList.find('.btnBookmarked').addClass('disabled')
@@ -107,7 +117,8 @@ const showLoader = () => {
 const hideLoader = () => {
     buttonSave.removeClass('loading disabled')
     buttonDelete.removeClass('loading disabled')
-    buttonDisplay.removeClass('disabled')
+    buttonDisplayBookmarked.removeClass('disabled').popup()
+    buttonDisplayAll.removeClass('disabled')
 
     verseList.find('.btnAddToBookmark').removeClass('disabled')
     verseList.find('.btnBookmarked').removeClass('disabled')
@@ -253,9 +264,29 @@ const updateActionButtons = selectedVerses => {
     }
 }
 
-const updateDisplayButton = verses => {
-    if (verses.length === 0) buttonDisplay.hide()
-    else buttonDisplay.show()
+function updateDisplayBookmarkedButton() {
+    if (verses !== undefined && selectedVerses !== undefined && selectedVerses.length === verses.length) {
+        buttonDisplayBookmarked.removeClass('teal')
+        buttonDisplayBookmarked.addClass('primary')
+    } else {
+        buttonDisplayBookmarked.removeClass('primary')
+        buttonDisplayBookmarked.addClass('teal')
+    }
+}
+
+function updateDisplayBookmarkedButtonGroup(selectedVerses) {
+    if (selectedVerses.length === 0) {
+        buttonGroupDisplayBookmarked.hide()
+        buttonGroupDisplayAll.show()
+    } else {
+        buttonGroupDisplayAll.hide()
+        buttonGroupDisplayBookmarked.show()
+    }
+}
+
+const updateDisplayAllButton = verses => {
+    if (verses.length === 0) buttonDisplayAll.hide()
+    else buttonDisplayAll.show().popup()
 }
 
 const updateBookmarkItem = (bookmarkItem) => {
@@ -433,7 +464,10 @@ bookSubject.subscribe(updateBookInfo)
 
 versesSubject.subscribe(value => verses = value)
 versesSubject.subscribe(updateVerseList)
-versesSubject.subscribe(updateDisplayButton)
+versesSubject.subscribe(updateDisplayAllButton)
+versesSubject.subscribe(updateDisplayBookmarkedButton)
 
 selectedVersesSubject.subscribe(value => selectedVerses = value)
 selectedVersesSubject.subscribe(updateActionButtons)
+selectedVersesSubject.subscribe(updateDisplayBookmarkedButton)
+selectedVersesSubject.subscribe(updateDisplayBookmarkedButtonGroup)

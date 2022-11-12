@@ -29,9 +29,35 @@
             <i class="trash icon"></i>
             <span>Remove</span>
         </div>
-        <div class="ui right labeled small primary icon button" id="modal-song-detail-button-display">
-            <i class="desktop icon"></i>
-            <span>Display</span>
+
+        <div class="ui buttons" id="modal-song-detail-button-group-display-all">
+            <div class="ui right labeled small primary icon button hasPopup modal-song-detail-button-display-all"
+                 data-content="Display all verses"
+                 data-position="bottom right"
+                 data-variation="tiny inverted"
+                 >
+                <i class="desktop icon"></i>
+                <span>Display</span>
+            </div>
+        </div>
+
+        <div class="ui buttons" id="modal-song-detail-button-group-display-bookmarked">
+            <div class="ui small teal icon button"
+                 id="modal-song-detail-button-display-bookmarked"
+                 data-content="Display bookmarked verses only"
+                 data-position="bottom center"
+                 data-variation="tiny inverted"
+                 >
+                <i class="bookmark icon"></i>
+            </div>
+            <div class="ui right labeled small primary icon button modal-song-detail-button-display-all"
+                 data-content="Display all verses"
+                 data-position="bottom right"
+                 data-variation="tiny inverted"
+                 >
+                <i class="desktop icon"></i>
+                <span>Display</span>
+            </div>
         </div>
     </div>
 
