@@ -2,6 +2,34 @@
 
 ---
 
+## Version `0.4.3`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b2`
+- Songs: `v0.4.s18`
+- Tatib: `v0.4.t10`
+- Project: `v0.4.p3`
+
+### Changes
+
+- `[p1]` Text in projection display will now resize automatically to fit the screen.
+- `[p2]` Title texts (in Tatib and Title Passage in Bible) will now be displayed on top of the display screen.
+- `[p3]` Bible app will now work with project display.
+- `[s9]` Added a button to open currently active Bookmark from Display tab.
+- `[s10]` Added a button to open currently active Song from Display tab.
+- `[s11]` SongShortcutButton will now be hidden when no active Song available.
+- `[b2, s12, t9]` Added DateUtil module.
+- `[s13]` Replaced the check when updating bookmarked verses to currently assigned Bookmark instead of the one in BookmarkManager.
+- `[s14]` Added a parameter of type Function to be executed when bookmarked verses is updated when opening SongDetail modal.
+- `[s15]` Added a popup on AddToBookmark and Bookmarked buttons in SongDetail modal that hint the name and date of currently assigned Bookmark.
+- `[s16]` Added a button to display only selected verses in SongDetail modal.
+- `[s17, t10]` Removed hover effect on (SongDetailModal's Verse list, Bookmark list, and Tatib list) in Dock.
+- `[s18]` Limit the line clamp size when hovering search result in SongSearch tab.
+
+---
+
 ## Version `0.4.2`
 
 ### App Versions
