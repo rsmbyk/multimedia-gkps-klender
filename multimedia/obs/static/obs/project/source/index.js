@@ -6,6 +6,7 @@ const title = $('#project-title')
 const text = $('#project-text')
 
 const updateSongInfo = ({ lyric }) => {
+    title.text('')
     text.text(lyric)
 }
 
