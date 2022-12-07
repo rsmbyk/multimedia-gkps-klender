@@ -24,7 +24,7 @@ const doTransition = () => {
     })
 }
 
-const updateDisplayState = status => {
+const updateDisplayState = ({ status }) => {
     if (status === true) passageSegment.transition('fade up in')
     else if (passageSegment.is(':visible')) {
         passageSegment.transition({
