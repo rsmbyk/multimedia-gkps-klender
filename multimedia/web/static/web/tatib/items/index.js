@@ -6,6 +6,7 @@ import * as toasts from '/static/helpers/toasts.js'
 
 import * as editItemModal from './modals/edit-item.js'
 import * as deleteItemModal from './modals/delete-item.js'
+import * as editEosModal from './modals/edit-eos.js'
 
 import * as PreviewManager from './PreviewManager.js'
 
@@ -246,12 +247,12 @@ const createTatibItemListItem = (tatibItem, index) => {
                     {
                         tag: 'div',
                         classList: ['description', 'tatibItemTitle'],
-                        innerText: tatibItem.title,
+                        innerText: tatibItem.item_type === 0 ? tatibItem.title : '--- END OF SECTION ---',
                     },
                     {
                         tag: 'div',
                         classList: ['description'],
-                        innerText: tatibItem.item_type === 1 ? '--- END OF SECTION --- ' : tatibItem.text,
+                        innerText: tatibItem.text,
                     },
                 ],
             },
@@ -359,10 +360,8 @@ const createTatibItemListItem = (tatibItem, index) => {
 
         if (tatibItem.item_type === 0) {
             buttonPreview.show()
-            buttonEdit.show()
         } else {
             buttonPreview.hide()
-            buttonEdit.hide()
         }
     }, () => {
         extra.hide()
@@ -374,7 +373,12 @@ const createTatibItemListItem = (tatibItem, index) => {
 
     buttonEdit.click(() => {
         PreviewManager.closePreview()
-        editItemModal.open(tatibItem, tatib, refreshItems)
+
+        if (tatibItem.item_type === 0) {
+            editItemModal.open(tatibItem, tatib, refreshItems)
+        } else {
+            editEosModal.open(tatibItem, tatib, refreshItems)
+        }
     })
 
     buttonDelete.click(() => {
@@ -401,9 +405,8 @@ const createTatibItemListItem = (tatibItem, index) => {
     })
 
     buttonAddEoSNext.click(() => {
-        buttonAddEoSNext.addClass('loading')
         PreviewManager.closePreview()
-        sendCreateEoSRequest(tatibItem.order_number)
+        editEosModal.open(null, tatib, refreshItems, tatibItem.order_number)
     })
 
     extra.hide()
@@ -469,28 +472,9 @@ const buildReorderRequestData = () => {
     }
 }
 
-function sendCreateEoSRequest(insertAfter) {
-    showLoader()
-
-    const body = {
-        tatib: tatibId,
-        item_type: 1,
-        insert_after: insertAfter,
-    }
-
-    axios.post('/api/tatib/items', body)
-        .then(({ data: item }) => scrollPositionSubject.next(item.order_number))
-        .then(retrieveItems)
-        .catch(e => {
-            console.log(e.response?.data)
-            toasts.error('Failed to create item', 'left bottom')
-        })
-}
-
 buttonAddEndOfSection.click(() => {
-    buttonAddEndOfSection.addClass('loading')
     PreviewManager.closePreview()
-    sendCreateEoSRequest()
+    editEosModal.open(null, tatib, refreshItems)
 })
 
 buttonAddText.click(() => {
