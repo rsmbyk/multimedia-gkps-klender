@@ -78,12 +78,12 @@ const createTatibItemListItem = tatibItem => {
                     {
                         tag: 'div',
                         classList: ['header'],
-                        innerText: tatibItem.title,
+                        innerText: tatibItem.item_type === 0 ? tatibItem.title : '--- END OF SECTION ---',
                     },
                     {
                         tag: 'div',
                         classList: ['description'],
-                        innerText: tatibItem.item_type === 1 ? '--- END OF SECTION ---' : tatibItem.text,
+                        innerText: tatibItem.text,
                     },
                 ],
             },

@@ -1,0 +1,52 @@
+{% load static %}
+
+<div class="ui tiny modal" id="modal-edit-eos">
+    <div class="header" id="modal-edit-eos-header"></div>
+
+    <div class="content">
+        <div class="ui form" id="modal-edit-eos-form">
+            <div class="field" style="display: none">
+                <label for="form-edit-eos-id">ID</label>
+                <input type="text"
+                       name="id"
+                       placeholder="ID"
+                       id="form-edit-eos-id">
+            </div>
+
+            <div class="field" style="display: none">
+                <label for="form-edit-eos-tatib-id">Tatib ID</label>
+                <input type="text"
+                       name="tatibId"
+                       placeholder="Tatib ID"
+                       id="form-edit-eos-tatib-id">
+            </div>
+
+            <div class="required field">
+                <label for="form-edit-eos-text">Notes</label>
+                <textarea type="text"
+                          name="text"
+                          placeholder="Catatan (Opsional)"
+                          id="form-edit-eos-text"></textarea>
+            </div>
+
+            <div class="ui error message" id="form-edit-eos-error-message-text"></div>
+            <div class="ui error message" id="form-edit-eos-error-message-non-field"></div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <div class="ui cancel button" id="modal-edit-eos-button-cancel">
+            <span>Cancel</span>
+        </div>
+
+        <div class="ui right labeled primary approve icon button" id="modal-edit-eos-button-create">
+            <i class="plus icon"></i>
+            <span>Create</span>
+        </div>
+
+        <div class="ui right labeled green approve icon button" id="modal-edit-eos-button-save">
+            <i class="save icon"></i>
+            <span>Save</span>
+        </div>
+    </div>
+</div>
