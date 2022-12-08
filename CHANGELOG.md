@@ -2,6 +2,26 @@
 
 ---
 
+## Version `0.4.4`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b3`
+- Songs: `v0.4.s18`
+- Tatib: `v0.4.t11`
+- Project: `v0.4.p6`
+
+### Changes
+
+- `[p4]` [Hotfix] Fixed projection title persists upon switching from Tatib and Bible with a title.
+- `[b3]` Fixed StatusButton not working due to the change on the structure of StatusSubject.
+- `[t11]` A description/note can now be added to TatibItem of type EndOfSection.
+- `[p5]` Changed projection text color to white.
+- `[p6]` Increased projection container's padding to 64px.
+
+---
+
 ## Version `0.4.3`
 
 ### App Versions
@@ -46,7 +66,7 @@
 - `[s6, t6]` The status broadcast message that is forwarded to the Subject will now forward the whole object instead of the status value only.
 - `[s7, t7]` The display tab will not re-broadcast the status message upon receiving a status broadcast message anymore.
 - `[s8, t8]` Added an option to not notify the Subject when sending status broadcast message.
-- `[p0]` Added a new app: `project` to show a full screen display of lyrics and tatib (and passage possibly in the future) texts. 
+- `[p0]` Added a new app: `project` to show a full screen display of lyrics and tatib (and passage possibly in the future) texts.
 
 ---
 
