@@ -14,6 +14,7 @@
 #project-title {
     white-space: pre-wrap;
     font-size: 50px;
+    color: white;
     text-align: center;
     font-family: "CMG Sans", sans-serif;
     font-weight: 700;
@@ -24,6 +25,7 @@
 #project-text {
     white-space: pre-wrap;
     font-size: 100px;
+    color: white;
     text-align: center;
     font-family: "CMG Sans", sans-serif;
     font-weight: 700;
