@@ -35,16 +35,14 @@ formDateCalendar.calendar({
 form.form({
     fields: {
         name: {
+            optional: true,
             rules: [
                 {
-                    type: 'empty',
+                    type: 'maxLength[32]',
                 },
                 {
-                    type: 'maxLength[20]',
-                },
-                {
-                    type: 'regExp[/^[a-z0-9 ()]+$/i]',
-                    prompt: '{name} can only contain alphanumeric, spaces and parentheses',
+                    type: 'regExp[/^$|[a-z0-9 ()-:&]$/i]',
+                    prompt: '{name} can only contain alphanumeric, spaces, parentheses and these symbols: &:-',
                 },
             ],
         },
@@ -121,8 +119,10 @@ const submitForm = onSuccess => {
     if (form.form('is valid')) {
         const { name, date, noDate } = form.form('get values')
 
+        // bookmark name will be set to "_" to indicate empty name.
+        // I didnt want to make any changes to the db models.
         const formData = {
-            name: name.trim(),
+            name: name.trim() || '_',
             date: noDate ? `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}` : null,
         }
 
