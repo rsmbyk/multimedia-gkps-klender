@@ -311,7 +311,7 @@ const evaluateButton = (button, isValid) => {
 }
 
 const postStatusMessage = status => {
-    bc.postStatusMessage(status)
+    bc.postStatusMessage(status, 'dock')
 }
 
 const postSongInfo = activeLyricIndex => {
