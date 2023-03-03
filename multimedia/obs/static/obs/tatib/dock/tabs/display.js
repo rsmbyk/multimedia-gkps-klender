@@ -222,6 +222,17 @@ const postTatibItem = (activeItemIndex, forceUpdate) => {
         tatibItems[activeItemIndex].title,
         tatibItems[activeItemIndex].text,
     )
+
+    if (tatibItems[activeItemIndex].item_type === 1 || activeItemIndex === tatibItems.length - 1) {
+        bc.postTatibItemMessage(
+            '',
+            '',
+        )
+    } else {
+        bc.postTatibItemMessage(
+            tatibItems[activeItemIndex].title,
+            tatibItems[activeItemIndex].text,
+        )
     }
 }
 
