@@ -65,8 +65,8 @@ form.form({
                     type: 'maxLength[64]',
                 },
                 {
-                    type: 'regExp[/^$|[a-z0-9 ()-:&|]$/i]',
-                    prompt: '{name} can only contain alphanumeric, spaces, parentheses and these symbols: &:-|',
+                    type: 'regExp[/^$|[a-z0-9 \(\)\-\:\&\|]$/i]',
+                    prompt: '{name} can only contain alphanumeric, spaces, parentheses and these symbols: & : - |',
                 },
             ],
         },
