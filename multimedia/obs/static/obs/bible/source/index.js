@@ -40,4 +40,4 @@ bc.passageSubject.subscribe(doTransition)
 
 bc.statusSubject.subscribe(updateDisplayState)
 
-bc.postStatusMessage(false)
+bc.postStatusMessage(false, 'source')

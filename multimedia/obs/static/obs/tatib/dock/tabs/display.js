@@ -203,7 +203,7 @@ const nextItem = () => {
 }
 
 const postStatusMessage = status => {
-    bc.postStatusMessage(status)
+    bc.postStatusMessage(status, 'dock')
 }
 
 const postTatibItem = activeItemIndex => {

@@ -24,9 +24,10 @@ export const postPassage = (bookName, chapterNumber, verseNumber, title, text) =
     })
 }
 
-export const postStatusMessage = (status, skipUpdateSubject) => {
+export const postStatusMessage = (status, source, skipUpdateSubject) => {
     bcStatus.postMessage({
         status: status,
+        source: source,
     })
 
     if (!skipUpdateSubject) {
