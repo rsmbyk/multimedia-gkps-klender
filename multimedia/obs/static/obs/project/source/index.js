@@ -51,16 +51,16 @@ function resizeTextFont() {
 }
 
 bcSongs.songInfoSubject.subscribe(updateSongInfo)
-bcSongs.songInfoSubject.subscribe(doTransition)
 bcSongs.songInfoSubject.subscribe(resizeTitleFont)
 bcSongs.songInfoSubject.subscribe(resizeTextFont)
+bcSongs.songInfoSubject.subscribe(doTransition)
 
 bcTatib.tatibItemSubject.subscribe(updateTatibInfo)
-bcTatib.tatibItemSubject.subscribe(doTransition)
 bcTatib.tatibItemSubject.subscribe(resizeTitleFont)
 bcTatib.tatibItemSubject.subscribe(resizeTextFont)
+bcTatib.tatibItemSubject.subscribe(doTransition)
 
 bcBible.passageSubject.subscribe(updatePassageInfo)
-bcBible.passageSubject.subscribe(doTransition)
 bcBible.passageSubject.subscribe(resizeTitleFont)
 bcBible.passageSubject.subscribe(resizeTextFont)
+bcBible.passageSubject.subscribe(doTransition)
