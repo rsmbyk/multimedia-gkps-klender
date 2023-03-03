@@ -314,9 +314,17 @@ const postStatusMessage = status => {
     bc.postStatusMessage(status, 'dock')
 }
 
-const postSongInfo = activeLyricIndex => {
+// forceUpdate parameter is used to force postSongInfo when activating the dock.
+// without this parameter, this function won't run when activating the dock because
+// this function checks for the current state of toggleButtonStatus and this function
+// is called as part of toggleButtonStatus's onActive function call.
+const postSongInfo = (activeLyricIndex, forceUpdate) => {
     if (activeLyricIndex === null)
         return
+
+    if (!toggleButtonStatus.isActive && !forceUpdate === true) {
+        return
+    }
 
     bc.postSongInfoMessage(
         activeSong.song_info.book_number,
@@ -398,7 +406,7 @@ const toggleButtonStatus = new ToggleButton(
             return false
 
         postStatusMessage(true)
-        postSongInfo(activeLyricIndex)
+        postSongInfo(activeLyricIndex, true)
     },
     () => {
         postStatusMessage(false)
@@ -489,10 +497,10 @@ activeLyricsSubject.subscribe(v => activeLyrics = v)
 activeLyricsSubject.subscribe(updateLyricList)
 
 activeLyricIndexSubject.subscribe(v => activeLyricIndex = v)
+activeLyricIndexSubject.subscribe(postSongInfo)
 activeLyricIndexSubject.subscribe(updateActiveLyricMarker)
 activeLyricIndexSubject.subscribe(evaluateButtonNextLyric)
 activeLyricIndexSubject.subscribe(evaluateButtonPrevLyric)
 activeLyricIndexSubject.subscribe(onLastLyricReached)
-activeLyricIndexSubject.subscribe(postSongInfo)
 
 hasPopup.popup()

@@ -11,6 +11,10 @@ export class ManualToggleButton {
     }
 
     setActive(skipToggleAction) {
+        if (this.isActive) {
+            return
+        }
+
         if (!skipToggleAction && this.onActive instanceof Function && this.onActive() === false)
             return
 
@@ -20,6 +24,10 @@ export class ManualToggleButton {
     }
 
     setInactive(skipToggleAction) {
+        if (!this.isActive) {
+            return
+        }
+
         if (!skipToggleAction && this.onInactive instanceof Function && this.onInactive() === true)
             return
 
