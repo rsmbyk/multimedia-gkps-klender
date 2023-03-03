@@ -62,11 +62,11 @@ form.form({
                     type: 'empty',
                 },
                 {
-                    type: 'maxLength[32]',
+                    type: 'maxLength[64]',
                 },
                 {
-                    type: 'regExp[/^[a-z0-9 ()]+$/i]',
-                    prompt: '{name} can only contain alphanumeric, spaces and parentheses',
+                    type: 'regExp[/^$|[a-z0-9 ()-:&|]$/i]',
+                    prompt: '{name} can only contain alphanumeric, spaces, parentheses and these symbols: &:-|',
                 },
             ],
         },
