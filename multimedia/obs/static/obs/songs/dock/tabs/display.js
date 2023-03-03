@@ -497,10 +497,10 @@ activeLyricsSubject.subscribe(v => activeLyrics = v)
 activeLyricsSubject.subscribe(updateLyricList)
 
 activeLyricIndexSubject.subscribe(v => activeLyricIndex = v)
+activeLyricIndexSubject.subscribe(postSongInfo)
 activeLyricIndexSubject.subscribe(updateActiveLyricMarker)
 activeLyricIndexSubject.subscribe(evaluateButtonNextLyric)
 activeLyricIndexSubject.subscribe(evaluateButtonPrevLyric)
 activeLyricIndexSubject.subscribe(onLastLyricReached)
-activeLyricIndexSubject.subscribe(postSongInfo)
 
 hasPopup.popup()
