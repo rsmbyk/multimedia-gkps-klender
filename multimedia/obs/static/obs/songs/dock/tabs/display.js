@@ -9,6 +9,8 @@ import * as bc from '../../common/bc.js'
 import * as options from '../../common/options.js'
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
+import * as bookmarksTab from './bookmarks.js'
+
 import * as songDetailModal from '../modals/song-detail.js'
 import * as bookmarkDetailModal from '../modals/bookmark-detail.js'
 
@@ -17,6 +19,7 @@ const hasPopup = $('#tab-display .hasPopup')
 const dropdownSongs = $('#display-dropdown-songs')
 const buttonBookmarkShortcut = $('#display-button-bookmark-shortcut')
 const buttonSongShortcut = $('#display-button-song-shortcut')
+const buttonReactivateBookmark = $('#display-button-reactivate-bookmark')
 
 const songBookNumber = $('#display-song-book-number')
 const songTitle = $('#display-song-title')
@@ -132,6 +135,14 @@ function updateBookmarkShortcutButton(bookmark) {
         buttonBookmarkShortcut.hide()
     } else {
         buttonBookmarkShortcut.show()
+    }
+}
+
+function updateReactivateBookmarkButton(bookmark) {
+    if (bookmark === null) {
+        buttonReactivateBookmark.hide()
+    } else {
+        buttonReactivateBookmark.show()
     }
 }
 
@@ -460,6 +471,11 @@ buttonSongShortcut.click(() => {
     }
 })
 
+buttonReactivateBookmark.click(() => {
+    bookmarkManager.reactivateBookmark()
+    bookmarksTab.refreshBookmarkList()
+})
+
 focusManager.registerFocusChange('green')
 
 bookmarkManager.bookmarkSubject.subscribe(updateBookmarkShortcutButton)
@@ -468,6 +484,8 @@ bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(updateSongsDropdown)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusInactive)
+
+bookmarkManager.bookmarkPendingSubject.subscribe(updateReactivateBookmarkButton)
 
 bc.statusSubject.subscribe(updateStatusButton)
 
