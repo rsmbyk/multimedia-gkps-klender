@@ -336,6 +336,10 @@ const toggleTrashMode = trash => {
     triggerRetrieveBookmarks(date)
 }
 
+export function refreshBookmarkList() {
+    triggerRetrieveBookmarks(date)
+}
+
 const retrieveBookmarks = requestUrl => {
     showLoader()
     displayPlaceholder()

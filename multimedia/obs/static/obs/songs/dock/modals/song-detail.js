@@ -11,6 +11,8 @@ import * as tabManager from '/static/helpers/tab-manager.js'
 
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
+import * as bookmarksTab from '../tabs/bookmarks.js'
+
 const modal = $('#modal-song-detail').modal({
     closable: false,
     allowMultiple: true,
@@ -98,6 +100,7 @@ buttonDisplayBookmarked.click(() => {
 
 buttonDisplayAll.click(() => {
     bookmarkManager.activateSingleBookmarkItem(book, song, verses)
+    bookmarksTab.refreshBookmarkList()
     modal.modal('hide all')
     tabManager.changeTab('tab-display')
 })
