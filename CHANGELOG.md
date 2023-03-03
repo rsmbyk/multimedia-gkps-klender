@@ -2,6 +2,35 @@
 
 ---
 
+## Version `0.4.5`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b7`
+- Songs: `v0.4.s28`
+- Tatib: `v0.4.t19`
+- Project: `v0.4.p10`
+
+### Changes
+
+- `[b4, s19, t12, p7]` Dock can now be controlled from Project's source page.
+- `[b5, s20, t13, p8]` Fixed an error where Project's source cannot be activated while opening multiple page of Project's source.
+- `[b6, s21, t14]` ToggleButton will not execute its onActive and onInactive if the state it change into would not change'.
+- `[s22, t15]` Songs info and Tatib item won't be broadcasted if the Dock is inactive.
+- `[s23]` Changed the order of which the SongInfo are broadcasted to increase consistency when changing lyric.
+- `[p9]` Changed the order of which the transition is done to hide the flickering when resizing texts.
+- `[t16]` TatibItem of type End of Section and End of Tatib will not be broadcasted anymore and will be replaced with empty texts instead.
+- `[b7, s24, t17]` Fixed ToggleButton not being initialized properly due to bad initial active state initialization order.
+- `[p10]` Changed background colour of Project's source.
+- `[s25]` Fixed a bug where Bookmark item in Bookmark tab not being updated when displaying a single Song.
+- `[s26]` Added a feature to reactivate Bookmark after displaying individual Songs.
+- `[s27]` Allowed empty name, allowed some symbols, and increase max length on Bookmark's name.
+- `[t18]` Allowed some symbols and increase max length on Tatib's name.
+- `[s28, t19]` Reworded Bookmark's and Tatib's Name input field regexes and error prompts.
+
+---
+
 ## Version `0.4.4`
 
 ### App Versions
