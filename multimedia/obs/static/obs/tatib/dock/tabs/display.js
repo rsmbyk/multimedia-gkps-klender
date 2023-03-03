@@ -203,17 +203,37 @@ const nextItem = () => {
 }
 
 const postStatusMessage = status => {
-    bc.postStatusMessage(status)
+    bc.postStatusMessage(status, 'dock')
 }
 
-const postTatibItem = activeItemIndex => {
+// forceUpdate parameter is used to force postSongInfo when activating the dock.
+// without this parameter, this function won't run when activating the dock because
+// this function checks for the current state of toggleButtonStatus and this function
+// is called as part of toggleButtonStatus's onActive function call.
+const postTatibItem = (activeItemIndex, forceUpdate) => {
     if (activeItemIndex === null)
         return
+
+    if (!toggleButtonStatus.isActive && !forceUpdate === true) {
+        return
+    }
 
     bc.postTatibItemMessage(
         tatibItems[activeItemIndex].title,
         tatibItems[activeItemIndex].text,
     )
+
+    if (tatibItems[activeItemIndex].item_type === 1 || activeItemIndex === tatibItems.length - 1) {
+        bc.postTatibItemMessage(
+            '',
+            '',
+        )
+    } else {
+        bc.postTatibItemMessage(
+            tatibItems[activeItemIndex].title,
+            tatibItems[activeItemIndex].text,
+        )
+    }
 }
 
 const toggleButtonStatus = new ToggleButton(
@@ -224,7 +244,7 @@ const toggleButtonStatus = new ToggleButton(
             return false
 
         postStatusMessage(true)
-        postTatibItem(activeItemIndex)
+        postTatibItem(activeItemIndex, true)
     },
     () => {
         postStatusMessage(false)

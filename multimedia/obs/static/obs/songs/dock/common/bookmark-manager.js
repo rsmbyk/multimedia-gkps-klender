@@ -3,13 +3,16 @@ import *  as bookmarkStorage from './bookmark-storage.js'
 
 export let bookmark
 export let bookmarkItems
+export let bookmarkPending
 
 export const bookmarkSubject = new BehaviorSubject(bookmarkStorage.loadBookmark())
 export const bookmarkItemsSubject = new BehaviorSubject(bookmarkStorage.loadBookmarkItems())
+export const bookmarkPendingSubject = new BehaviorSubject(null)
 
 export const activateBookmark = bookmark => {
     bookmarkStorage.saveBookmark(bookmark)
     bookmarkSubject.next(bookmark)
+    bookmarkPendingSubject.next(null)
 }
 
 export const refreshBookmarkItems = () => {
@@ -26,6 +29,10 @@ const activateBookmarkItems = bookmarkItems => {
 }
 
 export const activateSingleBookmarkItem = (book, song, verses) => {
+    if (bookmark !== null) {
+        savePendingBookmark(bookmark)
+    }
+
     deactivate()
     activateBookmarkItems([{
         song: song.id,
@@ -45,7 +52,18 @@ export const deactivate = () => {
     bookmarkItemsSubject.next(null)
 }
 
+export function reactivateBookmark() {
+    activateBookmark(bookmarkPending)
+    bookmarkPendingSubject.next(null)
+}
+
+export function savePendingBookmark(bookmark) {
+    bookmarkPendingSubject.next(bookmark)
+}
+
 bookmarkSubject.subscribe(value => bookmark = value)
 bookmarkSubject.subscribe(refreshBookmarkItems)
 
 bookmarkItemsSubject.subscribe(value => bookmarkItems = value)
+
+bookmarkPendingSubject.subscribe(value => bookmarkPending = value)

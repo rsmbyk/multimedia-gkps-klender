@@ -60,6 +60,6 @@ function updateDisplayState({ status }) {
 bc.statusSubject.subscribe(value => status = value)
 bc.statusSubject.subscribe(updateDisplayState)
 
-bc.postStatusMessage(false)
+bc.postStatusMessage(false, 'source')
 
 options.displayModeSubject.subscribe(updateDisplayMode)

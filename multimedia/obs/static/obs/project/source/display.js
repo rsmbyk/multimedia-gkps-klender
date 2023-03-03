@@ -23,22 +23,24 @@ function transitionOut(element) {
 }
 
 function updateDisplayState(appName) {
-    return ({ status }) => {
+    return ({ status, source }) => {
         if (status === true) {
             transitionIn(projectSegment)
 
-            if (appName === 'songs') {
-                bcTatib.postStatusMessage(false, true)
-                bcBible.postStatusMessage(false, true)
-            } else if (appName === 'tatib') {
-                bcSongs.postStatusMessage(false, true)
-                bcBible.postStatusMessage(false, true)
-            } else if (appName === 'bible') {
-                bcSongs.postStatusMessage(false, true)
-                bcTatib.postStatusMessage(false, true)
+            if (source !== 'source') {
+                if (appName === 'songs') {
+                    bcTatib.postStatusMessage(false, 'source', true)
+                    bcBible.postStatusMessage(false, 'source', true)
+                } else if (appName === 'tatib') {
+                    bcSongs.postStatusMessage(false, 'source', true)
+                    bcBible.postStatusMessage(false, 'source', true)
+                } else if (appName === 'bible') {
+                    bcSongs.postStatusMessage(false, 'source', true)
+                    bcTatib.postStatusMessage(false, 'source', true)
+                }
             }
         }
-        else if (projectSegment.is(':visible')) transitionOut(projectSegment)
+        else if (projectSegment.is(':visible') && source !== 'source') transitionOut(projectSegment)
     }
 }
 
@@ -46,6 +48,6 @@ bcSongs.statusSubject.subscribe(updateDisplayState('songs'))
 bcTatib.statusSubject.subscribe(updateDisplayState('tatib'))
 bcBible.statusSubject.subscribe(updateDisplayState('bible'))
 
-bcSongs.postStatusMessage(false)
-bcTatib.postStatusMessage(false)
-bcBible.postStatusMessage(false)
+bcSongs.postStatusMessage(false, 'source')
+bcTatib.postStatusMessage(false, 'source')
+bcBible.postStatusMessage(false, 'source')

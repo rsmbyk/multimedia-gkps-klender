@@ -127,7 +127,7 @@ const updateNextVerseButton = verseNumber => {
 }
 
 const postStatusMessage = status => {
-    bc.postStatusMessage(status)
+    bc.postStatusMessage(status, 'dock')
 }
 
 const postPassage = () => {

@@ -9,6 +9,8 @@ import * as bc from '../../common/bc.js'
 import * as options from '../../common/options.js'
 import * as bookmarkManager from '../common/bookmark-manager.js'
 
+import * as bookmarksTab from './bookmarks.js'
+
 import * as songDetailModal from '../modals/song-detail.js'
 import * as bookmarkDetailModal from '../modals/bookmark-detail.js'
 
@@ -17,6 +19,7 @@ const hasPopup = $('#tab-display .hasPopup')
 const dropdownSongs = $('#display-dropdown-songs')
 const buttonBookmarkShortcut = $('#display-button-bookmark-shortcut')
 const buttonSongShortcut = $('#display-button-song-shortcut')
+const buttonReactivateBookmark = $('#display-button-reactivate-bookmark')
 
 const songBookNumber = $('#display-song-book-number')
 const songTitle = $('#display-song-title')
@@ -132,6 +135,14 @@ function updateBookmarkShortcutButton(bookmark) {
         buttonBookmarkShortcut.hide()
     } else {
         buttonBookmarkShortcut.show()
+    }
+}
+
+function updateReactivateBookmarkButton(bookmark) {
+    if (bookmark === null) {
+        buttonReactivateBookmark.hide()
+    } else {
+        buttonReactivateBookmark.show()
     }
 }
 
@@ -311,12 +322,20 @@ const evaluateButton = (button, isValid) => {
 }
 
 const postStatusMessage = status => {
-    bc.postStatusMessage(status)
+    bc.postStatusMessage(status, 'dock')
 }
 
-const postSongInfo = activeLyricIndex => {
+// forceUpdate parameter is used to force postSongInfo when activating the dock.
+// without this parameter, this function won't run when activating the dock because
+// this function checks for the current state of toggleButtonStatus and this function
+// is called as part of toggleButtonStatus's onActive function call.
+const postSongInfo = (activeLyricIndex, forceUpdate) => {
     if (activeLyricIndex === null)
         return
+
+    if (!toggleButtonStatus.isActive && !forceUpdate === true) {
+        return
+    }
 
     bc.postSongInfoMessage(
         activeSong.song_info.book_number,
@@ -398,7 +417,7 @@ const toggleButtonStatus = new ToggleButton(
             return false
 
         postStatusMessage(true)
-        postSongInfo(activeLyricIndex)
+        postSongInfo(activeLyricIndex, true)
     },
     () => {
         postStatusMessage(false)
@@ -452,6 +471,11 @@ buttonSongShortcut.click(() => {
     }
 })
 
+buttonReactivateBookmark.click(() => {
+    bookmarkManager.reactivateBookmark()
+    bookmarksTab.refreshBookmarkList()
+})
+
 focusManager.registerFocusChange('green')
 
 bookmarkManager.bookmarkSubject.subscribe(updateBookmarkShortcutButton)
@@ -460,6 +484,8 @@ bookmarkManager.bookmarkItemsSubject.subscribe(onBookmarkItemsUpdated)
 bookmarkManager.bookmarkItemsSubject.subscribe(updateSongsDropdown)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusActive)
 bookmarkManager.bookmarkItemsSubject.subscribe(evaluateButtonStatusInactive)
+
+bookmarkManager.bookmarkPendingSubject.subscribe(updateReactivateBookmarkButton)
 
 bc.statusSubject.subscribe(updateStatusButton)
 
@@ -489,10 +515,10 @@ activeLyricsSubject.subscribe(v => activeLyrics = v)
 activeLyricsSubject.subscribe(updateLyricList)
 
 activeLyricIndexSubject.subscribe(v => activeLyricIndex = v)
+activeLyricIndexSubject.subscribe(postSongInfo)
 activeLyricIndexSubject.subscribe(updateActiveLyricMarker)
 activeLyricIndexSubject.subscribe(evaluateButtonNextLyric)
 activeLyricIndexSubject.subscribe(evaluateButtonPrevLyric)
 activeLyricIndexSubject.subscribe(onLastLyricReached)
-activeLyricIndexSubject.subscribe(postSongInfo)
 
 hasPopup.popup()

@@ -7,10 +7,14 @@ export class ManualToggleButton {
 
         this.isActive = false
         this.isShown = true
-        this.setInactive()
+        this.setInactive(false, true)
     }
 
     setActive(skipToggleAction) {
+        if (this.isActive) {
+            return
+        }
+
         if (!skipToggleAction && this.onActive instanceof Function && this.onActive() === false)
             return
 
@@ -19,7 +23,11 @@ export class ManualToggleButton {
         this.isActive = true
     }
 
-    setInactive(skipToggleAction) {
+    setInactive(skipToggleAction, init) {
+        if (!this.isActive && !init) {
+            return
+        }
+
         if (!skipToggleAction && this.onInactive instanceof Function && this.onInactive() === true)
             return
 

@@ -246,6 +246,7 @@ const createBookmarkListItem = bookmark => {
         ],
     })
 
+    const name = item.find('.header')
     const iconCheck = item.find('.icoCheck')
     const extra = item.find('.extra')
     const buttonActivate = item.find('.btnActivate')
@@ -253,6 +254,13 @@ const createBookmarkListItem = bookmark => {
     const buttonEdit = item.find('.btnEdit')
     const buttonRestore = item.find('.btnRestore')
     const buttonDelete = item.find('.btnDelete')
+
+    // bookmarks with name "_" indicates empty name
+    if (bookmark.name === '_') {
+        name.hide()
+    } else {
+        name.show()
+    }
 
     if (bookmarkManager.bookmark !== null && bookmark.id === bookmarkManager.bookmark.id) {
         iconCheck.show()
@@ -333,6 +341,10 @@ const triggerRetrieveBookmarks = date => {
 }
 
 const toggleTrashMode = trash => {
+    triggerRetrieveBookmarks(date)
+}
+
+export function refreshBookmarkList() {
     triggerRetrieveBookmarks(date)
 }
 
