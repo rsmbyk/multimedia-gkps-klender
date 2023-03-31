@@ -2,6 +2,7 @@ import * as doms from '/static/helpers/doms.js'
 
 import * as historyManager from '../common/history-manager.js'
 
+import * as browseTab from './browse.js'
 import * as displayTab from './display.js'
 
 const chapterList = $('#history-chapter-list')
@@ -40,6 +41,7 @@ const createChapterListItem = ({ translation, chapterNumber, verses, verseNumber
 
     item.click(() => {
         displayTab.display(translation, chapterNumber, verses, verseNumber)
+        browseTab.open(translation, chapterNumber, verses)
         displayTab.navigateTo()
     })
 
