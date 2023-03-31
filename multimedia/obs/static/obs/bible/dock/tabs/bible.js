@@ -5,6 +5,7 @@ import { DropdownStateValue } from '/static/helpers/state-value.js'
 import * as toasts from '/static/helpers/toasts.js'
 
 import * as browseTab from './browse.js'
+import * as displayTab from './display.js'
 
 const LOCAL_STORAGE_KEY_DROPDOWN_VERSIONS = 'OBS_BIBLE_DOCK_BIBLE_DROPDOWN_VERSIONS'
 const LOCAL_STORAGE_KEY_DROPDOWN_BOOKS = 'OBS_BIBLE_DOCK_BIBLE_DROPDOWN_BOOKS'
@@ -163,7 +164,7 @@ const retrieveTranslations = selectedVersionId => {
     showBooksLoader()
     showChaptersLoader()
 
-    axios.get(`/api/bible/translations?version=${selectedVersionId}&omit=version`)
+    axios.get(`/api/bible/translations?version=${selectedVersionId}`)
         .then(({ data: translations }) => translationsSubject.next(translations))
         .catch(displayBooksErrorView)
 }
@@ -181,6 +182,7 @@ const createVersionsDropdownItem = version => {
 const updateVersionsDropdown = versions => {
     dropdownVersions.dropdown('change values', versions.map(createVersionsDropdownItem))
     stateValueVersions.init(versionId => selectedVersionIdSubject.next(versionId), true)
+    displayTab.updateVersionsDropdown(versions)
 }
 
 const retrieveVersions = () => {

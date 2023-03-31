@@ -12,6 +12,8 @@ import * as historyManager from '../common/history-manager.js'
 
 const hasPopup = $('#tab-display .hasPopup')
 
+const dropdownVersions = $('#display-dropdown-versions')
+
 const textBookName = $('#display-book-name')
 const textChapterNumber = $('#display-chapter-number')
 const textVerseNumber = $('#display-verse-number')
@@ -74,6 +76,8 @@ const setIdle = () => {
     placeholderVerseNumber.show()
     placeholderPassage.show()
 
+    dropdownVersions.addClass('disabled')
+
     buttonStatusActive.addClass('disabled')
     buttonStatusInactive.addClass('disabled')
 
@@ -111,6 +115,11 @@ const updatePassage = verseNumber => {
     displayPassage()
 }
 
+function updateVersionsDropdownValue(translation) {
+    dropdownVersions.dropdown('set selected', translation.version.abbreviation)
+    dropdownVersions.removeClass('disabled')
+}
+
 const updateStatusButton = ({ status }) => {
     if (status === true && !toggleButtonStatus.isActive) toggleButtonStatus.setActive(true)
     else if (status === false && toggleButtonStatus.isActive) toggleButtonStatus.setInactive(true)
@@ -139,6 +148,44 @@ const postPassage = () => {
         verse.title,
         verse.text,
     )
+}
+
+function switchVersion(versionAbbr) {
+    if (versionAbbr === translation.version.abbreviation) {
+        return
+    }
+
+    setIdle()
+    const requests = [
+        axios.get(`/api/bible/translations?version__abbreviation=${versionAbbr}&book__name=${translation.book.name}`),
+        axios.get(`/api/bible/verses?book_translation__version__abbreviation=${versionAbbr}&book_translation__book__name=${translation.book.name}&chapter=${chapterNumber}&omit=id,book_translation,chapter`),
+    ]
+
+    Promise.all(requests)
+        .then(([{ data: translations }, { data: verses }]) => {
+            display(translations[0], chapterNumber, verses, verseNumber)
+        })
+        .catch((e) => {
+            console.log(e)
+            display(translation, chapterNumber, verses, verseNumber)
+        })
+}
+
+const createVersionsDropdownItem = version => {
+    return {
+        value: version.abbreviation,
+        name: `${version.lang.name} (${version.name})`,
+        icon: version.lang.id === 2 ? 'id' : 'language',
+        iconClass: version.lang.id === 2 ? 'flag' : 'icon',
+    }
+}
+
+export function updateVersionsDropdown(versions) {
+    dropdownVersions
+        .dropdown('change values', versions.map(createVersionsDropdownItem))
+        .dropdown('setting', 'onChange', value => {
+            switchVersion(value)
+        })
 }
 
 export const display = (translation, chapterNumber, verses, verseNumber) => {
@@ -174,6 +221,7 @@ bc.statusSubject.subscribe(updateStatusButton)
 
 translationSubject.subscribe(v => translation = v)
 translationSubject.subscribe(updateBookName)
+translationSubject.subscribe(updateVersionsDropdownValue)
 
 chapterNumberSubject.subscribe(v => chapterNumber = v)
 chapterNumberSubject.subscribe(updateChapterNumber)

@@ -6,7 +6,7 @@ from multimedia.bible import models
 class BookTranslationFilterSet(django_filters.FilterSet):
     class Meta:
         model = models.BookTranslation
-        fields = ('version',)
+        fields = ('version', 'version__abbreviation', 'book__name')
 
 
 class VerseFilterSet(django_filters.FilterSet):
