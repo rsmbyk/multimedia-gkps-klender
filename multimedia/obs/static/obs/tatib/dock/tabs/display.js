@@ -236,6 +236,11 @@ const postTatibItem = (activeItemIndex, forceUpdate) => {
     }
 }
 
+export function rebroadcast() {
+    toggleButtonStatus.setInactive()
+    toggleButtonStatus.setActive()
+}
+
 const toggleButtonStatus = new ToggleButton(
     buttonStatusActive,
     buttonStatusInactive,

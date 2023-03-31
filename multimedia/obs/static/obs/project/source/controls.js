@@ -30,6 +30,21 @@ hotkeys('space', function() {
     }
 })
 
+hotkeys('1', function() {
+    lastActiveBC = bcSongs
+    lastActiveBC.postControlMessage('rebroadcast')
+})
+
+hotkeys('2', function() {
+    lastActiveBC = bcBible
+    lastActiveBC.postControlMessage('rebroadcast')
+})
+
+hotkeys('3', function() {
+    lastActiveBC = bcTatib
+    lastActiveBC.postControlMessage('rebroadcast')
+})
+
 bcSongs.statusSubject.subscribe(updateLastActiveApp(bcSongs))
 bcTatib.statusSubject.subscribe(updateLastActiveApp(bcTatib))
 bcBible.statusSubject.subscribe(updateLastActiveApp(bcBible))
