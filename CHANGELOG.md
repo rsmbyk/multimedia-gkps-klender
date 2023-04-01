@@ -2,6 +2,25 @@
 
 ---
 
+## Version `0.4.6`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b10`
+- Songs: `v0.4.s29`
+- Tatib: `v0.4.t20`
+- Project: `v0.4.p12`
+
+### Changes
+
+- `[b8, s29, t20, p11]` Added a feature to switch control between apps from Project's source page.
+- `[b9]` Added a dropdown in Bible's display tab to switch language between Indonesian and Simalungun.
+- `[b10]` The corresponding Chapter will also be opened in Browse tab when selecting Verse from History tab.
+- `[p12]` Added a page to configure Project's source styles (colours and possibly other settings in the future).
+
+---
+
 ## Version `0.4.5`
 
 ### App Versions
