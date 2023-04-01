@@ -1,5 +1,7 @@
 import * as bc from '../../../common/bc.js'
 
+import * as display from '../display.js'
+
 const buttonStatusActive = $('#display-button-status-active')
 const buttonStatusInactive = $('#display-button-status-inactive')
 
@@ -21,6 +23,8 @@ function handleControlInput({ control }) {
         } else if (buttonStatusInactive.is(':visible')) {
             buttonStatusInactive.click()
         }
+    } else if (control === 'rebroadcast') {
+        display.rebroadcast()
     }
 }
 
