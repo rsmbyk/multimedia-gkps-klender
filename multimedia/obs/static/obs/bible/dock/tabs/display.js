@@ -188,6 +188,11 @@ export function updateVersionsDropdown(versions) {
         })
 }
 
+export function rebroadcast() {
+    toggleButtonStatus.setInactive()
+    toggleButtonStatus.setActive()
+}
+
 export const display = (translation, chapterNumber, verses, verseNumber) => {
     translationSubject.next(translation)
     chapterNumberSubject.next(chapterNumber)

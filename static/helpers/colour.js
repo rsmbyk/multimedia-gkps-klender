@@ -20,3 +20,8 @@ export const hexToRgb = hex => {
         a: parseInt(result[4], 16),
     } : null
 }
+
+export function updateStyleColour(element, hexColour, attributeName) {
+    const { r, g, b, a } = hexToRgb(hexColour)
+    element.css(attributeName, `rgba(${r}, ${g}, ${b}, ${isNaN(a) ? 1 : a / 255})`)
+}
