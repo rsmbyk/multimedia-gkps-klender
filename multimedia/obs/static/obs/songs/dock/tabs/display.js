@@ -346,6 +346,11 @@ const postSongInfo = (activeLyricIndex, forceUpdate) => {
     )
 }
 
+export function rebroadcast() {
+    toggleButtonStatus.setInactive()
+    toggleButtonStatus.setActive()
+}
+
 const updateStatusButton = ({ status }) => {
     if (status === true) toggleButtonStatus.setActive(true)
     else toggleButtonStatus.setInactive(true)
