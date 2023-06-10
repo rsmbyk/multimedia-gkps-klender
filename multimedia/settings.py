@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'multimedia.wsgi.application'
 
 DEVELOPMENT_MODE = config('DJANGO_DEVELOPMENT_MODE', default=False, cast=bool)
 
-if DEVELOPMENT_MODE is True:
+if DEVELOPMENT_MODE is True or True:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
