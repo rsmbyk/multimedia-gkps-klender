@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'multimedia.wsgi.application'
 
 DEVELOPMENT_MODE = config('DJANGO_DEVELOPMENT_MODE', default=False, cast=bool)
 
-if DEVELOPMENT_MODE is True or True:
+if DEVELOPMENT_MODE is True:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -139,13 +139,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = BASE_DIR / '_static'
 
-# STATICFILES_DIRS = [
-#     BASE_DIR / 'static'
-# ]
+STATICFILES_DIRS = [
+    BASE_DIR / 'static'
+]
 
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
