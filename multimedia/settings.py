@@ -82,7 +82,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'multimedia.wsgi.application'
+WSGI_APPLICATION = 'multimedia.wsgi.app'
 
 
 # Database
