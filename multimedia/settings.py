@@ -111,7 +111,7 @@ if DEVELOPMENT_MODE is True:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-elif not (len(sys.argv) > 1 and sys.argv[0] == 'manage.py' and sys.argv[1] == 'collectstatic'):
+elif not (len(sys.argv) > 1 and 'collectstatic' in sys.argv):
     DATABASES = {
         'default': dj_database_url.parse(config('DATABASE_URL')),
     }
@@ -159,7 +159,13 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if os.environ.get('VERCEL'):
+    # Vercel legacy builds do not run collectstatic reliably. Serve files from
+    # repo static dirs at runtime instead of requiring a manifest in _static.
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    WHITENOISE_USE_FINDERS = True
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

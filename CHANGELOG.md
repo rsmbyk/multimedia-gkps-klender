@@ -5,6 +5,22 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.15`
+
+### App Versions
+
+- Django: `v0.4.dj9`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj9]` Dropped failing Vercel `build.sh` static-build step; serve static files via WhiteNoise finders on Vercel and raised the lambda size limit.
+
+---
+
 ## Version `0.4.14`
 
 ### App Versions
