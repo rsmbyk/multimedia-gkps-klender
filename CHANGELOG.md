@@ -1,5 +1,8 @@
 # Changelog
 
+How versioning works (release vs per-app counters, changelog tags, and where to
+bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
+
 ---
 
 ## Version `0.4.6`
