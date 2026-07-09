@@ -6,7 +6,6 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,0.0.0.0,web"
       DJANGO_DEVELOPMENT_MODE: "False"
     volumes:
       - .:/app
