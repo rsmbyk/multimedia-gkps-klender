@@ -2,15 +2,22 @@ const defaultSelector = '.ui.menu .item'
 
 let activeTab
 
-export const init = (selector=null) => {
-    $(selector !== null ? selector : defaultSelector).tab('setting', 'onVisible', (tabPath) => {
+const resolveSelector = (selector) => selector !== null ? selector : defaultSelector
+
+export const init = (selector = null) => {
+    const resolvedSelector = resolveSelector(selector)
+
+    $(resolvedSelector).tab('setting', 'onVisible', (tabPath) => {
         activeTab = tabPath
     })
+
+    const activeItem = $(resolvedSelector).find('.item.active').first()
+    if (activeItem.length > 0) {
+        activeTab = activeItem.attr('data-tab')
+    }
 }
 
-export const changeTab = (name, selector=null) =>
-    $(selector !== null ? selector : defaultSelector).tab('change tab', name)
+export const changeTab = (name, selector = null) =>
+    $(resolveSelector(selector)).tab('change tab', name)
 
-export const getActiveTab = () => {
-    return activeTab
-}
+export const getActiveTab = () => activeTab

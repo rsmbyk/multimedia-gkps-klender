@@ -1,5 +1,157 @@
 # Changelog
 
+How versioning works (release vs per-app counters, changelog tags, and where to
+bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
+
+---
+
+## Version `0.4.16`
+
+### App Versions
+
+- Django: `v0.4.dj10`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj10]` Removed legacy `vercel.json` `builds` config; Vercel now uses zero-configuration Django detection via `manage.py`.
+
+---
+
+## Version `0.4.15`
+
+### App Versions
+
+- Django: `v0.4.dj9`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj9]` Dropped failing Vercel `build.sh` static-build step; serve static files via WhiteNoise finders on Vercel and raised the lambda size limit.
+
+---
+
+## Version `0.4.14`
+
+### App Versions
+
+- Django: `v0.4.dj8`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj8]` Restored legacy Vercel `builds` routing and added `build.sh` to run `collectstatic` into `_static` for CDN serving.
+
+---
+
+## Version `0.4.13`
+
+### App Versions
+
+- Django: `v0.4.dj7`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj7]` Fixed production 500 by running `collectstatic` on Vercel (legacy `builds` config skipped it) and serving static assets from the CDN with manifest storage.
+
+---
+
+## Version `0.4.12`
+
+### App Versions
+
+- Django: `v0.4.dj6`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj6]` Auto-allow Vercel deployment hosts (`*.vercel.app`, `VERCEL_URL`) so production no longer returns Django 400 Bad Request.
+
+---
+
+## Version `0.4.11`
+
+### App Versions
+
+- Django: `v0.4.dj5`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj5]` Aligned Vercel Python pin with the platform default (3.12) after 3.11 conflicted with auto-generated `requires-python`; kept `psycopg2-binary` 2.9.9 and bumped PyYAML for wheel compatibility.
+
+---
+
+## Version `0.4.10`
+
+### App Versions
+
+- Django: `v0.4.dj4`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj4]` Fixed Vercel production build by pinning Python 3.11 and upgrading `psycopg2-binary` to a version with prebuilt wheels.
+
+---
+
+## Version `0.4.9`
+
+### App Versions
+
+- Django: `v0.4.dj3`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj3]` Merged `railway-migration` production deployment config (WhiteNoise static files, Railway/Vercel WSGI entrypoint, `vercel.json`).
+- `[dj3]` Restored safe local defaults for `DJANGO_DEBUG` and `DJANGO_ALLOWED_HOSTS` while keeping production overrides via environment variables.
+
+---
+
+## Version `0.4.8`
+
+### App Versions
+
+- Django: `v0.4.dj2`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[b11, s30, t21, p13]` Restored dock and project navigation hotkeys after BehaviorSubject and hotkeys-js regressions.
+- `[s30]` Fixed songbooks dropdown stuck on Loading when API responses did not reach the UI.
+- `[dj2]` Added Docker Compose setup for local development with optional Postgres.
+- `[dj2]` Fixed container entrypoint execution on Windows-shared-folder CRLF line endings.
+- `[dj2]` Read Django ALLOWED_HOSTS from `.env` so LAN devices can reach the app during testing.
+
 ---
 
 ## Version `0.4.6`

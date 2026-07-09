@@ -1,3 +1,4 @@
+import * as hotkeys from '/static/helpers/hotkeys.js'
 import * as bcSongs from '../../songs/common/bc.js'
 import * as bcTatib from '../../tatib/common/bc.js'
 import * as bcBible from '../../bible/common/bc.js'
@@ -12,35 +13,35 @@ function updateLastActiveApp(bc) {
     }
 }
 
-hotkeys('left', function() {
+hotkeys.bind('left', function() {
     if (lastActiveBC !== null) {
         lastActiveBC.postControlMessage('left')
     }
 })
 
-hotkeys('right', function() {
+hotkeys.bind('right', function() {
     if (lastActiveBC !== null) {
         lastActiveBC.postControlMessage('right')
     }
 })
 
-hotkeys('space', function() {
+hotkeys.bind('space', function() {
     if (lastActiveBC !== null) {
         lastActiveBC.postControlMessage('space')
     }
 })
 
-hotkeys('1', function() {
+hotkeys.bind('1', function() {
     lastActiveBC = bcSongs
     lastActiveBC.postControlMessage('rebroadcast')
 })
 
-hotkeys('2', function() {
+hotkeys.bind('2', function() {
     lastActiveBC = bcBible
     lastActiveBC.postControlMessage('rebroadcast')
 })
 
-hotkeys('3', function() {
+hotkeys.bind('3', function() {
     lastActiveBC = bcTatib
     lastActiveBC.postControlMessage('rebroadcast')
 })

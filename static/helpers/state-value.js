@@ -66,5 +66,11 @@ export class DropdownStateValue extends StateValue {
         })
 
         super.init(loadSavedValue)
+
+        const value = this.currentValue
+        if (value !== undefined && value !== '' && value !== this.lastValue && onChange instanceof Function) {
+            this.lastValue = value
+            onChange(value)
+        }
     }
 }

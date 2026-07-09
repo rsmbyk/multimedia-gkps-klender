@@ -30,7 +30,21 @@ SECRET_KEY = config('DJANGO_SECRET_KEY', default=get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+ALLOWED_HOSTS = list(config('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv()))
+
+# Vercel injects VERCEL=1 and VERCEL_URL per deployment. Without these hosts,
+# Django returns "Bad Request (400)" for *.vercel.app requests.
+if os.environ.get('VERCEL'):
+    ALLOWED_HOSTS.append('.vercel.app')
+    vercel_url = os.environ.get('VERCEL_URL')
+    if vercel_url:
+        ALLOWED_HOSTS.append(vercel_url)
+
+CSRF_TRUSTED_ORIGINS = list(config('DJANGO_CSRF_TRUSTED_ORIGINS', default='', cast=Csv()))
+if os.environ.get('VERCEL'):
+    vercel_url = os.environ.get('VERCEL_URL')
+    if vercel_url:
+        CSRF_TRUSTED_ORIGINS.append(f'https://{vercel_url}')
 
 
 # Application definition
@@ -41,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
@@ -54,6 +69,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -80,7 +96,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'multimedia.wsgi.application'
+WSGI_APPLICATION = 'multimedia.wsgi.app'
 
 
 # Database
@@ -95,7 +111,7 @@ if DEVELOPMENT_MODE is True:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-elif not (len(sys.argv) > 1 and sys.argv[0] == 'manage.py' and sys.argv[1] == 'collectstatic'):
+elif not (len(sys.argv) > 1 and 'collectstatic' in sys.argv):
     DATABASES = {
         'default': dj_database_url.parse(config('DATABASE_URL')),
     }
@@ -135,13 +151,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / '_static'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
+
+if os.environ.get('VERCEL'):
+    # Vercel serverless does not use a collectstatic manifest in production.
+    # Serve files from repo static dirs at runtime instead of requiring _static.
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    WHITENOISE_USE_FINDERS = True
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
