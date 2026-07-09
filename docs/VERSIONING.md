@@ -5,6 +5,14 @@ whole repo and **per-app versions** for each OBS plugin (plus the Django backend
 
 See [`CHANGELOG.md`](../CHANGELOG.md) for the history of shipped versions.
 
+Branching and when bumps happen in the lifecycle are defined in
+[`GIT_FLOW.md`](GIT_FLOW.md):
+
+- **App counters** (`b` / `s` / `t` / `p` / `dj`) bump on work merging into
+  **`develop`**
+- **Release version** (`MAJOR.MINOR.PATCH`) is finalized only on a
+  **`release/*`** branch (or on **`hotfix/*`** for a production patch)
+
 ## Release version
 
 Format: `MAJOR.MINOR.PATCH` (e.g. `0.4.6`)

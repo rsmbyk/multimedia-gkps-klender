@@ -1,0 +1,20 @@
+---
+description: Git Flow branching — main/develop roles, PR merge methods, release/hotfix rules
+alwaysApply: true
+---
+
+# Git Flow (this repo)
+
+Follow [`docs/GIT_FLOW.md`](docs/GIT_FLOW.md). Summary:
+
+- Long-lived: `main` (production / Vercel), `develop` (integration)
+- Topic work: branch from `develop` as `feature/*`, `fix/*`, or `chore/*`
+- **Always** use a pull request — no direct product pushes to `main` or `develop`
+- `main` accepts **only** `release/*` and `hotfix/*`
+- Merge methods:
+  - Into `develop` from feature/fix/chore → **squash**
+  - Into `develop` from release/hotfix → **merge commit** (never squash)
+  - Into `main` from release/hotfix → **merge commit** (never squash)
+- Versioning: bump app counters on merge into `develop`; finalize release
+  version only on `release/*` (or `hotfix/*` for patches). See
+  [`docs/VERSIONING.md`](docs/VERSIONING.md).
