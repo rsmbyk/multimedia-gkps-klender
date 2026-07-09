@@ -5,6 +5,26 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.8`
+
+### App Versions
+
+- Django: `v0.4.dj2`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[b11, s30, t21, p13]` Restored dock and project navigation hotkeys after BehaviorSubject and hotkeys-js regressions.
+- `[s30]` Fixed songbooks dropdown stuck on Loading when API responses did not reach the UI.
+- `[dj2]` Added Docker Compose setup for local development with optional Postgres.
+- `[dj2]` Fixed container entrypoint execution on Windows-shared-folder CRLF line endings.
+- `[dj2]` Read Django ALLOWED_HOSTS from `.env` so LAN devices can reach the app during testing.
+
+---
+
 ## Version `0.4.6`
 
 ### App Versions
