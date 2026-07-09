@@ -15,7 +15,6 @@ const dropdownSongs = $('#songbooks-dropdown-songs')
 const buttonOpenSong = $('#songbooks-button-open-song')
 
 const booksSubject = new BehaviorSubject()
-const songsSubject = new BehaviorSubject()
 const selectedBookIdSubject = new BehaviorSubject().pipe(distinctUntilChanged())
 const selectedSongIdSubject = new BehaviorSubject()
 
@@ -83,8 +82,15 @@ const createSongsDropdownMenuItem = song => {
 }
 
 const updateSongsDropdown = songs => {
-    dropdownSongs.dropdown('change values', songs.map(createSongsDropdownMenuItem))
-    songsStateValue.init(songId => selectedSongIdSubject.next(songId), false)
+    try {
+        dropdownSongs.dropdown('change values', songs.map(createSongsDropdownMenuItem))
+        songsStateValue.init(songId => selectedSongIdSubject.next(songId), false)
+    } catch (e) {
+        console.error(e)
+        toasts.error('Failed to render song list', 'top center')
+        displaySongsErrorView()
+        return
+    }
 
     hideLoader()
 
@@ -100,7 +106,7 @@ const retrieveSongs = selectedBookId => {
     showSongsLoader()
 
     axios.get(`/api/songs/songs?book=${selectedBookId}`)
-         .then(({ data: songs }) => songsSubject.next(songs))
+         .then(({ data: songs }) => updateSongsDropdown(songs))
          .catch(e => {
              console.log(e)
              toasts.error('Failed to load song list', 'top center')
@@ -120,6 +126,7 @@ const createBooksDropdownMenuItem = book => {
 const updateBooksDropdown = books => {
     dropdownBooks.dropdown('change values', books.map(createBooksDropdownMenuItem))
     booksStateValue.init(bookId => selectedBookIdSubject.next(bookId), true)
+    dropdownBooks.removeClass('loading')
 }
 
 const retrieveBooks = () => {
@@ -135,8 +142,6 @@ const retrieveBooks = () => {
 }
 
 booksSubject.subscribe(updateBooksDropdown)
-
-songsSubject.subscribe(updateSongsDropdown)
 
 selectedBookIdSubject.subscribe(retrieveSongs)
 
