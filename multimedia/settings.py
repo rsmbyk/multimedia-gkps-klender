@@ -160,8 +160,8 @@ STATICFILES_DIRS = [
 ]
 
 if os.environ.get('VERCEL'):
-    # Vercel legacy builds do not run collectstatic reliably. Serve files from
-    # repo static dirs at runtime instead of requiring a manifest in _static.
+    # Vercel serverless does not use a collectstatic manifest in production.
+    # Serve files from repo static dirs at runtime instead of requiring _static.
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
     WHITENOISE_USE_FINDERS = True
 else:

@@ -5,6 +5,22 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.16`
+
+### App Versions
+
+- Django: `v0.4.dj10`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj10]` Removed legacy `vercel.json` `builds` config; Vercel now uses zero-configuration Django detection via `manage.py`.
+
+---
+
 ## Version `0.4.15`
 
 ### App Versions
