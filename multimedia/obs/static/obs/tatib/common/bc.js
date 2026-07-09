@@ -7,7 +7,15 @@ const BC_NAME_STATUS = 'OBS-TATIB-STATUS'
 const BC_NAME_CONTROL = 'OBS-TATIB-CONTROL'
 
 export const tatibItemSubject = new BehaviorSubject()
-export const statusSubject = new BehaviorSubject().pipe(distinctUntilChanged())
+const statusSubjectInternal = new BehaviorSubject()
+export const statusSubject = {
+    next(value) {
+        statusSubjectInternal.next(value)
+    },
+    subscribe(...args) {
+        return statusSubjectInternal.pipe(distinctUntilChanged()).subscribe(...args)
+    },
+}
 export const controlSubject = new BehaviorSubject()
 
 const bcTatibItem = new BroadcastChannel(BC_NAME_TATIB_ITEM)
@@ -28,7 +36,7 @@ export const postStatusMessage = (status, source, skipUpdateSubject) => {
     })
 
     if (!skipUpdateSubject) {
-        statusSubject.next(status)
+        statusSubject.next({ status, source })
     }
 }
 

@@ -1,3 +1,4 @@
+import * as hotkeys from '/static/helpers/hotkeys.js'
 import * as tabManager from '/static/helpers/tab-manager.js'
 
 const buttonStatusActive = $('#display-button-status-active')
@@ -12,7 +13,7 @@ const buttonNextLyric = $('#display-btn-next-lyric')
 const buttonLastLyric = $('#display-btn-last-lyric')
 const buttonLastVerse = $('#display-btn-last-verse')
 
-hotkeys('left', () => {
+hotkeys.bind('left', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
         if (!buttonPrevLyric.hasClass('disabled')) {
             buttonPrevLyric.click()
@@ -20,7 +21,7 @@ hotkeys('left', () => {
     }
 })
 
-hotkeys('right', () => {
+hotkeys.bind('right', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
         if (buttonLastVerse.is(':visible')) {
             buttonLastVerse.click()
@@ -32,7 +33,7 @@ hotkeys('right', () => {
     }
 })
 
-hotkeys('ctrl+left', () => {
+hotkeys.bind('ctrl+left', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
         if (!buttonPrevVerse.hasClass('disabled')) {
             buttonPrevVerse.click()
@@ -40,7 +41,7 @@ hotkeys('ctrl+left', () => {
     }
 })
 
-hotkeys('ctrl+right', () => {
+hotkeys.bind('ctrl+right', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
         if (!buttonNextVerse.hasClass('disabled')) {
             buttonNextVerse.click()
@@ -48,7 +49,7 @@ hotkeys('ctrl+right', () => {
     }
 })
 
-hotkeys('shift+left', () => {
+hotkeys.bind('shift+left', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
         if (!buttonPrevSong.hasClass('disabled')) {
             buttonPrevSong.click()
@@ -56,7 +57,7 @@ hotkeys('shift+left', () => {
     }
 })
 
-hotkeys('shift+right', () => {
+hotkeys.bind('shift+right', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
         if (!buttonNextSong.hasClass('disabled')) {
             buttonNextSong.click()
@@ -64,7 +65,7 @@ hotkeys('shift+right', () => {
     }
 })
 
-hotkeys('space', () => {
+hotkeys.bind('space', () => {
     if (tabManager.getActiveTab() === 'tab-display') {
         if (buttonStatusActive.is(':visible')) {
             buttonStatusActive.click()
