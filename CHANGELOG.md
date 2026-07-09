@@ -5,6 +5,22 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.10`
+
+### App Versions
+
+- Django: `v0.4.dj4`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj4]` Fixed Vercel production build by pinning Python 3.11 and upgrading `psycopg2-binary` to a version with prebuilt wheels.
+
+---
+
 ## Version `0.4.9`
 
 ### App Versions
