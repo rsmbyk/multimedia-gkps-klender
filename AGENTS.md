@@ -9,6 +9,13 @@ guessing.
 - **Versions / changelog tags:** [`docs/VERSIONING.md`](docs/VERSIONING.md)
 - **Shipped history:** [`CHANGELOG.md`](CHANGELOG.md)
 
+## Testing (TDD)
+
+- **Guide:** [`docs/TDD.md`](docs/TDD.md)
+- **Python:** `pytest` / `requirements-dev.txt` / `pytest.ini`
+- **JavaScript:** Vitest / `package.json` / `vitest.config.js`
+- Behavior changes: failing test first, then implementation.
+
 ## Cursor rules
 
 Agent-oriented summaries live under [`.cursor/rules/`](.cursor/rules/). They
