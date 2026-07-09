@@ -5,6 +5,22 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.17`
+
+### App Versions
+
+- Django: `v0.4.dj11`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj11]` Restored `vercel.json` WSGI routing after zero-config deploy produced Vercel 404s with no runtime logs.
+
+---
+
 ## Version `0.4.16`
 
 ### App Versions
