@@ -5,6 +5,22 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.12`
+
+### App Versions
+
+- Django: `v0.4.dj6`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj6]` Auto-allow Vercel deployment hosts (`*.vercel.app`, `VERCEL_URL`) so production no longer returns Django 400 Bad Request.
+
+---
+
 ## Version `0.4.11`
 
 ### App Versions
