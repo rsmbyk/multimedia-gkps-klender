@@ -5,6 +5,22 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.11`
+
+### App Versions
+
+- Django: `v0.4.dj5`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj5]` Aligned Vercel Python pin with the platform default (3.12) after 3.11 conflicted with auto-generated `requires-python`; kept `psycopg2-binary` 2.9.9 and bumped PyYAML for wheel compatibility.
+
+---
+
 ## Version `0.4.10`
 
 ### App Versions
