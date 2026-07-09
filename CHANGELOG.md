@@ -5,6 +5,23 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.9`
+
+### App Versions
+
+- Django: `v0.4.dj3`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj3]` Merged `railway-migration` production deployment config (WhiteNoise static files, Railway/Vercel WSGI entrypoint, `vercel.json`).
+- `[dj3]` Restored safe local defaults for `DJANGO_DEBUG` and `DJANGO_ALLOWED_HOSTS` while keeping production overrides via environment variables.
+
+---
+
 ## Version `0.4.8`
 
 ### App Versions
