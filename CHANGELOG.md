@@ -5,6 +5,22 @@ bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
 ---
 
+## Version `0.4.14`
+
+### App Versions
+
+- Django: `v0.4.dj8`
+- Bible: `v0.4.b11`
+- Songs: `v0.4.s30`
+- Tatib: `v0.4.t21`
+- Project: `v0.4.p13`
+
+### Changes
+
+- `[dj8]` Restored legacy Vercel `builds` routing and added `build.sh` to run `collectstatic` into `_static` for CDN serving.
+
+---
+
 ## Version `0.4.13`
 
 ### App Versions
