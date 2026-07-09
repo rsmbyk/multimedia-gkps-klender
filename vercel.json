@@ -1,18 +1,9 @@
 {
-    "builds": [
-        {
-            "src": "multimedia/wsgi.py",
-            "use": "@vercel/python",
-            "config": {
-                "maxLambdaSize": "15mb",
-                "runtime": "python3.12"
-            }
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "buildCommand": "python manage.py collectstatic --noinput",
+    "functions": {
+        "multimedia/wsgi.py": {
+            "maxDuration": 60
         }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "multimedia/wsgi.py"
-        }
-    ]
+    }
 }
