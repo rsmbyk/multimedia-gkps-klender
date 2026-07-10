@@ -19,69 +19,38 @@ Kristen Protestan Simalungun) prepare worship content and project it live with
 ## Stack
 
 - **Backend:** Django 4, Django REST Framework, WhiteNoise
-- **Database:** PostgreSQL (e.g. Neon) in normal/deployed setups; SQLite when `DJANGO_DEVELOPMENT_MODE=True`
+- **Database:** PostgreSQL (Docker Compose locally; Neon/`DATABASE_URL` in production)
 - **Frontend:** ES modules + Semantic UI / jQuery in OBS browser sources and web pages
 - **Production:** Vercel (WSGI via `multimedia/wsgi.py`)
-- **Optional local containers:** Docker Compose (`Dockerfile`, `docker-compose.yml`)
+- **Local app runtime:** Docker Compose only (`web` + local Postgres)
 
 ## Requirements
 
-- Python **3.10 or 3.11** (Django 4.0.1; prefer 3.11)
-- Node.js **20+** only if you run the frontend test suite
-- A Postgres URL **or** development mode with SQLite (see below)
+- **Docker** (local app) — on this machine use the VirtualBox `docker-vm` context, not Docker Desktop
+- **Python 3.10 or 3.11** only if you run the pytest suite on the host (prefer 3.11)
+- **Node.js 20+** only if you run the frontend test suite
 
-## Quick start (local)
+## Quick start (local Docker)
 
 ```powershell
 git clone <repository-url>
 cd multimedia-gkps-klender
 
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-
-pip install -r requirements-dev.txt
 copy .env.example .env
-```
-
-Edit `.env`. For a quick local loop with SQLite:
-
-```env
-DJANGO_DEVELOPMENT_MODE=True
-DJANGO_DEBUG=True
-DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
-```
-
-For a remote/Postgres database, set `DATABASE_URL` and keep
-`DJANGO_DEVELOPMENT_MODE=False` (see comments in `.env.example`).
-
-```powershell
-python manage.py migrate
-python manage.py runserver
-```
-
-App: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-
-Optional seed data (if you use it on this clone):
-
-```powershell
-python scripts/seeder.py
-```
-
-## Docker Compose
-
-Uses your `.env` by default (handy for a shared remote DB):
-
-```powershell
 docker compose up --build
 ```
 
-Isolated local Postgres:
+App: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+
+Compose always injects a local `DATABASE_URL` for the `db` service. Do **not**
+point local development at production Neon.
+
+Optional seed data (inside the running `web` container, if you use it on this
+clone):
 
 ```powershell
-docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+docker compose exec web python scripts/seeder.py
 ```
-
-App: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
 ## OBS browser sources
 
@@ -106,8 +75,13 @@ browser source — OBS caches aggressively.
 
 This project uses TDD for behavior changes. See [`docs/TDD.md`](docs/TDD.md).
 
+Host Python is for the test suite; the app itself runs in Docker.
+
 ```powershell
 # Python (Django) — SQLite in-memory via multimedia.settings_test
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
 pytest
 
 # JavaScript (Vitest + jsdom)
@@ -135,4 +109,4 @@ Default integration branch is **`develop`**. Production deploys from **`main`**.
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Vercel production runbook and landmines |
 | [`docs/TDD.md`](docs/TDD.md) | pytest + Vitest, red → green → refactor |
 | [`CHANGELOG.md`](CHANGELOG.md) | Released and unreleased changes |
-| [`.env.example`](.env.example) | Environment variables |
+| [`.env.example`](.env.example) | Local Docker environment variables |

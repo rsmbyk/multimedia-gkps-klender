@@ -16,6 +16,13 @@ keep them as history. New releases use one SemVer and area labels only.
   (first tagged release under the new scheme will be `0.5.0`).
 - `[docs, deploy]` Add production deploy runbook for the working Vercel + `main`
   setup (legacy `vercel.json` routing, env vars, static files, landmines).
+- `[deploy, docker]` Make Docker Compose the only local app runtime with a
+  built-in Postgres service; remove `docker-compose.local.yml` and stop pointing
+  local `.env` at Neon.
+- `[dj]` Remove `DJANGO_DEVELOPMENT_MODE` / app SQLite; require `DATABASE_URL`
+  and `DJANGO_SECRET_KEY`, and refuse `DJANGO_DEBUG=True` when `VERCEL` is set.
+- `[docs, test]` Document Docker-only local workflow; add env-safety unit tests.
+- `[docker]` Add `scripts/copy_neon_to_local.sh` to dump Neon into Compose Postgres.
 
 ---
 
