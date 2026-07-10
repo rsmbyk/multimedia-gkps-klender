@@ -63,6 +63,10 @@ a registry of feature specs. Detailed EARS live in the feature specs below.
 - **APP-AC12:** Production hosting SHALL follow `DEPLOY-VERCEL` /
   [`docs/DEPLOY.md`](../../docs/DEPLOY.md); local app runtime SHALL follow
   `DEPLOY-LOCAL` (Docker Compose).
+- **APP-AC13:** THE product SHALL expose a single SemVer via
+  `multimedia/obs/static/obs/common/version.js` (`APP_VERSION`); OBS docks and
+  project settings SHALL display that value through `data-app-version` nodes
+  (see [`docs/VERSIONING.md`](../../docs/VERSIONING.md)).
 
 ## Feature registry
 

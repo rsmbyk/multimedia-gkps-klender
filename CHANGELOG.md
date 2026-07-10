@@ -12,6 +12,18 @@ keep them as history. New releases use one SemVer and area labels only.
 
 ### Changes
 
+---
+
+## Version `0.5.0`
+
+First release under the single-SemVer scheme (replacing per-app `0.4.x`
+counters).
+
+### Changes
+
+- `[project, songs, bible, tatib]` Add shared OBS SemVer constant
+  (`multimedia/obs/static/obs/common/version.js`) and fill `data-app-version`
+  footers; remove divergent per-app `v0.4.*` template strings.
 - `[docs]` Seed backlog tracker with `BL-001`–`BL-010` (SemVer footer, 0.5.0
   release, tatib month filters, CI, Vitest gaps, optional web admins, API
   access revisit).
@@ -28,7 +40,7 @@ keep them as history. New releases use one SemVer and area labels only.
 - `[docs]` Adopt lightweight docs-native Spec-Driven Development (`docs/SDD.md`,
   `specs/` layout, Cursor rule); SDD sits above TDD for in-scope product work.
 - `[docs]` Adopt Git Flow, TDD toolchain docs, and single-SemVer versioning
-  (first tagged release under the new scheme will be `0.5.0`).
+  (first tagged release under the new scheme is `0.5.0`).
 - `[docs, deploy]` Add production deploy runbook for the working Vercel + `main`
   setup (legacy `vercel.json` routing, env vars, static files, landmines).
 - `[deploy, docker]` Make Docker Compose the only local app runtime with a

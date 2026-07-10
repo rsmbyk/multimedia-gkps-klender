@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|--------|
 | **ID** | `BL-002` |
-| **Status** | `idea` |
+| **Status** | `done` |
 | **Priority** | `P0` |
 | **Size** | `M` |
 | **Area** | `docs` |
@@ -39,3 +39,4 @@ section finalized, version constant/footer match.
 | Date | Note |
 |------|------|
 | 2026-07-10 | Seeded from versioning / Git Flow docs |
+| 2026-07-10 | Cutting `release/0.5.0` (bundled with `BL-001`) |

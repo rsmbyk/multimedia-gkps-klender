@@ -25,10 +25,8 @@ There is **one** product version. There are no per-plugin counters (`b` / `s` /
 ### Jump to `0.5.0`
 
 Production on the old scheme ended at **`0.4.17`** (per-app counters in the
-changelog and hardcoded OBS template strings). The **first release under this
-document is `0.5.0`**, which marks the versioning switch. Until that release is
-cut and tagged on `main`, develop may document upcoming work under
-`## Unreleased` while production remains `0.4.17`.
+changelog and hardcoded OBS template strings). **`0.5.0`** is the first release
+under this document (single SemVer + shared OBS version UI).
 
 Older `CHANGELOG.md` sections keep their historical **App Versions** blocks for
 archive; do not add new ones.
@@ -68,15 +66,17 @@ Suggested labels (use what fits; combine with commas when needed):
 | `docs` | Documentation / project conventions |
 | `test` | Test toolchain |
 
-## UI display (planned; not implemented in this docs pass)
+## UI display
 
-- **One shared footer** on OBS pages shows the single app version (e.g. `0.5.0`).
-- **One JS-readable constant** is the source of truth for that string (exact path
-  to be added when the UI work lands). Templates and docks must not hardcode
-  divergent per-app versions.
+- **One shared product version** is defined in
+  [`multimedia/obs/static/obs/common/version.js`](../multimedia/obs/static/obs/common/version.js)
+  as `APP_VERSION` (JS-readable).
+- OBS docks (and project settings) mark nodes with `data-app-version`;
+  `applyAppVersion()` fills them from that constant.
+- Templates and docks must **not** hardcode divergent per-app versions
+  (`v0.4.s30`, etc.).
 
-Until that lands, old per-app strings in templates may still be visible in
-`0.4.x` production; remove them as part of the `0.5.0` release work.
+Bump `APP_VERSION` only on `release/*` or `hotfix/*` when finalizing SemVer.
 
 ## Checklist: change on `develop`
 
