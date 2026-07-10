@@ -157,6 +157,7 @@ song list without remaining on a permanent loading state.`
 | [`GIT_FLOW.md`](GIT_FLOW.md) | Where work branches and merges |
 | [`VERSIONING.md`](VERSIONING.md) | Changelog labels; no SemVer bump on develop PRs |
 | [`DEPLOY.md`](DEPLOY.md) | Production constraints for deploy-related specs |
+| [`BACKLOG.md`](BACKLOG.md) | What we might do next (`BL-*`); specs take over once in scope |
 
 ## Agent expectations
 
