@@ -12,6 +12,8 @@ keep them as history. New releases use one SemVer and area labels only.
 
 ### Changes
 
+- `[docs]` Adopt lightweight docs-native Spec-Driven Development (`docs/SDD.md`,
+  `specs/` layout, Cursor rule); SDD sits above TDD for in-scope product work.
 - `[docs]` Adopt Git Flow, TDD toolchain docs, and single-SemVer versioning
   (first tagged release under the new scheme will be `0.5.0`).
 - `[docs, deploy]` Add production deploy runbook for the working Vercel + `main`
