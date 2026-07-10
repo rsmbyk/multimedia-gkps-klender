@@ -1,6 +1,6 @@
-# Plan: Current-state test coverage
+# Plan: TEST-COV — Current-state test coverage
 
-Spec: [`spec.md`](spec.md)
+Spec: [`spec.md`](spec.md) (`TEST-COV`)
 
 ## Approach
 

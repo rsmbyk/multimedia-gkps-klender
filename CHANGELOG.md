@@ -12,6 +12,9 @@ keep them as history. New releases use one SemVer and area labels only.
 
 ### Changes
 
+- `[docs]` Backfill as-built product specs with Spec IDs (`APP` overview +
+  feature registry for API, OBS, web, deploy); document ID conventions in
+  `docs/SDD.md` and `specs/README.md`.
 - `[test]` Add current-state regression coverage for API (songs, bookmarks,
   tatib, bible, search), shared helpers, OBS BroadcastChannel/storage/hotkeys,
   and isolatable web contracts; pytest uses Compose Postgres via host `:5433`.

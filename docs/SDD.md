@@ -82,8 +82,9 @@ human), then change the code. Do not silently let the code become the only truth
 
 ```text
 specs/
-  README.md                 # index and conventions
+  README.md                 # index, ID conventions, feature registry
   constitution.md           # project-wide guardrails (points at docs/)
+  app/                      # APP — full product overview
   _templates/               # copy these for new work
     spec.md
     plan.md
@@ -100,6 +101,37 @@ specs/
 Branch naming still follows [`GIT_FLOW.md`](GIT_FLOW.md)
 (`feature/*`, `fix/*`, `chore/*`). Specs for a topic live on that branch and
 merge with the PR.
+
+## Spec IDs
+
+Every spec folder has a stable **Spec ID** (short code). Use it in titles,
+cross-references, PR notes, and chat (“see `OBS-SONGS-AC3`”).
+
+| Kind | Pattern | Example |
+|------|---------|---------|
+| Spec | `<CODE>` | `OBS-SONGS`, `API-SONGS`, `APP` |
+| User story | `<CODE>-US<n>` | `OBS-SONGS-US1` |
+| Acceptance criterion | `<CODE>-AC<n>` | `OBS-SONGS-AC3` |
+| Task | `<CODE>-T<n>` | `OBS-SONGS-T2` |
+
+Rules:
+
+- Codes are **stable** once published. Renaming a folder does not change the
+  code unless the registry is updated deliberately.
+- Numbers are **local to that spec** (restart at 1 in each file).
+- OBS live surfaces use **`OBS-` first**, then the domain (`OBS-SONGS`,
+  `OBS-BIBLE`, `OBS-TATIB`, `OBS-PROJECT`).
+- Cross-ref in Markdown as plain codes (`API-SONGS-AC2`) and/or links to the
+  feature `spec.md`.
+- The living registry of codes lives in [`specs/README.md`](../specs/README.md)
+  and [`specs/app/spec.md`](../specs/app/spec.md).
+
+When writing acceptance criteria, prefix each bullet with its ID:
+
+```markdown
+- **API-SONGS-AC1:** WHEN an unauthenticated client lists books THE system
+  SHALL return HTTP 200.
+```
 
 ## EARS notation
 

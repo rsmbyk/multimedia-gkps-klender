@@ -38,3 +38,7 @@ over duplicating them here. Agents and humans must treat these as always-on.
   applies).
 - IF implementation and the agreed spec disagree, THEN the spec SHALL be
   clarified or updated before treating the code as correct.
+- Specs SHALL use stable Spec IDs (`CODE`, `CODE-US*`, `CODE-AC*`, `CODE-T*`)
+  as defined in [`docs/SDD.md`](../docs/SDD.md#spec-ids); new capabilities
+  SHALL be registered in [`specs/README.md`](README.md) and
+  [`specs/app/spec.md`](app/spec.md).

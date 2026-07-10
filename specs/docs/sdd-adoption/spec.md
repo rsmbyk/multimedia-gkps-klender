@@ -1,4 +1,11 @@
-# Spec: Spec-Driven Development adoption
+# Spec: DOCS-SDD — Spec-Driven Development adoption
+
+| Field | Value |
+|-------|--------|
+| **Spec ID** | `DOCS-SDD` |
+| **Area** | `docs` |
+| **Status** | `active` |
+| **Folder** | `specs/docs/sdd-adoption/` |
 
 ## Problem / goal
 
@@ -9,36 +16,41 @@ live in-repo and drive plan → tasks → implementation.
 
 ## User stories
 
-- As a maintainer, I want a documented SDD workflow and `specs/` layout, so that
-  new features start from agreed acceptance criteria.
-- As an agent, I want a Cursor rule and constitution that point at those docs, so
-  that I do not skip Specify / Plan / Tasks on in-scope work.
+- **DOCS-SDD-US1:** As a maintainer, I want a documented SDD workflow and
+  `specs/` layout, so that new features start from agreed acceptance criteria.
+- **DOCS-SDD-US2:** As an agent, I want a Cursor rule and constitution that
+  point at those docs, so that I do not skip Specify / Plan / Tasks on in-scope
+  work.
 
 ## Acceptance criteria (EARS)
 
-- THE repository SHALL document SDD in `docs/SDD.md` and link it from
-  `AGENTS.md`.
-- THE repository SHALL provide `specs/constitution.md`, `specs/README.md`, and
-  copyable templates under `specs/_templates/`.
-- THE repository SHALL include an always-applied Cursor rule
+- **DOCS-SDD-AC1:** THE repository SHALL document SDD in `docs/SDD.md` and link
+  it from `AGENTS.md`.
+- **DOCS-SDD-AC2:** THE repository SHALL provide `specs/constitution.md`,
+  `specs/README.md`, and copyable templates under `specs/_templates/`.
+- **DOCS-SDD-AC3:** THE repository SHALL include an always-applied Cursor rule
   `.cursor/rules/sdd.mdc` that summarizes SDD and points at `docs/SDD.md`.
-- WHEN product behavior changes under SDD, THE workflow SHALL still require TDD
-  for implementation tasks (SDD does not replace TDD).
-- THE adoption SHALL NOT require installing Spec Kit, OpenSpec, or other SDD
-  CLIs.
+- **DOCS-SDD-AC4:** WHEN product behavior changes under SDD, THE workflow SHALL
+  still require TDD for implementation tasks (SDD does not replace TDD).
+- **DOCS-SDD-AC5:** THE adoption SHALL NOT require installing Spec Kit,
+  OpenSpec, or other SDD CLIs.
+- **DOCS-SDD-AC6:** THE repository SHALL define stable Spec IDs
+  (`CODE`, `CODE-US*`, `CODE-AC*`, `CODE-T*`) in `docs/SDD.md` and
+  `specs/README.md`.
 
 ## Out of scope
 
-- Backfilling specs for existing product features
 - Installing or configuring third-party SDD toolchains
 - Changing Git Flow, SemVer, deploy, or TDD mechanics beyond cross-links
+- (Historical) Product feature backfill was deferred here; see `APP` and the
+  feature registry for the later as-built backfill.
 
 ## Constraints
 
-- Follow [`specs/constitution.md`](../../constitution.md) once added; until then
-  follow existing `docs/TDD.md`, `docs/GIT_FLOW.md`, and `docs/DEPLOY.md`.
-- Docs / tooling only — no product behavior change; no new tests required.
+- Follow [`specs/constitution.md`](../../constitution.md) and linked docs.
+- Docs / tooling only for the original adoption — no product behavior change.
 
 ## Notes
 
 - Example folder for this adoption: `specs/docs/sdd-adoption/` (this tree).
+- Product overview: [`APP`](../../app/spec.md).

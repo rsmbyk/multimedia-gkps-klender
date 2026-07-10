@@ -19,10 +19,12 @@ guessing.
 
 ## Specs (SDD)
 
-- **Guide:** [`docs/SDD.md`](docs/SDD.md)
+- **Guide:** [`docs/SDD.md`](docs/SDD.md) (includes Spec ID conventions)
 - **Tree:** [`specs/`](specs/) (constitution, templates, per-feature specs)
+- **Product overview:** [`specs/app/`](specs/app/) (`APP`) + registry in
+  [`specs/README.md`](specs/README.md)
 - Spec-anchored intent before code for in-scope product work; TDD still proves
-  each implementation task.
+  each implementation task. Cross-ref criteria as `OBS-SONGS-AC3`, etc.
 
 ## Cursor rules
 
