@@ -1,4 +1,7 @@
 import * as settingsStorage from '../common/settings-storage.js'
+import { applyAppVersion } from '../../common/version.js'
+
+applyAppVersion()
 
 const form = $('#project-settings-form')
 

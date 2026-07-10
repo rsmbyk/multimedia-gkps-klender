@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|--------|
 | **ID** | `BL-001` |
-| **Status** | `ready` |
+| **Status** | `done` |
 | **Priority** | `P0` |
 | **Size** | `M` |
 | **Area** | `project` |
@@ -40,3 +40,4 @@ strings are removed.
 | Date | Note |
 |------|------|
 | 2026-07-10 | Seeded from versioning docs |
+| 2026-07-10 | Implemented on `release/0.5.0` (`version.js` + `data-app-version`) |
