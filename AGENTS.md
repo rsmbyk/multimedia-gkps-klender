@@ -17,6 +17,13 @@ guessing.
 - **JavaScript:** Vitest / `package.json` / `vitest.config.js`
 - Behavior changes: failing test first, then implementation.
 
+## Specs (SDD)
+
+- **Guide:** [`docs/SDD.md`](docs/SDD.md)
+- **Tree:** [`specs/`](specs/) (constitution, templates, per-feature specs)
+- Spec-anchored intent before code for in-scope product work; TDD still proves
+  each implementation task.
+
 ## Cursor rules
 
 Agent-oriented summaries live under [`.cursor/rules/`](.cursor/rules/). They

@@ -1,0 +1,24 @@
+---
+description: Spec-Driven Development — specs before code for product behavior
+alwaysApply: true
+---
+
+# SDD (this repo)
+
+Follow [`docs/SDD.md`](docs/SDD.md). Summary:
+
+- Lightweight **docs-native** SDD: Markdown under `specs/` is the intent source
+  of truth (spec-anchored). No Spec Kit / OpenSpec CLI required.
+- For new product behavior and non-trivial / cross-cutting changes: **Specify →
+  Plan → Tasks → Implement**. Human OK at phase boundaries when the session
+  expects discuss-first.
+- Specs live in `specs/<area>/<feature>/` (`spec.md`, `plan.md`, `tasks.md`).
+  Copy from `specs/_templates/`. Project guardrails:
+  [`specs/constitution.md`](specs/constitution.md).
+- **SDD above TDD:** implement each task with red → green → refactor
+  ([`docs/TDD.md`](docs/TDD.md)). If code and spec disagree, update the spec
+  first (or clarify), then the code.
+- Skip full specs for docs-only / pure tooling / tiny obvious one-file fixes
+  (optional mini-spec in the PR).
+- Do not install large SDD toolchains without asking; prefer the docs-native
+  layout already documented.
