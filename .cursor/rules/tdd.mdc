@@ -1,0 +1,19 @@
+---
+description: TDD required for behavior changes — pytest (Django) and Vitest (JS)
+alwaysApply: true
+---
+
+# TDD (this repo)
+
+Follow [`docs/TDD.md`](docs/TDD.md). Summary:
+
+- For product behavior changes: **red → green → refactor** (failing test first).
+- Python: `pytest` + `pytest-django` + coverage (`requirements-dev.txt`,
+  `pytest.ini`). Suite uses `multimedia.settings_test` (in-memory SQLite).
+- JavaScript: Vitest + jsdom + `@vitest/coverage-v8` (`package.json`,
+  `vitest.config.js`). Colocate `*.test.js` or use `tests/js/`.
+- Docs-only / pure tooling with no behavior change may skip new tests.
+- CI is not configured yet — still run `pytest` and `npm test` locally before
+  finishing behavior work.
+- Do not add large uncommon test frameworks without asking; prefer the stack
+  already documented.

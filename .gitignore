@@ -213,3 +213,9 @@ cython_debug/
 
 # Django STATIC_ROOT
 _static/
+
+# Node / frontend tests
+node_modules/
+coverage-js/
+coverage-python.xml
+*.lcov

@@ -1,7 +1,21 @@
 # Changelog
 
-How versioning works (release vs per-app counters, changelog tags, and where to
-bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
+How versioning works (single SemVer from `0.5.0`, area labels, and release
+timing) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
+
+Sections `0.4.x` and earlier use the legacy per-app **App Versions** blocks;
+keep them as history. New releases use one SemVer and area labels only.
+
+---
+
+## Unreleased
+
+### Changes
+
+- `[docs]` Adopt Git Flow, TDD toolchain docs, and single-SemVer versioning
+  (first tagged release under the new scheme will be `0.5.0`).
+- `[docs, deploy]` Add production deploy runbook for the working Vercel + `main`
+  setup (legacy `vercel.json` routing, env vars, static files, landmines).
 
 ---
 
