@@ -12,6 +12,8 @@ keep them as history. New releases use one SemVer and area labels only.
 
 ### Changes
 
+- `[docs]` Add in-repo backlog and tracker (`docs/BACKLOG.md`, `backlog/` board
+  and item template, Cursor rule); scaffolding only — no seed items yet.
 - `[docs]` Backfill as-built product specs with Spec IDs (`APP` overview +
   feature registry for API, OBS, web, deploy); document ID conventions in
   `docs/SDD.md` and `specs/README.md`.

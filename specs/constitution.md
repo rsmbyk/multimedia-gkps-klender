@@ -14,6 +14,9 @@ over duplicating them here. Agents and humans must treat these as always-on.
 - THE project SHALL use a single SemVer and changelog area labels as defined in
   [`docs/VERSIONING.md`](../docs/VERSIONING.md). Feature PRs into `develop`
   SHALL NOT bump SemVer; they SHALL add `## Unreleased` bullets when warranted.
+- THE project SHALL keep an in-repo backlog and tracker as defined in
+  [`docs/BACKLOG.md`](../docs/BACKLOG.md) (`BL-*` items; board in
+  `backlog/README.md`).
 
 ## Production and local runtime
 

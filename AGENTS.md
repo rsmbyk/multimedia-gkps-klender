@@ -26,6 +26,13 @@ guessing.
 - Spec-anchored intent before code for in-scope product work; TDD still proves
   each implementation task. Cross-ref criteria as `OBS-SONGS-AC3`, etc.
 
+## Backlog and tracker
+
+- **Guide:** [`docs/BACKLOG.md`](docs/BACKLOG.md)
+- **Board:** [`backlog/README.md`](backlog/README.md) (`BL-*` items under
+  `backlog/items/`)
+- Backlog is “what we might do”; specs remain intent once work is in scope.
+
 ## Cursor rules
 
 Agent-oriented summaries live under [`.cursor/rules/`](.cursor/rules/). They

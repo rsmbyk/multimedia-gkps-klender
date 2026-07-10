@@ -108,5 +108,7 @@ Default integration branch is **`develop`**. Production deploys from **`main`**.
 | [`docs/VERSIONING.md`](docs/VERSIONING.md) | SemVer, changelog area labels |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Vercel production runbook and landmines |
 | [`docs/TDD.md`](docs/TDD.md) | pytest + Vitest, red → green → refactor |
+| [`docs/SDD.md`](docs/SDD.md) | Spec-Driven Development and Spec IDs |
+| [`docs/BACKLOG.md`](docs/BACKLOG.md) | In-repo backlog and tracker (`BL-*`) |
 | [`CHANGELOG.md`](CHANGELOG.md) | Released and unreleased changes |
 | [`.env.example`](.env.example) | Local Docker environment variables |
