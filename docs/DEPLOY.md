@@ -47,16 +47,16 @@ Until a deliberate, tested migration exists:
 ## Environment variables (Vercel)
 
 Set these in the Vercel project (**Settings → Environment Variables**), at least
-for **Production**. See [`.env.example`](../.env.example) for local comments.
+for **Production**. Local Docker uses [`.env.example`](../.env.example) and a
+compose-injected Postgres URL — do not point local `.env` at Neon.
 
 ### Required
 
 | Variable | Notes |
 |----------|--------|
 | `DATABASE_URL` | Postgres URL (Neon or other). Must be reachable from Vercel. |
-| `DJANGO_SECRET_KEY` | Long random secret. Do not reuse a public or committed value. |
-| `DJANGO_DEBUG` | `False` in production. |
-| `DJANGO_DEVELOPMENT_MODE` | `False` so settings use `DATABASE_URL`, not SQLite. |
+| `DJANGO_SECRET_KEY` | Long random secret. Required whenever the app loads (no random fallback). |
+| `DJANGO_DEBUG` | `False` in production. Settings refuse `True` when `VERCEL` is set. |
 
 ### Recommended for a custom domain
 
@@ -127,9 +127,9 @@ errors).
 | Remove `builds` / `routes` for “modern” config without a tested replacement | Same |
 | Rename/remove WSGI `app` | Function may not bind |
 | Force zero-config Django without verifying this repo layout | Undetected missing function |
-| Set `DJANGO_DEBUG=True` in production | Security / noise |
-| Set `DJANGO_DEVELOPMENT_MODE=True` in production | SQLite / wrong DB path |
-| Break `DATABASE_URL` | 500s on every DB hit |
+| Set `DJANGO_DEBUG=True` in production | Settings raise on Vercel; security risk elsewhere |
+| Omit `DJANGO_SECRET_KEY` | App fails to start (no random fallback) |
+| Break `DATABASE_URL` | 500s on every DB hit / startup ImproperlyConfigured |
 | Re-add failing `collectstatic` build step | Deploy fails before traffic moves |
 | Deploy product work from a branch other than `main` | Bypasses Git Flow; easy to lose track of what’s live |
 

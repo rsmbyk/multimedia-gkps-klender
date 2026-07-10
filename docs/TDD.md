@@ -35,9 +35,11 @@ py -3.11 -m venv .venv
 pip install -r requirements-dev.txt
 ```
 
-Pytest loads `multimedia.settings_test`, which reuses normal settings but
-forces an **in-memory SQLite** database so the suite never needs
-`DATABASE_URL` / Neon (local `.env` cannot override this).
+The **app** runs in Docker Compose with local Postgres. Pytest runs on the
+**host** and loads `multimedia.settings_test`, which reuses normal settings but
+forces an **in-memory SQLite** database for test isolation only. `conftest.py`
+supplies dummy `DJANGO_SECRET_KEY` / `DATABASE_URL` so settings import succeeds
+before that override.
 
 ### Commands
 
