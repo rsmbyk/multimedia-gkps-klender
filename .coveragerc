@@ -1,0 +1,12 @@
+[run]
+source = multimedia
+omit =
+    */migrations/*
+    */apps.py
+    multimedia/asgi.py
+    multimedia/wsgi.py
+    multimedia/manage.py
+
+[report]
+skip_empty = true
+show_missing = true

@@ -1,7 +1,55 @@
 # Changelog
 
-How versioning works (release vs per-app counters, changelog tags, and where to
-bump UI versions) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
+How versioning works (single SemVer from `0.5.0`, area labels, and release
+timing) is documented in [`docs/VERSIONING.md`](docs/VERSIONING.md).
+
+Sections `0.4.x` and earlier use the legacy per-app **App Versions** blocks;
+keep them as history. New releases use one SemVer and area labels only.
+
+---
+
+## Unreleased
+
+### Changes
+
+---
+
+## Version `0.5.0`
+
+First release under the single-SemVer scheme (replacing per-app `0.4.x`
+counters).
+
+### Changes
+
+- `[project, songs, bible, tatib]` Add shared OBS SemVer constant
+  (`multimedia/obs/static/obs/common/version.js`) and fill `data-app-version`
+  footers; remove divergent per-app `v0.4.*` template strings.
+- `[docs]` Seed backlog tracker with `BL-001`–`BL-010` (SemVer footer, 0.5.0
+  release, tatib month filters, CI, Vitest gaps, optional web admins, API
+  access revisit).
+- `[docs]` Add in-repo backlog and tracker (`docs/BACKLOG.md`, `backlog/` board
+  and item template, Cursor rule).
+- `[docs]` Backfill as-built product specs with Spec IDs (`APP` overview +
+  feature registry for API, OBS, web, deploy); document ID conventions in
+  `docs/SDD.md` and `specs/README.md`.
+- `[test]` Add current-state regression coverage for API (songs, bookmarks,
+  tatib, bible, search), shared helpers, OBS BroadcastChannel/storage/hotkeys,
+  and isolatable web contracts; pytest uses Compose Postgres via host `:5433`.
+- `[fix]` Exclude the current bookmark from name+date uniqueness on update;
+  scope tatib `insert_after` order shifts to the same tata ibadah.
+- `[docs]` Adopt lightweight docs-native Spec-Driven Development (`docs/SDD.md`,
+  `specs/` layout, Cursor rule); SDD sits above TDD for in-scope product work.
+- `[docs]` Adopt Git Flow, TDD toolchain docs, and single-SemVer versioning
+  (first tagged release under the new scheme is `0.5.0`).
+- `[docs, deploy]` Add production deploy runbook for the working Vercel + `main`
+  setup (legacy `vercel.json` routing, env vars, static files, landmines).
+- `[deploy, docker]` Make Docker Compose the only local app runtime with a
+  built-in Postgres service; remove `docker-compose.local.yml` and stop pointing
+  local `.env` at Neon.
+- `[dj]` Remove `DJANGO_DEVELOPMENT_MODE` / app SQLite; require `DATABASE_URL`
+  and `DJANGO_SECRET_KEY`, and refuse `DJANGO_DEBUG=True` when `VERCEL` is set.
+- `[docs, test]` Document Docker-only local workflow; add env-safety unit tests.
+- `[docker]` Add `scripts/copy_neon_to_local.sh` to dump Neon into Compose Postgres.
 
 ---
 

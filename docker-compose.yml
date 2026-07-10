@@ -6,10 +6,33 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_DEVELOPMENT_MODE: "False"
+      # Always win over .env so an old Neon URL cannot hijack local Docker.
+      DATABASE_URL: postgresql://multimedia:multimedia@db:5432/multimedia
+      DJANGO_DEBUG: "True"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-insecure-local-only-change-me}
+      RUN_MIGRATIONS: "true"
     volumes:
       - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
     command: python manage.py runserver 0.0.0.0:8000
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: multimedia
+      POSTGRES_USER: multimedia
+      POSTGRES_PASSWORD: multimedia
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U multimedia -d multimedia"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
