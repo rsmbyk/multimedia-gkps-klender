@@ -1,10 +1,10 @@
-# Plan: \<Feature name\>
+# Plan: \<CODE\> — \<Feature name\>
 
-Spec: [`spec.md`](spec.md)
+Spec: [`spec.md`](spec.md) (`<CODE>`)
 
 ## Approach
 
-\<High-level how. Main modules / apps / static paths.\>
+\<High-level how. For as-built backfills: describe the existing architecture.\>
 
 ## Touch points
 
