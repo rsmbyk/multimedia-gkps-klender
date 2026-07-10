@@ -12,8 +12,11 @@ keep them as history. New releases use one SemVer and area labels only.
 
 ### Changes
 
+- `[docs]` Seed backlog tracker with `BL-001`–`BL-010` (SemVer footer, 0.5.0
+  release, tatib month filters, CI, Vitest gaps, optional web admins, API
+  access revisit).
 - `[docs]` Add in-repo backlog and tracker (`docs/BACKLOG.md`, `backlog/` board
-  and item template, Cursor rule); scaffolding only — no seed items yet.
+  and item template, Cursor rule).
 - `[docs]` Backfill as-built product specs with Spec IDs (`APP` overview +
   feature registry for API, OBS, web, deploy); document ID conventions in
   `docs/SDD.md` and `specs/README.md`.
