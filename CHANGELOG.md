@@ -22,6 +22,7 @@ keep them as history. New releases use one SemVer and area labels only.
 - `[dj]` Remove `DJANGO_DEVELOPMENT_MODE` / app SQLite; require `DATABASE_URL`
   and `DJANGO_SECRET_KEY`, and refuse `DJANGO_DEBUG=True` when `VERCEL` is set.
 - `[docs, test]` Document Docker-only local workflow; add env-safety unit tests.
+- `[docker]` Add `scripts/copy_neon_to_local.sh` to dump Neon into Compose Postgres.
 
 ---
 
