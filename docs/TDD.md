@@ -35,16 +35,30 @@ py -3.11 -m venv .venv
 pip install -r requirements-dev.txt
 ```
 
-The **app** runs in Docker Compose with local Postgres. Pytest runs on the
-**host** and loads `multimedia.settings_test`, which reuses normal settings but
-forces an **in-memory SQLite** database for test isolation only. `conftest.py`
-supplies dummy `DJANGO_SECRET_KEY` / `DATABASE_URL` so settings import succeeds
-before that override.
+The **app** runs in Docker Compose with local Postgres. Pytest also runs on the
+**host** and loads `multimedia.settings_test`, which reuses normal settings then
+**forces** Compose Postgres and **ignores** any Neon/production `DATABASE_URL`
+in `.env`. pytest-django creates a separate `test_*` database so the live
+Compose `multimedia` database is not wiped.
+
+Default test DSN: `postgresql://multimedia:multimedia@127.0.0.1:5433/multimedia`
+(override with `TEST_DATABASE_URL`). Port **5433** avoids colliding with a
+Windows-native Postgres that often owns `localhost:5432`. On this machine the
+VirtualBox `docker-vm` NAT only forwards SSH (`2222`) and HTTP (`8000`), so
+reach guest Compose Postgres with an SSH local forward:
+
+```powershell
+# Start Compose DB inside docker-vm (if not already up)
+C:\Users\Javan\docker-compose.cmd -f C:\Users\Javan\projects\multimedia-gkps-klender\docker-compose.yml up -d db
+
+# Forward guest :5432 to host :5433 (once per session)
+ssh -f -N -L 5433:127.0.0.1:5432 docker-vm
+```
 
 ### Commands
 
 ```powershell
-pytest                  # full suite + coverage summary
+pytest                  # full suite + coverage summary (needs Postgres)
 pytest -k name          # focused run
 pytest --no-cov         # skip coverage when iterating quickly
 ```
@@ -98,9 +112,9 @@ Path aliases (for imports in tests):
 Environment: **jsdom** (DOM APIs available). Vendored libraries under
 `static/libs/` are excluded from coverage.
 
-Many OBS modules expect globals such as `rxjs` from UMD script tags. When a
-module under test needs those, provide them in the test file (or a small
-`tests/js/setup.js` later) before importing the module.
+Many OBS modules expect globals such as `rxjs` from UMD script tags.
+`tests/js/setup.js` installs the `rxjs` npm package onto `globalThis.rxjs` for
+Vitest. Path alias `/static/helpers` mirrors browser absolute imports.
 
 ## What to test (when we start writing cases)
 

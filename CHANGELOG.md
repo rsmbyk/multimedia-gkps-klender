@@ -12,6 +12,11 @@ keep them as history. New releases use one SemVer and area labels only.
 
 ### Changes
 
+- `[test]` Add current-state regression coverage for API (songs, bookmarks,
+  tatib, bible, search), shared helpers, OBS BroadcastChannel/storage/hotkeys,
+  and isolatable web contracts; pytest uses Compose Postgres via host `:5433`.
+- `[fix]` Exclude the current bookmark from name+date uniqueness on update;
+  scope tatib `insert_after` order shifts to the same tata ibadah.
 - `[docs]` Adopt lightweight docs-native Spec-Driven Development (`docs/SDD.md`,
   `specs/` layout, Cursor rule); SDD sits above TDD for in-scope product work.
 - `[docs]` Adopt Git Flow, TDD toolchain docs, and single-SemVer versioning

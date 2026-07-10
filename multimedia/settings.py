@@ -109,8 +109,9 @@ WSGI_APPLICATION = 'multimedia.wsgi.app'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-# Local app runtime uses Docker Compose Postgres. Pytest overrides via
-# multimedia.settings_test (in-memory SQLite for isolation only).
+# Local app runtime uses Docker Compose Postgres. Pytest forces Compose
+# Postgres via multimedia.settings_test (ignores .env Neon URLs) and
+# pytest-django uses a separate test_* database.
 
 _skip_database = len(sys.argv) > 1 and 'collectstatic' in sys.argv
 DATABASES = build_databases(

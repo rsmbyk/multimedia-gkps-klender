@@ -1,4 +1,5 @@
 import { BehaviorSubject } from '/static/helpers/rx.js'
+import { joinAdjacentLyricLines } from './lyric-chunks.js'
 
 const previewSegment = $('#preview-segment')
 const previewText = $('.previewText')
@@ -13,25 +14,7 @@ const activeLyricsSubject = new BehaviorSubject()
 const activeLyricIndexSubject = new BehaviorSubject()
 
 const buildLyrics = lyric => {
-    const joinAdjacentText = lyricTexts => {
-        const result = []
-        let joinedTexts = ''
-
-        for (let i=0; i < lyricTexts.length; i++) {
-            if (joinedTexts.length !== 0) joinedTexts += '\n'
-            joinedTexts += lyricTexts[i]
-
-            if ((i+1) % 2 === 0) {
-                result.push(joinedTexts)
-                joinedTexts = ''
-            }
-        }
-
-        if (joinedTexts.length > 0) result.push(joinedTexts)
-        return result
-    }
-
-    activeLyricsSubject.next(joinAdjacentText(lyric.split('\n')))
+    activeLyricsSubject.next(joinAdjacentLyricLines(lyric))
 
     if (activeLyricIndex === undefined || lyric?.length === 0) {
         activeLyricIndexSubject.next(0)
