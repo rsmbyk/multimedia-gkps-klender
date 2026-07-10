@@ -120,6 +120,7 @@ npm test
 - **Branching:** Git Flow — [`docs/GIT_FLOW.md`](docs/GIT_FLOW.md)
 - **Versions:** single SemVer for the whole app (from **`0.5.0`**) —
   [`docs/VERSIONING.md`](docs/VERSIONING.md)
+- **Production deploy:** Vercel + `main` — [`docs/DEPLOY.md`](docs/DEPLOY.md)
 - **History:** [`CHANGELOG.md`](CHANGELOG.md)
 - **Agent / contributor index:** [`AGENTS.md`](AGENTS.md)
 
@@ -131,6 +132,7 @@ Default integration branch is **`develop`**. Production deploys from **`main`**.
 |-----|--------|
 | [`docs/GIT_FLOW.md`](docs/GIT_FLOW.md) | Branches, PRs, release / hotfix |
 | [`docs/VERSIONING.md`](docs/VERSIONING.md) | SemVer, changelog area labels |
+| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Vercel production runbook and landmines |
 | [`docs/TDD.md`](docs/TDD.md) | pytest + Vitest, red → green → refactor |
 | [`CHANGELOG.md`](CHANGELOG.md) | Released and unreleased changes |
 | [`.env.example`](.env.example) | Environment variables |

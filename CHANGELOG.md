@@ -14,6 +14,8 @@ keep them as history. New releases use one SemVer and area labels only.
 
 - `[docs]` Adopt Git Flow, TDD toolchain docs, and single-SemVer versioning
   (first tagged release under the new scheme will be `0.5.0`).
+- `[docs, deploy]` Add production deploy runbook for the working Vercel + `main`
+  setup (legacy `vercel.json` routing, env vars, static files, landmines).
 
 ---
 

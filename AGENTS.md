@@ -8,6 +8,7 @@ guessing.
 - **Model:** Git Flow — [`docs/GIT_FLOW.md`](docs/GIT_FLOW.md)
 - **Versions (single SemVer) / changelog area labels:** [`docs/VERSIONING.md`](docs/VERSIONING.md)
 - **Shipped history:** [`CHANGELOG.md`](CHANGELOG.md)
+- **Production deploy:** [`docs/DEPLOY.md`](docs/DEPLOY.md)
 
 ## Testing (TDD)
 
