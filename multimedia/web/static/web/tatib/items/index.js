@@ -9,6 +9,8 @@ import * as deleteItemModal from './modals/delete-item.js'
 import * as editEosModal from './modals/edit-eos.js'
 
 import * as PreviewManager from './PreviewManager.js'
+import { buildTatibReorderRequestData } from './reorder.js'
+import { tatibItemsReorderUrl, tatibItemsUrl, tatibUrl } from '../../api-paths.js'
 
 const breadcrumb = $('#breadcrumb')
 const breadcrumbTatib = $('#breadcrumb-tatib')
@@ -440,7 +442,7 @@ const retrieveItems = () => {
     showLoader()
     displayItemListPlaceholder()
 
-    axios.get(`/api/tatib/items?tatib=${tatibId}&ordering=order_number`)
+    axios.get(tatibItemsUrl(tatibId))
         .then(({ data: items }) => itemsSubject.next(items))
         .catch(displayErrorView)
 }
@@ -455,22 +457,13 @@ const retrieveTatib = () => {
     displayTatibInfoPlaceholder()
     displayItemListPlaceholder()
 
-    axios.get(`/api/tatib/tatibs/${tatibId}`)
+    axios.get(tatibUrl(tatibId))
         .then(({ data: tatib }) => tatibSubject.next(tatib))
         .then(retrieveItems)
         .catch(displayErrorView)
 }
 
-const buildReorderRequestData = () => {
-    return {
-        items: itemsOrder.map((item, index) => {
-            return {
-                item: item.id,
-                order_number: index + 1,
-            }
-        })
-    }
-}
+const buildReorderRequestData = () => buildTatibReorderRequestData(itemsOrder)
 
 buttonAddEndOfSection.click(() => {
     PreviewManager.closePreview()
@@ -494,7 +487,7 @@ buttonDiscard.click(() => {
 buttonSave.click(() => {
     showLoader()
 
-    axios.post('/api/tatib/items/reorder', buildReorderRequestData())
+    axios.post(tatibItemsReorderUrl(), buildReorderRequestData())
         .then(() => scrollPositionSubject.next(null))
         .then(() => {
             itemsOrderSubject.next(null)

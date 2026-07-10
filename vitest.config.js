@@ -7,6 +7,7 @@ const root = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   test: {
     environment: 'jsdom',
+    setupFiles: ['./tests/js/setup.js'],
     include: [
       'static/**/*.test.js',
       'multimedia/**/static/**/*.test.js',
@@ -33,6 +34,8 @@ export default defineConfig({
       '@helpers': path.resolve(root, 'static/helpers'),
       '@obs': path.resolve(root, 'multimedia/obs/static/obs'),
       '@web': path.resolve(root, 'multimedia/web/static/web'),
+      // App modules import absolute /static/... paths in the browser.
+      '/static/helpers': path.resolve(root, 'static/helpers'),
     },
   },
 })

@@ -1,28 +1,31 @@
 import * as bcSongs from '../../songs/common/bc.js'
 import * as bcTatib from '../../tatib/common/bc.js'
 import * as bcBible from '../../bible/common/bc.js'
+import {
+    formatPassageProjectContent,
+    formatSongProjectContent,
+    formatTatibProjectContent,
+} from './format.js'
 
 const title = $('#project-title')
 const text = $('#project-text')
 
-const updateSongInfo = ({ lyric }) => {
-    title.text('')
-    text.text(lyric)
+const updateSongInfo = (songInfo) => {
+    const content = formatSongProjectContent(songInfo)
+    title.text(content.title)
+    text.text(content.text)
 }
 
 function updateTatibInfo(tatibItem) {
-    title.text(tatibItem.title)
-    text.text(tatibItem.text)
+    const content = formatTatibProjectContent(tatibItem)
+    title.text(content.title)
+    text.text(content.text)
 }
 
-function updatePassageInfo({ bookName, chapterNumber, verseNumber, title: passageTitle, text: passageText }) {
-    let projectTitle = `${bookName} ${chapterNumber} : ${verseNumber}`
-    if (passageTitle.length > 0) {
-        projectTitle += '\n' + passageTitle
-    }
-
-    title.text(projectTitle)
-    text.text(passageText)
+function updatePassageInfo(passage) {
+    const content = formatPassageProjectContent(passage)
+    title.text(content.title)
+    text.text(content.text)
 }
 
 const doTransition = () => {

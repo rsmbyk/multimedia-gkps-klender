@@ -112,9 +112,9 @@ Path aliases (for imports in tests):
 Environment: **jsdom** (DOM APIs available). Vendored libraries under
 `static/libs/` are excluded from coverage.
 
-Many OBS modules expect globals such as `rxjs` from UMD script tags. When a
-module under test needs those, provide them in the test file (or a small
-`tests/js/setup.js` later) before importing the module.
+Many OBS modules expect globals such as `rxjs` from UMD script tags.
+`tests/js/setup.js` installs the `rxjs` npm package onto `globalThis.rxjs` for
+Vitest. Path alias `/static/helpers` mirrors browser absolute imports.
 
 ## What to test (when we start writing cases)
 
