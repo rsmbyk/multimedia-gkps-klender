@@ -62,14 +62,15 @@ develop ──► feature/my-change ──(PR, squash)──► develop
    ```
 2. Implement, commit (Conventional Commits), push the branch.
 3. Open a PR **into `develop`**.
-4. Before merge: bump **app counters** for every app you changed (`b` / `s` /
-   `t` / `p` / `dj`), update templates if OBS-facing, and add changelog bullets
-   with the correct `[tag]` prefixes. See [`VERSIONING.md`](VERSIONING.md).
+4. Before merge: add changelog bullets under `## Unreleased` with **area
+   labels** (e.g. `[songs]`, `[deploy]`). Do **not** bump SemVer on develop.
+   See [`VERSIONING.md`](VERSIONING.md).
 5. **Squash merge** into `develop`.
 6. Delete the topic branch (local and remote).
 
-Docs-only or pure tooling chores that do not change any app may omit an app
-counter bump; still open a PR and squash into `develop`.
+Docs-only or pure tooling chores still use a PR; add `[docs]` / `[test]`
+bullets when the change is worth recording, otherwise a PR description is
+enough.
 
 ## Release flow
 
@@ -83,20 +84,20 @@ develop ──► release/x.y.z ──(PR, merge)──► main   (tag vX.Y.Z)
    ```bash
    git checkout develop
    git pull origin develop
-   git checkout -b release/0.4.18
+   git checkout -b release/0.5.0
    ```
 2. On the release branch **only**:
-   - Finalize the **release version** (`MAJOR.MINOR.PATCH`) in `CHANGELOG.md`
-   - Sync the **App Versions** block for that release
-   - Finish any remaining release-section changelog polish
-   - Ensure OBS template version strings match the App Versions table
+   - Choose and finalize **SemVer** (`MAJOR.MINOR.PATCH`) in `CHANGELOG.md`
+   - Move `## Unreleased` into `## Version x.y.z` (no App Versions block)
+   - Set the centralized JS-readable version constant (when it exists)
+   - Confirm the shared OBS footer shows that version (when it exists)
 3. Open a PR: `release/x.y.z` → **`main`**. **Merge commit** (not squash).
 4. Tag the release on `main`:
    ```bash
    git checkout main
    git pull origin main
-   git tag v0.4.18
-   git push origin v0.4.18
+   git tag v0.5.0
+   git push origin v0.5.0
    ```
    Optionally create a GitHub Release from that tag.
 5. Open a PR: `release/x.y.z` → **`develop`** (or merge `main` back if that is
@@ -120,25 +121,27 @@ main ──► hotfix/short-name ──(PR, merge)──► main   (tag if patch
    git pull origin main
    git checkout -b hotfix/short-name
    ```
-2. Fix the issue. If this ships as a patch release, bump the release version and
+2. Fix the issue. If this ships as a patch release, bump SemVer and the
    changelog on the hotfix branch (same finalize rules as a mini release).
 3. PR → **`main`**, **merge commit**. Tag if you cut a patch (`vX.Y.Z`).
-4. PR → **`develop`**, **merge commit** (not squash). Carry any app-counter or
-   changelog updates develop still needs.
+4. PR → **`develop`**, **merge commit** (not squash). Reconcile changelog /
+   Unreleased if develop had moved ahead.
 5. Delete the hotfix branch.
 
 ## Checklist: shipping a normal change
 
 - [ ] Branched from latest `develop`
 - [ ] PR targets `develop`
-- [ ] App counters + changelog updated for affected apps (if any)
+- [ ] `## Unreleased` changelog bullets + area labels (if product-facing)
+- [ ] SemVer **not** bumped on this PR
 - [ ] Squash merge into `develop`
 - [ ] Topic branch deleted
 
 ## Checklist: cutting a release
 
 - [ ] `release/x.y.z` cut from latest `develop`
-- [ ] Release version + App Versions + changelog finalized on the release branch
+- [ ] SemVer + changelog finalized on the release branch (from Unreleased)
+- [ ] Version constant + shared footer updated when that UI exists
 - [ ] Merge commit into `main`
 - [ ] Tag `vX.Y.Z` pushed
 - [ ] Merge commit back into `develop`

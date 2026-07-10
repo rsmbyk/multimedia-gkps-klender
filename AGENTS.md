@@ -6,7 +6,7 @@ guessing.
 ## Branching and releases
 
 - **Model:** Git Flow — [`docs/GIT_FLOW.md`](docs/GIT_FLOW.md)
-- **Versions / changelog tags:** [`docs/VERSIONING.md`](docs/VERSIONING.md)
+- **Versions (single SemVer) / changelog area labels:** [`docs/VERSIONING.md`](docs/VERSIONING.md)
 - **Shipped history:** [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Testing (TDD)

@@ -15,6 +15,7 @@ Follow [`docs/GIT_FLOW.md`](docs/GIT_FLOW.md). Summary:
   - Into `develop` from feature/fix/chore → **squash**
   - Into `develop` from release/hotfix → **merge commit** (never squash)
   - Into `main` from release/hotfix → **merge commit** (never squash)
-- Versioning: bump app counters on merge into `develop`; finalize release
-  version only on `release/*` (or `hotfix/*` for patches). See
-  [`docs/VERSIONING.md`](docs/VERSIONING.md).
+- Versioning: single SemVer for the whole app. Do not bump on develop PRs —
+  add `## Unreleased` bullets with area labels. Finalize `MAJOR.MINOR.PATCH`
+  only on `release/*` (or `hotfix/*` for patches). First new-scheme release is
+  `0.5.0`. See [`docs/VERSIONING.md`](docs/VERSIONING.md).

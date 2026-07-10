@@ -1,93 +1,94 @@
 # Versioning
 
-This project uses **two levels** of version numbers: a **release version** for the
-whole repo and **per-app versions** for each OBS plugin (plus the Django backend).
+This project uses a **single [Semantic Versioning](https://semver.org/)
+(`MAJOR.MINOR.PATCH`)** number for the whole application (Django, API, web
+admin, and all OBS docks / sources).
 
-See [`CHANGELOG.md`](../CHANGELOG.md) for the history of shipped versions.
+See [`CHANGELOG.md`](../CHANGELOG.md) for shipped history. Branching and when
+the version is finalized are defined in [`GIT_FLOW.md`](GIT_FLOW.md).
 
-Branching and when bumps happen in the lifecycle are defined in
-[`GIT_FLOW.md`](GIT_FLOW.md):
+## Current scheme (from `0.5.0`)
 
-- **App counters** (`b` / `s` / `t` / `p` / `dj`) bump on work merging into
-  **`develop`**
-- **Release version** (`MAJOR.MINOR.PATCH`) is finalized only on a
-  **`release/*`** branch (or on **`hotfix/*`** for a production patch)
+Format: `MAJOR.MINOR.PATCH` (e.g. `0.5.0`)
 
-## Release version
+Git tags use a `v` prefix: `v0.5.0`.
 
-Format: `MAJOR.MINOR.PATCH` (e.g. `0.4.6`)
+| Bump | When |
+|------|------|
+| **MAJOR** | Breaking changes (API contracts, OBS message shapes, incompatible data migrations) |
+| **MINOR** | New features or notable backward-compatible behavior |
+| **PATCH** | Bug fixes, deploy/plumbing, small tweaks, docs that ship with a tagged release |
 
-A release bundles whatever app and backend versions were current when that
-release was cut. Each release section in `CHANGELOG.md` lists those versions
-under **App Versions**.
+There is **one** product version. There are no per-plugin counters (`b` / `s` /
+`t` / `p` / `dj`) and no `v0.4.s30`-style strings in the new scheme.
 
-## Per-app versions (OBS plugins)
+### Jump to `0.5.0`
 
-The four OBS browser-source apps each have their own counter:
+Production on the old scheme ended at **`0.4.17`** (per-app counters in the
+changelog and hardcoded OBS template strings). The **first release under this
+document is `0.5.0`**, which marks the versioning switch. Until that release is
+cut and tagged on `main`, develop may document upcoming work under
+`## Unreleased` while production remains `0.4.17`.
 
-| App | Letter | Version example | Shown in UI |
-|-----|--------|-----------------|-------------|
-| Bible | `b` | `v0.4.b10` | Bible dock → Bible tab |
-| Songs | `s` | `v0.4.s29` | Songs dock → Songbooks tab |
-| Tatib | `t` | `v0.4.t20` | Tatib dock → Tatibs tab |
-| Project | `p` | `v0.4.p12` | Project source page `<title>` |
+Older `CHANGELOG.md` sections keep their historical **App Versions** blocks for
+archive; do not add new ones.
 
-Format: `v{major}.{letter}{number}`
+## When the version changes
 
-- **major** — matches the current release line (e.g. `0.4` while release `0.4.x` is active)
-- **letter** — identifies the app (`b`, `s`, `t`, `p`)
-- **number** — increments when **that app** changes, independently of the others
+| On | Action |
+|----|--------|
+| Feature / fix / chore PR into **`develop`** | **Do not** bump SemVer. Add bullets under `## Unreleased` with area labels (below). |
+| **`release/x.y.z`** branch | Choose and finalize `MAJOR.MINOR.PATCH`, rename/move `Unreleased` into `## Version x.y.z`, set the centralized version constant, update the shared OBS footer. |
+| Tag on **`main`** after release merge | `vX.Y.Z` |
+| **`hotfix/*`** | Usually a **PATCH** bump on the hotfix branch; same finalize steps, then merge to `main` and `develop`. |
 
-Example: Songs can move from `s28` → `s29` while Bible stays at `b10` within the
-same release `0.4.6`.
+## Changelog area labels (non-version)
 
-## Django / backend version
-
-The web admin, REST API, and Django apps use a separate counter:
-
-- Format: `v0.4.dj1` (letter `dj` = Django)
-- Tracked in `CHANGELOG.md` under **App Versions**
-- Not displayed in OBS dock UI
-
-## Where versions are defined
-
-Versions are **hardcoded in templates** (there is no central runtime config):
-
-| App | File |
-|-----|------|
-| Songs | `multimedia/obs/templates/songs/dock/tabs/songbooks.html` |
-| Bible | `multimedia/obs/templates/bible/dock/tabs/bible.html` |
-| Tatib | `multimedia/obs/templates/tatib/dock/tabs/tatibs.html` |
-| Project | `multimedia/obs/templates/project/source/index.html` |
-
-When you change an app, bump its version in the matching template **and** record
-the change in `CHANGELOG.md`.
-
-## Changelog change tags
-
-Each bullet in `CHANGELOG.md` is prefixed with the app(s) it affects:
+Bullets still carry **area labels** so history stays skimmable. Labels do **not**
+include version numbers.
 
 ```text
-[b8, s29, t20, p11] Added a feature to switch control between apps...
-[b10] The corresponding Chapter will also be opened in Browse tab...
-[dj1, t1] Added buttons to insert TatibItems right after a specific item.
+[songs] Restore songbooks dropdown loading after Rx regression
+[bible, project] Fix arrow-key navigation in dock and source
+[deploy] Restore vercel.json WSGI routing for production
+[docs] Adopt Git Flow and SemVer versioning
 ```
 
-| Tag | Meaning |
-|-----|---------|
-| `[s29]` | Songs only |
-| `[b10, s29]` | Bible and Songs |
-| `[dj1]` | Django backend / web / API |
-| `[p12]` | Project source only |
+Suggested labels (use what fits; combine with commas when needed):
 
-Use the appropriate letter(s) when adding changelog entries. Bump the version
-number for every app tag you add (e.g. a `[s30]` entry implies Songs is now
-`v0.4.s30`).
+| Label | Surface |
+|-------|---------|
+| `songs` | Songs OBS dock / source |
+| `bible` | Bible OBS dock / source |
+| `tatib` | Tatib OBS dock / source |
+| `project` | Project OBS source / settings |
+| `api` | REST API |
+| `web` | Django web admin UI |
+| `deploy` | Hosting, Vercel, Docker, static serving |
+| `docs` | Documentation / project conventions |
+| `test` | Test toolchain |
 
-## Checklist when shipping a change
+## UI display (planned; not implemented in this docs pass)
 
-1. Identify which app(s) changed (`b`, `s`, `t`, `p`, `dj`).
-2. Increment each affected app's version counter in its template (if OBS-facing).
-3. Add a changelog entry under the current or new release section with the
-   correct `[tag]` prefix.
-4. Update **App Versions** in that release section if any counter moved.
+- **One shared footer** on OBS pages shows the single app version (e.g. `0.5.0`).
+- **One JS-readable constant** is the source of truth for that string (exact path
+  to be added when the UI work lands). Templates and docks must not hardcode
+  divergent per-app versions.
+
+Until that lands, old per-app strings in templates may still be visible in
+`0.4.x` production; remove them as part of the `0.5.0` release work.
+
+## Checklist: change on `develop`
+
+1. Implement the behavior (TDD where applicable — see [`TDD.md`](TDD.md)).
+2. Add changelog bullet(s) under `## Unreleased` with area label(s).
+3. Do **not** bump SemVer or create a release section yet.
+
+## Checklist: cutting a release
+
+1. Branch `release/x.y.z` from `develop`.
+2. Decide `MAJOR` / `MINOR` / `PATCH` from the Unreleased bullets.
+3. Turn `Unreleased` into `## Version x.y.z` (no App Versions block).
+4. Set the centralized JS-readable version constant to `x.y.z`.
+5. Confirm the shared OBS footer reads that constant.
+6. Merge to `main` (merge commit), tag `vX.Y.Z`, merge back to `develop`.
