@@ -17,7 +17,10 @@ class TataIbadahItemSerializer(serializers.ModelSerializer):
             max_order_number = max_order_number_aggr or 0
         else:
             max_order_number = insert_after
-            items = models.TataIbadahItem.objects.filter(order_number__gt=insert_after)
+            items = models.TataIbadahItem.objects.filter(
+                tatib=tatib,
+                order_number__gt=insert_after,
+            )
             for item in items:
                 item.order_number += 1
             models.TataIbadahItem.objects.bulk_update(items, ['order_number'])
