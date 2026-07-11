@@ -14,6 +14,16 @@ keep them as history. New releases use one SemVer and area labels only.
 
 ---
 
+## Version `0.5.1`
+
+### Changes
+
+- `[songs, bible, tatib]` Fix OBS dock imports of shared `version.js` (was
+  resolving to `/static/obs/<app>/common/version.js` → 404; now
+  `../../common/version.js`).
+
+---
+
 ## Version `0.5.0`
 
 First release under the single-SemVer scheme (replacing per-app `0.4.x`
