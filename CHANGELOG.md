@@ -14,6 +14,28 @@ keep them as history. New releases use one SemVer and area labels only.
 
 ---
 
+## Version `0.5.2`
+
+### Changes
+
+- `[deploy]` Move the local Compose stack off the crowded well-known ports:
+  `web` publishes on **63404** and `db` on **59075** (IANA dynamic range), both
+  overridable with `WEB_PORT` / `DB_PORT` in `.env` so a collision no longer
+  requires editing a tracked file. Container-internal ports are unchanged
+  (`8000` / `5432`).
+- `[deploy]` Make `.env` optional for Docker Compose. `docker compose config`
+  previously failed outright on a fresh clone because `env_file: .env` was a
+  hard requirement, even though compose already defaulted every variable the
+  app needs to boot. A present `.env` still wins.
+- `[test]` Give the host pytest DSN one source of truth
+  (`multimedia.env.DEFAULT_DB_HOST_PORT`) instead of a literal that pointed at
+  port `5433`, which compose never published — so host-side `pytest` could not
+  reach the database without the Windows `docker-vm` SSH tunnel.
+- `[docs]` Correct the published ports in `README.md` and `docs/TDD.md`, and
+  note the superseded `DEPLOY-LOCAL-AC4` origin on spec 015.
+
+---
+
 ## Version `0.5.1`
 
 ### Changes

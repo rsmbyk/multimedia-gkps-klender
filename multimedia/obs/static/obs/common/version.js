@@ -2,7 +2,7 @@
  * Single product SemVer for the whole app (OBS docks/sources, web, API).
  * Bump only on release/* or hotfix/* per docs/VERSIONING.md.
  */
-export const APP_VERSION = '0.5.1'
+export const APP_VERSION = '0.5.2'
 
 /** Display string for footers (same as APP_VERSION under the current scheme). */
 export function formatAppVersion() {

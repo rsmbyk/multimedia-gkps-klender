@@ -14,6 +14,14 @@ Migrated as-built from legacy `DEPLOY-LOCAL` with no behavior change. Original
 problem/goal and acceptance criteria are preserved verbatim below for
 traceability. New work uses Given / When / Then in this file going forward.
 
+> **Superseded in part (2026-09-30):** `DEPLOY-LOCAL-AC4` below fixes the app
+> origin at `http://127.0.0.1:8000/`. Spec
+> [018](../018-local-compose-ports/spec.md) moved the published host ports to
+> high random values (app on `63404`, Postgres on `59075`), overridable via
+> `WEB_PORT` / `DB_PORT` in `.env`. The migrated EARS body is preserved verbatim
+> for traceability; the live values are in [`README.md`](../../README.md) and
+> [`docs/TDD.md`](../../docs/TDD.md).
+
 ## Scope
 
 ### In scope

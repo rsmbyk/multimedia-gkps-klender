@@ -14,11 +14,11 @@ describe('OBS app version', () => {
 
   it('exports a single SemVer product version', () => {
     expect(APP_VERSION).toMatch(/^\d+\.\d+\.\d+$/)
-    expect(APP_VERSION).toBe('0.5.1')
+    expect(APP_VERSION).toBe('0.5.2')
   })
 
   it('formats the display string from the constant', () => {
-    expect(formatAppVersion()).toBe('0.5.1')
+    expect(formatAppVersion()).toBe('0.5.2')
   })
 
   it('fills every data-app-version element from the constant', () => {
@@ -29,7 +29,7 @@ describe('OBS app version', () => {
     applyAppVersion(document)
     const nodes = [...document.querySelectorAll('[data-app-version]')]
     expect(nodes).toHaveLength(2)
-    expect(nodes.every((node) => node.textContent === '0.5.1')).toBe(true)
+    expect(nodes.every((node) => node.textContent === '0.5.2')).toBe(true)
   })
 
   it('dock indexes import version from obs/common (not per-app common)', () => {

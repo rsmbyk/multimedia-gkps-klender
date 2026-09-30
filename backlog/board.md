@@ -41,6 +41,7 @@ Legacy `BL-*` IDs are preserved inside item files.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-011](./items/ITEM-011-local-compose-random-ports.md) | Local Compose on random low-conflict ports | Move 8000/5432 to random high ports | chore | P1 | S | [018](../specs/018-local-compose-ports/spec.md) | pending | 2026-09-30 |
 
 ## Done
 

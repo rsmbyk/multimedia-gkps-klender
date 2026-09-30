@@ -7,11 +7,12 @@ the live Compose ``multimedia`` database is not wiped.
 This override ignores any Neon/production ``DATABASE_URL`` in ``.env`` so the
 suite never runs against remote data.
 
-Default host port is **5433** so pytest does not collide with a local Windows
-Postgres that often owns ``localhost:5432``. Reach Compose via either:
+Default host port is the one ``docker-compose.yml`` publishes for ``db``
+(``multimedia.env.DEFAULT_DB_HOST_PORT``, from the IANA dynamic range), so
+pytest and the stack cannot disagree. Reach Compose via either:
 
-- Compose published as ``5433:5432``, or
-- ``ssh -f -N -L 5433:127.0.0.1:5432 docker-vm``
+- Compose published on that port, or
+- ``ssh -f -N -L <that port>:127.0.0.1:5432 docker-vm``
 
 Override with env ``TEST_DATABASE_URL`` when needed.
 """
@@ -22,20 +23,16 @@ import os
 
 import dj_database_url
 
+from multimedia.env import DEFAULT_TEST_DATABASE_URL
+
 # Must run before importing multimedia.settings (fail-fast env rules).
 os.environ.setdefault("DJANGO_DEBUG", "True")
 os.environ.setdefault("DJANGO_SECRET_KEY", "test-insecure-pytest-only")
-os.environ.setdefault(
-    "DATABASE_URL",
-    "postgresql://multimedia:multimedia@127.0.0.1:5433/multimedia",
-)
+os.environ.setdefault("DATABASE_URL", DEFAULT_TEST_DATABASE_URL)
 
 from multimedia.settings import *  # noqa: E402, F403
 
-_TEST_DATABASE_URL = os.environ.get(
-    "TEST_DATABASE_URL",
-    "postgresql://multimedia:multimedia@127.0.0.1:5433/multimedia",
-)
+_TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL", DEFAULT_TEST_DATABASE_URL)
 
 DATABASES = {
     "default": dj_database_url.parse(
