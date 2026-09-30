@@ -32,6 +32,8 @@ livestream: read the Bible, look up a song, browse the songbooks, on any device.
   support.
 - **Content curation** stays without touching the database.
 - **Operators** run the service from the same place.
+- **Own design language**: drift off Semantic/Fomantic UI toward a system built from scratch, with
+  a palette drawn from the GKPS logo.
 - Stays server-rendered Django with a real design system (no framework rewrite).
 
 Sequenced slices:

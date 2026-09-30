@@ -18,6 +18,9 @@ existing Django stack.
 ### In scope
 
 - Design foundation (base template, tokens, components) used by the public pages.
+- A design language defined from scratch (no Semantic/Fomantic on public pages), palette drawn
+  from the GKPS logo's green and blue; Fomantic retained in the repo until all surfaces migrate.
+- Application of the shared glossary and naming conventions ([`docs/GLOSSARY.md`](../GLOSSARY.md)).
 - Public song reading: home, book index, song list, song detail.
 - Server-side song search.
 - `/manage/` editor relocation with redirects from legacy paths.
@@ -86,6 +89,14 @@ existing Django stack.
 - **When** I open a public reading page
 - **Then** the content (books, songs, lyrics) is present in the server-rendered HTML
 - **And** the page does not require Fomantic for layout or legibility
+
+### Scenario: Custom design system
+
+- **Given** a public reading page
+- **When** it renders
+- **Then** it is styled by the project's own tokens and components, not Fomantic
+- **And** its palette is drawn from the GKPS logo's green and blue
+- **And** the Fomantic library files remain in the repo for not-yet-migrated surfaces
 
 ### Scenario: Legible and keyboard-accessible reading
 

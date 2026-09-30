@@ -11,6 +11,7 @@
 - [ ] Spec Accepted by the project owner
 - [ ] Branch from the current base (`feat/001-public-songs-reading`)
 - [ ] Design foundation: base template + `tokens` CSS + component styles
+      (GKPS green/blue palette; no Fomantic on reading pages)
 - [ ] Red — views/URLs tests (paths): `multimedia/web/tests.py`
 - [ ] Green — public views + routes (home, book, song) and `/manage/` relocation + redirects
 - [ ] Red — search filtering tests (paths): `multimedia/web/tests.py`

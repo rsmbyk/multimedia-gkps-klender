@@ -24,6 +24,10 @@ The Bible reader and the editor/operator redesigns follow in later specs.
 - A reusable design foundation: a Django base template, a CSS `tokens` layer, and a small
   component set (shell, search, list row, book chip, song header, lyric block, breadcrumb,
   empty/error states).
+- A **design language defined from scratch**, drifting off Semantic/Fomantic UI, with a palette
+  drawn from the GKPS logo's green and blue (used with restraint). Fomantic library files stay in
+  the tree until every surface has migrated.
+- Application of the shared glossary and naming conventions ([`docs/GLOSSARY.md`](../GLOSSARY.md)).
 - Public, server-rendered song reading: home (search + book list) → book index → song list →
   song lyric page.
 - Server-side search over songs (title / book number).
@@ -40,9 +44,12 @@ The Bible reader and the editor/operator redesigns follow in later specs.
 
 ## Approach
 
-Server-render with the Django ORM; no client fetch on read pages. Replace Fomantic on the reading
-pages with a plain-CSS design system (custom properties; no build step). Reuse the existing `songs`
-models. Keep the DRF API untouched for OBS.
+Server-render with the Django ORM; no client fetch on read pages. **Drift away from
+Semantic/Fomantic UI toward a design language defined from scratch** — a plain-CSS token and
+component system (custom properties; no build step), with a palette drawn from the **green and
+blue of the GKPS logo** and used sufficiently but not forced. The Fomantic library files stay in
+the tree until every surface has migrated, then are removed. Reuse the existing `songs` models;
+keep the DRF API untouched for OBS. New code follows [`docs/GLOSSARY.md`](../GLOSSARY.md).
 
 Routes:
 

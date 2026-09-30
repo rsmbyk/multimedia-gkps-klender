@@ -32,6 +32,8 @@ songbooks, read lyrics, search — with the editor relocated under `/manage/`.
 - `bump: minor`: `VERSION` is `0.5.2` (highest shared tag), so this slice lands
   as `0.6.0` in the release PR.
 - E2E: Playwright (Python) via Django `LiveServerTestCase`.
+- Design language defined from scratch (no Semantic/Fomantic on public pages); palette drawn from
+  the GKPS logo's green and blue.
 
 ## Acceptance sketch
 
