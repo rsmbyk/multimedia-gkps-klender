@@ -12,6 +12,21 @@ import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 
+# Host port where ``docker-compose.yml`` publishes its ``db`` service. Picked
+# from the IANA dynamic range (49152-65535) so the stack is unlikely to collide
+# with other local apps; override per clone with ``DB_PORT`` in ``.env``.
+#
+# This lives here — a module with no Django settings side effects, importable
+# before settings load — so ``conftest.py`` and ``multimedia.settings_test``
+# read the same value the compose file publishes instead of repeating a
+# literal that can drift. See ``specs/018-local-compose-ports/``.
+DEFAULT_DB_HOST_PORT = 59075
+
+DEFAULT_TEST_DATABASE_URL = (
+    f"postgresql://multimedia:multimedia@127.0.0.1:{DEFAULT_DB_HOST_PORT}/multimedia"
+)
+
+
 def resolve_secret_key(*, debug: bool, secret_key: str | None) -> str:
     """Return DJANGO_SECRET_KEY or raise if missing.
 

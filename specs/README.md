@@ -41,3 +41,4 @@ Legacy `CODE` refs remain readable inside migrated spec bodies.
 | [015](015-deploy-local/spec.md) | Local Compose runtime | Accepted |
 | [016](016-docs-sdd-adoption/spec.md) | SDD adoption notes | Accepted |
 | [017](017-test-coverage/spec.md) | Current test coverage | Accepted |
+| [018](018-local-compose-ports/spec.md) | Local Compose ports | Accepted |

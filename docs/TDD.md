@@ -41,19 +41,30 @@ The **app** runs in Docker Compose with local Postgres. Pytest also runs on the
 in `.env`. pytest-django creates a separate `test_*` database so the live
 Compose `multimedia` database is not wiped.
 
-Default test DSN: `postgresql://multimedia:multimedia@127.0.0.1:5433/multimedia`
-(override with `TEST_DATABASE_URL`). Port **5433** avoids colliding with a
-Windows-native Postgres that often owns `localhost:5432`. On this machine the
-VirtualBox `docker-vm` NAT only forwards SSH (`2222`) and HTTP (`8000`), so
-reach guest Compose Postgres with an SSH local forward:
+Default test DSN: `postgresql://multimedia:multimedia@127.0.0.1:59075/multimedia`
+(override with `TEST_DATABASE_URL`). Port **59075** is the same high random port
+`docker-compose.yml` publishes for `db` — it lives in the IANA dynamic range so
+it is unlikely to collide with a local Postgres or another app. The value is a
+single constant, `multimedia.env.DEFAULT_DB_HOST_PORT`, shared with the compose
+file so the two cannot drift apart. If you changed `DB_PORT` in `.env`, set
+`TEST_DATABASE_URL` to match.
+
+On this machine the VirtualBox `docker-vm` NAT only forwards SSH (`2222`), so
+when running the stack inside that VM you still need an SSH local forward to
+reach guest Postgres on the host:
 
 ```powershell
 # Start Compose DB inside docker-vm (if not already up)
 C:\Users\Javan\docker-compose.cmd -f C:\Users\Javan\projects\multimedia-gkps-klender\docker-compose.yml up -d db
 
-# Forward guest :5432 to host :5433 (once per session)
-ssh -f -N -L 5433:127.0.0.1:5432 docker-vm
+# Forward guest :5432 to the published port (once per session)
+ssh -f -N -L 59075:127.0.0.1:5432 docker-vm
 ```
+
+> **Caveat:** the project pins Django 4.0.1 and needs **Python 3.10/3.11** on
+> the host. A host without one of those cannot run `pytest` at all, whatever the
+> port. If `py -3.11` is missing, install it (or use `uv python install 3.11`)
+> before blaming the port.
 
 ### Commands
 

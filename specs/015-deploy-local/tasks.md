@@ -42,7 +42,8 @@ Spec: [`spec.md`](spec.md) (`DEPLOY-LOCAL`) · Plan: [`plan.md`](plan.md)
 
 - [ ] **DEPLOY-LOCAL-T2 — Manual smoke (optional)**
   - Touch: Compose stack
-  - Verify: `docker compose up` → http://127.0.0.1:8000/
+  - Verify: `docker compose up` → http://127.0.0.1:63404/ (published port moved
+    by spec [018](../018-local-compose-ports/spec.md); see `.env` `WEB_PORT`)
   - Covers: `DEPLOY-LOCAL-AC4`
 
 ## Done when
