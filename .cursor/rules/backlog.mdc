@@ -5,14 +5,14 @@ alwaysApply: true
 
 # Backlog / tracker (this repo)
 
-Follow [`docs/BACKLOG.md`](docs/BACKLOG.md). Summary:
+Follow [`backlog/board.md`](backlog/board.md) and [`docs/PROCESS.md`](docs/PROCESS.md). Product notes in [`docs/BACKLOG.md`](docs/BACKLOG.md) remain background; PROCESS wins on conflict. Summary:
 
-- Living board: [`backlog/README.md`](backlog/README.md); items in
-  `backlog/items/BL-NNN-slug.md`.
-- IDs: `BL-<nnn>` (global, never reuse). Next free number is on the board.
-- Statuses: `idea` → `ready` → `specified` → `in-progress` → `in-review` →
-  `done` (or `dropped`).
+- Living board: [`backlog/board.md`](backlog/board.md); items in
+  `backlog/items/ITEM-XXX-slug.md` (from `backlog/items/_template.md`).
+- IDs: `ITEM-<nnn>` (consecutive; legacy `BL-*` migrated per ADR 0001).
+- Statuses: `backlog` → `speccing` → `ready` → `in-progress` → `in-review` →
+  `done`. Backlog column sorted P0–P3.
 - WHEN an item’s status changes, update **both** the item file and the board.
-- Specs stay the intent source (`docs/SDD.md`); backlog is “what we might do”.
-- Prefer linking planned product / non-trivial work to a `BL-*` item.
+- Specs stay the intent source; backlog is “what we might do”.
+- Prefer linking planned product / non-trivial work to an `ITEM-*` item.
 - Docs-native only — do not add backlog SaaS toolchains without asking.

@@ -12,9 +12,11 @@ Follow [`docs/GIT_FLOW.md`](docs/GIT_FLOW.md). Summary:
 - **Always** use a pull request — no direct product pushes to `main` or `develop`
 - `main` accepts **only** `release/*` and `hotfix/*`
 - Merge methods:
-  - Into `develop` from feature/fix/chore → **squash**
+  - Into `develop` from feature/fix/chore/docs → **squash merge**
   - Into `develop` from release/hotfix → **merge commit** (never squash)
-  - Into `main` from release/hotfix → **merge commit** (never squash)
+  - Into `main` from release/hotfix → **merge commit / standard merge** (never
+    squash — anything into `main` is a standard merge)
+- After merge: delete **only the remote branch**; leave local branches intact.
 - Versioning: single SemVer for the whole app. Do not bump on develop PRs —
   add `## Unreleased` bullets with area labels. Finalize `MAJOR.MINOR.PATCH`
   only on `release/*` (or `hotfix/*` for patches). First new-scheme release is

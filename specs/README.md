@@ -1,58 +1,43 @@
 # Specs
 
-Living specifications for this project. Process: [`docs/SDD.md`](../docs/SDD.md).
-Spec IDs: see [Spec ID conventions](#spec-id-conventions) below.
+Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS.md).
 
-| Path | Purpose |
-|------|---------|
-| [`constitution.md`](constitution.md) | Project-wide guardrails (points at `docs/`) |
-| [`app/`](app/) | **APP** — full product overview and feature registry |
-| [`_templates/`](_templates/) | Starter `spec.md` / `plan.md` / `tasks.md` |
-| `<area>/<feature>/` | One folder per capability or change |
+## Rules
 
-## Spec ID conventions
+1. Spec **before** implementation. Plan (manual notes or any AI agent plan mode) **stops at Drafts**.
+2. Use [`_template/`](./_template/) — `{plan,spec,tasks}.md` in every Draft.
+3. Number specs `000`, `001`, … consecutively. Folder: `NNN-slug/`.
+4. **Spec 000** is the product baseline (migrated from legacy `APP`).
+5. Keep acceptance in Given / When / Then (migrated as-built bodies preserve
+   legacy EARS verbatim for traceability).
+6. Link tests under Traceability; tasks name those paths for TDD.
+7. Update the spec in the same PR as behavior changes.
+8. **One concern per spec.** CSS and copy still get a numbered spec.
+9. Every spec comes from one or more `ITEM-XXX` on [`backlog/board.md`](../backlog/board.md).
 
-| Kind | Pattern | Example |
-|------|---------|---------|
-| Spec | `<CODE>` | `OBS-SONGS`, `API-SONGS`, `APP` |
-| User story | `<CODE>-US<n>` | `OBS-SONGS-US1` |
-| Acceptance criterion | `<CODE>-AC<n>` | `OBS-SONGS-AC3` |
-| Task | `<CODE>-T<n>` | `OBS-SONGS-T2` |
+Legacy `CODE` → `NNN` mapping lives in
+[`docs/adr/0001-adopt-vexbook-process.md`](../docs/adr/0001-adopt-vexbook-process.md).
+Legacy `CODE` refs remain readable inside migrated spec bodies.
 
-- Codes are stable once published.
-- Numbers restart per spec.
-- OBS live surfaces: **`OBS-` first**, then domain (`OBS-SONGS`, …).
-- Full rules: [`docs/SDD.md`](../docs/SDD.md#spec-ids).
+## Index
 
-## Feature registry
-
-| Spec ID | Path | Status | Summary |
-|---------|------|--------|---------|
-| `APP` | [`app/`](app/) | as-built | Full product overview |
-| `API-ACCESS` | [`api/open-access-policy/`](api/open-access-policy/) | as-built | Unauthenticated product API / web |
-| `API-SONGS` | [`api/songs-content/`](api/songs-content/) | as-built | Songs books / songs / verses REST |
-| `API-BIBLE` | [`api/bible-content/`](api/bible-content/) | as-built | Bible langs / versions / books / verses REST |
-| `API-TATIB` | [`api/tatib-content/`](api/tatib-content/) | as-built | Tata ibadah + items REST |
-| `API-SEARCH` | [`api/song-search/`](api/song-search/) | as-built | Song lyric phrase search |
-| `SONGS-BM` | [`songs/song-bookmarks/`](songs/song-bookmarks/) | as-built | Song setlists (API + OBS) |
-| `OBS-SONGS` | [`songs/obs-songs-live/`](songs/obs-songs-live/) | as-built | OBS Songs dock + source |
-| `OBS-BIBLE` | [`bible/obs-bible-live/`](bible/obs-bible-live/) | as-built | OBS Bible dock + source |
-| `OBS-TATIB` | [`tatib/obs-tatib-live/`](tatib/obs-tatib-live/) | as-built | OBS Tatib dock + source |
-| `OBS-PROJECT` | [`project/obs-project-projection/`](project/obs-project-projection/) | as-built | Combined OBS projection |
-| `WEB-SONGS` | [`web/songs-content-admin/`](web/songs-content-admin/) | as-built | Browser songs content admin |
-| `WEB-TATIB` | [`web/tatib-content-admin/`](web/tatib-content-admin/) | as-built | Browser tatib content admin |
-| `WEB-ADMIN` | [`web/django-staff-admin/`](web/django-staff-admin/) | as-built | Django `/admin/` staff UI |
-| `DEPLOY-VERCEL` | [`deploy/vercel-production/`](deploy/vercel-production/) | as-built | Vercel + Neon production |
-| `DEPLOY-LOCAL` | [`deploy/local-compose-runtime/`](deploy/local-compose-runtime/) | as-built | Docker Compose local runtime |
-| `DOCS-SDD` | [`docs/sdd-adoption/`](docs/sdd-adoption/) | active | SDD process adoption |
-| `TEST-COV` | [`test/current-coverage/`](test/current-coverage/) | active | Current-state test coverage |
-
-## Starting a new change
-
-1. Pick a new Spec ID (add a row to the registry and to [`app/spec.md`](app/spec.md)).
-2. Copy `_templates/` into `specs/<area>/<short-feature-name>/`.
-3. Fill `spec.md` (with `CODE-US*` / `CODE-AC*`) → human OK → `plan.md` → OK → `tasks.md` → OK.
-4. Implement tasks with TDD; keep the spec updated if intent shifts.
-
-`<area>` should align with changelog labels when possible (`songs`, `bible`,
-`api`, `web`, `deploy`, `docs`, …).
+| Spec | Title | Status |
+| --- | --- | --- |
+| [000](000-multimedia-baseline/spec.md) | Multimedia GKPS Klender baseline | Accepted |
+| [001](001-api-open-access/spec.md) | Open product API and web access | Accepted |
+| [002](002-api-songs-content/spec.md) | Songs REST content | Accepted |
+| [003](003-api-bible-content/spec.md) | Bible REST content | Accepted |
+| [004](004-api-tatib-content/spec.md) | Tatib REST content | Accepted |
+| [005](005-api-song-search/spec.md) | Song lyric search | Accepted |
+| [006](006-songs-bookmarks/spec.md) | Song bookmarks and setlists | Accepted |
+| [007](007-obs-songs-live/spec.md) | OBS Songs dock and source | Accepted |
+| [008](008-obs-bible-live/spec.md) | OBS Bible dock and source | Accepted |
+| [009](009-obs-tatib-live/spec.md) | OBS Tatib dock and source | Accepted |
+| [010](010-obs-project-projection/spec.md) | Combined OBS projection | Accepted |
+| [011](011-web-songs-admin/spec.md) | Web songs content admin | Accepted |
+| [012](012-web-tatib-admin/spec.md) | Web tatib content admin | Accepted |
+| [013](013-web-django-admin/spec.md) | Django staff admin | Accepted |
+| [014](014-deploy-vercel/spec.md) | Vercel production | Accepted |
+| [015](015-deploy-local/spec.md) | Local Compose runtime | Accepted |
+| [016](016-docs-sdd-adoption/spec.md) | SDD adoption notes | Accepted |
+| [017](017-test-coverage/spec.md) | Current test coverage | Accepted |
