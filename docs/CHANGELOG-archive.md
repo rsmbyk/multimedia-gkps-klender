@@ -1,0 +1,280 @@
+# Changelog
+
+> **Archived (pre-adoption, legacy format).** Preserved as-is from before the
+> vexbook adoption on 2026-09-30. It uses the legacy per-version "App Versions"
+> format and is no longer updated. See the root
+> [`CHANGELOG.md`](../CHANGELOG.md) for current history.
+
+---
+
+## Version `0.4.6`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b10`
+- Songs: `v0.4.s29`
+- Tatib: `v0.4.t20`
+- Project: `v0.4.p12`
+
+### Changes
+
+- `[b8, s29, t20, p11]` Added a feature to switch control between apps from Project's source page.
+- `[b9]` Added a dropdown in Bible's display tab to switch language between Indonesian and Simalungun.
+- `[b10]` The corresponding Chapter will also be opened in Browse tab when selecting Verse from History tab.
+- `[p12]` Added a page to configure Project's source styles (colours and possibly other settings in the future).
+
+---
+
+## Version `0.4.5`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b7`
+- Songs: `v0.4.s28`
+- Tatib: `v0.4.t19`
+- Project: `v0.4.p10`
+
+### Changes
+
+- `[b4, s19, t12, p7]` Dock can now be controlled from Project's source page.
+- `[b5, s20, t13, p8]` Fixed an error where Project's source cannot be activated while opening multiple page of Project's source.
+- `[b6, s21, t14]` ToggleButton will not execute its onActive and onInactive if the state it change into would not change'.
+- `[s22, t15]` Songs info and Tatib item won't be broadcasted if the Dock is inactive.
+- `[s23]` Changed the order of which the SongInfo are broadcasted to increase consistency when changing lyric.
+- `[p9]` Changed the order of which the transition is done to hide the flickering when resizing texts.
+- `[t16]` TatibItem of type End of Section and End of Tatib will not be broadcasted anymore and will be replaced with empty texts instead.
+- `[b7, s24, t17]` Fixed ToggleButton not being initialized properly due to bad initial active state initialization order.
+- `[p10]` Changed background colour of Project's source.
+- `[s25]` Fixed a bug where Bookmark item in Bookmark tab not being updated when displaying a single Song.
+- `[s26]` Added a feature to reactivate Bookmark after displaying individual Songs.
+- `[s27]` Allowed empty name, allowed some symbols, and increase max length on Bookmark's name.
+- `[t18]` Allowed some symbols and increase max length on Tatib's name.
+- `[s28, t19]` Reworded Bookmark's and Tatib's Name input field regexes and error prompts.
+
+---
+
+## Version `0.4.4`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b3`
+- Songs: `v0.4.s18`
+- Tatib: `v0.4.t11`
+- Project: `v0.4.p6`
+
+### Changes
+
+- `[p4]` [Hotfix] Fixed projection title persists upon switching from Tatib and Bible with a title.
+- `[b3]` Fixed StatusButton not working due to the change on the structure of StatusSubject.
+- `[t11]` A description/note can now be added to TatibItem of type EndOfSection.
+- `[p5]` Changed projection text color to white.
+- `[p6]` Increased projection container's padding to 64px.
+
+---
+
+## Version `0.4.3`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b2`
+- Songs: `v0.4.s18`
+- Tatib: `v0.4.t10`
+- Project: `v0.4.p3`
+
+### Changes
+
+- `[p1]` Text in projection display will now resize automatically to fit the screen.
+- `[p2]` Title texts (in Tatib and Title Passage in Bible) will now be displayed on top of the display screen.
+- `[p3]` Bible app will now work with project display.
+- `[s9]` Added a button to open currently active Bookmark from Display tab.
+- `[s10]` Added a button to open currently active Song from Display tab.
+- `[s11]` SongShortcutButton will now be hidden when no active Song available.
+- `[b2, s12, t9]` Added DateUtil module.
+- `[s13]` Replaced the check when updating bookmarked verses to currently assigned Bookmark instead of the one in BookmarkManager.
+- `[s14]` Added a parameter of type Function to be executed when bookmarked verses is updated when opening SongDetail modal.
+- `[s15]` Added a popup on AddToBookmark and Bookmarked buttons in SongDetail modal that hint the name and date of currently assigned Bookmark.
+- `[s16]` Added a button to display only selected verses in SongDetail modal.
+- `[s17, t10]` Removed hover effect on (SongDetailModal's Verse list, Bookmark list, and Tatib list) in Dock.
+- `[s18]` Limit the line clamp size when hovering search result in SongSearch tab.
+
+---
+
+## Version `0.4.2`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b1`
+- Songs: `v0.4.s8`
+- Tatib: `v0.4.t8`
+- Project: `v0.4.p0`
+
+### Changes
+
+- `[b1, s5, t5]` Added an option to skip the toggle action when toggling a ToggleButton.
+- `[s6, t6]` The status broadcast message that is forwarded to the Subject will now forward the whole object instead of the status value only.
+- `[s7, t7]` The display tab will not re-broadcast the status message upon receiving a status broadcast message anymore.
+- `[s8, t8]` Added an option to not notify the Subject when sending status broadcast message.
+- `[p0]` Added a new app: `project` to show a full screen display of lyrics and tatib (and passage possibly in the future) texts.
+
+---
+
+## Version `0.4.1 Hotfix`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b0`
+- Songs: `v0.4.s4`
+- Tatib: `v0.4.t4`
+
+### Hotfix Changes
+
+- `[s4]` The displayed lyrics will be set to empty string upon reaching last lyric.
+
+---
+
+## Version `0.4`
+
+### App Versions
+
+- Django: `v0.4.dj1`
+- Bible: `v0.4.b0`
+- Songs: `v0.4.s3`
+- Tatib: `v0.4.t4`
+
+### Changes
+
+- `[s1]` Added two display modes (Box and Outline DisplayModes) to use in Options.
+- `[dj1, t1]` Added buttons to insert TatibItems right after a specific item.
+- `[t2]` The page will now scroll to the last (detected) position before refreshing the TatibItem list.
+- `[s2, t3]` The PreviewSegment in web will now be closed when trying to do other actions.
+- `[s3, t4]` Added a PreviewSegment into the EditModals in Web that shows live preview of the currently edited items.
+
+---
+
+## Version `0.3.9`
+
+### App Versions
+
+- Django: `v0.3.dj3`
+- Bible: `v0.3.b18`
+- Songs: `v0.3.s42`
+- Tatib: `v0.3.t19`
+
+### Changes
+
+- `[t16]` Title/Header-like can now be added to TataIbadahItem to provide additional text/info to the screen.
+- `[s40, t17]` Fixed the scaling of Web Preview font-size.
+- `[s41, t18]` Added a Button(s) to navigate back to the root URL of the web.
+- `[s42, t19]` The top layout of some pages in the web is now in fixed position to improve the QoL when navigating around and/or editing Songs/TataIbadahItems.
+
+---
+
+## Version `0.3.8`
+
+### App Versions
+
+- Django: `v0.3.dj3`
+- Bible: `v0.3.b18`
+- Songs: `v0.3.s39`
+- Tatib: `v0.3.t15`
+
+### Changes
+
+- `[s37]` NKB (Nyanyikanlah Kidung Baru) hymn book is now available.
+- `[s38, t15]` Song's Verse and TataIbadahItem can now be previewed in the web by clicking the preview button (black eye icon).
+- `[s39]` Deleted Bookmarks can now be viewed and restored to be used again.
+- `[dj3]` Added and updated some Django Model Admins.
+
+---
+
+## Version `0.3.7`
+
+### App Versions
+
+- Django: `v0.3.dj2`
+- Bible: `v0.3.b18`
+- Songs: `v0.3.s36`
+- Tatib: `v0.3.t14`
+
+### Changes
+
+- `[b12, s26, t1]` Added an indicator to indicate whether the Dock windows are being focused or not.
+- `[b13, t2]` Added keyboard navigation support to Bible and Tatib dock.
+- `[s27]` Fixed wrapping issue on overflowing texts in songs' Source Segment.
+- `[t3]` Added reorder functionality to Tatib web.
+- `[s28]` Fixed not-working codes to check disabled buttons.
+- `[b14, s29]` Changed indicator button's icon to cross.
+- `[t4]` Changed tatib's tab icon to cross.
+- `[b15, s30, t5]` Changed Dock's background colour.
+- `[t6]` Changed tatib's colour theme to red.
+- `[t7]` Fixed a bug where TatibItem not actually being posted to BroadcastChannel on changing active item index.
+- `[t8]` Fixed tatib's web page title.
+- `[t9]` Removed tatib's Source Segment's label.
+- `[t10]` Removed unused codes.
+- `[t11]` Fixed an error accessing Tatib's name when there is no active tab.
+- `[b16, s31, t12]` Fixed a bug where the Dock keep updating StatusButton's indefinitely when opening multiple dock windows.
+- `[s32]` Replaced ReplaySubject with BehaviorSubject.
+- `[s33]` Added more infos in string representation of Bookmark model class.
+- `[b17, s34, t13]` Fixed a bug where the Dock's display status not being updated when specifically refreshing the source.
+- `[s35, t14]` Changed Paste Modal's positive button's text to "Display".
+- `[b18, s36]` Reduced margins and paddings by a little.
+
+---
+
+## Version `0.3.6`
+
+### App Versions
+
+- Django: `v0.3.dj2`
+- Songs: `v0.3.s25`
+- Bible: `v0.3.b11`
+- Tatib: `v0.3.t0`
+
+### Changes
+
+- `[s24, b10]` Reduced Source Segment's height by the following methods:
+  - Reducing segment's padding.
+  - Reducing divider's margin.
+  - Changing label's size to big.
+- `[s25, b11]` Added an option to change the colour of Source's Label Icon.
+- `[t0]` Added a new app: Tatib
+
+---
+
+## Version `0.3.5`
+
+### App Versions
+
+- Django: `v0.3.dj2`
+- Songs: `v0.3.s23`
+- Bible: `v0.3.b9`
+
+### Changes
+
+- `[s12]` Increased Song's Title length limit to 64 characters.
+- `[s13]` Added keyboard support to navigate through the song.
+- `[s14, b5]` Added a QoL support to block texts in DisplayTab from being selected by cursor clicks.
+- `[b6]` Added a title in HistoryTab.
+- `[s15]` Allowed some common symbols to be used in SongBook's and Song's title.
+- `[s16, b7]` Added exit transitions when deactivating source.
+- `[s17]` Added Song info (BookNumber and Title) on PrevSongButton and NextSongButton popups.
+- `[dj2, s18]` Added reorder functionality to BookmarkDetailModal
+- `[s19]` Fixed an error when updating popup on PrevSongButton and NextSongButton on empty Bookmark (and no active Bookmark).
+- `[s20, b8]` Added an option to change Text Colour of the source.
+- `[s21]` Changed Text Size options value to be numerical (in pixels).
+- `[s22, b9]` Fixed an issue in which the source displaying brief exit transition when reloading both the dock and source.
+- `[s23]` Allowed the same song to be added multiple of times to the same Bookmark.
+
+---
+
+## Version 0.3.4
+
+### Songs (v0.3.s11)
+
+- [s11] Remove "disabled days of week" in Bookmark form.

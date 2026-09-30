@@ -40,6 +40,5 @@ A Django web application with three surfaces:
 ## Parked
 
 - Backfilling as-built behavior into numbered specs (owner-accepted slice).
-- Converting `CHANGELOG.md` to the Keep a Changelog shape PROCESS expects.
 - Choosing the E2E tool for this stack.
 - CI for tests.

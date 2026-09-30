@@ -19,7 +19,9 @@ taken from the codebase; items marked *(confirm)* are the owner's call.
   - Never force-push `main` or `develop`; never create vendor/agent-named branches.
   Recorded here per [`docs/PROCESS.md`](PROCESS.md).
 - **Versioning:** SemVer, locked by vexbook. Identity is repo-root [`VERSION`](../VERSION),
-  [`CHANGELOG.md`](../CHANGELOG.md), and annotated tags `vX.Y.Z`. `VERSION` was bootstrapped to
+  [`CHANGELOG.md`](../CHANGELOG.md), and annotated tags `vX.Y.Z`. The changelog uses the Keep a
+  Changelog structure; pre-adoption history is archived at
+  [`docs/CHANGELOG-archive.md`](CHANGELOG-archive.md). `VERSION` was bootstrapped to
   `0.4.6` (latest tag reachable from `main` at adopt time) — see
   [ADR 0001](adr/0001-adopt-vexbook-process.md).
 

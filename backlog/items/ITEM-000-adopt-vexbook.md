@@ -39,7 +39,8 @@ after adopt goes through SDD.
 - Git model recorded as Git Flow and locked with merge rules in ADR 0002
   (features squash-merge to `develop`; releases/hotfixes merge-commit to `main`;
   remote branch deleted after merge, local kept).
-- Product `CHANGELOG.md` format conversion is out of scope (flagged in ADR 0001).
+- `CHANGELOG.md` converted to the Keep a Changelog structure; pre-adoption history
+  archived in `docs/CHANGELOG-archive.md`.
 
 ## Acceptance sketch
 

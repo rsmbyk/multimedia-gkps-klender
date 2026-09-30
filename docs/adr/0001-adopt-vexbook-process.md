@@ -37,5 +37,6 @@ Source: vexbook tag **`v0.4.0`** (`https://github.com/rsmbyk/vexbook`). No autom
 - Gaps observed and left for the owner to confirm (see [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) and [`docs/PRODUCT.md`](../PRODUCT.md)):
   - Git model: recorded as **Git Flow**; confirmed and detailed in
     [ADR 0002](0002-git-flow-merge-strategy.md).
-  - The product `CHANGELOG.md` uses a custom format, not the Keep a Changelog shape PROCESS expects. It was left as-is; converting it is a separate product decision.
+  - Product `CHANGELOG.md` converted to the Keep a Changelog structure; pre-adoption history
+    preserved in [`docs/CHANGELOG-archive.md`](../CHANGELOG-archive.md).
   - The E2E tool named by PROCESS is not yet chosen for this stack.
