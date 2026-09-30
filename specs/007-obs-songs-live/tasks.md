@@ -17,14 +17,14 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump` on the ITEM and spec header (`none`)
 - [x] If bump is not `none`: N/A
-- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in **this PR** (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in **this PR** (In review while open; Done before merge)
+- [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
 ## Done when
 
 - [x] Legacy `OBS-SONGS` intent preserved verbatim in `spec.md`
 - [x] Existing `pytest` / `npm test` unaffected (docs-only)
-- [ ] Board, tasks, and version (if any) are complete in this PR
+- [x] Board, tasks, and version (if any) are complete in this PR
 
 <details>
 <summary>Legacy tasks (verbatim from `specs/songs/obs-songs-live/tasks.md`)</summary>
