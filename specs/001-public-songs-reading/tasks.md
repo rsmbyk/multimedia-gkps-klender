@@ -17,10 +17,10 @@
 - [ ] Green — server-side song search
 - [ ] Red — template-rendering tests for the reading pages (content present without JS)
 - [ ] Green — public templates
-- [ ] Red — E2E (paths, or N/A in spec out-of-scope): deferred in spec (E2E tool unchosen)
+- [ ] Red — E2E Playwright tests (paths): `tests/e2e/test_reading.py`
 - [ ] Green — E2E
 - [ ] Fill Traceability in `./spec.md`
-- [ ] Set `bump` on the ITEM and spec header (resolve the version/tag conflict first)
+- [ ] Set `bump` on the ITEM and spec header (`minor` → `0.6.0` on landing)
 - [ ] If bump is not `none`: `VERSION`, changelog `## [X.Y.Z]`, and `release_version` in
       **this PR**
 - [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in **this PR** (In review while

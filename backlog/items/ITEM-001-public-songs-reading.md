@@ -29,9 +29,9 @@ songbooks, read lyrics, search — with the editor relocated under `/manage/`.
 - Spec pack: [`specs/001-public-songs-reading/`](../specs/001-public-songs-reading/spec.md).
 - Part of the owner's vision: the website becomes the product (see
   [`docs/PRODUCT.md`](../../docs/PRODUCT.md) → Vision).
-- `bump: minor` is intent only; `VERSION` is `0.4.6` on `main` while tags
-  `v0.5.0`–`v0.5.2` exist on the `develop` line. Resolve before versioning.
-- E2E tool is still unchosen (deferred in spec).
+- `bump: minor`: `VERSION` is `0.5.2` (highest shared tag), so this slice lands
+  as `0.6.0` in the release PR.
+- E2E: Playwright (Python) via Django `LiveServerTestCase`.
 
 ## Acceptance sketch
 

@@ -63,15 +63,13 @@ Legacy editor URLs (`/songs/books`, `/songs/books/<id>`, `/songs/songs/<id>`) re
 - **Domain/app tests:** Django test runner (`python manage.py test`), in
   `multimedia/web/tests.py` — URL resolution, view status/context, search filtering, redirects,
   and template-rendering assertions (content present without JS).
-- **E2E (tool named after stack exists):** not yet chosen. This slice relies on the Django test
-  client plus template assertions. Flagged as a gap to resolve.
+- **E2E:** Playwright (Python) driven from Django `LiveServerTestCase`, run under
+  `python manage.py test` (`tests/e2e/`), covering the reading flow in a real browser.
 
 ## Risks
 
 - **URL restructure** touches existing editor links and any external references. Covered by
   redirects and tests.
-- **Version arithmetic conflict:** `VERSION` is `0.4.6` on `main`, but tags `v0.5.0`–`v0.5.2`
-  already exist on the `develop` line; a `minor` bump here would collide. Resolve the
-  release/version gap with the owner before this PR versions. Treat `bump: minor` as intent until
-  then.
+- **Versioning resolved:** `VERSION` is `0.5.2` (highest tag in the repo, shared with the parallel
+  `develop` line), so this slice's `minor` bump lands as `0.6.0` with no tag collision.
 - **Design-foundation scope creep:** bounded to the components listed in the spec for this slice.

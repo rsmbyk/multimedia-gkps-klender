@@ -87,9 +87,17 @@ existing Django stack.
 - **Then** the content (books, songs, lyrics) is present in the server-rendered HTML
 - **And** the page does not require Fomantic for layout or legibility
 
+### Scenario: Legible and keyboard-accessible reading
+
+- **Given** a song page
+- **When** I view it in a narrow (mobile) viewport
+- **Then** the layout is a single readable column with no horizontal scrolling
+- **And** interactive controls are reachable and operable by keyboard with a visible focus state
+- **And** body text meets WCAG AA contrast against its background
+
 ## Traceability
 
 - Domain/app tests: `multimedia/web/tests.py` (Django test runner, `python manage.py test`)
-- E2E: not yet chosen (deferred; see plan risks)
+- E2E: Playwright (Python) via Django `LiveServerTestCase` (paths named in tasks)
 - Implementation: `multimedia/web/...`, `multimedia/web/templates/...`,
   `multimedia/web/static/web/...`, `static/...`
