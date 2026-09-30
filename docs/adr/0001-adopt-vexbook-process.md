@@ -33,10 +33,14 @@ Source: vexbook tag **`v0.4.0`** (`https://github.com/rsmbyk/vexbook`). No autom
 
 - [`PROCESS.md`](../PROCESS.md), [`KICKOFF.md`](../KICKOFF.md), and [`rules/SDD-GATE.md`](../rules/SDD-GATE.md) are **binding** for this repository.
 - Every behavior, CSS, or copy change now follows SDD: Plan → Draft → owner Accept → implement ([`docs/rules/SDD-GATE.md`](../rules/SDD-GATE.md)).
-- `VERSION` was bootstrapped to **`0.4.6`**, the latest git tag reachable from `main` at adopt time. This is an identity bootstrap, not a release; the adoption itself has `bump: none`.
-- Gaps observed and left for the owner to confirm (see [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) and [`docs/PRODUCT.md`](../PRODUCT.md)):
-  - Git model: recorded as **Git Flow**; confirmed and detailed in
+- `VERSION` is **`0.5.2`** — the highest existing tag in the repository. Tags `v0.4.8`–`v0.5.2`
+  belong to the parallel `develop` line and are already published, so continuing from `0.5.2` keeps
+  the shared tag namespace collision-free. This is an identity bootstrap, not a release; the
+  adoption itself has `bump: none`. The next feature bump is therefore `0.6.0`.
+- Gaps observed and resolved with the owner (see [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) and [`docs/PRODUCT.md`](../PRODUCT.md)):
+  - Git model: **Git Flow** — confirmed and detailed in
     [ADR 0002](0002-git-flow-merge-strategy.md).
   - Product `CHANGELOG.md` converted to the Keep a Changelog structure; pre-adoption history
     preserved in [`docs/CHANGELOG-archive.md`](../CHANGELOG-archive.md).
-  - The E2E tool named by PROCESS is not yet chosen for this stack.
+  - E2E tool: **Playwright (Python)** driven from Django `LiveServerTestCase` and run under
+    `python manage.py test` ([`docs/ARCHITECTURE.md`](../ARCHITECTURE.md)).

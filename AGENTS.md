@@ -24,8 +24,8 @@ It is an **adopter**, not a greenfield spawn.
   not `none`) land in **the same PR** as the work.
 - **Versioning:** SemVer is locked. Identity is repo-root [`VERSION`](VERSION) (one line, no `v`),
   [`CHANGELOG.md`](CHANGELOG.md), and annotated tags `vX.Y.Z`. The ITEM/spec carries
-  `bump: major | minor | patch | none`. `VERSION` is bootstrapped to the product's latest tag; see
-  ADR 0001.
+  `bump: major | minor | patch | none`. `VERSION` continues from the highest tag shared with the
+  parallel `develop` line (currently `0.5.2`); see ADR 0001.
 - **Git:** **Git Flow** — `main` is production, `develop` is integration (see
   [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
   [`docs/adr/0002-git-flow-merge-strategy.md`](docs/adr/0002-git-flow-merge-strategy.md)).
