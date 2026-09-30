@@ -1,6 +1,6 @@
 ---
 id: ITEM-001
-status: in-progress
+status: in-review
 title: Public song reading + design foundation
 type: feat
 priority: P0
@@ -9,7 +9,7 @@ created: 2026-09-30
 updated: 2026-09-30
 spec: ../specs/001-public-songs-reading/spec.md
 branch: feat/001-public-songs-reading
-pr:
+pr: 257
 archived_at:
 archive_reason:
 bump: minor
