@@ -1,0 +1,7 @@
+# Development-only dependencies (not installed in production).
+-r requirements.txt
+
+# End-to-end browser tests: Playwright via Django LiveServerTestCase.
+# After install, fetch the browser binary once:
+#   playwright install chromium
+playwright==1.47.0

@@ -1,0 +1,414 @@
+/*
+ * Components — Multimedia GKPS Klender
+ *
+ * The project's own design language, built on tokens.css. No Semantic/Fomantic
+ * dependency: the public reading pages use only this file.
+ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--step-0);
+    line-height: var(--leading);
+    color: var(--ink);
+    background: var(--bg);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+a {
+    color: var(--blue-700);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+:focus-visible {
+    outline: 2px solid var(--gkps-blue);
+    outline-offset: 2px;
+}
+
+/* Layout */
+.container {
+    width: 100%;
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.skip-link {
+    position: absolute;
+    left: var(--space-3);
+    top: -3rem;
+    z-index: 10;
+    padding: var(--space-2) var(--space-4);
+    background: var(--blue-700);
+    color: #fff;
+    border-radius: var(--radius);
+    transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+    top: var(--space-3);
+}
+
+/* Header */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-3);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.brand:hover {
+    text-decoration: none;
+}
+
+.brand__logo {
+    border-radius: 50%;
+}
+
+.brand__name {
+    font-size: var(--step-1);
+    letter-spacing: -0.01em;
+}
+
+.search {
+    display: flex;
+    flex: 1 1 16rem;
+    gap: var(--space-2);
+    min-width: 12rem;
+    margin-left: auto;
+}
+
+.search__input {
+    flex: 1;
+    padding: var(--space-2) var(--space-3);
+    font: inherit;
+    color: inherit;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.search__button {
+    padding: var(--space-2) var(--space-4);
+    font: inherit;
+    font-weight: 600;
+    color: #fff;
+    background: var(--gkps-green);
+    border: 0;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.search__button:hover {
+    background: var(--green-600);
+}
+
+/* Content */
+.content {
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-8);
+}
+
+.hero {
+    margin-bottom: var(--space-6);
+    padding: var(--space-6) 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.hero__title {
+    max-width: 20ch;
+    margin: 0 0 var(--space-3);
+    font-size: clamp(1.75rem, 1rem + 3vw, 2.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.hero__lead {
+    max-width: 48ch;
+    margin: 0;
+    font-size: var(--step-1);
+    color: var(--ink-soft);
+}
+
+.section-title,
+.page-title {
+    margin: 0 0 var(--space-4);
+    font-size: var(--step-2);
+    letter-spacing: -0.01em;
+}
+
+.page-header {
+    margin-bottom: var(--space-5);
+}
+
+.muted {
+    color: var(--muted);
+}
+
+/* Book list */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.book-card__link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    height: 100%;
+    padding: var(--space-4);
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+}
+
+.book-card__link:hover {
+    text-decoration: none;
+    border-color: var(--gkps-green);
+    transform: translateY(-1px);
+}
+
+.book-card__name {
+    font-size: var(--step-1);
+    font-weight: 600;
+}
+
+.book-card__meta {
+    font-size: var(--step--1);
+    color: var(--muted);
+}
+
+.tag {
+    color: var(--green-600);
+}
+
+/* Song list */
+.song-list {
+    display: grid;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.song-list__item {
+    background: var(--surface);
+}
+
+.song-list__link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    color: var(--ink);
+}
+
+.song-list__link:hover {
+    background: var(--green-100);
+    text-decoration: none;
+}
+
+.song-list__number {
+    min-width: 5.5ch;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--gkps-blue);
+}
+
+.song-list__title {
+    flex: 1;
+}
+
+.song-list__key {
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    font-size: var(--step--1);
+    color: var(--muted);
+}
+
+.breadcrumb a {
+    color: var(--muted);
+}
+
+/* Song reading */
+.song {
+    max-width: 42rem;
+}
+
+.song__header {
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: 2px solid var(--gkps-green);
+}
+
+.song__number {
+    margin: 0 0 var(--space-1);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--gkps-blue);
+}
+
+.song__title {
+    margin: 0 0 var(--space-2);
+    font-size: var(--step-3);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.song__meta {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--muted);
+}
+
+.song__lyrics {
+    font-family: var(--font-serif);
+    font-size: 1.1875rem;
+    line-height: 1.8;
+}
+
+.verse {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    gap: var(--space-2);
+    padding: var(--space-3) 0;
+}
+
+.verse + .verse {
+    border-top: 1px solid var(--border);
+}
+
+.verse__number {
+    padding-top: 0.35rem;
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    font-weight: 700;
+    color: var(--gkps-green);
+}
+
+.verse__lyric {
+    margin: 0;
+    white-space: pre-line;
+}
+
+.song-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+}
+
+.song-nav a {
+    font-weight: 600;
+}
+
+/* States */
+.empty {
+    padding: var(--space-5);
+    text-align: center;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.link {
+    font-weight: 600;
+}
+
+/* Footer */
+.site-footer {
+    padding: var(--space-5) 0;
+    font-size: var(--step--1);
+    color: var(--muted);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+}
+
+/* Print */
+@media print {
+    .site-header,
+    .site-footer,
+    .song-nav,
+    .breadcrumb,
+    .search {
+        display: none;
+    }
+
+    body {
+        background: #fff;
+    }
+
+    .song__lyrics {
+        font-size: 12pt;
+    }
+}

@@ -23,6 +23,26 @@ A Django web application with three surfaces:
 - **Web management UI** (`/`): server-rendered admin/management screens.
 - **OBS projection sources** (`/obs/`): browser source pages for Bible, Songs, Tatib, and Project.
 
+## Vision
+
+The web experience becomes the product — a site worth opening any day, not only during a
+livestream: read the Bible, look up a song, browse the songbooks, on any device.
+
+- **Public reading experience** first: songbooks, then the Bible, with multi-language / version
+  support.
+- **Content curation** stays without touching the database.
+- **Operators** run the service from the same place.
+- **Own design language**: drift off Semantic/Fomantic UI toward a system built from scratch, with
+  a palette drawn from the GKPS logo.
+- Stays server-rendered Django with a real design system (no framework rewrite).
+
+Sequenced slices:
+
+1. Public song reading + design foundation (spec 001)
+2. Public Bible reading
+3. Editor and OBS operator surfaces adopt the same foundation
+4. Tata Ibadah templates (create a repeated service from a template)
+
 ## Locked decisions
 
 - **Process:** vexbook at `v0.4.0` — SDD, TDD, ITEM board, SemVer (ADR 0001).

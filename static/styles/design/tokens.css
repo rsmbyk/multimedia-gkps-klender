@@ -1,0 +1,52 @@
+/*
+ * Design tokens — Multimedia GKPS Klender
+ *
+ * The brand palette is sampled from the GKPS logo: a deep royal blue and a
+ * fresh medium green. They anchor the system but are used with restraint.
+ */
+
+:root {
+    /* Brand (sampled from static/assets/gkps.png) */
+    --gkps-green: #3cb055;
+    --gkps-blue: #143792;
+
+    /* Derived tints/shades */
+    --green-100: #e7f6ec;
+    --green-600: #2f8f45;
+    --blue-100: #e7ebf7;
+    --blue-700: #102a70;
+
+    /* Neutrals */
+    --ink: #17222c;
+    --ink-soft: #46586a;
+    --muted: #6b7c8c;
+    --bg: #f6f8fa;
+    --surface: #ffffff;
+    --border: #dce4ec;
+
+    /* Typography */
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-serif: Georgia, "Times New Roman", serif;
+    --step--1: 0.875rem;
+    --step-0: 1rem;
+    --step-1: 1.25rem;
+    --step-2: 1.5rem;
+    --step-3: 2rem;
+    --leading: 1.6;
+
+    /* Spacing */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+
+    /* Shape */
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow-1: 0 1px 2px rgba(16, 32, 48, 0.06), 0 2px 8px rgba(16, 32, 48, 0.05);
+    --container: 68rem;
+}

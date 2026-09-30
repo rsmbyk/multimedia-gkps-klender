@@ -21,10 +21,9 @@ taken from the codebase; items marked *(confirm)* are the owner's call.
 - **Versioning:** SemVer, locked by vexbook. Identity is repo-root [`VERSION`](../VERSION),
   [`CHANGELOG.md`](../CHANGELOG.md), and annotated tags `vX.Y.Z`. The changelog uses the Keep a
   Changelog structure; pre-adoption history is archived at
-  [`docs/CHANGELOG-archive.md`](CHANGELOG-archive.md). `VERSION` is `0.5.2` — the highest existing
-  tag in the repository (tags `v0.4.8`–`v0.5.2` belong to the parallel `develop` line), so the tag
-  namespace stays collision-free; the next feature bump is `0.6.0`. See
-  [ADR 0001](adr/0001-adopt-vexbook-process.md).
+  [`docs/CHANGELOG-archive.md`](CHANGELOG-archive.md). `VERSION` continues from the highest tag
+  shared with the parallel `develop` line (currently `0.6.0`, the first feature release after
+  adoption). See [ADR 0001](adr/0001-adopt-vexbook-process.md).
 
 ## Stack
 
@@ -52,7 +51,11 @@ Django project `multimedia` with apps:
 | `obs` | OBS projection source pages and their static JS |
 | `web` | Server-rendered web management UI |
 
-URL roots (`multimedia/urls.py`): `/admin/`, `/api/`, `/obs/`, and `/` (web).
+URL roots (`multimedia/urls.py`): `/admin/`, `/api/`, `/obs/`, and the Django app at `/` — public
+reading at `/` and `/songs/…`, editor at `/manage/…`.
+
+Public reading pages use the project's own design language (`static/styles/design/tokens.css`,
+`components.css`); Fomantic UI remains in use by the editor and OBS surfaces until they migrate.
 
 ## Boundaries
 
@@ -63,8 +66,9 @@ URL roots (`multimedia/urls.py`): `/admin/`, `/api/`, `/obs/`, and `/` (web).
 ## Testing
 
 - Django test runner (`manage.py test`); coverage output `.coverage` / `coverage-python.xml`.
-- E2E: **Playwright (Python)**, driven from Django `LiveServerTestCase` and run under
-  `python manage.py test` (no second test runner).
+- E2E: **Playwright (Python)**, driven from Django `StaticLiveServerTestCase` and run under
+  `python manage.py test` (`tests/e2e/`); dev dependency in `requirements-dev.txt`
+  (`playwright install chromium` once).
 - CI: none on `main` yet.
 
 ## Hosting
