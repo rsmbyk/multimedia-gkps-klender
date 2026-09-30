@@ -1,0 +1,42 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Multimedia GKPS Klender{% endblock %}</title>
+    <meta name="description" content="{% block description %}Read the Bible and songbooks of GKPS Klender.{% endblock %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+    <link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/design/components.css' %}">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="{% url 'web-home' %}">
+                <img class="brand__logo" src="{% static 'assets/gkps.png' %}" alt="" width="36" height="36">
+                <span class="brand__name">Multimedia GKPS Klender</span>
+            </a>
+            <form class="search" action="{% url 'web-home' %}" method="get" role="search">
+                <label class="visually-hidden" for="q">Search songs</label>
+                <input class="search__input" id="q" type="search" name="q"
+                       value="{{ query|default:'' }}" placeholder="Search songs…" autocomplete="off"
+                       aria-label="Search songs">
+                <button class="search__button" type="submit">Search</button>
+            </form>
+        </div>
+    </header>
+
+    <main id="main" class="container content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>Multimedia GKPS Klender</p>
+        </div>
+    </footer>
+</body>
+</html>

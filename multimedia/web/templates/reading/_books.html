@@ -1,0 +1,15 @@
+<ul class="book-grid">
+    {% for book in books %}
+    <li class="book-card">
+        <a class="book-card__link" href="{% url 'web-book' book.id %}">
+            <span class="book-card__name">{{ book.name }}</span>
+            <span class="book-card__meta">
+                {% if book.short_name %}{{ book.short_name }} · {% endif %}{{ book.lang.name }}
+                {% if book.is_hymn_book %} · <span class="tag">Hymn book</span>{% endif %}
+            </span>
+        </a>
+    </li>
+    {% empty %}
+    <li class="empty">No songbooks yet.</li>
+    {% endfor %}
+</ul>

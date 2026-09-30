@@ -1,7 +1,7 @@
 # Spec: Public song reading + design foundation
 
 - **ID:** 001
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-001
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -51,7 +51,7 @@ existing Django stack.
 ### Scenario: Browse a book's songs
 
 - **Given** a book with songs
-- **When** I open `/songs/<book_id>/`
+- **When** I open `/songs/book/<book_id>/`
 - **Then** I see the book's songs with their book number, title, and key
 - **And** each song links to its song page
 
@@ -108,7 +108,12 @@ existing Django stack.
 
 ## Traceability
 
-- Domain/app tests: `multimedia/web/tests.py` (Django test runner, `python manage.py test`)
-- E2E: Playwright (Python) via Django `LiveServerTestCase` (paths named in tasks)
-- Implementation: `multimedia/web/...`, `multimedia/web/templates/...`,
-  `multimedia/web/static/web/...`, `static/...`
+- Domain/app tests: [`multimedia/songs/tests.py`](../../multimedia/songs/tests.py) (search),
+  [`multimedia/web/tests.py`](../../multimedia/web/tests.py) (views, URLs, redirects)
+- E2E: [`tests/e2e/test_reading.py`](../../tests/e2e/test_reading.py) (Playwright via
+  `StaticLiveServerTestCase`)
+- Implementation: [`multimedia/songs/search.py`](../../multimedia/songs/search.py),
+  [`multimedia/web/urls.py`](../../multimedia/web/urls.py),
+  [`multimedia/web/views.py`](../../multimedia/web/views.py),
+  `multimedia/web/reading/`, `multimedia/web/manage/`,
+  `multimedia/web/templates/reading/`, `static/styles/design/`

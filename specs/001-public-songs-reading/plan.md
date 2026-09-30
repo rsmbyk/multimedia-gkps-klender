@@ -1,6 +1,6 @@
 # Plan 001: Public song reading + design foundation
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-001
@@ -55,11 +55,11 @@ Routes:
 
 | Path | Serves |
 | --- | --- |
-| `/` | Public home: search + book list |
-| `/songs/` | Book index (same as home browse) |
-| `/songs/<book_id>/` | Song list for a book |
+| `/` | Public home: search + songbook list |
+| `/songs/` | All songbooks (book index) |
+| `/songs/book/<book_id>/` | Songs within a book |
 | `/songs/<song_id>/` | Song detail (lyrics) |
-| `/manage/...` | Editor (moved; old paths redirect) |
+| `/manage/...` | Editor (moved; legacy paths redirect) |
 | `/obs/...` | OBS operator UI (unchanged) |
 
 Legacy editor URLs (`/songs/books`, `/songs/books/<id>`, `/songs/songs/<id>`) redirect to their

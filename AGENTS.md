@@ -52,7 +52,7 @@ It is an **adopter**, not a greenfield spawn.
 - **Vocabulary:** use the canonical terms and naming rules in
   [`docs/GLOSSARY.md`](docs/GLOSSARY.md) for all new work.
 - **Conventions:** Git Flow ([ADR 0002](docs/adr/0002-git-flow-merge-strategy.md)), Keep a
-  Changelog, `VERSION` `0.5.2` (next feature bump `0.6.0`).
+  Changelog, `VERSION` (currently `0.6.0`).
 
 ## This agent's rules
 
