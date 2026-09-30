@@ -35,6 +35,7 @@ Source: vexbook tag **`v0.4.0`** (`https://github.com/rsmbyk/vexbook`). No autom
 - Every behavior, CSS, or copy change now follows SDD: Plan → Draft → owner Accept → implement ([`docs/rules/SDD-GATE.md`](../rules/SDD-GATE.md)).
 - `VERSION` was bootstrapped to **`0.4.6`**, the latest git tag reachable from `main` at adopt time. This is an identity bootstrap, not a release; the adoption itself has `bump: none`.
 - Gaps observed and left for the owner to confirm (see [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) and [`docs/PRODUCT.md`](../PRODUCT.md)):
-  - Git model is recorded as **Git Flow** (as observed). Confirm.
+  - Git model: recorded as **Git Flow**; confirmed and detailed in
+    [ADR 0002](0002-git-flow-merge-strategy.md).
   - The product `CHANGELOG.md` uses a custom format, not the Keep a Changelog shape PROCESS expects. It was left as-is; converting it is a separate product decision.
   - The E2E tool named by PROCESS is not yet chosen for this stack.

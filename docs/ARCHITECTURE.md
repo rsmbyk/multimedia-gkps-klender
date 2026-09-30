@@ -5,10 +5,19 @@ taken from the codebase; items marked *(confirm)* are the owner's call.
 
 ## Git and versioning
 
-- **Git model:** Git Flow *(as observed — confirm)*. `main` is production; `develop` is
-  integration. Feature/fix/chore/docs branches (`feat/*`, `fix/*`, `chore/*`, `docs/*`) branch from
-  `develop`; releases and hotfixes cut `main` and merge back. Recorded here per
-  [`docs/PROCESS.md`](PROCESS.md).
+- **Git model:** **Git Flow** (locked by [ADR 0002](adr/0002-git-flow-merge-strategy.md)).
+  - `main` — production (deployed to Vercel).
+  - `develop` — integration.
+  - **Features** (`feat/*`, `fix/*`, `chore/*`, `docs/*`) branch from `develop` and merge **into
+    `develop` with a squash merge** (one commit per PR). Default PR target is `develop`.
+  - **Releases** (`release/*`) branch from `develop`; **hotfixes** (`hotfix/*`) branch from `main`.
+    Both target `main`, and **every merge into `main` uses a standard merge commit** (history is
+    preserved, never squashed).
+  - After a release/hotfix lands on `main`, merge `main` back into `develop` so `VERSION` stays
+    aligned, then tag `vX.Y.Z` on the `main` commit.
+  - **After any merge: delete the remote branch only. Keep the local branch intact.**
+  - Never force-push `main` or `develop`; never create vendor/agent-named branches.
+  Recorded here per [`docs/PROCESS.md`](PROCESS.md).
 - **Versioning:** SemVer, locked by vexbook. Identity is repo-root [`VERSION`](../VERSION),
   [`CHANGELOG.md`](../CHANGELOG.md), and annotated tags `vX.Y.Z`. `VERSION` was bootstrapped to
   `0.4.6` (latest tag reachable from `main` at adopt time) — see

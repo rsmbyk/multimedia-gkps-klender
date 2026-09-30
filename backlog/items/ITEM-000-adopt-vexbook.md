@@ -36,7 +36,9 @@ after adopt goes through SDD.
   reusable `_template`s, PR template).
 - `VERSION` is bootstrapped to `0.4.6` (latest tag reachable from `main`);
   confirm or adjust.
-- Git model recorded as Git Flow (observed); confirm.
+- Git model recorded as Git Flow and locked with merge rules in ADR 0002
+  (features squash-merge to `develop`; releases/hotfixes merge-commit to `main`;
+  remote branch deleted after merge, local kept).
 - Product `CHANGELOG.md` format conversion is out of scope (flagged in ADR 0001).
 
 ## Acceptance sketch

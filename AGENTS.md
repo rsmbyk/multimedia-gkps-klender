@@ -26,9 +26,15 @@ It is an **adopter**, not a greenfield spawn.
   [`CHANGELOG.md`](CHANGELOG.md), and annotated tags `vX.Y.Z`. The ITEM/spec carries
   `bump: major | minor | patch | none`. `VERSION` is bootstrapped to the product's latest tag; see
   ADR 0001.
-- **Git:** Git Flow — `main` is production, `develop` is integration. Features from `develop` use
-  `feat/*`, `fix/*`, `chore/*`, `docs/*`; releases cut `main`. Never create vendor/agent-named
-  branches; never force-push `main` or `develop`.
+- **Git:** **Git Flow** — `main` is production, `develop` is integration (see
+  [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
+  [`docs/adr/0002-git-flow-merge-strategy.md`](docs/adr/0002-git-flow-merge-strategy.md)).
+  - Features (`feat/*`, `fix/*`, `chore/*`, `docs/*`) branch from `develop` and **squash-merge into
+    `develop`**.
+  - Releases (`release/*`) and hotfixes (`hotfix/*`) target `main` and use a **standard merge
+    commit**; every merge into `main` is a merge commit, never a squash.
+  - After a merge, **delete the remote branch only; keep the local branch intact**.
+  - Never create vendor/agent-named branches; never force-push `main` or `develop`.
 - **Commits:** Conventional Commits (`type(scope): imperative subject`). Agent commits end with a
   `Co-authored-by` trailer for the vendor product that authored the commit — never another
   vendor's trailer. Open **draft** PRs using the repository PR template.

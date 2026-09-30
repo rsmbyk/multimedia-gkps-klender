@@ -28,7 +28,9 @@ A Django web application with three surfaces:
 - **Process:** vexbook at `v0.4.0` — SDD, TDD, ITEM board, SemVer (ADR 0001).
 - **Stack:** Python / Django / Django REST Framework / PostgreSQL, deployed on Vercel.
 - **Versioning:** SemVer; `VERSION` + `CHANGELOG.md` + annotated tag `vX.Y.Z`.
-- **Git:** Git Flow — `main` (production) / `develop` (integration). *(as observed — confirm)*
+- **Git:** Git Flow — `main` (production) / `develop` (integration); features **squash-merge** into
+  `develop`, releases/hotfixes **merge-commit** into `main`, remote branch deleted after merge
+  (local kept) ([ADR 0002](adr/0002-git-flow-merge-strategy.md)).
 
 ## Non-goals
 
