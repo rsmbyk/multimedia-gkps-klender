@@ -1,0 +1,21 @@
+# Specs
+
+Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS.md).
+
+## Rules
+
+1. Spec **before** implementation. Plan (manual notes or any AI agent plan mode) **stops at Drafts**.
+2. Use [`_template/`](./_template/) — `{plan,spec,tasks}.md` in every Draft.
+3. Number specs `000`, `001`, … consecutively. Folder: `NNN-slug/`.
+4. **Spec 000** is reserved for scaffolding and is **one spec**.
+5. Keep acceptance in Given / When / Then.
+6. Link tests under Traceability; tasks name those paths for TDD.
+7. Update the spec in the same PR as behavior changes.
+8. **One concern per spec.** CSS and copy still get a numbered spec.
+9. Every spec comes from one or more `ITEM-XXX` on [`backlog/board.md`](../backlog/board.md).
+
+## Index
+
+| Spec | Title | Status |
+| --- | --- | --- |
+| — | _No specs yet. This product adopted the process from an existing codebase; backfilled as-built specs and the first feature spec are separate slices._ | — |
