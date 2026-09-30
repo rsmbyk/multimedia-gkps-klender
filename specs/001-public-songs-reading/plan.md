@@ -1,0 +1,77 @@
+# Plan 001: Public song reading + design foundation
+
+- **Status:** Draft
+- **Spec:** [./spec.md](./spec.md)
+- **Tasks:** [./tasks.md](./tasks.md)
+- **Item:** ITEM-001
+- **Bump:** minor
+
+## Why
+
+The app was built only as an OBS streaming aid. Its `web/` surface is a CRUD editor on
+Fomantic UI defaults, client-side fetching, and almost no custom CSS — so there is no reading
+experience worth opening for everyday use. This slice begins the shift the owner asked for:
+the website itself becomes worth opening to read the Bible or look up a song, not just to run a
+service.
+
+This is the first slice: a shared **design foundation** plus the public **song-reading** path.
+The Bible reader and the editor/operator redesigns follow in later specs.
+
+## Scope / edges
+
+**In:**
+
+- A reusable design foundation: a Django base template, a CSS `tokens` layer, and a small
+  component set (shell, search, list row, book chip, song header, lyric block, breadcrumb,
+  empty/error states).
+- Public, server-rendered song reading: home (search + book list) → book index → song list →
+  song lyric page.
+- Server-side search over songs (title / book number).
+- Routing: public reading at `/` and `/songs/...`; the editor moves to `/manage/...`; legacy
+  editor paths redirect.
+- Mobile-first, accessible markup and contrast.
+
+**Out:**
+
+- Bible reading (next spec).
+- Redesigning the editor or OBS operator screens (they adopt the foundation later).
+- Authentication / members-only access — reading is public.
+- Offline/PWA, UI translation, and printing beyond a simple print stylesheet.
+
+## Approach
+
+Server-render with the Django ORM; no client fetch on read pages. Replace Fomantic on the reading
+pages with a plain-CSS design system (custom properties; no build step). Reuse the existing `songs`
+models. Keep the DRF API untouched for OBS.
+
+Routes:
+
+| Path | Serves |
+| --- | --- |
+| `/` | Public home: search + book list |
+| `/songs/` | Book index (same as home browse) |
+| `/songs/<book_id>/` | Song list for a book |
+| `/songs/<song_id>/` | Song detail (lyrics) |
+| `/manage/...` | Editor (moved; old paths redirect) |
+| `/obs/...` | OBS operator UI (unchanged) |
+
+Legacy editor URLs (`/songs/books`, `/songs/books/<id>`, `/songs/songs/<id>`) redirect to their
+`/manage/...` equivalents.
+
+## TDD
+
+- **Domain/app tests:** Django test runner (`python manage.py test`), in
+  `multimedia/web/tests.py` — URL resolution, view status/context, search filtering, redirects,
+  and template-rendering assertions (content present without JS).
+- **E2E (tool named after stack exists):** not yet chosen. This slice relies on the Django test
+  client plus template assertions. Flagged as a gap to resolve.
+
+## Risks
+
+- **URL restructure** touches existing editor links and any external references. Covered by
+  redirects and tests.
+- **Version arithmetic conflict:** `VERSION` is `0.4.6` on `main`, but tags `v0.5.0`–`v0.5.2`
+  already exist on the `develop` line; a `minor` bump here would collide. Resolve the
+  release/version gap with the owner before this PR versions. Treat `bump: minor` as intent until
+  then.
+- **Design-foundation scope creep:** bounded to the components listed in the spec for this slice.

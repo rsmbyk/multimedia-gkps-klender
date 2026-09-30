@@ -18,4 +18,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 
 | Spec | Title | Status |
 | --- | --- | --- |
-| — | _No specs yet. This product adopted the process from an existing codebase; backfilled as-built specs and the first feature spec are separate slices._ | — |
+| [001](001-public-songs-reading/spec.md) | Public song reading + design foundation | Draft |
+
+`000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
+spec yet — the as-built baseline backfill is a separate, owner-accepted slice.
