@@ -6,10 +6,10 @@ type: chore
 priority: P1
 effort: S
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 spec: ../specs/002-local-docker-compose/spec.md
 branch: chore/002-local-docker-compose
-pr:
+pr: 258
 archived_at:
 archive_reason:
 bump: none
