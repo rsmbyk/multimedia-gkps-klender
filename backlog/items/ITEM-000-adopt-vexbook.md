@@ -1,6 +1,6 @@
 ---
 id: ITEM-000
-status: in-review
+status: done
 title: Adopt vexbook process at v0.4.0
 type: chore
 priority: P0
