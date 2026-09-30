@@ -1,6 +1,6 @@
 ---
 id: ITEM-001
-status: in-review
+status: done
 title: Public song reading + design foundation
 type: feat
 priority: P0
