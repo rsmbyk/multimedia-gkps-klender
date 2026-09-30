@@ -41,12 +41,29 @@ Suggested PR title style: Conventional Commits subject
 
 | Target | Source | Method | Why |
 |--------|--------|--------|-----|
-| `develop` | `feature/*`, `fix/*`, `chore/*` | **Squash merge** | One clean commit per topic on develop. |
-| `develop` | `release/*`, `hotfix/*` | **Merge commit** | Preserve the release/hotfix join; do not squash. |
-| `main` | `release/*`, `hotfix/*` | **Merge commit** | Preserve release/hotfix history on production. |
+| `develop` | `feature/*`, `fix/*`, `chore/*`, `docs/*` | **Squash merge** | One clean commit per topic on develop. |
+| `develop` | `release/*`, `hotfix/*` | **Merge commit (standard merge)** | Preserve the release/hotfix join; do not squash. |
+| `main` | `release/*`, `hotfix/*` | **Merge commit (standard merge)** | Preserve release/hotfix history on production. |
+
+Rules:
+
+- Topic branches (`feature/*`, `fix/*`, `chore/*`, `docs/*`) into `develop`:
+  **always squash merge**.
+- **Any** merge into `main` (only `release/*` or `hotfix/*` may target it):
+  **always a standard merge (merge commit), never squash**.
+- Never squash a release or hotfix PR, regardless of target.
 
 When using the GitHub UI, pick the matching merge button. Do not squash a
 release or hotfix into `develop` or `main`.
+
+## Branch deletion
+
+- After a merge, delete **only the remote branch** (e.g.
+  `git push origin --delete <branch>`, or rely on the repo's
+  “Automatically delete head branches” setting, which removes the remote head
+  branch only).
+- **Leave local branches intact.** Each developer prunes their own locals when
+  they no longer need them (e.g. `git branch -d <branch>`).
 
 ## Day-to-day feature / fix / chore
 
@@ -66,7 +83,8 @@ develop ──► feature/my-change ──(PR, squash)──► develop
    labels** (e.g. `[songs]`, `[deploy]`). Do **not** bump SemVer on develop.
    See [`VERSIONING.md`](VERSIONING.md).
 5. **Squash merge** into `develop`.
-6. Delete the topic branch (local and remote).
+6. Delete the remote topic branch only (see [Branch deletion](#branch-deletion));
+   keep the local branch.
 
 Docs-only or pure tooling chores still use a PR; add `[docs]` / `[test]`
 bullets when the change is worth recording, otherwise a PR description is
@@ -102,7 +120,8 @@ develop ──► release/x.y.z ──(PR, merge)──► main   (tag vX.Y.Z)
    Optionally create a GitHub Release from that tag.
 5. Open a PR: `release/x.y.z` → **`develop`** (or merge `main` back if that is
    cleaner after the tag). **Merge commit** (not squash).
-6. Delete the release branch after both merges.
+6. Delete the remote release branch after both merges; keep the local branch
+   (see [Branch deletion](#branch-deletion)).
 
 Vercel deploys from `main` after step 3. The tag labels the shipped commit; it
 does not replace the production branch.
@@ -126,7 +145,8 @@ main ──► hotfix/short-name ──(PR, merge)──► main   (tag if patch
 3. PR → **`main`**, **merge commit**. Tag if you cut a patch (`vX.Y.Z`).
 4. PR → **`develop`**, **merge commit** (not squash). Reconcile changelog /
    Unreleased if develop had moved ahead.
-5. Delete the hotfix branch.
+5. Delete the remote hotfix branch only; keep the local branch (see
+   [Branch deletion](#branch-deletion)).
 
 ## Checklist: shipping a normal change
 
@@ -135,7 +155,7 @@ main ──► hotfix/short-name ──(PR, merge)──► main   (tag if patch
 - [ ] `## Unreleased` changelog bullets + area labels (if product-facing)
 - [ ] SemVer **not** bumped on this PR
 - [ ] Squash merge into `develop`
-- [ ] Topic branch deleted
+- [ ] Remote topic branch deleted (local kept)
 
 ## Checklist: cutting a release
 
@@ -145,14 +165,14 @@ main ──► hotfix/short-name ──(PR, merge)──► main   (tag if patch
 - [ ] Merge commit into `main`
 - [ ] Tag `vX.Y.Z` pushed
 - [ ] Merge commit back into `develop`
-- [ ] Release branch deleted
+- [ ] Remote release branch deleted (local kept)
 
 ## Checklist: production hotfix
 
 - [ ] `hotfix/*` cut from latest `main`
 - [ ] Merge commit into `main` (+ tag if patch release)
 - [ ] Merge commit into `develop`
-- [ ] Hotfix branch deleted
+- [ ] Remote hotfix branch deleted (local kept)
 
 ## What not to do
 
@@ -173,7 +193,7 @@ Configured for this private repo (Free plan):
 | Allow merge commits | Yes (use for `release/*` / `hotfix/*` → `main` and → `develop`) |
 | Allow squash merging | Yes (use for `feature/*` / `fix/*` / `chore/*` → `develop`) |
 | Allow rebase merging | No |
-| Automatically delete head branches | Yes |
+| Automatically delete head branches | Yes (removes the remote head branch only; local branches are never touched) |
 | Squash commit title / message | PR title / commit messages |
 | Merge commit title / message | PR title / PR body |
 
@@ -184,7 +204,11 @@ public repository). Until that is available, enforce the merge matrix by
 discipline and by following this doc:
 
 - Never merge into `main` except from `release/*` or `hotfix/*`
-- Never squash a release or hotfix PR
+- Never squash a release or hotfix PR — anything merged into `main` uses a
+  standard merge (merge commit)
+- Squash-merge topic branches (`feature/*`, `fix/*`, `chore/*`, `docs/*`) into
+  `develop`
+- Delete only remote branches after merge; leave local branches intact
 - Prefer the GitHub merge button that matches the table above
 
 When Pro is enabled, add protection roughly as follows:

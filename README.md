@@ -36,11 +36,20 @@ Kristen Protestan Simalungun) prepare worship content and project it live with
 git clone <repository-url>
 cd multimedia-gkps-klender
 
-copy .env.example .env
 docker compose up --build
 ```
 
-App: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+App: [http://127.0.0.1:63404/](http://127.0.0.1:63404/)
+
+`.env` is optional — compose supplies safe defaults for everything the app
+needs to boot. Copy `.env.example` to `.env` only if you want to change those
+defaults.
+
+Published ports are high random numbers (IANA dynamic range) so the stack is
+unlikely to collide with other local apps. If one is already taken, set
+`WEB_PORT` / `DB_PORT` in `.env` and restart — no need to edit
+`docker-compose.yml`. Container-internal ports are unaffected: the app still
+listens on `8000` and Postgres on `5432` inside the network.
 
 Compose always injects a local `DATABASE_URL` for the `db` service. Do **not**
 point local development at production Neon.
