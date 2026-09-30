@@ -1,6 +1,6 @@
 ---
 id: ITEM-000
-status: in-progress
+status: in-review
 title: Adopt vexbook process at v0.4.0
 type: chore
 priority: P0
@@ -9,7 +9,7 @@ created: 2026-09-30
 updated: 2026-09-30
 spec:
 branch: chore/readopt-vexbook-v0.4.0
-pr:
+pr: 256
 archived_at:
 archive_reason:
 bump: none
