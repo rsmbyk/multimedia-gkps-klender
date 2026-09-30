@@ -5,16 +5,18 @@ alwaysApply: true
 
 # SDD (this repo)
 
-Follow [`docs/SDD.md`](docs/SDD.md). Summary:
+Follow [`docs/PROCESS.md`](docs/PROCESS.md) and the must-apply gate
+[`docs/rules/SDD-GATE.md`](docs/rules/SDD-GATE.md). Product notes in
+[`docs/SDD.md`](docs/SDD.md) remain background; PROCESS wins on conflict.
 
 - Lightweight **docs-native** SDD: Markdown under `specs/` is the intent source
   of truth (spec-anchored). No Spec Kit / OpenSpec CLI required.
 - For new product behavior and non-trivial / cross-cutting changes: **Specify →
   Plan → Tasks → Implement**. Human OK at phase boundaries when the session
   expects discuss-first.
-- Specs live in `specs/<area>/<feature>/` (`spec.md`, `plan.md`, `tasks.md`).
-  Copy from `specs/_templates/`. Project guardrails:
-  [`specs/constitution.md`](specs/constitution.md).
+- Specs live in `specs/NNN-slug/` (`spec.md`, `plan.md`, `tasks.md`).
+  Copy from `specs/_template/`. Legacy `CODE` IDs (`APP`, `OBS-SONGS`, …) are
+  retired; mapping in `docs/adr/0001-adopt-vexbook-process.md`.
 - **SDD above TDD:** implement each task with red → green → refactor
   ([`docs/TDD.md`](docs/TDD.md)). If code and spec disagree, update the spec
   first (or clarify), then the code.
