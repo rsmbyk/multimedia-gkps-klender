@@ -47,10 +47,12 @@ It is an **adopter**, not a greenfield spawn.
 - **Stack:** Python 3.12 + Django 4.0 + Django REST Framework; PostgreSQL; WhiteNoise; deployed on
   Vercel (`@vercel/python`). Frontend is server-rendered templates with vanilla JS, jQuery, RxJS,
   and Fomantic UI.
-- **Tests:** Django test runner; coverage via `coverage`. E2E tool not yet chosen (flagged in ADR
-  0001). TDD for domain/application rules.
-- **Gaps to confirm (owner):** Git Flow as recorded, `VERSION` bootstrap, `CHANGELOG.md` format,
-  and the E2E tool.
+- **Tests:** Django test runner; coverage via `coverage`. E2E is Playwright (Python) via Django
+  `LiveServerTestCase`. TDD for domain/application rules.
+- **Vocabulary:** use the canonical terms and naming rules in
+  [`docs/GLOSSARY.md`](docs/GLOSSARY.md) for all new work.
+- **Conventions:** Git Flow ([ADR 0002](docs/adr/0002-git-flow-merge-strategy.md)), Keep a
+  Changelog, `VERSION` `0.5.2` (next feature bump `0.6.0`).
 
 ## This agent's rules
 
