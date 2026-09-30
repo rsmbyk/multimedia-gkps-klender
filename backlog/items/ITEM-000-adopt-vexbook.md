@@ -9,7 +9,7 @@ created: 2026-09-30
 updated: 2026-09-30
 spec: 000-multimedia-baseline
 branch: chore/adopt-vexbook-v0.4.0
-pr:
+pr: "#252"
 archived_at:
 archive_reason:
 bump: none

@@ -41,7 +41,7 @@ Legacy `BL-*` IDs are preserved inside item files.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-000](./items/ITEM-000-adopt-vexbook.md) | Adopt vexbook process at v0.4.0 with full migration | Process file set + NNN/ITEM/VERSION | chore | P0 | M | [000](../specs/000-multimedia-baseline/spec.md) | — | 2026-09-30 |
+| [ITEM-000](./items/ITEM-000-adopt-vexbook.md) | Adopt vexbook process at v0.4.0 with full migration | Process file set + NNN/ITEM/VERSION | chore | P0 | M | [000](../specs/000-multimedia-baseline/spec.md) | #252 | 2026-09-30 |
 
 ## Done
 
