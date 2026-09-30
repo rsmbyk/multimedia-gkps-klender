@@ -41,7 +41,6 @@ Legacy `BL-*` IDs are preserved inside item files.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-011](./items/ITEM-011-local-compose-random-ports.md) | Local Compose on random low-conflict ports | Move 8000/5432 to random high ports | chore | P1 | S | [018](../specs/018-local-compose-ports/spec.md) | pending | 2026-09-30 |
 
 ## Done
 
@@ -53,3 +52,4 @@ Legacy `BL-*` IDs are preserved inside item files.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-001](./items/ITEM-001-shared-obs-semver-footer.md) | Shared OBS SemVer footer and version constant | One version constant + footer | feat | P0 | M | [007](../specs/007-obs-songs-live/spec.md) | release/0.5.0 | 2026-09-30 |
 | [ITEM-002](./items/ITEM-002-cut-release-0-5-0.md) | Cut first SemVer release 0.5.0 | Tag v0.5.0 on main | chore | P0 | M | [000](../specs/000-multimedia-baseline/spec.md) | release/0.5.0 | 2026-09-30 |
+| [ITEM-011](./items/ITEM-011-local-compose-random-ports.md) | Local Compose on random low-conflict ports | Move 8000/5432 to random high ports | chore | P1 | S | [018](../specs/018-local-compose-ports/spec.md) | develop (#253) | 2026-09-30 |

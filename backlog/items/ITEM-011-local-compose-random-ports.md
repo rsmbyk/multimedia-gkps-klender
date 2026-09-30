@@ -1,6 +1,6 @@
 ---
 id: ITEM-011
-status: in_review
+status: done
 title: 'Local Compose on random low-conflict ports'
 type: chore
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-09-30
 updated: 2026-09-30
 spec: 018-local-compose-ports
 branch: feat/018-local-compose-ports
-pr:
+pr: 253
 archived_at:
 archive_reason:
 bump: patch
