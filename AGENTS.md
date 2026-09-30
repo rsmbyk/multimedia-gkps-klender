@@ -30,9 +30,10 @@ Product docs below remain authoritative for stack and domain detail.
   target `develop`; release/hotfix via merge commits per
   [`docs/GIT_FLOW.md`](docs/GIT_FLOW.md).
 - **Commits:** Conventional Commits; agent commits end with a `Co-authored-by`
-  trailer. Recorded convention for this repo (owner decision 2026-09-30):
-  `Co-authored-by: Muse Spark 1.3 Free (Meta MSL)` — no email address; do not
-  substitute another vendor's trailer.
+  trailer using whatever attribution is closest to the authoring agent as far
+  as it knows — not limited to the Agent Product, and never another vendor's
+  trailer. Current instance: `Co-authored-by: Muse Spark 1.3 Free (Meta MSL)`
+  (no email address).
 
 ## Product (this repo)
 
