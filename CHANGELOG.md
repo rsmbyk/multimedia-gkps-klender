@@ -10,6 +10,21 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-01
+
+### Added
+
+- Maintenance mode (`MAINTENANCE_MODE`): the site root `/` serves a short notice
+  (HTTP 503) while the reading home stays reachable at `/home/`.
+- `[devops]` Local Docker Compose stack (`web` + `db`) on low-conflict ports
+  from the IANA dynamic range, overridable via `WEB_PORT` / `DB_PORT` in `.env`.
+  Container-internal ports stay conventional (`8000` / `5432`).
+
+### Changed
+
+- The public home moved from `/` to `/home/` while maintenance is on; `/` serves
+  the home again when `MAINTENANCE_MODE` is off.
+
 ## [0.6.0] - 2026-09-30
 
 ### Added

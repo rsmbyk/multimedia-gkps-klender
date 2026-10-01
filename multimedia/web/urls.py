@@ -4,8 +4,10 @@ from django.views.generic import RedirectView
 from multimedia.web import views
 
 urlpatterns = [
-    # Public reading experience (top level).
-    path('', views.HomeView.as_view(), name='web-home'),
+    # Site root: a maintenance notice while MAINTENANCE_MODE is on, else the home.
+    path('', views.IndexView.as_view(), name='web-index'),
+    # Public reading home; a temporary URL while maintenance is on.
+    path('home/', views.HomeView.as_view(), name='web-home'),
     path('songs/', include('multimedia.web.reading.urls')),
 
     # Content editor, moved off the public paths.

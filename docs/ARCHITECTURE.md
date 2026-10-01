@@ -52,7 +52,12 @@ Django project `multimedia` with apps:
 | `web` | Server-rendered web management UI |
 
 URL roots (`multimedia/urls.py`): `/admin/`, `/api/`, `/obs/`, and the Django app at `/` — public
-reading at `/` and `/songs/…`, editor at `/manage/…`.
+reading at `/songs/…`, editor at `/manage/…`.
+
+The site root `/` is **maintenance-gated** by `MAINTENANCE_MODE` (env, default on): while on it
+serves a 503 notice (`reading/maintenance.html`), and the reading home is temporarily at `/home/`
+(still the `web-home` url name, so header/search links follow it). While off, `/` serves the home.
+Only `/` is gated; every other surface is unaffected.
 
 Public reading pages use the project's own design language (`static/styles/design/tokens.css`,
 `components.css`); Fomantic UI remains in use by the editor and OBS surfaces until they migrate.

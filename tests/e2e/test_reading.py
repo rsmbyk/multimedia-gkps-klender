@@ -14,6 +14,7 @@ import unittest
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings
+from django.urls import reverse
 
 from multimedia.songs import models
 
@@ -58,7 +59,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_reader_can_browse_and_read_a_song(self):
         page = self._open_page()
-        page.goto(self.live_server_url + '/')
+        page.goto(self.live_server_url + reverse('web-home'))
         self.assertIn('Multimedia GKPS Klender', page.title())
 
         page.get_by_role('link', name='Nyanyikanlah Kidung Baru').first.click()
@@ -68,8 +69,14 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_finds_a_song(self):
         page = self._open_page()
-        page.goto(self.live_server_url + '/')
+        page.goto(self.live_server_url + reverse('web-home'))
         page.get_by_label('Search songs').fill('waktu pagi')
         page.get_by_role('button', name='Search').click()
 
         self.assertTrue(page.get_by_role('link', name='NKB 12').first.is_visible())
+
+    def test_maintenance_notice_at_root(self):
+        with self.settings(MAINTENANCE_MODE=True):
+            page = self._open_page()
+            page.goto(self.live_server_url + '/')
+            self.assertTrue(page.get_by_text('pemeliharaan').is_visible())

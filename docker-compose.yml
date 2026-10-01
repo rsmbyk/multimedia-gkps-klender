@@ -1,0 +1,48 @@
+services:
+  web:
+    build: .
+    ports:
+      # Published high port (IANA dynamic range) to avoid colliding with other
+      # local apps. Override with WEB_PORT in .env; internal port stays 8000.
+      - "${WEB_PORT:-63404}:8000"
+    env_file:
+      # Optional: compose supplies every variable the app needs to boot, so a
+      # fresh clone runs without `cp .env.example .env`. When .env is present it
+      # still wins, so the documented LAN-IP / DEBUG tweaks keep working.
+      - path: .env
+        required: false
+    environment:
+      # Always win over .env so an old production URL cannot hijack local Docker.
+      DATABASE_URL: postgresql://multimedia:multimedia@db:5432/multimedia
+      DJANGO_DEBUG: "True"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-insecure-local-only-change-me}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-127.0.0.1,localhost,0.0.0.0,web}
+      RUN_MIGRATIONS: "true"
+    volumes:
+      # Bind-mount the repo so Django autoreloads on host edits.
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python manage.py runserver 0.0.0.0:8000
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: multimedia
+      POSTGRES_USER: multimedia
+      POSTGRES_PASSWORD: multimedia
+    ports:
+      # Same rationale as web: published host port is high and overridable
+      # (DB_PORT), while the in-network port stays 5432 for DATABASE_URL.
+      - "${DB_PORT:-59075}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U multimedia -d multimedia"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
