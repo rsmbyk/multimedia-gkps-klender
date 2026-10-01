@@ -1,6 +1,6 @@
 ---
 id: ITEM-004
-status: in_review
+status: done
 title: Maintenance page at the site root
 type: feat
 priority: P1
