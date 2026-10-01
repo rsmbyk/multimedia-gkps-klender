@@ -16,6 +16,9 @@ Pre-adoption history in the legacy per-version format is archived in
 
 - Maintenance mode (`MAINTENANCE_MODE`): the site root `/` serves a short notice
   (HTTP 503) while the reading home stays reachable at `/home/`.
+- `[devops]` Local Docker Compose stack (`web` + `db`) on low-conflict ports
+  from the IANA dynamic range, overridable via `WEB_PORT` / `DB_PORT` in `.env`.
+  Container-internal ports stay conventional (`8000` / `5432`).
 
 ### Changed
 
