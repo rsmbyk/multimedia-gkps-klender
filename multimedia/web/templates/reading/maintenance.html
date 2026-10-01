@@ -1,0 +1,23 @@
+{% load static %}
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Situs sedang dalam pemeliharaan — Multimedia GKPS Klender</title>
+    <meta name="robots" content="noindex">
+    <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+    <link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/design/components.css' %}">
+</head>
+<body>
+    <main id="main" class="maintenance">
+        <div class="maintenance__card">
+            <img class="maintenance__logo" src="{% static 'assets/gkps.png' %}" alt="" width="72" height="72">
+            <h1 class="maintenance__title">Situs sedang dalam pemeliharaan</h1>
+            <p class="maintenance__lead">Kami sedang memperbarui situs. Silakan kembali sebentar lagi.</p>
+            <p class="maintenance__note">We're updating the site. Please check back shortly.</p>
+        </div>
+    </main>
+</body>
+</html>

@@ -32,6 +32,10 @@ DEBUG = config('DJANGO_DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='*', cast=Csv())
 
+# Maintenance mode: the site root serves a notice (HTTP 503) while the reading
+# home stays reachable at /home/. Toggle with the MAINTENANCE_MODE env var.
+MAINTENANCE_MODE = config('MAINTENANCE_MODE', default=True, cast=bool)
+
 
 # Application definition
 
