@@ -19,6 +19,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | Spec | Title | Status |
 | --- | --- | --- |
 | [001](001-public-songs-reading/spec.md) | Public song reading + design foundation | Accepted |
+| [002](002-local-docker-compose/spec.md) | Local Docker Compose stack | Accepted |
 | [003](003-maintenance-page/spec.md) | Maintenance page at the site root | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
