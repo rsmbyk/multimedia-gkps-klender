@@ -1,6 +1,6 @@
 ---
 id: ITEM-003
-status: in_review
+status: done
 title: Local Docker Compose stack on low-conflict ports
 type: chore
 priority: P1
