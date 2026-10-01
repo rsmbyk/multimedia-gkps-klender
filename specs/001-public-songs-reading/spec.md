@@ -117,3 +117,8 @@ existing Django stack.
   [`multimedia/web/views.py`](../../multimedia/web/views.py),
   `multimedia/web/reading/`, `multimedia/web/manage/`,
   `multimedia/web/templates/reading/`, `static/styles/design/`
+
+> **Superseded (conditional) — spec 003:** while `MAINTENANCE_MODE` is on, `/` serves a
+> maintenance notice (503) and the home scenario above is served at `/home/` instead. The
+> scenario body is preserved for history; see
+> [`specs/003-maintenance-page/`](../003-maintenance-page/spec.md).

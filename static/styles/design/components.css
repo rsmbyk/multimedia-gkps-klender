@@ -371,6 +371,50 @@ a:hover {
     font-weight: 600;
 }
 
+/* Maintenance notice */
+.maintenance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--space-6) var(--space-4);
+}
+
+.maintenance__card {
+    max-width: 34rem;
+    padding: var(--space-7) var(--space-6);
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+}
+
+.maintenance__logo {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+}
+
+.maintenance__title {
+    margin: var(--space-4) 0 var(--space-3);
+    font-size: var(--step-3);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.maintenance__lead {
+    margin: 0 0 var(--space-2);
+    font-size: var(--step-1);
+    color: var(--ink-soft);
+}
+
+.maintenance__note {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--muted);
+}
+
 /* States */
 .empty {
     padding: var(--space-5);

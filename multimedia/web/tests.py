@@ -78,3 +78,44 @@ class ReadingViewsTests(TestCase):
     def test_legacy_verse_list_redirects_to_manage(self):
         response = self.client.get(f'/songs/songs/{self.song.id}')
         self.assertRedirects(response, reverse('web-songs-verses', args=[self.song.id]), status_code=301)
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class MaintenanceModeTests(TestCase):
+    """The site root shows a maintenance notice while MAINTENANCE_MODE is on."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.lang = models.Language.objects.create(name='Indonesian')
+        cls.book = models.Book.objects.create(
+            lang=cls.lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+
+    @override_settings(MAINTENANCE_MODE=True)
+    def test_root_shows_maintenance_when_on(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 503)
+        self.assertIn('Retry-After', response)
+        self.assertContains(response, 'pemeliharaan', status_code=503)
+        self.assertContains(response, 'noindex', status_code=503)
+        self.assertNotContains(response, 'name="q"', status_code=503)
+
+    @override_settings(MAINTENANCE_MODE=False)
+    def test_root_shows_home_when_off(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Nyanyikanlah Kidung Baru')
+        self.assertContains(response, 'name="q"')
+
+    @override_settings(MAINTENANCE_MODE=True)
+    def test_temporary_home_serves_home_when_on(self):
+        self.assertEqual(reverse('web-home'), '/home/')
+        response = self.client.get(reverse('web-home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Nyanyikanlah Kidung Baru')
+        self.assertContains(response, 'name="q"')
+
+    @override_settings(MAINTENANCE_MODE=True)
+    def test_other_surfaces_unaffected(self):
+        for url in ('/songs/', '/manage/'):
+            with self.subTest(url=url):
+                self.assertNotEqual(self.client.get(url).status_code, 503)

@@ -59,3 +59,5 @@ still found in the codebase.
 | **Public site** | — | The public reading experience at `/` and `/songs/…` (later `/bible/…`). |
 | **Editor** | Web admin UI, `web` | The content-management surface, moving to `/manage/…`. |
 | **Design language** | Design system | This project's own tokens and components, drifting off Semantic/Fomantic UI; palette drawn from the GKPS logo. |
+| **Maintenance page** | — | The notice served at `/` while maintenance mode is on. | `reading/maintenance.html` |
+| **Temporary home** | — | The reading home at `/home/` while maintenance mode is on. | `web/urls.py` (`web-home`) |

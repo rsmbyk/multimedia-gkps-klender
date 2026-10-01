@@ -10,6 +10,18 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-01
+
+### Added
+
+- Maintenance mode (`MAINTENANCE_MODE`): the site root `/` serves a short notice
+  (HTTP 503) while the reading home stays reachable at `/home/`.
+
+### Changed
+
+- The public home moved from `/` to `/home/` while maintenance is on; `/` serves
+  the home again when `MAINTENANCE_MODE` is off.
+
 ## [0.6.0] - 2026-09-30
 
 ### Added
