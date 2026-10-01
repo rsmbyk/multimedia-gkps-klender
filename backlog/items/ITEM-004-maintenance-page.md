@@ -9,7 +9,7 @@ created: 2026-10-01
 updated: 2026-10-01
 spec: ../specs/003-maintenance-page/spec.md
 branch: feat/003-maintenance-page
-pr:
+pr: 259
 archived_at:
 archive_reason:
 bump: minor
