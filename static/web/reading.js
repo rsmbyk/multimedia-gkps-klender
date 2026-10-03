@@ -274,13 +274,73 @@
   } catch (e) {}
 
   /* ---------- shared helpers ---------- */
-  function revealInSidebar(row, body) {
+  function prefersReduce() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  function flashRow(row) {
     if (!row) return;
+    row.classList.remove('tatib__flash');
+    void row.offsetWidth;                 /* restart a running flash */
+    row.classList.add('tatib__flash');
+  }
+  /* The reveal: centre a row in its scrollport. It belongs to the two
+     "here you are" moments only -- opening a search result, or opening a
+     sidebar on the page being read -- and it travels, so the rows just before
+     the target are seen moving past. A plain item click uses ensureVisible()
+     instead: no motion unless the row is clipped. */
+  var revealPending = 0;
+  function beginReveal() {                /* tests wait for data-scroll-anim to clear */
+    revealPending += 1;
+    root.dataset.scrollAnim = 'on';
+  }
+  function endReveal() {
+    revealPending = Math.max(0, revealPending - 1);
+    if (!revealPending) root.removeAttribute('data-scroll-anim');
+  }
+  function centerOf(row, body) {
     var r = row.getBoundingClientRect();
     var b = body.getBoundingClientRect();
-    if (r.top < b.top || r.bottom > b.bottom) {
-      body.scrollTop += (r.top + r.height / 2) - (b.top + b.height / 2);
+    var max = Math.max(0, body.scrollHeight - body.clientHeight);
+    return Math.max(0, Math.min(max,
+      body.scrollTop + (r.top + r.height / 2) - (b.top + b.height / 2)));
+  }
+  function animateScroll(body, to, done) {
+    var from = body.scrollTop;
+    var ms = prefersReduce() ? 0 : Math.max(220, Math.min(420, transitionDurationMs() * 1.8));
+    if (!ms || Math.abs(to - from) < 1) {
+      body.scrollTop = to;
+      if (done) done();
+      return;
     }
+    var start = null;
+    window.requestAnimationFrame(function step(now) {
+      if (start === null) start = now;
+      var t = Math.min(1, (now - start) / ms);
+      var eased = 1 - Math.pow(1 - t, 3);  /* easeOutCubic */
+      body.scrollTop = from + (to - from) * eased;
+      if (t < 1) window.requestAnimationFrame(step);
+      else { body.scrollTop = to; if (done) done(); }
+    });
+  }
+  function revealRow(row, body, opts) {
+    if (!row || !body) return;
+    if (opts && opts.flash) flashRow(row);
+    if (prefersReduce()) {
+      body.scrollTop = centerOf(row, body);
+      return;
+    }
+    beginReveal();
+    var landed = centerOf(row, body);
+    animateScroll(body, landed, function () {
+      /* The sidebar's push transition reflows the list while it runs (its width
+         changes), so the first target can be stale: centre once more after the
+         layout settles -- unless the reader has moved on in the meantime. */
+      window.setTimeout(function () {
+        if (document.contains(row) && Math.abs(body.scrollTop - landed) <= 2) {
+          animateScroll(body, centerOf(row, body), endReveal);
+        } else endReveal();
+      }, transitionDurationMs() + 80);
+    });
   }
   /* Minimal nudge: move a list only as far as needed to show the row fully.
      Clicking an already visible item must never move the list. */
@@ -321,13 +381,33 @@
     });
   }
 
-  /* The "here you are" reveal: only for opening a sidebar on the page being
-     read (boot / restore / a search result) -- never for plain item clicks. */
-  function revealCurrentRailTile() {
+  /* The Tata Ibadah item the stage was opened at: its contents row is a
+     quicklink that is never selected, so it is flashed instead. */
+  function stageAnchor() {
+    var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
+    var section = target ? target.closest('[id^="ti-"]') : null;
+    return section ? section.id.slice(3) : null;
+  }
+  function anchorFromUrl(url) {
+    var hash = String(url || '').indexOf('#');
+    return hash === -1 ? null : url.slice(hash + 1).replace(/^ti-/, '');
+  }
+  /* "here you are": centre the rows that identify what is on stage -- the panel
+     tile (book / songbook / service) and the list row (chapter / song / contents
+     item). Only ever called for the two reveal moments: a search result opened,
+     or a sidebar opened on the page being read. */
+  function revealCurrent(anchor) {
+    revealRow(panelBody.querySelector('.book[aria-current="true"]'), panelBody);
     if (activeSection === 'alkitab') {
-      revealInSidebar(chList.querySelector('.ch-num[aria-current="true"]'), chBody);
+      revealRow(chList.querySelector('.ch-num[aria-current="true"]'), chBody);
     } else if (activeSection === 'kidung') {
-      revealInSidebar(chList.querySelector('.songrow[aria-current="true"]'), chBody);
+      revealRow(chList.querySelector('.songrow[aria-current="true"]'), chBody);
+    } else if (activeSection === 'tatib' && anchor) {
+      var row = null;
+      chList.querySelectorAll('.songrow').forEach(function (x) {
+        if (x.dataset.i === anchor) row = x;
+      });
+      revealRow(row, chBody, { flash: true });
     }
   }
 
@@ -766,7 +846,7 @@
       syncState();
       updateChInds();
     }
-    revealInSidebar(tile, panelBody);
+    revealCurrent(stageAnchor());
     /* On narrow screens the child replaced its parent: hand focus to the
        exact reading destination, or the contents collapse control. */
     if (root.dataset.nav === 'closed') {
@@ -785,6 +865,12 @@
 
   function navigate(url, opts) {
     if (!url || navBusy) return;
+    /* Leaving the result set by any route: remember where in it the reader was,
+       so the search icon can come back to that offset. */
+    if (root.dataset.home === 'results'
+        && !(opts && (opts.kind === 'search' || opts.kind === 'more' || opts.kind === 'results'))) {
+      try { localStorage.setItem('gkps-search-scroll', String(window.scrollY)); } catch (e) {}
+    }
     navBusy = true;
     fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
       .then(function (response) {
@@ -898,12 +984,19 @@
     updateChInds();
     window.requestAnimationFrame(updateChInds);
 
-    /* the rail search icon restores the last result set */
-    if (root.dataset.home === 'results') {
-      try { localStorage.setItem('gkps-search', url); } catch (e) {}
-      railSearch.setAttribute('href', url);
+    /* The rail search icon restores the last result set. Only the page that IS
+       the result set may update it -- a stale root state must never let a
+       reading page overwrite the stored search. */
+    if (fresh.home === 'results') {
+      var searchPath = url.indexOf(window.location.origin) === 0
+        ? url.slice(window.location.origin.length) : url;    /* store a path, not an origin */
+      try { localStorage.setItem('gkps-search', searchPath); } catch (e) {}
+      railSearch.setAttribute('href', searchPath);
     } else if (kind === 'home') {
-      try { localStorage.removeItem('gkps-search'); } catch (e) {}
+      try {
+        localStorage.removeItem('gkps-search');
+        localStorage.removeItem('gkps-search-scroll');
+      } catch (e) {}
       railSearch.setAttribute('href', '/home/');
     }
     document.title = doc.title;
@@ -913,8 +1006,7 @@
       restoreCurrentPath(opts.section);
     }
     if (kind === 'sync') {
-      var syncTile = panelBody.querySelector('.book[aria-current="true"]');
-      revealInSidebar(syncTile, panelBody);
+      revealCurrent(stageAnchor());
       if (root.dataset.nav === 'closed') {
         var syncRow = chList.querySelector('[aria-current="true"]');
         if (syncRow) syncRow.focus({ preventScroll: true });
@@ -927,12 +1019,18 @@
       window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
     }
     if (kind === 'result') {
-      revealCurrentRailTile();
+      revealCurrent(anchorFromUrl(url) || stageAnchor());
       var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
       if (target) revealSearchTarget(target);
     }
-    if (kind === 'search' || kind === 'home' || kind === 'results') {
+    if (kind === 'search' || kind === 'home') {
       window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+    if (kind === 'results') {
+      /* back to the result set: resume where the reader left it */
+      var remembered = 0;
+      try { remembered = parseInt(localStorage.getItem('gkps-search-scroll') || '0', 10) || 0; } catch (e) {}
+      window.scrollTo({ top: remembered, behavior: 'auto' });
     }
   }
 
@@ -1024,7 +1122,7 @@
   syncState();
   decorateChapters();
   markRailTile();
-  revealCurrentRailTile();
+  revealCurrent(stageAnchor() || anchorFromUrl(window.location.hash));
   updateChInds();
   window.requestAnimationFrame(updateChInds);
   var visibleBlock = null;

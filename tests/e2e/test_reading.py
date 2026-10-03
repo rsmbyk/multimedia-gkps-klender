@@ -11,7 +11,7 @@ One-time setup::
 """
 
 import unittest
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings
@@ -46,6 +46,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         songs.Verse.objects.create(song=self.song, number=1, lyric='Di waktu pagi aku bersyukur')
         self.harian = songs.Book.objects.create(
             lang=lang, name='Kidung Harian', short_name='KH', is_hymn_book=False)
+        # bulk first, so the reveal tests have a list long enough to travel
+        for n in range(1, 31):
+            songs.Song.objects.create(book=self.harian, title='Lagu %02d' % n)
         songs.Song.objects.create(book=self.harian, title='Alpha')
         songs.Song.objects.create(book=self.harian, title='Zebra')
 
@@ -55,12 +58,31 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         mat_tb = bible.BookTranslation.objects.create(version=version, book=self.mat, translation='Matius')
         bible.Verse.objects.create(book_translation=mat_tb, chapter=5, verse=13, text='Kamu adalah garam dunia.')
         bible.Verse.objects.create(book_translation=mat_tb, chapter=5, verse=14, text='Kamu adalah terang dunia.')
+        for verse in list(range(1, 13)) + list(range(15, 28)):   # a results page long enough to scroll
+            bible.Verse.objects.create(book_translation=mat_tb, chapter=5, verse=verse,
+                                       text='Kasih dan kasih %d' % verse)
+        # a chapter deep in the list, so a reveal has somewhere to travel
+        bible.Verse.objects.create(book_translation=mat_tb, chapter=20, verse=1,
+                                   text='Janganlah kamu kuatir akan hidupmu.')
 
         self.service = tatib.TataIbadah.objects.create(
             name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
         tatib.TataIbadahItem.objects.create(
             tatib=self.service, item_type=tatib.TataIbadahItemType.TEXT,
             title='Nyanyian Pembukaan', text='KJ 120', order_number=1)
+        for n in range(1, 21):
+            extra = tatib.TataIbadah.objects.create(
+                name='Ibadah %02d' % n, date=date(2026, 1, 1) + timedelta(days=n), is_active=True)
+            # a service is listed and searchable only while it has a public section
+            tatib.TataIbadahItem.objects.create(
+                tatib=extra, item_type=tatib.TataIbadahItemType.TEXT,
+                title='Bagian %02d' % n, text='Isi ibadah %02d' % n, order_number=1)
+        self.big = tatib.TataIbadah.objects.create(
+            name='Susunan Panjang', date=date(2026, 6, 7), is_active=True)
+        for n in range(1, 41):
+            tatib.TataIbadahItem.objects.create(
+                tatib=self.big, item_type=tatib.TataIbadahItemType.TEXT,
+                title='Bagian %02d' % n, text='Isi bagian %02d' % n, order_number=n)
 
         self._playwright = sync_playwright().start()
         try:
@@ -258,3 +280,165 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(sort).to_have_attribute('data-order', 'title')
         sort.click()
         expect(rows.first).to_have_attribute('data-t', 'Zebra')
+
+    # --- sidebar reveals (owner review round 2) ---
+
+    def _settle_reveal(self, page):
+        """Wait for the reveal to start and its travel (plus the settle pass) to end."""
+        try:
+            page.wait_for_function(
+                "document.documentElement.dataset.scrollAnim === 'on'", timeout=2500)
+        except Exception:
+            pass
+        page.wait_for_function(
+            "document.documentElement.dataset.scrollAnim !== 'on'", timeout=8000)
+
+    def _at_edge(self, page, body_sel):
+        return page.evaluate(
+            """(sel) => {
+              const b = document.querySelector(sel);
+              return b.scrollTop <= 2 || b.scrollTop >= b.scrollHeight - b.clientHeight - 2;
+            }""", body_sel)
+
+    def _row_state(self, page, body_sel, row_sel, match=None):
+        """Centre offset (px), visibility and flash state of a list row."""
+        return page.evaluate(
+            """([bodySel, rowSel, match]) => {
+              const body = document.querySelector(bodySel);
+              const b = body.getBoundingClientRect();
+              const rows = Array.from(document.querySelectorAll(rowSel));
+              const row = match
+                ? rows.find(r => r.dataset.i === match || r.dataset.name === match)
+                : rows.find(r => r.getAttribute('aria-current') === 'true');
+              if (!row) return null;
+              const rr = row.getBoundingClientRect();
+              return {delta: Math.round((rr.top + rr.height / 2) - (b.top + b.height / 2)),
+                      visible: rr.top >= b.top - 1 && rr.bottom <= b.bottom + 1,
+                      flashed: row.classList.contains('tatib__flash')};
+            }""", [body_sel, row_sel, match])
+
+    def test_song_result_centres_the_sidebar_row(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        self._search(page, 'Lagu 17')
+        row = page.locator('.result-group[data-kind="songs"] .result-row').first
+        expect(row).to_contain_text('Lagu 17')
+        row.click()
+        expect(page.locator('html')).to_have_attribute('data-read', 'on')
+        self._settle_reveal(page)
+        state = self._row_state(page, '#chBody', '#chList .songrow')
+        self.assertIsNotNone(state, 'no current song row')
+        self.assertTrue(state['visible'], f'row not visible: {state}')
+        if not self._at_edge(page, '#chBody'):
+            self.assertLessEqual(abs(state['delta']), 30, f'row not centred: {state}')
+
+    def test_tata_ibadah_service_result_centres_the_service_row(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        self._search(page, 'Ibadah 07')
+        page.locator('.result-group[data-kind="tatib"] .result-row').first.click()
+        expect(page.locator('html')).to_have_attribute('data-read', 'on')
+        self._settle_reveal(page)
+        state = self._row_state(page, '#panelBody', '#panelBody .book')
+        self.assertIsNotNone(state, 'no current service row')
+        self.assertTrue(state['visible'], f'service row not visible: {state}')
+        if not self._at_edge(page, '#panelBody'):
+            self.assertLessEqual(abs(state['delta']), 40, f'service row not centred: {state}')
+
+    def test_tata_ibadah_item_result_centres_and_flashes_the_contents_row(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        self._search(page, 'Bagian 25')
+        page.wait_for_function(
+            "document.getElementById('searchStatus') && "
+            "document.getElementById('searchStatus').textContent.includes('Bagian 25')")
+        rows = page.locator('.result-group[data-kind="tatib"] .result-row')
+        expect(rows.first).to_be_visible()
+        target, anchor = None, None
+        for index in range(rows.count()):
+            href = rows.nth(index).get_attribute('href') or ''
+            if '#ti-' in href:
+                target, anchor = rows.nth(index), href.split('#ti-')[-1]
+                break
+        self.assertIsNotNone(target, 'no item-level Tata Ibadah result')
+        target.click()
+        expect(page.locator('html')).to_have_attribute('data-read', 'on')
+        self._settle_reveal(page)
+        state = self._row_state(page, '#chBody', '#chList .songrow', anchor)
+        self.assertIsNotNone(state, f'contents row {anchor} not found')
+        self.assertTrue(state['flashed'], 'the contents quicklink was not flashed')
+        self.assertTrue(state['visible'], f'contents row not visible: {state}')
+        if not self._at_edge(page, '#chBody'):
+            self.assertLessEqual(abs(state['delta']), 30, f'contents row not centred: {state}')
+        service = self._row_state(page, '#panelBody', '#panelBody .book')
+        self.assertTrue(service['visible'], 'the service row was not revealed')
+
+    def test_sidebar_open_centres_the_row_shown_on_stage(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.id, 20]))
+        expect(page.locator('#chList .ch-num[data-n="20"]')).to_have_attribute('aria-current', 'true')
+        page.locator('#chCollapse').click()
+        page.locator('.rail [data-panel="alkitab"]').click()      # close both levels
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+        page.locator('.rail [data-panel="alkitab"]').click()      # reopen -> restore + reveal
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        self._settle_reveal(page)
+        state = self._row_state(page, '#chBody', '#chList .ch-num')
+        self.assertIsNotNone(state, 'no current chapter row')
+        self.assertTrue(state['visible'], f'chapter row not visible: {state}')
+        self.assertLessEqual(abs(state['delta']), 30, f'chapter row not centred: {state}')
+
+    def test_reveal_travel_is_animated(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.id, 20]))
+        page.locator('#chCollapse').click()
+        page.locator('.rail [data-panel="alkitab"]').click()      # close both levels
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+        out = page.evaluate("""() => new Promise(resolve => {
+          const body = document.getElementById('chBody');
+          body.scrollTop = 0;
+          const seen = [];
+          let flag = false;
+          document.querySelector('.rail [data-panel="alkitab"]').click();
+          const t0 = performance.now();
+          function tick() {
+            seen.push(body.scrollTop);
+            if (document.documentElement.dataset.scrollAnim === 'on') flag = true;
+            if (performance.now() - t0 < 1200) requestAnimationFrame(tick);
+            else resolve({distinct: new Set(seen).size, flag: flag, last: seen[seen.length - 1]});
+          }
+          requestAnimationFrame(tick);
+        })""")
+        self.assertTrue(out['flag'], 'the reveal never marked itself as animating')
+        self.assertGreater(out['distinct'], 4, f'the reveal jumped instead of travelling: {out}')
+
+    def test_search_state_survives_sidebar_browsing(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        self._search(page, 'kasih')
+        page.wait_for_selector('#searchStatus')
+        for _ in range(3):                       # make the result page tall enough to scroll
+            more = page.locator('.result-more')
+            if not more.count():
+                break
+            more.first.click()
+            page.wait_for_timeout(250)
+        page.evaluate('window.scrollTo(0, 400)')
+        page.wait_for_timeout(150)
+        offset = page.evaluate('window.scrollY')
+        self.assertGreater(offset, 0, 'the result page did not scroll')
+        # leave through the sidebars, never through a result
+        page.locator('.rail [data-panel="alkitab"]').click()
+        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+        page.locator('#chList .ch-num').nth(4).click()
+        page.wait_for_function("document.documentElement.dataset.read === 'on'")
+        stored = page.evaluate("localStorage.getItem('gkps-search')")
+        self.assertTrue(stored.startswith(reverse('web-search') + '?q=kasih'), stored)
+        page.locator('#railSearch').click()
+        page.wait_for_selector('#searchStatus')
+        page.wait_for_timeout(250)
+        expect(page.get_by_text('Results for').first).to_be_visible()
+        resumed = page.evaluate('window.scrollY')
+        self.assertGreater(resumed, 100, f'the result set was not resumed at an offset: {resumed}')
+        self.assertLessEqual(resumed, offset)
+        self.assertGreaterEqual(resumed, offset - 60, f'resumed far from the remembered offset: {resumed} vs {offset}')
