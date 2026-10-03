@@ -61,12 +61,19 @@ overlay growing its box, a blank line holding one line alone). A **project butto
 Ibadah opens the projector in a new tab for that Tata Ibadah, together with the **jump-to-it**
 controls on scripture and song entries.
 
-Display mode lives on the server, not in a browser tab: one record saying which Tata Ibadah is on
-screen, which entry, and whether it is on. Every tab reads it, so a second tab is in the same
-mode; the entry write endpoints refuse while the Tata Ibadah they target is displaying (the Tata
-Ibadah's own fields stay writable — they are not on screen); and the project button becomes Stop
-projecting and Update the current state. The projector learns of changes by polling that record —
-no new channel to share with the old docks, and nothing for them to hear.
+Display mode lives in the browser that started it, shared across its tabs over its own
+`BroadcastChannel`, and nowhere else — deliberately, so several laptops can project different
+things to different screens. One Tata Ibadah at a time within a browser; another browser is
+unaffected. While one is displaying, that browser's tabs refuse entry writes (adds, edits,
+reorders, deletes) while the Tata Ibadah's own fields stay writable, and the project button
+becomes Stop projecting and Update the current state. The endpoints are untouched: the lock is
+the shell declining an action, not a server rule, which is also what keeps the compatibility
+promise intact.
+
+The OBS overlay is deliberately not in this slice: inside OBS the channel is a different browser
+process from the operator's, so what drives the overlay needs an answer of its own. The
+projector page — which the project button opens in the operator's own browser, where the channel
+does reach — is the whole of this version's display.
 
 Tests: rendering per kind on both pages, the two-line and blank-line rules, prev/next/toggle,
 one Tata Ibadah at a time, the entry-write refusal in a second tab, the stop and update buttons,

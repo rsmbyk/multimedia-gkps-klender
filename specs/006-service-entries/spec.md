@@ -70,7 +70,8 @@ This is an addition to the production app, not a replacement of it.
   scripts, own sync channel.
 - **A project button** on a Tata Ibadah in the reading app that opens the new projector in a new
   tab, showing that Tata Ibadah. On the projector: previous, next, and a toggle for on and off —
-  nothing more for this first version.
+  nothing more for this first version. The OBS overlay follows in a later slice on the same
+  browser channel, once the question of what drives it inside OBS is answered.
 - A **jump-to-it** control on a scripture entry and on a song entry, opening that passage or that
   song the way a search result does.
 - **Display mode**, held on the server and shared by every tab: at most one Tata Ibadah is being
@@ -107,12 +108,12 @@ This is an addition to the production app, not a replacement of it.
   Song: song, and a non-empty set of included verse numbers.
 - **Dropdowns come from the data.** Chapters are the book's chapter count, verses are that
   chapter's verses. Selecting a book or a chapter resets the fields below it to 1.
-- **A song entry follows its song.** A new song entry shows every verse, and what it shows is
-  resolved from the song when it is displayed: change a song's lyrics and the entry follows.
-  What the operator can set is which verses to *leave out*, and that is what is stored — so a
-  verse added to the song later appears in the service, and an excluded one stays excluded. At
-  least one verse must remain included. The control's label reads "all verses" when nothing is
-  excluded, otherwise the verses it will show.
+- **A song entry fixes which verses it shows.** A new song entry includes all of the song's
+  verses at that moment, and that list of numbers is what is stored. A verse added to the song
+  later does *not* appear in a prepared service — it has to be added to the entry deliberately.
+  What the song *says* is still resolved live, so a lyric edit reaches every service that uses
+  it. At least one verse must stay included; the control reads "all verses" when every verse is
+  included, otherwise it names the ones that are.
 - **A deleted song is still a working reference.** Songs, songbooks and verses are soft-deleted:
   the row stays, normal lists stop offering it, and a service entry that refers to it keeps
   resolving what it can and says its target was deleted, so the operator can see and fix the
@@ -125,11 +126,17 @@ This is an addition to the production app, not a replacement of it.
   Tata Ibadah source already renders: a text entry is its own text; a scripture entry is the
   passage as the app already cites it; a song entry is the selected verses as the app already
   formats lyrics; a section break is its label with no body.
-- **One Tata Ibadah on screen at a time.** The display state lives on the server — which Tata
-  Ibadah, which entry, and whether it is on — so every tab and the projector agree, and a second
-  tab is in the same mode as the first. Starting another Tata Ibadah's projection replaces the
-  first. While a Tata Ibadah is being displayed, entry writes against it are refused by the
-  server, not merely hidden in the page.
+- **The display state lives in the browser that started it, and nowhere else.** It is shared
+  across that browser's tabs over a `BroadcastChannel`, and deliberately not stored on the
+  server: several laptops project to different screens — one for OBS, several for displays — and
+  each has to be able to show something different. No server record is added for any of this.
+- **One Tata Ibadah at a time, per browser.** Starting another Tata Ibadah's projection in the
+  same browser replaces the first. Another browser is untouched and may show something else.
+- **The entry lock belongs to the browser that is displaying.** While a Tata Ibadah is on screen
+  there, none of its tabs will add, edit, reorder or delete an entry, while the Tata Ibadah's own
+  fields stay editable (they are not on screen). The endpoints keep their normal validation: this
+  is the shell refusing an action, not a server-side restriction, so the current API is exactly
+  as it is today.
 - **The display is only pushed when the operator shows it.** Showing an entry is an explicit
   action; reordering never re-pushes what is on screen, and the display keeps showing what it was
   told to until the operator shows something else or presses Update.
@@ -184,17 +191,24 @@ This is an addition to the production app, not a replacement of it.
   the font to the screen and the overlay growing its box to the content
 - **And** a blank line in a body holds the screen with one line at a time
 
-### Scenario: Display mode blocks entry edits everywhere
+### Scenario: Display mode blocks entry edits across that browser's tabs
 
 - **Given** a Tata Ibadah is being displayed from one tab
 - **Then** its project button reads Stop projecting and Update the current state
-- **When** another tab is opened, or the same Tata Ibadah is opened elsewhere
-- **Then** the display mode is already on for it, and adding, editing, reordering or deleting an
-  entry is refused in every tab, while the Tata Ibadah's own fields stay editable
+- **When** the same browser opens the app in another tab
+- **Then** the display mode is already on there too, and adding, editing, reordering or deleting an
+  entry is refused in both, while the Tata Ibadah's own fields stay editable
 
-### Scenario: Only one Tata Ibadah at a time
+### Scenario: Two laptops, two screens, two different things
 
-- **Given** one Tata Ibadah is being displayed
+- **Given** one laptop is projecting a Tata Ibadah
+- **When** a second laptop opens the app and projects a different Tata Ibadah
+- **Then** each shows its own, neither disturbs the other, and neither laptop is locked by the
+  other's display mode
+
+### Scenario: Only one Tata Ibadah at a time, per browser
+
+- **Given** one Tata Ibadah is being displayed in this browser
 - **When** another Tata Ibadah's project button is used
 - **Then** the first stops being displayed and the second takes its place
 
@@ -232,14 +246,14 @@ This is an addition to the production app, not a replacement of it.
 2. **The old rows.** Migrating existing `TataIbadahItem` rows into entries is deferred to a
    separate slice after this one lands, as you said. Until then both models exist side by side
    and a Tata Ibadah may be shown by either path.
-3. **Read your "always sync" as: exclusions are stored, not inclusions.** A new verse in the song
-   appears in the service; a verse the operator unchecked stays out. If you meant the opposite (a
-   frozen list of verses, so changing a song never changes a prepared service), say so — it is a
-   one-field difference, but it decides whether stored services follow live edits.
+3. **The verses a song entry shows are stored as the numbers included, not the numbers left
+   out** (your correction). A verse added to the song later does not appear in a prepared
+   service; the operator adds it deliberately. Resolved. ✔
 4. **Leaving with unsaved reordering** asks first, on the in-page switches (contents, another
-   Tata Ibadah, search) and on closing the tab (`beforeunload`). By "expensive to rebuild" I mean
-   the operator's work in assembling and ordering a service by hand, not anything the app
-   computes — if a service order is cheap to recreate, say so and I will drop the guard.
+   Tata Ibadah, search) and on closing the tab (`beforeunload`). Plainly, "expensive to rebuild"
+   meant: if you rearrange twelve items and then click away without saving, you do that
+   rearranging again by hand. The confirmation exists so that click cannot silently throw the
+   work away. If you would rather it never ask, say so and I will drop it.
 5. **A running change** to an entry that is currently on screen: the display keeps showing what
    it was told to show until the operator shows something else — the order change alone never
    re-pushes the display.

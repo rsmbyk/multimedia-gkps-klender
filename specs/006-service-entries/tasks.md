@@ -33,13 +33,15 @@
 
 - [ ] Red: each kind rendered on the new projector and overlay; two lines per body; the
       blank-line rule; prev/next/toggle
-- [ ] Red: entry writes refused while the Tata Ibadah is displaying, in a second tab too, while
-      the Tata Ibadah's own fields stay writable; one Tata Ibadah at a time
+- [ ] Red: entry writes refused while the Tata Ibadah is displaying in this browser, in its other
+      tabs too, while the Tata Ibadah's own fields stay writable; one Tata Ibadah at a time in
+      this browser; a second browser unaffected
 - [ ] Red: the project button becomes Stop projecting and Update the current state; Update
       re-reads a song whose lyrics changed
-- [ ] Green: the server-held display record, the hand-written pages on the reading app's tokens,
-      the project button, the jump-to controls on scripture and song entries
+- [ ] Green: the in-browser display state on its own channel, the hand-written pages on the
+      reading app's tokens, the project button, the jump-to controls on scripture and song entries
 - [ ] e2e: a whole service driven through the new projector, plus the two-tab lock
+- [ ] Deferred: the OBS overlay, which needs its own answer for reaching inside OBS
 
 ## Slice 5 — soft deletion
 
