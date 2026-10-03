@@ -911,7 +911,8 @@
     var fresh = doc.documentElement.dataset;
     var kind = opts.kind || 'lists';
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
-      || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results';
+      || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results'
+      || kind === 'refresh';
 
     /* shared first column: books / songbooks / services */
     panelTitleEl.textContent = txt(doc, '#panelTitle');
@@ -983,6 +984,37 @@
       root.dataset.ch = fresh.ch || root.dataset.ch;
     }
 
+    /* the sidebar add buttons live outside the swapped regions: keep their
+       label, kind and book in step with the section that just arrived */
+    var freshPanelAdd = doc.querySelector('#panelAdd');
+    var panelAdd = document.getElementById('panelAdd');
+    if (panelAdd) {
+      if (freshPanelAdd) {
+        panelAdd.dataset.editorOpen = freshPanelAdd.dataset.editorOpen || panelAdd.dataset.editorOpen;
+        if (freshPanelAdd.dataset.editorLabel) {
+          panelAdd.dataset.editorLabel = freshPanelAdd.dataset.editorLabel;
+          var addLabel = panelAdd.querySelector('.editor-add__label');
+          if (addLabel) addLabel.textContent = freshPanelAdd.dataset.editorLabel;
+        }
+        panelAdd.hidden = false;
+      } else {
+        panelAdd.hidden = true;
+      }
+    }
+    var freshSongAdd = doc.querySelector('#songAdd');
+    var songAdd = document.getElementById('songAdd');
+    if (songAdd) {
+      if (freshSongAdd) {
+        songAdd.dataset.editorBook = freshSongAdd.dataset.editorBook || '';
+        songAdd.disabled = freshSongAdd.hasAttribute('disabled');
+        if (songAdd.disabled) songAdd.title = 'Open a songbook first';
+        else songAdd.removeAttribute('title');
+        songAdd.hidden = false;
+      } else {
+        songAdd.hidden = true;
+      }
+    }
+
     bindPanelTiles();
     bindPanelTips();
     bindChRows();
@@ -1030,6 +1062,18 @@
       revealCurrent(anchorFromUrl(url) || stageAnchor());
       var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
       if (target) revealSearchTarget(target);
+    }
+    if (kind === 'refresh' && opts.what) {
+      /* a save just closed its modal: show the row it touched */
+      var saved = chList.querySelector('[data-editor-id="' + opts.what + '"]')
+        || panelBody.querySelector('[data-editor-id="' + opts.what + '"]');
+      if (saved) {
+        var row = saved.closest('a') || saved;
+        var scroller = panelBody.contains(row) ? panelBody : chBody;
+        revealRow(row, scroller);
+        row.classList.add('row-flash');
+        saved.focus({ preventScroll: true });
+      }
     }
     if (kind === 'search') {
       window.scrollTo({ top: 0, behavior: 'auto' });
@@ -1149,6 +1193,13 @@
   railSearch.addEventListener('click', openSearch);
   var railLogo = document.querySelector('.rail__logo');
   if (railLogo) railLogo.addEventListener('click', openSearch);
+
+  /* A sidebar editor saved something: re-render the page's regions in place, so
+     every list, the panel selection and the reading stage agree again. */
+  document.addEventListener('editor:saved', function (event) {
+    navigate(window.location.pathname + window.location.search,
+             { kind: 'refresh', what: event.detail && event.detail.id });
+  });
 
   /* ---------- reveal search targets ---------- */
   function revealSearchTarget(target) {

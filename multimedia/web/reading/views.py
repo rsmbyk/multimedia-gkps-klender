@@ -18,14 +18,16 @@ import re
 from urllib.parse import quote
 
 from django.db.models import Count, F
-from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
+                         JsonResponse)
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.generic import TemplateView
 
 from multimedia.bible import models as bible_models
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
+from multimedia.web.reading import editors
 from multimedia.web.reading import search as search_lib
 
 TESTAMENTS = (('old', 'Perjanjian Lama'), ('new', 'Perjanjian Baru'))
@@ -81,6 +83,48 @@ def _shell(section, nav, ch, read_on, home_state, ch_mode='chapter'):
     }
 
 
+# ---------- sidebar editors (spec 005) ----------
+# GET renders the modal's form (empty, or prefilled when editing); POST validates
+# and saves, answering JSON on success and the re-rendered form on error. Both are
+# server-authoritative: the rules hold even when the modal is bypassed.
+
+
+def _editor_fragment_context(kind, form, pk):
+    kwargs = {'kind': kind, 'pk': pk} if pk else {'kind': kind}
+    return {
+        'form': form,
+        'kind': kind,
+        'title': editors.form_title(kind, pk),
+        'save_url': reverse('web-editor-save' if pk else 'web-editor-save-new', kwargs=kwargs),
+        'target_id': pk or '',
+    }
+
+
+def editor_form(request, kind, pk=None):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    form, _target = editors.build_form(kind, request, pk)
+    if form is None:
+        raise Http404('Not editable.')
+    return render(request, 'reading/_editor_form.html',
+                  _editor_fragment_context(kind, form, pk))
+
+
+def editor_save(request, kind, pk=None):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    form, target = editors.build_form(kind, request, pk, data=request.POST)
+    if form is None:
+        raise Http404('Not editable.')
+    if not form.is_valid():
+        return render(request, 'reading/_editor_form.html',
+                      _editor_fragment_context(kind, form, pk), status=400)
+    saved = editors.save_form(kind, form, target)
+    return JsonResponse({'ok': True, 'id': saved.pk})
+
+
 def _books_groups(selected_id=None):
     info_map = search_lib.bible_book_index()
     groups = []
@@ -107,7 +151,8 @@ def _songbooks(selected_id=None):
     books = (song_models.Book.objects.annotate(song_total=Count('song'))
              .order_by('-song_total', 'name', 'lang'))
     return [{'id': book.pk, 'name': book.name, 'short': book.short_name or '',
-             'current': book.pk == selected_id} for book in books]
+             'hymn': book.is_hymn_book, 'current': book.pk == selected_id}
+            for book in books]
 
 
 def _song_rows(book, current_id=None):
@@ -446,6 +491,8 @@ class BookDetailView(TemplateView):
             'show_song_sort': not book.is_hymn_book,
             'ch_title': f'Song list — {book.name}',
             'book_name': book.name,
+            'editor_book_id': book.pk,
+            'book_is_hymn': book.is_hymn_book,
         })
         return context
 
@@ -466,6 +513,7 @@ class SongDetailView(TemplateView):
             citation = book.name
         verses = [verse.lyric for verse in song.verse_set.order_by('number')]
         context.update(_shell('kidung', 'open', 'open', True, 'reading', ch_mode='song'))
+        context.update({'editor_book_id': book.pk, 'book_is_hymn': book.is_hymn_book})
         context.update({
             'page_title': f'{citation} — GKPS Klender',
             'songbooks': _songbooks(book.pk),

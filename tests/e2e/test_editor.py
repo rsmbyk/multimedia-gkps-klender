@@ -1,0 +1,187 @@
+"""End-to-end tests for the sidebar editors (spec 005).
+
+Same runner and skip behaviour as the reading suite: Django's test runner via
+``StaticLiveServerTestCase``, skipped when Playwright or its browser is missing.
+"""
+
+import unittest
+from datetime import date
+
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.test import override_settings
+from django.urls import reverse
+
+from multimedia.songs import models as songs
+from multimedia.tatib import models as tatib
+
+try:
+    from playwright.sync_api import expect, sync_playwright
+
+    HAS_PLAYWRIGHT = True
+except ImportError:  # pragma: no cover - depends on environment
+    HAS_PLAYWRIGHT = False
+
+
+@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class EditorE2ETests(StaticLiveServerTestCase):
+    def setUp(self):
+        super().setUp()
+        self.lang = songs.Language.objects.create(name='Indonesian')
+        self.hymn = songs.Book.objects.create(
+            lang=self.lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        self.hymn_song = songs.Song.objects.create(
+            book=self.hymn, number=12, title='Di Waktu Pagi', key='c')
+        self.book = songs.Book.objects.create(
+            lang=self.lang, name='Kidung Harian', short_name='KH', is_hymn_book=False)
+        self.song = songs.Song.objects.create(book=self.book, title='Alpha')
+        self.service = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.service, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Pembukaan', text='KJ 120', order_number=1)
+        self._playwright = sync_playwright().start()
+        try:
+            self.browser = self._playwright.chromium.launch()
+        except Exception as error:  # pragma: no cover - depends on environment
+            self._playwright.stop()
+            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
+
+    def tearDown(self):
+        self._close_browser()
+        super().tearDown()
+
+    def _close_browser(self):
+        """Playwright's loop must not overlap Django's database access, so any test
+        that asserts against the database closes the browser first."""
+        if self._playwright is not None:
+            self.browser.close()
+            self._playwright.stop()
+            self._playwright = None
+
+    def _page(self, url):
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        page.goto(self.live_server_url + url)
+        page.wait_for_load_state('networkidle')
+        return page
+
+    def _fill(self, page, name, value):
+        widget = page.locator(f'[name="{name}"]')
+        if widget.evaluate('el => el.tagName') == 'SELECT':
+            page.select_option(f'[name="{name}"]', value)
+        else:
+            page.fill(f'[name="{name}"]', value)
+
+    def _save(self, page, **fields):
+        for name, value in fields.items():
+            self._fill(page, name, value)
+        page.click('.editor__save')
+        # a <dialog> is never detached; it just loses its open attribute
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+
+    # --- the add buttons ---
+
+    def test_add_songbook_through_the_modal(self):
+        page = self._page(reverse('web-books'))
+        expect(page.locator('dialog[open]')).to_have_count(0)
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('New songbook')
+        self._save(page, name='Kidung Sekolah', short_name='KS',
+                   lang=str(self.lang.pk))
+        expect(page.locator('dialog[open]')).to_have_count(0)
+        expect(page.locator('#panelBody .book').filter(has_text='Kidung Sekolah')).to_be_visible()
+        self._close_browser()
+        self.assertTrue(songs.Book.objects.filter(name='Kidung Sekolah').exists())
+
+    def test_add_song_to_the_open_songbook(self):
+        page = self._page(reverse('web-book', args=[self.book.pk]))
+        expect(page.locator('#songAdd')).to_be_enabled()
+        page.click('#songAdd')
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('New song')
+        self._save(page, title='Lagu Baru', number='', sub_number='', key='')
+        expect(page.locator('#chList .songrow').filter(has_text='Lagu Baru')).to_be_visible()
+        self._close_browser()
+        self.assertTrue(songs.Song.objects.filter(book=self.book, title='Lagu Baru').exists())
+
+    def test_add_tatib_with_its_first_section(self):
+        page = self._page(reverse('web-tatib'))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('New Tata Ibadah')
+        self._save(page, name='Ibadah Baru', date='2026-11-01', first_title='Pembukaan',
+                   first_text='KJ 1')
+        expect(page.locator('#panelBody .book').filter(has_text='Ibadah Baru')).to_be_visible()
+        self._close_browser()
+        service = tatib.TataIbadah.objects.get(name='Ibadah Baru')
+        self.assertEqual(service.tataibadahitem_set.count(), 1)
+
+    # --- editing ---
+
+    def test_edit_a_song_row_from_its_hover_control(self):
+        page = self._page(reverse('web-book', args=[self.book.pk]))
+        row = page.locator(f'li:has(.songrow[data-i="{self.song.pk}"])')
+        control = row.locator('.row-edit')
+        expect(control).to_have_css('opacity', '0')          # out of the way when idle
+        self.assertEqual(control.evaluate('el => getComputedStyle(el).pointerEvents'), 'none')
+        row.hover()
+        expect(control).to_have_css('opacity', '1')
+        control.click()
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('Edit song')
+        expect(page.locator('[name="title"]')).to_have_value('Alpha')
+        self._save(page, title='Alpha Baru')
+        expect(page.locator('#chList .songrow').filter(has_text='Alpha Baru')).to_be_visible()
+        self._close_browser()
+        self.song.refresh_from_db()
+        self.assertEqual(self.song.title, 'Alpha Baru')
+
+    def test_edit_a_tatib_row(self):
+        page = self._page(reverse('web-tatib'))
+        row = page.locator(f'li:has(.book[data-name="{self.service.pk}"])')
+        row.hover()
+        row.locator('.row-edit').click()
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('Edit Tata Ibadah')
+        expect(page.locator('[name="name"]')).to_have_value('Ibadah Minggu III')
+        self._save(page, name='Ibadah Minggu IV')
+        expect(page.locator('#panelBody .book').filter(has_text='Ibadah Minggu IV')).to_be_visible()
+        self._close_browser()
+        self.service.refresh_from_db()
+        self.assertEqual(self.service.name, 'Ibadah Minggu IV')
+
+    def test_hymn_songbooks_and_their_songs_offer_no_control(self):
+        page = self._page(reverse('web-book', args=[self.hymn.pk]))
+        self.assertEqual(page.locator('#chList .row-edit').count(), 0)   # its songs
+        hymn_panel = self._page(reverse('web-books'))
+        hymn_row = hymn_panel.locator(f'li:has(.book[data-name="{self.hymn.pk}"])')
+        self.assertEqual(hymn_row.locator('.row-edit').count(), 0)
+        free_row = hymn_panel.locator(f'li:has(.book[data-name="{self.book.pk}"])')
+        self.assertEqual(free_row.locator('.row-edit').count(), 1)
+
+    def test_validation_error_stays_in_the_modal(self):
+        page = self._page(reverse('web-books'))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        self._fill(page, 'name', 'Bentrok')
+        self._fill(page, 'short_name', 'KH')                 # already used
+        self._fill(page, 'lang', str(self.lang.pk))
+        page.click('.editor__save')
+        expect(page.locator('dialog[open]')).to_have_count(1)  # still open
+        expect(page.locator('.editor__error')).to_contain_text('already been used')
+        expect(page.locator('[name="name"]')).to_have_value('Bentrok')
+        self._close_browser()
+        self.assertFalse(songs.Book.objects.filter(name='Bentrok').exists())
+
+    def test_the_shell_survives_a_save(self):
+        page = self._page(reverse('web-song', args=[self.song.pk]))
+        start = page.url
+        page.click('#songAdd')
+        page.wait_for_selector('dialog[open]')
+        self._save(page, title='Lagu Kedua', number='', sub_number='', key='')
+        expect(page.locator('dialog[open]')).to_have_count(0)
+        self.assertEqual(page.url, start)                      # one page, no reload
+        expect(page.locator('.read__title')).to_contain_text('Alpha')   # the stage kept reading
+        self._close_browser()
+        self.assertTrue(songs.Song.objects.filter(title='Lagu Kedua').exists())

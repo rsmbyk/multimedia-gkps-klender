@@ -1,0 +1,23 @@
+{% comment %}The modal's body: a form for one record, rendered on its own so the
+modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
+<div class="editor__body" data-kind="{{ kind }}" data-target="{{ target_id }}">
+  <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
+  <form class="editor__form" method="post" action="{{ save_url }}">
+    {% csrf_token %}
+    {% for field in form %}{% if field.is_hidden %}{{ field }}{% else %}
+    <div class="editor__field{% if field.errors %} is-invalid{% endif %}">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<p class="editor__help">{{ field.help_text }}</p>{% endif %}
+      {% for error in field.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    {% endif %}{% endfor %}
+    {% for error in form.non_field_errors %}
+    <p class="editor__error" role="alert">{{ error }}</p>
+    {% endfor %}
+    <div class="editor__actions">
+      <button class="editor__save" type="submit">Save</button>
+      <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+    </div>
+  </form>
+</div>

@@ -36,6 +36,12 @@ ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='*', cast=Csv())
 # home stays reachable at /home/. Toggle with the MAINTENANCE_MODE env var.
 MAINTENANCE_MODE = config('MAINTENANCE_MODE', default=True, cast=bool)
 
+# Sidebar editors (spec 005). The owner's decision is that anyone may write to the
+# corpus from the reading sidebars, so this defaults to False. Setting it True
+# restricts the controls *and* the write endpoints to signed-in staff, without any
+# change to the UI code.
+SIDEBAR_EDITORS_REQUIRE_LOGIN = config('SIDEBAR_EDITORS_REQUIRE_LOGIN', default=False, cast=bool)
+
 
 # Application definition
 
@@ -81,6 +87,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'multimedia.web.reading.context_processors.sidebar_editors',
             ],
         },
     },

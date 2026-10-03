@@ -1,6 +1,7 @@
 from datetime import date
 
-from django.test import TestCase, override_settings
+from django.contrib.auth.models import User
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from multimedia.bible import models as bible
@@ -213,3 +214,194 @@ class MaintenanceModeTests(TestCase):
         for url in ('/songs/', '/manage/'):
             with self.subTest(url=url):
                 self.assertNotEqual(self.client.get(url).status_code, 503)
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class EditorViewTests(TestCase):
+    """Sidebar editors (spec 005): the forms, the endpoints, and the two gates."""
+
+    @classmethod
+    def setUpTestData(cls):
+        lang = songs.Language.objects.create(name='Indonesian')
+        cls.nkb = songs.Book.objects.create(
+            lang=lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        songs.Song.objects.create(book=cls.nkb, number=12, title='Di Waktu Pagi')
+        cls.harian = songs.Book.objects.create(
+            lang=lang, name='Kidung Harian', short_name='KH', is_hymn_book=False)
+        cls.service = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
+        tatib.TataIbadahItem.objects.create(
+            tatib=cls.service, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Nyanyian Pembukaan', text='KJ 120', order_number=1)
+
+    def new_url(self, kind):
+        return reverse('web-editor-new', kwargs={'kind': kind})
+
+    def save_url(self, kind, pk=None):
+        if pk:
+            return reverse('web-editor-save', kwargs={'kind': kind, 'pk': pk})
+        return reverse('web-editor-save-new', kwargs={'kind': kind})
+
+    # --- the form fragment ---
+
+    def test_new_form_renders_every_field_with_csrf(self):
+        response = self.client.get(self.new_url('songbook'))
+        self.assertEqual(response.status_code, 200)
+        for field in ('name', 'short_name', 'lang', 'is_hymn_book'):
+            self.assertContains(response, 'name="%s"' % field)
+        self.assertContains(response, 'csrfmiddlewaretoken')
+        self.assertContains(response, 'New songbook')
+
+    def test_edit_form_is_prefilled(self):
+        response = self.client.get(
+            reverse('web-editor-edit', kwargs={'kind': 'songbook', 'pk': self.harian.pk}))
+        self.assertContains(response, 'value="Kidung Harian"')
+        self.assertContains(response, 'Edit songbook')
+
+    def test_tatib_edit_form_has_no_section_fields(self):
+        response = self.client.get(
+            reverse('web-editor-edit', kwargs={'kind': 'tatib', 'pk': self.service.pk}))
+        self.assertNotContains(response, 'first_title')
+
+    def test_unknown_kind_is_404(self):
+        self.assertEqual(self.client.get(self.new_url('bible')).status_code, 404)
+
+    # --- songbooks ---
+
+    def test_create_songbook(self):
+        response = self.client.post(self.save_url('songbook'), {
+            'name': 'Kidung Baru', 'short_name': 'KB', 'lang': self.harian.lang_id,
+            'is_hymn_book': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['ok'])
+        self.assertTrue(songs.Book.objects.filter(name='Kidung Baru', short_name='KB').exists())
+
+    def test_duplicate_short_name_is_refused(self):
+        response = self.client.post(self.save_url('songbook'), {
+            'name': 'Lain', 'short_name': 'KH', 'lang': self.harian.lang_id})
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'already been used', status_code=400)
+        self.assertFalse(songs.Book.objects.filter(name='Lain').exists())
+
+    def test_editing_a_songbook_keeps_its_own_short_name(self):
+        response = self.client.post(
+            self.save_url('songbook', self.harian.pk),
+            {'name': 'Kidung Harian Baru', 'short_name': 'KH', 'lang': self.harian.lang_id})
+        self.assertEqual(response.status_code, 200, response.content[:400])
+        self.harian.refresh_from_db()
+        self.assertEqual(self.harian.name, 'Kidung Harian Baru')
+
+    def test_hymn_songbook_cannot_be_edited(self):
+        self.assertEqual(self.client.get(reverse(
+            'web-editor-edit', kwargs={'kind': 'songbook', 'pk': self.nkb.pk})).status_code, 404)
+        self.assertEqual(self.client.post(self.save_url('songbook', self.nkb.pk), {
+            'name': 'Changed', 'short_name': 'NKB', 'lang': self.nkb.lang_id}).status_code, 404)
+
+    # --- songs ---
+
+    def test_create_song_in_the_open_songbook(self):
+        response = self.client.post(self.save_url('song'), {
+            'book': self.harian.pk, 'title': 'Lagu Baru', 'number': '', 'sub_number': '',
+            'key': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(songs.Song.objects.filter(book=self.harian, title='Lagu Baru').exists())
+
+    def test_a_hymn_needs_its_number(self):
+        response = self.client.post(self.save_url('song'), {
+            'book': self.nkb.pk, 'title': 'Hymn Baru', 'number': '', 'sub_number': '', 'key': ''})
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'needs a number', status_code=400)
+        self.assertFalse(songs.Song.objects.filter(title='Hymn Baru').exists())
+
+    def test_duplicate_song_number_is_refused(self):
+        response = self.client.post(self.save_url('song'), {
+            'book': self.nkb.pk, 'title': 'Hymn Lain', 'number': '12', 'sub_number': '', 'key': ''})
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'already taken', status_code=400)
+
+    def test_song_without_a_songbook_is_404(self):
+        self.assertEqual(self.client.get(self.new_url('song')).status_code, 404)
+
+    def test_a_hymn_song_cannot_be_edited(self):
+        song = songs.Song.objects.get(book=self.nkb, number=12)
+        self.assertEqual(self.client.get(reverse(
+            'web-editor-edit', kwargs={'kind': 'song', 'pk': song.pk})).status_code, 404)
+
+    def test_editing_a_free_song(self):
+        song = songs.Song.objects.create(book=self.harian, title='Alpha')
+        response = self.client.post(self.save_url('song', song.pk), {
+            'title': 'Alpha Baru', 'number': '', 'sub_number': '', 'key': 'c'})
+        self.assertEqual(response.status_code, 200, response.content[:400])
+        song.refresh_from_db()
+        self.assertEqual(song.title, 'Alpha Baru')
+
+    # --- Tata Ibadah ---
+
+    def test_create_tatib_with_its_first_section(self):
+        response = self.client.post(self.save_url('tatib'), {
+            'name': 'Ibadah Baru', 'date': '2026-11-01', 'is_active': 'on',
+            'first_title': 'Pembukaan', 'first_text': 'KJ 1'})
+        self.assertEqual(response.status_code, 200)
+        service = tatib.TataIbadah.objects.get(name='Ibadah Baru')
+        self.assertEqual(service.tataibadahitem_set.count(), 1)
+        self.assertEqual(service.tataibadahitem_set.first().order_number, 1)
+
+    def test_create_tatib_without_a_section_still_saves(self):
+        self.client.post(self.save_url('tatib'), {'name': 'Tanpa Bagian', 'date': ''})
+        service = tatib.TataIbadah.objects.get(name='Tanpa Bagian')
+        self.assertEqual(service.tataibadahitem_set.count(), 0)
+
+    def test_edit_tatib(self):
+        response = self.client.post(self.save_url('tatib', self.service.pk), {
+            'name': 'Ibadah Minggu IV', 'date': '2026-08-30', 'is_active': 'on'})
+        self.assertEqual(response.status_code, 200, response.content[:400])
+        self.service.refresh_from_db()
+        self.assertEqual(self.service.name, 'Ibadah Minggu IV')
+
+    # --- the gates ---
+
+    def test_csrf_is_enforced(self):
+        strict = Client(enforce_csrf_checks=True)
+        response = strict.post(self.save_url('songbook'), {
+            'name': 'X', 'short_name': 'X', 'lang': self.harian.lang_id})
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(songs.Book.objects.filter(name='X').exists())
+
+    def test_endpoints_are_post_only(self):
+        response = self.client.get(self.save_url('tatib'))
+        self.assertEqual(response.status_code, 405)
+
+    def test_login_hook_hides_the_controls_and_refuses_writes(self):
+        with self.settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True):
+            page = self.client.get(reverse('web-tatib'))
+            self.assertContains(page, 'data-panel="tatib"')       # the sidebar itself
+            self.assertNotContains(page, 'editor-add')
+            self.assertNotContains(page, 'row-edit')
+            self.assertEqual(self.client.get(self.new_url('tatib')).status_code, 403)
+            self.assertEqual(self.client.post(self.save_url('tatib'), {'name': 'X'}).status_code, 403)
+            self.assertFalse(tatib.TataIbadah.objects.filter(name='X').exists())
+
+    def test_login_hook_lets_staff_through(self):
+        staff = User.objects.create_user('editor', password='secret', is_staff=True)
+        self.client.force_login(staff)
+        with self.settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True):
+            self.assertContains(self.client.get(reverse('web-tatib')), 'editor-add')
+        self.assertEqual(self.client.get(self.new_url('tatib')).status_code, 200)
+
+    # --- what the shell renders by default ---
+
+    def test_controls_appear_for_editable_rows_only(self):
+        free = self.client.get(reverse('web-book', args=[self.harian.pk]))
+        self.assertContains(free, 'data-editor-open="songbook"')
+        self.assertContains(free, 'data-editor-open="song"')
+        hymn = self.client.get(reverse('web-book', args=[self.nkb.pk]))
+        # no row control for its songs (the add button is allowed and carries no id)
+        self.assertNotContains(hymn, 'data-editor-open="song" data-editor-id')
+        self.assertNotContains(hymn, 'data-editor-id="%d"' % self.nkb.pk)  # its own row
+
+    def test_add_buttons_render_per_section(self):
+        self.assertContains(self.client.get(reverse('web-books')),
+                            'data-editor-open="songbook"')
+        self.assertContains(self.client.get(reverse('web-tatib')),
+                            'data-editor-open="tatib"')
+        self.assertNotContains(self.client.get(reverse('web-bible')), 'data-editor-open')

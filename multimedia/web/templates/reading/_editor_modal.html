@@ -1,0 +1,14 @@
+{% comment %}The one modal every sidebar editor opens; its body is fetched (spec
+005). A closed <dialog> renders nothing, so this costs the page no pixels.{% endcomment %}
+{% if editor_enabled %}
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle"
+        data-editor-new="{% url 'web-editor-new' 'KIND' %}"
+        data-editor-edit="{% url 'web-editor-edit' 'KIND' 0 %}">
+  <button class="editor__close" type="button" data-editor-close aria-label="Close">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+  </button>
+  <div class="editor__content" id="editorContent" aria-live="polite"></div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+</dialog>
+{% endif %}
