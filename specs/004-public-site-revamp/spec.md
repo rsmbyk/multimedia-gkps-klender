@@ -420,9 +420,10 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   tatib, maintenance); `static/styles/design/{tokens,components}.css`;
   `static/web/reading.js` (new)
 - Parity (local, 2026-10-03): the mockup's full browser-check suite re-run against the
-  implementation — **119/119 green** (geometry, copy, behavior, widths 320–1440, plus the
+  implementation — **122/122 green** (geometry, copy, behavior, widths 320–1440, plus the
   review-round checks: in-place navigation under one URL, section switches preserving the
   reading stage, sidebar picks not scrolling their lists, short queries searching) — plus a
   segmented pixel comparison at 1440: home and results byte-identical; bible, song, and
-  tatib within 0.00004 RMSE (antialiasing level). Deliberate deviations are listed above and
-  in the pull request.
+  tatib within 0.000009 RMSE below the toolbar band, whose only difference is the collapse
+  glyph (band 0.00919 — the named deviation). Deliberate deviations are listed above and in
+  the pull request.
