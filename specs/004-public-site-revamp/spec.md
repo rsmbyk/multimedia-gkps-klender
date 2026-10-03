@@ -179,6 +179,12 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   centred like a book or songbook, and the contents row — a quicklink that is never selected —
   is **flashed** (the tint holds half of a 2.6 s animation) so the item in view is
   identifiable.
+- **Search and filter fields carry a clear control.** Every search/filter input (the global
+  search, the panel filter, the list filter) has a small × at its right edge, shown only while
+  the field holds something; activating it empties the field, re-runs what the field drives
+  (the filter re-applies, the result set stays), and leaves focus in the field. Its accessible
+  name names what it clears, derived from the field's own label (*Clear books*, *Clear
+  songbooks*, *Clear songs*, *Clear Tata Ibadah*, *Clear search*).
 - **Song lists sort by recency or alphabetically.** A non-hymn songbook (`is_hymn_book`
   false) shows a sort control in the chapters toolbar — *recently updated* (default, by
   `Song.modified`, newest first) ↔ *alphabetical* — applied in place without a reload. Hymn
@@ -450,6 +456,7 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   segmented pixel comparison at 1440: home and results byte-identical; bible, song, and
   tatib and song byte-identical below the toolbar band, bible within 0.0026 there (a scroll
   indicator left by the reveal path), whose only toolbar difference is the collapse glyph
-  glyph (band 0.0092 — the named deviation). **Owner-requested deviation (round 3):** the
-  mockup's logo starts a fresh search; here the logo takes the same route as the search icon.
+  glyph (band 0.0092 — the named deviation). **Owner-requested deviations:** (round 3) the
+  mockup's logo starts a fresh search, here the logo takes the same route as the search icon;
+  (round 5) the clear control inside search and filter fields, which the mockup does not have.
   Deliberate deviations are listed above and in the pull request.

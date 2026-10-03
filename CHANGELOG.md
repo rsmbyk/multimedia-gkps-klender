@@ -46,6 +46,8 @@ Pre-adoption history in the legacy per-version format is archived in
   older build could leave a reading page there) is discarded instead of being opened.
 - The brand logo now takes the same route as the search icon — back to the last result set
   rather than starting a fresh search.
+- Every search and filter field has a clear (×) control, shown while the field holds a value;
+  clearing re-runs the filter (or keeps the result set) and returns focus to the field.
 - The last result set survives browsing away through the sidebars, and returning to it
   resumes the scroll offset it was left at.
 - Search behaviors: any non-empty query searches — the minimum length and its inline

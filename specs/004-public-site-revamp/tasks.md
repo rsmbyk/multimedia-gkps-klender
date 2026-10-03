@@ -77,6 +77,18 @@ DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test \
 DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test tests.e2e.test_reading
 ```
 
+## Review round 5 (owner, 2026-10-03)
+
+- Every search and filter field gained a clear (×) control: hidden while the field is empty,
+  it empties the field, re-runs what the field drives (filters re-apply, the result set stays)
+  and returns focus to the field. The accessible name follows the panel's own label, so it
+  reads *Clear books / songbooks / songs / Tata Ibadah / search* as the sidebar changes. The
+  fields' right padding grew to make room; the pinned field heights are unchanged and the
+  pixel comparison of home and the results page is still byte-identical.
+- A request for add/edit controls on these sidebars was raised at the same time; it is new
+  write capability (the site is read-only and the repo has no forms, no editor app and no
+  permission gate), so it is being drafted as its own spec before implementation.
+
 ## Review round 4 (owner, 2026-10-03)
 
 - The brand logo now takes the same route as the rail's Search icon: back to the last result

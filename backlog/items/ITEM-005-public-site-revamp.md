@@ -69,6 +69,8 @@ Tata Ibadah and for search.
   dropped), so it can never open a reading page's sidebar.
 - The brand logo is the same route as the search icon (owner request, a deviation from the
   mockup): both return to the last result set, or the landing when nothing is stored.
+- Every search/filter field carries a clear (×) control (round 5): shown only when the field
+  has a value, it empties the field, re-runs the filter, and keeps focus in the field.
 - One concern: this is one spec (004).
 
 ## Acceptance sketch
