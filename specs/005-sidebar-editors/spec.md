@@ -1,7 +1,7 @@
 # Spec: Sidebar editors for Kidung and Tata Ibadah
 
 - **ID:** 005
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-006
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -136,12 +136,16 @@ team; the spec pins it as the first thing to revisit.
 
 ## Traceability
 
-- Domain/app tests: `multimedia/web/tests.py` (create/update for each record, the constraint
-  matrix, CSRF, the login hook, hymn exclusion in the rendered shell)
-- E2E: `tests/e2e/test_editor.py` (the three add flows, an edit flow, hover-reveal and
-  keyboard reach, the error path, and that the stage survives a save)
-- Implementation: `multimedia/web/reading/editors.py` (forms + helpers),
-  `multimedia/web/reading/views.py` + `urls.py` (POST endpoints),
-  `multimedia/web/templates/reading/` (`_editor_modal.html`, add/edit controls),
-  `static/styles/design/components.css`, `static/web/editors.js`,
-  `static/web/reading.js` (the `shell:applied` event)
+- Domain/app tests: `multimedia/web/tests.py` — `EditorViewTests` (create/update for each
+  record, the constraint matrix, CSRF, POST-only, the login hook, hymn exclusion in the
+  rendered shell)
+- E2E: `tests/e2e/test_editor.py` — `EditorE2ETests` (the three add flows, both edit flows,
+  the hover reveal with its keyboard reach, the error path, and the stage surviving a save)
+- Implementation: `multimedia/web/reading/editors.py` (forms + accept/save helpers),
+  `multimedia/web/reading/views.py` (`editor_form`, `editor_save`),
+  `multimedia/web/reading/context_processors.py` (`editor_enabled`),
+  `multimedia/web/urls.py` (four `/editor/...` routes),
+  `multimedia/web/templates/reading/{_editor_modal,_editor_form}.html` plus the add buttons
+  and row controls in `base.html`, `_songbooks_panel.html`, `_song_list.html`,
+  `_tatib_panel.html`; `static/web/editors.js`; the `refresh` kind in
+  `static/web/reading.js`; `static/styles/design/components.css`

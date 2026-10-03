@@ -10,6 +10,38 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-03
+
+### Added
+
+- Sidebar editors (spec 005): a full-width accent add button below the filter in the
+  songbook, song and Tata Ibadah sidebars, and a hover/focus-revealed edit control on every
+  row of those lists. Each opens a modal — a native `<dialog>` in the reading design — that
+  creates or edits the record through a server-rendered form, refreshes the page's regions
+  in place on save, and shows validation errors beside their fields without closing.
+- Songbook fields: name, short name, language, hymn flag. Song fields: number, sub-number,
+  title, key — with the number required for a hymn. Tata Ibadah fields: name, date, active,
+  plus an optional first section on create, because a service only appears in the public
+  lists once it has one.
+- `SIDEBAR_EDITORS_REQUIRE_LOGIN` (default off): set it true to hide every editor control
+  from anonymous visitors and refuse their writes with 403, without touching the UI code.
+
+### Changed
+
+- Hymn songbooks and the songs inside them are read-only: they render no edit control at
+  all, checked against the data rather than a list of names, and their write endpoints
+  refuse the request even when it is hand-crafted.
+- The forms mirror the models' own rules, so a duplicate short name, a duplicate
+  `(book, number, sub_number)` and a numberless hymn are refused server-side; CSRF is
+  required on every write.
+
+### Security
+
+- **Accepted risk (owner decision, 2026-10-03): anyone may write through these forms.** The
+  corpus of a publicly reachable deployment is editable by anyone who can reach it. The
+  login hook above is the documented mitigation and the first thing to switch on before the
+  site is exposed beyond the team.
+
 ## [0.8.0] - 2026-10-03
 
 ### Added
