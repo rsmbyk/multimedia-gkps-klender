@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-007](./items/ITEM-007-service-entries.md) | Service entries | One Tata Ibadah holds texts, scriptures, songs and section breaks; drag reorder with save/discard; its own projector and overlay, current OBS untouched | feat | P1 | L | [006](../specs/006-service-entries/spec.md) | 2026-10-03 |
 
 ## Ready
 
