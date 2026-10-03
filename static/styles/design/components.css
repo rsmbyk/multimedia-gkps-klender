@@ -424,6 +424,7 @@ body {
 .row-edit {
   position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
   width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
+  cursor: pointer;
   border: 1px solid var(--divider); border-radius: 7px;
   background: var(--rail-bg); color: var(--head-ink);
   opacity: 0; pointer-events: none;
@@ -551,6 +552,9 @@ li:hover > .row-edit, li:focus-within > .row-edit,
   transition: background var(--ease);
 }
 .book:hover { background: var(--icon-hover-bg); }
+/* The row keeps its hover look while the pointer is on its own edit control. */
+#panelBody li:hover > a:not([aria-current="true"]),
+#chList li:hover > a:not([aria-current="true"]) { background: var(--icon-hover-bg); }
 .book[aria-current="true"] {
   background: var(--active-bg);
   color: var(--active-ink);
@@ -1086,6 +1090,7 @@ li:hover > .row-edit, li:focus-within > .row-edit,
   transition: background var(--ease);
 }
 .songrow:hover { background: var(--icon-hover-bg); }
+#chList li:hover > .songrow:not([aria-current="true"]) { background: var(--icon-hover-bg); }
 .songrow[aria-current="true"] { background: var(--active-bg); color: var(--active-ink); }
 .songrow__c {
   flex: none;

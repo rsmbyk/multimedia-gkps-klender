@@ -145,6 +145,10 @@ def _books_groups(selected_id=None):
     return groups
 
 
+# A leading "435. " / "435)" / "435 -" inside a title: the alphabetical key drops it.
+_TITLE_NUMBER = re.compile(r'^\s*\d+\s*[.\-)\u2013]?\s*')
+
+
 def _songbooks(selected_id=None):
     # Largest collections first: the accepted mockup's panel order (HAL, KJ,
     # PKJ, NKB, HARIAN, ANTIFON, AJAR) is exactly descending song count.
@@ -156,12 +160,13 @@ def _songbooks(selected_id=None):
 
 
 def _song_rows(book, current_id=None):
-    if book.is_hymn_book:
-        # A hymn book's file order already is its song-number order.
-        songs = book.song_set.order_by('number', 'sub_number', 'title')
-    else:
-        # Non-hymn books default to the sort toggle's "recently updated".
-        songs = book.song_set.order_by(F('modified').desc(nulls_last=True), 'title')
+    # One order for every kind of songbook: by number (unnumbered last), then
+    # sub-number, then title -- the file's own order.
+    #
+    # There is deliberately no "recently updated" order: the corpus is imported with
+    # a single `modified` timestamp for every row, so that order would tie on every
+    # song and the A-Z toggle would look like it did nothing (spec 005).
+    songs = book.song_set.order_by(F('number').asc(nulls_last=True), 'sub_number', 'title')
     rows = []
     for song in songs:
         numbered = book.is_hymn_book and song.number is not None
@@ -169,8 +174,9 @@ def _song_rows(book, current_id=None):
             'id': song.pk,
             'number_display': song.book_number if numbered else '',
             'title': song.title or '(untitled)',
-            'sort_title': song.title,
-            'modified_key': str(int(song.modified.timestamp() * 1000000)) if song.modified else '',
+            # The A-Z key. Plenty of titles carry their own leading "435. ", which
+            # would make alphabetical order identical to the number order.
+            'sort_title': _TITLE_NUMBER.sub('', song.title or '').lower(),
             'current': song.pk == current_id,
         })
     return rows

@@ -53,7 +53,7 @@
   var chSearchEl = document.querySelector('.ch__search');
 
   var activeSection = root.dataset.section || 'alkitab';
-  var songSort = 'm';                    /* 'm' = recently updated, 'title' = A-Z */
+  var songSort = 'o';                    /* 'o' = the file's own order, 'title' = A-Z */
   var navBeforeCh = null;
   var pendingAnchor = null;
   var railCloseTimer = null;
@@ -623,11 +623,13 @@
       var rx = x.querySelector('.songrow');
       var ry = y.querySelector('.songrow');
       if (songSort === 'title') {
-        return String(rx.dataset.t || '').localeCompare(String(ry.dataset.t || ''), 'id');
+        var xt = String(rx.dataset.t || '');
+        var yt = String(ry.dataset.t || '');
+        if (xt !== yt) return xt < yt ? -1 : 1;
       }
-      /* Microsecond keys; title breaks a tie so both surfaces agree exactly. */
-      var recent = (parseFloat(ry.dataset.m) || 0) - (parseFloat(rx.dataset.m) || 0);
-      return recent || String(rx.dataset.t || '').localeCompare(String(ry.dataset.t || ''), 'id');
+      /* 'o' restores the order the server rendered; it also breaks an A-Z tie so
+         both surfaces agree exactly. */
+      return (parseInt(rx.dataset.o, 10) || 0) - (parseInt(ry.dataset.o, 10) || 0);
     });
     var frag = document.createDocumentFragment();
     rows.forEach(function (li) { frag.appendChild(li); });
@@ -635,17 +637,17 @@
     updateChInds();
   }
   function syncSortBtn() {
-    var recent = songSort === 'm';
-    var label = recent
-      ? 'Sort: recently updated \u2014 switch to alphabetical'
-      : 'Sort: alphabetical \u2014 switch to recently updated';
+    var listed = songSort === 'o';
+    var label = listed
+      ? 'Sort: by number \u2014 switch to alphabetical'
+      : 'Sort: alphabetical \u2014 switch to by number';
     songSortBtn.setAttribute('aria-label', label);
     songSortBtn.title = label;
-    songSortBtn.dataset.order = recent ? 'm' : 'title';
+    songSortBtn.dataset.order = songSort;
   }
   songSortBtn.addEventListener('click', function () {
     if (songSortBtn.hidden) return;
-    songSort = songSort === 'm' ? 'title' : 'm';
+    songSort = songSort === 'o' ? 'title' : 'o';
     syncSortBtn();
     applySongOrder();
   });

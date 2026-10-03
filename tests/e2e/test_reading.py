@@ -49,8 +49,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         # bulk first, so the reveal tests have a list long enough to travel
         for n in range(1, 31):
             songs.Song.objects.create(book=self.harian, title='Lagu %02d' % n)
-        songs.Song.objects.create(book=self.harian, title='Alpha')
-        songs.Song.objects.create(book=self.harian, title='Zebra')
+        # Numbered on purpose: the file order (by number) and A-Z must differ, or the
+        # sort toggle cannot be observed to do anything.
+        songs.Song.objects.create(book=self.harian, title='Alpha', number=2)
+        songs.Song.objects.create(book=self.harian, title='Zebra', number=1)
 
         b_lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru', abbreviation='TB')
@@ -322,12 +324,14 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         sort = page.locator('#songSort')
         expect(sort).to_be_visible()
         rows = page.locator('#chList .songrow')
-        expect(rows.first).to_have_attribute('data-t', 'Zebra')   # newest first
+        expect(sort).to_have_attribute('data-order', 'o')
+        expect(rows.first).to_contain_text('Zebra')      # the file's own order (number 1)
         sort.click()
-        expect(rows.first).to_have_attribute('data-t', 'Alpha')   # alphabetical
         expect(sort).to_have_attribute('data-order', 'title')
+        expect(rows.first).to_contain_text('Alpha')      # alphabetical
         sort.click()
-        expect(rows.first).to_have_attribute('data-t', 'Zebra')
+        expect(sort).to_have_attribute('data-order', 'o')
+        expect(rows.first).to_contain_text('Zebra')      # and back again
 
     # --- sidebar reveals (owner review round 2) ---
 
