@@ -74,6 +74,9 @@ class CorpusSearchTests(TestCase):
         songs.Verse.objects.create(song=cls.kj100, number=1, lyric='Kasih itu sabar, kasih itu murah hati')
         cls.pkj120 = songs.Song.objects.create(book=pkj, number=120, title='Kasih Jemaat Terpilih')
         songs.Verse.objects.create(song=cls.pkj120, number=1, lyric='Pujilah Tuhan, hai jemaat')
+        harian = songs.Book.objects.create(lang=song_lang, name='Kidung Harian', short_name='', is_hymn_book=False)
+        cls.harian_song = songs.Song.objects.create(book=harian, number=None, title='Doa Pagi')
+        songs.Verse.objects.create(song=cls.harian_song, number=1, lyric='Kasih setia setiap hari')
 
         # --- Tata Ibadah ---
         cls.svc = tatib.TataIbadah.objects.create(name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
@@ -161,6 +164,10 @@ class CorpusSearchTests(TestCase):
         rows = search('pengampunan dosa')['songs']
         self.assertEqual(rows[0]['target']['song_id'], self.kj152.id)
         self.assertIn('pengampunan dosa', rows[0]['excerpt'])
+
+    def test_non_hymn_songbooks_are_searchable(self):
+        rows = search('setia setiap hari')['songs']
+        self.assertIn(self.harian_song.id, self.targets(rows))
 
     def test_multiword_scattered_match(self):
         rows = search('dosa pengampunan')['songs']

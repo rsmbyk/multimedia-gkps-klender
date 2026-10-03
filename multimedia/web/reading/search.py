@@ -267,9 +267,9 @@ def _bible_hits(phrase, words, raw, books):
     return rows
 
 
-def _song_hits(phrase, words, raw, hymn_books):
+def _song_hits(phrase, words, raw, songbooks):
     hits = []
-    for book in hymn_books:
+    for book in songbooks:
         entry = _entry(
             kind='songbook', title=book.name,
             lookup_title=f'{book.name} {book.short_name}',
@@ -290,11 +290,10 @@ def _song_hits(phrase, words, raw, hymn_books):
                           | Q(book__short_name__icontains=word)
                           | Q(verse__lyric__icontains=word))
         criteria |= all_words
-    ids = set(song_models.Song.objects.filter(book__is_hymn_book=True)
-              .filter(criteria).values_list('id', flat=True))
+    ids = set(song_models.Song.objects.filter(criteria).values_list('id', flat=True))
     match = _SONG_REF_RE.match(normalize(raw))
     if match:
-        ref_book = next((book for book in hymn_books
+        ref_book = next((book for book in songbooks
                          if normalize(book.short_name or '') == match.group('name')
                          or normalize(book.name) == match.group('name')), None)
         if ref_book is not None:
@@ -379,8 +378,8 @@ def search(query):
         return result
     words = phrase.split(' ')
     books = bible_book_index()
-    hymn_books = list(song_models.Book.objects.filter(is_hymn_book=True).order_by('id'))
+    songbooks = list(song_models.Book.objects.order_by('id'))
     result.groups['bible'] = _bible_hits(phrase, words, raw, books)
-    result.groups['songs'] = _song_hits(phrase, words, raw, hymn_books)
+    result.groups['songs'] = _song_hits(phrase, words, raw, songbooks)
     result.groups['tatib'] = _tatib_hits(phrase, words, raw)
     return result

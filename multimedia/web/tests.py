@@ -19,6 +19,7 @@ class ReadingViewsTests(TestCase):
         songs.Verse.objects.create(song=cls.song, number=1, lyric='Di waktu pagi aku bersyukur')
         songs.Verse.objects.create(song=cls.song, number=2, lyric='Bersama seluruh ciptaan')
         cls.next_song = songs.Song.objects.create(book=cls.nkb, number=13, title='Di Waktu Malam')
+        songs.Book.objects.create(lang=lang, name='Kidung Harian', short_name='', is_hymn_book=False)
 
         b_lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru', abbreviation='TB')
@@ -100,6 +101,7 @@ class ReadingViewsTests(TestCase):
         response = self.client.get(reverse('web-books'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Nyanyikanlah Kidung Baru')
+        self.assertContains(response, 'Kidung Harian')
 
     def test_book_detail_lists_its_songs(self):
         response = self.client.get(reverse('web-book', args=[self.nkb.id]))

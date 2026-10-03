@@ -17,6 +17,7 @@ URL map:
 import re
 from urllib.parse import quote
 
+from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -101,7 +102,10 @@ def _books_groups(selected_id=None):
 
 
 def _songbooks(selected_id=None):
-    books = song_models.Book.objects.filter(is_hymn_book=True).order_by('name', 'lang')
+    # Largest collections first: the accepted mockup's panel order (HAL, KJ,
+    # PKJ, NKB, HARIAN, ANTIFON, AJAR) is exactly descending song count.
+    books = (song_models.Book.objects.annotate(song_total=Count('song'))
+             .order_by('-song_total', 'name', 'lang'))
     return [{'id': book.pk, 'name': book.name, 'short': book.short_name or '',
              'current': book.pk == selected_id} for book in books]
 
@@ -124,9 +128,13 @@ def _tatib_groups(mode, selected_id=None):
                 .filter(tataibadahitem__item_type=tatib_models.TataIbadahItemType.TEXT)
                 .distinct())
     if mode == 'template':
+        # Mirrors the mockup's Indonesian locale collation for these names:
+        # case- and diacritic-folded, with the '|' separator ignored.
+        templates = sorted(services.filter(date__isnull=True),
+                           key=lambda service: search_lib.normalize(service.name).replace('|', ''))
         rows = [{'id': service.pk, 'name': service.name, 'date_display': '',
                  'current': service.pk == selected_id}
-                for service in services.filter(date__isnull=True).order_by('name')]
+                for service in templates]
         return [{'label': 'Templates', 'key': '', 'services': rows}]
     groups = []
     current = None
