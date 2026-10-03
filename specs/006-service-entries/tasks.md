@@ -91,6 +91,10 @@
       when it was the app's accent), and the fitting brought down until the words fit the screen --
       measured on the ink, floored at the current projector's 2px, so a body longer than the screen
       is never cut off (`tests/e2e/test_projector.py`, 11)
+- [x] The words' own lines get a little air between them (0.45em, in the fitted size), and closing
+      the projector window ends the display by itself -- the opener's handle at once, the projector's
+      beat for every other tab -- releasing the write lock everywhere (`tests/e2e/test_projector.py`,
+      14)
 - [ ] Deferred, per the plan: the OBS overlay, which needs its own answer for reaching inside OBS.
       The projector window is the whole of this version's display.
 

@@ -43,6 +43,21 @@
     if (channel) channel.postMessage(message);
   }
 
+  /* ---------- the beat -------------------------------------------------------
+     A window can be closed while the app stays open, and the browser gives the opener
+     no "closed" event -- only the handle it holds. So this window keeps announcing
+     itself: a stamp in localStorage (which every tab of the browser shares) and a
+     message on the channel, every couple of seconds. A shell that sees the stamps stop
+     takes the display down. A hidden tab is throttled to roughly one timer a minute,
+     which is why the shell waits far longer than this interval before deciding the
+     window is gone. */
+  var BEAT_KEY = 'gkps-display-beat';
+
+  function beat() {
+    try { localStorage.setItem(BEAT_KEY, String(Date.now())); } catch (e) { /* private mode */ }
+    post({type: 'beat', service: service, on: showing});
+  }
+
   /* ---------- fitting the words to the screen -------------------------------
      The current projector's own two loops, kept in its shape -- do...while, one pixel at
      a time, from 50 for the title and 100 for the text, floor 2 -- so the words come out
@@ -133,6 +148,7 @@
       write({service: service, screen: current, on: showing});
       post(showing ? {type: 'show', service: service, screen: current} : {type: 'stop'});
     }
+    beat();          /* every change is also a sign of life */
   }
 
   var direction = 1;
@@ -237,5 +253,10 @@
   }
   render(true);
   window.addEventListener('resize', function () { render(true); });
+  /* The sign of life, and the reason a shell can tell that this window has gone: while it
+     is open it shows up every couple of seconds, and when it closes the stamps stop. */
+  window.setInterval(beat, 2000);
+  document.addEventListener('visibilitychange', beat);
+  window.addEventListener('focus', beat);
   post({type: 'state'});                 /* ask the other tabs what is on screen */
 })();

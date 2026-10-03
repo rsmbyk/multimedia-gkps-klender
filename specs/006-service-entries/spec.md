@@ -373,6 +373,21 @@ blanking, and the pane's entries showing their references alone.
   the display box inside the window on all four sides, and a page that does not scroll. This is also
   what the current projector's `72` is for -- its loop measures the WINDOW and subtracts the inset,
   so an inflated container cannot fool it.
+- **The words' own lines get air between them, and only there.** A screen's lines are separate lines,
+  not one wrapped paragraph, so `.screen__line + .screen__line { margin-top: 0.45em }` -- in `em`, so
+  the gap travels with the fitted size; a wrapped row keeps the line-height alone. The fitting
+  measures it (the ink's box runs from the first line's top to the last line's bottom, gap included),
+  and it was measured live: 24.8px at a 55px fit, with the whole text still inside the screen.
+- **Closing the projector window ends the display.** Nobody presses Stop on a screen that is no
+  longer there. The browser tells the OPENER the moment the window it opened goes (its handle's
+  `closed`), which stops the display at once, and the projector also leaves a **beat** behind -- a
+  stamp in localStorage plus a channel message every couple of seconds -- covering the tabs that did
+  not open it, a shell reloaded since, and a window that died rather than closed. The wait is
+  generous (90s) because a hidden tab's timers are throttled to about one a minute, and a state
+  written just now counts as alive by its own stamp, so the moment between pressing Project and the
+  window's first beat cannot stop the display it just started. The stop releases the lock in every
+  tab of that browser and says why; a display left on from an earlier session is stopped as the page
+  loads.
 - **Short morphs** carry a move or a toggle: the arriving screen fades and rises (from the
   direction of travel), the one it replaces fades out the other way, and space fades the words
   rather than blanking them. Reduced motion makes every move instant.

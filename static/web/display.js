@@ -13,6 +13,7 @@
  *     {type: 'show', service: <id>, slide: <slide id>}   an entry is on screen
  *     {type: 'stop'}                                     nothing is on screen
  *     {type: 'update'}                                   re-read what is on screen
+ *     {type: 'beat', service: <id>, on: <bool>}          the projector window is still open
  *
  * Everything here is DELEGATED and resolved from the document on each use. The
  * shell swaps the reading pane's contents in place (reading.js applyPage), which
@@ -33,10 +34,11 @@
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (stored && typeof stored === 'object') {
-        return {service: stored.service, screen: stored.screen, on: stored.on === true};
+        return {service: stored.service, screen: stored.screen, on: stored.on === true,
+                at: Number(stored.at) || 0};
       }
     } catch (e) { /* a corrupt value is no value */ }
-    return {service: null, screen: 0, on: false};
+    return {service: null, screen: 0, on: false, at: 0};
   }
 
   var state = read();
@@ -50,6 +52,7 @@
   }
 
   function write(next) {
+    next.at = Date.now();               /* when this browser last touched the display */
     state = next;
     try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (e) { /* private mode */ }
   }
@@ -115,6 +118,7 @@
       var projector = window.open(open.dataset.projectorUrl, 'gkps-projector',
                                   'width=1280,height=800');
       if (projector) projector.focus();
+      watch(projector);                                       /* and know when it goes */
       write({service: service, screen: 0, on: true});          /* the display opens at its start */
       post({type: 'show', service: service, screen: 0});
       sync();
@@ -126,6 +130,56 @@
       say('The display is re-reading this Tata Ibadah.');
     }
   });
+
+  /* ---------- a display whose window has gone --------------------------------
+     Closing the projector window has to end the display. Otherwise every tab of this
+     browser stays locked -- refusing entry writes, showing Stop projecting -- for a
+     screen nobody is driving, and the only way out is to press Stop on a display that
+     is not running.
+
+     Two signals, in order of speed. The window THIS tab opened: the browser tells the
+     opener the moment its handle is closed, so closing the window stops the display at
+     once. And the beat the projector leaves behind (web/projector.js), which covers the
+     tabs that did not open it, a shell reloaded since, and a window that died instead of
+     closing. The wait is long because a hidden tab's timers are throttled to about one a
+     minute: quiet for a minute and a half means gone. A state written just now counts as
+     alive by its own stamp, so the moment between pressing Project and the window's first
+     beat cannot stop the display it just started. */
+  var BEAT_KEY = 'gkps-display-beat';
+  var QUIET_AFTER = 90 * 1000;
+
+  function lastBeat() {
+    try { return Number(localStorage.getItem(BEAT_KEY)) || 0; } catch (e) { return 0; }
+  }
+
+  function gone() {
+    if (state.on !== true) return false;
+    var stamp = Math.max(lastBeat(), Number(state.at) || 0);
+    return Date.now() - stamp > QUIET_AFTER;
+  }
+
+  function stopBecauseGone() {
+    if (state.on !== true) return;
+    write({service: state.service, screen: state.screen, on: false});
+    post({type: 'stop'});
+    sync();
+    say('The projector window is gone, so the display stopped.');
+  }
+
+  function watch(win) {
+    if (!win) return;
+    var timer = window.setInterval(function () {
+      if (!win.closed) return;
+      window.clearInterval(timer);
+      stopBecauseGone();
+    }, 700);
+  }
+
+  window.setInterval(function () { if (gone()) stopBecauseGone(); }, 5000);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && gone()) stopBecauseGone();
+  });
+  if (gone()) stopBecauseGone();        /* a display left on from an earlier session */
 
   /* Another tab changed the display: follow it. */
   if (channel) {

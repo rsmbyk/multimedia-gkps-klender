@@ -394,6 +394,57 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertGreaterEqual(huge['above'], -1, huge)
         self.assertGreaterEqual(huge['below'], -1, huge)
 
+    def test_a_gap_opens_between_the_words_own_lines(self):
+        """A screen's own lines get air between them; a wrapped row does not.
+
+        The line-height alone cannot say this: it spaces every row of a wrapped line, so
+        two lines of a text entry read as one continuous column.
+        """
+        page = self._page(self._projector_url())
+        measured = page.evaluate("""() => {
+          const active = document.querySelector('.screen.is-active');
+          const lines = active.querySelector('.screen__lines');
+          const range = document.createRange();
+          const size = () => parseFloat(getComputedStyle(lines).fontSize);
+          const fit = () => window.dispatchEvent(new Event('resize'));
+
+          lines.innerHTML = '<p class="screen__line">'
+                          + 'Tuhan adalah gembalaku. '.repeat(6) + '</p>';
+          fit();
+          const single = (() => {                     // one line, wrapped over its rows
+            range.selectNodeContents(lines.querySelector('.screen__line'));
+            const ink = range.getBoundingClientRect().height;
+            const rows = Math.round(ink / (size() * 1.37));
+            return {pitch: ink / rows, size: size(), rows: rows};
+          })();
+
+          lines.innerHTML = '<p class="screen__line">Kasih sayang-Mu perlindunganku</p>'
+                          + '<p class="screen__line">Di bawah naungan sayap-Mu</p>';
+          fit();
+          const all = lines.querySelectorAll('.screen__line');
+          const first = all[0].getBoundingClientRect();
+          const second = all[1].getBoundingClientRect();
+          const pair = {gap: second.top - first.bottom, pitch: second.top - first.top,
+                        size: size()};
+
+          // the air between the lines is part of what the fitting measures
+          const stage = document.getElementById('projectorScreens').getBoundingClientRect();
+          range.selectNodeContents(lines);
+          const ink = range.getBoundingClientRect();
+          return {single: single, pair: pair,
+                  insideWindow: ink.top >= stage.top - 1 && ink.bottom <= stage.bottom + 1};
+        }""")
+        single, pair = measured['single'], measured['pair']
+        # a wrapped row is spaced by the line-height and nothing more -- and the ink's own
+        # box is the glyphs', a shade shorter than the line box, so it comes in just under
+        self.assertLessEqual(single['pitch'], single['size'] * 1.37 + 1, measured)
+        self.assertGreater(single['pitch'], single['size'] * 1.25, measured)
+        # ... while the words' own lines get extra air between them ...
+        self.assertGreater(pair['gap'], pair['size'] * 0.25, measured)
+        # ... so a screen of them is roomier than the same rows merely wrapped
+        self.assertGreater(pair['pitch'], single['pitch'] + pair['size'] * 0.25, measured)
+        self.assertTrue(measured['insideWindow'], measured)
+
     # --- the button, its two states, and the lock across tabs ----------------
 
     def test_project_button_opens_the_display_and_locks_the_browser(self):
@@ -473,6 +524,41 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(projector.get_attribute('body', 'data-showing'), 'false')
         self.assertEqual(page.get_attribute('[data-project-group]', 'data-displaying'), 'false')
         self.assertIn('Project', page.locator('[data-project-open]').inner_text())
+
+    def test_closing_the_projector_window_stops_the_display(self):
+        """Closing the window ends the display by itself, in every tab of the browser.
+
+        A tab that did not open the window cannot watch the handle close, so the projector
+        also leaves a beat behind (web/projector.js); the opener knows at once, and the
+        other tab hears the stop it posts. Nobody presses Stop.
+        """
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        projector = popup_info.value
+        projector.wait_for_load_state('networkidle')
+        tab = self._page(self._service_url(), context)         # another tab, same browser
+        for other in (page, tab):
+            self.assertEqual(other.get_attribute('[data-project-group]', 'data-displaying'),
+                             'true')
+
+        projector.close()
+
+        for other in (page, tab):
+            other.wait_for_function(
+                "document.querySelector('[data-project-group]').dataset.displaying === 'false'",
+                timeout=10000)
+            self.assertIn('Project', other.locator('[data-project-open]').inner_text())
+        self.assertFalse(page.locator('[data-project-note]').is_hidden())
+        self.assertIn('stopped', page.locator('[data-project-note]').inner_text())
+
+        # the write lock went with the window
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(200)
+        page.locator('[data-entry-open="text"]').first.click()
+        page.wait_for_selector('dialog[open]')
+        page.keyboard.press('Escape')
 
     # --- the path a person actually clicks through ---------------------------
 

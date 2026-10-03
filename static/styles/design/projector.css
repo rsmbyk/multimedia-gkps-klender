@@ -136,6 +136,13 @@ body.projector[data-showing="false"] .screen.is-active {
    fitting would quietly do nothing -- the words then ran past the edge of the screen. */
 .screen__lines { margin: 0; text-align: center; font-size: 100px; }
 
+/* A screen's own lines are separate lines, not one wrapped paragraph, so they get a
+   little air between them -- and only there: a wrapped row keeps the line-height alone,
+   or two lines of a text entry would read as one continuous column. In `em`, so the gap
+   travels with the fitted size, and the fitting measures it (the ink's box spans from
+   the first line's top to the last line's bottom, gap included). */
+.screen__line + .screen__line { margin-top: 0.45em; }
+
 .screen__line {
   margin: 0;
   text-align: center;
