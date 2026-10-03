@@ -72,8 +72,8 @@ promise intact.
 
 The OBS overlay is deliberately not in this slice: inside OBS the channel is a different browser
 process from the operator's, so what drives the overlay needs an answer of its own. The
-projector page — which the project button opens in the operator's own browser, where the channel
-does reach — is the whole of this version's display.
+projector window — which the project button opens in the operator's own browser, where the
+channel does reach — is the whole of this version's display.
 
 Tests: rendering per kind on both pages, the two-line and blank-line rules, prev/next/toggle,
 one Tata Ibadah at a time, the entry-write refusal in a second tab, the stop and update buttons,

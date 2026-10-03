@@ -68,10 +68,13 @@ This is an addition to the production app, not a replacement of it.
   every kind of entry, split a body into two lines, size the font to fit (projector) or grow the
   box to fit (overlay), and treat a blank line as the operator's pause. Own templates, own
   scripts, own sync channel.
-- **A project button** on a Tata Ibadah in the reading app that opens the new projector in a new
-  tab, showing that Tata Ibadah. On the projector: previous, next, and a toggle for on and off —
-  nothing more for this first version. The OBS overlay follows in a later slice on the same
-  browser channel, once the question of what drives it inside OBS is answered.
+- **A project button** on a Tata Ibadah in the reading app that opens the new projector in a
+  **new window** — a sized popup, opened from the operator's click so the browser allows it, and
+  falling back to a tab if the browser insists. Being same-origin, it is on the same channel as
+  the app that opened it. On the projector: previous, next, and a toggle for on and off — nothing
+  more for this first version. The OBS overlay follows in a later slice, where it needs its own
+  exclusive control surface inside OBS (as the current dock is) because that is a different
+  browser process from the operator's.
 - A **jump-to-it** control on a scripture entry and on a song entry, opening that passage or that
   song the way a search result does.
 - **Display mode**, held on the server and shared by every tab: at most one Tata Ibadah is being
@@ -126,6 +129,9 @@ This is an addition to the production app, not a replacement of it.
   Tata Ibadah source already renders: a text entry is its own text; a scripture entry is the
   passage as the app already cites it; a song entry is the selected verses as the app already
   formats lyrics; a section break is its label with no body.
+- **The projector is a window, not a page you navigate to.** It opens beside the app, sized for a
+  screen, and is asked for full screen on the operator's own gesture rather than grabbing it.
+  Closing it does not stop projecting on its own; the toggle does.
 - **The display state lives in the browser that started it, and nowhere else.** It is shared
   across that browser's tabs over a `BroadcastChannel`, and deliberately not stored on the
   server: several laptops project to different screens — one for OBS, several for displays — and
@@ -261,7 +267,8 @@ This is an addition to the production app, not a replacement of it.
 
 1. **Name:** `ServiceEntry` in the `tatib` app. ✔
 2. **Control surface:** a project button on the Tata Ibadah that opens the new projector in a new
-   tab; previous, next and an on/off toggle on the projector. No new dock in this version. ✔
+   window (a tab if the browser insists); previous, next and an on/off toggle on the projector.
+   No new dock in this version; the overlay waits for one, later. ✔
 3. **Stack:** hand-written, on the public reading app's design tokens, so the public site and the
    OBS surfaces stop looking like two products. ✔
 4. **URLs:** new paths of their own, e.g. `/obs/service/...`, leaving `/obs/...` alone. ✔
