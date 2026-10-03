@@ -488,8 +488,6 @@ body {
 .search-home__submit svg { width: 20px; height: 20px; }
 .search-home__submit:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .search-home__hint { margin: 18px 0 0; font-size: 13px; color: var(--head-ink); }
-.search-home__validation { margin: 10px 0 0; font-size: 13px; color: var(--ink); }
-.search-home__validation[hidden] { display: none; }
 [data-read="on"] .search-home { display: none; }
 .search-results[hidden], .search-home[hidden] { display: none; }
 [data-home="results"] .search-home { min-height: 0; padding: 6px 0 26px; }

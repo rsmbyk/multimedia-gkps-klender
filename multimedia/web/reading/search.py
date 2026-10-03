@@ -27,8 +27,6 @@ from multimedia.bible import models as bible_models
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
 
-MIN_KEYWORDS = 3
-
 GROUP_ORDER = ('bible', 'songs', 'tatib')
 
 MONTHS_SHORT = ('Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des')
@@ -50,15 +48,6 @@ def normalize(text):
     text = unicodedata.normalize('NFD', str(text or ''))
     text = ''.join(ch for ch in text if not unicodedata.combining(ch))
     return re.sub(r'\s+', ' ', text).strip().casefold()
-
-
-def keyword_length(text):
-    """Count letters and digits (the mockup's ``[\\p{L}\\p{N}]``)."""
-    return sum(1 for ch in str(text or '') if ch.isalnum())
-
-
-def is_short_query(text):
-    return keyword_length(text) < MIN_KEYWORDS
 
 
 class SearchResults:
@@ -369,9 +358,6 @@ def search(query):
     """Search the whole corpus; see the module docstring for semantics."""
     raw = str(query or '').strip()
     result = SearchResults(query=raw)
-    if is_short_query(raw):
-        result.valid = False
-        return result
     phrase = normalize(raw)
     if not phrase:
         result.valid = False

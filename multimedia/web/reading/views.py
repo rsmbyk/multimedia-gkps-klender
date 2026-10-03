@@ -17,7 +17,7 @@ URL map:
 import re
 from urllib.parse import quote
 
-from django.db.models import Count
+from django.db.models import Count, F
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -111,13 +111,21 @@ def _songbooks(selected_id=None):
 
 
 def _song_rows(book, current_id=None):
+    if book.is_hymn_book:
+        # A hymn book's file order already is its song-number order.
+        songs = book.song_set.order_by('number', 'sub_number', 'title')
+    else:
+        # Non-hymn books default to the sort toggle's "recently updated".
+        songs = book.song_set.order_by(F('modified').desc(nulls_last=True), 'title')
     rows = []
-    for song in book.song_set.order_by('number', 'sub_number', 'title'):
+    for song in songs:
         numbered = book.is_hymn_book and song.number is not None
         rows.append({
             'id': song.pk,
             'number_display': song.book_number if numbered else '',
             'title': song.title or '(untitled)',
+            'sort_title': song.title,
+            'modified_key': str(int(song.modified.timestamp() * 1000000)) if song.modified else '',
             'current': song.pk == current_id,
         })
     return rows
@@ -293,7 +301,6 @@ class SearchView(TemplateView):
         context.update({
             'query': query,
             'books_groups': _books_groups(),
-            'query_invalid': False,
             'result_groups': [],
         })
         if not has_param:
@@ -301,7 +308,7 @@ class SearchView(TemplateView):
             return context
         results = search_lib.search(query)
         if not results.valid:
-            context['query_invalid'] = True
+            # An empty query keeps the landing.
             context['page_title'] = 'Search — GKPS Klender'
             return context
         context['home_state'] = 'results'
@@ -436,6 +443,7 @@ class BookDetailView(TemplateView):
             'page_title': f'{book.name} — GKPS Klender',
             'songbooks': _songbooks(book.pk),
             'songs': _song_rows(book),
+            'show_song_sort': not book.is_hymn_book,
             'ch_title': f'Song list — {book.name}',
             'book_name': book.name,
         })
@@ -462,6 +470,7 @@ class SongDetailView(TemplateView):
             'page_title': f'{citation} — GKPS Klender',
             'songbooks': _songbooks(book.pk),
             'songs': _song_rows(book, song.pk),
+            'show_song_sort': not book.is_hymn_book,
             'ch_title': f'Song list — {book.name}',
             'verses': verses,
             'read_kind': 'song',

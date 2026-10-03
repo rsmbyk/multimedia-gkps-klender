@@ -37,23 +37,31 @@
   var chUp = document.getElementById('chUp');
   var chDown = document.getElementById('chDown');
   var songFilterEl = document.getElementById('songFilter');
+  var songSortBtn = document.getElementById('songSort');
   var songEmpty = document.getElementById('chEmpty');
   var searchForm = document.getElementById('globalSearch');
   var searchQuery = document.getElementById('searchQuery');
-  var searchValidation = document.getElementById('searchValidation');
   var readEl = document.getElementById('read');
   var readBody = document.getElementById('readBody');
   var langTb = document.getElementById('langTb');
   var langSim = document.getElementById('langSim');
+  var stage = document.querySelector('.stage');
+  var panelTitleEl = document.getElementById('panelTitle');
+  var panelFilterLabel = document.querySelector('label[for="bookFilter"]');
+  var chTitleEl = document.getElementById('chTitle');
+  var chFilterLabel = document.querySelector('label[for="songFilter"]');
+  var chSearchEl = document.querySelector('.ch__search');
 
   var activeSection = root.dataset.section || 'alkitab';
+  var songSort = 'm';                    /* 'm' = recently updated, 'title' = A-Z */
   var navBeforeCh = null;
   var pendingAnchor = null;
   var railCloseTimer = null;
   var railCloseListener = null;
 
-  /* What the server marked as this page's own content; restoration uses it. */
-  var pageState = (function () {
+  /* What the current DOM marks as this page's own content; refreshed after
+     every in-page navigation. */
+  function readPageState() {
     var tile = panelBody.querySelector('.book[aria-current="true"]');
     var row = chList.querySelector('.songrow[aria-current="true"]');
     var chapterTile = chList.querySelector('.ch-num[aria-current="true"]');
@@ -62,7 +70,42 @@
       songId: row ? row.dataset.i : null,
       chapter: chapterTile ? chapterTile.dataset.n : null
     };
+  }
+  var pageState = readPageState();
+
+  /* Identity of what the reading stage shows. Unlike pageState it survives a
+     section switch (which clears the lists), so restoration can rebuild. */
+  var KIND_SECTION = { bible: 'alkitab', song: 'kidung', tatib: 'tatib' };
+  var stageInfo = (function () {
+    var s = readPageState();
+    return {
+      tile: s.tileName, chapter: s.chapter, song: s.songId,
+      url: window.location.pathname + window.location.search
+    };
   })();
+  function readKind() {
+    return readEl && readEl.dataset.kind ? readEl.dataset.kind : '';
+  }
+  function stageSection() {
+    return KIND_SECTION[readKind()] || null;
+  }
+
+  /* After a stage swap the element references below point at detached nodes;
+     re-grab them from the fresh markup. */
+  function refreshStageRefs() {
+    readEl = document.getElementById('read');
+    readBody = document.getElementById('readBody');
+    langTb = document.getElementById('langTb');
+    langSim = document.getElementById('langSim');
+    searchForm = document.getElementById('globalSearch');
+    searchQuery = document.getElementById('searchQuery');
+    editionBlocks = [];
+    if (readBody) {
+      readBody.querySelectorAll('.read__ed').forEach(function (el) {
+        editionBlocks.push({ ed: el.dataset.ed, el: el });
+      });
+    }
+  }
 
   function panelOwner() {
     return activeSection === 'kidung' ? kidBtn
@@ -155,7 +198,10 @@
     });
     el.addEventListener('blur', hideTileTip);
   }
-  panelBody.querySelectorAll('.book').forEach(bindFloatTip);
+  function bindPanelTips() {
+    panelBody.querySelectorAll('.book').forEach(bindFloatTip);
+  }
+  bindPanelTips();
   bindFloatTip(panelExpand);
 
   /* ---------- theme ---------- */
@@ -206,16 +252,19 @@
     if (persist) { try { localStorage.setItem('gkps-lang', ed); } catch (e) {} }
     decorateChapters();
   }
-  [langTb, langSim].forEach(function (link) {
-    if (!link) return;
-    link.addEventListener('click', function (event) {
-      var want = link === langSim ? 'sim' : 'tb';
-      /* no text in the other edition: keep the last good view */
-      if (!editionBlock(want) || want === currentEdition()) { event.preventDefault(); return; }
-      event.preventDefault();
-      setEdition(want, true);
+  function bindLangLinks() {
+    [langTb, langSim].forEach(function (link) {
+      if (!link) return;
+      link.addEventListener('click', function (event) {
+        var want = link === langSim ? 'sim' : 'tb';
+        /* no text in the other edition: keep the last good view */
+        if (!editionBlock(want) || want === currentEdition()) { event.preventDefault(); return; }
+        event.preventDefault();
+        setEdition(want, true);
+      });
     });
-  });
+  }
+  bindLangLinks();
   try {
     var savedLang = localStorage.getItem('gkps-lang');
     if ((savedLang === 'tb' || savedLang === 'sim') && savedLang !== currentEdition()
@@ -233,6 +282,15 @@
       body.scrollTop += (r.top + r.height / 2) - (b.top + b.height / 2);
     }
   }
+  /* Minimal nudge: move a list only as far as needed to show the row fully.
+     Clicking an already visible item must never move the list. */
+  function ensureVisible(row, body) {
+    if (!row) return;
+    var r = row.getBoundingClientRect();
+    var b = body.getBoundingClientRect();
+    if (r.top < b.top) body.scrollTop -= (b.top - r.top);
+    else if (r.bottom > b.bottom) body.scrollTop += (r.bottom - b.bottom);
+  }
   function markBookTile(name) {
     var key = name == null ? null : String(name);
     panelBody.querySelectorAll('.book').forEach(function (book) {
@@ -247,7 +305,6 @@
         if (on) x.setAttribute('aria-current', 'true');
         else x.removeAttribute('aria-current');
       });
-      revealInSidebar(chList.querySelector('.ch-num[aria-current="true"]'), chBody);
       return;
     }
     if (activeSection === 'kidung') {
@@ -256,13 +313,22 @@
         if (on) x.setAttribute('aria-current', 'true');
         else x.removeAttribute('aria-current');
       });
-      revealInSidebar(chList.querySelector('.songrow[aria-current="true"]'), chBody);
       return;
     }
     /* Tata Ibadah contents rows are quicklinks, never a current destination. */
     chList.querySelectorAll('.songrow[aria-current]').forEach(function (row) {
       row.removeAttribute('aria-current');
     });
+  }
+
+  /* The "here you are" reveal: only for opening a sidebar on the page being
+     read (boot / restore / a search result) -- never for plain item clicks. */
+  function revealCurrentRailTile() {
+    if (activeSection === 'alkitab') {
+      revealInSidebar(chList.querySelector('.ch-num[aria-current="true"]'), chBody);
+    } else if (activeSection === 'kidung') {
+      revealInSidebar(chList.querySelector('.songrow[aria-current="true"]'), chBody);
+    }
   }
 
   /* ---------- chapters rail ---------- */
@@ -318,21 +384,39 @@
     cancelPendingRailClose();
     closeChapters(true);
     var row = panelBody.querySelector('.book[aria-current="true"]');
-    if (root.dataset.nav !== 'closed' && row) row.focus();
+    if (root.dataset.nav !== 'closed' && row) row.focus({ preventScroll: true });
     else panelOwner().focus();
   });
 
   /* book tiles: the page's own book toggles its chapter list in place;
      another book is a normal link to its own page */
-  panelBody.querySelectorAll('.book').forEach(function (tile) {
-    tile.addEventListener('click', function (event) {
-      if (activeSection !== 'alkitab' || tile.dataset.name !== pageState.tileName) return;
-      event.preventDefault();
-      hideTileTip();
-      if (root.dataset.ch === 'open') closeChapters(true);
-      else openChaptersInPlace(pageState.tileName);
+  function bindPanelTiles() {
+    panelBody.querySelectorAll('.book').forEach(function (tile) {
+      tile.addEventListener('click', function (event) {
+        if (activeSection === 'alkitab' && tile.dataset.name === pageState.tileName) {
+          /* the open book toggles its chapter list in place */
+          event.preventDefault();
+          hideTileTip();
+          if (root.dataset.ch === 'open') closeChapters(true);
+          else openChaptersInPlace(pageState.tileName);
+          return;
+        }
+        /* another book / songbook / service: navigate in place */
+        event.preventDefault();
+        hideTileTip();
+        var href = tile.getAttribute('href') || '';
+        navigate(tile.href, { kind: /\/tatib\//.test(href) ? 'service' : 'lists' });
+      });
     });
-  });
+    var mode = panel.querySelector('.panel__filter .panel__mode');
+    if (mode) {
+      mode.addEventListener('click', function (event) {
+        event.preventDefault();
+        navigate(mode.href, { kind: 'mode' });
+      });
+    }
+  }
+  bindPanelTiles();
 
   /* ---------- Tata Ibadah contents: quicklinks that jump, never selected ---------- */
   function jumpTatibItem(anchor) {
@@ -343,15 +427,29 @@
     if (previous) previous.classList.remove('tatib__flash');
     target.classList.add('tatib__flash');
   }
-  chList.querySelectorAll('a.songrow').forEach(function (link) {
-    var href = link.getAttribute('href') || '';
-    if (href.charAt(0) !== '#') return;
-    link.addEventListener('click', function (event) {
-      event.preventDefault();
-      jumpTatibItem(href.slice(1));
-      if (mqNarrow.matches) closeChapters(false);
+  function bindChRows() {
+    chList.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        var href = link.getAttribute('href') || '';
+        if (href.charAt(0) === '#') {
+          /* Tata Ibadah contents are quicklinks, never a destination */
+          event.preventDefault();
+          jumpTatibItem(href.slice(1));
+          if (mqNarrow.matches) closeChapters(false);
+          return;
+        }
+        if (link.classList.contains('ch-num') && link.classList.contains('no-data')) {
+          event.preventDefault();          /* no text in this edition: inert tile */
+          return;
+        }
+        if (link.classList.contains('ch-num') || link.classList.contains('songrow')) {
+          event.preventDefault();
+          navigate(link.href, { kind: link.classList.contains('ch-num') ? 'chapter' : 'song' });
+        }
+      });
     });
-  });
+  }
+  bindChRows();
 
   /* ---------- panel filter ---------- */
   function applyFilter(query) {
@@ -413,11 +511,51 @@
       else {
         closeChapters(true);
         var row = panelBody.querySelector('.book[aria-current="true"]');
-        if (root.dataset.nav !== 'closed' && row) row.focus();
+        if (root.dataset.nav !== 'closed' && row) row.focus({ preventScroll: true });
         else panelOwner().focus();
       }
     }
   });
+
+  /* ---------- song-list order: recently updated <-> alphabetical ---------- */
+  function songRowEls() {
+    return Array.prototype.filter.call(chList.children, function (li) {
+      return li.querySelector('.songrow');
+    });
+  }
+  function applySongOrder() {
+    var rows = songRowEls();
+    rows.sort(function (x, y) {
+      var rx = x.querySelector('.songrow');
+      var ry = y.querySelector('.songrow');
+      if (songSort === 'title') {
+        return String(rx.dataset.t || '').localeCompare(String(ry.dataset.t || ''), 'id');
+      }
+      /* Microsecond keys; title breaks a tie so both surfaces agree exactly. */
+      var recent = (parseFloat(ry.dataset.m) || 0) - (parseFloat(rx.dataset.m) || 0);
+      return recent || String(rx.dataset.t || '').localeCompare(String(ry.dataset.t || ''), 'id');
+    });
+    var frag = document.createDocumentFragment();
+    rows.forEach(function (li) { frag.appendChild(li); });
+    chList.appendChild(frag);
+    updateChInds();
+  }
+  function syncSortBtn() {
+    var recent = songSort === 'm';
+    var label = recent
+      ? 'Sort: recently updated \u2014 switch to alphabetical'
+      : 'Sort: alphabetical \u2014 switch to recently updated';
+    songSortBtn.setAttribute('aria-label', label);
+    songSortBtn.title = label;
+    songSortBtn.dataset.order = recent ? 'm' : 'title';
+  }
+  songSortBtn.addEventListener('click', function () {
+    if (songSortBtn.hidden) return;
+    songSort = songSort === 'm' ? 'title' : 'm';
+    syncSortBtn();
+    applySongOrder();
+  });
+  if (!songSortBtn.hidden) syncSortBtn();
 
   /* ---------- state machine: closed <-> open <-> mini ---------- */
   function syncSearchBtn() {
@@ -584,9 +722,13 @@
      an ordinary link to its root */
   function railBtnClick(name, btn) {
     return function (event) {
-      if (name !== activeSection) return;
       event.preventDefault();
       var fromClosed = root.dataset.nav === 'closed' && root.dataset.ch === 'closed';
+      if (name !== activeSection) {
+        /* another section: fetch its root and morph the shell in place */
+        navigate(btn.getAttribute('href'), { kind: 'rail', section: name });
+        return;
+      }
       if (root.dataset.nav === 'open') {
         closeAllPanels();
         btn.focus();
@@ -601,20 +743,24 @@
   tatBtn.addEventListener('click', railBtnClick('tatib', tatBtn));
 
   function restoreCurrentPath(name) {
-    if (root.dataset.read !== 'on' || name !== activeSection) return;
-    if (!pageState.tileName) return;
+    if (root.dataset.read !== 'on' || stageSection() !== name) return;
+    if (chList.children.length === 0) {
+      /* a section switch wiped the lists: rebuild them from the stage's page */
+      if (stageInfo.url) navigate(stageInfo.url, { kind: 'sync' });
+      return;
+    }
     var tile = null;
     panelBody.querySelectorAll('.book').forEach(function (row) {
-      if (String(row.dataset.name) === String(pageState.tileName)) tile = row;
+      if (String(row.dataset.name) === String(stageInfo.tile)) tile = row;
     });
     if (!tile) return;
     if (tile.closest('.is-hidden')) {
       filter.value = '';
       applyFilter('');
     }
-    if (activeSection === 'alkitab') openChaptersInPlace(pageState.tileName);
+    if (name === 'alkitab') openChaptersInPlace(stageInfo.tile);
     else {
-      markBookTile(pageState.tileName);
+      markBookTile(stageInfo.tile);
       root.dataset.ch = 'open';
       markRailTile();
       syncState();
@@ -630,13 +776,191 @@
     }
   }
 
+  /* ---------- in-page navigation: fetch a page, swap the shell in place ----------
+     Every click inside the shell loads its target page in the background and
+     swaps the sidebar / list / stage fragments, so the push and wipe
+     transitions run instead of a full reload. The links keep their real
+     hrefs: without JS (or when a fetch fails) the browser navigates. */
+  var navBusy = false;
+
+  function navigate(url, opts) {
+    if (!url || navBusy) return;
+    navBusy = true;
+    fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.text();
+      })
+      .then(function (html) {
+        navBusy = false;
+        applyPage(new window.DOMParser().parseFromString(html, 'text/html'), url, opts || {});
+      })
+      .catch(function (error) {
+        navBusy = false;
+        if (window.console && console.error) console.error('in-page navigation failed:', error);
+        window.location.href = url;      /* fetch failed: fall back to the real page */
+      });
+  }
+
+  function txt(doc, sel) {
+    var el = doc.querySelector(sel);
+    return el ? el.textContent : '';
+  }
+
+  function applyPage(doc, url, opts) {
+    var fresh = doc.documentElement.dataset;
+    var kind = opts.kind || 'lists';
+    var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
+      || kind === 'result' || kind === 'more' || kind === 'search'
+      || kind === 'home' || kind === 'results';
+
+    /* shared first column: books / songbooks / services */
+    panelTitleEl.textContent = txt(doc, '#panelTitle');
+    panelFilterLabel.textContent = txt(doc, 'label[for="bookFilter"]');
+    var freshFilter = doc.querySelector('#bookFilter');
+    if (freshFilter) filter.placeholder = freshFilter.getAttribute('placeholder') || '';
+    panelBody.innerHTML = doc.querySelector('#panelBody').innerHTML;
+    var freshEmpty = doc.querySelector('#panelEmpty');
+    if (freshEmpty) {
+      panelEmpty.textContent = freshEmpty.textContent;
+      panelEmpty.hidden = freshEmpty.hidden;
+    }
+    var freshPanelCollapse = doc.querySelector('#panelCollapse');
+    if (freshPanelCollapse) panelCollapse.setAttribute('aria-label', freshPanelCollapse.getAttribute('aria-label'));
+    /* the Tata Ibadah mode switch lives in the filter strip */
+    var oldMode = panel.querySelector('.panel__filter .panel__mode');
+    var newMode = doc.querySelector('.panel__filter .panel__mode');
+    if (newMode) {
+      var imported = document.importNode(newMode, true);
+      if (oldMode) oldMode.parentNode.replaceChild(imported, oldMode);
+      else panel.querySelector('.panel__filter').appendChild(imported);
+    } else if (oldMode) {
+      oldMode.parentNode.removeChild(oldMode);
+    }
+
+    /* shared second column: chapters / song list / service contents */
+    chTitleEl.textContent = txt(doc, '#chTitle');
+    chFilterLabel.textContent = txt(doc, 'label[for="songFilter"]');
+    var freshSongFilter = doc.querySelector('#songFilter');
+    if (freshSongFilter) songFilterEl.placeholder = freshSongFilter.getAttribute('placeholder') || '';
+    var freshChSearch = doc.querySelector('.ch__search');
+    if (freshChSearch) chSearchEl.hidden = freshChSearch.hidden;
+    songEmpty.hidden = true;
+    songEmpty.textContent = txt(doc, '#chEmpty') || songEmpty.textContent;
+    var freshChCollapse = doc.querySelector('#chCollapse');
+    if (freshChCollapse) chCollapse.setAttribute('aria-label', freshChCollapse.getAttribute('aria-label'));
+    var freshSort = doc.querySelector('#songSort');
+    if (freshSort) songSortBtn.hidden = freshSort.hidden;
+    chList.innerHTML = doc.querySelector('#chList').innerHTML;
+
+    /* state */
+    activeSection = fresh.section || activeSection;
+    root.dataset.section = activeSection;
+    if (fresh.chMode) root.dataset.chMode = fresh.chMode;
+
+    if (swapsStage) {
+      root.dataset.read = fresh.read;
+      root.dataset.home = fresh.home;
+      root.dataset.nav = fresh.nav;
+      root.dataset.ch = fresh.ch;
+      stage.innerHTML = doc.querySelector('.stage').innerHTML;
+      refreshStageRefs();
+      bindLangLinks();
+      bindSearchForm();
+      bindStageExtras();
+    } else if (kind === 'rail') {
+      /* section switch: the lists move to the target section; the stage keeps
+         whatever it shows (mockup: setSection + openPanel) */
+      if (root.dataset.ch === 'open') closeChapters();
+      chList.innerHTML = '';
+      root.dataset.ch = 'closed';
+      root.dataset.nav = fresh.nav || 'open';
+    } else if (kind === 'sync') {
+      root.dataset.nav = fresh.nav || 'open';
+      root.dataset.ch = fresh.ch || root.dataset.ch;
+    } else {
+      root.dataset.nav = fresh.nav || root.dataset.nav;
+      root.dataset.ch = fresh.ch || root.dataset.ch;
+    }
+
+    bindPanelTiles();
+    bindPanelTips();
+    bindChRows();
+
+    pageState = readPageState();
+    if (swapsStage) {
+      stageInfo = { tile: pageState.tileName, chapter: pageState.chapter,
+                    song: pageState.songId, url: url };
+    }
+    decorateChapters();
+    markRailTile();
+    syncState();
+    updateChInds();
+    window.requestAnimationFrame(updateChInds);
+
+    /* the rail search icon restores the last result set */
+    if (root.dataset.home === 'results') {
+      try { localStorage.setItem('gkps-search', url); } catch (e) {}
+      railSearch.setAttribute('href', url);
+    } else if (kind === 'home') {
+      try { localStorage.removeItem('gkps-search'); } catch (e) {}
+      railSearch.setAttribute('href', '/home/');
+    }
+    document.title = doc.title;
+
+    /* per-kind endings */
+    if (kind === 'rail') {
+      restoreCurrentPath(opts.section);
+    }
+    if (kind === 'sync') {
+      var syncTile = panelBody.querySelector('.book[aria-current="true"]');
+      revealInSidebar(syncTile, panelBody);
+      if (root.dataset.nav === 'closed') {
+        var syncRow = chList.querySelector('[aria-current="true"]');
+        if (syncRow) syncRow.focus({ preventScroll: true });
+        else chCollapse.focus({ preventScroll: true });
+      }
+    }
+    if (kind === 'chapter' || kind === 'song' || kind === 'service') {
+      if (kind === 'song' && mqNarrow.matches) closeChapters(false);
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    }
+    if (kind === 'result') {
+      revealCurrentRailTile();
+      var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
+      if (target) revealSearchTarget(target);
+    }
+    if (kind === 'search' || kind === 'home' || kind === 'results') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }
+
+  /* results and "Show more" open in place too */
+  function bindStageExtras() {
+    if (!stage) return;
+    stage.querySelectorAll('.result-row').forEach(function (row) {
+      row.addEventListener('click', function (event) {
+        event.preventDefault();
+        navigate(row.href, { kind: 'result' });
+      });
+    });
+    stage.querySelectorAll('.result-more').forEach(function (more) {
+      more.addEventListener('click', function (event) {
+        event.preventDefault();
+        navigate(more.href, { kind: 'more' });
+      });
+    });
+  }
+  bindStageExtras();
+
   /* ---------- Escape closes the innermost open layer ---------- */
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Escape') return;
     if (root.dataset.ch === 'open') {
       closeChapters(true);
       var row = panelBody.querySelector('.book[aria-current="true"]');
-      if (root.dataset.nav !== 'closed' && row) row.focus();
+      if (root.dataset.nav !== 'closed' && row) row.focus({ preventScroll: true });
       else panelOwner().focus();
     } else if (root.dataset.nav !== 'closed') {
       closePanel();
@@ -644,29 +968,20 @@
     }
   });
 
-  /* ---------- search: minimum length + keeping the last result set ---------- */
-  function keywordLength(query) {
-    return Array.from(String(query).matchAll(/[\p{L}\p{N}]/gu)).length;
-  }
-  function clearSearchValidation() {
-    searchQuery.removeAttribute('aria-invalid');
-    searchQuery.removeAttribute('aria-describedby');
-    searchValidation.hidden = true;
-  }
-  searchQuery.addEventListener('input', clearSearchValidation);
-  searchForm.addEventListener('submit', function (event) {
-    var query = searchQuery.value.trim();
-    if (keywordLength(query) < 3) {
+  /* ---------- search: any non-empty query runs, in place ---------- */
+  function bindSearchForm() {
+    if (!searchForm) return;
+    searchForm.addEventListener('submit', function (event) {
+      var input = searchForm.querySelector('#searchQuery') || searchQuery;
+      var query = input ? input.value.trim() : '';
+      if (!query) { event.preventDefault(); return; }
+      input.value = query;
       event.preventDefault();
-      searchQuery.setAttribute('aria-invalid', 'true');
-      searchQuery.setAttribute('aria-describedby', 'searchValidation');
-      searchValidation.hidden = false;
-      searchQuery.focus();
-      return;
-    }
-    clearSearchValidation();
-    searchQuery.value = query;
-  });
+      var action = searchForm.getAttribute('action') || '/search/';
+      navigate(action + '?q=' + encodeURIComponent(query), { kind: 'search' });
+    });
+  }
+  bindSearchForm();
   try {
     if (root.dataset.home === 'results') {
       /* remember the exact result URL, revealed rows included */
@@ -677,11 +992,19 @@
     var logo = document.querySelector('.rail__logo');
     if (logo) {
       /* a fresh search: the logo forgets the last result set */
-      logo.addEventListener('click', function () {
+      logo.addEventListener('click', function (event) {
         try { localStorage.removeItem('gkps-search'); } catch (e) {}
+        event.preventDefault();
+        navigate(logo.getAttribute('href') || '/home/', { kind: 'home' });
       });
     }
   } catch (e) {}
+
+  /* the rail search icon restores the last result set, in place */
+  railSearch.addEventListener('click', function (event) {
+    event.preventDefault();
+    navigate(railSearch.getAttribute('href') || '/home/', { kind: 'results' });
+  });
 
   /* ---------- reveal search targets ---------- */
   function revealSearchTarget(target) {
@@ -701,6 +1024,7 @@
   syncState();
   decorateChapters();
   markRailTile();
+  revealCurrentRailTile();
   updateChInds();
   window.requestAnimationFrame(updateChInds);
   var visibleBlock = null;

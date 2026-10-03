@@ -44,6 +44,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             lang=lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
         self.song = songs.Song.objects.create(book=self.book, number=12, title='Di Waktu Pagi', key='c')
         songs.Verse.objects.create(song=self.song, number=1, lyric='Di waktu pagi aku bersyukur')
+        self.harian = songs.Book.objects.create(
+            lang=lang, name='Kidung Harian', short_name='KH', is_hymn_book=False)
+        songs.Song.objects.create(book=self.harian, title='Alpha')
+        songs.Song.objects.create(book=self.harian, title='Zebra')
 
         b_lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru', abbreviation='TB')
@@ -93,49 +97,46 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         self._search(page, 'waktu pagi')
-        page.wait_for_url('**/search/**')
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
         expect(page.locator('.result-group__title').filter(has_text='Kidung')).to_be_visible()
+        self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
 
     def test_search_resolves_bible_reference(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         self._search(page, 'Matius 5:13')
-        page.wait_for_url('**/search/**')
         first = page.locator('.result-group[data-kind="bible"] .result-row').first
         expect(first).to_contain_text('Matius 5:13')
         first.click()
-        page.wait_for_url(f'**/bible/{self.mat.id}/5/**')
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
         expect(page.locator('[data-search-target="true"]')).to_have_count(1)
+        expect(page.locator('html')).to_have_attribute('data-read', 'on')
+        self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
 
-    def test_search_minimum_length_never_clears_results(self):
+    def test_short_query_searches_and_empty_submit_changes_nothing(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         self._search(page, 'waktu pagi')
-        page.wait_for_url('**/search/**')
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()
         field = page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')
-        field.fill('ab')
+        field.fill('di')                       # two characters search now
         field.press('Enter')
-        expect(page.get_by_text('Enter at least 3 letters or numbers.')).to_be_visible()
-        self.assertIn('q=waktu+pagi', page.url)
+        expect(page.get_by_text('Results for').first).to_be_visible()
+        field.fill('')                         # an empty submit keeps the results
+        field.press('Enter')
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()
 
     def test_search_keeps_last_result_set(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         self._search(page, 'waktu pagi')
-        page.wait_for_url('**/search/**')
         page.locator('.result-group[data-kind="songs"] .result-row').first.click()
-        page.wait_for_url(f'**/songs/{self.song.id}/**')
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
         page.locator('#railSearch').click()
-        page.wait_for_url('**/search/**')
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
         page.locator('.rail__logo').click()
-        page.wait_for_url('**/home/**')
         expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_have_value('')
+        self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
 
     def test_search_icon_exclusive_to_closed_sidebars(self):
         page = self._page()
@@ -153,10 +154,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-books'))
         self.assertIn('GKPS Klender', page.title())
         page.get_by_role('link', name='Nyanyikanlah Kidung Baru').first.click()
-        page.wait_for_url('**/songs/book/**')
+        expect(page.get_by_role('link', name='NKB 12').first).to_be_visible()
         page.get_by_role('link', name='NKB 12').first.click()
-        page.wait_for_url(f'**/songs/{self.song.id}/**')
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
+        self.assertEqual(page.url, self.live_server_url + reverse('web-books'))
 
     def test_sidebar_restore_from_stage_content(self):
         page = self._page()
@@ -205,3 +206,55 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             page = self._page()
             page.goto(self.live_server_url + '/')
             expect(page.get_by_text('pemeliharaan')).to_be_visible()
+
+    # --- one-page shell (spec 004 review round) ---
+
+    def test_shell_navigates_in_place(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        start = page.url
+        page.locator('.rail [data-panel="alkitab"]').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        expect(page.locator('#panelBody .book').first).to_be_visible()
+        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        page.locator('#chList .ch-num').nth(4).click()
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        self.assertEqual(page.url, start)        # one page, no address changes
+
+    def test_sidebar_click_never_scrolls_the_list(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.id, 5]))
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        body = "document.getElementById('chBody')"
+
+        page.evaluate(body + '.scrollTop = 0')
+        page.evaluate("document.querySelectorAll('#chList .ch-num')[4].click()")
+        page.wait_for_timeout(300)
+        self.assertEqual(page.evaluate(body + '.scrollTop'), 0)   # visible row: no move
+
+        # a row clipped at the top edge is nudged just enough to be fully visible
+        page.evaluate(
+            "(() => { const b = document.getElementById('chBody');"
+            " const t = document.querySelector('#chList .ch-num:not(.no-data)');"
+            " b.scrollTop += t.getBoundingClientRect().top - b.getBoundingClientRect().top + 30; })()")
+        before = page.evaluate(body + '.scrollTop')
+        self.assertGreater(before, 0, 'fixture list did not scroll')
+        page.evaluate("document.querySelector('#chList .ch-num:not(.no-data)').click()")
+        page.wait_for_timeout(300)
+        after = page.evaluate(body + '.scrollTop')
+        self.assertLessEqual(after, before)
+        self.assertLess(before - after, 45)      # nudged, never centred
+
+    def test_song_sort_toggle_on_non_hymn_books(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-book', args=[self.harian.id]))
+        sort = page.locator('#songSort')
+        expect(sort).to_be_visible()
+        rows = page.locator('#chList .songrow')
+        expect(rows.first).to_have_attribute('data-t', 'Zebra')   # newest first
+        sort.click()
+        expect(rows.first).to_have_attribute('data-t', 'Alpha')   # alphabetical
+        expect(sort).to_have_attribute('data-order', 'title')
+        sort.click()
+        expect(rows.first).to_have_attribute('data-t', 'Zebra')

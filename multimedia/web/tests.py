@@ -19,7 +19,10 @@ class ReadingViewsTests(TestCase):
         songs.Verse.objects.create(song=cls.song, number=1, lyric='Di waktu pagi aku bersyukur')
         songs.Verse.objects.create(song=cls.song, number=2, lyric='Bersama seluruh ciptaan')
         cls.next_song = songs.Song.objects.create(book=cls.nkb, number=13, title='Di Waktu Malam')
-        songs.Book.objects.create(lang=lang, name='Kidung Harian', short_name='', is_hymn_book=False)
+        cls.harian = songs.Book.objects.create(
+            lang=lang, name='Kidung Harian', short_name='', is_hymn_book=False)
+        songs.Song.objects.create(book=cls.harian, title='Alpha')
+        songs.Song.objects.create(book=cls.harian, title='Zebra')
 
         b_lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru', abbreviation='TB')
@@ -68,12 +71,12 @@ class ReadingViewsTests(TestCase):
         self.assertContains(response, target)
         self.assertContains(response, 'Kamu adalah garam dunia.')
 
-    def test_search_page_flags_short_queries(self):
-        response = self.client.get(reverse('web-search'), {'q': 'ab'})
+    def test_search_page_searches_short_queries(self):
+        response = self.client.get(reverse('web-search'), {'q': 'di'})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Enter at least 3 letters or numbers.')
-        self.assertContains(response, 'aria-invalid="true"')
-        self.assertNotContains(response, 'Results for')
+        self.assertContains(response, 'Results for')
+        self.assertContains(response, 'Di Waktu Pagi')
+        self.assertNotContains(response, 'at least 3')
 
     # --- Alkitab ---
 
@@ -109,6 +112,14 @@ class ReadingViewsTests(TestCase):
         self.assertContains(response, 'Di Waktu Pagi')
         self.assertContains(response, reverse('web-song', args=[self.song.id]))
         self.assertContains(response, 'Song list')
+        self.assertFalse(response.context['show_song_sort'])   # hymns keep number order
+
+    def test_non_hymn_book_offers_the_sort_toggle(self):
+        response = self.client.get(reverse('web-book', args=[self.harian.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['show_song_sort'])
+        self.assertContains(response, 'data-m="')              # rows carry the sort key
+        self.assertEqual(response.context['songs'][0]['sort_title'], 'Zebra')
 
     def test_song_detail_shows_lyrics_and_citation(self):
         response = self.client.get(reverse('web-song', args=[self.song.id]))

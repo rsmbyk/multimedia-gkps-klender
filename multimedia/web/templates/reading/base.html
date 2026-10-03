@@ -198,7 +198,9 @@
           <input id="songFilter" type="search" placeholder="{{ ch_filter_placeholder|default:'Filter songs...' }}"
                  autocomplete="off" spellcheck="false">
         </div>
-        <button class="ch__sort" type="button" id="songSort" data-order="m"{% if not show_song_sort %} hidden{% endif %}>
+        <button class="ch__sort" type="button" id="songSort" data-order="m"
+                aria-label="Sort: recently updated — switch to alphabetical"
+                title="Sort: recently updated — switch to alphabetical"{% if not show_song_sort %} hidden{% endif %}>
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 5.5h14M5 10h10M8 14.5h4"/>
@@ -248,7 +250,7 @@
     <label class="sr" for="searchQuery">Search Alkitab, Kidung, and Tata Ibadah</label>
     <input class="search-home__input" id="searchQuery" type="search" name="q"
            value="{{ query|default:'' }}"
-           placeholder="Search Alkitab, Kidung, Tata Ibadah..." autocomplete="off" spellcheck="false"{% if query_invalid %} aria-invalid="true" aria-describedby="searchValidation"{% endif %}>
+           placeholder="Search Alkitab, Kidung, Tata Ibadah..." autocomplete="off" spellcheck="false">
     <button class="search-home__submit" type="submit" aria-label="Search">
      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" aria-hidden="true">
@@ -256,7 +258,6 @@
      </svg>
     </button>
    </form>
-   <p class="search-home__validation" id="searchValidation" role="alert"{% if not query_invalid %} hidden{% endif %}>Enter at least 3 letters or numbers.</p>
    <p class="search-home__hint">Try Matius 5:13, KJ 152, or pengampunan dosa</p>
   </div>
  </section>

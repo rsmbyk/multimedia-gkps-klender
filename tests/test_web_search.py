@@ -1,7 +1,7 @@
 """Public search rules (spec 004).
 
-Covers the cross-corpus search module: query normalization, the minimum
-length guard, reference resolution (Bible + songs, full name = abbreviation),
+Covers the cross-corpus search module: query normalization, any-non-empty
+query policy, reference resolution (Bible + songs, full name = abbreviation),
 the ranking ladder, grouping, and what is *not* indexed (End-of-section notes,
 inactive or empty services).
 """
@@ -13,7 +13,7 @@ from django.test import SimpleTestCase, TestCase
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
-from multimedia.web.reading.search import keyword_length, normalize, search
+from multimedia.web.reading.search import normalize, search
 
 
 class QueryRulesTests(SimpleTestCase):
@@ -21,15 +21,8 @@ class QueryRulesTests(SimpleTestCase):
         self.assertEqual(normalize('  Y\u00e9sus   K\u00c9KASIH! '), 'yesus kekasih!')
         self.assertEqual(normalize(None), '')
 
-    def test_keyword_length_counts_letters_and_digits_only(self):
-        self.assertEqual(keyword_length('kj'), 2)
-        self.assertEqual(keyword_length('a b'), 2)
-        self.assertEqual(keyword_length('!!!'), 0)
-        self.assertEqual(keyword_length('kj 1'), 3)
-        self.assertEqual(keyword_length('120'), 3)
-
-    def test_short_queries_are_not_searched(self):
-        for query in ('kj', 'a b', '!!!', '', '   '):
+    def test_empty_queries_are_not_searched(self):
+        for query in ('', '   '):
             with self.subTest(query=query):
                 result = search(query)
                 self.assertFalse(result.valid)
@@ -202,3 +195,8 @@ class CorpusSearchTests(TestCase):
         result = search('zzzqqq')
         self.assertTrue(result.valid)
         self.assertEqual(result.total, 0)
+
+    def test_short_query_is_searched(self):
+        result = search('di')
+        self.assertTrue(result.valid)
+        self.assertGreater(result.total, 0)
