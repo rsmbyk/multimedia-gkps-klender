@@ -29,9 +29,15 @@
 - [x] Two bugs the tests caught: `editor/<str:kind>/new/` was swallowing `editor/entry/new/`
       (the entry routes must come first), and a second `kind` input shadowed the form's own,
       making every create invalid
-- [ ] The content pane itself: entries rendered in the Tata Ibadah page, the per-entry add
-      controls, and the modals' behaviour (the cascading dropdowns, the song pick, the verse
-      checklist's label)
+- [x] The pane's rendering: a service's entries appear in its stage after its legacy items, in
+      its contents list, with a jump control on a passage or a song, and four add controls on
+      every item (and one row at the end). Additive: a service with no entries renders exactly as
+      it did before, which one test pins
+- [x] A new entry can be inserted behind the item whose control was used (`after`), shifting the
+      rest -- the liturgy is built in place, not appended
+- [ ] The modals' behaviour in the browser: opening the fragment, submitting it, the cascading
+      book -> chapter -> verse resets, the song pick's search, and the verse checklist's label
+      (`static/web/entries.js`, and the styles for the new controls)
 - [ ] E2E: each modal, the cascading dropdowns, the verse checklist's label, the panes
       refreshing in place
 

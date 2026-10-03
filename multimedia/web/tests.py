@@ -600,6 +600,74 @@ class ServiceEntryViewTests(TestCase):
         for number in (1, 2, 3):                       # checked, whatever the attribute order
             self.assertRegex(html, rf'value="{number}"[^>]*checked')
 
+    # --- the pane: entries in the service's own stage ----------------------
+
+    def test_the_service_stage_renders_its_entries_after_its_legacy_items(self):
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='PAMUNGKAHNI', text='Paragenda: ...', order_number=1)
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='Kasih karunia')
+        response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('PAMUNGKAHNI', html)                       # the legacy item, untouched
+        self.assertIn('Kasih karunia', html)
+        self.assertIn('tatib__item--entry', html)
+        self.assertLess(html.index('PAMUNGKAHNI'), html.index('Kasih karunia'))
+
+    def test_a_service_without_entries_renders_as_it_did_before(self):
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='PAMUNGKAHNI', text='Paragenda: ...', order_number=1)
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn('PAMUNGKAHNI', html)
+        self.assertNotIn('tatib__item--entry', html)
+        self.assertIn('PAMUNGKAHNI', html.split('entry__add')[0])   # nothing injected before it
+
+    def test_a_scripture_entry_offers_a_jump_to_its_passage(self):
+        self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=4)
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn(f'/bible/{self.matius.book_id}/5/', html)
+        self.assertIn('?v=2&amp;to=4', html)
+
+    def test_a_song_entry_offers_a_jump_to_its_song(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn(reverse('web-song', args=[self.song.pk]), html)
+        self.assertIn('Ada Kuasa dalam DarahNya', html)          # the song's title
+
+    def test_the_add_controls_sit_on_each_item(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        for kind in ('scripture', 'song', 'text', 'section_break'):
+            self.assertIn(f'data-entry-open="{kind}"', html)
+        self.assertIn(f'data-entry-after="e{entry.pk}"', html)
+
+    def test_an_entry_can_be_inserted_behind_the_item_it_was_asked_for(self):
+        first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
+        second = self.make(kind=tatib.ServiceEntryKind.TEXT, text='b', order_number=2)
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': 'text', 'text': 'c', 'after': first.pk})
+        self.assertEqual(response.status_code, 200)
+        second.refresh_from_db()
+        self.assertEqual([(e.order_number, e.text) for e in self.tatib.service_entries.all()],
+                         [(1, 'a'), (2, 'c'), (3, 'b')])
+
+    def test_the_contents_list_carries_the_entries_too(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                          chapter=5, verse_start=2)
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        toc = html.split('id="chList"')[1]
+        self.assertIn('Matius 5:2', toc)
+        self.assertIn(f'href="#ti-e{entry.pk}"', toc)            # the row points at its block
+        self.assertIn(f'id="ti-e{entry.pk}"', html)
+
     def test_the_verses_of_a_song_come_back_all_included(self):
         response = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))
         self.assertEqual(response.status_code, 200)

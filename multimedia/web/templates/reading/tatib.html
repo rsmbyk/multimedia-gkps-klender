@@ -9,13 +9,31 @@
 {% block read_body %}
 {% for item in items %}
 {% if item.eos %}
-<div class="tatib__eos" id="ti-{{ item.anchor }}">{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
+<div class="tatib__eos" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}">{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
 {% else %}
-<section class="tatib__item" id="ti-{{ item.anchor }}">
-{% if item.title %}<h2 class="read__sec">{{ item.title }}</h2>{% endif %}
+<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}">
+{% if item.title %}<h2 class="read__sec">{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
+{% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
 {% for para in item.paras %}<p class="tatib__tx">{% if para.speaker %}<span class="tatib__sp">{{ para.speaker }}.</span> {% endif %}{{ para.text }}</p>
 {% endfor %}
+{% if item.entry %}{% if item.note and item.eos %}<span class="tatib__note">{{ item.note }}</span>{% endif %}{% endif %}
 </section>
 {% endif %}
+{% if editor_enabled %}
+<div class="entry__add" data-entry-after="{{ item.anchor }}" role="group" aria-label="Add after this item">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">+ Break</button>
+</div>
+{% endif %}
 {% endfor %}
+{% if editor_enabled %}
+<div class="entry__add entry__add--end" data-entry-after="" role="group" aria-label="Add at the end">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">+ Break</button>
+</div>
+{% endif %}
 {% endblock %}

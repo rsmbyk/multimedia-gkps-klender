@@ -172,7 +172,17 @@ def entry_save(request, pk=None):
                         + ('' if pk else f'?tatib={form.tatib.pk}'),
         }, status=400)
     if entry is None:
-        form.instance.order_number = entry_forms.next_order_number(form.tatib)
+        after = request.POST.get('after')
+        marker = (tatib_models.ServiceEntry.objects.filter(pk=after, tatib=form.tatib).first()
+                  if after else None)
+        if marker is not None:
+            # the add controls sit on an item, so the new one goes in behind it
+            (tatib_models.ServiceEntry.objects
+             .filter(tatib=form.tatib, order_number__gt=marker.order_number)
+             .update(order_number=F('order_number') + 1))
+            form.instance.order_number = marker.order_number + 1
+        else:
+            form.instance.order_number = entry_forms.next_order_number(form.tatib)
     form.instance.kind = entry_forms.KINDS[kind]      # the URL decides the kind, not the post
     saved = form.save()
     return JsonResponse({'ok': True, 'id': saved.pk})
@@ -326,6 +336,57 @@ def _first_line(text):
     return line.strip()
 
 
+def _paragraphs(text):
+    """A block's lines, with a speaker lifted out of "SPEAKER. text" when present."""
+    paras = []
+    for line in (text or '').split('\n'):
+        match = SPEAKER_RE.match(line)
+        if match:
+            paras.append({'speaker': match.group(1), 'text': match.group(2)})
+        else:
+            paras.append({'speaker': '', 'text': line})
+    return paras
+
+
+def _entry_jump(entry):
+    """Where a passage or a song entry points, the way a search result does."""
+    if entry.kind == tatib_models.ServiceEntryKind.SCRIPTURE and entry.book_translation_id:
+        url = reverse('web-bible-chapter',
+                      args=[entry.book_translation.book_id, entry.chapter])
+        url += f'?v={entry.verse_start}'
+        if entry.verse_end:
+            url += f'&to={entry.verse_end}'
+        return url
+    if entry.kind == tatib_models.ServiceEntryKind.SONG and entry.song_id:
+        return reverse('web-song', args=[entry.song_id])
+    return ''
+
+
+def _entry_blocks(service, items, toc, text_count):
+    """The service's entries, after its legacy items. Additive: a service with none
+    renders exactly as it did before (spec 006 keeps the old path working)."""
+    for entry in service.service_entries.order_by('order_number'):
+        anchor = f'e{entry.pk}'
+        title, body = entry.resolve()
+        kind_key = entry_forms.kind_name(entry.kind)
+        block = {'entry': True, 'anchor': anchor, 'pk': entry.pk, 'kind': kind_key,
+                 'kind_label': entry.get_kind_display(), 'title': title,
+                 'paras': _paragraphs(body) if body else [],
+                 'note': entry.title if entry.kind == tatib_models.ServiceEntryKind.SECTION_BREAK
+                         else ''}
+        if kind_key in ('scripture', 'song'):
+            block['jump'] = _entry_jump(entry)
+            if kind_key == 'song' and entry.song_id:
+                block['subtitle'] = entry.song.title or ''
+        items.append(block)
+        text_count += 1
+        label = title or entry.get_kind_display()
+        toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
+                    'label': label[:60], 'titled': bool(title),
+                    'txt': f'{title} {body}'})
+    return text_count
+
+
 def _tatib_stage(service):
     items, toc = [], []
     text_count = 0
@@ -336,14 +397,8 @@ def _tatib_stage(service):
             toc.append({'eos': True, 'anchor': anchor})
             continue
         text_count += 1
-        paras = []
-        for line in item.text.split('\n'):
-            match = SPEAKER_RE.match(line)
-            if match:
-                paras.append({'speaker': match.group(1), 'text': match.group(2)})
-            else:
-                paras.append({'speaker': '', 'text': line})
-        items.append({'eos': False, 'anchor': anchor, 'title': item.title, 'paras': paras})
+        items.append({'eos': False, 'anchor': anchor, 'title': item.title,
+                      'paras': _paragraphs(item.text)})
         label = item.title or _first_line(item.text)
         if len(label) > 60:
             label = label[:60] + '…'
@@ -351,6 +406,7 @@ def _tatib_stage(service):
                     'label': label or f'Section {text_count}',
                     'titled': bool(item.title),
                     'txt': f'{item.title} {item.text}'})
+    text_count = _entry_blocks(service, items, toc, text_count)
     return items, toc
 
 
