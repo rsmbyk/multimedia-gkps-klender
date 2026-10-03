@@ -62,9 +62,11 @@ Tata Ibadah and for search.
   rows are nudged only; reveals may centre), and non-hymn song lists carry the *recently
   updated* ↔ *alphabetical* sort backed by `Song.modified` (migration 0012).
 - Reveal behaviors pinned (review round 2): a search result and a sidebar opened on the page
-  being read both centre the panel tile **and** the list row — for every section, animated —
-  with Tata Ibadah contents rows flashed instead of selected; the last result set survives
-  sidebar browsing and resumes its scroll offset.
+  being read both centre the panel tile **and** the list row — for every section, a short
+  ≈120-180 ms tween — with Tata Ibadah contents rows flashed instead of selected; the last
+  result set survives sidebar browsing and resumes its scroll offset.
+- The rail search icon restores only a validated result-set URL (a stale stored value is
+  dropped), so it can never open a reading page's sidebar.
 - One concern: this is one spec (004).
 
 ## Acceptance sketch

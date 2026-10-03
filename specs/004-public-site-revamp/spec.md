@@ -171,11 +171,13 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 - **Reveals centre, and they travel.** In the two reveal cases — opening a search result, or
   opening a sidebar on the page being read — the rows that identify what is on stage are
   centred: the panel tile (book, songbook, service) **and** the list row (chapter, song,
-  contents item). The travel is animated (a short eased tween, so the rows just before the
-  target are seen moving past; reduced motion jumps), and a second pass re-centres after the
-  sidebar's push transition has reflowed the lists. Every corpus behaves the same: Tata
-  Ibadah's service row is centred like a book or songbook, and the contents row — a quicklink
-  that is never selected — is **flashed** so the item in view is identifiable.
+  contents item). The travel is a short eased tween (≈120–180 ms, the shell's easing, so the
+  rows just before the target are seen moving past; reduced motion jumps), with a reflow pass
+  after the sidebar's push transition that snaps when the correction is under ~48 px and
+  travels only when it is larger. Every corpus behaves the same: Tata Ibadah's service row is
+  centred like a book or songbook, and the contents row — a quicklink that is never selected —
+  is **flashed** (the tint holds half of a 2.6 s animation) so the item in view is
+  identifiable.
 - **Song lists sort by recency or alphabetically.** A non-hymn songbook (`is_hymn_book`
   false) shows a sort control in the chapters toolbar — *recently updated* (default, by
   `Song.modified`, newest first) ↔ *alphabetical* — applied in place without a reload. Hymn

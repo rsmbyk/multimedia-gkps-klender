@@ -77,6 +77,17 @@ DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test \
 DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test tests.e2e.test_reading
 ```
 
+## Review round 3 (owner, 2026-10-03)
+
+- The search rail icon could open a *reading page's* sidebar: a value written into
+  `gkps-search` by an older build (a Tata Ibadah or Bible URL) was trusted verbatim and
+  navigated to. The stored URL is now validated against the result-set shape and dropped when
+  it does not match, so the icon can only ever restore results (a stale value falls back to
+  the landing).
+- The reveal travel was shortened to ≈120-180 ms (from 220-420 ms), and a reflow correction
+  under ~48 px now snaps instead of travelling — one short glide, not motion-then-correction.
+- The contents flash was lengthened to 2.6 s (half of it solid).
+
 ## Review round 2 (owner, 2026-10-03)
 
 Six follow-ups from clicking through the built site, all fixed and measured:
@@ -85,12 +96,12 @@ Six follow-ups from clicking through the built site, all fixed and measured:
   reveal only handled Bible chapters and songs).
 - A Tata Ibadah **item** result centres its contents row in the contents list and **flashes**
   it — quicklinks are never selected, so a flash is how the item is identified. The flash hold
-  was lengthened for rows (1.9s, 45% solid) after a capture showed it faded too fast to see.
+  was lengthened for rows (2.6s, half of it solid) after a capture showed it faded too fast.
 - Reveals are consistent across every section: the panel tile (book / songbook / service) and
   the list row (chapter / song / contents item) are both centred, whether the row was already
   on screen or not, and whether the moment is a result open or a sidebar open on the page
   being read.
-- The reveal **travels** (eased tween, so the rows before the target are seen passing) instead
+- The reveal **travels** (a ≈120-180 ms eased tween, shortened on request, so the rows before the target are seen passing) instead
   of jumping, with a second pass that re-centres after the sidebar's push transition has
   reflowed the lists. `data-scroll-anim` marks the reveal window for tests.
 - The last result set survives browsing away through the sidebars: a reading page no longer
