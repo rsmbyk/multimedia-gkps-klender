@@ -966,6 +966,7 @@
       refreshStageRefs();
       bindLangLinks();
       bindSearchForm();
+      bindFieldClears();
       bindStageExtras();
     } else if (kind === 'rail') {
       /* section switch: the lists move to the target section; the stage keeps
@@ -1076,6 +1077,34 @@
   });
 
   /* ---------- search: any non-empty query runs, in place ---------- */
+  /* ---------- clear controls: one per search / filter field ----------
+     Shown only while the field holds something; clearing fires the field's own
+     input event (so a filter re-applies) and leaves focus in the field. */
+  function bindFieldClear(box) {
+    var input = box.querySelector('input');
+    var clear = box.querySelector('.field-clear');
+    if (!input || !clear || clear.dataset.bound) return;
+    clear.dataset.bound = 'true';
+    var label = input.id ? document.querySelector('label[for="' + input.id + '"]') : null;
+    var text = label ? label.textContent.trim() : '';
+    text = text.replace(/^Filter\s+/i, '').replace(/^Search\b.*$/i, 'search');
+    clear.setAttribute('aria-label', text ? 'Clear ' + text : 'Clear this field');
+    function sync() { clear.hidden = input.value === ''; }
+    clear.addEventListener('click', function () {
+      if (input.value === '') return;
+      input.value = '';
+      sync();
+      input.dispatchEvent(new window.Event('input', { bubbles: true }));
+      input.focus();
+    });
+    ['input', 'change', 'search'].forEach(function (ev) { input.addEventListener(ev, sync); });
+    sync();
+  }
+  function bindFieldClears() {
+    document.querySelectorAll('.filter-box, .search-home__form').forEach(bindFieldClear);
+  }
+  bindFieldClears();
+
   function bindSearchForm() {
     if (!searchForm) return;
     searchForm.addEventListener('submit', function (event) {

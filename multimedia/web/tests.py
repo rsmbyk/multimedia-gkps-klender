@@ -46,6 +46,7 @@ class ReadingViewsTests(TestCase):
         response = self.client.get(reverse('web-home'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="q"')
+        self.assertContains(response, 'class="field-clear"')          # the clear control
         self.assertContains(response, 'Search Alkitab, Kidung, and Tata Ibadah')
         self.assertContains(response, 'Try Matius 5:13, KJ 152, or pengampunan dosa')
         self.assertContains(response, 'data-tip="Alkitab"')
@@ -70,6 +71,11 @@ class ReadingViewsTests(TestCase):
         target = reverse('web-bible-chapter', args=[self.mat.id, 5]) + '?v=13&amp;to=13'
         self.assertContains(response, target)
         self.assertContains(response, 'Kamu adalah garam dunia.')
+
+    def test_search_field_has_a_clear_control(self):
+        response = self.client.get(reverse('web-search'), {'q': 'kasih'})
+        self.assertContains(response, 'field-clear')
+        self.assertContains(response, 'type="button" aria-label="Clear the filter" hidden')
 
     def test_search_page_searches_short_queries(self):
         response = self.client.get(reverse('web-search'), {'q': 'di'})

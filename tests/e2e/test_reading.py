@@ -270,6 +270,52 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertLessEqual(after, before)
         self.assertLess(before - after, 45)      # nudged, never centred
 
+    def test_clear_controls_in_search_and_filter_fields(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-book', args=[self.harian.id]))
+        clear = page.locator('.ch__search .field-clear')
+        expect(clear).to_be_hidden()                              # nothing typed yet
+        expect(clear).to_have_attribute('aria-label', 'Clear songs')
+        total = page.locator('#chList .songrow').count()
+        page.fill('#songFilter', 'Lagu 1')
+        expect(clear).to_be_visible()
+        filtered = page.evaluate(
+            "Array.from(document.querySelectorAll('#chList .songrow'))"
+            ".filter(r => !r.closest('.is-hidden')).length")
+        self.assertLess(filtered, total, 'the filter did not filter')
+        clear.click()
+        expect(page.locator('#songFilter')).to_have_value('')
+        expect(clear).to_be_hidden()
+        self.assertEqual(page.evaluate(
+            "Array.from(document.querySelectorAll('#chList .songrow'))"
+            ".filter(r => !r.closest('.is-hidden')).length"), total)
+        self.assertTrue(page.evaluate(
+            "document.activeElement === document.getElementById('songFilter')"),
+            'focus did not return to the field')
+
+        # the panel filter names what it clears
+        page.goto(self.live_server_url + reverse('web-tatib'))
+        panel_clear = page.locator('.panel__filter .field-clear')
+        expect(panel_clear).to_be_hidden()
+        expect(panel_clear).to_have_attribute('aria-label', 'Clear Tata Ibadah')
+        page.fill('#bookFilter', 'Ibadah')
+        expect(panel_clear).to_be_visible()
+        panel_clear.click()
+        expect(page.locator('#bookFilter')).to_have_value('')
+
+        # the search field
+        page.goto(self.live_server_url + reverse('web-home'))
+        search_clear = page.locator('.search-home .field-clear')
+        expect(search_clear).to_be_hidden()
+        expect(search_clear).to_have_attribute('aria-label', 'Clear search')
+        self._search(page, 'waktu pagi')
+        page.wait_for_selector('#searchStatus')
+        expect(search_clear).to_be_visible()
+        search_clear.click()
+        expect(page.locator('#searchQuery')).to_have_value('')
+        expect(search_clear).to_be_hidden()
+        expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()   # results stay
+
     def test_song_sort_toggle_on_non_hymn_books(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-book', args=[self.harian.id]))
