@@ -60,19 +60,26 @@
       guard on every exit path (contents, another Tata Ibadah, search, tab close)
 - [ ] Green: reorder mode, Save/Discard, the confirmation modal, the reorder endpoint
 
-## Slice 4 — the new display and display mode
+## Slice 4 — the new display and display mode  (done, bar the deferred overlay)
 
-- [ ] Red: each kind rendered on the new projector and overlay; two lines per body; the
-      blank-line rule; prev/next/toggle
-- [ ] Red: entry writes refused while the Tata Ibadah is displaying in this browser, in its other
-      tabs too, while the Tata Ibadah's own fields stay writable; one Tata Ibadah at a time in
-      this browser; a second browser unaffected
-- [ ] Red: the project button becomes Stop projecting and Update the current state; Update
-      re-reads a song whose lyrics changed
-- [ ] Green: the in-browser display state on its own channel, the hand-written pages on the
-      reading app's tokens, the project button, the jump-to controls on scripture and song entries
-- [ ] e2e: a whole service driven through the new projector, plus the two-tab lock
-- [ ] Deferred: the OBS overlay, which needs its own answer for reaching inside OBS
+- [x] Red: each kind rendered on the new projector; the body's own two lines; the blank-line
+      pause; prev/next/toggle (`multimedia/web/tests.py`, `ServiceProjectorTests`, red before the
+      page existed)
+- [x] Red: entry writes refused while the Tata Ibadah is displaying in this browser, in its other
+      tabs too, while the Tata Ibadah's own fields stay writable; one Tata Ibadah at a time in this
+      browser; a second browser unaffected (`tests/e2e/test_projector.py`)
+- [x] Red: the project button becomes Stop projecting and Update the current state; Update
+      re-reads what is on screen — a lyric edit reaches a fresh projection
+      (`test_a_lyric_change_reaches_a_fresh_projection`)
+- [x] Green: the display state in the browser on its own channel (`static/web/display.js`), the
+      projector page on the reading app's tokens (`reading/projector.html`,
+      `static/styles/design/projector.css`, `static/web/projector.js`), the project group
+      (`reading/tatib.html`), the decline in `static/web/entries.js`, and the endpoints untouched:
+      the lock is the shell refusing, exactly as the compatibility promise requires
+- [x] e2e: a whole service driven through the new projector, the two-tab lock, a second browser
+      left alone, and Update keeping its place (4 tests)
+- [ ] Deferred, per the plan: the OBS overlay, which needs its own answer for reaching inside OBS.
+      The projector window is the whole of this version's display.
 
 ## Slice 5 — soft deletion
 

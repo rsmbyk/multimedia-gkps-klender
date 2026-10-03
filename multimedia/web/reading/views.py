@@ -422,6 +422,48 @@ def _tatib_stage(service):
     return items, toc
 
 
+def _projector_slides(service):
+    """What the display is given (spec 006, slice 4): one slide per element of the
+    running order, each resolved to the ``(title, body)`` pair the Tata Ibadah source
+    already renders. The legacy rows ride along before the entries, so the order a
+    person sees on the projector is the order the reading pane shows.
+
+    A slide is named by the same anchor the pane uses -- a legacy item by its
+    ``order_number``, an entry by ``e<id>`` -- which is what the display state and
+    the channel pass around.
+    """
+    slides = []
+    for item in service.tataibadahitem_set.order_by('order_number'):
+        if item.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
+            slides.append({'slide': item.order_number, 'kind': 'section_break',
+                           'title': item.text, 'body': ''})
+        else:
+            slides.append({'slide': item.order_number, 'kind': 'text',
+                           'title': item.title, 'body': item.text})
+    for entry in service.service_entries.order_by('order_number'):
+        title, body = entry.resolve()
+        slides.append({'slide': f'e{entry.pk}', 'kind': entry_forms.kind_name(entry.kind),
+                       'title': title, 'body': body})
+    return slides
+
+
+def service_projector(request, service_id):
+    """The new service projector: a page of its own, hand-written on the reading
+    app's tokens, showing one slide at a time.
+
+    It keeps no server record of what is on screen. Which slide is showing lives in
+    the operator's browser and is shared across that browser's tabs over the
+    display channel, so several laptops can drive different screens.
+    """
+    service = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    return render(request, 'reading/projector.html', {
+        'service': service,
+        'service_id': service.pk,
+        'slides': _projector_slides(service),
+        'page_title': f'{service.name} — display',
+    })
+
+
 def _search_row(row):
     target = row['target']
     kind = row['kind']
@@ -733,6 +775,8 @@ class TatibView(TemplateView):
             'tatib_mode_label': ('Show dated Tata Ibadah' if mode == 'template'
                                  else 'Show Tata Ibadah templates'),
             'service_id': service.pk if service else None,
+            'projector_url': (reverse('web-service-projector', args=[service.pk])
+                              if service else ''),
             'toc_items': toc,
             'items': items,
             'read_kind': 'tatib' if service else '',

@@ -442,6 +442,15 @@
   }
 
   document.addEventListener('click', function (event) {
+    /* Display mode lives in this browser (spec 006, slice 4): while a Tata Ibadah is
+       on screen, an entry write is declined here, with the reason, rather than at the
+       endpoint -- which keeps the current API exactly as it is. */
+    if (event.target.closest('[data-entry-delete], [data-entry-edit], [data-entry-open]') &&
+        window.gkpsDisplay && window.gkpsDisplay.locked()) {
+      event.preventDefault();
+      window.gkpsDisplay.refuse();
+      return;
+    }
     var del = event.target.closest('[data-entry-delete]');
     if (del) { event.preventDefault(); confirmDelete(del.dataset.entryDelete); return; }
     var edit = event.target.closest('[data-entry-edit]');

@@ -278,6 +278,32 @@ Filled per slice as it lands.
 - Deviations from the mockup, on the owner's instruction: no x-close on the modal, a filter inside
   each picker rather than beside it, and the verse checklist inside a dropdown
 
+### Slice 4 — the new display and display mode (landed 2026-10-04)
+
+- The projector: `multimedia/web/templates/reading/projector.html`,
+  `static/styles/design/projector.css`, `static/web/projector.js`; the view and its slide payload
+  (`service_projector`, `_projector_slides`) in `multimedia/web/reading/views.py`, routed at
+  `/obs/service/<id>/` (`web-service-projector`) so every `/obs/` path the dock uses stays as it is
+- The display state and the lock: `static/web/display.js` (localStorage plus its own
+  `BroadcastChannel`), the project group in `reading/tatib.html`, the decline in
+  `static/web/entries.js`
+- App tests: `ServiceProjectorTests` (11) — its own path, the page on the app's tokens, every kind
+  with its title and body in the running order, the blank line kept, a section break with no body,
+  the legacy rows before the entries, the three controls, the project button and its two states,
+  and a lyric edit reaching a fresh projection
+- E2E: `tests/e2e/test_projector.py` (4) — one slide at a time with the font fitted to the screen,
+  prev/next/toggle, the button's states, the two-tab lock, the Tata Ibadah's own fields staying
+  editable, a second browser untouched, and Update re-reading the page while keeping its place
+- Two readings taken, marked **to confirm**: (1) the projector shows the service's whole running
+  order — the legacy rows before the entries — so a service that predates this spec can be
+  displayed too, not only one built from entries; (2) while anything is displaying in a browser,
+  entry writes are declined in every one of its tabs (the plan's wording), not only for the
+  displaying service
+- Deferred, per the plan: the OBS overlay. The projector window is this version's whole display;
+  the overlay needs its own answer for reaching inside OBS
+- Verified: 93 tests green across the app; the projector e2e green (4/4) and the entry e2e green
+  (10/10)
+
 ## Open questions for Accept
 
 1. **Name.** I propose a new model **`ServiceEntry`** ("service entry") in the `tatib` app, with

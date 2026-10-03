@@ -771,3 +771,139 @@ class ServiceEntryViewTests(TestCase):
                                            kwargs={'pk': self.matius.pk, 'chapter': 5}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['count'], 5)
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class ServiceProjectorTests(TestCase):
+    """The new service projector (spec 006, slice 4).
+
+    Written before the page exists: the URL it names does not resolve yet, so the
+    first run is a page of NoReverseMatch.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III',
+                                                    date=date(2026, 7, 12))
+
+        b_lang = bible.Language.objects.create(name='Indonesia')
+        version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru',
+                                               abbreviation='TB')
+        book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
+        cls.matius = bible.BookTranslation.objects.create(
+            version=version, book=book, translation='Matius')
+        for number in (2, 3):
+            bible.Verse.objects.create(book_translation=cls.matius, chapter=5,
+                                       verse=number, text=f'ayat {number}')
+
+        s_lang = songs.Language.objects.create(name='Indonesian')
+        cls.songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat',
+                                                 short_name='KJ', is_hymn_book=True)
+        cls.song = songs.Song.objects.create(book=cls.songbook, number=152,
+                                             title='Ada Kuasa dalam DarahNya')
+        for number in (1, 2):
+            songs.Verse.objects.create(song=cls.song, number=number, lyric=f'bait {number}')
+
+    def projector_url(self):
+        return reverse('web-service-projector', args=[self.tatib.pk])
+
+    def make(self, order, **fields):
+        return tatib.ServiceEntry.objects.create(tatib=self.tatib, order_number=order, **fields)
+
+    def html(self):
+        response = self.client.get(self.projector_url())
+        self.assertEqual(response.status_code, 200)
+        return response.content.decode()
+
+    # --- the page and its path --------------------------------------------
+
+    def test_the_projector_lives_on_a_path_of_its_own(self):
+        self.assertEqual(self.projector_url(), f'/obs/service/{self.tatib.pk}/')
+
+    def test_an_unknown_service_is_a_404(self):
+        response = self.client.get(reverse('web-service-projector', args=[99999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_it_is_a_page_of_its_own_on_the_app_tokens(self):
+        html = self.html()
+        self.assertIn('styles/design/tokens.css', html)   # the public app's own tokens
+        self.assertNotIn('rail__menu', html)              # not the reading shell
+        self.assertNotIn('panelBody', html)
+        self.assertIn('gkps-service-display', html)       # its own channel
+
+    # --- what it shows ----------------------------------------------------
+
+    def test_every_kind_appears_with_its_title_and_body_in_the_service_order(self):
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
+                  text='Tuhan beserta kita')
+        self.make(2, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=3)
+        self.make(3, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        self.make(4, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
+        html = self.html()
+        for needle in ('Salam', 'Tuhan beserta kita', 'Matius 5:2-3',
+                       '2 ayat 2', '3 ayat 3', 'Kidung Jemaat 152', 'bait 1', 'bait 2',
+                       'Persembahan'):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, html)
+        order = [html.index(n) for n in ('Salam', 'Matius 5:2-3', 'Kidung Jemaat 152',
+                                         'Persembahan')]
+        self.assertEqual(order, sorted(order))
+
+    def test_a_body_keeps_its_lines_and_its_blank_line(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=3)
+        self.assertIn('2 ayat 2\n\n3 ayat 3', self.html())    # the blank line is the pause
+
+    def test_a_section_break_carries_its_label_and_no_body(self):
+        entry = self.make(1, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
+        slide = self.html().split(f'data-slide="e{entry.pk}"')[1].split('</section>')[0]
+        self.assertIn('Persembahan', slide)
+        self.assertNotIn('slide__body', slide)               # a label alone, no empty box
+
+    def test_the_legacy_rows_ride_along_before_the_entries(self):
+        """A service built before spec 006 still projects: the pane's order is the
+        display's order (legacy items first, then the entries)."""
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, order_number=1, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Nas', text='Mazmur 23')
+        self.make(2, kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='Tuhan beserta kita')
+        html = self.html()
+        self.assertIn('Mazmur 23', html)
+        self.assertLess(html.index('Nas'), html.index('Salam'))
+
+    def test_a_lyric_change_reaches_a_fresh_projection(self):
+        """What Update fetches is resolved at request time: the lyrics are the song's
+        own, so an edit reaches every service that uses it."""
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1])
+        self.assertIn('bait 1', self.html())
+        songs.Verse.objects.filter(song=self.song, number=1).update(lyric='bait satu yang baru')
+        self.assertIn('bait satu yang baru', self.html())
+
+    def test_the_three_controls_and_the_toggle_state(self):
+        html = self.html()
+        for needle in ('data-projector="prev"', 'data-projector="next"',
+                       'data-projector="toggle"', 'Previous entry', 'Next entry'):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, html)
+        self.assertIn('aria-pressed=', html)                 # the toggle says which state it is in
+
+    # --- the shell's project button ---------------------------------------
+
+    def test_the_reading_page_offers_the_project_button(self):
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn('data-project-open', html)
+        self.assertIn(f'data-projector-url="/obs/service/{self.tatib.pk}/"', html)
+        self.assertIn('data-project-service="', html)        # which service it would display
+        self.assertIn('gkps-service-display', html)          # the same channel
+        self.assertIn('Stop projecting', html)               # the label it takes while displaying
+        self.assertIn('Update the current state', html)
+        self.assertIn('data-project-update hidden', html)    # the update control waits its turn
+        self.assertIn('data-project-note', html)             # and a place to say why a click was declined
+
+    def test_the_project_button_is_only_on_a_service(self):
+        for name, args in (('web-home', []), ('web-tatib', []), ('web-search', [])):
+            with self.subTest(url=name):
+                response = self.client.get(reverse(name, args=args))
+                self.assertNotIn('data-project-open', response.content.decode())

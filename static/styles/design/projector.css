@@ -1,0 +1,94 @@
+/* The new service projector (spec 006, slice 4).
+   A page of its own, sized for a screen, built from the reading app's design
+   tokens so the surface a congregation sees looks like one product with the app
+   the operator prepares in. Nothing here touches the OBS surfaces: the current
+   projector and overlay keep their own stylesheets. */
+
+body.projector {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--canvas);
+  color: var(--ink);
+  overflow: hidden;                       /* a display does not scroll */
+}
+
+/* The screen: one slide at a time, centred, with the service named quietly above
+   it so whoever walks past knows which service is on. */
+.projector__screen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 72px 64px 96px;
+}
+
+.projector__service {
+  position: absolute; top: 26px; left: 50%; transform: translateX(-50%);
+  margin: 0;
+  font: 600 13px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--head-ink);
+}
+
+.projector__slides { width: 100%; max-height: 100%; }
+
+.slide { display: none; text-align: center; }
+.slide.is-active { display: block; }
+
+.slide__title {
+  margin: 0 0 20px;
+  font: 700 50px/1.37 ui-serif, Georgia, serif;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+
+/* The body keeps the lines it was authored with -- the operator's two-line shape --
+   and a blank line stays a visible pause between its blocks. web/projector.js fits
+   the font to what is left of the screen. */
+.slide__body {
+  margin: 0 auto;
+  font: 700 100px/1.37 ui-serif, Georgia, serif;
+  white-space: pre-wrap;
+}
+
+.projector__empty {
+  margin: 0;
+  font: 500 20px/1.5 ui-sans-serif, system-ui, sans-serif;
+  color: var(--head-ink);
+}
+
+/* The toggle hides what is on screen without losing the operator's place, so the
+   display carries a state attribute rather than clearing the slide. */
+body.projector[data-showing="false"] .slide { display: none; }
+
+/* Three controls and nothing more. They fade back while nobody is near them so the
+   congregation sees only the words, and come forward on hover or keyboard focus. */
+.projector__bar {
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--canvas) 88%, transparent);
+  border: 1px solid var(--divider);
+  opacity: .28; transition: opacity var(--ease);
+}
+.projector__bar:hover, .projector__bar:focus-within { opacity: 1; }
+
+.projector__btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0;
+  border: 0; border-radius: 999px;
+  background: transparent; color: var(--ink);
+  cursor: pointer; transition: background var(--ease), color var(--ease);
+}
+.projector__btn svg { width: 22px; height: 22px; }
+.projector__btn:hover { background: var(--icon-hover-bg); }
+.projector__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.projector__btn[disabled] { color: var(--divider); cursor: default; }
+.projector__btn[disabled]:hover { background: transparent; }
+
+/* One eye at a time: whichever state the toggle is in. */
+.projector__eye-off { display: none; }
+.projector__btn[aria-pressed="false"] .projector__eye-on { display: none; }
+.projector__btn[aria-pressed="false"] .projector__eye-off { display: block; }
+
+@media print {
+  .projector__bar { display: none; }
+}

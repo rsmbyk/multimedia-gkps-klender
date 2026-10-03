@@ -1085,6 +1085,12 @@
     }
     document.title = doc.title;
 
+    /* Anything the arriving page carries and another script owns -- the project
+       button, for one -- needs its hook run again: the swap replaced the node the
+       earlier binding sat on, which is how a control can be present on a deep link
+       and dead on the path a person actually clicks through. */
+    document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
+
     /* per-kind endings */
     if (kind === 'rail') {
       restoreCurrentPath(opts.section);
