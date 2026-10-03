@@ -990,35 +990,25 @@
       root.dataset.ch = fresh.ch || root.dataset.ch;
     }
 
-    /* the sidebar add buttons live outside the swapped regions: keep their
-       label, kind and book in step with the section that just arrived */
+    /* The sidebar add buttons sit outside the swapped regions, so they cannot be
+       updated in place: a page that never had one (the search-first home) has no
+       element to update, which is exactly how they went missing on the home ->
+       section path. Swap them whole from the page that just arrived instead, and
+       drop them when it has none (Alkitab). */
+    var panelEl = document.getElementById('panel');
+    var panelFilter = panelEl && panelEl.querySelector('.panel__filter');
+    var oldPanelAdd = document.getElementById('panelAdd');
+    if (oldPanelAdd) oldPanelAdd.parentNode.removeChild(oldPanelAdd);
     var freshPanelAdd = doc.querySelector('#panelAdd');
-    var panelAdd = document.getElementById('panelAdd');
-    if (panelAdd) {
-      if (freshPanelAdd) {
-        panelAdd.dataset.editorOpen = freshPanelAdd.dataset.editorOpen || panelAdd.dataset.editorOpen;
-        if (freshPanelAdd.dataset.editorLabel) {
-          panelAdd.dataset.editorLabel = freshPanelAdd.dataset.editorLabel;
-          var addLabel = panelAdd.querySelector('.editor-add__label');
-          if (addLabel) addLabel.textContent = freshPanelAdd.dataset.editorLabel;
-        }
-        panelAdd.hidden = false;
-      } else {
-        panelAdd.hidden = true;
-      }
+    if (freshPanelAdd && panelFilter && panelFilter.parentNode) {
+      panelFilter.parentNode.insertBefore(freshPanelAdd, panelFilter.nextSibling);
     }
-    var freshSongAdd = doc.querySelector('#songAdd');
-    var songAdd = document.getElementById('songAdd');
-    if (songAdd) {
-      if (freshSongAdd) {
-        songAdd.dataset.editorBook = freshSongAdd.dataset.editorBook || '';
-        songAdd.disabled = freshSongAdd.hasAttribute('disabled');
-        if (songAdd.disabled) songAdd.title = 'Open a songbook first';
-        else songAdd.removeAttribute('title');
-        songAdd.hidden = false;
-      } else {
-        songAdd.hidden = true;
-      }
+    var chTop = document.querySelector('.ch__top');
+    var oldChAdd = document.querySelector('.ch__add');
+    if (oldChAdd) oldChAdd.parentNode.removeChild(oldChAdd);
+    var freshChAdd = doc.querySelector('.ch__add');
+    if (freshChAdd && chTop && chTop.parentNode) {
+      chTop.parentNode.insertBefore(freshChAdd, chTop.nextSibling);
     }
 
     bindPanelTiles();

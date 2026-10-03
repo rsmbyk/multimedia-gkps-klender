@@ -105,6 +105,28 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self._close_browser()
         self.assertTrue(songs.Song.objects.filter(book=self.book, title='Lagu Baru').exists())
 
+    def test_the_add_buttons_exist_on_the_home_to_section_path(self):
+        """The path the owner actually uses: land on the home, click through in-page.
+
+        The sidebars are swapped in by reading.js and the add buttons sit outside
+        those swapped regions, so a page that never had one has to have it inserted
+        -- updating in place left them missing on exactly this path (spec 005).
+        """
+        page = self._page(reverse('web-home'))
+        expect(page.locator('.editor-add')).to_have_count(0)
+        page.click('.rail__btn[aria-label="Kidung"]')
+        panel_add = page.locator('#panelAdd')
+        expect(panel_add).to_be_visible()
+        expect(panel_add).to_contain_text('Add songbook')
+        panel_add.click()
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('New songbook')
+        page.keyboard.press('Escape')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        page.click('.rail__btn[aria-label="Alkitab"]')
+        expect(page.locator('#panelAdd')).to_have_count(0)          # and gone again
+        self._close_browser()
+
     def test_add_tatib_with_its_first_section(self):
         page = self._page(reverse('web-tatib'))
         page.click('#panelAdd')

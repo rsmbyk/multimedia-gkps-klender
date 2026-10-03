@@ -48,6 +48,11 @@ rows — from the same three sidebars that already list them, without leaving th
   every songbook. Song *numbers* stay a hymn-book concept; nothing in the UI names them.
 - The song list's add button moved out of the toolbar to a full-width row below the filter.
   Inline, it displaced the sort control from the position the accepted mockup gives it.
+- The add buttons are now inserted from the page that arrives when the shell swaps a section
+  in place. They live outside the swapped regions, so the previous in-place update could only
+  reach a button that already existed -- and the search-first home has none, which is why they
+  were missing for anyone who landed on the home and clicked through, the path the owner
+  actually uses. A page that has none gets one inserted; Alkitab drops it again.
 - Hovering a row's own edit control keeps the row's hover styling, and that control carries a
   pointer cursor, so the list never appears to lose its affordance under the pointer.
 

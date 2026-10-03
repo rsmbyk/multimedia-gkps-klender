@@ -42,6 +42,10 @@ Pre-adoption history in the legacy per-version format is archived in
   control keeps the place it has in the accepted mockup.
 - Hovering a row's edit control no longer drops the row's hover styling, and the control
   carries a pointer cursor like the rest of the row.
+- The add buttons are inserted from the page that arrives when the shell swaps a section in
+  place. They sit outside the swapped regions, and the search-first home has no such button
+  to update, so they used to be missing for anyone who landed on the home and clicked through
+  to a section -- the path the site is designed around. Regression-tested on that path.
 
 ### Security
 
