@@ -63,7 +63,8 @@
 - [x] `VERSION` → 0.8.0, changelog `## [0.8.0] - 2026-10-03`, `release_version` in **this PR**
 - [x] Update ITEM-005 + [`backlog/board.md`](../../backlog/board.md) in **this PR**
       (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+      ([#261](https://github.com/rsmbyk/multimedia-gkps-klender/pull/261))
 
 ## Commands
 

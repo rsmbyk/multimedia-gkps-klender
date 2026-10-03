@@ -9,7 +9,7 @@ created: 2026-10-01
 updated: 2026-10-03
 spec: ../specs/004-public-site-revamp/spec.md
 branch: feat/004-public-site-revamp
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/261
 archived_at:
 archive_reason:
 bump: minor
