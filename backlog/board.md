@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-008](./items/ITEM-008-old-rows.md) | The old rows — editable, and one running order | Edit/Delete on old TataIbadahItem rows from the pane, and one running order so an insertion lands after the clicked row | feat | P1 | L | [007](../specs/007-service-order-editor/spec.md) | 2026-10-04 |
 
 
 ## Ready
