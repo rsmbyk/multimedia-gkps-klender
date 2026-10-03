@@ -648,7 +648,8 @@ class ServiceEntryViewTests(TestCase):
             self.assertIn(f'data-entry-open="{kind}"', html)
         self.assertIn(f'data-entry-after="e{entry.pk}"', html)
 
-    def test_an_entry_can_be_inserted_behind_the_item_it_was_asked_for(self):
+    def test_an_entry_is_inserted_after_the_item_whose_control_was_used(self):
+        # after, never before: the new entry takes the next place and the rest move down
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
         second = self.make(kind=tatib.ServiceEntryKind.TEXT, text='b', order_number=2)
         response = self.client.post(self.save_new_url(),
@@ -657,6 +658,34 @@ class ServiceEntryViewTests(TestCase):
         second.refresh_from_db()
         self.assertEqual([(e.order_number, e.text) for e in self.tatib.service_entries.all()],
                          [(1, 'a'), (2, 'c'), (3, 'b')])
+
+    # --- an empty service, and what the sidebar lists -----------------------
+
+    def test_an_empty_service_invites_its_first_item(self):
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn('This Tata Ibadah is empty', html)
+        for label in ('Add Passage', 'Add Song', 'Add Text', 'Add Break'):
+            self.assertIn(label, html)
+        self.assertIn('entry__empty-btn', html)
+
+    def test_a_service_built_only_from_entries_is_listed_in_the_sidebar(self):
+        # the sidebar used to keep only services with a legacy text item, which would
+        # have made a service of entries invisible
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
+        response = self.client.get(reverse('web-tatib') + '?mode=template')
+        self.assertContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
+
+    def test_a_service_with_nothing_at_all_stays_out_of_the_sidebar(self):
+        response = self.client.get(reverse('web-tatib') + '?mode=template')
+        self.assertNotContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
+
+    def test_a_service_with_only_entries_is_not_empty(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertNotIn('This Tata Ibadah is empty', html)
+        self.assertIn('entry__add-btn', html)             # the per-item controls, instead
 
     def test_the_contents_list_carries_the_entries_too(self):
         entry = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,

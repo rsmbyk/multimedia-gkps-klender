@@ -1276,3 +1276,74 @@ kbd {
     font-size: 0.9375rem;
     color: var(--head-ink);
 }
+
+/* ---------- service entries (spec 006) ------------------------------------ */
+
+/* The add controls belong to their item: hidden until that item is hovered or
+   something inside the controls takes focus, so the service reads as a service. */
+.entry__add {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 0 0 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ease);
+}
+.tatib__item:hover + .entry__add,
+.tatib__eos:hover + .entry__add,
+.entry__add:focus-within { opacity: 1; pointer-events: auto; }
+
+.entry__add-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  font: 500 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: var(--head-ink);
+  background: var(--canvas);
+  border: 1px dashed var(--divider);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color var(--ease), border-color var(--ease), background var(--ease);
+}
+.entry__add-btn:hover {
+  color: var(--ink);
+  border-color: var(--focus);
+  background: var(--icon-hover-bg);
+}
+.entry__add-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* An empty service is an invitation, not a void: the four kinds, big enough to
+   read as the starting point, centred on the page. */
+.entry__empty {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 56px 16px;
+  text-align: center;
+}
+.entry__empty-title {
+  margin: 0;
+  font: 600 20px/1.3 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+}
+.entry__empty-hint { margin: 0; color: var(--head-ink); }
+.entry__empty-actions {
+  display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+  margin-top: 14px;
+}
+.entry__empty-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  min-width: 132px; padding: 20px 18px;
+  font: 500 14px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease), transform var(--ease);
+}
+.entry__empty-btn svg { width: 26px; height: 26px; color: var(--head-ink); }
+.entry__empty-btn:hover {
+  border-color: var(--focus);
+  background: var(--icon-hover-bg);
+  transform: translateY(-1px);
+}
+.entry__empty-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }

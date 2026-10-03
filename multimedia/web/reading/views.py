@@ -176,7 +176,7 @@ def entry_save(request, pk=None):
         marker = (tatib_models.ServiceEntry.objects.filter(pk=after, tatib=form.tatib).first()
                   if after else None)
         if marker is not None:
-            # the add controls sit on an item, so the new one goes in behind it
+            # the controls sit on an item: the new entry goes AFTER it, never before
             (tatib_models.ServiceEntry.objects
              .filter(tatib=form.tatib, order_number__gt=marker.order_number)
              .update(order_number=F('order_number') + 1))
@@ -286,8 +286,11 @@ def _song_rows(book, current_id=None):
 
 
 def _tatib_groups(mode, selected_id=None):
+    # A service is listed once it has something to show: a legacy text item, or an
+    # entry (spec 006). Without the second the new content would be invisible here.
     services = (tatib_models.TataIbadah.objects.filter(is_active=True)
-                .filter(tataibadahitem__item_type=tatib_models.TataIbadahItemType.TEXT)
+                .filter(Q(tataibadahitem__item_type=tatib_models.TataIbadahItemType.TEXT)
+                        | Q(service_entries__isnull=False))
                 .distinct())
     if mode == 'template':
         # Mirrors the mockup's Indonesian locale collation for these names:
