@@ -1,6 +1,6 @@
 # Spec 006: Service entries — one Tata Ibadah holds texts, scriptures and songs
 
-- **Status:** Draft — needs the owner's Accept (SDD gate; no implementation before that)
+- **Status:** Accepted (owner, 2026-10-03) — needs the owner's Accept (SDD gate; no implementation before that)
 - **Spec:** 006-service-entries
 - **Item:** [`backlog/items/ITEM-007-service-entries.md`](../../backlog/items/ITEM-007-service-entries.md)
 - **Owner:** GKPS Klender
@@ -242,6 +242,22 @@ This is an addition to the production app, not a replacement of it.
 - **When** they are exercised against the same data
 - **Then** their responses are unchanged, and the existing Tata Ibadah items, docks, sources and
   projection behave exactly as before
+
+## Traceability
+
+Filled per slice as it lands.
+
+### Slice 1 — the model (landed 2026-10-03)
+
+- Model, rules, citation and per-kind `resolve()`: `multimedia/tatib/models.py`
+- Migration: `multimedia/tatib/migrations/0005_serviceentry.py`
+- Admin: `multimedia/tatib/admin.py`
+- Tests: `multimedia/tatib/tests.py` — `ServiceEntryTests` (14), covering each kind's
+  `(title, body)`, the passage range rules, the included-verse list (a verse added to a song
+  later is not in a prepared entry; a lyric edit does reach it), ordering, and a service holding
+  both legacy items and entries
+- Compatibility: no current template, endpoint or model changed; the pre-existing 116 tests pass
+  unchanged alongside these
 
 ## Open questions for Accept
 

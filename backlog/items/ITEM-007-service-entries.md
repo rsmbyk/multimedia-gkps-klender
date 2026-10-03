@@ -1,12 +1,12 @@
 ---
 id: ITEM-007
 title: Service entries — a Tata Ibadah holds texts, scriptures and songs
-status: speccing
+status: in-progress
 type: feat
 priority: P1
 effort: L
 spec: specs/006-service-entries/spec.md
-branch:
+branch: feat/006-service-entries
 pr:
 bump: minor
 release_version:

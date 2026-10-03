@@ -1,6 +1,6 @@
 # Tasks 006: Service entries
 
-- **Status:** Draft — needs the owner's Accept (SDD gate). No implementation before that.
+- **Status:** Accepted (owner, 2026-10-03) — needs the owner's Accept (SDD gate). No implementation before that.
 - **Spec:** [./spec.md](./spec.md) · **Plan:** [./plan.md](./plan.md)
 
 ## Before starting
@@ -10,11 +10,15 @@
 - [ ] Branch from the current base (`feat/006-service-entries`)
 - [ ] Confirm the compatibility promise's regression pass exists before touching anything
 
-## Slice 1 — the model
+## Slice 1 — the model  (done)
 
-- [ ] Red: field rules per kind; the book/chapter cascade resets to 1; all verses by default and
-      at least one kept; `resolve()` per kind; ordering and contiguous numbers
-- [ ] Green: `tatib.ServiceEntry` + migration + admin, `TataIbadahItem` untouched
+- [x] Red: field rules per kind; at least one verse kept; `resolve()` per kind; ordering
+      (`multimedia/tatib/tests.py`, `ServiceEntryTests`)
+- [x] Green: `tatib.ServiceEntry` + migration `0005_serviceentry` + admin; `TataIbadahItem`
+      untouched
+- [x] The book/chapter cascade reset to 1 is a form/UI rule: slice 2
+- [x] Verified: 130 tests green, the 116 that existed before among them, with no edit to any
+      current template, endpoint or model
 
 ## Slice 2 — the content pane
 

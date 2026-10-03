@@ -1,6 +1,6 @@
 # Plan 006: Service entries
 
-- **Status:** Draft — needs the owner's Accept (SDD gate)
+- **Status:** Accepted (owner, 2026-10-03) — needs the owner's Accept (SDD gate)
 - **Spec:** [./spec.md](./spec.md)
 - **Bump:** minor (0.9.0 → 0.10.0)
 
