@@ -22,12 +22,23 @@ KINDS = {
 
 
 class ServiceEntryForm(forms.ModelForm):
-    """What every kind shares: the hidden kind, the service, and saving."""
+    """What every kind shares: the hidden kind, the service, and saving.
+
+    ``kind`` travels as the URL's name ('scripture', 'section_break') because that is
+    what the modals and the test speak; ``clean_kind`` turns it into the value the
+    model stores before anything else sees it.
+    """
+
+    kind = forms.ChoiceField(choices=[(name, name) for name in KINDS],
+                             widget=forms.HiddenInput)
 
     class Meta:
         model = tatib_models.ServiceEntry
         fields = []
         widgets = {'kind': forms.HiddenInput}
+
+    def clean_kind(self):
+        return KINDS[self.cleaned_data['kind']]
 
     def __init__(self, *args, tatib=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -109,7 +120,8 @@ def build_entry_form(kind, data=None, instance=None, tatib=None):
     if form_class is None:
         return None
     form = form_class(data=data, instance=instance, tatib=tatib)
-    form.instance.kind = KINDS[kind]              # the kind is the URL's, not the post's
+    form.fields['kind'].initial = kind            # the URL names the kind; clean_kind maps it
+    form.instance.kind = KINDS[kind]
     return form
 
 

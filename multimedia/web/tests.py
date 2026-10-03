@@ -493,14 +493,14 @@ class ServiceEntryViewTests(TestCase):
             'text': ['name="title"', 'name="text"'],
             'scripture': ['name="book_translation"', 'name="chapter"', 'name="verse_start"',
                           'name="verse_end"'],
-            'song': ['name="song"', 'name="verses"'],
+            'song': ['name="song"', 'id="entry-verses"'],
             'section_break': [],
         }
         for kind, needles in cases.items():
             with self.subTest(kind=kind):
                 response = self.client.get(self.new_url(kind))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, f'value="{kind}"')      # the kind travels hidden
+                self.assertContains(response, f'data-entry-form="{kind}"')   # the kind is the form's
                 for needle in needles:
                     self.assertContains(response, needle)
 
@@ -589,7 +589,16 @@ class ServiceEntryViewTests(TestCase):
         response = self.client.get(reverse('web-entry-song-options') + '?q=kuasa')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Kidung Jemaat')
-        self.assertContains(response, f'value="{self.song.pk}"')
+        self.assertContains(response, f'data-song="{self.song.pk}"')
+
+    def test_the_song_fragment_checks_every_verse_of_its_song(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        response = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="verses"')
+        html = response.content.decode()
+        for number in (1, 2, 3):                       # checked, whatever the attribute order
+            self.assertRegex(html, rf'value="{number}"[^>]*checked')
 
     def test_the_verses_of_a_song_come_back_all_included(self):
         response = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))

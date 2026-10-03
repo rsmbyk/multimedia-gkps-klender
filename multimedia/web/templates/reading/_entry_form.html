@@ -2,7 +2,6 @@
 <form class="editor__form" data-entry-form="{{ kind }}" action="{{ save_url }}" method="post">
   {% csrf_token %}
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}
-  <input type="hidden" name="kind" value="{{ kind }}">
 
   {% if kind == 'scripture' %}
   <div class="editor__field">
@@ -39,7 +38,7 @@
   </div>
   <div class="editor__field">
     <label>Verses <span class="editor__hint">(all shown unless unchecked)</span></label>
-    {{ form.verses }}
+    <div class="editor__verses" id="entry-verses" data-verses>{{ form.verses }}</div>
   </div>
 
   {% else %}

@@ -24,13 +24,9 @@ urlpatterns = [
     path('tatib/', reading_views.TatibView.as_view(), name='web-tatib'),
     path('tatib/<int:service_id>/', reading_views.TatibView.as_view(), name='web-tatib-service'),
 
-    # Sidebar editors (spec 005).
-    path('editor/<str:kind>/new/', reading_views.editor_form, name='web-editor-new'),
-    path('editor/<str:kind>/new/save/', reading_views.editor_save, name='web-editor-save-new'),
-    path('editor/<str:kind>/<int:pk>/', reading_views.editor_form, name='web-editor-edit'),
-    path('editor/<str:kind>/<int:pk>/save/', reading_views.editor_save, name='web-editor-save'),
-
-    # Service entries (spec 006, slice 2): the content pane's own editor.
+    # Service entries (spec 006, slice 2): the content pane's own editor. These come
+    # BEFORE the generic editor patterns below: 'editor/<str:kind>/new/' would otherwise
+    # swallow 'editor/entry/new/' with kind='entry', and the old view would 404.
     path('editor/entry/new/', reading_views.entry_form, name='web-entry-new'),
     path('editor/entry/new/save/', reading_views.entry_save, name='web-entry-save-new'),
     path('editor/entry/<int:pk>/edit/', reading_views.entry_form, name='web-entry-edit'),
@@ -42,6 +38,12 @@ urlpatterns = [
          name='web-entry-song-verses'),
     path('editor/entry/chapter/<int:pk>/<int:chapter>/', reading_views.entry_chapter_verses,
          name='web-entry-chapter-verses'),
+
+    # Sidebar editors (spec 005).
+    path('editor/<str:kind>/new/', reading_views.editor_form, name='web-editor-new'),
+    path('editor/<str:kind>/new/save/', reading_views.editor_save, name='web-editor-save-new'),
+    path('editor/<str:kind>/<int:pk>/', reading_views.editor_form, name='web-editor-edit'),
+    path('editor/<str:kind>/<int:pk>/save/', reading_views.editor_save, name='web-editor-save'),
 
     # Content editor, moved off the public paths.
     path('manage/', include('multimedia.web.manage.urls')),

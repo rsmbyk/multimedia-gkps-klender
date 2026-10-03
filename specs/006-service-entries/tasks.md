@@ -20,12 +20,20 @@
 - [x] Verified: 130 tests green, the 116 that existed before among them, with no edit to any
       current template, endpoint or model
 
-## Slice 2 — the content pane
+## Slice 2 — the content pane  (endpoints done; the pane itself to come)
 
-- [ ] Red: create/update/delete endpoints per kind; validation errors; the modals' defaults
-- [ ] Red: e2e — each modal, the cascading dropdowns, the verse checklist's label, the panes
-      refreshing in place, hymn-free behaviour where relevant
-- [ ] Green: entry rendering in the Tata Ibadah page, the per-entry add controls, the four modals
+- [x] Red: create/update/delete endpoints per kind; validation errors; what the pickers need
+      (`ServiceEntryViewTests`, 17 tests, red before the wiring existed)
+- [x] Green: the per-kind forms (`multimedia/web/reading/entries.py`), the six endpoint views,
+      their URLs, and the two fragments (`_entry_form.html`, `_entry_song_options.html`)
+- [x] Two bugs the tests caught: `editor/<str:kind>/new/` was swallowing `editor/entry/new/`
+      (the entry routes must come first), and a second `kind` input shadowed the form's own,
+      making every create invalid
+- [ ] The content pane itself: entries rendered in the Tata Ibadah page, the per-entry add
+      controls, and the modals' behaviour (the cascading dropdowns, the song pick, the verse
+      checklist's label)
+- [ ] E2E: each modal, the cascading dropdowns, the verse checklist's label, the panes
+      refreshing in place
 
 ## Slice 3 — reorder
 

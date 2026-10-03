@@ -17,7 +17,7 @@ URL map:
 import re
 from urllib.parse import quote
 
-from django.db.models import Count, F
+from django.db.models import Count, F, Q
 from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
                          JsonResponse)
 from django.shortcuts import get_object_or_404, render
@@ -173,6 +173,7 @@ def entry_save(request, pk=None):
         }, status=400)
     if entry is None:
         form.instance.order_number = entry_forms.next_order_number(form.tatib)
+    form.instance.kind = entry_forms.KINDS[kind]      # the URL decides the kind, not the post
     saved = form.save()
     return JsonResponse({'ok': True, 'id': saved.pk})
 
@@ -190,10 +191,10 @@ def entry_delete(request, pk):
 def entry_song_options(request):
     """The song pick's options, grouped by songbook, filtered by q."""
     query = (request.GET.get('q') or '').strip()
-    songs = (song_models.Song.objects.select_related('book')
-             .order_by('book__name', 'number', 'title'))
+    songs = song_models.Song.objects.select_related('book')
     if query:
-        songs = songs.filter(title__icontains=query) | songs.filter(number__icontains=query)
+        songs = songs.filter(Q(title__icontains=query) | Q(number__icontains=query))
+    songs = songs.order_by('book__name', 'number', 'title')
     groups, current = [], None
     for song in songs[:200]:
         label = song.book.short_name or song.book.name
