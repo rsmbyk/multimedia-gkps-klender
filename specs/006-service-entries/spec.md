@@ -362,6 +362,17 @@ blanking, and the pane's entries showing their references alone.
   characters came out at 4px instead of 41px). The port compares strictly against the box. Verified
   live at 1400×800 -- 114 characters at 73px, 564 at 41px, 2,820 at 20px, 14,100 at 9px, each
   fitting with one pixel more failing to.
+- **The display's own box has to be inside the window, or the fitting fits words into space that is
+  not there.** The projector page is standalone: it loads `tokens.css` and `projector.css`, not the
+  product's `components.css`, which is where the design system's `*, *::before, *::after
+  { box-sizing: border-box }` lives. On the UA's content-box default,
+  `.projector__screen { height: 100%; padding: 64px }` measured 928px on an 800px window with its
+  last 64px off screen, and the fitting -- which measures that box -- put a long text's last line
+  there. A shorter screen (Ester 8:9, nine wrapped lines) looked perfect in the same build, which is
+  exactly how it was reported. The page carries its own reset now, and an e2e pins the invariant:
+  the display box inside the window on all four sides, and a page that does not scroll. This is also
+  what the current projector's `72` is for -- its loop measures the WINDOW and subtracts the inset,
+  so an inflated container cannot fool it.
 - **Short morphs** carry a move or a toggle: the arriving screen fades and rises (from the
   direction of travel), the one it replaces fades out the other way, and space fades the words
   rather than blanking them. Reduced motion makes every move instant.

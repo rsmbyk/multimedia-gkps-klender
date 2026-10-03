@@ -167,6 +167,37 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertGreaterEqual(ink['insetLeft'], -1, ink)
         self.assertGreaterEqual(ink['insetRight'], -1, ink)
 
+    def test_the_display_box_sits_inside_the_window(self):
+        """A box that runs off the screen takes the fitted words with it.
+
+        The projector page is standalone -- it loads tokens.css and projector.css, not the
+        product's components.css -- so the design system's border-box reset did not reach
+        it and `height: 100%; padding: 64px` resolved as content-box: a 928px box on an
+        800px window, whose last 64px hung off the screen. The fitting measures the
+        display's own box, so it fitted the words into space that was not there and the
+        last line was cut, while every check that compared the ink against that box read
+        green -- the box was the thing that was wrong.
+        """
+        page = self._page(self._projector_url())
+        box = page.evaluate("""() => {
+          const screen = document.getElementById('projectorScreen');
+          const stage = screen.querySelector('.projector__screens').getBoundingClientRect();
+          return {boxSizing: getComputedStyle(screen).boxSizing,
+                  top: Math.round(stage.top), bottom: Math.round(stage.bottom),
+                  viewport: window.innerHeight,
+                  scrollHeight: document.documentElement.scrollHeight,
+                  left: Math.round(stage.left), right: Math.round(stage.right),
+                  width: window.innerWidth};
+        }""")
+        self.assertEqual(box['boxSizing'], 'border-box', box)
+        self.assertGreaterEqual(box['top'], 0, box)
+        self.assertLessEqual(box['bottom'], box['viewport'],
+                             'the display box runs past the bottom of the window: %s' % box)
+        self.assertGreaterEqual(box['left'], 0, box)
+        self.assertLessEqual(box['right'], box['width'], box)
+        self.assertLessEqual(box['scrollHeight'], box['viewport'],
+                             'the display page scrolls: %s' % box)
+
     def test_the_header_and_the_words_sit_in_the_middle_of_the_screen(self):
         page = self._page(self._projector_url())
         page.keyboard.press('End')                        # a screen with both a header and a line
@@ -301,6 +332,9 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
           return {size: parseFloat(getComputedStyle(lines).fontSize),
                   insideTop: rect.top - stage.top, insideBottom: stage.bottom - rect.bottom,
                   insideLeft: rect.left - stage.left, insideRight: stage.right - rect.right,
+                  winBottom: window.innerHeight - rect.bottom,
+                  winTop: rect.top, winLeft: rect.left,
+                  winRight: window.innerWidth - rect.right,
                   head: head ? head.textContent : ''};
         }""")
         self.assertLess(fitted['size'], 100)              # it came down to fit
@@ -308,6 +342,12 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertGreaterEqual(fitted['insideBottom'], -1, fitted)
         self.assertGreaterEqual(fitted['insideLeft'], -1, fitted)
         self.assertGreaterEqual(fitted['insideRight'], -1, fitted)
+        # and inside the WINDOW, not merely inside the box the fitting measured: the box
+        # itself sat 64px past the bottom of the screen, and the words went with it
+        self.assertGreaterEqual(fitted['winTop'], 0, fitted)
+        self.assertGreaterEqual(fitted['winBottom'], 0, fitted)
+        self.assertGreaterEqual(fitted['winLeft'], 0, fitted)
+        self.assertGreaterEqual(fitted['winRight'], 0, fitted)
         self.assertIn('Mazmur 23:1', fitted['head'])      # the reference still heads it
 
         # ...and as LARGE as it can be: one pixel more must not fit

@@ -11,6 +11,16 @@
    Nothing else is on the screen -- no controls, no service label -- because the
    operator drives it from the keyboard (web/projector.js). */
 
+/* This page is standalone: it loads tokens.css and this file, NOT the product's
+   components.css, so the design system's border-box reset does not reach it. Without
+   this rule `.projector__screen { height: 100%; padding: 64px }` resolves as
+   content-box on the UA default -- a 928px-tall box on an 800px window, whose bottom
+   64px (and the words that fitted into it) hang off the screen. The fitting below
+   measures that box, so it fitted words into space that was not there and the last
+   line was cut off. The current projector never hit this: its loop measures the
+   WINDOW and subtracts the inset (its 72). */
+*, *::before, *::after { box-sizing: border-box; }
+
 html, body.projector { height: 100%; }
 
 body.projector {
