@@ -153,6 +153,12 @@
     el.addEventListener('focus', function () { showTip(el); });
     el.addEventListener('blur', hideTip);
   }
+  /* A rail click leaves focus on the tile, and a focused tile keeps its label up --
+     which reads as a stuck tooltip once the sidebar it opened has closed. */
+  rail.addEventListener('click', function () {
+    hideTip();
+    window.setTimeout(hideTip, 260);         /* after any re-focus the state change does */
+  });
   rail.querySelectorAll('.rail__btn[data-tip]').forEach(function (btn) {
     bindTip(btn);
     btn.addEventListener('keydown', function (event) {
@@ -995,6 +1001,34 @@
        element to update, which is exactly how they went missing on the home ->
        section path. Swap them whole from the page that just arrived instead, and
        drop them when it has none (Alkitab). */
+    /* The mode toggle belongs to the Tata Ibadah toolbar only. Syncing the toolbar's
+       labels was not enough: on the home -> section path the button itself was absent,
+       so the section's toggle never appeared and the collapse sat in its place. */
+    (function () {
+      var toolbarEl = document.querySelector('.panel__filter');
+      if (!toolbarEl) return;
+      var live = document.getElementById('tatibMode');
+      var fresh = doc.querySelector('#tatibMode');
+      if (fresh && !live) {
+        toolbarEl.insertBefore(fresh.cloneNode(true), toolbarEl.firstChild);
+        live = document.getElementById('tatibMode');
+      } else if (live && !fresh) {
+        live.parentNode.removeChild(live);
+        live = null;
+      } else if (live && fresh) {
+        ['href', 'aria-label', 'title', 'hidden'].forEach(function (attr) {
+          if (fresh.hasAttribute(attr)) live.setAttribute(attr, fresh.getAttribute(attr));
+          else live.removeAttribute(attr);
+        });
+        live.innerHTML = fresh.innerHTML;
+      }
+      /* One deterministic order, whatever the swap left behind: the mockup's
+         [field, toggle, collapse]. Appending each in turn re-parents them. */
+      [toolbarEl.querySelector('.filter-box'), live,
+       document.getElementById('panelCollapse')].forEach(function (el) {
+        if (el && el.parentNode) el.parentNode.appendChild(el);
+      });
+    })();
     var panelEl = document.getElementById('panel');
     var panelFilter = panelEl && panelEl.querySelector('.panel__filter');
     var oldPanelAdd = document.getElementById('panelAdd');
@@ -1105,6 +1139,10 @@
   /* ---------- Escape closes the innermost open layer ---------- */
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Escape') return;
+    /* an open modal (the editors' <dialog>) is the innermost layer: the browser
+       closes it and the keypress must stop there, or Esc also closes the sidebar
+       behind it (review report) */
+    if (document.querySelector('dialog[open]')) return;
     if (root.dataset.ch === 'open') {
       closeChapters(true);
       var row = panelBody.querySelector('.book[aria-current="true"]');

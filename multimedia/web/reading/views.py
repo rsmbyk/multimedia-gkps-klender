@@ -563,7 +563,10 @@ class TatibView(TemplateView):
             'page_title': f'{service.name} — GKPS Klender' if service else 'Tata Ibadah — GKPS Klender',
             'tatib_groups': _tatib_groups(mode, service.pk if service else None),
             'show_tatib_mode': True,
-            'tatib_mode_url': f'?mode={other_mode}',
+            # Absolute on purpose: the search-first home swaps this button into the live
+            # page, where a relative "?mode=..." resolves against /home/ and lands on the
+            # search home -- which closes the panel and shows Alkitab (review report).
+            'tatib_mode_url': reverse('web-tatib') + f'?mode={other_mode}',
             'tatib_mode_pressed': 'true' if mode == 'template' else 'false',
             'tatib_mode_label': ('Show dated Tata Ibadah' if mode == 'template'
                                  else 'Show Tata Ibadah templates'),

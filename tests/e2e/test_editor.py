@@ -139,6 +139,51 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#panelAdd')).to_have_count(0)          # and gone again
         self._close_browser()
 
+    def test_escape_inside_the_modal_does_not_also_close_the_sidebar(self):
+        """The modal is the innermost layer: Esc must stop there (review report)."""
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        page.keyboard.press('Escape')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        self.assertEqual(page.evaluate("document.documentElement.dataset.nav"), 'open')
+        expect(page.locator('#panelAdd')).to_be_visible()
+        self._close_browser()
+
+    def test_the_tata_ibadah_mode_toggle_exists_after_clicking_through(self):
+        """It is part of the Tata Ibadah toolbar only, and the home path swaps that in."""
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        expect(page.locator('#tatibMode')).to_have_count(0)
+        page.click('.rail__btn[aria-label="Tata Ibadah"]')
+        mode = page.locator('#tatibMode')
+        expect(mode).to_be_visible()
+        expect(mode).to_have_attribute('aria-label', 'Show Tata Ibadah templates')
+        # and it sits where the mockup puts it: between the field and the collapse
+        order = page.evaluate("""() => [...document.querySelectorAll('.panel__filter > *')]
+            .map(e => e.id || e.className.split(' ')[0])""")
+        self.assertEqual(order[-2:], ['tatibMode', 'panelCollapse'])
+        self._close_browser()
+
+    def test_closing_a_sidebar_reveals_no_row_control_and_no_rail_label(self):
+        """Closing the song list left the row's control lit and a tile's label hanging."""
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        page.get_by_text(self.book.name, exact=True).first.click()
+        page.wait_for_function("document.documentElement.dataset.ch === 'open'")
+        page.wait_for_timeout(700)
+        # close the song list with its own control, then look for anything revealed
+        page.click('#chCollapse')
+        page.wait_for_function("document.documentElement.dataset.ch === 'closed'")
+        page.wait_for_timeout(500)
+        lit = page.evaluate("""() => [...document.querySelectorAll('#panelBody .row-edit, #chList .row-edit')]
+            .filter(b => getComputedStyle(b).opacity !== '0').length""")
+        self.assertEqual(lit, 0, 'a row control was left revealed')
+        tips = page.evaluate("""() => [...document.querySelectorAll('.rail__btn[data-tip-open="true"]')].length""")
+        self.assertEqual(tips, 0, "a rail tile's label was left hanging")
+        self._close_browser()
+
     def test_add_tatib_with_its_first_section(self):
         page = self._page(reverse('web-tatib'))
         page.click('#panelAdd')

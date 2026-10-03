@@ -438,7 +438,10 @@ body {
 }
 .row-edit svg { width: 13px; height: 13px; }
 .row-edit:hover { color: var(--ink); }
-li:hover > .row-edit, li:focus-within > .row-edit,
+/* Only a hovered row, or the control itself once focused (Tab still reaches it).
+   `li:focus-within` looked equivalent but the row link holds focus after a
+   sidebar closes, which revealed the control with no pointer on it. */
+li:hover > .row-edit,
 .row-edit:focus-visible { opacity: 1; pointer-events: auto; }
 .row-edit:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .row-flash { animation: tatibRowFlash 2.6s linear 1; }

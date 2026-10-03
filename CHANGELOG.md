@@ -44,6 +44,16 @@ Pre-adoption history in the legacy per-version format is archived in
   control keeps the place it has in the accepted mockup.
 - Hovering a row's edit control no longer drops the row's hover styling, and the control
   carries a pointer cursor like the rest of the row.
+- Escape inside an editor's modal closes only the modal: the page's own Escape handling
+  looked through it and closed the sidebar behind it too.
+- The Tata Ibadah mode toggle works when it is reached by clicking through from the home. Its
+  link was relative (`?mode=template`), which only resolves on `/tatib/`; swapped into the home
+  it became `/home/?mode=template` -- the search home -- so the panel closed and Alkitab
+  appeared. It is absolute now, and it is synced (or removed) with its section, so it keeps the
+  slot the mockup gives it instead of leaving the collapse there.
+- Closing a sidebar no longer reveals a row's edit control (the row link kept focus, and
+  `:focus-within` counted as hover) or leaves a rail tile's label hanging (a focused tile shows
+  its own tooltip; the label is cleared once its click has been handled).
 - The add buttons are inserted from the page that arrives when the shell swaps a section in
   place. They sit outside the swapped regions, and the search-first home has no such button
   to update, so they used to be missing for anyone who landed on the home and clicked through
