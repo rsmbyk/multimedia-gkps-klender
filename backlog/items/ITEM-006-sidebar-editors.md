@@ -9,7 +9,7 @@ created: 2026-10-03
 updated: 2026-10-03
 spec: specs/005-sidebar-editors/spec.md
 branch: feat/005-sidebar-editors
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/262
 archived_at:
 archive_reason:
 bump: minor
