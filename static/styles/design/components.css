@@ -421,7 +421,9 @@ body {
 
 /* the song list's add button: full width, right below the toolbar (spec 005) */
 .ch__add { flex: none; padding: 0 12px 12px; }
-.ch__add .editor-add { width: 100%; }
+/* the wrapper owns the inset; .editor-add's own horizontal margin (for the panels)
+   would double it and push the button past the sidebar's edge */
+.ch__add .editor-add { width: 100%; margin: 0; }
 
 /* the rows are the positioning context for their own control */
 #panelBody li, #chList li { position: relative; }

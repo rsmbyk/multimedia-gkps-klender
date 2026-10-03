@@ -123,6 +123,18 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#editorTitle')).to_have_text('New songbook')
         page.keyboard.press('Escape')
         page.wait_for_function("!document.querySelector('dialog[open]')")
+        # and it sits inside the sidebar's padding on both sides (review report:
+        # a doubled inset pushed it past the edge)
+        page.get_by_text(self.book.name, exact=True).first.click()
+        page.wait_for_function("document.documentElement.dataset.ch === 'open'")
+        page.wait_for_timeout(700)                      # let its travel finish
+        insets = page.evaluate('''() => {
+            const b = document.getElementById('songAdd');
+            const s = document.querySelector('.chapters');
+            const br = b.getBoundingClientRect(), sr = s.getBoundingClientRect();
+            return {left: br.left - sr.left, right: sr.right - br.right}; }''')
+        self.assertGreater(insets['left'], 0, 'the add button overflows the left edge')
+        self.assertGreater(insets['right'], 0, 'the add button overflows the right edge')
         page.click('.rail__btn[aria-label="Alkitab"]')
         expect(page.locator('#panelAdd')).to_have_count(0)          # and gone again
         self._close_browser()
