@@ -150,7 +150,12 @@
       tipTimer = window.setTimeout(function () { showTip(el); }, HOVER_DELAY);
     });
     el.addEventListener('pointerleave', hideTip);
-    el.addEventListener('focus', function () { showTip(el); });
+    el.addEventListener('focus', function () {
+      /* Closing a panel puts focus back on its rail tile, and a pointer-driven focus
+         must not raise the label: only a keyboard focus should (review report). */
+      if (!el.matches(':focus-visible')) return;
+      showTip(el);
+    });
     el.addEventListener('blur', hideTip);
   }
   /* A rail click leaves focus on the tile, and a focused tile keeps its label up --
@@ -200,10 +205,15 @@
     });
     el.addEventListener('pointerleave', hideTileTip);
     el.addEventListener('focus', function () {
-      if (root.dataset.nav === 'mini') showTileTip(el);
+      if (root.dataset.nav === 'mini' && el.matches(':focus-visible')) showTileTip(el);
     });
     el.addEventListener('blur', hideTileTip);
   }
+  /* Every tooltip is about a state that a transition is about to change: a focused
+     tile keeps its own label up, and a tile's floating label can be showing under the
+     pointer as the panel closes, where no pointerleave ever arrives. Clear them all at
+     each transition rather than guessing which one is up. */
+  function hideTips() { hideTip(); hideTileTip(); }
   function bindPanelTips() {
     panelBody.querySelectorAll('.book').forEach(bindFloatTip);
   }
@@ -453,6 +463,7 @@
   });
 
   function openChaptersInPlace(name) {
+    hideTips();
     cancelPendingRailClose();
     if (mqNarrow.matches && root.dataset.nav !== 'closed') {
       navBeforeCh = root.dataset.nav;
@@ -470,6 +481,7 @@
     window.requestAnimationFrame(updateChInds);
   }
   function closeChapters(restorePanel) {
+    hideTips();
     if (root.dataset.ch !== 'open') return;
     root.dataset.ch = 'closed';
     hideTileTip();
@@ -771,6 +783,7 @@
   });
 
   function openPanel() {
+    hideTips();
     cancelPendingRailClose();
     if (mqNarrow.matches && root.dataset.ch === 'open') closeChapters();
     if (root.dataset.chMode === 'song' && mqSongNarrow.matches
@@ -790,6 +803,7 @@
     if (snapshot) restorePos(snapshot);
   }
   function closePanel() {
+    hideTips();
     cancelPendingRailClose();
     root.dataset.nav = 'closed';
     syncState();

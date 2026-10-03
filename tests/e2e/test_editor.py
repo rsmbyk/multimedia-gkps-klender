@@ -180,8 +180,22 @@ class EditorE2ETests(StaticLiveServerTestCase):
         lit = page.evaluate("""() => [...document.querySelectorAll('#panelBody .row-edit, #chList .row-edit')]
             .filter(b => getComputedStyle(b).opacity !== '0').length""")
         self.assertEqual(lit, 0, 'a row control was left revealed')
-        tips = page.evaluate("""() => [...document.querySelectorAll('.rail__btn[data-tip-open="true"]')].length""")
-        self.assertEqual(tips, 0, "a rail tile's label was left hanging")
+        # The label is painted by ::after, so read that -- an attribute or a missing
+        # element proves nothing. First a positive control: hovering must raise it.
+        lift = ("Number(getComputedStyle(document.querySelector("
+                "'.rail__btn[aria-label=\"Kidung\"]'), '::after').opacity)")
+        page.hover('.rail__btn[aria-label="Kidung"]')
+        page.wait_for_timeout(900)
+        self.assertGreater(page.evaluate(lift), 0.05, 'the label did not appear on hover')
+        # closing the panel with its own control puts focus back on the tile, and that
+        # must not raise the label again (review report: it did)
+        page.click('#panelCollapse')
+        page.wait_for_function("document.documentElement.dataset.nav === 'closed'")
+        page.wait_for_timeout(700)
+        self.assertEqual(page.evaluate(lift), 0, 'the rail label stayed up after closing')
+        rails = page.evaluate("""() => [...document.querySelectorAll('.rail__btn[data-tip]')]
+            .filter(b => Number(getComputedStyle(b, '::after').opacity) > 0.05).map(b => b.dataset.tip)""")
+        self.assertEqual(rails, [], 'a rail label was left up')
         self._close_browser()
 
     def test_add_tatib_with_its_first_section(self):

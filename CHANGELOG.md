@@ -51,9 +51,12 @@ Pre-adoption history in the legacy per-version format is archived in
   it became `/home/?mode=template` -- the search home -- so the panel closed and Alkitab
   appeared. It is absolute now, and it is synced (or removed) with its section, so it keeps the
   slot the mockup gives it instead of leaving the collapse there.
-- Closing a sidebar no longer reveals a row's edit control (the row link kept focus, and
-  `:focus-within` counted as hover) or leaves a rail tile's label hanging (a focused tile shows
-  its own tooltip; the label is cleared once its click has been handled).
+- Closing a sidebar no longer reveals a row's edit control: the row link kept focus, and
+  `:focus-within` counted as hover.
+- A rail tile's label no longer appears when a sidebar closes. Closing the panel returns focus
+  to its tile on purpose (that is the focus management, and it is right), but the label was
+  raised by *any* focus; it now answers keyboard focus only, via `:focus-visible`. Any tooltip
+  still up when a sidebar's state changes is cleared at the transition.
 - The add buttons are inserted from the page that arrives when the shell swaps a section in
   place. They sit outside the swapped regions, and the search-first home has no such button
   to update, so they used to be missing for anyone who landed on the home and clicked through
