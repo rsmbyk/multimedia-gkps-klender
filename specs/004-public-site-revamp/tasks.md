@@ -35,7 +35,7 @@
 - [ ] Green — `reading/tatib*.html` — service list (year+month groups, Templates view),
       contents quicklinks, service order stage (speaker marks, quiet end-of-section notes,
       date-only eyebrow)
-- [ ] Green — `static/styles/design/components.css` rebuilt: rail, push panels with
+- [x] Green — `static/styles/design/components.css` rebuilt: rail, push panels with
       clip-wipe, mini collapse, song-list swap below 1272px, overlays ≤720px, reader
       typography, tooltips, print block
 - [ ] Green — `static/web/reading.js` (new, dependency-free): state machine (`nav`, `ch`,
