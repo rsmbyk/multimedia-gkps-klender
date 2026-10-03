@@ -504,10 +504,44 @@ class ServiceEntryViewTests(TestCase):
                 for needle in needles:
                     self.assertContains(response, needle)
 
-    def test_the_scripture_fragment_offers_the_books_and_their_chapter_counts(self):
+    def test_the_scripture_fragment_groups_searchable_books_by_testament(self):
         response = self.client.get(self.new_url('scripture'))
         self.assertContains(response, 'Matius')
         self.assertContains(response, 'data-chapters="28"')
+        self.assertContains(response, 'Perjanjian Baru')
+        self.assertContains(response, 'data-entry-picker="book"')
+        self.assertContains(response, 'placeholder="Filter books..."')
+
+    def test_the_chapter_endpoint_returns_actual_verse_numbers(self):
+        response = self.client.get(reverse('web-entry-chapter-verses',
+                                           kwargs={'pk': self.matius.pk, 'chapter': 5}))
+        self.assertEqual(response.json()['verses'], [1, 2, 3, 4, 5])
+
+    def test_song_picker_and_verse_checkboxes_live_in_dropdowns(self):
+        response = self.client.get(self.new_url('song'))
+        self.assertContains(response, 'data-entry-picker="song"')
+        self.assertContains(response, 'placeholder="Search songs..."')
+        self.assertContains(response, 'data-verses-trigger')
+        self.assertContains(response, 'data-verses-summary')
+
+    def test_text_and_break_titles_say_optional(self):
+        self.assertContains(self.client.get(self.new_url('text')), 'Title <span class="editor__hint">(optional)</span>')
+        self.assertContains(self.client.get(self.new_url('section_break')),
+                            'Label <span class="editor__hint">(optional)</span>')
+
+    def test_empty_text_is_rejected_and_field_marked(self):
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.TEXT, 'title': 'Heading', 'text': '   ',
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'is-invalid', status_code=400)
+        self.assertContains(response, 'aria-invalid="true"', status_code=400)
+        self.assertFalse(self.tatib.service_entries.exists())
+
+    def test_shared_dialog_has_cancel_but_no_x_button(self):
+        html = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk])).content.decode()
+        self.assertNotIn('class="editor__close"', html)
+        self.assertIn('data-editor-close', self.client.get(self.new_url('text')).content.decode())
 
     # --- creating ----------------------------------------------------------
 
@@ -648,12 +682,21 @@ class ServiceEntryViewTests(TestCase):
             self.assertIn(f'data-entry-open="{kind}"', html)
         self.assertIn(f'data-entry-after="e{entry.pk}"', html)
 
+    def test_invalid_insertion_form_keeps_its_after_marker(self):
+        first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk,
+            'verses': [], 'after': f'e{first.pk}',
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, f'name="after" value="e{first.pk}"', status_code=400)
+
     def test_an_entry_is_inserted_after_the_item_whose_control_was_used(self):
         # after, never before: the new entry takes the next place and the rest move down
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
         second = self.make(kind=tatib.ServiceEntryKind.TEXT, text='b', order_number=2)
         response = self.client.post(self.save_new_url(),
-                                    {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'c', 'after': first.pk})
+                                    {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'c', 'after': f'e{first.pk}'})
         self.assertEqual(response.status_code, 200)
         second.refresh_from_db()
         self.assertEqual([(e.order_number, e.text) for e in self.tatib.service_entries.all()],

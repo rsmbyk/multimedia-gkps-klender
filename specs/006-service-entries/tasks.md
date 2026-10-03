@@ -1,14 +1,15 @@
 # Tasks 006: Service entries
 
-- **Status:** Accepted (owner, 2026-10-03) — needs the owner's Accept (SDD gate). No implementation before that.
+- **Status:** Accepted (owner, 2026-10-03)
 - **Spec:** [./spec.md](./spec.md) · **Plan:** [./plan.md](./plan.md)
 
 ## Before starting
 
-- [ ] Spec Accepted by the project owner
-- [ ] The open questions in ./spec.md answered (model name, control surface, stack, URLs)
-- [ ] Branch from the current base (`feat/006-service-entries`)
-- [ ] Confirm the compatibility promise's regression pass exists before touching anything
+- [x] Spec Accepted by the project owner (2026-10-03)
+- [x] The open questions in ./spec.md answered (model name, control surface, stack, URLs)
+- [x] Branch from the current base (`feat/006-service-entries`)
+- [x] Confirm the compatibility promise's regression pass exists before touching anything —
+      `multimedia/web/tests.py` pins that a service with no entries renders exactly as before
 
 ## Slice 1 — the model  (done)
 
@@ -20,7 +21,7 @@
 - [x] Verified: 130 tests green, the 116 that existed before among them, with no edit to any
       current template, endpoint or model
 
-## Slice 2 — the content pane  (endpoints done; the pane itself to come)
+## Slice 2 — the content pane  (done)
 
 - [x] Red: create/update/delete endpoints per kind; validation errors; what the pickers need
       (`ServiceEntryViewTests`, 17 tests, red before the wiring existed)
@@ -39,11 +40,19 @@
 - [x] Additive: a service with no entries renders exactly as it did before, which one test pins
 - [x] A new entry can be inserted behind the item whose control was used (`after`), shifting the
       rest -- the liturgy is built in place, not appended
-- [ ] The modals' behaviour in the browser: opening the fragment, submitting it, the cascading
+- [x] The modals' behaviour in the browser: opening the fragment, submitting it, the cascading
       book -> chapter -> verse resets, the song pick's search, and the verse checklist's label
       (`static/web/entries.js`, and the styles for the new controls)
-- [ ] E2E: each modal, the cascading dropdowns, the verse checklist's label, the panes
-      refreshing in place
+- [x] E2E: each modal, the cascading dropdowns, the verse checklist's label, the panes
+      refreshing in place — `tests/e2e/test_entries.py` (10 tests, green)
+- [x] The owner's review round of 2026-10-04: each picker's own filter inside the dropdown, books
+      grouped by testament, the to-verse list hiding what cannot end a range (disabled, with its
+      hover note), the verse checklist inside a dropdown labelled by what is included and shut for
+      a one-verse song, the optional-header hints, the empty-text Save guard, the danger-coloured
+      Delete with icons, and no x-close on the modal
+- [x] Two defects the browser run found and fixed: a slow preload overwriting a newer search answer
+      (a stale-response guard), and menus clipped by the modal's own scroll box (each menu is now
+      capped to the room its trigger has, opening upward when that side is larger)
 
 ## Slice 3 — reorder
 

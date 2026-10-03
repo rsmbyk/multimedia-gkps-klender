@@ -103,6 +103,11 @@ class ServiceEntryTests(TestCase):
         with self.assertRaises(ValidationError):
             self._entry(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[])
 
+    def test_a_text_entry_needs_its_text(self):
+        # an empty text entry has nothing to show; the header alone is not one
+        with self.assertRaises(ValidationError):
+            self._entry(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='   ')
+
     def test_a_section_break_may_be_unlabelled(self):
         # the owner's correction: a break is a break, its label is optional
         entry = self._entry(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='')

@@ -29,6 +29,7 @@
   --tip-bg: #1F1F1D;
   --tip-ink: #FFFFFF;
   --head-ink: #646357;           /* group headers + meta on canvas */
+  --danger: #B3261E;             /* destructive actions, invalid fields */
   --focus: #1C5C3C;
   --active-flash: rgba(28, 92, 60, .16);
   --shadow: 0 6px 18px -10px rgba(20,20,18,.5);
@@ -79,6 +80,7 @@
   --tip-bg: #EDEBE5;
   --tip-ink: #16150F;
   --head-ink: #9C9A91;
+  --danger: #FF9E9A;            /* lifted for dark surfaces */
   --focus: #7C9CF0;
   --shadow: 0 6px 18px -10px rgba(0,0,0,.9);
 }

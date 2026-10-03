@@ -259,6 +259,25 @@ Filled per slice as it lands.
 - Compatibility: no current template, endpoint or model changed; the pre-existing 116 tests pass
   unchanged alongside these
 
+### Slice 2 — the content pane (landed 2026-10-04)
+
+- Endpoints and forms: `multimedia/web/reading/entries.py`, `views.py` and its URLs; the fragments
+  `reading/_entry_form.html` and `reading/_entry_song_options.html`
+- The pane, the four add controls, the per-entry edit and delete, the empty-service invitation:
+  `reading/tatib.html`, `static/web/entries.js`, `static/web/reading.js`
+- The modal's chrome and the pickers: `reading/_editor_modal.html`,
+  `static/styles/design/components.css`, `tokens.css` (`--danger`)
+- App tests: `multimedia/web/tests.py` — the six endpoints per kind, their validation errors, the
+  insert-after rule and the pane's controls; `multimedia/tatib/tests.py` — a text entry needs its
+  text
+- E2E: `tests/e2e/test_entries.py` (10) — each modal, the cascading dropdowns, the to-verse
+  disabled state with its hover note, the verse checklist's label and its one-verse case, the
+  filter inside each dropdown, the panes refreshing in place
+- Verified: 82 tests green across `multimedia.web`, `multimedia.tatib` and the design tokens; the
+  entry e2e green (10/10). The rest of the e2e suite runs at the push step, at the owner's request
+- Deviations from the mockup, on the owner's instruction: no x-close on the modal, a filter inside
+  each picker rather than beside it, and the verse checklist inside a dropdown
+
 ## Open questions for Accept
 
 1. **Name.** I propose a new model **`ServiceEntry`** ("service entry") in the `tatib` app, with

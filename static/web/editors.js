@@ -64,6 +64,8 @@
           announce('Please correct the highlighted fields.');
           var invalid = content.querySelector('.is-invalid input, .is-invalid select, .is-invalid textarea');
           if (invalid) invalid.focus();
+          /* the entry modals re-wire their own controls onto the fresh fragment */
+          document.dispatchEvent(new CustomEvent('editor:rendered'));
         });
       }
       if (response.status === 403) {

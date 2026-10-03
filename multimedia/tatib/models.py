@@ -84,6 +84,8 @@ class ServiceEntry(models.Model):
 
     def clean(self):
         errors = {}
+        if self.kind == ServiceEntryKind.TEXT and not (self.text or '').strip():
+            errors['text'] = 'A text entry needs its text.'
         if self.kind == ServiceEntryKind.SCRIPTURE:
             if not self.book_translation_id or not self.chapter or not self.verse_start:
                 errors['chapter'] = 'A passage needs a book, a chapter and a starting verse.'

@@ -468,14 +468,8 @@ li:hover > .row-edit,
   font-size: 18px; font-weight: 640; letter-spacing: -.01em;
   border-bottom: 1px solid var(--divider);
 }
-.editor__close {
-  position: absolute; right: 10px; top: 10px; z-index: 1;
-  width: 30px; height: 30px; padding: 0; display: grid; place-items: center;
-  border: 0; border-radius: 8px; background: none; color: var(--head-ink);
-  cursor: pointer; transition: background var(--ease), color var(--ease);
-}
-.editor__close:hover { background: var(--icon-hover-bg); color: var(--ink); }
-.editor__close svg { width: 14px; height: 14px; }
+/* The dialog carries no x: the form's own Cancel, Escape and the backdrop are the
+   ways out, and chrome that repeats a control the form already has is noise. */
 .editor__field { margin: 0 0 12px; }
 .editor__field > label {
   display: block; margin-bottom: 5px;
@@ -489,7 +483,7 @@ li:hover > .row-edit,
   background: var(--rail-bg); color: var(--ink);
   font: 500 14px/1.35 ui-sans-serif, system-ui, sans-serif;
 }
-.editor__field textarea { resize: vertical; }
+.editor__field textarea { resize: none; }
 /* The song pick is a search like the shell's, so it wears the same magnifier. */
 .editor__field input[type="search"] {
   padding-left: 34px;
@@ -516,9 +510,10 @@ li:hover > .row-edit,
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
 }
 .editor__field.is-invalid input, .editor__field.is-invalid select,
-.editor__field.is-invalid textarea { border-color: var(--ink); }
+.editor__field.is-invalid textarea,
+.editor__field.is-invalid .editor__picker-trigger { border-color: var(--danger); }
 .editor__help { margin: 5px 0 0; font-size: 12px; color: var(--head-ink); }
-.editor__error { margin: 5px 0 0; font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.editor__error { margin: 5px 0 0; font-size: 12.5px; font-weight: 600; color: var(--danger); }
 .editor__actions {
   display: flex; justify-content: flex-end; gap: 8px;
   margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--divider);
@@ -532,6 +527,10 @@ li:hover > .row-edit,
 .editor__save:focus-visible, .editor__cancel:focus-visible {
   outline: 2px solid var(--focus); outline-offset: 2px;
 }
+.editor__save:disabled { background: var(--divider); color: var(--head-ink); cursor: not-allowed; }
+
+/* A hint rides inside a label without shouting: "(optional)", "all verses". */
+.editor__hint { font-weight: 400; color: var(--head-ink); }
 
 /* ---------- clear control inside search and filter fields ---------- */
 .panel__filter input, .ch__search input { padding-right: 34px; }   /* room for the × */
@@ -1329,6 +1328,10 @@ kbd {
   opacity: 0;
   transition: opacity 140ms ease 220ms;
 }
+/* The last text paragraph's 4px bottom margin collapses outside its section.
+   Pull that dead strip into the control row without moving the buttons: a slow
+   pointer between two legacy paragraphs must still hover the row. */
+.tatib__item + .entry__add { margin-top: -4px; padding-top: 4px; }
 .tatib__item:hover + .entry__add,
 .tatib__eos:hover + .entry__add,
 .entry__add:hover,
@@ -1391,8 +1394,8 @@ kbd {
 .entry__empty-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
 
-.entry__divider { width: 1px; align-self: stretch; margin: 2px 4px; background: var(--divider); }
 .entry__ctrl {
+  display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 10px;
   font: 500 13px/1.2 ui-sans-serif, system-ui, sans-serif;
   color: var(--head-ink);
@@ -1402,25 +1405,72 @@ kbd {
   cursor: pointer;
   transition: color var(--ease), border-color var(--ease), background var(--ease);
 }
+.entry__ctrl svg { width: 13px; height: 13px; flex: none; }
 .entry__ctrl:hover { color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg); }
-.entry__ctrl--danger:hover { color: #b3261e; border-color: #b3261e; }
+/* Destructive reads as destructive at rest, not only under the pointer. */
+.entry__ctrl--danger { color: var(--danger); }
+.entry__ctrl--danger:hover {
+  color: var(--danger); border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
 
 /* Edit and Delete act on the entry above, so they sit at the row's far end,
    away from the four ways of adding something after it -- and they travel as one
    group, so a narrow column wraps the pair together instead of splitting them. */
 .entry__acts { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
 
-/* A dialog's close is chrome, not content: it reads at the same weight as the
-   other icon buttons and answers a hover the way they do. */
-.editor__close { color: var(--head-ink); border-radius: 8px; transition: color var(--ease), background var(--ease); }
-.editor__close:hover, .editor__close:focus-visible { color: var(--ink); background: var(--icon-hover-bg); }
-.editor__close svg { width: 16px; height: 16px; }
-
 /* ---------- the entry modals ---------------------------------------------- */
-.editor__songpick {
-  max-height: 168px; overflow: auto; margin-top: 6px;
-  border: 1px solid var(--divider); border-radius: 9px; background: var(--canvas);
+
+/* A picker wears a select's chrome: the trigger is the closed control, the menu
+   the open one. The book and song pickers carry their own filter, so the menu is
+   a column -- the filter fixed at the top, the options scrolling under it. */
+.editor__picker { position: relative; }
+.editor__picker-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; min-height: 38px; padding: 8px 34px 8px 10px; text-align: left;
+  border: 1px solid var(--divider); border-radius: 9px;
+  background-color: var(--rail-bg); color: var(--ink);
+  font: 500 14px/1.35 ui-sans-serif, system-ui, sans-serif;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23555349' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+  cursor: pointer; transition: border-color var(--ease), box-shadow var(--ease);
 }
+:root[data-theme="dark"] .editor__picker-trigger {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239C9A91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
+}
+.editor__picker-trigger:hover,
+.editor__picker-trigger[aria-expanded="true"] { border-color: var(--focus); }
+.editor__picker-trigger:focus-visible {
+  outline: none; border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+.editor__picker-trigger:disabled { color: var(--head-ink); cursor: default; }
+.editor__picker-trigger:disabled:hover { border-color: var(--divider); }
+.editor__picker-menu {
+  position: absolute; z-index: 4; left: 0; right: 0; top: calc(100% + 6px);
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 268px; padding: 8px;
+  background: var(--canvas); border: 1px solid var(--divider); border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+.editor__picker-menu[hidden] { display: none; }     /* author display beats [hidden] */
+.editor__picker-menu[data-flip="up"] { top: auto; bottom: calc(100% + 6px); }
+.editor__picker-options { min-height: 0; overflow: auto; }
+.editor__picker-group[hidden] { display: none; }
+.editor__picker-options .editor__hint { margin: 6px 8px; }
+
+/* "No verses left after this one": the disabled to-verse's hover note. */
+.editor__end-wrap { position: relative; display: block; }
+.editor__end-wrap select:disabled { color: var(--head-ink); }
+.editor__end-tip {
+  position: absolute; z-index: 4; left: 0; right: 0; top: calc(100% + 6px);
+  padding: 7px 10px; border-radius: 8px;
+  background: var(--tip-bg); color: var(--tip-ink);
+  font: 500 12.5px/1.35 ui-sans-serif, system-ui, sans-serif;
+  opacity: 0; pointer-events: none; transition: opacity var(--ease);
+}
+.editor__end-wrap[data-empty]:hover .editor__end-tip,
+.editor__end-wrap[data-empty]:focus-within .editor__end-tip { opacity: 1; }
 .editor__songgroup-label {
   margin: 0; padding: 8px 12px 4px;
   font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif;
@@ -1435,10 +1485,12 @@ kbd {
   background: var(--icon-hover-bg); outline: none;
 }
 .editor__verses {
-  display: flex; flex-wrap: wrap; gap: 10px 18px; max-height: 190px; overflow: auto;
-  padding: 10px 12px; border: 1px solid var(--divider); border-radius: 9px;
+  display: flex; flex-wrap: wrap; gap: 10px 18px;
+  padding: 8px 10px;
 }
-.editor__verse {
+.editor__picker-menu .editor__verses { border: 0; }        /* the menu is the box */
+.editor__verses > div { display: inline-flex; }
+.editor__verses label, .editor__verse {
   display: inline-flex; align-items: center; gap: 7px;
   font: 400 14px/1.2 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
   cursor: pointer;

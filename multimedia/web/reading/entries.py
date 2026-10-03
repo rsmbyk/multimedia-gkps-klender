@@ -155,11 +155,18 @@ def scripture_books():
     for translation in (bible_models.BookTranslation.objects
                         .select_related('book', 'version').order_by('book_id')):
         rows.append({'id': translation.pk, 'name': translation.translation,
+                     'testament_label': ('Perjanjian Lama' if translation.book.testament == 'old'
+                                         else 'Perjanjian Baru'),
                      'chapters': translation.book.number_of_chapters})
     return rows
 
 
-def chapter_verse_count(translation_pk, chapter):
+def chapter_verse_numbers(translation_pk, chapter):
     from multimedia.bible import models as bible_models
-    return bible_models.Verse.objects.filter(
-        book_translation_id=translation_pk, chapter=chapter).count()
+    return list(bible_models.Verse.objects.filter(
+        book_translation_id=translation_pk, chapter=chapter)
+        .order_by('verse').values_list('verse', flat=True))
+
+
+def chapter_verse_count(translation_pk, chapter):
+    return len(chapter_verse_numbers(translation_pk, chapter))

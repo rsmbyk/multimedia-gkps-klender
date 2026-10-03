@@ -39,6 +39,19 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(tatib=self.full, order_number=1,
                                           kind=tatib.ServiceEntryKind.TEXT,
                                           title='Salam', text='lama')
+        self.ordered = tatib.TataIbadah.objects.create(
+            name='Ordered service', date=date(2026, 7, 11), is_active=True)
+        for order, text in enumerate(('First', 'Last'), 1):
+            tatib.ServiceEntry.objects.create(
+                tatib=self.ordered, order_number=order,
+                kind=tatib.ServiceEntryKind.TEXT, text=text)
+        self.legacy = tatib.TataIbadah.objects.create(
+            name='Pengakuan Iman', date=date(2026, 7, 12), is_active=True)
+        for order, text in enumerate(('Aku percaya kepada Allah.\nYang dikandung dari Roh Kudus.',
+                                      'Yang menderita sengsara di bawah Pontius Pilatus.'), 1):
+            tatib.TataIbadahItem.objects.create(
+                tatib=self.legacy, order_number=order,
+                item_type=tatib.TataIbadahItemType.TEXT, text=text)
 
         s_lang = songs.Language.objects.create(name='Indonesian')
         songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat', short_name='KJ',
@@ -46,6 +59,9 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         self.song = songs.Song.objects.create(book=songbook, number=152, title='Ada Kuasa')
         for number in (1, 2, 3):
             songs.Verse.objects.create(song=self.song, number=number, lyric=f'bait {number}')
+        # a one-verse song: its checklist has nothing to choose, so it stays shut
+        self.solo = songs.Song.objects.create(book=songbook, number=90, title='Bait Tunggal')
+        songs.Verse.objects.create(song=self.solo, number=1, lyric='satu')
 
         b_lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru',
@@ -95,6 +111,57 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.entry__add').first).to_have_css('opacity', '1')
         self.assertEqual(page.locator('[data-entry-after]').count(), 1)
 
+    def test_legacy_item_controls_stay_revealed_between_item_and_button_row(self):
+        page = self._page(reverse('web-home'))
+        page.locator('[data-panel="tatib"]').click()
+        page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.legacy.pk])}"]').click()
+        page.wait_for_selector('#readBody > .tatib__item + .entry__add')
+        item = page.locator('#readBody > .tatib__item').first
+        row = page.locator('#readBody > .entry__add').first
+        item_box, row_box = item.bounding_box(), row.bounding_box()
+        self.assertLessEqual(row_box['y'], item_box['y'] + item_box['height'] + .5)
+        x = row_box['x'] + row_box['width'] * .8  # the blank right side, not a button
+        page.mouse.move(x, item_box['y'] + item_box['height'] - 8)
+        expect(row).to_have_css('opacity', '1')
+        page.mouse.move(x, row_box['y'] + 8, steps=12)
+        page.wait_for_timeout(420)               # beyond the old 220 ms hide delay
+        expect(row).to_have_css('opacity', '1')
+
+    def test_save_from_home_keeps_the_tata_ibadah_on_stage(self):
+        page = self._page(reverse('web-home'))
+        page.locator('[data-panel="tatib"]').click()
+        page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.full.pk])}"]').click()
+        page.wait_for_function("document.querySelector('#readName').textContent.trim() === 'Ibadah Sore'")
+        self.assertTrue(page.url.endswith('/home/'))  # the shell never changes the address bar
+        self._reveal(page)
+        page.locator('[data-entry-edit]').first.click()
+        page.wait_for_selector('dialog[open]')
+        page.fill('[name=text]', 'Saved on the service')
+        page.click('.editor__save')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        expect(page.locator('#readName')).to_have_text('Ibadah Sore')
+        expect(page.locator('.tatib__item--entry .tatib__tx')).to_contain_text('Saved on the service')
+
+    def test_add_after_first_entry_from_home_inserts_before_second(self):
+        page = self._page(reverse('web-home'))
+        page.locator('[data-panel="tatib"]').click()
+        page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.ordered.pk])}"]').click()
+        page.wait_for_function("document.querySelector('#readName').textContent.trim() === 'Ordered service'")
+        self._reveal(page)
+        page.locator('#readBody .entry__add').first.locator('[data-entry-open="text"]').click()
+        page.wait_for_selector('dialog[open]')
+        page.fill('[name=text]', 'Middle')
+        with page.expect_response(lambda response: '/editor/entry/new/save/' in response.url) as saving:
+            page.click('.editor__save')
+        self.assertEqual(saving.value.status, 200, saving.value.text()[:600])
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        expect(page.locator('#readName')).to_have_text('Ordered service')
+        expect(page.locator('#readBody .tatib__item--entry .tatib__tx')).to_have_text(
+            ['First', 'Middle', 'Last'])
+        self._close_browser()
+        self.assertEqual(list(self.ordered.service_entries.order_by('order_number')
+                              .values_list('text', flat=True)), ['First', 'Middle', 'Last'])
+
     # --- a passage ------------------------------------------------------------
 
     def test_adding_a_passage_through_the_modal(self):
@@ -104,13 +171,24 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.wait_for_selector('dialog[open]')
         expect(page.locator('#editorTitle')).to_have_text('New passage')
 
-        page.select_option('[name=book_translation]', str(self.matius.pk))
-        page.wait_for_timeout(400)
+        page.get_by_role('button', name='Book').click()
+        page.get_by_placeholder('Filter books...').fill('Matius')
+        expect(page.locator('[data-picker-options]')).to_contain_text('Perjanjian Baru')
+        page.locator('[data-picker-options] button', has_text='Matius').first.click()
         expect(page.locator('[name=chapter]')).to_have_value('1')
         page.select_option('[name=chapter]', '5')
-        page.wait_for_timeout(500)
         expect(page.locator('[name=verse_start]')).to_have_value('1')
+        # the chapter's last verse leaves nothing to end a range with: the to-verse
+        # shuts off and explains itself on hover
+        page.select_option('[name=verse_start]', '5')
+        expect(page.locator('[name=verse_end]')).to_be_disabled()
+        expect(page.locator('[data-end-wrap]')).to_have_attribute('data-empty', 'true')
+        page.hover('[data-end-wrap]')
+        expect(page.locator('.editor__end-tip')).to_have_css('opacity', '1')
         page.select_option('[name=verse_start]', '2')
+        expect(page.locator('[name=verse_end]')).to_be_enabled()
+        expect(page.locator('[name=verse_end] option[value="1"]')).to_have_count(0)
+        expect(page.locator('[name=verse_end]')).to_be_enabled()
         page.select_option('[name=verse_end]', '4')
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
@@ -128,23 +206,54 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
         page.locator('.entry__empty-btn', has_text='Add Song').first.click()
         page.wait_for_selector('dialog[open]')
+        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
         page.fill('#entry-song-search', 'kuasa')
         page.wait_for_selector('#entry-song-options [data-song]')
         page.locator('#entry-song-options [data-song]').first.click()
-        page.wait_for_selector('#entry-verses input[type=checkbox]')
+        page.wait_for_selector('#entry-verses input[type=checkbox]', state='attached')
+        expect(page.locator('[data-verses-trigger]')).to_have_text('All verses')
+        expect(page.locator('[data-verses-trigger]')).to_be_enabled()
+        page.locator('[data-verses-trigger]').click()
         expect(page.locator('#entry-verses input[type=checkbox]')).to_have_count(3)
         self.assertEqual(
             page.evaluate("[...document.querySelectorAll('#entry-verses input')].filter(i => i.checked).length"), 3)
-        expect(page.locator('[data-verses-summary]')).to_have_text('All verses.')
-
         page.locator('#entry-verses input[value="2"]').uncheck()
-        expect(page.locator('[data-verses-summary]')).to_have_text('Verses 1, 3.')
+        expect(page.locator('[data-verses-trigger]')).to_have_text('Verses 1, 3')
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
 
         self._close_browser()
         saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
         self.assertEqual(saved.verses, [1, 3])
+
+    def test_single_verse_song_keeps_checked_verse_and_disables_picker(self):
+        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('.entry__empty-btn', has_text='Add Song').click()
+        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.fill('#entry-song-search', 'tunggal')
+        page.wait_for_selector('#entry-song-options [data-song]')
+        page.locator('#entry-song-options [data-song]').first.click()
+        # one verse is no choice: it stays checked, and the dropdown stays shut
+        expect(page.locator('[data-verses-trigger]')).to_be_disabled()
+        expect(page.locator('[data-verses-trigger]')).to_have_text('All verses')
+        self.assertEqual(
+            page.evaluate("[...document.querySelectorAll('#entry-verses input')].filter(i => i.checked).length"), 1)
+        page.click('.editor__save')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+
+        self._close_browser()
+        saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
+        self.assertEqual(saved.verses, [1])
+
+    def test_text_save_requires_content_and_does_not_resize(self):
+        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('.entry__empty-btn', has_text='Add Text').click()
+        expect(page.locator('.editor__save')).to_be_disabled()
+        expect(page.locator('[name=text]')).to_have_css('resize', 'none')
+        page.fill('[name=text]', '   ')
+        expect(page.locator('.editor__save')).to_be_disabled()
+        page.fill('[name=text]', 'Pembukaan')
+        expect(page.locator('.editor__save')).to_be_enabled()
 
     # --- editing and deleting -------------------------------------------------
 

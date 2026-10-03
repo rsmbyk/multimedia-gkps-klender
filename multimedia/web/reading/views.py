@@ -145,6 +145,8 @@ def entry_form(request, kind=None, pk=None):
         'form': form, 'kind': kind, 'entry': None if pk is None else entry,
         'title': entry_forms.entry_title(kind, None if pk is None else entry),
         'tatib': tatib, 'books': entry_forms.scripture_books(),
+        'song': getattr(form, 'song', None),
+        'after': request.GET.get('after') if pk is None else None,
         'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
                             kwargs={'pk': pk} if pk else {})
                     + ('' if pk else f'?tatib={tatib.pk}'),
@@ -170,16 +172,22 @@ def entry_save(request, pk=None):
             'form': form, 'kind': kind, 'entry': entry,
             'title': entry_forms.entry_title(kind, entry), 'tatib': form.tatib,
             'books': entry_forms.scripture_books(),
+            'song': getattr(form, 'song', None),
+            'after': request.POST.get('after') if pk is None else None,
             'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
                                 kwargs={'pk': pk} if pk else {})
                         + ('' if pk else f'?tatib={form.tatib.pk}'),
         }, status=400)
     if entry is None:
-        after = request.POST.get('after')
-        marker = (tatib_models.ServiceEntry.objects.filter(pk=after, tatib=form.tatib).first()
-                  if after else None)
+        after = request.POST.get('after', '')
+        # The stage's anchor is "e<pk>" for a ServiceEntry. Never pass that
+        # string to an integer PK lookup (which raises a 500); also avoid
+        # treating a legacy item's numeric order as a ServiceEntry PK.
+        marker = (tatib_models.ServiceEntry.objects.filter(
+            pk=int(after[1:]), tatib=form.tatib).first()
+            if after.startswith('e') and after[1:].isdigit() else None)
         if marker is not None:
-            # the controls sit on an item: the new entry goes AFTER it, never before
+            # The new entry goes AFTER the clicked entry, never before it.
             (tatib_models.ServiceEntry.objects
              .filter(tatib=form.tatib, order_number__gt=marker.order_number)
              .update(order_number=F('order_number') + 1))
@@ -226,10 +234,10 @@ def entry_song_verses(request, pk):
 
 
 def entry_chapter_verses(request, pk, chapter):
-    count = entry_forms.chapter_verse_count(pk, chapter)
-    if not count:
+    verses = entry_forms.chapter_verse_numbers(pk, chapter)
+    if not verses:
         raise Http404('That chapter has no verses here.')
-    return JsonResponse({'count': count})
+    return JsonResponse({'count': len(verses), 'verses': verses})
 
 
 def _books_groups(selected_id=None):
