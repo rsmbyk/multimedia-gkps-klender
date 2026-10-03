@@ -28,6 +28,7 @@ from multimedia.bible import models as bible_models
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
 from multimedia.web.reading import editors
+from multimedia.web.reading import entries as entry_forms
 from multimedia.web.reading import search as search_lib
 
 TESTAMENTS = (('old', 'Perjanjian Lama'), ('new', 'Perjanjian Baru'))
@@ -123,6 +124,98 @@ def editor_save(request, kind, pk=None):
                       _editor_fragment_context(kind, form, pk), status=400)
     saved = editors.save_form(kind, form, target)
     return JsonResponse({'ok': True, 'id': saved.pk})
+
+
+def entry_form(request, kind=None, pk=None):
+    """The modal's form fragment: one per kind, or the existing entry's own."""
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if pk is not None:
+        entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk)
+        kind = entry_forms.kind_name(entry.kind)
+        form = entry_forms.build_entry_form(kind, instance=entry)
+        tatib = entry.tatib
+    else:
+        kind = request.GET.get('kind')          # the new form names its kind in the query
+        tatib = get_object_or_404(tatib_models.TataIbadah, pk=request.GET.get('tatib'))
+        form = entry_forms.build_entry_form(kind, tatib=tatib)
+    if form is None:
+        raise Http404('Unknown kind.')
+    return render(request, 'reading/_entry_form.html', {
+        'form': form, 'kind': kind, 'entry': None if pk is None else entry,
+        'tatib': tatib, 'books': entry_forms.scripture_books(),
+        'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
+                            kwargs={'pk': pk} if pk else {})
+                    + ('' if pk else f'?tatib={tatib.pk}'),
+    })
+
+
+def entry_save(request, pk=None):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk) if pk else None
+    kind = entry_forms.kind_name(entry.kind) if entry else request.POST.get('kind')
+    form = entry_forms.build_entry_form(
+        kind, data=request.POST, instance=entry,
+        tatib=entry.tatib if entry else get_object_or_404(
+            tatib_models.TataIbadah, pk=request.GET.get('tatib')))
+    if form is None:
+        raise Http404('Unknown kind.')
+    if not form.is_valid():
+        return render(request, 'reading/_entry_form.html', {
+            'form': form, 'kind': kind, 'entry': entry, 'tatib': form.tatib,
+            'books': entry_forms.scripture_books(),
+            'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
+                                kwargs={'pk': pk} if pk else {})
+                        + ('' if pk else f'?tatib={form.tatib.pk}'),
+        }, status=400)
+    if entry is None:
+        form.instance.order_number = entry_forms.next_order_number(form.tatib)
+    saved = form.save()
+    return JsonResponse({'ok': True, 'id': saved.pk})
+
+
+def entry_delete(request, pk):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk)
+    entry.delete()
+    return JsonResponse({'ok': True})
+
+
+def entry_song_options(request):
+    """The song pick's options, grouped by songbook, filtered by q."""
+    query = (request.GET.get('q') or '').strip()
+    songs = (song_models.Song.objects.select_related('book')
+             .order_by('book__name', 'number', 'title'))
+    if query:
+        songs = songs.filter(title__icontains=query) | songs.filter(number__icontains=query)
+    groups, current = [], None
+    for song in songs[:200]:
+        label = song.book.short_name or song.book.name
+        if current is None or current['label'] != label:
+            current = {'label': label, 'name': song.book.name, 'songs': []}
+            groups.append(current)
+        current['songs'].append({'id': song.pk, 'title': song.title,
+                                 'number': song.number})
+    return render(request, 'reading/_entry_song_options.html', {'groups': groups})
+
+
+def entry_song_verses(request, pk):
+    song = get_object_or_404(song_models.Song, pk=pk)
+    numbers = list(song.verse_set.order_by('number').values_list('number', flat=True))
+    return JsonResponse({'verses': numbers, 'title': song.title or ''})
+
+
+def entry_chapter_verses(request, pk, chapter):
+    count = entry_forms.chapter_verse_count(pk, chapter)
+    if not count:
+        raise Http404('That chapter has no verses here.')
+    return JsonResponse({'count': count})
 
 
 def _books_groups(selected_id=None):

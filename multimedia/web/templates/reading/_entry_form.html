@@ -1,0 +1,67 @@
+{% comment %}One kind's fields (spec 006, slice 2). The modal posts this fragment back.{% endcomment %}
+<form class="editor__form" data-entry-form="{{ kind }}" action="{{ save_url }}" method="post">
+  {% csrf_token %}
+  {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+  <input type="hidden" name="kind" value="{{ kind }}">
+
+  {% if kind == 'scripture' %}
+  <div class="editor__field">
+    <label for="id_book_translation">Book</label>
+    <select name="book_translation" id="id_book_translation">
+      {% for book in books %}
+      <option value="{{ book.id }}" data-chapters="{{ book.chapters }}"
+              {% if form.book_translation.value|stringformat:'s' == book.id|stringformat:'s' %}selected{% endif %}>{{ book.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="editor__field">
+    <label for="id_chapter">Chapter</label>
+    <input type="number" name="chapter" id="id_chapter" min="1"
+           value="{{ form.chapter.value|default:1 }}">
+  </div>
+  <div class="editor__field">
+    <label for="id_verse_start">From verse</label>
+    <input type="number" name="verse_start" id="id_verse_start" min="1"
+           value="{{ form.verse_start.value|default:1 }}">
+  </div>
+  <div class="editor__field">
+    <label for="id_verse_end">To verse <span class="editor__hint">(optional)</span></label>
+    <input type="number" name="verse_end" id="id_verse_end" min="1"
+           value="{{ form.verse_end.value|default_if_none:'' }}">
+  </div>
+
+  {% elif kind == 'song' %}
+  <div class="editor__field">
+    <label for="entry-song-search">Song</label>
+    <input type="search" id="entry-song-search" placeholder="Search songs..." autocomplete="off">
+    <input type="hidden" name="song" id="id_song" value="{{ form.song.value|default:'' }}">
+    <div class="editor__songpick" id="entry-song-options" hidden></div>
+  </div>
+  <div class="editor__field">
+    <label>Verses <span class="editor__hint">(all shown unless unchecked)</span></label>
+    {{ form.verses }}
+  </div>
+
+  {% else %}
+  <div class="editor__field">
+    <label for="id_title">{% if kind == 'section_break' %}Label{% else %}Title{% endif %}</label>
+    <input type="text" name="title" id="id_title" maxlength="64" value="{{ form.title.value|default:'' }}">
+  </div>
+  {% if kind == 'text' %}
+  <div class="editor__field">
+    <label for="id_text">Text</label>
+    <textarea name="text" id="id_text" rows="6">{{ form.text.value|default:'' }}</textarea>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {% for error in form.non_field_errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  {% for field in form %}{% for error in field.errors %}
+  <p class="editor__error" role="alert">{{ error }}</p>
+  {% endfor %}{% endfor %}
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>

@@ -103,9 +103,10 @@ class ServiceEntryTests(TestCase):
         with self.assertRaises(ValidationError):
             self._entry(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[])
 
-    def test_a_section_break_needs_a_label(self):
-        with self.assertRaises(ValidationError):
-            self._entry(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='')
+    def test_a_section_break_may_be_unlabelled(self):
+        # the owner's correction: a break is a break, its label is optional
+        entry = self._entry(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='')
+        self.assertEqual(entry.resolve(), ('', ''))
 
     # --- ordering, and living beside the legacy rows ------------------------
 

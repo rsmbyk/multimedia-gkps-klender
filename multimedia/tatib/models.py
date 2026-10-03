@@ -94,8 +94,6 @@ class ServiceEntry(models.Model):
                 errors['song'] = 'A song entry needs a song.'
             elif not self.verses:
                 errors['verses'] = 'Keep at least one verse in the service.'
-        if self.kind == ServiceEntryKind.SECTION_BREAK and not self.title:
-            errors['title'] = 'A section break needs a label.'
         if errors:
             raise ValidationError(errors)
 

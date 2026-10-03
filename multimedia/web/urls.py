@@ -30,6 +30,19 @@ urlpatterns = [
     path('editor/<str:kind>/<int:pk>/', reading_views.editor_form, name='web-editor-edit'),
     path('editor/<str:kind>/<int:pk>/save/', reading_views.editor_save, name='web-editor-save'),
 
+    # Service entries (spec 006, slice 2): the content pane's own editor.
+    path('editor/entry/new/', reading_views.entry_form, name='web-entry-new'),
+    path('editor/entry/new/save/', reading_views.entry_save, name='web-entry-save-new'),
+    path('editor/entry/<int:pk>/edit/', reading_views.entry_form, name='web-entry-edit'),
+    path('editor/entry/<int:pk>/save/', reading_views.entry_save, name='web-entry-save'),
+    path('editor/entry/<int:pk>/delete/', reading_views.entry_delete, name='web-entry-delete'),
+    path('editor/entry/songs/', reading_views.entry_song_options,
+         name='web-entry-song-options'),
+    path('editor/entry/song/<int:pk>/verses/', reading_views.entry_song_verses,
+         name='web-entry-song-verses'),
+    path('editor/entry/chapter/<int:pk>/<int:chapter>/', reading_views.entry_chapter_verses,
+         name='web-entry-chapter-verses'),
+
     # Content editor, moved off the public paths.
     path('manage/', include('multimedia.web.manage.urls')),
 

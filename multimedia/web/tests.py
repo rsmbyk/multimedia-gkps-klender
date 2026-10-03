@@ -10,7 +10,9 @@ from multimedia.tatib import models as tatib
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class ReadingViewsTests(TestCase):
+class EditorViewTests(TestCase):
+    """Sidebar editors (spec 005): the forms, the endpoints, and the two gates."""
+
     @classmethod
     def setUpTestData(cls):
         lang = songs.Language.objects.create(name='Indonesian')
@@ -441,3 +443,161 @@ class EditorViewTests(TestCase):
         self.assertContains(self.client.get(reverse('web-tatib')),
                             'data-editor-open="tatib"')
         self.assertNotContains(self.client.get(reverse('web-bible')), 'data-editor-open')
+
+
+class ServiceEntryViewTests(TestCase):
+    """The service entry endpoints (spec 006, slice 2).
+
+    Written before the endpoints exist: every one names the URL it expects, so the
+    red run is a page of NoReverseMatch until the wiring lands.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III')
+
+        b_lang = bible.Language.objects.create(name='Indonesia')
+        version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru', abbreviation='TB')
+        book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
+        cls.matius = bible.BookTranslation.objects.create(
+            version=version, book=book, translation='Matius')
+        bible.BookTranslation.objects.create(
+            version=version, book=bible.Book.objects.create(
+                name='Mrk', testament='new', number_of_chapters=16), translation='Markus')
+        for number in range(1, 6):
+            bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=number,
+                                       text=f'ayat {number}')
+
+        s_lang = songs.Language.objects.create(name='Indonesian')
+        cls.songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat',
+                                                 short_name='KJ', is_hymn_book=True)
+        cls.song = songs.Song.objects.create(book=cls.songbook, number=152,
+                                             title='Ada Kuasa dalam DarahNya')
+        for number in (1, 2, 3):
+            songs.Verse.objects.create(song=cls.song, number=number, lyric=f'bait {number}')
+
+    def new_url(self, kind):
+        return reverse('web-entry-new') + f'?kind={kind}&tatib={self.tatib.pk}'
+
+    def save_new_url(self):
+        return reverse('web-entry-save-new') + f'?tatib={self.tatib.pk}'
+
+    def make(self, **fields):
+        fields.setdefault('order_number', 1)
+        return tatib.ServiceEntry.objects.create(tatib=self.tatib, **fields)
+
+    # --- the form fragment per kind ----------------------------------------
+
+    def test_the_new_fragment_offers_the_fields_its_kind_needs(self):
+        cases = {
+            'text': ['name="title"', 'name="text"'],
+            'scripture': ['name="book_translation"', 'name="chapter"', 'name="verse_start"',
+                          'name="verse_end"'],
+            'song': ['name="song"', 'name="verses"'],
+            'section_break': [],
+        }
+        for kind, needles in cases.items():
+            with self.subTest(kind=kind):
+                response = self.client.get(self.new_url(kind))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, f'value="{kind}"')      # the kind travels hidden
+                for needle in needles:
+                    self.assertContains(response, needle)
+
+    def test_the_scripture_fragment_offers_the_books_and_their_chapter_counts(self):
+        response = self.client.get(self.new_url('scripture'))
+        self.assertContains(response, 'Matius')
+        self.assertContains(response, 'data-chapters="28"')
+
+    # --- creating ----------------------------------------------------------
+
+    def test_creating_a_text_entry_appends_it_to_the_service(self):
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': 'text', 'title': 'Salam', 'text': 'Kasih karunia'})
+        self.assertEqual(response.status_code, 200)
+        entry = self.tatib.service_entries.get()
+        self.assertEqual(response.json()['id'], entry.pk)
+        self.assertEqual(entry.order_number, 1)
+
+    def test_creating_a_scripture_entry(self):
+        response = self.client.post(self.save_new_url(), {
+            'kind': 'scripture', 'book_translation': self.matius.pk, 'chapter': 5,
+            'verse_start': 2, 'verse_end': 4})
+        self.assertEqual(response.status_code, 200)
+        entry = self.tatib.service_entries.get()
+        self.assertEqual(entry.resolve(), ('Matius 5:2-4', '2 ayat 2\n\n3 ayat 3\n\n4 ayat 4'))
+
+    def test_creating_a_song_entry_stores_the_verses_it_includes(self):
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': 'song', 'song': self.song.pk, 'verses': ['1', '3']})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.tatib.service_entries.get().verses, [1, 3])
+
+    def test_creating_a_section_break_without_a_label(self):
+        response = self.client.post(self.save_new_url(), {'kind': 'section_break', 'title': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.tatib.service_entries.get().resolve(), ('', ''))
+
+    def test_the_next_entry_lands_after_the_last_one(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
+        self.client.post(self.save_new_url(), {'kind': 'text', 'text': 'b'})
+        self.assertEqual([e.order_number for e in self.tatib.service_entries.all()], [1, 2])
+
+    # --- refusing ----------------------------------------------------------
+
+    def test_a_song_entry_without_verses_is_refused_and_writes_nothing(self):
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': 'song', 'song': self.song.pk, 'verses': []})
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'at least one verse', status_code=400)
+        self.assertFalse(self.tatib.service_entries.exists())
+
+    def test_a_passage_without_a_chapter_is_refused(self):
+        response = self.client.post(self.save_new_url(), {
+            'kind': 'scripture', 'book_translation': self.matius.pk, 'verse_start': 2})
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(self.tatib.service_entries.exists())
+
+    def test_the_endpoints_are_post_only(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        self.assertEqual(self.client.get(reverse('web-entry-save-new')).status_code, 405)
+        self.assertEqual(self.client.get(reverse('web-entry-save',
+                                                 kwargs={'pk': entry.pk})).status_code, 405)
+
+    def test_editing_an_entry_keeps_its_place(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=3)
+        response = self.client.post(reverse('web-entry-save', kwargs={'pk': entry.pk}),
+                                    {'kind': 'text', 'title': 'Baru', 'text': 'b'})
+        self.assertEqual(response.status_code, 200)
+        entry.refresh_from_db()
+        self.assertEqual((entry.order_number, entry.title), (3, 'Baru'))
+
+    def test_deleting_an_entry(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        response = self.client.post(reverse('web-entry-delete', kwargs={'pk': entry.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(tatib.ServiceEntry.objects.filter(pk=entry.pk).exists())
+
+    @override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True)
+    def test_the_editor_gate_covers_entries(self):
+        self.assertEqual(self.client.get(self.new_url('text')).status_code, 403)
+        self.assertEqual(self.client.post(self.save_new_url(), {'kind': 'text'}).status_code, 403)
+
+    # --- what the pickers need ---------------------------------------------
+
+    def test_the_song_options_are_grouped_by_songbook_and_searchable(self):
+        response = self.client.get(reverse('web-entry-song-options') + '?q=kuasa')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Kidung Jemaat')
+        self.assertContains(response, f'value="{self.song.pk}"')
+
+    def test_the_verses_of_a_song_come_back_all_included(self):
+        response = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['verses'], [1, 2, 3])
+
+    def test_the_verse_count_of_a_chapter(self):
+        response = self.client.get(reverse('web-entry-chapter-verses',
+                                           kwargs={'pk': self.matius.pk, 'chapter': 5}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], 5)
