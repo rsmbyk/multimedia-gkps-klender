@@ -107,6 +107,10 @@ body {
   position: relative;
   width: var(--btn);
   height: var(--btn);
+  /* the mockup's controls are <button>s, so their UA font metrics apply;
+     links mirror them so computed styles stay identical */
+  font-size: 13.3333px;
+  line-height: normal;
   display: grid;
   place-items: center;
   padding: 0;
@@ -521,6 +525,7 @@ body {
   font-size: 14px; line-height: 1.5;
 }
 .result-more {
+  display: inline-block;    /* the mockup's button box; anchors need it said */
   margin: 12px 0 0; padding: 7px 0; border: 0; background: none;
   color: var(--ink); font: 600 14px/1.4 ui-sans-serif, system-ui, sans-serif;
   text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
@@ -593,6 +598,8 @@ body {
 }
 .read__lang button:hover,
 .read__lang a:hover { color: var(--ink); }
+/* anchors mirror the mockup's button content metrics (centered glyphs, no underline) */
+.read__lang a { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .read__lang button[aria-pressed="true"],
 .read__lang a[aria-pressed="true"] {
   background: var(--active-bg);
@@ -638,6 +645,10 @@ body {
 }
 .read__body > .v:first-child { margin-top: 0; }
 .read__body > .read__sec:first-child { margin-top: 8px; }
+/* The TB/SIM edition blocks wrap the same content; their first child must
+   keep the same collapsed top margin as a direct child of .read__body. */
+.read__ed > .v:first-child { margin-top: 0; }
+.read__ed > .read__sec:first-child { margin-top: 8px; }
 /* the TB/SIM toggle belongs to the bible reader only */
 .read[data-kind="song"] .read__lang,
 .read[data-kind="tatib"] .read__lang { display: none; }
@@ -874,6 +885,8 @@ body {
   flex: none;
   position: relative;
   width: 38px; height: 38px;
+  font-size: 13.3333px;      /* mirrors the mockup's button UA metrics */
+  line-height: normal;
   display: grid; place-items: center;
   background: var(--canvas);
   border: 1px solid var(--divider);
@@ -1092,6 +1105,11 @@ kbd {
   .stage { margin: 0 !important; width: 100%; padding: 0 !important; transition: none !important; }
   .result-row { break-inside: avoid; }
 }
+
+/* Edition blocks (TB / SIM): the wrapper must not create a box of its own,
+   or margin collapsing shifts the first heading by 4px vs the mockup. */
+.read__ed { display: contents; }
+.read__ed[hidden] { display: none; }
 
 /* Maintenance notice (spec 003): standalone page, outside the shell. */
 .maintenance {

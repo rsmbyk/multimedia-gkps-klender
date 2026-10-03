@@ -701,6 +701,8 @@
   syncState();
   decorateChapters();
   markRailTile();
+  updateChInds();
+  window.requestAnimationFrame(updateChInds);
   var visibleBlock = null;
   editionBlocks.forEach(function (block) { if (!block.el.hidden) visibleBlock = block.el; });
   var searchTarget = visibleBlock
