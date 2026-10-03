@@ -10,8 +10,15 @@ from multimedia.tatib import models as tatib
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class EditorViewTests(TestCase):
-    """Sidebar editors (spec 005): the forms, the endpoints, and the two gates."""
+class ReadingViewTests(TestCase):
+    """The public reading pages (spec 004): the search-first shell, Alkitab, Kidung, Tata
+    Ibadah, and the manage redirects.
+
+    Named for what it tests on purpose. It was called `EditorViewTests` -- the same name as
+    the sidebar editors' class further down this module -- so Python kept only the later
+    binding and these 23 tests had not run since spec 005 landed (the file's 100 tests
+    collected as 77). Two test classes in one module must never share a name.
+    """
 
     @classmethod
     def setUpTestData(cls):
