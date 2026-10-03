@@ -43,50 +43,57 @@
     if (channel) channel.postMessage(message);
   }
 
-  /* ---------- fitting the words to the screen ------------------------------- */
+  /* ---------- fitting the words to the screen -------------------------------
+     The current projector's own two loops, kept in its shape -- do...while, one pixel at
+     a time, from 50 for the title and 100 for the text, floor 2 -- so the words come out
+     as large as they can be and no larger: the loop stops at the first size that fits,
+     which is one pixel more than the first size that does not.
 
-  /* The current projector's habit, kept, with its own floor: the header shrinks until
-     it fits the width (and, if it is alone too tall, until it leaves the words room),
-     the words until they fit what is left of the screen -- BOTH ways, and all the way
-     down, so a body longer than the screen is never cut off. A single word too long for
-     any line breaks rather than running off the edge (overflow-wrap in the stylesheet). */
+     Two things differ from the original, both deliberate: the measure is the display's
+     own box rather than the window, and the text's condition also reads the INK's box --
+     a wrapped block can report a height a few pixels inside the words' real extents, and
+     the last line then hangs over the bottom edge. */
+
+  function resizeTitleFont(head) {
+    if (!head) return;
+    var fontSize = 50;
+    do {
+      head.style.fontSize = fontSize + 'px';
+      fontSize -= 1;
+      /* Strictly greater, against the display's own box: the original compared
+         `>= window - 72`, which only works because the window is a different box from
+         the element's parent. Measured against its own parent, a full-width block is
+         always ">= clientWidth - margin", and the loop would run to the floor. */
+    } while ((head.scrollWidth > stage.clientWidth
+              || head.scrollHeight > stage.clientHeight * 0.45) && fontSize > 10);
+  }
+
+  function resizeTextFont(head, lines) {
+    if (!lines) return;
+    var box = stage.getBoundingClientRect();
+    var range = document.createRange();
+    var overflows = function () {
+      if (lines.scrollHeight > stage.clientHeight - (head ? head.offsetHeight : 0) - 8) {
+        return true;
+      }
+      range.selectNodeContents(lines);
+      var ink = range.getBoundingClientRect();
+      return (ink.top < box.top + 4 || ink.bottom > box.bottom - 4
+              || ink.left < box.left - 1 || ink.right > box.right + 2);
+    };
+    var fontSize = 100;
+    do {
+      lines.style.fontSize = fontSize + 'px';
+      fontSize -= 1;
+    } while (overflows() && fontSize > 1);
+  }
+
   function fit(active) {
     if (!active) return;
     var head = active.querySelector('.screen__head');
     var lines = active.querySelector('.screen__lines');
-    var size, limit;
-
-    if (head) {
-      head.style.fontSize = '50px';
-      size = 50;
-      while ((head.scrollWidth > stage.clientWidth
-              || head.scrollHeight > stage.clientHeight * 0.45) && size > 10) {
-        size -= 1;
-        head.style.fontSize = size + 'px';
-      }
-    }
-    if (lines) {
-      lines.style.fontSize = '100px';
-      size = 100;
-      limit = stage.clientHeight - (head ? head.offsetHeight : 0) - 8;
-      /* The check reads the INK's own box, not the block's: a wrapped block reports a
-         scroll height that can sit a few px inside the words' real extents, and the
-         last line then hangs past the bottom edge. */
-      var box = stage.getBoundingClientRect();
-      var range = document.createRange();
-      var overflows = function () {
-        if (lines.scrollWidth > stage.clientWidth || lines.scrollHeight > limit) return true;
-        range.selectNodeContents(lines);
-        var ink = range.getBoundingClientRect();
-        return (ink.top < box.top + 4 || ink.bottom > box.bottom - 4
-                || ink.left < box.left - 2 || ink.right > box.right + 2);
-      };
-      while (overflows() && size > 2) {         /* down to 2px, as the current projector does:
-                                                   better tiny than cut off */
-        size -= 1;
-        lines.style.fontSize = size + 'px';
-      }
-    }
+    resizeTitleFont(head);
+    resizeTextFont(head, lines);
   }
 
   /* ---------- showing ------------------------------------------------------- */

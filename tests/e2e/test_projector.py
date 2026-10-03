@@ -310,6 +310,32 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertGreaterEqual(fitted['insideRight'], -1, fitted)
         self.assertIn('Mazmur 23:1', fitted['head'])      # the reference still heads it
 
+        # ...and as LARGE as it can be: one pixel more must not fit
+        maximal = page.evaluate("""() => {
+          const stage = document.querySelector('#projectorScreens');
+          const box = stage.getBoundingClientRect();
+          const active = document.querySelector('.screen.is-active');
+          const lines = active.querySelector('.screen__lines');
+          const head = active.querySelector('.screen__head');
+          const size = parseFloat(getComputedStyle(lines).fontSize);
+          const range = document.createRange();
+          const fits = (px) => {                 // the same question the fitting asks
+            lines.style.fontSize = px + 'px';
+            range.selectNodeContents(lines);
+            const ink = range.getBoundingClientRect();
+            return (lines.scrollHeight <= stage.clientHeight
+                                             - (head ? head.offsetHeight : 0) - 8
+                    && ink.top >= box.top + 4 && ink.bottom <= box.bottom - 4
+                    && ink.left >= box.left - 1 && ink.right <= box.right + 2);
+          };
+          const chosen = fits(size);
+          const oneLarger = fits(size + 1);
+          lines.style.fontSize = size + 'px';    // leave it as it was
+          return {size: size, chosen: chosen, oneLarger: oneLarger};
+        }""")
+        self.assertTrue(maximal['chosen'], maximal)      # the size it chose fits
+        self.assertFalse(maximal['oneLarger'], maximal)  # and nothing larger does
+
         # a body longer than any screen must still come down until it fits, not stop at
         # a floor and run off the bottom
         huge = page.evaluate("""() => {
