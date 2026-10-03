@@ -37,7 +37,13 @@ Pre-adoption history in the legacy per-version format is archived in
   stage and returning rebuilds that section's lists from it.
 - Sidebar clicks no longer scroll their lists: a row clipped at an edge is nudged only
   enough to become fully visible, and only reveals (opening the sidebar on the page being
-  read, or opening a search result) may centre a row.
+  read, or opening a search result) centre a row.
+- Reveals do that consistently now: the panel tile and the list row are both centred for
+  every section — Tata Ibadah services included, whose rows were never revealed before — and
+  the travel is animated so the rows before the target are seen. A Tata Ibadah contents item
+  is flashed rather than selected, since quicklinks never carry a current state.
+- The last result set survives browsing away through the sidebars, and returning to it
+  resumes the scroll offset it was left at.
 - Search behaviors: any non-empty query searches — the minimum length and its inline
   message are gone — an empty submit is inert and keeps the last result set; the rail
   search icon restores the last result set, the logo starts a fresh search.

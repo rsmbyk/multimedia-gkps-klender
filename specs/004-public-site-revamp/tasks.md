@@ -77,6 +77,26 @@ DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test \
 DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test tests.e2e.test_reading
 ```
 
+## Review round 2 (owner, 2026-10-03)
+
+Six follow-ups from clicking through the built site, all fixed and measured:
+
+- A Tata Ibadah **service** result now centres its row in the services list (it never did: the
+  reveal only handled Bible chapters and songs).
+- A Tata Ibadah **item** result centres its contents row in the contents list and **flashes**
+  it — quicklinks are never selected, so a flash is how the item is identified. The flash hold
+  was lengthened for rows (1.9s, 45% solid) after a capture showed it faded too fast to see.
+- Reveals are consistent across every section: the panel tile (book / songbook / service) and
+  the list row (chapter / song / contents item) are both centred, whether the row was already
+  on screen or not, and whether the moment is a result open or a sidebar open on the page
+  being read.
+- The reveal **travels** (eased tween, so the rows before the target are seen passing) instead
+  of jumping, with a second pass that re-centres after the sidebar's push transition has
+  reflowed the lists. `data-scroll-anim` marks the reveal window for tests.
+- The last result set survives browsing away through the sidebars: a reading page no longer
+  overwrites the stored search URL (the stale `data-home` read), and the scroll offset inside
+  the result set is remembered and resumed on return.
+
 ## Review round (owner, 2026-10-03) — supersedes the validation entries above
 
 Owner review asked for four changes; all are implemented and verified:
@@ -107,6 +127,9 @@ unchanged throughout; 14 transitions running on open).
       place — no address changes, animations play, section switches keep the reading stage
 - [x] Sidebar picks never scroll their lists; clipped rows nudged only; reveals may centre
 - [x] Song lists: *recently updated* ↔ *alphabetical* on non-hymn songbooks
+- [x] Reveals centre the panel tile and the list row for every section, animated; Tata Ibadah
+      contents rows flash instead of being selected
+- [x] The last result set survives sidebar browsing and resumes its scroll offset
 - [x] Nested sidebars: parent-first, mini collapse (Bible), song-list swap (Kidung),
       year+month groups + templates (Tata Ibadah), quicklinks unselected, content-based
       restoration

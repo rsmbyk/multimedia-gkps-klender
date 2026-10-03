@@ -152,8 +152,10 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 - **The search icon keeps the last result set; the logo starts a new one.** Within the
   session, activating the rail's Search icon restores the last query and its results —
   including how many rows were revealed with "Show more" — from the landing page, a reading
-  page, or after browsing the sidebars. The logo returns to the empty landing page (the
-  landing only exists before the first search and after the logo).
+  page, or after browsing the sidebars. Only the result page itself updates that memory: a
+  reading page reached through a sidebar never overwrites it, and the **scroll offset inside
+  the result set is remembered and resumed** on return. The logo returns to the empty landing
+  page (the landing only exists before the first search and after the logo).
 - **The search indication is exclusive.** The rail Search button is `aria-current` only
   while the search stage is showing **and both sidebar levels are closed**; opening any
   section clears it, closing returns it, and reading keeps it off.
@@ -165,9 +167,15 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   and deep links exist only when the server renders them on a direct load. Switching sections
   leaves the reading stage intact; returning to a section rebuilds its lists from it.
 - **Sidebar picks do not scroll their lists.** Clicking a fully visible row moves nothing; a
-  row clipped at an edge is nudged only enough to become fully visible, never recentred. Only
-  the two reveal cases scroll a list: opening a sidebar on the page being read, and opening a
-  search result that sits deeper in its list.
+  row clipped at an edge is nudged only enough to become fully visible, never recentred.
+- **Reveals centre, and they travel.** In the two reveal cases — opening a search result, or
+  opening a sidebar on the page being read — the rows that identify what is on stage are
+  centred: the panel tile (book, songbook, service) **and** the list row (chapter, song,
+  contents item). The travel is animated (a short eased tween, so the rows just before the
+  target are seen moving past; reduced motion jumps), and a second pass re-centres after the
+  sidebar's push transition has reflowed the lists. Every corpus behaves the same: Tata
+  Ibadah's service row is centred like a book or songbook, and the contents row — a quicklink
+  that is never selected — is **flashed** so the item in view is identifiable.
 - **Song lists sort by recency or alphabetically.** A non-hymn songbook (`is_hymn_book`
   false) shows a sort control in the chapters toolbar — *recently updated* (default, by
   `Song.modified`, newest first) ↔ *alphabetical* — applied in place without a reload. Hymn
@@ -269,6 +277,8 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   then activate the rail's Search destination
 - **Then** the same query and the same result rows (including revealed extras) are shown
   again
+- **And** the offset inside the result set is resumed, so the reader continues where they
+  left off
 - **And** only the logo returns to the empty landing page
 
 ### Scenario: The shell never leaves the page
@@ -281,6 +291,16 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 - **And** switching sections leaves the reading stage intact, and returning rebuilds that
   section's lists from the page being read
 
+### Scenario: Reveals centre what is on stage
+
+- **Given** the reader is on a page — a chapter, a song, or a Tata Ibadah service (with or
+  without an item it was opened at)
+- **When** they open the section sidebar, or open a search result
+- **Then** the panel tile and the list row that identify that content are centred in their
+  scrollports (clamped only at a list's edge), the travel is animated so the rows before the
+  target are seen, and a Tata Ibadah contents row is flashed rather than selected
+- **And** the same holds for every section, whether the row is already on screen or not
+
 ### Scenario: Sidebar picks never scroll the lists
 
 - **Given** an open sidebar list
@@ -289,7 +309,7 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 - **And** a row clipped at an edge is nudged just enough to become fully visible, never
   recentred
 - **And** only the two reveal cases may scroll a list — opening the sidebar on the page being
-  read, or opening a search result that sits deeper in its list
+  read, or opening a search result — and those centre the row (see the reveal scenario above)
 
 ### Scenario: Song lists sort by recency or alphabetically
 
@@ -424,6 +444,7 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   review-round checks: in-place navigation under one URL, section switches preserving the
   reading stage, sidebar picks not scrolling their lists, short queries searching) — plus a
   segmented pixel comparison at 1440: home and results byte-identical; bible, song, and
-  tatib within 0.000009 RMSE below the toolbar band, whose only difference is the collapse
-  glyph (band 0.00919 — the named deviation). Deliberate deviations are listed above and in
-  the pull request.
+  tatib and song byte-identical below the toolbar band, bible within 0.0026 there (a scroll
+  indicator left by the reveal path), whose only toolbar difference is the collapse glyph
+  (band 0.0092 — the named deviation). Deliberate deviations are listed above and in the
+  pull request.
