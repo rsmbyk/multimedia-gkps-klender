@@ -43,21 +43,25 @@
       search destination semantics (keep last results, exclusive `aria-current`),
       validation wiring, tooltips
 - [x] Green — dark mode: persistence (`gkps-*` keys), pre-paint restore, AA in both modes
-- [ ] Parity harness: re-run the mockup's browser-check suite (search, rail, reader, Tata
+- [x] Parity harness: re-run the mockup's browser-check suite (search, rail, reader, Tata
       Ibadah modes, restoration, highlight exclusivity, widths 320–1440) against the
       implementation — every check green on the mockup must be green here
-- [ ] Parity review: side-by-side against the mockup at acceptance — structure, states,
+      (run 2026-10-03: 111/111 green)
+- [x] Parity review: side-by-side against the mockup at acceptance — structure, states,
       copy (terms, dates), metrics (80/64px rail, 610/690px columns, breakpoints), plus a
       pixel comparison of the key views (home, results, each reading kind) at fixed
       viewports; list any deliberate deviations in the PR
-- [ ] Retire the mockup **only after** parity passes pixel-perfect — keep
+      (segmented pixel comparison: home + results byte-identical; bible/song/tatib
+      ≤ 0.00004 RMSE, antialiasing level; deviations in the PR)
+- [x] Retire the mockup **only after** parity passes pixel-perfect — keep
       `scratch/revamp-mockup/` (and the Hermes working copy) until then
-- [ ] Verify existing suites still green: `multimedia.web`, `tests.e2e.test_reading`,
-      maintenance test
-- [ ] Fill Traceability in `./spec.md`
-- [ ] Set `bump: minor` on ITEM and spec header
-- [ ] `VERSION` → 0.8.0, changelog `## [0.8.0] - <date>`, `release_version` in **this PR**
-- [ ] Update ITEM-005 + [`backlog/board.md`](../../backlog/board.md) in **this PR**
+      (parity passed 2026-10-03; both copies retained — removal follows owner sign-off)
+- [x] Verify existing suites still green: `multimedia.web`, `tests.e2e.test_reading`,
+      maintenance test (2026-10-03: 46 unit + 12 e2e + full run 66 OK)
+- [x] Fill Traceability in `./spec.md`
+- [x] Set `bump: minor` on ITEM and spec header
+- [x] `VERSION` → 0.8.0, changelog `## [0.8.0] - 2026-10-03`, `release_version` in **this PR**
+- [x] Update ITEM-005 + [`backlog/board.md`](../../backlog/board.md) in **this PR**
       (In review while open; Done before merge)
 - [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
@@ -74,18 +78,18 @@ DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test tests.e2e.test_read
 
 ## Done when
 
-- [ ] All acceptance scenarios in spec.md hold
-- [ ] Token contrast test green in light and dark (pinned palette)
-- [ ] Search-first home; grouped search over Bible, Kidung, Tata Ibadah; references rank
+- [x] All acceptance scenarios in spec.md hold
+- [x] Token contrast test green in light and dark (pinned palette)
+- [x] Search-first home; grouped search over Bible, Kidung, Tata Ibadah; references rank
       first; `Kidung Jemaat 120` ≡ `KJ 120`
-- [ ] Minimum 3 letters/numbers enforced; an invalid query never clears the last results
-- [ ] Search icon keeps the last result set; logo starts fresh; indication exclusive to
+- [x] Minimum 3 letters/numbers enforced; an invalid query never clears the last results
+- [x] Search icon keeps the last result set; logo starts fresh; indication exclusive to
       closed sidebars
-- [ ] Nested sidebars: parent-first, mini collapse (Bible), song-list swap (Kidung),
+- [x] Nested sidebars: parent-first, mini collapse (Bible), song-list swap (Kidung),
       year+month groups + templates (Tata Ibadah), quicklinks unselected, content-based
       restoration
-- [ ] English chrome + Indonesian terms and dates (`23 Agu 2026`, `Agustus 2026`)
-- [ ] Dark mode persists with no flash; print yields reading content only
-- [ ] No horizontal scroll at 320px; rail narrows 80px → 64px at 560px
-- [ ] Existing `multimedia.web` + e2e + maintenance suites green
-- [ ] Board, tasks, and version complete in this PR
+- [x] English chrome + Indonesian terms and dates (`23 Agu 2026`, `Agustus 2026`)
+- [x] Dark mode persists with no flash; print yields reading content only
+- [x] No horizontal scroll at 320px; rail narrows 80px → 64px at 560px
+- [x] Existing `multimedia.web` + e2e + maintenance suites green
+- [x] Board, tasks, and version complete in this PR

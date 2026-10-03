@@ -1,6 +1,6 @@
 ---
 id: ITEM-005
-status: in-progress
+status: in-review
 title: 'Public site revamp'
 type: chore
 priority: P1
@@ -13,7 +13,7 @@ pr:
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 0.8.0
 ---
 
 # ITEM-005: Public site revamp

@@ -10,6 +10,29 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-03
+
+### Added
+
+- Search-first public site: an icon rail (Search, Alkitab, Kidung, Tata Ibadah, theme
+  toggle) and a landing page whose search spans the whole corpus — Bible books,
+  references, and verse text; songbooks, titles, and lyrics; Tata Ibadah titles and
+  public contents — with grouped results, counts, excerpts, and exact reference
+  resolution (`Matius 5:13`, `Kidung Jemaat 120` ≡ `KJ 120`).
+- Public reading views for Bible chapters (verse numbers, TB/SIM translation toggle) and
+  Tata Ibadah service orders (year+month groups, Templates view, section quicklinks).
+- Dark mode by rail toggle, persisted and applied before first paint, with the palette
+  AA-safe in light and dark.
+
+### Changed
+
+- Public pages rebuilt on the design language from spec 001: hand-written CSS with no
+  framework, a narrow rail with nested sidebars (mini collapse for Bible, wide song list
+  for Kidung), keyboard/touch ergonomics, and print that yields reading content only.
+- Search behaviors: minimum three letters/numbers with an inline message; an invalid
+  query never clears the last result set; the rail search icon restores the last result
+  set, the logo starts a fresh search.
+
 ## [0.7.0] - 2026-10-01
 
 ### Added

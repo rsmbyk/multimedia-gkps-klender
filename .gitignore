@@ -213,3 +213,7 @@ cython_debug/
 
 # Django STATIC_ROOT
 _static/
+
+# Local working scratch (parity reference for spec 004; see ITEM-005) - never commit
+/scratch/
+db.sqlite3.bak-*

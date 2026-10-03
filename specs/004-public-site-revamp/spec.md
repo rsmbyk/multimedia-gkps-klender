@@ -365,3 +365,8 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   `multimedia/web/templates/reading/` (base, home, search, bible, book_index, book, song,
   tatib, maintenance); `static/styles/design/{tokens,components}.css`;
   `static/web/reading.js` (new)
+- Parity (local, 2026-10-03): the mockup's full browser-check suite re-run against the
+  implementation — 111/111 green (geometry, copy, behavior, widths 320–1440) — plus a
+  segmented pixel comparison at 1440: home and results byte-identical; bible, song, and
+  tatib within 0.00004 RMSE (antialiasing level). Deliberate deviations are listed in the
+  pull request.
