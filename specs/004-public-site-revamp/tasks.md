@@ -10,10 +10,10 @@
 
 - [x] Spec Accepted by the project owner
 - [x] Branch from `develop` (`feat/004-public-site-revamp`)
-- [ ] Red — `tests/test_design_tokens.py`: contrast pairs fail against current `tokens.css`
-- [ ] Green — rewrite `static/styles/design/tokens.css` to the spec's pinned palette and
+- [x] Red — `tests/test_design_tokens.py`: contrast pairs fail against current `tokens.css`
+- [x] Green — rewrite `static/styles/design/tokens.css` to the spec's pinned palette and
       metrics (light + dark) until the contrast test passes
-- [ ] Red — `tests/test_web_search.py`: reference parsing (`Kidung Jemaat 120` ≡ `KJ 120`,
+- [x] Red — `tests/test_web_search.py`: reference parsing (`Kidung Jemaat 120` ≡ `KJ 120`,
       `Matius 5:13`), ranking rules, minimum query length — failing
 - [ ] Green — `multimedia/web/reading/` search view + URL: cross-corpus query (Bible,
       Kidung, Tata Ibadah), grouped results, reference-first ranking, minimum length
