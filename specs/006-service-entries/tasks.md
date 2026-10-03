@@ -87,6 +87,9 @@
       with the accent for the header, the projector-then-Source-Sans face stack, the ink centred on
       both axes, short arrive/leave morphs and a fade on the toggle, and reduced motion respected
       (`tests/e2e/test_projector.py`, 10)
+- [x] The header brighter still (the display's own warm gold, sent back as too close to the words
+      when it was the app's accent), and the fitting brought down until the words fit the screen
+      both ways and stay inside it (`tests/e2e/test_projector.py`, 11)
 - [ ] Deferred, per the plan: the OBS overlay, which needs its own answer for reaching inside OBS.
       The projector window is the whole of this version's display.
 

@@ -21,6 +21,10 @@ body.projector {
   font-weight: 700;
   line-height: 1.37;
   overflow: hidden;                       /* a display does not scroll */
+  /* The header is its own colour, bright enough to read from the back of the room
+     (13:1 on this canvas). It is a display colour, not a product token: the app's
+     dark accent sat too close to the words to carry a heading. */
+  --display-head: #FFD166;
   /* The design system's --ease carries its own duration, so it cannot go inside a
      shorthand that also names one: `transition: opacity 220ms var(--ease)` parses as
      duration + 200ms DELAY. The timing curve alone lives here. */
@@ -109,8 +113,9 @@ body.projector[data-showing="false"] .screen.is-active {
   margin: 0;
   padding: 0;
   text-align: center;
-  color: var(--active-bg);                /* the header reads apart from the words */
+  color: var(--display-head);             /* the header reads apart from the words */
   white-space: pre-wrap;                  /* a reference and its title stack */
+  overflow-wrap: break-word;
   font-size: 50px;
   font-weight: 700;
   line-height: 1.37;
@@ -125,6 +130,8 @@ body.projector[data-showing="false"] .screen.is-active {
   margin: 0;
   text-align: center;
   white-space: pre-wrap;
+  overflow-wrap: break-word;              /* a single long word breaks rather than
+                                             running off the screen */
   font-size: inherit;
   font-weight: 700;
   line-height: 1.37;

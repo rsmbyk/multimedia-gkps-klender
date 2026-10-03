@@ -46,7 +46,10 @@
   /* ---------- fitting the words to the screen ------------------------------- */
 
   /* The current projector's habit, kept: the header shrinks until it fits the width,
-     the words until they fit what is left of the screen. */
+     the words until they fit what is left of the screen. The words come down until
+     they fit BOTH ways and keep coming down past the old 12px floor, so a screenful of
+     text is never cut off; a single word too long for any line breaks rather than
+     running off the edge (overflow-wrap in the stylesheet). */
   function fit(active) {
     if (!active) return;
     var head = active.querySelector('.screen__head');
@@ -56,7 +59,7 @@
     if (head) {
       head.style.fontSize = '50px';
       size = 50;
-      while (head.scrollWidth > stage.clientWidth && size > 12) {
+      while (head.scrollWidth > stage.clientWidth && size > 10) {
         size -= 1;
         head.style.fontSize = size + 'px';
       }
@@ -65,7 +68,8 @@
       lines.style.fontSize = '100px';
       size = 100;
       limit = stage.clientHeight - (head ? head.offsetHeight : 0) - 8;
-      while ((lines.scrollHeight > limit || lines.scrollWidth > stage.clientWidth) && size > 12) {
+      while ((lines.scrollWidth > stage.clientWidth || lines.scrollHeight > limit)
+             && size > 8) {
         size -= 1;
         lines.style.fontSize = size + 'px';
       }

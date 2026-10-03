@@ -340,8 +340,9 @@ blanking, and the pane's entries showing their references alone.
 - **The product's dark palette, not black and white.** The page links the design tokens and pins
   `data-theme="dark"`: the warm near-black canvas (`#14130F`) and the warm off-white ink
   (`#F5F3EE`). It never follows the operator's light/dark choice -- a display is not a page.
-- **The header reads apart from the words**, in the dark theme's accent (`--active-bg`,
-  `#7C9CF0`), which also carries the app's own state colour onto the screen.
+- **The header reads apart from the words**, in the display's own bright warm gold
+  (`--display-head`, `#FFD166` -- 13:1 on this canvas). A product token was tried first (the dark
+  theme's accent) and sent back for being too close to the words for a heading.
 - **The face**: the repo's own code uses exactly two -- `"CMG Sans"` (the current projector) and
   `"Source Sans Pro"` (the songs, bible and service sources and the dock item previews), and it
   ships neither as a file, so both come from the machine. The display stacks
@@ -349,6 +350,11 @@ blanking, and the pane's entries showing their references alone.
   behind it.
 - **The texts are centred both ways** -- the words' own ink, not just their boxes: the header's gap
   is flex content rather than a margin, and the pages were measured at 0px off centre on both axes.
+- **The words always fit the screen.** The fitting brings a body down until it fits BOTH ways (the
+  old projector only measured height), past the old 12px floor and down to 8px, and a single word
+  too long for any line breaks rather than running off the edge (`overflow-wrap: break-word`).
+  Verified live: a ~750-character body came down from 100px to 38px with the ink inside the screen
+  on all four sides.
 - **Short morphs** carry a move or a toggle: the arriving screen fades and rises (from the
   direction of travel), the one it replaces fades out the other way, and space fades the words
   rather than blanking them. Reduced motion makes every move instant.

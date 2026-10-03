@@ -70,6 +70,20 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.other = tatib.TataIbadah.objects.create(
             name='Ibadah Sore', date=date(2026, 8, 30), is_active=True)
 
+        # a body far too long for one screen, so the fitting has to bring it down
+        long_book = bible.Book.objects.create(name='Mzm', testament='old',
+                                              number_of_chapters=150)
+        long_translation = bible.BookTranslation.objects.create(
+            version=version, book=long_book, translation='Mazmur')
+        bible.Verse.objects.create(
+            book_translation=long_translation, chapter=23, verse=1, title='Tuhan, gembalaku',
+            text=' '.join(['Tuhan adalah gembalaku, takkan kekurangan aku.'] * 12))
+        self.long_service = tatib.TataIbadah.objects.create(
+            name='Ibadah Panjang', date=date(2026, 9, 6), is_active=True)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.long_service, order_number=1, kind=tatib.ServiceEntryKind.SCRIPTURE,
+            book_translation=long_translation, chapter=23, verse_start=1)
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -126,7 +140,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertIn('Source Sans Pro', styles['face'])   # and the rest of the OBS surfaces'
         self.assertEqual(styles['weight'], '700')
         self.assertEqual(styles['buttons'], 0)             # no controls on the display
-        self.assertEqual(styles['head'], 'rgb(124, 156, 240)')      # the header reads apart...
+        self.assertEqual(styles['head'], 'rgb(255, 209, 102)')      # the header, brighter still...
         self.assertEqual(styles['line'], styles['color'])           # ...from the words
 
         fit = page.evaluate("""() => {
@@ -273,6 +287,28 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(shape[5]['lines'], ['bait 2'])
         self.assertEqual(shape[6]['head'], 'Matius 5:3')  # a passage names the verse it shows
         self.assertEqual(shape[6]['lines'], ['ayat 3'])
+
+    def test_a_body_too_long_for_the_screen_comes_down_to_fit(self):
+        page = self._page(reverse('web-service-projector', args=[self.long_service.pk]))
+        fitted = page.evaluate("""() => {
+          const stage = document.querySelector('#projectorScreens').getBoundingClientRect();
+          const active = document.querySelector('.screen.is-active');
+          const lines = active.querySelector('.screen__lines');
+          const head = active.querySelector('.screen__head');
+          const range = document.createRange();
+          range.selectNodeContents(lines);
+          const rect = range.getBoundingClientRect();
+          return {size: parseFloat(getComputedStyle(lines).fontSize),
+                  insideTop: rect.top - stage.top, insideBottom: stage.bottom - rect.bottom,
+                  insideLeft: rect.left - stage.left, insideRight: stage.right - rect.right,
+                  head: head ? head.textContent : ''};
+        }""")
+        self.assertLess(fitted['size'], 100)              # it came down to fit
+        self.assertGreaterEqual(fitted['insideTop'], -1, fitted)
+        self.assertGreaterEqual(fitted['insideBottom'], -1, fitted)
+        self.assertGreaterEqual(fitted['insideLeft'], -1, fitted)
+        self.assertGreaterEqual(fitted['insideRight'], -1, fitted)
+        self.assertIn('Mazmur 23:1', fitted['head'])      # the reference still heads it
 
     # --- the button, its two states, and the lock across tabs ----------------
 
