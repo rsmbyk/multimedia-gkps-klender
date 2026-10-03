@@ -44,6 +44,8 @@ Pre-adoption history in the legacy per-version format is archived in
   is flashed rather than selected, since quicklinks never carry a current state.
 - The rail search icon only ever restores a real result set: a stored URL that is not one (an
   older build could leave a reading page there) is discarded instead of being opened.
+- The brand logo now takes the same route as the search icon — back to the last result set
+  rather than starting a fresh search.
 - The last result set survives browsing away through the sidebars, and returning to it
   resumes the scroll offset it was left at.
 - Search behaviors: any non-empty query searches — the minimum length and its inline

@@ -149,13 +149,14 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   other. An **empty** submission is inert — with results on stage it restores the last result
   set, on the landing it stays on the landing — and there is no `aria-invalid` state or
   validation message anywhere.
-- **The search icon keeps the last result set; the logo starts a new one.** Within the
-  session, activating the rail's Search icon restores the last query and its results —
-  including how many rows were revealed with "Show more" — from the landing page, a reading
-  page, or after browsing the sidebars. Only the result page itself updates that memory: a
-  reading page reached through a sidebar never overwrites it, and the **scroll offset inside
-  the result set is remembered and resumed** on return. The logo returns to the empty landing
-  page (the landing only exists before the first search and after the logo).
+- **The search icon and the brand logo are one route** (owner request, supersedes the
+  mockup's logo-starts-a-fresh-search). Activating either restores the last result set — the
+  query, the rows including those revealed with "Show more", and the **scroll offset** it was
+  left at — from the landing page, a reading page, or after browsing the sidebars; with
+  nothing stored yet, or with a stored value that is not a result-set URL, it shows the empty
+  landing instead. Only the result page itself updates that memory: a reading page reached
+  through a sidebar never overwrites it, and nothing clears it. The landing therefore exists
+  before the first search of a session.
 - **The search indication is exclusive.** The rail Search button is `aria-current` only
   while the search stage is showing **and both sidebar levels are closed**; opening any
   section clears it, closing returns it, and reading keeps it off.
@@ -281,7 +282,8 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   again
 - **And** the offset inside the result set is resumed, so the reader continues where they
   left off
-- **And** only the logo returns to the empty landing page
+- **And** leaving through the logo behaves identically — with no stored result set both land
+  on the empty landing page
 
 ### Scenario: The shell never leaves the page
 
@@ -448,5 +450,6 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   segmented pixel comparison at 1440: home and results byte-identical; bible, song, and
   tatib and song byte-identical below the toolbar band, bible within 0.0026 there (a scroll
   indicator left by the reveal path), whose only toolbar difference is the collapse glyph
-  (band 0.0092 — the named deviation). Deliberate deviations are listed above and in the
-  pull request.
+  glyph (band 0.0092 — the named deviation). **Owner-requested deviation (round 3):** the
+  mockup's logo starts a fresh search; here the logo takes the same route as the search icon.
+  Deliberate deviations are listed above and in the pull request.

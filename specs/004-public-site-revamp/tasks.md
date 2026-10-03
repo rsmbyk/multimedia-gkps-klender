@@ -77,6 +77,13 @@ DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test \
 DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test tests.e2e.test_reading
 ```
 
+## Review round 4 (owner, 2026-10-03)
+
+- The brand logo now takes the same route as the rail's Search icon: back to the last result
+  set (query, revealed rows, scroll offset), or the empty landing when nothing is stored. It
+  no longer clears the stored set, so nothing resets a session's search. Recorded as a
+  deviation from the mockup.
+
 ## Review round 3 (owner, 2026-10-03)
 
 - The search rail icon could open a *reading page's* sidebar: a value written into

@@ -67,6 +67,8 @@ Tata Ibadah and for search.
   result set survives sidebar browsing and resumes its scroll offset.
 - The rail search icon restores only a validated result-set URL (a stale stored value is
   dropped), so it can never open a reading page's sidebar.
+- The brand logo is the same route as the search icon (owner request, a deviation from the
+  mockup): both return to the last result set, or the landing when nothing is stored.
 - One concern: this is one spec (004).
 
 ## Acceptance sketch
