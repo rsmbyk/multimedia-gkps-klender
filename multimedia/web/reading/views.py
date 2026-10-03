@@ -286,12 +286,10 @@ def _song_rows(book, current_id=None):
 
 
 def _tatib_groups(mode, selected_id=None):
-    # A service is listed once it has something to show: a legacy text item, or an
-    # entry (spec 006). Without the second the new content would be invisible here.
-    services = (tatib_models.TataIbadah.objects.filter(is_active=True)
-                .filter(Q(tataibadahitem__item_type=tatib_models.TataIbadahItemType.TEXT)
-                        | Q(service_entries__isnull=False))
-                .distinct())
+    # Every active service is listed, empty ones included: an empty service has to be
+    # reachable to be filled, and its page says it is empty (spec 006 review). The old
+    # rule kept only services that already had a legacy text item.
+    services = tatib_models.TataIbadah.objects.filter(is_active=True)
     if mode == 'template':
         # Mirrors the mockup's Indonesian locale collation for these names:
         # case- and diacritic-folded, with the '|' separator ignored.

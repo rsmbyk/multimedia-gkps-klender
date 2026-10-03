@@ -31,8 +31,12 @@
       making every create invalid
 - [x] The pane's rendering: a service's entries appear in its stage after its legacy items, in
       its contents list, with a jump control on a passage or a song, and four add controls on
-      every item (and one row at the end). Additive: a service with no entries renders exactly as
-      it did before, which one test pins
+      every item — revealed on hover, and an entry also carries its own **edit** and **delete**
+- [x] An empty service shows a centred invitation instead: the message, and the four kinds as
+      wide buttons with their icons left of the labels, stacked down the page
+- [x] Every active service is listed in the sidebar, empty ones included, so an empty service can
+      be opened and filled (the old rule kept only services with a legacy text item)
+- [x] Additive: a service with no entries renders exactly as it did before, which one test pins
 - [x] A new entry can be inserted behind the item whose control was used (`after`), shifting the
       rest -- the liturgy is built in place, not appended
 - [ ] The modals' behaviour in the browser: opening the fragment, submitting it, the cascading

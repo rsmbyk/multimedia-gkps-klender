@@ -21,8 +21,9 @@ Pre-adoption history in the legacy per-version format is archived in
   in place on save, and shows validation errors beside their fields without closing.
 - Songbook fields: name, short name, language, hymn flag. Song fields: number, sub-number,
   title, key — with the number required for a hymn. Tata Ibadah fields: name, date, active,
-  plus an optional first section on create, because a service only appears in the public
-  lists once it has one.
+  plus an optional first section on create, because a service used to appear in the public
+  lists only once it had one. (Since spec 006 every active service is listed, empty ones
+  included, so an empty service can be opened and filled; its page says it is empty.)
 - `SIDEBAR_EDITORS_REQUIRE_LOGIN` (default off): set it true to hide every editor control
   from anonymous visitors and refuse their writes with 403, without touching the UI code.
 

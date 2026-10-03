@@ -676,9 +676,30 @@ class ServiceEntryViewTests(TestCase):
         response = self.client.get(reverse('web-tatib') + '?mode=template')
         self.assertContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
 
-    def test_a_service_with_nothing_at_all_stays_out_of_the_sidebar(self):
+    def test_an_empty_service_is_listed_so_it_can_be_filled(self):
+        # the owner's call: an empty service has to be reachable, and its page says so
         response = self.client.get(reverse('web-tatib') + '?mode=template')
-        self.assertNotContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
+        self.assertContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
+
+    def test_every_entry_carries_its_own_edit_and_delete(self):
+        first = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
+        second = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Doa', text='b',
+                           order_number=2)
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        for entry in (first, second):
+            self.assertIn(f'data-entry-edit="{entry.pk}"', html)
+            self.assertIn(f'data-entry-delete="{entry.pk}"', html)
+
+    def test_the_legacy_items_themselves_carry_no_edit_or_delete(self):
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='PAMUNGKAHNI', text='a', order_number=1)
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='b')
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertEqual(html.count('data-entry-edit="'), 1)      # the entry's, not the item's
+        self.assertEqual(html.count('data-entry-open="scripture"'), 2)   # both rows add
 
     def test_a_service_with_only_entries_is_not_empty(self):
         self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')

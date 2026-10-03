@@ -25,6 +25,11 @@
   <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
   <button type="button" class="entry__add-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">+ Break</button>
+  {% if item.entry %}
+  <span class="entry__divider" aria-hidden="true"></span>
+  <button type="button" class="entry__ctrl" data-entry-edit="{{ item.pk }}">Edit</button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="{{ item.pk }}">Delete</button>
+  {% endif %}
 </div>
 {% endif %}
 {% endfor %}
