@@ -911,8 +911,7 @@
     var fresh = doc.documentElement.dataset;
     var kind = opts.kind || 'lists';
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
-      || kind === 'result' || kind === 'more' || kind === 'search'
-      || kind === 'home' || kind === 'results';
+      || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results';
 
     /* shared first column: books / songbooks / services */
     panelTitleEl.textContent = txt(doc, '#panelTitle');
@@ -1006,12 +1005,6 @@
         ? url.slice(window.location.origin.length) : url;    /* store a path, not an origin */
       try { localStorage.setItem('gkps-search', searchPath); } catch (e) {}
       railSearch.setAttribute('href', searchPath);
-    } else if (kind === 'home') {
-      try {
-        localStorage.removeItem('gkps-search');
-        localStorage.removeItem('gkps-search-scroll');
-      } catch (e) {}
-      railSearch.setAttribute('href', '/home/');
     }
     document.title = doc.title;
 
@@ -1037,13 +1030,15 @@
       var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
       if (target) revealSearchTarget(target);
     }
-    if (kind === 'search' || kind === 'home') {
+    if (kind === 'search') {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
     if (kind === 'results') {
-      /* back to the result set: resume where the reader left it */
+      /* landed on the result set: resume where the reader left it */
       var remembered = 0;
-      try { remembered = parseInt(localStorage.getItem('gkps-search-scroll') || '0', 10) || 0; } catch (e) {}
+      if (fresh.home === 'results') {
+        try { remembered = parseInt(localStorage.getItem('gkps-search-scroll') || '0', 10) || 0; } catch (e) {}
+      }
       window.scrollTo({ top: remembered, behavior: 'auto' });
     }
   }
@@ -1101,15 +1096,6 @@
     }
     var lastSearch = storedSearchUrl();
     if (lastSearch) railSearch.setAttribute('href', lastSearch);
-    var logo = document.querySelector('.rail__logo');
-    if (logo) {
-      /* a fresh search: the logo forgets the last result set */
-      logo.addEventListener('click', function (event) {
-        try { localStorage.removeItem('gkps-search'); } catch (e) {}
-        event.preventDefault();
-        navigate(logo.getAttribute('href') || '/home/', { kind: 'home' });
-      });
-    }
   } catch (e) {}
 
   /* The stored result-set URL, or nothing. A value written by an older build (or
@@ -1123,11 +1109,17 @@
     return null;
   }
 
-  /* the rail search icon restores the last result set, in place */
-  railSearch.addEventListener('click', function (event) {
+  /* The search destination. The rail's Search icon and the brand logo are the same
+     route (owner request): back to the last result set, or the landing when there
+     is none. Only the result page itself updates what is stored -- nothing clears
+     it. */
+  function openSearch(event) {
     event.preventDefault();
     navigate(storedSearchUrl() || '/home/', { kind: 'results' });
-  });
+  }
+  railSearch.addEventListener('click', openSearch);
+  var railLogo = document.querySelector('.rail__logo');
+  if (railLogo) railLogo.addEventListener('click', openSearch);
 
   /* ---------- reveal search targets ---------- */
   function revealSearchTarget(target) {

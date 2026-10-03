@@ -156,8 +156,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
         page.locator('#railSearch').click()
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
+        # the brand logo is the same route as the search icon (owner request)
         page.locator('.rail__logo').click()
-        expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_have_value('')
+        expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
+        expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_have_value('waktu pagi')
         self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
 
     def test_search_icon_exclusive_to_closed_sidebars(self):
@@ -423,6 +425,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('html')).to_have_attribute('data-section', 'alkitab')
         expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
         self.assertIsNone(page.evaluate("localStorage.getItem('gkps-search')"))
+        # the logo takes the same route, not a restart
+        page.locator('.rail__logo').click()
+        page.wait_for_function("document.documentElement.dataset.home === 'landing'")
+        expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
 
     def test_search_state_survives_sidebar_browsing(self):
         page = self._page()
