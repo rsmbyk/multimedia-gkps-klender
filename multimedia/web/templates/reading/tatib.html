@@ -6,16 +6,27 @@
 
 {% block ch_rows %}{% if service_id %}{% include 'reading/_toc.html' %}{% endif %}{% endblock %}
 
-{% block read_body %}
-{% if service_id %}
+{% comment %}The project button rides with the date, at the top right of the page.{% endcomment %}
+{% block read_actions %}{% if service_id %}
 <div class="read__project" data-project-group data-display-channel="gkps-service-display">
   <button type="button" class="read__project-btn" data-project-open
           data-projector-url="{{ projector_url }}" data-project-service="{{ service_id }}"
-          data-label-project="Project" data-label-stop="Stop projecting">Project</button>
+          data-label-project="Project" data-label-stop="Stop projecting"
+          aria-label="Project" title="Project">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+      <circle cx="6.7" cy="9.7" r="1.7"/>
+      <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+    </svg>
+    <span data-project-label>Project</span>
+  </button>
   <button type="button" class="read__project-btn" data-project-update hidden>Update the current state</button>
   <p class="read__project-note" data-project-note role="status" hidden></p>
 </div>
-{% endif %}
+{% endif %}{% endblock %}
+
+{% block read_body %}
 {% for item in items %}
 {% if item.eos %}
 <div class="tatib__eos" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}">{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>

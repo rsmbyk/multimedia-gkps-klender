@@ -671,8 +671,10 @@ class ServiceEntryViewTests(TestCase):
         self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
-        self.assertIn(reverse('web-song', args=[self.song.pk]), html)
-        self.assertIn('Ada Kuasa dalam DarahNya', html)          # the song's title
+        pane = html.split('id="readBody"')[1]
+        self.assertIn(reverse('web-song', args=[self.song.pk]), pane)
+        self.assertIn('Kidung Jemaat 152', pane)                 # its reference, as the jump
+        self.assertNotIn('bait 1', pane)                         # no lyrics: the display has those
 
     def test_the_add_controls_sit_on_each_item(self):
         entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
@@ -792,9 +794,9 @@ class ServiceProjectorTests(TestCase):
         book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
         cls.matius = bible.BookTranslation.objects.create(
             version=version, book=book, translation='Matius')
-        for number in (2, 3):
-            bible.Verse.objects.create(book_translation=cls.matius, chapter=5,
-                                       verse=number, text=f'ayat {number}')
+        bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=2, text='ayat 2')
+        bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=3,
+                                   text='ayat 3', title='Berbahagia')
 
         s_lang = songs.Language.objects.create(name='Indonesian')
         cls.songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat',
@@ -824,53 +826,85 @@ class ServiceProjectorTests(TestCase):
         response = self.client.get(reverse('web-service-projector', args=[99999]))
         self.assertEqual(response.status_code, 404)
 
-    def test_it_is_a_page_of_its_own_on_the_app_tokens(self):
+    def test_it_is_a_page_of_its_own_with_nothing_but_the_words(self):
         html = self.html()
-        self.assertIn('styles/design/tokens.css', html)   # the public app's own tokens
-        self.assertNotIn('rail__menu', html)              # not the reading shell
+        self.assertIn('styles/design/projector.css', html)   # the display's own stylesheet
+        self.assertNotIn('rail__menu', html)                 # not the reading shell
         self.assertNotIn('panelBody', html)
-        self.assertIn('gkps-service-display', html)       # its own channel
+        self.assertIn('gkps-service-display', html)          # its own channel
+        self.assertNotIn('<button', html)                    # no controls on screen
+        self.assertNotIn('data-projector', html)
 
     # --- what it shows ----------------------------------------------------
 
-    def test_every_kind_appears_with_its_title_and_body_in_the_service_order(self):
-        self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
-                  text='Tuhan beserta kita')
-        self.make(2, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
-                  chapter=5, verse_start=2, verse_end=3)
-        self.make(3, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
-        self.make(4, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
-        html = self.html()
-        for needle in ('Salam', 'Tuhan beserta kita', 'Matius 5:2-3',
-                       '2 ayat 2', '3 ayat 3', 'Kidung Jemaat 152', 'bait 1', 'bait 2',
-                       'Persembahan'):
-            with self.subTest(needle=needle):
-                self.assertIn(needle, html)
-        order = [html.index(n) for n in ('Salam', 'Matius 5:2-3', 'Kidung Jemaat 152',
-                                         'Persembahan')]
-        self.assertEqual(order, sorted(order))
+    def screens(self, html=None):
+        return (html or self.html()).split('<section class="screen')[1:]
 
-    def test_a_body_keeps_its_lines_and_its_blank_line(self):
+    def test_a_passage_is_one_verse_a_screen_headed_by_its_reference_and_title(self):
         self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
                   chapter=5, verse_start=2, verse_end=3)
-        self.assertIn('2 ayat 2\n\n3 ayat 3', self.html())    # the blank line is the pause
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)                    # one verse at a time
+        self.assertIn('Matius 5:2', screens[0])
+        self.assertIn('ayat 2', screens[0])
+        self.assertNotIn('ayat 3', screens[0])
+        self.assertIn('Matius 5:3', screens[1])
+        self.assertIn('Berbahagia', screens[1])              # the verse's own title, when it has one
+        self.assertIn('ayat 3', screens[1])
 
-    def test_a_section_break_carries_its_label_and_no_body(self):
-        entry = self.make(1, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
-        slide = self.html().split(f'data-slide="e{entry.pk}"')[1].split('</section>')[0]
-        self.assertIn('Persembahan', slide)
-        self.assertNotIn('slide__body', slide)               # a label alone, no empty box
+    def test_a_text_shows_two_lines_at_a_time_under_its_own_header(self):
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
+                  text='satu\ndua\ntiga\nempat\nlima')
+        screens = self.screens()
+        self.assertEqual(len(screens), 3)                    # two, two, then the last alone
+        for block in screens:
+            self.assertIn('Salam', block)
+        self.assertIn('satu', screens[0])
+        self.assertIn('dua', screens[0])
+        self.assertNotIn('tiga', screens[0])
+        self.assertIn('tiga', screens[1])
+        self.assertIn('empat', screens[1])
+        self.assertIn('lima', screens[2])
+
+    def test_a_song_shows_its_lyrics_alone_in_pairs(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)                    # a verse to a screen
+        self.assertIn('bait 1', screens[0])
+        self.assertNotIn('bait 2', screens[0])
+        self.assertIn('bait 2', screens[1])
+        self.assertNotIn('Kidung Jemaat', screens[0])         # the words alone: no citation
+        self.assertNotIn('screen__head', screens[0])
+
+    def test_a_blank_line_holds_a_line_alone(self):
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, text='satu\ndua\n\ntiga')
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)
+        self.assertIn('dua', screens[0])
+        self.assertNotIn('tiga', screens[0])
+        self.assertIn('tiga', screens[1])
+
+    def test_a_section_break_shows_nothing(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
+        screens = self.screens()
+        self.assertEqual(len(screens), 1)
+        self.assertIn('is-blank', screens[0])
+        self.assertNotIn('Persembahan', screens[0])          # the operator's note stays off screen
+        self.assertNotIn('screen__head', screens[0])
+        self.assertNotIn('screen__line', screens[0])
 
     def test_the_legacy_rows_ride_along_before_the_entries(self):
-        """A service built before spec 006 still projects: the pane's order is the
-        display's order (legacy items first, then the entries)."""
+        """A service built before spec 006 still displays: the pane's order is the
+        display's order, and its rows take the same shape."""
         tatib.TataIbadahItem.objects.create(
             tatib=self.tatib, order_number=1, item_type=tatib.TataIbadahItemType.TEXT,
-            title='Nas', text='Mazmur 23')
+            title='Nas', text='Tuhan adalah gembalaku')
         self.make(2, kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='Tuhan beserta kita')
-        html = self.html()
-        self.assertIn('Mazmur 23', html)
-        self.assertLess(html.index('Nas'), html.index('Salam'))
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)
+        self.assertIn('Nas', screens[0])
+        self.assertIn('Tuhan adalah gembalaku', screens[0])
+        self.assertIn('Salam', screens[1])
 
     def test_a_lyric_change_reaches_a_fresh_projection(self):
         """What Update fetches is resolved at request time: the lyrics are the song's
@@ -880,27 +914,41 @@ class ServiceProjectorTests(TestCase):
         songs.Verse.objects.filter(song=self.song, number=1).update(lyric='bait satu yang baru')
         self.assertIn('bait satu yang baru', self.html())
 
-    def test_the_three_controls_and_the_toggle_state(self):
+    def test_the_display_starts_at_its_first_screen_and_off(self):
         html = self.html()
-        for needle in ('data-projector="prev"', 'data-projector="next"',
-                       'data-projector="toggle"', 'Previous entry', 'Next entry'):
-            with self.subTest(needle=needle):
-                self.assertIn(needle, html)
-        self.assertIn('aria-pressed=', html)                 # the toggle says which state it is in
+        self.assertIn('data-current-screen="0"', html)
+        self.assertIn('data-showing="false"', html)
 
     # --- the shell's project button ---------------------------------------
 
-    def test_the_reading_page_offers_the_project_button(self):
+    def test_the_reading_page_offers_the_project_button_with_its_icon(self):
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
         self.assertIn('data-project-open', html)
         self.assertIn(f'data-projector-url="/obs/service/{self.tatib.pk}/"', html)
         self.assertIn('data-project-service="', html)        # which service it would display
         self.assertIn('gkps-service-display', html)          # the same channel
+        self.assertIn('data-project-label', html)            # the icon rides beside a label
         self.assertIn('Stop projecting', html)               # the label it takes while displaying
         self.assertIn('Update the current state', html)
         self.assertIn('data-project-update hidden', html)    # the update control waits its turn
         self.assertIn('data-project-note', html)             # and a place to say why a click was declined
+        # it rides with the date, at the top right, above the service's own words
+        self.assertLess(html.index('read__head-top'), html.index('data-project-open'))
+        self.assertLess(html.index('data-project-open'), html.index('readBody'))
+
+    def test_the_reading_page_shows_only_the_reference_for_a_passage_and_a_song(self):
+        """The pane is the running order: the words belong on the display."""
+        self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=3)
+        self.make(2, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        pane = html.split('id="readBody"')[1]
+        self.assertIn('Matius 5:2-3', pane)
+        self.assertIn('Kidung Jemaat 152', pane)
+        self.assertNotIn('ayat 2', pane)
+        self.assertNotIn('bait 1', pane)
 
     def test_the_project_button_is_only_on_a_service(self):
         for name, args in (('web-home', []), ('web-tatib', []), ('web-search', [])):

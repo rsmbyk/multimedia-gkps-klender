@@ -536,16 +536,23 @@ li:hover > .row-edit,
 /* A hint rides inside a label without shouting: "(optional)", "all verses". */
 .editor__hint { font-weight: 400; color: var(--head-ink); }
 
-/* The project button on a Tata Ibadah (spec 006, slice 4). It opens the display in
-   a window of its own; while this browser is displaying this service the button
-   becomes Stop projecting and the update control appears beside it. */
-.read__project { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin: 0 0 16px; }
+/* The project button on a Tata Ibadah (spec 006, slice 4). It rides with the date at
+   the top right of the page and opens the display in a window of its own; while this
+   browser is displaying this service the button becomes Stop projecting and the update
+   control appears beside it. */
+.read__head-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; min-height: 34px;
+}
+.read__project { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin: 0; }
 .read__project-btn {
+  display: inline-flex; align-items: center; gap: 6px;
   height: 34px; padding: 0 14px; border-radius: 9px;
   border: 1px solid var(--divider); background: none; color: var(--head-ink);
   font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
   transition: border-color var(--ease), color var(--ease), background var(--ease);
 }
+.read__project-btn svg { width: 15px; height: 15px; flex: none; }
 .read__project-btn:hover {
   color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg);
 }

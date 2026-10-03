@@ -300,7 +300,10 @@
 
  <article class="read" id="read" lang="{{ read_lang|default:'id' }}" tabindex="-1"{% if read_kind %} data-kind="{{ read_kind }}"{% endif %}>
   <header class="read__head">
-   <p class="read__eyebrow" id="readEyebrow"{% if not read_eyebrow %} hidden{% endif %}>{{ read_eyebrow|default:'' }}</p>
+   <div class="read__head-top">
+    <p class="read__eyebrow" id="readEyebrow"{% if not read_eyebrow %} hidden{% endif %}>{{ read_eyebrow|default:'' }}</p>
+    {% block read_actions %}{% endblock %}
+   </div>
    <div class="read__row">
     <h1 class="read__title"><span id="readName">{{ read_name|default:'' }}</span> <span class="read__no" id="readNo">{{ read_no|default:'' }}</span></h1>
     {% if read_show_lang %}

@@ -33,10 +33,10 @@
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (stored && typeof stored === 'object') {
-        return {service: stored.service, slide: stored.slide, on: stored.on === true};
+        return {service: stored.service, screen: stored.screen, on: stored.on === true};
       }
     } catch (e) { /* a corrupt value is no value */ }
-    return {service: null, slide: null, on: false};
+    return {service: null, screen: 0, on: false};
   }
 
   var state = read();
@@ -75,9 +75,15 @@
     if (!n.group || !n.open) return;
     var service = Number(n.open.dataset.projectService);
     var here = state.on === true && state.service === service;
+    var text = here ? (n.open.dataset.labelStop || 'Stop projecting')
+                    : (n.open.dataset.labelProject || 'Project');
     n.group.dataset.displaying = here ? 'true' : 'false';
-    n.open.textContent = here ? (n.open.dataset.labelStop || 'Stop projecting')
-                              : (n.open.dataset.labelProject || 'Project');
+    /* The button carries an icon: only its label changes. */
+    var label = n.open.querySelector('[data-project-label]');
+    if (label) label.textContent = text;
+    else n.open.textContent = text;
+    n.open.setAttribute('aria-label', text);
+    n.open.title = text;
     if (n.update) n.update.hidden = !here;
   }
 
@@ -98,7 +104,7 @@
       event.preventDefault();
       var service = Number(open.dataset.projectService);
       if (state.on === true && state.service === service) {
-        write({service: service, slide: state.slide, on: false});   /* Stop projecting */
+        write({service: service, screen: state.screen, on: false});   /* Stop projecting */
         post({type: 'stop'});
         sync();
         return;
@@ -106,13 +112,11 @@
       /* A window, not a page you navigate to: opened beside the app and sized for a
          screen. Nothing grabs the screen -- the projector asks for full screen when
          the operator clicks inside it. */
-      var anchors = document.querySelectorAll('#readBody [data-anchor]');
-      var first = anchors.length ? (anchors[0].dataset.anchor || '') : '';
       var projector = window.open(open.dataset.projectorUrl, 'gkps-projector',
                                   'width=1280,height=800');
       if (projector) projector.focus();
-      write({service: service, slide: first, on: true});
-      post({type: 'show', service: service, slide: first});
+      write({service: service, screen: 0, on: true});          /* the display opens at its start */
+      post({type: 'show', service: service, screen: 0});
       sync();
       return;
     }
@@ -127,10 +131,10 @@
   if (channel) {
     channel.addEventListener('message', function (event) {
       var message = event.data || {};
-      if (message.type === 'show') write({service: message.service, slide: message.slide, on: true});
-      else if (message.type === 'stop') write({service: state.service, slide: state.slide, on: false});
+      if (message.type === 'show') write({service: message.service, screen: message.screen, on: true});
+      else if (message.type === 'stop') write({service: state.service, screen: state.screen, on: false});
       else if (message.type === 'state' && state.on) {
-        post({type: 'show', service: state.service, slide: state.slide});
+        post({type: 'show', service: state.service, screen: state.screen});
       }
       sync();
     });

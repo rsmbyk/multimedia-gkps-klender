@@ -106,59 +106,76 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                      ' active: e.classList.contains("is-active"),'
                      ' hidden: e.getAttribute("aria-hidden")}))')
 
-    # --- one slide at a time, fitted to the screen ---------------------------
+    # --- only the words, white on black --------------------------------------
 
-    def test_one_slide_at_a_time_and_the_font_fits_the_screen(self):
+    def test_the_screen_is_only_the_words_in_white_on_black(self):
         page = self._page(self._projector_url())
-        shown = [s for s in self._slides(page) if s['active']]
-        self.assertEqual(len(shown), 1)
-        self.assertEqual(shown[0]['slide'], '1')          # the legacy row opens the display
-        self.assertIn('Mazmur 23', page.locator('.slide.is-active').inner_text())
+        styles = page.evaluate("""() => {
+          const body = getComputedStyle(document.body);
+          return {background: body.backgroundColor, color: body.color,
+                  face: body.fontFamily, weight: body.fontWeight,
+                  buttons: document.querySelectorAll('button').length};
+        }""")
+        self.assertEqual(styles['background'], 'rgb(0, 0, 0)')
+        self.assertEqual(styles['color'], 'rgb(255, 255, 255)')
+        self.assertIn('CMG Sans', styles['face'])        # the face the current projector uses
+        self.assertEqual(styles['weight'], '700')
+        self.assertEqual(styles['buttons'], 0)           # no controls on the display
 
         fit = page.evaluate("""() => {
-          const body = document.querySelector('.slide.is-active .slide__body');
-          const stage = document.querySelector('#projectorSlides');
-          const size = parseFloat(getComputedStyle(body).fontSize);
-          return {size, fitsWidth: body.scrollWidth <= stage.clientWidth + 1,
-                  fitsHeight: body.scrollHeight <= stage.clientHeight + 1,
-                  stageWidth: stage.clientWidth};
+          const lines = document.querySelector('.screen.is-active .screen__lines');
+          const stage = document.querySelector('#projectorScreens');
+          return {size: parseFloat(getComputedStyle(lines).fontSize),
+                  fitsWidth: lines.scrollWidth <= stage.clientWidth + 1,
+                  fitsHeight: lines.scrollHeight <= stage.clientHeight + 1};
         }""")
         self.assertTrue(fit['fitsWidth'], fit)
         self.assertTrue(fit['fitsHeight'], fit)
         self.assertLessEqual(fit['size'], 100)
 
-        # next moves on, prev comes back
-        page.click('[data-projector="next"]')
+    def test_the_keyboard_moves_and_turns_the_display_on_and_off(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('ArrowRight')
         page.wait_for_timeout(150)
-        self.assertIn('Salam', page.locator('.slide.is-active').inner_text())
-        page.click('[data-projector="next"]')
-        page.wait_for_timeout(150)
-        self.assertIn('Persembahan', page.locator('.slide.is-active').inner_text())
-        self.assertEqual(page.locator('.slide.is-active .slide__body').count(), 0)  # label alone
-        page.click('[data-projector="prev"]')
-        page.wait_for_timeout(150)
-        self.assertIn('Salam', page.locator('.slide.is-active').inner_text())
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '1')
+        self.assertIn('Tuhan adalah gembalaku', page.locator('.screen.is-active').inner_text())
 
-        # the last slide's next is off, and the first slide's prev is off
-        page.click('[data-projector="next"]')
-        page.click('[data-projector="next"]')
-        page.click('[data-projector="next"]')
-        page.wait_for_timeout(200)
-        self.assertIn('ayat 3', page.locator('.slide.is-active').inner_text())
-        self.assertTrue(page.locator('[data-projector="next"]').is_disabled())
+        page.keyboard.press('ArrowLeft')
+        page.wait_for_timeout(150)
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '0')
+        self.assertIn('Mazmur 23', page.locator('.screen.is-active').inner_text())
 
-        # the toggle takes the words off the screen and brings them back
-        page.click('[data-projector="toggle"]')
+        page.keyboard.press('Space')
         page.wait_for_timeout(150)
         self.assertEqual(page.get_attribute('body', 'data-showing'), 'false')
-        self.assertEqual(page.locator('.slide:visible').count(), 0)
-        self.assertEqual(page.get_attribute('[data-projector="toggle"]', 'aria-pressed'), 'false')
-        self.assertEqual(page.get_attribute('[data-projector="toggle"]', 'aria-label'),
-                         'Show the display')
-        page.click('[data-projector="toggle"]')
+        self.assertEqual(page.locator('.screen:visible').count(), 0)
+        page.keyboard.press('Space')
         page.wait_for_timeout(150)
         self.assertEqual(page.get_attribute('body', 'data-showing'), 'true')
-        self.assertEqual(page.locator('.slide:visible').count(), 1)
+        self.assertEqual(page.locator('.screen:visible').count(), 1)
+
+    def test_every_kind_takes_the_shape_it_should_on_screen(self):
+        """"The running order, screen by screen: a passage one verse at a time, a text
+        two lines under its header, a song its lyrics alone, a break nothing at all."""
+        page = self._page(self._projector_url())
+        shape = page.eval_on_selector_all('.screen', """els => els.map(e => ({
+          blank: e.classList.contains('is-blank'),
+          head: (e.querySelector('.screen__head') || {}).textContent || null,
+          lines: [...e.querySelectorAll('.screen__line')].map(p => p.textContent)}))""")
+        self.assertEqual([s['blank'] for s in shape],
+                         [False, False, False, True, False, False, False])
+        self.assertEqual(shape[0]['head'], 'Nas')        # a legacy row takes the same shape
+        self.assertEqual(shape[0]['lines'], ['Mazmur 23'])
+        self.assertEqual(shape[1]['lines'], ['Tuhan adalah gembalaku, takkan kekurangan aku.'])
+        self.assertEqual(shape[2]['head'], 'Salam')      # a text keeps its own header
+        self.assertEqual(shape[2]['lines'], ['Kasih karunia Tuhan beserta kita semua'])
+        self.assertIsNone(shape[3]['head'])              # a break shows nothing: the note is the
+        self.assertEqual(shape[3]['lines'], [])          # operator's own
+        self.assertIsNone(shape[4]['head'])              # a song is its lyrics alone
+        self.assertEqual(shape[4]['lines'], ['bait 1'])
+        self.assertEqual(shape[5]['lines'], ['bait 2'])
+        self.assertEqual(shape[6]['head'], 'Matius 5:3')  # a passage names the verse it shows
+        self.assertEqual(shape[6]['lines'], ['ayat 3'])
 
     # --- the button, its two states, and the lock across tabs ----------------
 
@@ -234,7 +251,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         projector.wait_for_load_state('networkidle')
         self.assertIn('Stop projecting', page.locator('[data-project-open]').inner_text())
 
-        projector.click('[data-projector="toggle"]')      # hide from the display itself
+        projector.keyboard.press('Space')                 # hide from the display itself
         page.wait_for_timeout(400)
         self.assertEqual(projector.get_attribute('body', 'data-showing'), 'false')
         self.assertEqual(page.get_attribute('[data-project-group]', 'data-displaying'), 'false')
@@ -279,11 +296,14 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             page.click('[data-project-open]')
         projector = popup_info.value
         projector.wait_for_load_state('networkidle')
-        projector.click('[data-projector="next"]')        # the text entry
+        projector.keyboard.press('ArrowRight')            # the text entry
         projector.wait_for_timeout(200)
-        projector.click('[data-projector="next"]')        # the section break
+        projector.keyboard.press('ArrowRight')            # the section break
         projector.wait_for_timeout(200)
-        self.assertIn('Persembahan', projector.locator('.slide.is-active').inner_text())
+        self.assertIn('Kasih karunia', projector.locator('.screen.is-active').inner_text())
+        projector.keyboard.press('ArrowRight')            # the section break: a blank screen
+        projector.wait_for_timeout(200)
+        self.assertEqual(projector.locator('.screen.is-active').inner_text().strip(), '')
 
         asked = []
         projector.on('request', lambda request: asked.append(request.url))
@@ -291,4 +311,4 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.wait_for_timeout(700)
         self.assertTrue([url for url in asked if self._projector_url() in url],
                         f'Update must re-read the page: {asked}')     # fresh lyrics reach it
-        self.assertIn('Persembahan', projector.locator('.slide.is-active').inner_text())
+        self.assertEqual(projector.locator('.screen.is-active').inner_text().strip(), '')

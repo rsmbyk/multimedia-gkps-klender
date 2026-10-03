@@ -381,15 +381,16 @@ def _entry_blocks(service, items, toc, text_count):
         anchor = f'e{entry.pk}'
         title, body = entry.resolve()
         kind_key = entry_forms.kind_name(entry.kind)
+        # A passage or a song shows its REFERENCE here, not its text: the pane is the
+        # running order, and the words belong on the display.
+        shows_text = kind_key not in ('scripture', 'song')
         block = {'entry': True, 'anchor': anchor, 'pk': entry.pk, 'kind': kind_key,
                  'kind_label': entry.get_kind_display(), 'title': title,
-                 'paras': _paragraphs(body) if body else [],
+                 'paras': _paragraphs(body) if (body and shows_text) else [],
                  'note': entry.title if entry.kind == tatib_models.ServiceEntryKind.SECTION_BREAK
                          else ''}
         if kind_key in ('scripture', 'song'):
             block['jump'] = _entry_jump(entry)
-            if kind_key == 'song' and entry.song_id:
-                block['subtitle'] = entry.song.title or ''
         items.append(block)
         text_count += 1
         label = title or entry.get_kind_display()
@@ -422,44 +423,88 @@ def _tatib_stage(service):
     return items, toc
 
 
-def _projector_slides(service):
-    """What the display is given (spec 006, slice 4): one slide per element of the
-    running order, each resolved to the ``(title, body)`` pair the Tata Ibadah source
-    already renders. The legacy rows ride along before the entries, so the order a
-    person sees on the projector is the order the reading pane shows.
+def _line_pairs(text):
+    """A body's lines in pairs -- the operator's two-line shape -- with a blank line
+    ending a screen, so the text after it starts a fresh one and a single line can
+    hold the screen alone."""
+    screens, pair = [], []
+    for raw in (text or '').split('\n'):
+        line = raw.strip()
+        if not line:
+            if pair:
+                screens.append(pair)
+                pair = []
+            continue
+        pair.append(line)
+        if len(pair) == 2:
+            screens.append(pair)
+            pair = []
+    if pair:
+        screens.append(pair)
+    return screens
 
-    A slide is named by the same anchor the pane uses -- a legacy item by its
-    ``order_number``, an entry by ``e<id>`` -- which is what the display state and
-    the channel pass around.
+
+def _scripture_screens(entry):
+    """One verse a screen: the reference names it, and the verse's own title (when the
+    translation carries one) says what the passage is called."""
+    verses = (bible_models.Verse.objects
+              .filter(book_translation_id=entry.book_translation_id, chapter=entry.chapter,
+                      verse__gte=entry.verse_start or 1,
+                      verse__lte=entry.verse_end or entry.verse_start or 0)
+              .order_by('verse'))
+    book = entry.book_translation.translation if entry.book_translation_id else ''
+    screens = []
+    for verse in verses:
+        reference = f'{book} {entry.chapter}:{verse.verse}'.strip()
+        heading = f'{reference}\n{verse.title}' if verse.title else reference
+        screens.append({'blank': False, 'header': heading, 'lines': [verse.text.strip()]})
+    return screens
+
+
+def _projector_screens(service):
+    """What the display shows, screen by screen (spec 006, slice 4).
+
+    A passage is one verse at a time, headed by its reference and title; a text is
+    two lines at a time under its own header; a song is its lyrics alone, two lines
+    at a time; a section break shows nothing -- it is the operator's own note. The
+    legacy rows ride along in the same shape before the entries, so the order on the
+    screen is the order the reading pane shows.
     """
-    slides = []
+    screens = []
     for item in service.tataibadahitem_set.order_by('order_number'):
         if item.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
-            slides.append({'slide': item.order_number, 'kind': 'section_break',
-                           'title': item.text, 'body': ''})
-        else:
-            slides.append({'slide': item.order_number, 'kind': 'text',
-                           'title': item.title, 'body': item.text})
+            screens.append({'blank': True, 'header': '', 'lines': []})
+            continue
+        for lines in _line_pairs(item.text):
+            screens.append({'blank': False, 'header': item.title, 'lines': lines})
     for entry in service.service_entries.order_by('order_number'):
-        title, body = entry.resolve()
-        slides.append({'slide': f'e{entry.pk}', 'kind': entry_forms.kind_name(entry.kind),
-                       'title': title, 'body': body})
-    return slides
+        if entry.kind == tatib_models.ServiceEntryKind.SECTION_BREAK:
+            screens.append({'blank': True, 'header': '', 'lines': []})
+        elif entry.kind == tatib_models.ServiceEntryKind.SCRIPTURE:
+            screens.extend(_scripture_screens(entry))
+        elif entry.kind == tatib_models.ServiceEntryKind.SONG:
+            for lines in _line_pairs(entry.resolve()[1]):
+                screens.append({'blank': False, 'header': '', 'lines': lines})
+        else:                                            # a text entry
+            header, body = entry.resolve()
+            for lines in _line_pairs(body):
+                screens.append({'blank': False, 'header': header, 'lines': lines})
+    return screens
 
 
 def service_projector(request, service_id):
-    """The new service projector: a page of its own, hand-written on the reading
-    app's tokens, showing one slide at a time.
+    """The new service projector: a page of its own, hand-written, showing one screen
+    at a time in white on black -- the way the current projector reads on a screen.
 
-    It keeps no server record of what is on screen. Which slide is showing lives in
-    the operator's browser and is shared across that browser's tabs over the
-    display channel, so several laptops can drive different screens.
+    It keeps no server record of what is on screen. Which screen is showing lives in
+    the operator's browser and is shared across that browser's tabs over the display
+    channel, so several laptops can drive different screens.
     """
     service = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
     return render(request, 'reading/projector.html', {
         'service': service,
         'service_id': service.pk,
-        'slides': _projector_slides(service),
+        'screens': _projector_screens(service),
         'page_title': f'{service.name} — display',
     })
 

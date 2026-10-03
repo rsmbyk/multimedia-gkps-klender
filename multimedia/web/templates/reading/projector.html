@@ -1,84 +1,45 @@
 {% load static %}
 {% comment %}
-The new service projector (spec 006, slice 4). A page of its own -- no shell, no
-sidebar -- hand-written on the reading app's tokens so what the congregation sees
-looks like the rest of the product.
+The new service projector (spec 006, slice 4). What the congregation sees: white on
+black, in the face the current projector uses, and nothing but the header and the
+words -- no controls, because the operator drives it from the keyboard (left/right to
+move, space to turn the display on and off).
 
-It carries one slide per element of the service's running order and keeps no server
-record of what is on screen: which slide is showing lives in the operator's browser
-and travels between that browser's tabs over the display channel (web/projector.js
-and web/display.js). The controls are the three the operator asked for: previous,
-next, and an on/off toggle.
+It carries one screen per thing to show and keeps no server record of what is on
+screen: which screen is showing lives in the operator's browser and travels between
+that browser's tabs over the display channel (web/projector.js, web/display.js).
 {% endcomment %}
 <!doctype html>
-<html lang="id" data-theme="light">
+<html lang="id">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ page_title }}</title>
-
-<!-- Restore the theme before first paint, exactly as the reading app does. -->
-<script>
-(function () {
-  try {
-    var t = localStorage.getItem('gkps-theme');
-    if (t !== 'light' && t !== 'dark') {
-      t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    document.documentElement.dataset.theme = t;
-  } catch (e) {}
-})();
-</script>
-
 <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
-<link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
 <link rel="stylesheet" href="{% static 'styles/design/projector.css' %}">
 </head>
 <body class="projector" data-display-channel="gkps-service-display"
-      data-service="{{ service_id }}" data-current-slide="{% if slides %}{{ slides.0.slide }}{% endif %}"
-      data-showing="false">
+      data-service="{{ service_id }}" data-current-screen="0" data-showing="false">
 
 <main class="projector__screen" id="projectorScreen">
-  <p class="projector__service">{{ service.name }}</p>
-
-  <div class="projector__slides" id="projectorSlides">
-    {% for slide in slides %}
-    <section class="slide" data-slide="{{ slide.slide }}" data-kind="{{ slide.kind }}"
+  <div class="projector__screens" id="projectorScreens">
+    {% for screen in screens %}
+    <section class="screen{% if screen.blank %} is-blank{% endif %}" data-screen="{{ forloop.counter0 }}"
              aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
-      {% if slide.title %}<h1 class="slide__title">{{ slide.title }}</h1>{% endif %}
-      {% if slide.body %}<div class="slide__body">{{ slide.body }}</div>{% endif %}
+      {% if screen.header %}<h1 class="screen__head">{{ screen.header }}</h1>{% endif %}
+      {% if screen.lines %}
+      <div class="screen__lines">
+        {% for line in screen.lines %}<p class="screen__line">{{ line }}</p>{% endfor %}
+      </div>
+      {% endif %}
     </section>
     {% endfor %}
   </div>
 
-  {% if not slides %}
+  {% if not screens %}
   <p class="projector__empty">Nothing to show yet: this Tata Ibadah has no items.</p>
   {% endif %}
 </main>
-
-<div class="projector__bar" role="group" aria-label="Display controls">
-  <button type="button" class="projector__btn" data-projector="prev" aria-label="Previous entry">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M14.5 6l-6 6 6 6"/></svg>
-  </button>
-  <button type="button" class="projector__btn" data-projector="toggle"
-          aria-pressed="true" aria-label="Hide the display">
-    <svg class="projector__eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/>
-      <circle cx="12" cy="12" r="2.8"/></svg>
-    <svg class="projector__eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M4.2 4.6l15 14.8M9.6 6.3A9.6 9.6 0 0112 6c5.8 0 9.4 6 9.4 6a17 17 0 01-3.5 4.2M6.4 8.2A17 17 0 002.6 12s3.6 6 9.4 6c1 0 1.9-.2 2.7-.4"/>
-      <path d="M9.9 10.3a2.8 2.8 0 003.9 3.9"/></svg>
-  </button>
-  <button type="button" class="projector__btn" data-projector="next" aria-label="Next entry">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M9.5 6l6 6-6 6"/></svg>
-  </button>
-</div>
 
 <script src="{% static 'web/projector.js' %}"></script>
 </body>

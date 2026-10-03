@@ -304,6 +304,37 @@ Filled per slice as it lands.
 - Verified: 93 tests green across the app; the projector e2e green (4/4) and the entry e2e green
   (10/10)
 
+### Slice 4, the display's own round (owner, 2026-10-04, later)
+
+The owner's review of the first projector, taken as the shape of the display:
+
+- **Only the header and the words.** The controls are gone from the screen; the operator drives it
+  from the keyboard -- left/right to move, space to turn the display on and off (Home and End
+  jump to the ends). Nothing but a header and up to two lines is drawn.
+- **White on black, in the current projector's face** (`"CMG Sans", sans-serif`, weight 700,
+  line-height 1.37), which is what the screen has always looked like. The display no longer wears
+  the reading app's light/dark tokens: it is a display, not a page.
+- **A passage is one verse a screen**, headed by that verse's reference and, when the translation
+  carries one, its title (`bible.Verse.title`). The verse number stays out of the body: the
+  reference already names it.
+- **A text is two lines at a time** under its own header, with a blank line ending a screen so a
+  line can hold the screen alone.
+- **A song is its lyrics alone, two lines at a time** -- no citation on screen.
+- **A section break shows nothing at all**: it is the operator's own note.
+- **The project button rides with the date** at the top right of the page, in line with it, with an
+  icon; its two states are unchanged.
+- **The reading pane carries only the reference** for a passage or a song (its citation, still the
+  jump link); the words belong on the display. The sidebar's contents rows keep the entry's text
+  as their filter key.
+
+Implemented in `_projector_screens`, `_line_pairs` and `_scripture_screens`
+(`multimedia/web/reading/views.py`), the display's own stylesheet, the keyboard in
+`static/web/projector.js`, the head's action block in `reading/base.html` and
+`reading/tatib.html`, and `_entry_blocks` for the pane. Tests: `ServiceProjectorTests` (11) and
+`tests/e2e/test_projector.py` (7); 100 app tests green. Verified live on "Pengakuan Iman": 8
+screens, two lines each, black on white, `"CMG Sans"` at weight 700, no buttons, keys moving and
+blanking, and the pane's entries showing their references alone.
+
 ## Open questions for Accept
 
 1. **Name.** I propose a new model **`ServiceEntry`** ("service entry") in the `tatib` app, with

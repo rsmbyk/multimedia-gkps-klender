@@ -78,6 +78,11 @@
       the lock is the shell refusing, exactly as the compatibility promise requires
 - [x] e2e: a whole service driven through the new projector, the two-tab lock, a second browser
       left alone, and Update keeping its place (4 tests)
+- [x] The display's own round (owner, 2026-10-04): only the header and the words, white on black in
+      the current projector's face, one verse a screen for a passage, two lines at a time for texts
+      and songs, a break showing nothing, the keyboard instead of controls, the project button with
+      its icon in line with the date, and the pane carrying only the reference
+      (`ServiceProjectorTests`, 11; `tests/e2e/test_projector.py`, 7)
 - [ ] Deferred, per the plan: the OBS overlay, which needs its own answer for reaching inside OBS.
       The projector window is the whole of this version's display.
 
