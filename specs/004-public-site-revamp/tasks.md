@@ -15,34 +15,34 @@
       metrics (light + dark) until the contrast test passes
 - [x] Red — `tests/test_web_search.py`: reference parsing (`Kidung Jemaat 120` ≡ `KJ 120`,
       `Matius 5:13`), ranking rules, minimum query length — failing
-- [ ] Green — `multimedia/web/reading/` search view + URL: cross-corpus query (Bible,
+- [x] Green — `multimedia/web/reading/` search view + URL: cross-corpus query (Bible,
       Kidung, Tata Ibadah), grouped results, reference-first ranking, minimum length
-- [ ] Green — reading views + URLs for Bible (books/chapters) and Tata Ibadah (service
+- [x] Green — reading views + URLs for Bible (books/chapters) and Tata Ibadah (service
       list + order), rendering the existing models
-- [ ] Red — E2E: search-first home, grouped results, reference resolution, validation,
+- [x] Red — E2E: search-first home, grouped results, reference resolution, validation,
       keep-last-results, sidebar open/close/restore, dark mode, print, no-overflow
-- [ ] Green — `multimedia/web/templates/reading/base.html` — rail shell: logo, destinations
+- [x] Green — `multimedia/web/templates/reading/base.html` — rail shell: logo, destinations
       (Search / Alkitab / Kidung / Tata Ibadah), theme toggle, tooltips, `data-*` state
       attributes, inline pre-paint theme script
-- [ ] Green — `reading/home.html` — search-first landing (96px logo, 56px field, 610px
+- [x] Green — `reading/home.html` — search-first landing (96px logo, 56px field, 610px
       column, example-query hint)
-- [ ] Green — `reading/search.html` — results (group heads Alkitab / Kidung / Tata Ibadah,
+- [x] Green — `reading/search.html` — results (group heads Alkitab / Kidung / Tata Ibadah,
       counts, excerpts, *Show more*, validation message, empty state)
-- [ ] Green — `reading/bible*.html` — chapter reading (verse numbers, TB/SIM toggle,
+- [x] Green — `reading/bible*.html` — chapter reading (verse numbers, TB/SIM toggle,
       search-target marking) plus books/chapters sidebar markup with mini collapse
-- [ ] Green — `reading/song*.html` — songbook panel + wide song list + lyrics (stanza
+- [x] Green — `reading/song*.html` — songbook panel + wide song list + lyrics (stanza
       numbers, citation eyebrow)
-- [ ] Green — `reading/tatib*.html` — service list (year+month groups, Templates view),
+- [x] Green — `reading/tatib*.html` — service list (year+month groups, Templates view),
       contents quicklinks, service order stage (speaker marks, quiet end-of-section notes,
       date-only eyebrow)
 - [x] Green — `static/styles/design/components.css` rebuilt: rail, push panels with
       clip-wipe, mini collapse, song-list swap below 1272px, overlays ≤720px, reader
       typography, tooltips, print block
-- [ ] Green — `static/web/reading.js` (new, dependency-free): state machine (`nav`, `ch`,
+- [x] Green — `static/web/reading.js` (new, dependency-free): state machine (`nav`, `ch`,
       `read`, `home`, `section`, `theme`), parent-first rails, content-based restoration,
       search destination semantics (keep last results, exclusive `aria-current`),
       validation wiring, tooltips
-- [ ] Green — dark mode: persistence (`gkps-*` keys), pre-paint restore, AA in both modes
+- [x] Green — dark mode: persistence (`gkps-*` keys), pre-paint restore, AA in both modes
 - [ ] Parity harness: re-run the mockup's browser-check suite (search, rail, reader, Tata
       Ibadah modes, restoration, highlight exclusivity, widths 320–1440) against the
       implementation — every check green on the mockup must be green here
