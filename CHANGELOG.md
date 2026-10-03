@@ -21,6 +21,8 @@ Pre-adoption history in the legacy per-version format is archived in
   resolution (`Matius 5:13`, `Kidung Jemaat 120` ≡ `KJ 120`).
 - Public reading views for Bible chapters (verse numbers, TB/SIM translation toggle) and
   Tata Ibadah service orders (year+month groups, Templates view, section quicklinks).
+- Song-list sort control on non-hymn songbooks — *recently updated* (default, by a new
+  `Song.modified` stamp; migration 0012) ↔ *alphabetical* — applied in place.
 - Dark mode by rail toggle, persisted and applied before first paint, with the palette
   AA-safe in light and dark.
 
@@ -29,9 +31,16 @@ Pre-adoption history in the legacy per-version format is archived in
 - Public pages rebuilt on the design language from spec 001: hand-written CSS with no
   framework, a narrow rail with nested sidebars (mini collapse for Bible, wide song list
   for Kidung), keyboard/touch ergonomics, and print that yields reading content only.
-- Search behaviors: minimum three letters/numbers with an inline message; an invalid
-  query never clears the last result set; the rail search icon restores the last result
-  set, the logo starts a fresh search.
+- The shell now navigates in place: rail destinations, sidebar picks, search submits,
+  result opens and *Show more* swap the affected regions under one URL, so panel
+  animations play and the address bar never changes. Switching sections keeps the reading
+  stage and returning rebuilds that section's lists from it.
+- Sidebar clicks no longer scroll their lists: a row clipped at an edge is nudged only
+  enough to become fully visible, and only reveals (opening the sidebar on the page being
+  read, or opening a search result) may centre a row.
+- Search behaviors: any non-empty query searches — the minimum length and its inline
+  message are gone — an empty submit is inert and keeps the last result set; the rail
+  search icon restores the last result set, the logo starts a fresh search.
 
 ## [0.7.0] - 2026-10-01
 

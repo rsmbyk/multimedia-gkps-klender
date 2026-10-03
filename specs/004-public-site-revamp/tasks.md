@@ -77,15 +77,36 @@ DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test \
 DJANGO_DEVELOPMENT_MODE=True .venv/bin/python manage.py test tests.e2e.test_reading
 ```
 
+## Review round (owner, 2026-10-03) — supersedes the validation entries above
+
+Owner review asked for four changes; all are implemented and verified:
+
+- Navigate the shell in place under one URL (fetch + DOM swap) so panel animations play —
+  supersedes the per-page link navigation of the earlier entries.
+- Sidebar picks never scroll their lists; a clipped row is nudged only enough to become fully
+  visible (reveals may still centre).
+- Restore the mockup's song-list sort control (*recently updated* ↔ *alphabetical*), backed
+  by a real `Song.modified` (migration 0012); hymn books keep number order.
+- Remove the minimum search length and its validation message; only an empty submit is inert.
+
+Verified: full suite green (`manage.py test`), plus a Playwright flow probe over
+home → rail → book → chapter → section switch → restore → search → result (address bar
+unchanged throughout; 14 transitions running on open).
+
 ## Done when
 
 - [x] All acceptance scenarios in spec.md hold
 - [x] Token contrast test green in light and dark (pinned palette)
 - [x] Search-first home; grouped search over Bible, Kidung, Tata Ibadah; references rank
       first; `Kidung Jemaat 120` ≡ `KJ 120`
-- [x] Minimum 3 letters/numbers enforced; an invalid query never clears the last results
+- [x] Any non-empty query searches (no minimum); an empty submit is inert and keeps the last
+      result set
 - [x] Search icon keeps the last result set; logo starts fresh; indication exclusive to
       closed sidebars
+- [x] One-page shell: rail/sidebar picks, search submits, result opens and *Show more* swap in
+      place — no address changes, animations play, section switches keep the reading stage
+- [x] Sidebar picks never scroll their lists; clipped rows nudged only; reveals may centre
+- [x] Song lists: *recently updated* ↔ *alphabetical* on non-hymn songbooks
 - [x] Nested sidebars: parent-first, mini collapse (Bible), song-list swap (Kidung),
       year+month groups + templates (Tata Ibadah), quicklinks unselected, content-based
       restoration

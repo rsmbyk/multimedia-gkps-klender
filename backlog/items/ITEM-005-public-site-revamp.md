@@ -53,9 +53,14 @@ Tata Ibadah and for search.
   Other languages deferred to a later concern.
 - No web fonts, no framework: system serif/sans stacks, hand-written CSS, inline SVG icons.
 - Search behaviors pinned: references rank first (`Matius 5:13`, `Kidung Jemaat 120` ≡
-  `KJ 120`), minimum 3 letters/numbers with an inline message, an invalid query never
-  clears the last results, the rail search icon keeps the last result set (the logo starts
-  fresh), and its current indication is exclusive to closed sidebars.
+  `KJ 120`), **any non-empty query searches** — the 3-letter minimum and its inline message
+  were dropped in the review round and only an empty submit is inert — the rail search icon
+  keeps the last result set (the logo starts fresh), and its current indication is exclusive
+  to closed sidebars.
+- Shell behaviors pinned (review round): navigation swaps the affected regions in place under
+  one URL (the address bar never changes), sidebar picks never scroll their lists (clipped
+  rows are nudged only; reveals may centre), and non-hymn song lists carry the *recently
+  updated* ↔ *alphabetical* sort backed by `Song.modified` (migration 0012).
 - One concern: this is one spec (004).
 
 ## Acceptance sketch

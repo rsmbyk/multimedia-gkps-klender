@@ -69,7 +69,7 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 - **Full-corpus search** across Bible (book names/aliases, chapter:verse references, verse
   text), Kidung (songbooks, song titles, lyrics), and Tata Ibadah (service titles, public
   contents): grouped results (Bible, Kidung, Tata Ibadah in that order), per-group counts,
-  text excerpts, "Show more"; a minimum query length; results open in the reading stage.
+  text excerpts, "Show more"; any non-empty query searches; results open in the reading stage.
 - **Reading stage for the three corpora** — Bible chapters with verse numbers and the
   TB/SIM translation toggle; hymn lyrics with numbered stanzas; Tata Ibadah services as
   ordered items (speaker marks L./P./J.; end-of-section notes rendered quietly).
@@ -83,7 +83,9 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 ### Out of scope
 
 - OBS surfaces, the public APIs, the editor under `/manage/`, bookmarks.
-- Model/data changes: reading renders the existing `bible.*`, `songs.*`, `tatib.*` data.
+- Model/data changes beyond `Song.modified` (migration 0012, added in the review round so
+  non-hymn song lists can sort by recency): reading renders the existing `bible.*`,
+  `songs.*`, `tatib.*` data.
 - The maintenance page (spec 003) — standalone, unchanged.
 - Migrating the Fomantic editor surfaces; any third-party frontend dependency.
 - Languages beyond English chrome + Indonesian terms/locale (deferred).
@@ -124,14 +126,15 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   tooltips *Search / Alkitab / Kidung / Tata Ibadah*; theme *Switch to dark mode* ↔
   *Switch to light mode*; search label *Search Alkitab, Kidung, and Tata Ibadah*; placeholder
   *Search Alkitab, Kidung, Tata Ibadah...*; hint *Try Matius 5:13, KJ 152, or pengampunan
-  dosa*; validation *Enter at least 3 letters or numbers.*; status *Results for “q”* /
+  dosa*; status *Results for “q”* /
   *No results for “q”. Try another keyword.*; count *N result(s)*; *Show more*; filters
   *Filter books... / Filter songbooks... / Filter Tata Ibadah... / Filter songs... /
   Filter sections...*; empties *No matching books / songbooks / Tata Ibadah / songs /
   sections.*;
   testament heads *Perjanjian Lama / Perjanjian Baru*; template head *Templates*; mode
   button *Show Tata Ibadah templates* ↔ *Show dated Tata Ibadah*; reader editions *TB* and
-  *SIM*.
+  *SIM*; song-list sort control *Sort: recently updated — switch to alphabetical* ↔
+  *Sort: alphabetical — switch to recently updated* (non-hymn songbooks only).
 - **Search covers the whole corpus.** Bible: every book name and alias, `Book chapter:verse`
   references (ranges included), and verse text (both translations, one hit per verse). Kidung:
   every songbook full name and abbreviation, song titles, and lyric text. Tata Ibadah:
@@ -141,9 +144,11 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   songbook name and the abbreviation interchangeably** — `Kidung Jemaat 120` and `KJ 120`
   resolve to the same song at the same rank — and matching is case- and diacritic-insensitive
   for all references.
-- **Minimum query length: 3 letters or numbers** (counted as `[\p{L}\p{N}]`). A shorter
-  submission sets `aria-invalid` on the field, shows the inline validation message, and
-  **never replaces the current result set** with an error state.
+- **Any non-empty query searches.** The owner's review round supersedes the mockup's
+  3-letter minimum (and its inline message): a short or punctuation-only query runs like any
+  other. An **empty** submission is inert — with results on stage it restores the last result
+  set, on the landing it stays on the landing — and there is no `aria-invalid` state or
+  validation message anywhere.
 - **The search icon keeps the last result set; the logo starts a new one.** Within the
   session, activating the rail's Search icon restores the last query and its results —
   including how many rows were revealed with "Show more" — from the landing page, a reading
@@ -154,6 +159,19 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   section clears it, closing returns it, and reading keeps it off.
 - **There is no back-to-results button.** The rail's Search icon is the return path from
   the reading stage.
+- **The shell is one page.** Every pick — a rail destination, a sidebar row (book, chapter,
+  song, service, template mode), a search submit, a result open, *Show more* — swaps the
+  affected regions in place with the same transitions, so **the address bar never changes**
+  and deep links exist only when the server renders them on a direct load. Switching sections
+  leaves the reading stage intact; returning to a section rebuilds its lists from it.
+- **Sidebar picks do not scroll their lists.** Clicking a fully visible row moves nothing; a
+  row clipped at an edge is nudged only enough to become fully visible, never recentred. Only
+  the two reveal cases scroll a list: opening a sidebar on the page being read, and opening a
+  search result that sits deeper in its list.
+- **Song lists sort by recency or alphabetically.** A non-hymn songbook (`is_hymn_book`
+  false) shows a sort control in the chapters toolbar — *recently updated* (default, by
+  `Song.modified`, newest first) ↔ *alphabetical* — applied in place without a reload. Hymn
+  songbooks keep their number order and hide the control.
 - **Nested sidebars are parent-first.** A click on a closed or mini section expands the
   parent panel; a click on the open parent closes it and its child; on narrow screens the
   parent trades away the child to keep one usable list, and on wide screens both stay
@@ -191,7 +209,15 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   metrics, and copy; the mockup file is the tie-breaker for anything this spec does not
   pin, and its browser-check suite is re-run against the implementation before review,
   with the key views compared pixel-for-pixel at fixed viewports. Any deliberate deviation
-  is written down at handoff.
+  is written down at handoff. **Owner-requested deviations from the mockup (review round,
+  2026-10-03):** (1) the mockup's 3-letter minimum and its inline validation message are
+  **not** ported — any non-empty query searches; (2) a sidebar click no longer recentres the
+  row (it moves a list only to un-clip a row, and centres only in the two reveal cases); the
+  mockup's own single-document navigation is now matched by the implementation (one page, no
+  address changes); (3) the mockup's *recently updated* sort needs real timestamps —
+  `Song.modified` supplies them, and until the first edits land the default order matches
+  alphabetical for untouched rows; (4) the collapse control's window glyph is replaced by a
+  **double chevron** (`«`), with single chevron and chevron-plus-bar shown as alternatives.
 
 ## Acceptance scenarios
 
@@ -228,13 +254,13 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 - **Then** both queries return the same song as the same first row
 - **And** activating it opens that song in the reading stage
 
-### Scenario: Minimum query length guards noise
+### Scenario: Every non-empty query searches
 
-- **Given** I type fewer than 3 letters/numbers (e.g. `kj`, `a b`, `!!!`)
+- **Given** I type a short query (e.g. `kj`, `di`) or a punctuation-only one
 - **When** I submit
-- **Then** the field is marked invalid, the message *Enter at least 3 letters or numbers.*
-  is shown, and no search is run
-- **And** a previous result set stays intact — the invalid query never replaces it
+- **Then** results for that query are shown — no minimum length, no invalid state, no message
+- **And** submitting an **empty** field is inert: the last result set stays on stage (from the
+  landing, the landing stays)
 
 ### Scenario: Search keeps its last result set
 
@@ -244,6 +270,33 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 - **Then** the same query and the same result rows (including revealed extras) are shown
   again
 - **And** only the logo returns to the empty landing page
+
+### Scenario: The shell never leaves the page
+
+- **Given** any stage (landing, results, a reading page)
+- **When** I pick a book, chapter, song, service, or search result, or open/close a sidebar
+  destination, or press *Show more*
+- **Then** the shell swaps the affected regions in place with its normal transitions and the
+  **address bar does not change**
+- **And** switching sections leaves the reading stage intact, and returning rebuilds that
+  section's lists from the page being read
+
+### Scenario: Sidebar picks never scroll the lists
+
+- **Given** an open sidebar list
+- **When** I click a row that is already fully visible
+- **Then** the list does not scroll at all
+- **And** a row clipped at an edge is nudged just enough to become fully visible, never
+  recentred
+- **And** only the two reveal cases may scroll a list — opening the sidebar on the page being
+  read, or opening a search result that sits deeper in its list
+
+### Scenario: Song lists sort by recency or alphabetically
+
+- **Given** a non-hymn songbook whose songs carry `modified` stamps
+- **Then** a sort control offers *recently updated* (default) ↔ *alphabetical* and re-orders
+  the list in place
+- **And** hymn songbooks keep number order and show no sort control
 
 ### Scenario: Search indication is exclusive
 
@@ -356,11 +409,12 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 ## Traceability
 
 - Domain/app tests: `tests/test_design_tokens.py` (contrast pairs, light + dark);
-  `tests/test_web_search.py` (query rules, reference ranking, minimum length);
+  `tests/test_web_search.py` (query rules, reference ranking, any-non-empty queries);
   `multimedia/web/tests.py` (reading views updated)
 - E2E: `tests/e2e/test_reading.py` extended — search-first home, grouped results, reference
-  resolution, validation, keep-last-results, nested rail open/close/restore, reading flows,
-  dark mode, print, no overflow at 320/1440
+  resolution, in-place shell navigation, sidebar click scroll rules, the song sort control,
+  short-query search, keep-last-results, nested rail open/close/restore, reading flows, dark
+  mode, print, no overflow at 320/1440
 - Implementation: `multimedia/web/reading/` (views + urls: search, bible, tatib);
   `multimedia/web/templates/reading/` (base, home, search, bible, book_index, book, song,
   tatib, maintenance); `static/styles/design/{tokens,components}.css`;
