@@ -451,10 +451,23 @@ li:hover > .row-edit,
   position: relative; width: min(30rem, calc(100vw - 32px));
   padding: 0; border: 0; border-radius: 14px;
   background: var(--canvas); color: var(--ink); box-shadow: var(--shadow);
+  display: flex; flex-direction: column;
+  max-height: min(86vh, 46rem);
 }
+/* An author display rule beats the UA's rule for a CLOSED dialog, so the dialog
+   has to say it again for itself -- otherwise it lays out inside the page and
+   steals width from the reading column. */
+.editor:not([open]) { display: none; }
 .editor::backdrop { background: rgba(31, 31, 29, .38); }
-.editor__content { padding: 22px; }
-.editor__title { margin: 0 0 14px; font-size: 17px; font-weight: 620; }
+/* The scroll belongs in here, not on the page behind: a dialog taller than the
+   viewport scrolls the document it sits over, which is the scrollbar everybody
+   notices and nobody wants. */
+.editor__content { padding: 22px; overflow-y: auto; min-height: 0; }
+.editor__title {
+  margin: 0 0 16px; padding: 0 34px 14px 0;
+  font-size: 18px; font-weight: 640; letter-spacing: -.01em;
+  border-bottom: 1px solid var(--divider);
+}
 .editor__close {
   position: absolute; right: 10px; top: 10px; z-index: 1;
   width: 30px; height: 30px; padding: 0; display: grid; place-items: center;
@@ -469,6 +482,7 @@ li:hover > .row-edit,
   font: 560 12.5px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
 }
 .editor__field input[type="text"], .editor__field input[type="number"],
+.editor__field input[type="search"],
 .editor__field input[type="date"], .editor__field select, .editor__field textarea {
   width: 100%; min-height: 38px; padding: 8px 10px;
   border: 1px solid var(--divider); border-radius: 9px;
@@ -476,6 +490,26 @@ li:hover > .row-edit,
   font: 500 14px/1.35 ui-sans-serif, system-ui, sans-serif;
 }
 .editor__field textarea { resize: vertical; }
+/* The song pick is a search like the shell's, so it wears the same magnifier. */
+.editor__field input[type="search"] {
+  padding-left: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23555349' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8.6' cy='8.6' r='4.9'/%3E%3Cpath d='M12.4 12.4l4 4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: left 11px center; background-size: 15px;
+}
+.editor__field select {
+  appearance: none; -webkit-appearance: none;
+  padding-right: 34px;                          /* room for the chevron */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23555349' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+}
+.editor__field select:focus { background-position: right 12px center; }
+:root[data-theme="dark"] .editor__field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239C9A91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
+}
+.editor__field input[type="search"]::-webkit-search-cancel-button { display: none; }
+/* Chapter, from and to are one row: three short numbers do not need three rows. */
+.editor__row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 12px; }
+.editor__row .editor__field { margin: 0 0 0; }
 .editor__field input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--active-bg); }
 .editor__field input:focus, .editor__field select:focus, .editor__field textarea:focus {
   outline: none; border-color: var(--focus);
@@ -485,7 +519,10 @@ li:hover > .row-edit,
 .editor__field.is-invalid textarea { border-color: var(--ink); }
 .editor__help { margin: 5px 0 0; font-size: 12px; color: var(--head-ink); }
 .editor__error { margin: 5px 0 0; font-size: 12.5px; font-weight: 600; color: var(--ink); }
-.editor__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.editor__actions {
+  display: flex; justify-content: flex-end; gap: 8px;
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--divider);
+}
 .editor__save, .editor__cancel {
   height: 38px; padding: 0 18px; border-radius: 9px;
   font: 600 13.5px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
@@ -1280,23 +1317,22 @@ kbd {
 /* ---------- service entries (spec 006) ------------------------------------ */
 
 /* The add controls belong to their item: hidden until that item is hovered or
-   something inside the controls takes focus, so the service reads as a service. */
+   something inside the controls takes focus, so the service reads as a service.
+   They must stay HITTABLE while hidden -- the row occupies its own space, so
+   nothing sits behind it. A control at pointer-events: none cannot be entered:
+   the pointer leaves the item, the reveal drops, and the row is unreachable
+   unless the mouse jumps the whole way in one move. The hide is delayed so
+   crossing the item's edge does not blink the controls away. */
 .entry__add {
-  display: flex; flex-wrap: wrap; gap: 6px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
   padding: 0 0 10px;
   opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--ease);
+  transition: opacity 140ms ease 220ms;
 }
-/* Revealed by the item it adds to, whether the row sits beside it or inside it,
-   and it stays revealed while the pointer or focus is on the controls themselves. */
 .tatib__item:hover + .entry__add,
 .tatib__eos:hover + .entry__add,
-.tatib__item:hover .entry__add,
-.tatib__item:focus-within .entry__add,
-.tatib__eos:hover .entry__add,
 .entry__add:hover,
-.entry__add:focus-within { opacity: 1; pointer-events: auto; }
+.entry__add:focus-within { opacity: 1; transition-delay: 0s; }
 
 .entry__add-btn {
   display: inline-flex; align-items: center; gap: 6px;
@@ -1369,9 +1405,20 @@ kbd {
 .entry__ctrl:hover { color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg); }
 .entry__ctrl--danger:hover { color: #b3261e; border-color: #b3261e; }
 
+/* Edit and Delete act on the entry above, so they sit at the row's far end,
+   away from the four ways of adding something after it -- and they travel as one
+   group, so a narrow column wraps the pair together instead of splitting them. */
+.entry__acts { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+
+/* A dialog's close is chrome, not content: it reads at the same weight as the
+   other icon buttons and answers a hover the way they do. */
+.editor__close { color: var(--head-ink); border-radius: 8px; transition: color var(--ease), background var(--ease); }
+.editor__close:hover, .editor__close:focus-visible { color: var(--ink); background: var(--icon-hover-bg); }
+.editor__close svg { width: 16px; height: 16px; }
+
 /* ---------- the entry modals ---------------------------------------------- */
 .editor__songpick {
-  max-height: 220px; overflow: auto; margin-top: 6px;
+  max-height: 168px; overflow: auto; margin-top: 6px;
   border: 1px solid var(--divider); border-radius: 9px; background: var(--canvas);
 }
 .editor__songgroup-label {
@@ -1388,7 +1435,7 @@ kbd {
   background: var(--icon-hover-bg); outline: none;
 }
 .editor__verses {
-  display: flex; flex-wrap: wrap; gap: 8px 16px; max-height: 190px; overflow: auto;
+  display: flex; flex-wrap: wrap; gap: 10px 18px; max-height: 190px; overflow: auto;
   padding: 10px 12px; border: 1px solid var(--divider); border-radius: 9px;
 }
 .editor__verse {

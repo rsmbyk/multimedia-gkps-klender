@@ -1,5 +1,5 @@
 {% comment %}One kind's fields (spec 006, slice 2). The modal posts this fragment back.{% endcomment %}
-<p class="editor__title" id="editorTitle">{{ title }}</p>
+<h2 class="editor__title" id="editorTitle">{{ title }}</h2>
 <form class="editor__form" data-entry-form="{{ kind }}" action="{{ save_url }}" method="post">
   {% csrf_token %}
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}
@@ -14,20 +14,22 @@
       {% endfor %}
     </select>
   </div>
-  <div class="editor__field">
-    <label for="id_chapter">Chapter</label>
-    <input type="number" name="chapter" id="id_chapter" min="1"
-           value="{{ form.chapter.value|default:1 }}">
-  </div>
-  <div class="editor__field">
-    <label for="id_verse_start">From verse</label>
-    <input type="number" name="verse_start" id="id_verse_start" min="1"
-           value="{{ form.verse_start.value|default:1 }}">
-  </div>
-  <div class="editor__field">
-    <label for="id_verse_end">To verse <span class="editor__hint">(optional)</span></label>
-    <input type="number" name="verse_end" id="id_verse_end" min="1"
-           value="{{ form.verse_end.value|default_if_none:'' }}">
+  <div class="editor__row">
+    <div class="editor__field">
+      <label for="id_chapter">Chapter</label>
+      <input type="number" name="chapter" id="id_chapter" min="1"
+             value="{{ form.chapter.value|default:1 }}">
+    </div>
+    <div class="editor__field">
+      <label for="id_verse_start">From verse</label>
+      <input type="number" name="verse_start" id="id_verse_start" min="1"
+             value="{{ form.verse_start.value|default:1 }}">
+    </div>
+    <div class="editor__field">
+      <label for="id_verse_end">To verse <span class="editor__hint">(optional)</span></label>
+      <input type="number" name="verse_end" id="id_verse_end" min="1"
+             value="{{ form.verse_end.value|default_if_none:'' }}">
+    </div>
   </div>
 
   {% elif kind == 'song' %}
