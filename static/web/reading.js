@@ -306,11 +306,11 @@
   }
   function animateScroll(body, to, done) {
     var from = body.scrollTop;
-    var ms = prefersReduce() ? 0 : Math.max(220, Math.min(420, transitionDurationMs() * 1.8));
+    var ms = prefersReduce() ? 0 : Math.max(120, Math.min(180, transitionDurationMs() * 0.9));
     if (!ms || Math.abs(to - from) < 1) {
       body.scrollTop = to;
       if (done) done();
-      return;
+      return to;
     }
     var start = null;
     window.requestAnimationFrame(function step(now) {
@@ -321,6 +321,7 @@
       if (t < 1) window.requestAnimationFrame(step);
       else { body.scrollTop = to; if (done) done(); }
     });
+    return to;
   }
   function revealRow(row, body, opts) {
     if (!row || !body) return;
@@ -330,17 +331,30 @@
       return;
     }
     beginReveal();
-    var landed = centerOf(row, body);
-    animateScroll(body, landed, function () {
-      /* The sidebar's push transition reflows the list while it runs (its width
-         changes), so the first target can be stale: centre once more after the
-         layout settles -- unless the reader has moved on in the meantime. */
+    /* A collapsing or expanding pane has no usable geometry yet: measuring it now
+       would aim the travel at a stale offset and then visibly correct it. When
+       that is the case, wait for the layout and make one travel of it; when the
+       pane is already laid out, travel at once. Either way the second pass
+       re-centres after the push transition has reflowed the list -- unless the
+       reader has moved on in the meantime. */
+    var laidOut = body.getBoundingClientRect().height > 120;
+    var landed = null;
+    function settle() {
       window.setTimeout(function () {
-        if (document.contains(row) && Math.abs(body.scrollTop - landed) <= 2) {
-          animateScroll(body, centerOf(row, body), endReveal);
+        if (document.contains(row) && (landed === null || Math.abs(body.scrollTop - landed) <= 2)) {
+          var corrected = centerOf(row, body);
+          /* A pixel or two of reflow is not worth a second visible travel. */
+          if (Math.abs(corrected - body.scrollTop) < 48) {
+            body.scrollTop = corrected;
+            endReveal();
+          } else {
+            animateScroll(body, corrected, endReveal);
+          }
         } else endReveal();
-      }, transitionDurationMs() + 80);
-    });
+      }, transitionDurationMs() + 40);
+    }
+    if (laidOut) landed = animateScroll(body, centerOf(row, body), settle);
+    else settle();
   }
   /* Minimal nudge: move a list only as far as needed to show the row fully.
      Clicking an already visible item must never move the list. */
@@ -1085,7 +1099,7 @@
       /* remember the exact result URL, revealed rows included */
       localStorage.setItem('gkps-search', window.location.pathname + window.location.search);
     }
-    var lastSearch = localStorage.getItem('gkps-search');
+    var lastSearch = storedSearchUrl();
     if (lastSearch) railSearch.setAttribute('href', lastSearch);
     var logo = document.querySelector('.rail__logo');
     if (logo) {
@@ -1098,10 +1112,21 @@
     }
   } catch (e) {}
 
+  /* The stored result-set URL, or nothing. A value written by an older build (or
+     any non-search URL) is dropped, so the search icon can never open a reading
+     page's sidebar by mistake. */
+  function storedSearchUrl() {
+    var value = null;
+    try { value = localStorage.getItem('gkps-search'); } catch (e) {}
+    if (value && /^\/search\/\?q=/.test(value)) return value;
+    if (value) { try { localStorage.removeItem('gkps-search'); } catch (e) {} }
+    return null;
+  }
+
   /* the rail search icon restores the last result set, in place */
   railSearch.addEventListener('click', function (event) {
     event.preventDefault();
-    navigate(railSearch.getAttribute('href') || '/home/', { kind: 'results' });
+    navigate(storedSearchUrl() || '/home/', { kind: 'results' });
   });
 
   /* ---------- reveal search targets ---------- */

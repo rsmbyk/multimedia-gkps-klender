@@ -412,6 +412,18 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertTrue(out['flag'], 'the reveal never marked itself as animating')
         self.assertGreater(out['distinct'], 4, f'the reveal jumped instead of travelling: {out}')
 
+    def test_search_icon_never_opens_a_stale_stored_url(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.evaluate("localStorage.setItem('gkps-search', '/tatib/1/')")   # what an older build wrote
+        page.reload()
+        expect(page.locator('#railSearch')).to_have_attribute('href', reverse('web-home'))
+        page.locator('#railSearch').click()
+        page.wait_for_function("document.documentElement.dataset.home === 'landing'")
+        expect(page.locator('html')).to_have_attribute('data-section', 'alkitab')
+        expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
+        self.assertIsNone(page.evaluate("localStorage.getItem('gkps-search')"))
+
     def test_search_state_survives_sidebar_browsing(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))

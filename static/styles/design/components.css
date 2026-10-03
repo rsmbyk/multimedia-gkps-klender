@@ -717,9 +717,9 @@ body {
 /* A contents quicklink is never "current", so a reveal flashes it instead of
    selecting it. The row tint holds long enough to be noticed before it fades;
    the short-lived reading-stage flash keeps its own timing above. */
-.songrow.tatib__flash { animation: tatibRowFlash 1.9s linear 1; }
+.songrow.tatib__flash { animation: tatibRowFlash 2.6s linear 1; }
 @keyframes tatibRowFlash {
-  0%, 45% { background: var(--active-flash); }
+  0%, 50% { background: var(--active-flash); }
   100% { background: transparent; }
 }
 /* contents rail: END_OF_SECTION shows as a short rule, not a row */
