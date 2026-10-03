@@ -215,9 +215,9 @@
              stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
       </button>
         </div>
-        <button class="ch__sort" type="button" id="songSort" data-order="o"
-                aria-label="Sort: by number — switch to alphabetical"
-                title="Sort: by number — switch to alphabetical"{% if not show_song_sort %} hidden{% endif %}>
+        <button class="ch__sort" type="button" id="songSort" data-order="m"
+                aria-label="Sort: last modified — switch to alphabetical"
+                title="Sort: last modified — switch to alphabetical"{% if not show_song_sort %} hidden{% endif %}>
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 5.5h14M5 10h10M8 14.5h4"/>
@@ -225,16 +225,6 @@
           <span class="ch__sort-mark" aria-hidden="true"></span>
         </button>
       </div>
-      {% if editor_enabled and section == 'kidung' and ch_mode == 'song' %}
-      <button class="editor-add" type="button" id="songAdd"
-              data-editor-open="song" data-editor-book="{{ editor_book_id|default:'' }}"
-              data-editor-label="Add song"{% if not editor_book_id %}
-              disabled aria-disabled="true" title="Open a songbook first"{% endif %}>
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9"
-           stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
-        <span class="editor-add__label">Add song</span>
-      </button>
-      {% endif %}
     </div>
     <button class="ch__collapse" type="button" id="chCollapse"
             aria-controls="chapters" aria-expanded="{% if ch_state == 'open' %}true{% else %}false{% endif %}"
@@ -246,6 +236,19 @@
       </svg>
     </button>
   </div>
+
+  {% if editor_enabled and section == 'kidung' and ch_mode == 'song' %}
+  <div class="ch__add">
+    <button class="editor-add" type="button" id="songAdd"
+            data-editor-open="song" data-editor-book="{{ editor_book_id|default:'' }}"
+            data-editor-label="Add song"{% if not editor_book_id %}
+            disabled aria-disabled="true" title="Open a songbook first"{% endif %}>
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+      <span class="editor-add__label">Add song</span>
+    </button>
+  </div>
+  {% endif %}
 
   <div class="ch__wrap">
     <button class="ch__ind" type="button" id="chUp" aria-label="Scroll up">

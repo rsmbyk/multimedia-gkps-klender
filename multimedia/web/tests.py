@@ -125,23 +125,25 @@ class ReadingViewsTests(TestCase):
         response = self.client.get(reverse('web-book', args=[self.harian.id]))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['show_song_sort'])
-        self.assertContains(response, 'data-o="')              # rows carry the file order
-        self.assertEqual(response.context['songs'][0]['sort_title'], 'alpha')
+        self.assertContains(response, 'data-m="')              # the default's key
+        self.assertContains(response, 'data-o="')              # its tiebreak
+        self.assertEqual(response.context['songs'][0]['sort_title'], 'zebra')   # newest first
 
-    def test_song_rows_read_in_number_order_and_the_az_key_drops_the_number(self):
-        # The corpus titles carry their own "435. ", which must not decide A-Z, and the
-        # orders have to really differ: every song imports with one `modified`
-        # timestamp, so a recency order would tie on all of them (spec 005).
+    def test_song_rows_carry_last_modified_and_an_az_key_without_the_number(self):
+        # The corpus titles carry their own "435. ", which must not decide A-Z: every
+        # song imports with one `modified` timestamp, so with that prefix in the key
+        # the alphabetical order would be identical to the last-modified one and the
+        # toggle could not be observed to do anything (spec 005).
         lang = songs.Language.objects.create(name='Uji Bahasa')
         book = songs.Book.objects.create(lang=lang, name='Uji Urutan', is_hymn_book=False)
         songs.Song.objects.create(book=book, number=2, title='15. Alfabet')
         songs.Song.objects.create(book=book, number=1, title='9. Zebra')
         response = self.client.get(reverse('web-book', args=[book.pk]))
         rows = response.context['songs']
-        self.assertEqual([r['title'] for r in rows], ['9. Zebra', '15. Alfabet'])   # by number
+        self.assertEqual([r['title'] for r in rows], ['9. Zebra', '15. Alfabet'])   # newest first
         self.assertEqual([r['sort_title'] for r in rows], ['zebra', 'alfabet'])     # A-Z
-        self.assertContains(response, 'data-o="0"')
-        self.assertNotContains(response, 'data-m="')
+        self.assertContains(response, 'data-m="')               # the default's key
+        self.assertContains(response, 'data-o="0"')             # and the tiebreak
 
     def test_song_detail_shows_lyrics_and_citation(self):
         response = self.client.get(reverse('web-song', args=[self.song.id]))

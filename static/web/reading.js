@@ -53,7 +53,7 @@
   var chSearchEl = document.querySelector('.ch__search');
 
   var activeSection = root.dataset.section || 'alkitab';
-  var songSort = 'o';                    /* 'o' = the file's own order, 'title' = A-Z */
+  var songSort = 'm';                    /* 'm' = last modified, 'title' = alphabetical */
   var navBeforeCh = null;
   var pendingAnchor = null;
   var railCloseTimer = null;
@@ -623,13 +623,17 @@
       var rx = x.querySelector('.songrow');
       var ry = y.querySelector('.songrow');
       if (songSort === 'title') {
+        /* The key ignores a title's own leading "435. ", or A-Z would just repeat
+           the file order. */
         var xt = String(rx.dataset.t || '');
         var yt = String(ry.dataset.t || '');
         if (xt !== yt) return xt < yt ? -1 : 1;
+        return (parseInt(rx.dataset.o, 10) || 0) - (parseInt(ry.dataset.o, 10) || 0);
       }
-      /* 'o' restores the order the server rendered; it also breaks an A-Z tie so
-         both surfaces agree exactly. */
-      return (parseInt(rx.dataset.o, 10) || 0) - (parseInt(ry.dataset.o, 10) || 0);
+      /* Last modified, newest first. Every song in the corpus currently shares one
+         timestamp, so the tiebreak -- the file's own order -- is what you see. */
+      var recent = (parseFloat(ry.dataset.m) || 0) - (parseFloat(rx.dataset.m) || 0);
+      return recent || (parseInt(rx.dataset.o, 10) || 0) - (parseInt(ry.dataset.o, 10) || 0);
     });
     var frag = document.createDocumentFragment();
     rows.forEach(function (li) { frag.appendChild(li); });
@@ -637,17 +641,17 @@
     updateChInds();
   }
   function syncSortBtn() {
-    var listed = songSort === 'o';
-    var label = listed
-      ? 'Sort: by number \u2014 switch to alphabetical'
-      : 'Sort: alphabetical \u2014 switch to by number';
+    var recent = songSort === 'm';
+    var label = recent
+      ? 'Sort: last modified \u2014 switch to alphabetical'
+      : 'Sort: alphabetical \u2014 switch to last modified';
     songSortBtn.setAttribute('aria-label', label);
     songSortBtn.title = label;
-    songSortBtn.dataset.order = songSort;
+    songSortBtn.dataset.order = recent ? 'm' : 'title';
   }
   songSortBtn.addEventListener('click', function () {
     if (songSortBtn.hidden) return;
-    songSort = songSort === 'o' ? 'title' : 'o';
+    songSort = songSort === 'm' ? 'title' : 'm';
     syncSortBtn();
     applySongOrder();
   });

@@ -134,8 +134,8 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   sections.*;
   testament heads *Perjanjian Lama / Perjanjian Baru*; template head *Templates*; mode
   button *Show Tata Ibadah templates* ↔ *Show dated Tata Ibadah*; reader editions *TB* and
-  *SIM*; song-list sort control *Sort: by number — switch to alphabetical* ↔
-  *Sort: alphabetical — switch to by number* (non-hymn songbooks only; see the
+  *SIM*; song-list sort control *Sort: last modified — switch to alphabetical* ↔
+  *Sort: alphabetical — switch to last modified* (non-hymn songbooks only; see the
   correction at the end of this document).
 - **Search covers the whole corpus.** Bible: every book name and alias, `Book chapter:verse`
   references (ranges included), and verse text (both translations, one hit per verse). Kidung:
@@ -188,8 +188,8 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   name names what it clears, derived from the field's own label (*Clear books*, *Clear
   songbooks*, *Clear songs*, *Clear Tata Ibadah*, *Clear search*).
 - **Song lists sort by recency or alphabetically.** A non-hymn songbook (`is_hymn_book`
-  false) shows a sort control in the chapters toolbar — *by number* (default: the file's own
-  order, number then sub-number then title) ↔ *alphabetical*, whose key drops a title's own
+  false) shows a sort control in the chapters toolbar — *last modified* (default:
+  newest first, the file's own order breaking a tie) ↔ *alphabetical*, whose key drops a title's own
   leading `435. ` — applied in place without a reload. Hymn
   songbooks keep their number order and hide the control.
 - **Nested sidebars are parent-first.** A click on a closed or mini section expands the
@@ -236,7 +236,7 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   mockup's own single-document navigation is now matched by the implementation (one page, no
   address changes); (3) the sort pair originally read *recently updated* /*alphabetical*, which
   could not work on the real corpus (every song imports with one `modified` timestamp, so all
-  rows tied and the toggle looked inert) — **corrected in review** to *by number* /
+  rows tied and the toggle looked inert) — **corrected in review** to keep *last modified* /
   *alphabetical*, which differ on every songbook; the mockup's own control is unchanged and
   still matches (3) ~~the mockup's *recently updated* sort needs real timestamps —
   `Song.modified` supplies them, and until the first edits land the default order matches
@@ -331,7 +331,7 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 ### Scenario: Song lists sort by recency or alphabetically
 
 - **Given** a non-hymn songbook whose songs carry `modified` stamps
-- **Then** a sort control offers *by number* (default) ↔ *alphabetical* and re-orders
+- **Then** a sort control offers *last modified* (default) ↔ *alphabetical* and re-orders
   the list in place
 - **And** hymn songbooks keep number order and show no sort control
 

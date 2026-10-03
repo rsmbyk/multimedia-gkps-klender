@@ -160,13 +160,11 @@ def _songbooks(selected_id=None):
 
 
 def _song_rows(book, current_id=None):
-    # One order for every kind of songbook: by number (unnumbered last), then
-    # sub-number, then title -- the file's own order.
-    #
-    # There is deliberately no "recently updated" order: the corpus is imported with
-    # a single `modified` timestamp for every row, so that order would tie on every
-    # song and the A-Z toggle would look like it did nothing (spec 005).
-    songs = book.song_set.order_by(F('number').asc(nulls_last=True), 'sub_number', 'title')
+    # The default is "last modified", newest first, with the file's own order as the
+    # tiebreak. Every song in the corpus currently shares one `modified` timestamp, so
+    # that tiebreak is what you actually see -- and it has to differ from the A-Z key
+    # below, or the toggle would look like it did nothing (spec 005).
+    songs = book.song_set.order_by(F('modified').desc(nulls_last=True), 'title')
     rows = []
     for song in songs:
         numbered = book.is_hymn_book and song.number is not None
@@ -177,6 +175,7 @@ def _song_rows(book, current_id=None):
             # The A-Z key. Plenty of titles carry their own leading "435. ", which
             # would make alphabetical order identical to the number order.
             'sort_title': _TITLE_NUMBER.sub('', song.title or '').lower(),
+            'modified_key': str(int(song.modified.timestamp() * 1000000)) if song.modified else '',
             'current': song.pk == current_id,
         })
     return rows

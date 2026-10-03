@@ -34,10 +34,12 @@ Pre-adoption history in the legacy per-version format is archived in
 - The forms mirror the models' own rules, so a duplicate short name, a duplicate
   `(book, number, sub_number)` and a numberless hymn are refused server-side; CSRF is
   required on every write.
-- Song lists sort *by number* (their own order) or *alphabetically*, with a title's own
-  leading `435. ` ignored by the alphabetical key. The earlier *recently updated* order could
-  not work: every song in the corpus imports with one `modified` timestamp, so all rows tied
-  and the toggle changed nothing visible. `Song.modified` stays on the model.
+- Song lists sort *last modified* (newest first, the file's own order breaking a tie) or
+  *alphabetically*, whose key ignores a title's own leading `435. `. Without that, the two
+  orders would be identical: every song in the corpus imports with one `modified` timestamp,
+  so all rows tie and the alphabetical order is what the list already shows. The song list's
+  add button also moved out of the toolbar to a full-width row below the filter, so the sort
+  control keeps the place it has in the accepted mockup.
 - Hovering a row's edit control no longer drops the row's hover styling, and the control
   carries a pointer cursor like the rest of the row.
 

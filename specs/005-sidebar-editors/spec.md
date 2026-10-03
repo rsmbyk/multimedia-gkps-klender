@@ -38,6 +38,19 @@ rows — from the same three sidebars that already list them, without leaving th
   or an approval flow.
 - OBS, the public API, bookmarks, the maintenance page.
 
+## Changed in this round's review
+
+- The song list's sort pair stays *last modified* (default) <-> *alphabetical* as accepted;
+  what changed is why it now moves. Every song in the corpus imports with a single `modified`
+  timestamp, so all rows tie and the *last modified* order is decided by its tiebreak -- the
+  file's own order, which was the alphabetical order -- making the toggle a no-op. The
+  alphabetical key now ignores a title's own leading `435. `, so the two orders differ on
+  every songbook. Song *numbers* stay a hymn-book concept; nothing in the UI names them.
+- The song list's add button moved out of the toolbar to a full-width row below the filter.
+  Inline, it displaced the sort control from the position the accepted mockup gives it.
+- Hovering a row's own edit control keeps the row's hover styling, and that control carries a
+  pointer cursor, so the list never appears to lose its affordance under the pointer.
+
 ## Domain rules
 
 - **Hymn songbooks are read-only, and so are their songs.** A row for a songbook with

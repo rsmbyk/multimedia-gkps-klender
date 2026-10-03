@@ -136,8 +136,8 @@ Owner review asked for four changes; all are implemented and verified:
 - Sidebar picks never scroll their lists; a clipped row is nudged only enough to become fully
   visible (reveals may still centre).
 - Restore the mockup's song-list sort control, backed by a real `Song.modified` (migration
-  0012); hymn books keep number order. **Corrected in review:** the pair is *by number* ↔
-  *alphabetical* — the corpus gives every song one `modified` stamp, so a recency order tied
+  0012); hymn books keep number order. **Corrected in review:** the pair stays *last modified* ↔ *alphabetical*, but the
+  alphabetical key now ignores a title's own leading number — the corpus gives every song one `modified` stamp, so a recency order tied
   on all of them and the toggle did nothing visible.
 - Remove the minimum search length and its validation message; only an empty submit is inert.
 
@@ -158,7 +158,7 @@ unchanged throughout; 14 transitions running on open).
 - [x] One-page shell: rail/sidebar picks, search submits, result opens and *Show more* swap in
       place — no address changes, animations play, section switches keep the reading stage
 - [x] Sidebar picks never scroll their lists; clipped rows nudged only; reveals may centre
-- [x] Song lists: *by number* ↔ *alphabetical* on non-hymn songbooks (corrected pair)
+- [x] Song lists: *last modified* ↔ *alphabetical* on non-hymn songbooks (corrected key)
 - [x] Reveals centre the panel tile and the list row for every section, animated; Tata Ibadah
       contents rows flash instead of being selected
 - [x] The last result set survives sidebar browsing and resumes its scroll offset

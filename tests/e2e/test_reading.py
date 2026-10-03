@@ -49,10 +49,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         # bulk first, so the reveal tests have a list long enough to travel
         for n in range(1, 31):
             songs.Song.objects.create(book=self.harian, title='Lagu %02d' % n)
-        # Numbered on purpose: the file order (by number) and A-Z must differ, or the
-        # sort toggle cannot be observed to do anything.
-        songs.Song.objects.create(book=self.harian, title='Alpha', number=2)
-        songs.Song.objects.create(book=self.harian, title='Zebra', number=1)
+        # Created last, so it is the newest by `modified`: the default order and the
+        # alphabetical one have to be observably different.
+        songs.Song.objects.create(book=self.harian, title='Alpha')
+        songs.Song.objects.create(book=self.harian, title='Zebra')
 
         b_lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru', abbreviation='TB')
@@ -318,19 +318,19 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(search_clear).to_be_hidden()
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()   # results stay
 
-    def test_song_sort_toggle_on_non_hymn_books(self):
+    def test_song_sort_toggles_between_last_modified_and_alphabetical(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-book', args=[self.harian.id]))
         sort = page.locator('#songSort')
         expect(sort).to_be_visible()
         rows = page.locator('#chList .songrow')
-        expect(sort).to_have_attribute('data-order', 'o')
-        expect(rows.first).to_contain_text('Zebra')      # the file's own order (number 1)
+        expect(sort).to_have_attribute('data-order', 'm')
+        expect(rows.first).to_contain_text('Zebra')      # last modified: Zebra is newest
         sort.click()
         expect(sort).to_have_attribute('data-order', 'title')
         expect(rows.first).to_contain_text('Alpha')      # alphabetical
         sort.click()
-        expect(sort).to_have_attribute('data-order', 'o')
+        expect(sort).to_have_attribute('data-order', 'm')
         expect(rows.first).to_contain_text('Zebra')      # and back again
 
     # --- sidebar reveals (owner review round 2) ---

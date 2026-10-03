@@ -419,6 +419,10 @@ body {
 .ch__tools .editor-add { margin: 8px 0 0; }
 [data-nav="mini"] .editor-add, [data-nav="closed"] .editor-add { display: none; }
 
+/* the song list's add button: full width, right below the toolbar (spec 005) */
+.ch__add { flex: none; padding: 0 12px 12px; }
+.ch__add .editor-add { width: 100%; }
+
 /* the rows are the positioning context for their own control */
 #panelBody li, #chList li { position: relative; }
 .row-edit {
