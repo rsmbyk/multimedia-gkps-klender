@@ -83,6 +83,10 @@
       and songs, a break showing nothing, the keyboard instead of controls, the project button with
       its icon in line with the date, and the pane carrying only the reference
       (`ServiceProjectorTests`, 11; `tests/e2e/test_projector.py`, 7)
+- [x] The display's colours, centring and morphs (owner, 2026-10-04): the product's dark palette
+      with the accent for the header, the projector-then-Source-Sans face stack, the ink centred on
+      both axes, short arrive/leave morphs and a fade on the toggle, and reduced motion respected
+      (`tests/e2e/test_projector.py`, 10)
 - [ ] Deferred, per the plan: the OBS overlay, which needs its own answer for reaching inside OBS.
       The projector window is the whole of this version's display.
 

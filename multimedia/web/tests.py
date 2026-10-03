@@ -828,7 +828,9 @@ class ServiceProjectorTests(TestCase):
 
     def test_it_is_a_page_of_its_own_with_nothing_but_the_words(self):
         html = self.html()
+        self.assertIn('styles/design/tokens.css', html)      # the product's own dark palette
         self.assertIn('styles/design/projector.css', html)   # the display's own stylesheet
+        self.assertIn('data-theme="dark"', html)             # pinned: a display is not a page
         self.assertNotIn('rail__menu', html)                 # not the reading shell
         self.assertNotIn('panelBody', html)
         self.assertIn('gkps-service-display', html)          # its own channel

@@ -106,21 +106,28 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                      ' active: e.classList.contains("is-active"),'
                      ' hidden: e.getAttribute("aria-hidden")}))')
 
-    # --- only the words, white on black --------------------------------------
+    # --- only the words, on the product's dark palette ------------------------
 
-    def test_the_screen_is_only_the_words_in_white_on_black(self):
+    def test_the_screen_is_only_the_words_on_the_product_palette(self):
         page = self._page(self._projector_url())
         styles = page.evaluate("""() => {
           const body = getComputedStyle(document.body);
+          const head = document.querySelector('.screen.is-active .screen__head');
+          const line = document.querySelector('.screen.is-active .screen__line');
           return {background: body.backgroundColor, color: body.color,
                   face: body.fontFamily, weight: body.fontWeight,
-                  buttons: document.querySelectorAll('button').length};
+                  buttons: document.querySelectorAll('button').length,
+                  head: head ? getComputedStyle(head).color : null,
+                  line: line ? getComputedStyle(line).color : null};
         }""")
-        self.assertEqual(styles['background'], 'rgb(0, 0, 0)')
-        self.assertEqual(styles['color'], 'rgb(255, 255, 255)')
-        self.assertIn('CMG Sans', styles['face'])        # the face the current projector uses
+        self.assertEqual(styles['background'], 'rgb(20, 19, 15)')   # the dark canvas, not black
+        self.assertEqual(styles['color'], 'rgb(245, 243, 238)')     # the warm off-white ink
+        self.assertIn('CMG Sans', styles['face'])          # the current projector's own face
+        self.assertIn('Source Sans Pro', styles['face'])   # and the rest of the OBS surfaces'
         self.assertEqual(styles['weight'], '700')
-        self.assertEqual(styles['buttons'], 0)           # no controls on the display
+        self.assertEqual(styles['buttons'], 0)             # no controls on the display
+        self.assertEqual(styles['head'], 'rgb(124, 156, 240)')      # the header reads apart...
+        self.assertEqual(styles['line'], styles['color'])           # ...from the words
 
         fit = page.evaluate("""() => {
           const lines = document.querySelector('.screen.is-active .screen__lines');
@@ -132,6 +139,96 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertTrue(fit['fitsWidth'], fit)
         self.assertTrue(fit['fitsHeight'], fit)
         self.assertLessEqual(fit['size'], 100)
+
+        # The fitting must reach the words: the ink stays inside the screen's box.
+        ink = page.evaluate("""() => {
+          const stage = document.querySelector('#projectorScreens').getBoundingClientRect();
+          const lines = document.querySelector('.screen.is-active .screen__lines');
+          const range = document.createRange();
+          range.selectNodeContents(lines);
+          const rect = range.getBoundingClientRect();
+          return {insetLeft: rect.left - stage.left, insetRight: stage.right - rect.right,
+                  size: parseFloat(getComputedStyle(lines).fontSize)};
+        }""")
+        self.assertGreaterEqual(ink['insetLeft'], -1, ink)
+        self.assertGreaterEqual(ink['insetRight'], -1, ink)
+
+    def test_the_header_and_the_words_sit_in_the_middle_of_the_screen(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('End')                        # a screen with both a header and a line
+        page.wait_for_timeout(300)
+        page.wait_for_function(
+            "() => !!document.querySelector('.screen.is-active .screen__line')")
+        centred = page.evaluate("""() => {
+          const stage = document.querySelector('#projectorScreens').getBoundingClientRect();
+          const active = document.querySelector('.screen.is-active');
+          const head = active.querySelector('.screen__head');
+          const lines = active.querySelector('.screen__lines');
+          const text = (el) => {                // the TEXT's own box, not the block's
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            return range.getBoundingClientRect();
+          };
+          const headBox = head ? text(head) : null;
+          const lineBox = text(lines);
+          const linesBox = lines.getBoundingClientRect();
+          const lastLine = Math.max.apply(null, [...lines.querySelectorAll('.screen__line')]
+                                                   .map(p => text(p).bottom));
+          return {stageCentreX: stage.left + stage.width / 2,
+                  stageCentreY: stage.top + stage.height / 2,
+                  headCentreX: headBox ? headBox.left + headBox.width / 2 : null,
+                  lineCentreX: lineBox.left + lineBox.width / 2,
+                  boxCentreY: ((head ? head.getBoundingClientRect().top : linesBox.top)
+                               + linesBox.bottom) / 2,
+                  inkCentreY: ((headBox ? headBox.top : lineBox.top) + lastLine) / 2};
+        }""")
+        self.assertAlmostEqual(centred['headCentreX'], centred['stageCentreX'], delta=2)
+        self.assertAlmostEqual(centred['lineCentreX'], centred['stageCentreX'], delta=2)
+        self.assertAlmostEqual(centred['boxCentreY'], centred['stageCentreY'], delta=1)
+        # The ink rides within a few px of the middle as well: a 50px header and 100px
+        # lines carry different leading, and half of that difference is what is left.
+        self.assertAlmostEqual(centred['inkCentreY'], centred['stageCentreY'], delta=8)
+
+    def test_moving_and_toggling_morph_rather_than_jump(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('ArrowRight')
+        started = page.evaluate("""() => ({
+          move: document.querySelector('#projectorScreens').dataset.move || '',
+          entering: document.querySelector('.screen.is-active').getAnimations().length,
+          leaving: !!document.querySelector('.screen.is-out')})""")
+        self.assertEqual(started['move'], 'next')
+        self.assertGreater(started['entering'], 0, 'the arriving screen must animate in')
+        self.assertTrue(started['leaving'], 'and the one it replaces must animate out')
+
+        page.keyboard.press('ArrowLeft')
+        page.wait_for_timeout(60)
+        self.assertEqual(page.get_attribute('#projectorScreens', 'data-move'), 'prev')
+        back = page.evaluate("""() => document.querySelector('.screen.is-active')
+          .getAnimations().map(a => a.animationName)""")
+        self.assertIn('screenInBack', back)               # it comes back the way it went
+
+        # turning the display off fades the words rather than blanking them instantly
+        page.wait_for_timeout(400)
+        self.assertIn('opacity', page.evaluate(
+            "() => getComputedStyle(document.querySelector('.screen.is-active')).transitionProperty"))
+        page.keyboard.press('Space')
+        page.wait_for_timeout(60)
+        self.assertLess(float(page.evaluate(
+            "() => getComputedStyle(document.querySelector('.screen.is-active')).opacity")), 1.0)
+        page.wait_for_timeout(400)
+        self.assertEqual(page.evaluate(
+            "() => getComputedStyle(document.querySelector('.screen.is-active')).opacity"), '0')
+
+    def test_reduced_motion_makes_every_move_instant(self):
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900},
+                                           reduced_motion='reduce')
+        page = self._page(self._projector_url(), context)
+        page.keyboard.press('ArrowRight')
+        page.wait_for_timeout(50)
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '1')   # it still moved
+        self.assertEqual(page.evaluate(
+            "() => [...document.querySelectorAll('.screen')]"
+            ".reduce((n, s) => n + s.getAnimations().length, 0)"), 0)
 
     def test_the_keyboard_moves_and_turns_the_display_on_and_off(self):
         page = self._page(self._projector_url())
@@ -146,11 +243,11 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertIn('Mazmur 23', page.locator('.screen.is-active').inner_text())
 
         page.keyboard.press('Space')
-        page.wait_for_timeout(150)
+        page.wait_for_timeout(400)                        # the words fade out over ~200ms
         self.assertEqual(page.get_attribute('body', 'data-showing'), 'false')
         self.assertEqual(page.locator('.screen:visible').count(), 0)
         page.keyboard.press('Space')
-        page.wait_for_timeout(150)
+        page.wait_for_timeout(400)
         self.assertEqual(page.get_attribute('body', 'data-showing'), 'true')
         self.assertEqual(page.locator('.screen:visible').count(), 1)
 

@@ -79,12 +79,29 @@
     if (current < 0) current = 0;
     if (all.length && current > all.length - 1) current = all.length - 1;
     var active = all[current] || null;
+    var previous = all[previousIndex] || null;
+    var moved = previous && previous !== active;
 
     all.forEach(function (each) {
       var on = each === active;
       each.classList.toggle('is-active', on);
+      /* Both morph classes are cleared every time: a quick move back and forth would
+         otherwise leave the arriving screen carrying "leaving" as well, and the
+         leaving animation is the one that would win. */
+      each.classList.remove('is-in');
+      each.classList.remove('is-out');
       each.setAttribute('aria-hidden', on ? 'false' : 'true');
     });
+
+    if (moved) {
+      /* A quiet morph: the one that goes fades out the way the new one came from. */
+      stage.dataset.move = direction >= 0 ? 'next' : 'prev';
+      previous.classList.add('is-out');
+      if (active) active.classList.add('is-in');
+      window.setTimeout(function () { previous.classList.remove('is-out'); }, 260);
+    }
+
+    previousIndex = current;
     body.dataset.currentScreen = String(current);
     body.dataset.showing = showing ? 'true' : 'false';
     if (active) fit(active);
@@ -94,9 +111,13 @@
     }
   }
 
+  var direction = 1;
+  var previousIndex = current;
+
   function move(step) {
     var next = current + step;
     if (next < 0 || next > screens().length - 1) return;
+    direction = step;
     current = next;
     showing = true;
     render();

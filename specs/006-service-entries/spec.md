@@ -335,6 +335,39 @@ Implemented in `_projector_screens`, `_line_pairs` and `_scripture_screens`
 screens, two lines each, black on white, `"CMG Sans"` at weight 700, no buttons, keys moving and
 blanking, and the pane's entries showing their references alone.
 
+### Slice 4, the display's colours, centring and morphs (owner, 2026-10-04, later still)
+
+- **The product's dark palette, not black and white.** The page links the design tokens and pins
+  `data-theme="dark"`: the warm near-black canvas (`#14130F`) and the warm off-white ink
+  (`#F5F3EE`). It never follows the operator's light/dark choice -- a display is not a page.
+- **The header reads apart from the words**, in the dark theme's accent (`--active-bg`,
+  `#7C9CF0`), which also carries the app's own state colour onto the screen.
+- **The face**: the repo's own code uses exactly two -- `"CMG Sans"` (the current projector) and
+  `"Source Sans Pro"` (the songs, bible and service sources and the dock item previews), and it
+  ships neither as a file, so both come from the machine. The display stacks
+  `"CMG Sans", "Source Sans Pro", sans-serif`: the projector's own face first, the other surfaces'
+  behind it.
+- **The texts are centred both ways** -- the words' own ink, not just their boxes: the header's gap
+  is flex content rather than a margin, and the pages were measured at 0px off centre on both axes.
+- **Short morphs** carry a move or a toggle: the arriving screen fades and rises (from the
+  direction of travel), the one it replaces fades out the other way, and space fades the words
+  rather than blanking them. Reduced motion makes every move instant.
+
+Two defects this round found and fixed, both invisible to a source read:
+
+- **A shorthand carrying two durations.** `transition: opacity 220ms var(--ease)` looks harmless,
+  but `--ease` is `200ms cubic-bezier(...)`: the shorthand takes the first time as the duration and
+  the second as the DELAY, so every transition and animation ran 200ms late. The display now
+  carries a timing-only `--display-ease`.
+- **The fitting never reached the words.** `.screen__line` declared its own `font-size: 100px`, so
+  the container's fitted size was overridden: the fitting read a wrapped block that "fitted" while
+  the ink ran 24px past the screen's edge. The size lives on the container and the lines inherit it;
+  the e2e now measures the ink's own box, not the block's, and asserts it stays inside.
+
+Verified live: background `rgb(20,19,15)`, ink `rgb(245,243,238)`, face
+`"CMG Sans", "Source Sans Pro", sans-serif`, 0px off centre on both axes, the arriving screen
+animating `screenIn` while the leaving one fades, and the off state fading 1 → 0.25 → 0.05 → 0.
+
 ## Open questions for Accept
 
 1. **Name.** I propose a new model **`ServiceEntry`** ("service entry") in the `tatib` app, with

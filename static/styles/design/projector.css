@@ -1,19 +1,30 @@
 /* The new service projector (spec 006, slice 4).
-   What the congregation sees: white on black, in the same face, weight and
-   line-height the current projector uses, so the screen looks the way the operator's
-   screen always has. Nothing else is on it -- no controls, no service label -- because
-   the operator drives it from the keyboard (web/projector.js). */
+   What the congregation sees. It rides the product's own DARK palette -- the warm
+   near-black canvas and the off-white ink, with the accent for the header -- rather
+   than a page's theme, because a display is not a page: the projector page pins
+   data-theme="dark" and never follows the operator's light/dark choice.
+
+   The face is the current projector's ("CMG Sans"), with the face the rest of the OBS
+   surfaces use ("Source Sans Pro") behind it: neither ships with the repo, so both
+   come from the machine, and the order keeps the projector looking as it always has.
+
+   Nothing else is on the screen -- no controls, no service label -- because the
+   operator drives it from the keyboard (web/projector.js). */
 
 html, body.projector { height: 100%; }
 
 body.projector {
   margin: 0;
-  background: #000;
-  color: #fff;
-  font-family: "CMG Sans", sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "CMG Sans", "Source Sans Pro", sans-serif;
   font-weight: 700;
   line-height: 1.37;
   overflow: hidden;                       /* a display does not scroll */
+  /* The design system's --ease carries its own duration, so it cannot go inside a
+     shorthand that also names one: `transition: opacity 220ms var(--ease)` parses as
+     duration + 200ms DELAY. The timing curve alone lives here. */
+  --display-ease: cubic-bezier(.32, .72, .28, 1);
 }
 
 /* The current projector's own box: centred, with room at the edges for overscan. */
@@ -24,35 +35,97 @@ body.projector {
   align-items: center; justify-content: center;
 }
 
-.projector__screens { width: 100%; }
+/* Every screen is stacked in the same box and centred both ways, so the header and
+   the words sit in the middle of the screen whichever line they are on. Only the
+   active one is painted; the rest wait invisible and untouchable. */
+.projector__screens { position: relative; flex: 1; width: 100%; overflow: hidden; }
 
-.screen { display: none; }
-.screen.is-active { display: block; }
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 18px;                              /* the header's gap counts as content, so the
+                                             ink itself lands in the middle */
+  text-align: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity 220ms var(--display-ease), transform 220ms var(--display-ease),
+              visibility 0s 220ms;
+}
+.screen.is-active {
+  opacity: 1; visibility: visible;
+  transition: opacity 220ms var(--display-ease), transform 220ms var(--display-ease),
+              visibility 0s;
+}
 
 /* A section break shows nothing at all -- it is the operator's own note. */
-.screen.is-blank { display: none; }
-.screen.is-blank.is-active { display: block; }
+.screen.is-blank.is-active { opacity: 1; visibility: visible; }
 
-/* Space turns the display off: the screen goes black and keeps the operator's place. */
-body.projector[data-showing="false"] .screen { display: none; }
+/* Space turns the display off: the screen goes quiet and keeps the operator's place.
+   The words fade rather than vanish, and fade back in on the way on. The transition
+   is declared HERE, with visibility held back until the fade has finished: applied
+   instantly, `visibility: hidden` makes the browser skip the opacity transition
+   altogether and the words simply disappear. */
+body.projector[data-showing="false"] .screen.is-active {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms var(--display-ease), visibility 0s 200ms;
+}
+
+/* ---------- the morphs ------------------------------------------------------
+   Moving between screens and turning the display on are short, quiet moves: the
+   arriving screen fades and rises into place while the one it replaces fades out the
+   other way, so the eye is led rather than startled. Nothing here is load-bearing:
+   with reduced motion every move is instant. */
+
+.screen.is-in { animation: screenIn 240ms var(--display-ease); }
+.screen.is-out { animation: screenOut 200ms var(--display-ease) forwards; }
+
+.projector__screens[data-move="prev"] .screen.is-in { animation-name: screenInBack; }
+.projector__screens[data-move="prev"] .screen.is-out { animation-name: screenOutBack; }
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes screenInBack {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes screenOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-12px); }
+}
+@keyframes screenOutBack {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(12px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen, .screen.is-active { transition: none; }
+  .screen.is-in, .screen.is-out { animation: none; }
+}
 
 .screen__head {
-  margin: 0 0 18px;
+  margin: 0;
   padding: 0;
   text-align: center;
+  color: var(--active-bg);                /* the header reads apart from the words */
   white-space: pre-wrap;                  /* a reference and its title stack */
   font-size: 50px;
   font-weight: 700;
   line-height: 1.37;
 }
 
-.screen__lines { margin: 0; }
+/* The size lives on the container so the fitting can drive it; the lines inherit it.
+   Declared on the line itself, it would win over the container's inline style and the
+   fitting would quietly do nothing -- the words then ran past the edge of the screen. */
+.screen__lines { margin: 0; text-align: center; font-size: 100px; }
 
 .screen__line {
   margin: 0;
   text-align: center;
   white-space: pre-wrap;
-  font-size: 100px;
+  font-size: inherit;
   font-weight: 700;
   line-height: 1.37;
 }
@@ -62,5 +135,5 @@ body.projector[data-showing="false"] .screen { display: none; }
   text-align: center;
   font-size: 28px;
   font-weight: 400;
-  color: rgba(255, 255, 255, .7);
+  color: var(--head-ink);
 }
