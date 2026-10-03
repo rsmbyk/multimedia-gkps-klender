@@ -1288,8 +1288,14 @@ kbd {
   pointer-events: none;
   transition: opacity var(--ease);
 }
+/* Revealed by the item it adds to, whether the row sits beside it or inside it,
+   and it stays revealed while the pointer or focus is on the controls themselves. */
 .tatib__item:hover + .entry__add,
 .tatib__eos:hover + .entry__add,
+.tatib__item:hover .entry__add,
+.tatib__item:focus-within .entry__add,
+.tatib__eos:hover .entry__add,
+.entry__add:hover,
 .entry__add:focus-within { opacity: 1; pointer-events: auto; }
 
 .entry__add-btn {
@@ -1362,3 +1368,35 @@ kbd {
 }
 .entry__ctrl:hover { color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg); }
 .entry__ctrl--danger:hover { color: #b3261e; border-color: #b3261e; }
+
+/* ---------- the entry modals ---------------------------------------------- */
+.editor__songpick {
+  max-height: 220px; overflow: auto; margin-top: 6px;
+  border: 1px solid var(--divider); border-radius: 9px; background: var(--canvas);
+}
+.editor__songgroup-label {
+  margin: 0; padding: 8px 12px 4px;
+  font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--head-ink);
+}
+.editor__songoption {
+  display: block; width: 100%; padding: 8px 12px; text-align: left;
+  font: 400 14px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+  background: transparent; border: 0; cursor: pointer;
+}
+.editor__songoption:hover, .editor__songoption:focus-visible {
+  background: var(--icon-hover-bg); outline: none;
+}
+.editor__verses {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; max-height: 190px; overflow: auto;
+  padding: 10px 12px; border: 1px solid var(--divider); border-radius: 9px;
+}
+.editor__verse {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 400 14px/1.2 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+  cursor: pointer;
+}
+.editor__confirm { display: grid; gap: 10px; padding: 4px 2px; }
+.editor__confirm-title {
+  margin: 0; font: 600 17px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+}

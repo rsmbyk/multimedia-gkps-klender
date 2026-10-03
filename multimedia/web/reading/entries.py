@@ -24,21 +24,20 @@ KINDS = {
 class ServiceEntryForm(forms.ModelForm):
     """What every kind shares: the hidden kind, the service, and saving.
 
-    ``kind`` travels as the URL's name ('scripture', 'section_break') because that is
-    what the modals and the test speak; ``clean_kind`` turns it into the value the
-    model stores before anything else sees it.
+    ``kind`` travels in the URL as a name ('scripture', 'section_break') because that
+    is what the modals and the tests speak, and the view turns that name into a stored
+    value before the form is built. The field itself speaks the model's own numbers --
+    an edit form is bound to an instance whose ``kind`` is already stored, so its
+    choices must be those values or every re-render rejects the entry it is editing.
     """
 
-    kind = forms.ChoiceField(choices=[(name, name) for name in KINDS],
-                             widget=forms.HiddenInput)
+    kind = forms.TypedChoiceField(choices=tatib_models.ServiceEntryKind.choices,
+                                  coerce=int, widget=forms.HiddenInput)
 
     class Meta:
         model = tatib_models.ServiceEntry
         fields = []
         widgets = {'kind': forms.HiddenInput}
-
-    def clean_kind(self):
-        return KINDS[self.cleaned_data['kind']]
 
     def __init__(self, *args, tatib=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -109,9 +108,28 @@ FORMS = {
 }
 
 
+TITLES = {
+    'text': 'text', 'scripture': 'passage', 'song': 'song', 'section_break': 'break',
+}
+
+
+def entry_title(kind, entry=None):
+    """What the modal says at the top: 'New passage', 'Edit song', ..."""
+    what = TITLES.get(kind, kind)
+    return f'Edit {what}' if entry is not None else f'New {what}'
+
+
 def kind_name(value):
     """The URL's name for a stored kind value ('section_break', 'song', ...)."""
     return tatib_models.ServiceEntryKind(value).name.lower()
+
+
+def kind_from_post(value):
+    """The URL name for what the form posted, which is the model's own value."""
+    try:
+        return kind_name(int(value))
+    except (TypeError, ValueError):
+        return None
 
 
 def build_entry_form(kind, data=None, instance=None, tatib=None):
@@ -120,8 +138,7 @@ def build_entry_form(kind, data=None, instance=None, tatib=None):
     if form_class is None:
         return None
     form = form_class(data=data, instance=instance, tatib=tatib)
-    form.fields['kind'].initial = kind            # the URL names the kind; clean_kind maps it
-    form.instance.kind = KINDS[kind]
+    form.fields['kind'].initial = KINDS[kind]     # the URL names the kind; the field stores it
     return form
 
 

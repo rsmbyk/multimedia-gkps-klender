@@ -143,6 +143,7 @@ def entry_form(request, kind=None, pk=None):
         raise Http404('Unknown kind.')
     return render(request, 'reading/_entry_form.html', {
         'form': form, 'kind': kind, 'entry': None if pk is None else entry,
+        'title': entry_forms.entry_title(kind, None if pk is None else entry),
         'tatib': tatib, 'books': entry_forms.scripture_books(),
         'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
                             kwargs={'pk': pk} if pk else {})
@@ -156,7 +157,8 @@ def entry_save(request, pk=None):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
     entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk) if pk else None
-    kind = entry_forms.kind_name(entry.kind) if entry else request.POST.get('kind')
+    kind = (entry_forms.kind_name(entry.kind) if entry
+            else entry_forms.kind_from_post(request.POST.get('kind')))
     form = entry_forms.build_entry_form(
         kind, data=request.POST, instance=entry,
         tatib=entry.tatib if entry else get_object_or_404(
@@ -165,7 +167,8 @@ def entry_save(request, pk=None):
         raise Http404('Unknown kind.')
     if not form.is_valid():
         return render(request, 'reading/_entry_form.html', {
-            'form': form, 'kind': kind, 'entry': entry, 'tatib': form.tatib,
+            'form': form, 'kind': kind, 'entry': entry,
+            'title': entry_forms.entry_title(kind, entry), 'tatib': form.tatib,
             'books': entry_forms.scripture_books(),
             'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
                                 kwargs={'pk': pk} if pk else {})

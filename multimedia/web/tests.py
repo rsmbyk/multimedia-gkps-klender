@@ -154,12 +154,12 @@ class EditorViewTests(TestCase):
         self.assertNotContains(page, 'id="songAdd"')
         # (#panelAdd is the songbook section's, which stays available: a new songbook
         # is not a hymn-book write)
-        url = reverse('web-editor-save-new', kwargs={'kind': 'song'})
+        url = reverse('web-editor-save-new', kwargs={'kind': tatib.ServiceEntryKind.SONG})
         post = self.client.post(url, {'book': self.nkb.pk, 'title': 'Diselundupkan',
                                       'number': '', 'sub_number': '', 'key': ''})
         self.assertEqual(post.status_code, 404)
         self.assertFalse(songs.Song.objects.filter(title='Diselundupkan').exists())
-        form = self.client.get(reverse('web-editor-new', kwargs={'kind': 'song'}),
+        form = self.client.get(reverse('web-editor-new', kwargs={'kind': tatib.ServiceEntryKind.SONG}),
                                {'book': self.nkb.pk})
         self.assertEqual(form.status_code, 404)
 
@@ -363,7 +363,7 @@ class EditorViewTests(TestCase):
     def test_a_hymn_song_cannot_be_edited(self):
         song = songs.Song.objects.get(book=self.nkb, number=12)
         self.assertEqual(self.client.get(reverse(
-            'web-editor-edit', kwargs={'kind': 'song', 'pk': song.pk})).status_code, 404)
+            'web-editor-edit', kwargs={'kind': tatib.ServiceEntryKind.SONG, 'pk': song.pk})).status_code, 404)
 
     def test_editing_a_free_song(self):
         song = songs.Song.objects.create(book=self.harian, title='Alpha')
@@ -513,7 +513,7 @@ class ServiceEntryViewTests(TestCase):
 
     def test_creating_a_text_entry_appends_it_to_the_service(self):
         response = self.client.post(self.save_new_url(),
-                                    {'kind': 'text', 'title': 'Salam', 'text': 'Kasih karunia'})
+                                    {'kind': tatib.ServiceEntryKind.TEXT, 'title': 'Salam', 'text': 'Kasih karunia'})
         self.assertEqual(response.status_code, 200)
         entry = self.tatib.service_entries.get()
         self.assertEqual(response.json()['id'], entry.pk)
@@ -521,7 +521,7 @@ class ServiceEntryViewTests(TestCase):
 
     def test_creating_a_scripture_entry(self):
         response = self.client.post(self.save_new_url(), {
-            'kind': 'scripture', 'book_translation': self.matius.pk, 'chapter': 5,
+            'kind': tatib.ServiceEntryKind.SCRIPTURE, 'book_translation': self.matius.pk, 'chapter': 5,
             'verse_start': 2, 'verse_end': 4})
         self.assertEqual(response.status_code, 200)
         entry = self.tatib.service_entries.get()
@@ -529,32 +529,32 @@ class ServiceEntryViewTests(TestCase):
 
     def test_creating_a_song_entry_stores_the_verses_it_includes(self):
         response = self.client.post(self.save_new_url(),
-                                    {'kind': 'song', 'song': self.song.pk, 'verses': ['1', '3']})
+                                    {'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': ['1', '3']})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.tatib.service_entries.get().verses, [1, 3])
 
     def test_creating_a_section_break_without_a_label(self):
-        response = self.client.post(self.save_new_url(), {'kind': 'section_break', 'title': ''})
+        response = self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.SECTION_BREAK, 'title': ''})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.tatib.service_entries.get().resolve(), ('', ''))
 
     def test_the_next_entry_lands_after_the_last_one(self):
         self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
-        self.client.post(self.save_new_url(), {'kind': 'text', 'text': 'b'})
+        self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'b'})
         self.assertEqual([e.order_number for e in self.tatib.service_entries.all()], [1, 2])
 
     # --- refusing ----------------------------------------------------------
 
     def test_a_song_entry_without_verses_is_refused_and_writes_nothing(self):
         response = self.client.post(self.save_new_url(),
-                                    {'kind': 'song', 'song': self.song.pk, 'verses': []})
+                                    {'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': []})
         self.assertEqual(response.status_code, 400)
         self.assertContains(response, 'at least one verse', status_code=400)
         self.assertFalse(self.tatib.service_entries.exists())
 
     def test_a_passage_without_a_chapter_is_refused(self):
         response = self.client.post(self.save_new_url(), {
-            'kind': 'scripture', 'book_translation': self.matius.pk, 'verse_start': 2})
+            'kind': tatib.ServiceEntryKind.SCRIPTURE, 'book_translation': self.matius.pk, 'verse_start': 2})
         self.assertEqual(response.status_code, 400)
         self.assertFalse(self.tatib.service_entries.exists())
 
@@ -567,7 +567,7 @@ class ServiceEntryViewTests(TestCase):
     def test_editing_an_entry_keeps_its_place(self):
         entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=3)
         response = self.client.post(reverse('web-entry-save', kwargs={'pk': entry.pk}),
-                                    {'kind': 'text', 'title': 'Baru', 'text': 'b'})
+                                    {'kind': tatib.ServiceEntryKind.TEXT, 'title': 'Baru', 'text': 'b'})
         self.assertEqual(response.status_code, 200)
         entry.refresh_from_db()
         self.assertEqual((entry.order_number, entry.title), (3, 'Baru'))
@@ -581,7 +581,7 @@ class ServiceEntryViewTests(TestCase):
     @override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True)
     def test_the_editor_gate_covers_entries(self):
         self.assertEqual(self.client.get(self.new_url('text')).status_code, 403)
-        self.assertEqual(self.client.post(self.save_new_url(), {'kind': 'text'}).status_code, 403)
+        self.assertEqual(self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.TEXT}).status_code, 403)
 
     # --- what the pickers need ---------------------------------------------
 
@@ -653,7 +653,7 @@ class ServiceEntryViewTests(TestCase):
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
         second = self.make(kind=tatib.ServiceEntryKind.TEXT, text='b', order_number=2)
         response = self.client.post(self.save_new_url(),
-                                    {'kind': 'text', 'text': 'c', 'after': first.pk})
+                                    {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'c', 'after': first.pk})
         self.assertEqual(response.status_code, 200)
         second.refresh_from_db()
         self.assertEqual([(e.order_number, e.text) for e in self.tatib.service_entries.all()],

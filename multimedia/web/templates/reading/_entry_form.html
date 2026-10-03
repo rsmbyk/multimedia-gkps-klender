@@ -1,4 +1,5 @@
 {% comment %}One kind's fields (spec 006, slice 2). The modal posts this fragment back.{% endcomment %}
+<p class="editor__title" id="editorTitle">{{ title }}</p>
 <form class="editor__form" data-entry-form="{{ kind }}" action="{{ save_url }}" method="post">
   {% csrf_token %}
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}
