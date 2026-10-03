@@ -52,18 +52,43 @@ Ibadah, search) and `beforeunload`.
 Tests: the drag and its sidebar preview, Discard restoring the previous order, the guard on each
 exit path, and adds being unavailable while reorder mode is on.
 
-### Slice 4 — the new display
+### Slice 4 — the new display and display mode
 
-New pages for this system: a screen projector and an OBS overlay, with the display rules the
-operator relies on (two lines per body, the projector fitting the font, the overlay growing its
-box, a blank line holding one line alone), plus the control surface for showing an entry, moving
-to the previous or next one, and clearing. Own templates, own scripts, own `BroadcastChannel`
-name, so no old dock can reach a new display or the reverse.
+Hand-written pages on the public reading app's design tokens: a **projector** (previous, next and
+an on/off toggle — and nothing more) and an **overlay** for OBS, both rendering every kind with
+the display rules the operator relies on (two lines per body, the projector fitting the font, the
+overlay growing its box, a blank line holding one line alone). A **project button** on a Tata
+Ibadah opens the projector in a new tab for that Tata Ibadah, together with the **jump-to-it**
+controls on scripture and song entries.
 
-Tests: rendering per kind in both pages, the two-line split and the blank-line rule, the sync
-channel's isolation, and an e2e pass driving a whole service through the new surface.
+Display mode lives on the server, not in a browser tab: one record saying which Tata Ibadah is on
+screen, which entry, and whether it is on. Every tab reads it, so a second tab is in the same
+mode; the entry write endpoints refuse while the Tata Ibadah they target is displaying (the Tata
+Ibadah's own fields stay writable — they are not on screen); and the project button becomes Stop
+projecting and Update the current state. The projector learns of changes by polling that record —
+no new channel to share with the old docks, and nothing for them to hear.
 
-### Slice 5 — the old rows (deferred, owner-triggered)
+Tests: rendering per kind on both pages, the two-line and blank-line rules, prev/next/toggle,
+one Tata Ibadah at a time, the entry-write refusal in a second tab, the stop and update buttons,
+and the jump-to controls.
+
+### Slice 5 — soft deletion
+
+An `is_deleted` flag (and when, and by whom, for the admin) on Song, Book and Verse, defaulting
+to not-deleted so every existing row and every current reading path behaves exactly as it does
+now. Deleting from the admin soft-deletes instead, normal lists stop offering the row, and a
+service entry that refers to one keeps resolving what it can and says its target was deleted.
+
+The blast radius is the point of care: the flag must be honoured wherever the current app lists
+or serves songs, songbooks and verses, and *nowhere else*. That audit is a deliberate part of
+this slice, with the compatibility pass over the current pages, docks and API run before and
+after.
+
+Tests: deletion marks rather than removes; the public and dock paths skip a deleted row; a
+service entry pointing at a deleted song still resolves and warns; the API's responses for
+non-deleted data are byte-for-byte what they were.
+
+### Slice 6 — the old rows (deferred, owner-triggered)
 
 Migrating `TataIbadahItem` rows into entries, and retiring the old path where it is no longer
 used. Deliberately not part of this spec's tasks: the owner triggers it once the new system is
@@ -76,7 +101,11 @@ finished.
 - **The in-page shell.** The reading app swaps sections without reloading, so the reorder guard
   has to intercept the shell's own navigation, not just browser navigation. Slice 3 tests each
   exit path.
-- **Two display channels.** A new `BroadcastChannel` name is a hard requirement; sharing one
-  would let a new dock drive an old source.
-- **Verse selection drift.** Storing the included verse numbers explicitly means a later change
-  to a song cannot silently alter a prepared service.
+- **Two display paths, no shared channel.** The new projector reads the server's display record
+  rather than joining the docks' browser channel, so an old dock and the new projector cannot
+  drive each other even by accident.
+- **Soft deletion's reach.** Adding the flag is safe; honouring it in the right places is the
+  work. Every current list, dock query and API filter is reviewed, and the compatibility pass
+  proves the non-deleted data still answers identically.
+- **Song sync.** Because a song entry resolves live, editing a song changes services that refer
+  to it — intended, and the reason exclusions are stored rather than inclusions.

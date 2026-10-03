@@ -29,12 +29,25 @@
       guard on every exit path (contents, another Tata Ibadah, search, tab close)
 - [ ] Green: reorder mode, Save/Discard, the confirmation modal, the reorder endpoint
 
-## Slice 4 — the new display
+## Slice 4 — the new display and display mode
 
-- [ ] Red: each kind rendered in the new projector and overlay; two lines per body; the blank-line
-      rule; the new channel isolated from the old one
-- [ ] Green: the new pages, their scripts, the control surface (show, prev, next, clear)
-- [ ] e2e: one whole service driven through the new surface
+- [ ] Red: each kind rendered on the new projector and overlay; two lines per body; the
+      blank-line rule; prev/next/toggle
+- [ ] Red: entry writes refused while the Tata Ibadah is displaying, in a second tab too, while
+      the Tata Ibadah's own fields stay writable; one Tata Ibadah at a time
+- [ ] Red: the project button becomes Stop projecting and Update the current state; Update
+      re-reads a song whose lyrics changed
+- [ ] Green: the server-held display record, the hand-written pages on the reading app's tokens,
+      the project button, the jump-to controls on scripture and song entries
+- [ ] e2e: a whole service driven through the new projector, plus the two-tab lock
+
+## Slice 5 — soft deletion
+
+- [ ] Red: deletion marks rather than removes; normal lists and the current dock/API paths skip a
+      deleted row; a service entry referring to a deleted song still resolves and warns
+- [ ] Green: the flag on Song, Book and Verse, the admin path, the warning on the entry
+- [ ] Audit every current query site for songs, songbooks and verses — the compatibility pass
+      before and after
 
 ## The compatibility promise
 

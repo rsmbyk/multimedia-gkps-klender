@@ -38,5 +38,12 @@ a separate, later slice the owner triggers.
 - Drafted from the owner's description of how services are prepared today (three lists, one dock
   talking to the display at a time) and the display rules the operator relies on (two lines per
   body, font fitting on the projector, box growth on the overlay, blank line as the pause).
-- Blocked on the owner's Accept of spec 006, and on the open questions in it (model name, what
-  drives the new display, its stack, its URLs).
+- The owner's answers (2026-10-03) are folded into spec 006: `ServiceEntry`; a project button
+  opening the new projector in a new tab with previous/next/toggle; hand-written pages on the
+  public design tokens; new `/obs/service/...` URLs; display mode held on the server so every tab
+  shares it, with entry writes refused while a Tata Ibadah is displaying; soft deletion for songs,
+  songbooks and verses with a deleted-target warning on the entry; jump-to-it controls on
+  scripture and song entries.
+- One reading to confirm: "always sync with the songs" is taken to mean *exclusions* are stored
+  (a verse added later shows; an unchecked one stays out) rather than a frozen verse list.
+- Blocked on the owner's Accept of spec 006 (and that one confirmation).
