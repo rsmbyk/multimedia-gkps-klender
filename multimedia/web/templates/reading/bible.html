@@ -1,0 +1,20 @@
+{% extends 'reading/base.html' %}
+
+{% block title %}{{ page_title|default:'Alkitab — GKPS Klender' }}{% endblock %}
+
+{% block panel_body %}{% include 'reading/_books_panel.html' %}{% endblock %}
+
+{% block ch_rows %}{% if book_id %}{% include 'reading/_chapters.html' %}{% endif %}{% endblock %}
+
+{% block read_body %}
+<div class="read__ed" data-ed="tb"{% if read_lang == 'sim' %} hidden{% endif %}>
+{% for v in tb_verses %}{% if v.title %}<h2 class="read__sec">{{ v.title }}</h2>{% endif %}<p class="v"{% if v.target %} data-search-target="true"{% endif %}><span class="v__n">{{ v.n }}</span><span>{{ v.text }}</span></p>
+{% endfor %}
+</div>
+{% if sim_verses %}
+<div class="read__ed" data-ed="sim"{% if read_lang != 'sim' %} hidden{% endif %}>
+{% for v in sim_verses %}{% if v.title %}<h2 class="read__sec">{{ v.title }}</h2>{% endif %}<p class="v"{% if v.target %} data-search-target="true"{% endif %}><span class="v__n">{{ v.n }}</span><span>{{ v.text }}</span></p>
+{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

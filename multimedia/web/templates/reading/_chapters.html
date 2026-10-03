@@ -1,0 +1,7 @@
+{% for c in chapters %}
+<li><a class="ch-num{% if not c.has_text %} no-data{% endif %}"
+       href="{% url 'web-bible-chapter' book_id c.n %}" data-n="{{ c.n }}"
+       data-tb="{% if c.has_text %}true{% else %}false{% endif %}"
+       data-sim="{% if c.has_sim %}true{% else %}false{% endif %}"
+       aria-label="{{ book_display }} chapter {{ c.n }}"{% if c.current %} aria-current="true"{% endif %}{% if not c.has_text %} aria-disabled="true"{% endif %}>{{ c.n }}</a></li>
+{% endfor %}

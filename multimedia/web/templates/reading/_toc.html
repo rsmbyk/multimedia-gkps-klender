@@ -1,0 +1,10 @@
+{% for item in toc_items %}
+{% if item.eos %}
+<li class="toc__eos" aria-hidden="true" data-i="{{ item.anchor }}"><span class="toc__eosline"></span></li>
+{% else %}
+<li><a class="songrow{% if not item.titled %} songrow--cont{% endif %}" href="#ti-{{ item.anchor }}"
+       data-i="{{ item.anchor }}" data-num="{{ item.n }}" data-txt="{{ item.txt|lower }}">
+  <span class="songrow__c">{{ item.n }}</span>
+  <span class="songrow__t">{{ item.label }}</span></a></li>
+{% endif %}
+{% endfor %}

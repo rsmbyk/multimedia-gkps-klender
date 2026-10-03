@@ -1,0 +1,6 @@
+{% for song in songs %}
+<li><a class="songrow" href="{% url 'web-song' song.id %}" data-i="{{ song.id }}"
+       {% if song.number_display %}data-num="{{ song.number_display }}" {% endif %}{% if song.current %} aria-current="true"{% endif %}>
+  {% if song.number_display %}<span class="songrow__c">{{ song.number_display }}</span>{% endif %}
+  <span class="songrow__t">{{ song.title }}</span></a></li>
+{% endfor %}

@@ -1,0 +1,21 @@
+{% extends 'reading/base.html' %}
+
+{% block title %}{{ page_title|default:'Tata Ibadah — GKPS Klender' }}{% endblock %}
+
+{% block panel_body %}{% include 'reading/_tatib_panel.html' %}{% endblock %}
+
+{% block ch_rows %}{% if service_id %}{% include 'reading/_toc.html' %}{% endif %}{% endblock %}
+
+{% block read_body %}
+{% for item in items %}
+{% if item.eos %}
+<div class="tatib__eos" id="ti-{{ item.anchor }}">{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
+{% else %}
+<section class="tatib__item" id="ti-{{ item.anchor }}">
+{% if item.title %}<h2 class="read__sec">{{ item.title }}</h2>{% endif %}
+{% for para in item.paras %}<p class="tatib__tx">{% if para.speaker %}<span class="tatib__sp">{{ para.speaker }}.</span> {% endif %}{{ para.text }}</p>
+{% endfor %}
+</section>
+{% endif %}
+{% endfor %}
+{% endblock %}

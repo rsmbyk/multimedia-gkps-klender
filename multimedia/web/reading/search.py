@@ -150,7 +150,7 @@ _BIBLE_REF_RE = re.compile(
 _SONG_REF_RE = re.compile(r'^(?P<name>.+?)\s+(?P<number>\d{1,3})(?P<sub>[a-z])?$')
 
 
-def _bible_book_map():
+def bible_book_index():
     """book pk -> display/other names, aliases, and the primary version."""
     books = {}
     queryset = (bible_models.Book.objects
@@ -163,6 +163,7 @@ def _bible_book_map():
         primary = translations[0] if translations else None
         books[book.pk] = {
             'book': book,
+            'by_version': {(t.version.abbreviation or '').upper(): t for t in translations},
             'display': primary.translation if primary else book.name,
             'other': translations[1].translation if len(translations) > 1 else '',
             'aliases': [book.name] + [t.translation for t in translations],
@@ -377,7 +378,7 @@ def search(query):
         result.valid = False
         return result
     words = phrase.split(' ')
-    books = _bible_book_map()
+    books = bible_book_index()
     hymn_books = list(song_models.Book.objects.filter(is_hymn_book=True).order_by('id'))
     result.groups['bible'] = _bible_hits(phrase, words, raw, books)
     result.groups['songs'] = _song_hits(phrase, words, raw, hymn_books)

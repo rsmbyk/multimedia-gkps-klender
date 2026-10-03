@@ -1,34 +1,7 @@
 {% extends 'reading/base.html' %}
 
-{% block title %}{{ book.name }} · Multimedia GKPS Klender{% endblock %}
+{% block title %}{{ page_title|default:'Kidung — GKPS Klender' }}{% endblock %}
 
-{% block content %}
-<nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="{% url 'web-home' %}">Home</a>
-    <span aria-hidden="true">/</span>
-    <a href="{% url 'web-books' %}">Songbooks</a>
-    <span aria-hidden="true">/</span>
-    <span aria-current="page">{{ book.name }}</span>
-</nav>
+{% block panel_body %}{% include 'reading/_songbooks_panel.html' %}{% endblock %}
 
-<header class="page-header">
-    <h1 class="page-title">{{ book.name }}</h1>
-    <p class="muted">{% if book.short_name %}{{ book.short_name }} · {% endif %}{{ book.lang.name }}</p>
-</header>
-
-{% if songs %}
-<ul class="song-list">
-    {% for song in songs %}
-    <li class="song-list__item">
-        <a class="song-list__link" href="{% url 'web-song' song.id %}">
-            <span class="song-list__number">{{ song.book_number }}</span>
-            <span class="song-list__title">{{ song.title }}</span>
-            {% if song.key %}<span class="song-list__key">{{ song.get_key_display|upper }}</span>{% endif %}
-        </a>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p class="empty">This songbook has no songs yet.</p>
-{% endif %}
-{% endblock %}
+{% block ch_rows %}{% include 'reading/_song_list.html' %}{% endblock %}
