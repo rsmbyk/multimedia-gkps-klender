@@ -350,11 +350,14 @@ blanking, and the pane's entries showing their references alone.
   behind it.
 - **The texts are centred both ways** -- the words' own ink, not just their boxes: the header's gap
   is flex content rather than a margin, and the pages were measured at 0px off centre on both axes.
-- **The words always fit the screen.** The fitting brings a body down until it fits BOTH ways (the
-  old projector only measured height), past the old 12px floor and down to 8px, and a single word
-  too long for any line breaks rather than running off the edge (`overflow-wrap: break-word`).
-  Verified live: a ~750-character body came down from 100px to 38px with the ink inside the screen
-  on all four sides.
+- **The words always fit the screen.** The words come down until they fit BOTH ways -- and the check
+  reads the **ink's own box** (a `Range` rect), not the block's, because a wrapped block reports a
+  scroll height that can sit a few px inside the words' real extents and the last line then hangs
+  past the edge. The floor is the current projector's (2px): better tiny than cut off. A single word
+  too long for any line breaks rather than running off the side, and a header too tall for the
+  screen comes down too, so it cannot squeeze the words out. Verified live, at 1400×800: 564
+  characters fit at 41px, 2,820 at 20px, 14,100 at 9px, 42,300 at 5px -- each inside on all four
+  sides.
 - **Short morphs** carry a move or a toggle: the arriving screen fades and rises (from the
   direction of travel), the one it replaces fades out the other way, and space fades the words
   rather than blanking them. Reduced motion makes every move instant.

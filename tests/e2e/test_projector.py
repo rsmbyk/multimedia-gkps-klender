@@ -310,6 +310,24 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertGreaterEqual(fitted['insideRight'], -1, fitted)
         self.assertIn('Mazmur 23:1', fitted['head'])      # the reference still heads it
 
+        # a body longer than any screen must still come down until it fits, not stop at
+        # a floor and run off the bottom
+        huge = page.evaluate("""() => {
+          const line = document.querySelector('.screen.is-active .screen__line');
+          line.textContent = 'Tuhan adalah gembalaku, takkan kekurangan aku. '.repeat(300);
+          window.dispatchEvent(new Event('resize'));
+          const stage = document.querySelector('#projectorScreens').getBoundingClientRect();
+          const lines = document.querySelector('.screen.is-active .screen__lines');
+          const range = document.createRange();
+          range.selectNodeContents(lines);
+          const rect = range.getBoundingClientRect();
+          return {size: parseFloat(getComputedStyle(lines).fontSize),
+                  above: rect.top - stage.top, below: stage.bottom - rect.bottom,
+                  stageHeight: Math.round(stage.height)};
+        }""")
+        self.assertGreaterEqual(huge['above'], -1, huge)
+        self.assertGreaterEqual(huge['below'], -1, huge)
+
     # --- the button, its two states, and the lock across tabs ----------------
 
     def test_project_button_opens_the_display_and_locks_the_browser(self):
