@@ -48,6 +48,9 @@ rows — from the same three sidebars that already list them, without leaving th
   every songbook. Song *numbers* stay a hymn-book concept; nothing in the UI names them.
 - The song list's add button moved out of the toolbar to a full-width row below the filter.
   Inline, it displaced the sort control from the position the accepted mockup gives it.
+- A hymn songbook shows no add button either, and its create endpoint refuses a
+  hand-crafted request. The first round's rule was read as covering *editing* only, which
+  left a new song into a published hymn corpus possible through the create path.
 - The add buttons are now inserted from the page that arrives when the shell swaps a section
   in place. They live outside the swapped regions, so the previous in-place update could only
   reach a button that already existed -- and the search-first home has none, which is why they

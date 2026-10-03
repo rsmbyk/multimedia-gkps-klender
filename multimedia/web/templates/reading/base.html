@@ -237,7 +237,7 @@
     </button>
   </div>
 
-  {% if editor_enabled and section == 'kidung' and ch_mode == 'song' %}
+  {% if editor_enabled and section == 'kidung' and ch_mode == 'song' and not book_is_hymn %}
   <div class="ch__add">
     <button class="editor-add" type="button" id="songAdd"
             data-editor-open="song" data-editor-book="{{ editor_book_id|default:'' }}"

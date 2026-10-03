@@ -30,7 +30,9 @@ Pre-adoption history in the legacy per-version format is archived in
 
 - Hymn songbooks and the songs inside them are read-only: they render no edit control at
   all, checked against the data rather than a list of names, and their write endpoints
-  refuse the request even when it is hand-crafted.
+  refuse the request even when it is hand-crafted. That now includes *adding* a song: a
+  hymn book shows no add button, and a hand-crafted create is refused like any other
+  hymn-book write (found in review, where the create path had been left open).
 - The forms mirror the models' own rules, so a duplicate short name, a duplicate
   `(book, number, sub_number)` and a numberless hymn are refused server-side; CSRF is
   required on every write.

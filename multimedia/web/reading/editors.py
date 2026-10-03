@@ -153,8 +153,8 @@ def build_form(kind, request, pk=None, data=None):
         return SongForm(data=data, instance=song), song
     book_id = query.get('book')
     book = _record(song_models.Book, book_id) if book_id else None
-    if book is None:
-        return None, None
+    if book is None or book.is_hymn_book:
+        return None, None                    # a hymn's songs are read-only, added or not
     return SongForm(data=data, book=book), book
 
 

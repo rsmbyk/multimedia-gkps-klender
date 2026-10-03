@@ -145,6 +145,22 @@ class ReadingViewsTests(TestCase):
         self.assertContains(response, 'data-m="')               # the default's key
         self.assertContains(response, 'data-o="0"')             # and the tiebreak
 
+    def test_a_hymn_book_offers_no_add_song_button_and_refuses_the_create(self):
+        # The first round's rule: a hymn', and a hymn's songs, are never editable.
+        page = self.client.get(reverse('web-book', args=[self.nkb.pk]))
+        self.assertEqual(page.status_code, 200)
+        self.assertNotContains(page, 'id="songAdd"')
+        # (#panelAdd is the songbook section's, which stays available: a new songbook
+        # is not a hymn-book write)
+        url = reverse('web-editor-save-new', kwargs={'kind': 'song'})
+        post = self.client.post(url, {'book': self.nkb.pk, 'title': 'Diselundupkan',
+                                      'number': '', 'sub_number': '', 'key': ''})
+        self.assertEqual(post.status_code, 404)
+        self.assertFalse(songs.Song.objects.filter(title='Diselundupkan').exists())
+        form = self.client.get(reverse('web-editor-new', kwargs={'kind': 'song'}),
+                               {'book': self.nkb.pk})
+        self.assertEqual(form.status_code, 404)
+
     def test_song_detail_shows_lyrics_and_citation(self):
         response = self.client.get(reverse('web-song', args=[self.song.id]))
         self.assertEqual(response.status_code, 200)
@@ -323,16 +339,19 @@ class EditorViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(songs.Song.objects.filter(book=self.harian, title='Lagu Baru').exists())
 
-    def test_a_hymn_needs_its_number(self):
-        response = self.client.post(self.save_url('song'), {
-            'book': self.nkb.pk, 'title': 'Hymn Baru', 'number': '', 'sub_number': '', 'key': ''})
-        self.assertEqual(response.status_code, 400)
-        self.assertContains(response, 'needs a number', status_code=400)
+    def test_a_hymn_book_refuses_new_songs_entirely(self):
+        # A hymn corpus is published work: no new songs, with a number or without.
+        for number in ('', '13'):
+            response = self.client.post(self.save_url('song'), {
+                'book': self.nkb.pk, 'title': 'Hymn Baru', 'number': number,
+                'sub_number': '', 'key': ''})
+            self.assertEqual(response.status_code, 404)
         self.assertFalse(songs.Song.objects.filter(title='Hymn Baru').exists())
 
     def test_duplicate_song_number_is_refused(self):
+        songs.Song.objects.create(book=self.harian, number=12, title='Sudah Ada')
         response = self.client.post(self.save_url('song'), {
-            'book': self.nkb.pk, 'title': 'Hymn Lain', 'number': '12', 'sub_number': '', 'key': ''})
+            'book': self.harian.pk, 'title': 'Lagu Lain', 'number': '12', 'sub_number': '', 'key': ''})
         self.assertEqual(response.status_code, 400)
         self.assertContains(response, 'already taken', status_code=400)
 
