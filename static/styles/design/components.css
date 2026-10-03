@@ -518,13 +518,17 @@ li:hover > .row-edit,
   display: flex; justify-content: flex-end; gap: 8px;
   margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--divider);
 }
-.editor__save, .editor__cancel {
+.editor__save, .editor__cancel, .editor__danger {
   height: 38px; padding: 0 18px; border-radius: 9px;
   font: 600 13.5px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
 }
 .editor__save { border: 0; background: var(--active-bg); color: var(--active-ink); }
 .editor__cancel { border: 1px solid var(--divider); background: none; color: var(--ink); }
-.editor__save:focus-visible, .editor__cancel:focus-visible {
+/* The destructive answer is the same button as the others, in the danger colour:
+   a confirmation whose two answers are different sizes reads as a mistake. */
+.editor__danger { border: 1px solid var(--danger); background: none; color: var(--danger); }
+.editor__danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.editor__save:focus-visible, .editor__cancel:focus-visible, .editor__danger:focus-visible {
   outline: 2px solid var(--focus); outline-offset: 2px;
 }
 .editor__save:disabled { background: var(--divider); color: var(--head-ink); cursor: not-allowed; }

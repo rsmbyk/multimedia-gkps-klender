@@ -269,10 +269,22 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.wait_for_selector('.tatib__item--entry')
         expect(page.locator('.tatib__tx').first).to_contain_text('baru')
 
-        # delete asks first, and Cancel keeps it
+        # delete asks first; the two answers are one size, the destructive one last
         self._reveal(page)
         page.locator('[data-entry-delete]').first.click()
         page.wait_for_selector('[data-confirm-delete]')
+
+        def box(selector):
+            found = page.locator(selector).bounding_box()
+            assert found is not None, selector
+            return found
+
+        cancel_box, delete_box = box('.editor__cancel'), box('[data-confirm-delete]')
+        self.assertEqual(round(cancel_box['height']), round(delete_box['height']))
+        self.assertGreaterEqual(delete_box['x'], cancel_box['x'] + cancel_box['width'])
+        self.assertEqual(
+            page.locator('.editor__cancel').evaluate('el => getComputedStyle(el).font'),
+            page.locator('[data-confirm-delete]').evaluate('el => getComputedStyle(el).font'))
         page.click('.editor__cancel')
         page.wait_for_function("!document.querySelector('dialog[open]')")
         self.assertEqual(page.locator('.tatib__item--entry').count(), 1)
