@@ -1,4 +1,5 @@
 from datetime import date
+import json
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase, override_settings
@@ -780,6 +781,113 @@ class ServiceEntryViewTests(TestCase):
                                            kwargs={'pk': self.matius.pk, 'chapter': 5}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['count'], 5)
+
+
+class ServiceEntryReorderTests(TestCase):
+    """The reorder endpoint (spec 006, slice 3).
+
+    It follows the conventions the current item API already uses: one POST of
+    `{entry, order_number}` pairs to a `/reorder` URL, answering with the order it left
+    behind, rather than a per-row endpoint. Written before the endpoint exists, so the
+    red run is a page of NoReverseMatch.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III')
+        cls.other = tatib.TataIbadah.objects.create(name='Ibadah Sore')
+        # A legacy item lives in the same service on its own numbering: the reorder must
+        # leave it, and every old row, exactly as it is.
+        cls.legacy = tatib.TataIbadahItem.objects.create(
+            tatib=cls.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Pembukaan', text='KJ 120', order_number=7)
+
+    def setUp(self):
+        self.first = self.make(1, 'Pembukaan', 'Kasih karunia')
+        self.second = self.make(2, 'Pujian', 'Bersyukurlah')
+        self.third = self.make(3, 'Penutup', 'Amin')
+        self.elsewhere = tatib.ServiceEntry.objects.create(
+            tatib=self.other, kind=tatib.ServiceEntryKind.TEXT,
+            title='Sore', text='Selamat sore', order_number=1)
+
+    def make(self, order, title, text):
+        return tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.TEXT, title=title, text=text,
+            order_number=order)
+
+    def url(self):
+        return reverse('web-entry-reorder')
+
+    def post(self, entries, service=None):
+        payload = {'tatib': (service or self.tatib).pk,
+                   'entries': [{'entry': entry.pk, 'order_number': number}
+                               for number, entry in enumerate(entries, 1)]}
+        return self.client.post(self.url(), data=json.dumps(payload),
+                                content_type='application/json')
+
+    def order_now(self, service=None):
+        return list((service or self.tatib).service_entries
+                    .order_by('order_number').values_list('pk', 'order_number'))
+
+    # --- what a reorder does ------------------------------------------------
+
+    def test_a_reorder_renumbers_the_entries_in_the_posted_order(self):
+        response = self.post([self.third, self.first, self.second])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.order_now(),
+                         [(self.third.pk, 1), (self.first.pk, 2), (self.second.pk, 3)])
+
+    def test_the_reorder_answers_with_the_order_it_left(self):
+        response = self.post([self.third, self.first, self.second])
+        self.assertEqual([row['entry'] for row in response.json()['entries']],
+                         [self.third.pk, self.first.pk, self.second.pk])
+        self.assertEqual([row['order_number'] for row in response.json()['entries']], [1, 2, 3])
+
+    def test_the_numbers_stay_contiguous_from_one(self):
+        # a list that names only one entry: it goes first, the rest follow in the order
+        # they were in, and nothing is left with a hole or a duplicate
+        response = self.post([self.second])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.order_now(),
+                         [(self.second.pk, 1), (self.first.pk, 2), (self.third.pk, 3)])
+
+    def test_a_reorder_leaves_the_legacy_items_alone(self):
+        self.post([self.third, self.first, self.second])
+        self.legacy.refresh_from_db()
+        self.assertEqual(self.legacy.order_number, 7)
+        self.assertEqual(self.legacy.text, 'KJ 120')
+
+    # --- what it refuses ----------------------------------------------------
+
+    def test_an_entry_from_another_service_is_refused(self):
+        response = self.post([self.first, self.elsewhere])
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self.order_now(),
+                         [(self.first.pk, 1), (self.second.pk, 2), (self.third.pk, 3)])
+
+    def test_a_reorder_without_its_service_is_refused(self):
+        response = self.client.post(self.url(),
+                                    data=json.dumps({'entries': [{'entry': self.first.pk,
+                                                                  'order_number': 1}]}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_a_service_that_is_not_there_is_refused(self):
+        response = self.post([self.first], service=self.tatib)
+        self.assertEqual(response.status_code, 200)          # the real one still works
+        missing = self.client.post(self.url(),
+                                   data=json.dumps({'tatib': 99999, 'entries': []}),
+                                   content_type='application/json')
+        self.assertEqual(missing.status_code, 400)
+
+    def test_a_reorder_is_post_only(self):
+        self.assertEqual(self.client.get(self.url()).status_code, 405)
+
+    @override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True)
+    def test_a_reorder_is_refused_when_editors_need_a_login(self):
+        self.assertEqual(self.post([self.first, self.second, self.third]).status_code, 403)
+        self.assertEqual(self.order_now(),
+                         [(self.first.pk, 1), (self.second.pk, 2), (self.third.pk, 3)])
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')

@@ -14,6 +14,7 @@ URL map:
     /tatib/ /tatib/<service>/                           Tata Ibadah
 """
 
+import json
 import re
 from urllib.parse import quote
 
@@ -207,6 +208,62 @@ def entry_delete(request, pk):
     entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk)
     entry.delete()
     return JsonResponse({'ok': True})
+
+
+def entry_reorder(request):
+    """The running order, saved in one POST (spec 006, slice 3).
+
+    The same shape the current item API's reorder uses -- one POST of {entry,
+    order_number} pairs to a /reorder URL, answering with the order it left behind --
+    rather than an endpoint per row.
+
+    What the list NAMES is what moves. Anything it leaves out follows in the order it was
+    already in, and the numbers come out contiguous from 1 either way, so a partial list
+    can never leave a hole or a duplicate. Every named entry must belong to the Tata
+    Ibadah being reordered: a reorder that could move another service's rows is refused
+    rather than half-applied. The legacy TataIbadahItem rows live on their own numbering
+    and are never touched.
+    """
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except (UnicodeDecodeError, ValueError):
+        payload = None
+    if not isinstance(payload, dict):
+        return JsonResponse({'ok': False, 'error': 'Malformed request.'}, status=400)
+    service = tatib_models.TataIbadah.objects.filter(pk=payload.get('tatib')).first()
+    if service is None:
+        return JsonResponse({'ok': False, 'error': 'Unknown Tata Ibadah.'}, status=400)
+    rows = payload.get('entries') or []
+    if not isinstance(rows, list):
+        return JsonResponse({'ok': False, 'error': 'Malformed request.'}, status=400)
+
+    moved, seen = [], set()
+    for row in rows:
+        entry = (tatib_models.ServiceEntry.objects
+                 .filter(pk=row.get('entry'), tatib=service).first()
+                 if isinstance(row, dict) else None)
+        if entry is None:
+            return JsonResponse(
+                {'ok': False, 'error': 'That entry is not in this Tata Ibadah.'}, status=400)
+        if entry.pk in seen:
+            continue                    # named twice: it goes where it is named first
+        seen.add(entry.pk)
+        moved.append(entry)
+
+    order = moved + list(service.service_entries.exclude(pk__in=seen).order_by('order_number'))
+    for position, entry in enumerate(order, 1):
+        if entry.order_number != position:
+            entry.order_number = position
+            entry.save(update_fields=['order_number'])
+    return JsonResponse({
+        'ok': True,
+        'entries': [{'entry': entry.pk, 'order_number': position}
+                    for position, entry in enumerate(order, 1)],
+    })
 
 
 def entry_song_options(request):
