@@ -27,11 +27,33 @@
 {% endif %}{% endblock %}
 
 {% block read_body %}
+{% if editor_enabled and has_entries %}
+{% comment %}Reorder mode (spec 006, slice 3): the order is changed in the page and shown
+at once, in the pane and in the sidebar's contents list, but nothing is saved until Save.
+One state attribute drives every piece of its chrome.{% endcomment %}
+<div class="reorder" data-reorder-group
+     data-reorder-endpoint="{% url 'web-entry-reorder' %}"
+     data-reorder-for="{{ service_id }}">
+  <button type="button" class="reorder__btn" data-reorder-start>
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" aria-hidden="true">
+      <path d="M6 6.5h8M6 10h8M6 13.5h8"/><path d="M3.4 6.5h.01M3.4 10h.01M3.4 13.5h.01"/>
+    </svg>
+    <span>Reorder</span>
+  </button>
+  <span class="reorder__pending">
+    <button type="button" class="reorder__btn reorder__btn--save" data-reorder-save>Save</button>
+    <button type="button" class="reorder__btn" data-reorder-discard>Discard</button>
+  </span>
+  <p class="reorder__hint">Drag an entry, or use its arrows. Nothing is saved until you press Save.</p>
+  <p class="reorder__status" data-reorder-status role="status"></p>
+</div>
+{% endif %}
 {% for item in items %}
 {% if item.eos %}
 <div class="tatib__eos" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}">{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
 {% else %}
-<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}">
+<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.entry %} data-entry-pk="{{ item.pk }}"{% endif %}>
 {% if item.title %}<h2 class="read__sec">{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
 {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
 {% for para in item.paras %}<p class="tatib__tx">{% if para.speaker %}<span class="tatib__sp">{{ para.speaker }}.</span> {% endif %}{{ para.text }}</p>
@@ -60,6 +82,34 @@
   </span>
   {% endif %}
 </div>
+{% if item.entry %}
+{% comment %}The entry's own handle and arrows, shown only while reordering. The grip is
+decoration -- the whole entry is the handle -- so the buttons are what the keyboard uses.
+They sit OUTSIDE .entry__add on purpose: reorder mode hides the add controls, and these
+must stay.{% endcomment %}
+<span class="entry__move">
+  <span class="entry__grip" data-move-grip title="Drag to reorder" aria-hidden="true">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" aria-hidden="true">
+      <path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/>
+    </svg>
+  </span>
+  <button type="button" class="entry__ctrl" data-move-up="{{ item.pk }}"
+          aria-label="Move up" title="Move up">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10 15.5v-11M5.5 9L10 4.5 14.5 9"/>
+    </svg>
+  </button>
+  <button type="button" class="entry__ctrl" data-move-down="{{ item.pk }}"
+          aria-label="Move down" title="Move down">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10 4.5v11M5.5 11l4.5 4.5L14.5 11"/>
+    </svg>
+  </button>
+</span>
+{% endif %}
 {% endif %}
 {% endfor %}
 {% if editor_enabled and not items %}
@@ -85,5 +135,23 @@
     </button>
   </div>
 </div>
+{% endif %}
+{% if editor_enabled and has_entries %}
+{% comment %}The question before leaving with an unsaved order (spec 006, slice 3). Three
+answers, all the modal buttons' own geometry: keep editing (the safe one, and the default
+for Escape and the backdrop), discard, or save and carry on.{% endcomment %}
+<dialog class="editor" id="reorderConfirm" data-reorder-confirm aria-labelledby="reorderAsk">
+  <div class="editor__content">
+    <div class="reorder__ask">
+      <h2 class="reorder__ask-title" id="reorderAsk">Save the new order?</h2>
+      <p class="reorder__ask-hint">You have rearranged this Tata Ibadah and not saved it.</p>
+      <div class="reorder__ask-actions">
+        <button type="button" class="reorder__answer" data-reorder-stay>Keep editing</button>
+        <button type="button" class="reorder__answer reorder__answer--danger" data-reorder-leave>Discard</button>
+        <button type="button" class="reorder__answer reorder__answer--primary" data-reorder-and-save>Save</button>
+      </div>
+    </div>
+  </div>
+</dialog>
 {% endif %}
 {% endblock %}

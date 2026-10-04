@@ -54,11 +54,31 @@
       (a stale-response guard), and menus clipped by the modal's own scroll box (each menu is now
       capped to the room its trigger has, opening upward when that side is larger)
 
-## Slice 3 — reorder
+## Slice 3 — reorder  (done)
 
-- [ ] Red: drag and keyboard moves; the sidebar preview; Discard restoring; adds hidden; the leave
-      guard on every exit path (contents, another Tata Ibadah, search, tab close)
-- [ ] Green: reorder mode, Save/Discard, the confirmation modal, the reorder endpoint
+- [x] Red: the endpoint's own rules (`ServiceEntryReorderTests`, 9) and the pane's chrome
+      (`ServiceReorderPaneTests`, 4), plus `tests/e2e/test_reorder.py` (7) -- red as a page of
+      NoReverseMatch and missing markup before the wiring landed
+- [x] Green: `entry_reorder` (one POST of {entry, order_number} pairs, answering with the order
+      it left, following the current item API's shape), the toolbar and per-entry handle in
+      `reading/tatib.html`, the styles, and `static/web/reorder.js`
+- [x] Drag with pointer events, and arrow buttons for the keyboard (focus stays on the same
+      arrow so a run of presses works); the grip is decoration, the whole entry is a handle
+- [x] The pending order previewed at once in the pane AND in the sidebar's contents list, whose
+      own numbers are renumbered to match; Discard restores both
+- [x] Leaving with an unsaved order asks first: the shell's in-page navigation hands over
+      (`navigate()`, reading.js) and `beforeunload` covers a tab close. Keep editing / Discard /
+      Save, and Save carries the person on to where they were going
+- [x] The CSRF cookie the JSON POST needs: `ensure_csrf_cookie` on the Tata Ibadah view (there is
+      no form on the page to render a token)
+- [x] Two defects the browser run found: the mode's state attribute sat on the toolbar, which is
+      the entries' SIBLING, so no selector could reach them (it is on the pane now), and the
+      dialog's buttons reused the entry modal's `.editor__save` / `.editor__cancel` classes,
+      which made the entry tests' selectors ambiguous -- they have their own names, drawing the
+      same geometry
+- [x] Verified: 113 in `multimedia/web/tests.py`, 17 e2e for the entries and the reorder, and the
+      live page measured (the adds go, three arrows appear, the arrow moves the entry, the
+      sidebar follows and renumbers, Discard restores, the question shows and closes)
 
 ## Slice 4 — the new display and display mode  (done, bar the deferred overlay)
 

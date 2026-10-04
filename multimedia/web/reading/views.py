@@ -23,6 +23,8 @@ from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
                          JsonResponse)
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView
 
 from multimedia.bible import models as bible_models
@@ -840,8 +842,14 @@ class SongDetailView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class TatibView(TemplateView):
-    """Tata Ibadah: services panel (dated / templates) and a service order."""
+    """Tata Ibadah: services panel (dated / templates) and a service order.
+
+    It carries the CSRF cookie on purpose: saving a rearranged order is a JSON POST from
+    the page (static/web/reorder.js), with no form to render a token, so the page itself
+    has to have set one.
+    """
 
     template_name = 'reading/tatib.html'
 
@@ -881,6 +889,7 @@ class TatibView(TemplateView):
                               if service else ''),
             'toc_items': toc,
             'items': items,
+            'has_entries': any(block.get('entry') for block in items),
             'read_kind': 'tatib' if service else '',
             'read_name': service.name if service else '',
             'read_no': '',

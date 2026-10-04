@@ -905,6 +905,12 @@
 
   function navigate(url, opts) {
     if (!url || navBusy) return;
+    /* Unsaved work in the pane asks first -- an order being rearranged (spec 006, slice 3).
+       It owns the navigation from here: it answers, then calls back. */
+    if (window.gkpsUnsaved && window.gkpsUnsaved.holds()) {
+      window.gkpsUnsaved.ask(function () { navigate(url, opts); });
+      return;
+    }
     /* Leaving the result set by any route: remember where in it the reader was,
        so the search icon can come back to that offset. */
     if (root.dataset.home === 'results'

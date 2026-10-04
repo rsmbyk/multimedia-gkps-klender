@@ -890,6 +890,65 @@ class ServiceEntryReorderTests(TestCase):
                          [(self.first.pk, 1), (self.second.pk, 2), (self.third.pk, 3)])
 
 
+class ServiceReorderPaneTests(TestCase):
+    """The pane's reorder chrome (spec 006, slice 3).
+
+    The mode itself is the page's (static/web/reorder.js); what the server owes it is the
+    toolbar, each entry's own handle and arrows, the question before leaving, and the
+    endpoint they work against -- and none of that on a service with no entries, where
+    there is no order to rearrange.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III')
+        cls.empty = tatib.TataIbadah.objects.create(name='Ibadah Sore')
+
+    def setUp(self):
+        tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.TEXT, title='Pembukaan',
+            text='Kasih karunia', order_number=1)
+        self.second = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.TEXT, title='Penutup',
+            text='Amin', order_number=2)
+
+    def page(self, service):
+        return self.client.get(reverse('web-tatib-service', args=[service.pk]))
+
+    def test_the_pane_offers_the_reorder_mode_with_its_endpoint(self):
+        response = self.page(self.tatib)
+        self.assertContains(response, 'data-reorder-group')
+        self.assertContains(response, 'data-reorder-endpoint="%s"' % reverse('web-entry-reorder'))
+        self.assertContains(response, 'data-reorder-for="%s"' % self.tatib.pk)
+        self.assertContains(response, 'data-reorder-start')
+        self.assertContains(response, 'data-reorder-save')
+        self.assertContains(response, 'data-reorder-discard')
+        # the state itself is the page's: the panes are siblings of the toolbar, so the
+        # attribute has to sit on their shared parent (static/web/reorder.js)
+        self.assertNotContains(response, 'data-reorder="off"')
+
+    def test_every_entry_carries_its_own_handle_and_arrows(self):
+        response = self.page(self.tatib)
+        entries = self.tatib.service_entries.order_by('order_number')
+        for entry in entries:
+            self.assertContains(response, 'data-entry-pk="%s"' % entry.pk)
+            self.assertContains(response, 'data-move-up="%s"' % entry.pk)
+            self.assertContains(response, 'data-move-down="%s"' % entry.pk)
+        self.assertContains(response, 'data-move-grip')
+
+    def test_the_question_before_leaving_offers_all_three_answers(self):
+        response = self.page(self.tatib)
+        self.assertContains(response, 'data-reorder-confirm')
+        self.assertContains(response, 'Keep editing')
+        self.assertContains(response, 'data-reorder-leave')
+        self.assertContains(response, 'data-reorder-and-save')
+
+    def test_a_service_with_no_entries_offers_no_reorder_mode(self):
+        response = self.page(self.empty)
+        self.assertNotContains(response, 'data-reorder-group')
+        self.assertNotContains(response, 'data-reorder-confirm')
+
+
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class ServiceProjectorTests(TestCase):
     """The new service projector (spec 006, slice 4).

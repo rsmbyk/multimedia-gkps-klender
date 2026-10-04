@@ -278,6 +278,45 @@ Filled per slice as it lands.
 - Deviations from the mockup, on the owner's instruction: no x-close on the modal, a filter inside
   each picker rather than beside it, and the verse checklist inside a dropdown
 
+### Slice 3 — reorder (landed 2026-10-04)
+
+The running order is rearranged in the pane and shown at once -- the pane and the sidebar's
+contents list -- but nothing is written until Save. `Discard` puts back what was there.
+While the mode is on, the pane's add controls (and the edit/delete acts) are gone: there is
+one thing to do. Leaving with unsaved changes asks first.
+
+- **The endpoint maps to `/reorder` and takes the item API's shape**: one POST of
+  `{entry, order_number}` pairs, answering with the order it left behind. What the list
+  NAMES is what moves; anything left out follows in the order it was already in, and the
+  numbers come out contiguous from 1, so a partial list cannot leave a hole. An entry from
+  another Tata Ibadah is refused rather than half-applied. The legacy `TataIbadahItem` rows
+  keep their own numbering, which a test pins.
+  **To confirm:** the keys are the new model's own (`entries` / `entry`) rather than the
+  current API's `items` / `item`; what is followed is the shape (one POST of pairs to a
+  `/reorder` URL, answering with the order), not the letter of the old key names.
+- **The mode is one state attribute on the PANE.** Not on the toolbar: the toolbar is the
+  entries' sibling, so a state there cannot reach them by selector -- the first build did
+  that, and the adds stayed on screen while the mode claimed to be on.
+- **A drag with pointer events, and arrows for the keyboard.** Dragging anywhere on the
+  entry works (the grip is decoration); a drag that ends on a jump link swallows the click
+  it would otherwise fire. The arrows keep focus on themselves, so a run of presses works.
+- **The sidebar's preview renumbers its rows** to the numbers that order would have, so the
+  preview reads as what is about to be saved, not a stale column beside a moved list.
+- **The question before leaving** offers Keep editing, Discard and Save, drawn with the modal
+  buttons' own geometry. **To confirm:** the answers run keep-editing / discard / save, so the
+  destructive one is not last -- with two answers it is last, and with a third the affirmative
+  takes the final slot where the eye lands. Say the word and the two swap.
+- **The guard hangs off one seam**: the shell's `navigate()` asks `window.gkpsUnsaved` before
+  it swaps anything, and `beforeunload` covers a tab close -- so every in-page exit (the
+  contents list, another Tata Ibadah, the rail's search, another section) is covered by one
+  place rather than four.
+- **The page carries the CSRF cookie** (`ensure_csrf_cookie` on the Tata Ibadah view): the
+  save is a JSON POST with no form to render a token, so the page has to have set one.
+
+Traceability: `multimedia/web/tests.py` (`ServiceEntryReorderTests`, `ServiceReorderPaneTests`),
+`tests/e2e/test_reorder.py`, `static/web/reorder.js`, `reading/tatib.html`,
+`static/styles/design/components.css`.
+
 ### Slice 4 — the new display and display mode (landed 2026-10-04)
 
 - The projector: `multimedia/web/templates/reading/projector.html`,

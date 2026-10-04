@@ -1535,3 +1535,86 @@ kbd {
 .editor__confirm-title {
   margin: 0; font: 600 17px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
 }
+
+/* ---------- reorder mode (spec 006, slice 3) -------------------------------- */
+
+/* One attribute drives the whole mode. The toolbar swaps its own buttons, the pane's add
+   controls go away (there is one thing to do, and the edit/delete acts belong to the
+   other one), and every entry grows a handle. These rules come last so the mode wins over
+   the hover-driven reveal above, which is more specific than it looks. */
+.reorder { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 16px; }
+.reorder__btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  font: 500 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease), color var(--ease);
+}
+.reorder__btn svg { width: 16px; height: 16px; flex: none; }
+.reorder__btn:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.reorder__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.reorder__btn--save {
+  border-color: var(--active-bg); background: var(--active-bg); color: var(--active-ink);
+}
+
+/* The question before leaving draws its answers with the modal buttons' own geometry --
+   same height, padding, radius and font -- but keeps its OWN class names: the entry
+   modal's `.editor__save` must stay unambiguous for the tests and the scripts that reach
+   it by class, and a second element wearing it breaks them (it did). */
+.reorder__ask { display: grid; gap: 10px; padding: 4px 2px; }
+.reorder__ask-title {
+  margin: 0; font: 600 17px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+}
+.reorder__ask-hint {
+  margin: 0; font: 400 14px/1.5 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
+}
+.reorder__ask-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 0; }
+.reorder__answer {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 38px; padding: 0 18px;
+  border: 1px solid var(--divider); border-radius: 9px;
+  background: none; color: var(--ink);
+  font: 600 13.5px/1 ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease), color var(--ease);
+}
+.reorder__answer:hover { background: var(--icon-hover-bg); }
+.reorder__answer:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.reorder__answer--primary { border: 0; background: var(--active-bg); color: var(--active-ink); }
+.reorder__answer--danger { border: 1px solid var(--danger); color: var(--danger); }
+.reorder__answer--danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.reorder__pending { display: none; align-items: center; gap: 8px; }
+.reorder__hint {
+  display: none; flex: 1 1 240px; margin: 0;
+  font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
+}
+.reorder__status {
+  flex: 1 1 100%; margin: 0;
+  font: 500 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; color: var(--danger);
+}
+.reorder__status:empty { display: none; }
+
+[data-reorder="on"] [data-reorder-start] { display: none; }
+[data-reorder="on"] .reorder__pending { display: inline-flex; }
+[data-reorder="on"] .reorder__hint { display: block; }
+[data-reorder="on"] .entry__add { display: none; }
+
+/* The entry's own handle and arrows. Shown only in the mode, and never on hover: a
+   keyboard has to reach them, so they are simply there while reordering. */
+.entry__move { display: none; }
+[data-reorder="on"] .entry__move {
+  display: inline-flex; align-items: center; gap: 4px; padding: 0 0 10px;
+}
+.entry__grip {
+  display: inline-flex; align-items: center; padding: 5px 8px;
+  color: var(--head-ink);
+  border: 1px dashed var(--divider);
+  border-radius: 8px;
+  cursor: grab;
+}
+.entry__grip svg { width: 16px; height: 16px; }
+.tatib__item--entry.is-dragging { opacity: .5; outline: 1px dashed var(--focus); outline-offset: 6px; }
