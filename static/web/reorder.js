@@ -34,24 +34,23 @@
 
   /* ---------- the sidebar's rows ------------------------------------------- */
 
-  function rowOf(pk) {
+  function rowFor(pk) {
     var l = list();
-    return l ? l.querySelector('a[data-i="e' + pk + '"]') : null;
+    var grip = l && l.querySelector('[data-move-grip="' + pk + '"]');
+    return grip ? grip.closest('li') : null;
   }
-  function rowFor(pk) { var link = rowOf(pk); return link ? link.closest('li') : null; }
+  /* The rows that can be moved: a normal entry's row, and a break's row -- which is the thin
+     line rather than a link. What they share is the grip. */
   function rows() {
     var l = list();
     if (!l) return [];
     return [].slice.call(l.children).filter(function (item) {
-      var link = item.querySelector('a[data-i]');
-      return !!link && link.dataset.i.charAt(0) === 'e';
+      return !!item.querySelector('[data-move-grip]');
     });
   }
   function pkOfRow(item) {
     var grip = item.querySelector('[data-move-grip]');
-    if (grip) return Number(grip.dataset.moveGrip);
-    var link = item.querySelector('a[data-i]');
-    return link ? Number(link.dataset.i.slice(1)) : null;
+    return grip ? Number(grip.dataset.moveGrip) : null;
   }
   function order() { return rows().map(pkOfRow); }
   function changed() {
@@ -71,7 +70,7 @@
       if (item) l.appendChild(item);
     });
   }
-  function renumber() {
+  function renumber(what) {
     var l = list();
     if (!l) return;
     /* the numbers come from the sidebar's own non-entry rows, which the server numbered */
@@ -79,11 +78,51 @@
       return link.dataset.i.charAt(0) !== 'e';
     }).map(function (link) { return Number(link.dataset.num) || 0; });
     var base = others.length ? Math.max.apply(null, others) : 0;
-    order().forEach(function (pk, index) {
-      var link = rowOf(pk);
-      var cell = link && link.querySelector('.songrow__c');
+    (what || order()).forEach(function (pk, index) {
+      var item = rowFor(pk);
+      var cell = item && item.querySelector('.songrow__c');   /* a break's row has none */
       if (cell) cell.textContent = String(base + index + 1);
     });
+  }
+
+  /* ---------- the morph ----------------------------------------------------- */
+
+  /* Every row is measured before a change; each one that moved is put back where it was and
+     released on the next frame, so the browser animates the difference. The eye follows the
+     row that travelled instead of the list blinking into a new shape. */
+  function snapshot() {
+    var before = {};
+    rows().forEach(function (item) {
+      before[pkOfRow(item)] = item.getBoundingClientRect().top;
+    });
+    return before;
+  }
+  function morph(before) {
+    rows().forEach(function (item) {
+      if (item.classList.contains('is-dragging')) return;
+      var was = before[pkOfRow(item)];
+      if (was == null) return;
+      var delta = was - item.getBoundingClientRect().top;
+      if (!delta) return;
+      item.style.transition = 'none';
+      item.style.transform = 'translateY(' + delta + 'px)';
+      window.requestAnimationFrame(function () {
+        item.style.transition = '';
+        item.style.transform = '';
+      });
+    });
+  }
+
+  /* Where the row would sit if it were let go now: the rows, with the drag's own place
+     taken from the gap, which is what the numbers are renumbered against while dragging. */
+  function orderWithGap() {
+    var l = list();
+    var out = [];
+    [].slice.call(l.children).forEach(function (item) {
+      if (item === drag.gap) { out.push(drag.pk); return; }
+      if (item.querySelector('[data-move-grip]')) out.push(pkOfRow(item));
+    });
+    return out;
   }
 
   /* ---------- the pane follows --------------------------------------------- */
@@ -196,10 +235,12 @@
     var at = what.indexOf(pk);
     var to = at + step;
     if (at < 0 || to < 0 || to >= what.length) return;
+    var before = snapshot();
     var moved = what.slice();
     moved.splice(to, 0, moved.splice(at, 1)[0]);
     place(moved);
     renumber();
+    morph(before);
     applyPaneOrder(order());
     status('');
   }
@@ -212,81 +253,94 @@
     var item = rowFor(pk);
     if (!item) return;
     event.preventDefault();
-    drag = {pk: pk, row: item, start: event.clientY, y: event.clientY, moved: false};
+    /* The row keeps its place in the list and rides under the pointer; a GAP takes its place
+       and travels instead. Nothing is inserted or removed under the pointer, which is what
+       would make the browser cancel the gesture. */
+    var box = item.getBoundingClientRect();
+    var gap = document.createElement('li');
+    gap.className = 'toc__placeholder';
+    gap.setAttribute('aria-hidden', 'true');
+    gap.style.height = Math.round(box.height) + 'px';
+    item.parentNode.insertBefore(gap, item);
+    drag = {pk: pk, row: item, gap: gap, start: event.clientY, y: event.clientY, moved: false};
     item.classList.add('is-dragging');
-    /* The gesture belongs to this row for its whole journey: without capture, the browser
-       hands the sequence to whatever is under the pointer next, and a drag that carried a
-       row over its neighbours lost the rest of its moves. */
     if (item.setPointerCapture && event.pointerId != null) {
       try { item.setPointerCapture(event.pointerId); } catch (e) { /* no capture */ }
     }
   }
 
+  /* Where the gap goes for a pointer at y: the first OTHER row whose middle sits below it, or
+     the end of the list. Used while dragging and once more on release, because the last move
+     event the module saw can be a step behind the pointer's own final position. */
+  function placeGapAt(y) {
+    var others = rows().filter(function (item) { return item !== drag.row; });
+    var target = null;
+    for (var i = 0; i < others.length; i += 1) {
+      var box = others[i].getBoundingClientRect();
+      if (y < box.top + box.height / 2) { target = others[i]; break; }
+    }
+    var l = list();
+    if (target) l.insertBefore(drag.gap, target);
+    else l.appendChild(drag.gap);
+  }
+
   function moveDrag(event) {
     if (!drag) return;
-    drag.y = event.clientY;                  /* the module's OWN record of the pointer */
+    drag.y = event.clientY;
     if (Math.abs(event.clientY - drag.start) > 3) drag.moved = true;
     if (!drag.moved) return;
-    /* The row FOLLOWS the pointer visually and the move is committed on release. Moving the
-       node during the drag would remove it from the document mid-gesture, and the browser
-       answers a pointer whose target has gone with `pointercancel` -- which ended the drag
-       after its first step. */
     drag.row.style.position = 'relative';
     drag.row.style.zIndex = '2';
     drag.row.style.transform = 'translateY(' + Math.round(event.clientY - drag.start) + 'px)';
+    /* The gap goes where the row would land if it were let go here, so the space it will
+       occupy is visible while dragging, the other rows part around it, and the numbers read
+       what the list would be. */
+    var before = snapshot();
+    placeGapAt(drag.y);
+    renumber(orderWithGap());
+    morph(before);
   }
 
-  function endDrag() {
+  function endDrag(event) {
     if (!drag) return;
     var moved = drag.moved;
-    var captured = drag.row;
-    /* The drop is where the pointer was last SEEN by this module, not whatever coordinates
-       the release event carries: the two disagreed in practice, and the row landed a
-       position or two short of where it was let go. */
-    var dropped = typeof drag.y === 'number' ? drag.y : drag.start;
-    if (captured.releasePointerCapture) {
-      try { captured.releasePointerCapture(1); } catch (e) { /* it was never captured */ }
-    }
-    drag.row.classList.remove('is-dragging');
-    drag.row.style.transform = '';
-    drag.row.style.zIndex = '';
-    drag.row.style.position = '';
+    var item = drag.row;
+    var gap = drag.gap;
+    var before = snapshot();
+    item.classList.remove('is-dragging');
+    item.style.transform = '';
+    item.style.zIndex = '';
+    item.style.position = '';
     if (moved) {
-      /* A drag that ended on a row would otherwise fire its link: the row jumps to the
-         entry, and a reorder that jumps the page is not what anyone asked for. */
+      if (event && typeof event.clientY === 'number') placeGapAt(event.clientY);
+      /* The row goes where the GAP is, so the drop is decided by the document rather than by
+         pointer arithmetic -- the gap is where the person saw it land. */
       swallow = true;
-      /* Where it was dropped: the first OTHER row whose middle sits below the pointer, or
-         the end of the list when there is none. */
-      var others = rows().filter(function (item) { return item !== drag.row; });
-      var target = null;
-      for (var i = 0; i < others.length; i += 1) {
-        var box = others[i].getBoundingClientRect();
-        if (dropped < box.top + box.height / 2) { target = others[i]; break; }
-      }
-      var l = list();
-      if (target) l.insertBefore(drag.row, target);
-      else l.appendChild(drag.row);
+      item.parentNode.insertBefore(item, gap);
       renumber();
+      morph(before);
       applyPaneOrder(order());
     }
+    if (gap.parentNode) gap.parentNode.removeChild(gap);
     drag = null;
   }
 
   /* ---------- what the person does ----------------------------------------- */
 
+  /* The drag's own listeners are in the CAPTURE phase. A bubble-phase listener on the document
+     stopped seeing the later moves of a gesture -- measured with a capture-phase trace that saw
+     every one of them -- which is why a row kept landing a step short of where it was released. */
   document.addEventListener('pointerdown', function (event) {
     if (event.button !== 0) return;
+    /* Only the grip starts a drag: it is the one control the sidebar draws, and a row's body
+       belongs to the link that opens the entry. */
     var grip = event.target.closest('[data-move-grip]');
-    if (grip) { startDrag(event, Number(grip.dataset.moveGrip)); return; }
-    /* once the mode is on, anywhere on the row is a handle */
-    var item = on ? event.target.closest('#chList li') : null;
-    if (item) startDrag(event, pkOfRow(item));
-  });
-  document.addEventListener('pointermove', moveDrag);
-  document.addEventListener('pointerup', endDrag);
-  document.addEventListener('pointercancel', endDrag);
-  window.addEventListener('blur', endDrag);
-
+    if (grip) startDrag(event, Number(grip.dataset.moveGrip));
+  }, true);
+  document.addEventListener('pointermove', moveDrag, true);
+  document.addEventListener('pointerup', endDrag, true);
+  document.addEventListener('pointercancel', endDrag, true);
+  window.addEventListener('blur', endDrag, true);
   /* A drag that ended on a link must not fire it as well. Capture phase, so this beats the
      shell's own click handling -- which would otherwise navigate mid-reorder. */
   document.addEventListener('click', function (event) {
@@ -297,24 +351,6 @@
   }, true);
 
   document.addEventListener('click', function (event) {
-    var up = event.target.closest('[data-move-up]');
-    if (up) {
-      event.preventDefault();
-      var pkUp = Number(up.dataset.moveUp);
-      moveBy(pkUp, -1);
-      var again = rowFor(pkUp) && rowFor(pkUp).querySelector('[data-move-up]');
-      if (again) again.focus();                     /* keep the keyboard's place */
-      return;
-    }
-    var down = event.target.closest('[data-move-down]');
-    if (down) {
-      event.preventDefault();
-      var pkDown = Number(down.dataset.moveDown);
-      moveBy(pkDown, 1);
-      var next = rowFor(pkDown) && rowFor(pkDown).querySelector('[data-move-down]');
-      if (next) next.focus();
-      return;
-    }
     if (event.target.closest('[data-reorder-save]')) {
       event.preventDefault();
       save(null);
@@ -325,6 +361,20 @@
       leave(true);
       return;
     }
+  });
+
+  /* The grip is a button: a keyboard can take hold of it and move the row with the arrow
+     keys. It is the only control there is -- no arrows are drawn -- so this is what keeps
+     the order rearrangable without a pointer. */
+  document.addEventListener('keydown', function (event) {
+    var grip = event.target.closest && event.target.closest('[data-move-grip]');
+    if (!grip) return;
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    var pk = Number(grip.dataset.moveGrip);
+    moveBy(pk, event.key === 'ArrowUp' ? -1 : 1);
+    var again = rowFor(pk) && rowFor(pk).querySelector('[data-move-grip]');
+    if (again) again.focus();                     /* keep the keyboard's place */
   });
 
   /* ---------- the question before leaving ---------------------------------- */

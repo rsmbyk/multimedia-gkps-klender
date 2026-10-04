@@ -49,6 +49,11 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.first = self._entry(1, 'Pembukaan', 'Kasih karunia')
         self.second = self._entry(2, 'Pujian', 'Bersyukurlah')
         self.third = self._entry(3, 'Penutup', 'Amin')
+        # a break is an entry too, and its row is the thin line rather than a link
+        self.break_ = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Doa',
+            order_number=4)
+        self.texts = [self.first.pk, self.second.pk, self.third.pk]
         self.setUp_browser()
 
     def _entry(self, order, title, text):
@@ -87,9 +92,17 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         return reverse('web-tatib-service', args=[self.tatib.pk])
 
     def _order_in_pane(self, page):
-        return page.evaluate("""() => [].slice.call(
+        every = page.evaluate("""() => [].slice.call(
           document.querySelectorAll('#readBody section[data-entry-pk]'))
           .map(function (s) { return Number(s.dataset.entryPk); })""")
+        return [pk for pk in every if pk in self.texts]     # the break's section says nothing
+
+    def _row_order(self, page):
+        """Every movable row, a break's thin line included, in the sidebar's order."""
+        return page.evaluate("""() => [].slice.call(document.querySelectorAll('#chList > li'))
+          .filter(function (li) { return !!li.querySelector('[data-move-grip]'); })
+          .map(function (li) {
+            return Number(li.querySelector('[data-move-grip]').dataset.moveGrip); })""")
 
     def _sidebar_order(self, page):
         return page.evaluate("""() => [].slice.call(
@@ -111,12 +124,12 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         return page.locator('#chList li', has=page.locator('[data-move-grip="%d"]' % pk))
 
     def _press(self, page, pk, direction):
-        """The row's control is revealed by hovering the row, as it is for a person."""
-        row = self._row(page, pk)
-        row.hover()
-        page.wait_for_timeout(150)
-        row.locator('[data-move-%s]' % direction).click()
-        page.wait_for_timeout(200)
+        """The grip is the only control drawn: focus it and use the arrow keys."""
+        grip = page.locator('[data-move-grip="%d"]' % pk)
+        grip.focus()
+        page.wait_for_timeout(120)
+        page.keyboard.press('ArrowUp' if direction == 'up' else 'ArrowDown')
+        page.wait_for_timeout(300)
 
     def _start(self, page):
         """No Reorder button: a move starts the mode. Moving the first row up moves nothing."""
@@ -127,13 +140,14 @@ class ReorderE2ETests(StaticLiveServerTestCase):
     def test_the_handles_are_in_the_sidebar_and_the_answers_below_its_filter(self):
         page = self._page(self._service_url())
         # the handles are the sidebar's, one per entry, and the page's pane has none
-        self.assertEqual(page.locator('#chList [data-move-grip]').count(), 3)
+        self.assertEqual(page.locator('#chList [data-move-grip]').count(), 4)
         self.assertEqual(page.locator('#readBody [data-move-grip]').count(), 0)
         self.assertEqual(page.locator('#readBody [data-move-up]').count(), 0)
         # and there is no Reorder button at all
         self.assertEqual(page.locator('[data-reorder-start]').count(), 0)
         self.assertEqual(self._state(page), None)          # not rearranging yet
         self.assertTrue(page.locator('.ch__reorder').is_hidden())   # nor any answers
+        at_rest = self._list_top(page)
 
         # the strip lives in the sidebar and outside the list that scrolls. Measure it while
         # it is SHOWN: a hidden element's rect is all zeros, which is not a measurement
@@ -151,6 +165,13 @@ class ReorderE2ETests(StaticLiveServerTestCase):
               const top = document.querySelector('.ch__top').getBoundingClientRect();
               return Math.round(strip.top - top.bottom);
             }"""), -1)
+        # and it holds its place in the column, so starting a drag does not push the list
+        # down: hidden with visibility, never display
+        self.assertEqual(self._list_top(page), at_rest)
+
+    def _list_top(self, page):
+        return page.evaluate("""() => Math.round(
+          document.querySelector('#chList').getBoundingClientRect().top)""")
 
     # --- the mode ------------------------------------------------------------
 
@@ -187,6 +208,19 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertEqual(self._order_in_pane(page), self._sidebar_order(page))
         self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
 
+    def test_a_break_can_be_moved_in_the_order(self):
+        page = self._page(self._service_url())
+        grip = page.locator('[data-move-grip="%d"]' % self.break_.pk)
+        self.assertEqual(grip.count(), 1)
+        self.assertEqual(self._row_order(page),
+                         [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
+        grip.focus()
+        page.keyboard.press('ArrowUp')
+        page.wait_for_timeout(300)
+        self.assertEqual(self._state(page), 'on')
+        self.assertEqual(self._row_order(page),
+                         [self.first.pk, self.second.pk, self.break_.pk, self.third.pk])
+
     def test_the_arrows_move_a_row_and_the_pane_follows(self):
         page = self._page(self._service_url())
         self._press(page, self.third.pk, 'up')
@@ -216,7 +250,7 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self._close_browser()
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('pk', flat=True)),
-                         [self.first.pk, self.second.pk, self.third.pk])
+                         [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
 
     # --- saving --------------------------------------------------------------
 
@@ -232,7 +266,7 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self._close_browser()
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('pk', flat=True)),
-                         [self.second.pk, self.first.pk, self.third.pk])
+                         [self.second.pk, self.first.pk, self.third.pk, self.break_.pk])
 
     # --- leaving with an unsaved order ---------------------------------------
 
@@ -265,7 +299,7 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self._close_browser()
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('pk', flat=True)),
-                         [self.second.pk, self.first.pk, self.third.pk])
+                         [self.second.pk, self.first.pk, self.third.pk, self.break_.pk])
 
     def test_the_search_asks_before_it_takes_the_pane_away(self):
         page = self._page(self._service_url())

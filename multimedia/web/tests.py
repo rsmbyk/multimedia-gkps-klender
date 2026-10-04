@@ -915,12 +915,25 @@ class ServiceReorderPaneTests(TestCase):
     def page(self, service):
         return self.client.get(reverse('web-tatib-service', args=[service.pk]))
 
-    def test_every_entry_carries_its_own_handle_and_arrows(self):
+    def test_every_entry_carries_its_own_handle(self):
         response = self.page(self.tatib)
         for entry in self.tatib.service_entries.order_by('order_number'):
             self.assertContains(response, 'data-move-grip="%s"' % entry.pk)
-            self.assertContains(response, 'data-move-up="%s"' % entry.pk)
-            self.assertContains(response, 'data-move-down="%s"' % entry.pk)
+        # only the grip: no arrows beside it, and nothing wrapped around it
+        self.assertNotContains(response, 'data-move-up')
+        self.assertNotContains(response, 'data-move-down')
+        self.assertNotContains(response, 'toc__move')
+        self.assertNotContains(response, 'toc__arrow')
+
+    def test_a_section_break_carries_a_handle_too(self):
+        """A break is an entry like any other: it can be moved in the order."""
+        break_ = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Doa',
+            order_number=3)
+        response = self.page(self.tatib)
+        self.assertContains(response, 'data-move-grip="%s"' % break_.pk)
+        # and it is not announced as hidden: it now holds a focusable control
+        self.assertContains(response, 'aria-label="Reorder this break')
 
     def test_the_answers_sit_below_the_filter_with_their_endpoint(self):
         response = self.page(self.tatib)
