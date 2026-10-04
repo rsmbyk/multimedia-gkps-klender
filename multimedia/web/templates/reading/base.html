@@ -250,6 +250,19 @@
   </div>
   {% endif %}
 
+  {% if section == 'tatib' and has_entries %}
+  {% comment %}The reorder mode's own answers, right below the sections filter and in the
+  part of the sidebar that never scrolls: they appear the moment an order is being
+  rearranged (the mode is entered by dragging an entry's handle, not by a button here).{% endcomment %}
+  <div class="ch__reorder" data-reorder-group
+       data-reorder-endpoint="{% url 'web-entry-reorder' %}"
+       data-reorder-for="{{ service_id }}">
+    <button type="button" class="reorder__btn reorder__btn--save" data-reorder-save>Save</button>
+    <button type="button" class="reorder__btn" data-reorder-discard>Discard</button>
+    <p class="reorder__status" data-reorder-status role="status"></p>
+  </div>
+  {% endif %}
+
   <div class="ch__wrap">
     <button class="ch__ind" type="button" id="chUp" aria-label="Scroll up">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"

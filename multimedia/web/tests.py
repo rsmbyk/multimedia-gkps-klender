@@ -891,12 +891,12 @@ class ServiceEntryReorderTests(TestCase):
 
 
 class ServiceReorderPaneTests(TestCase):
-    """The pane's reorder chrome (spec 006, slice 3).
+    """Where the reorder chrome lives (spec 006, slice 3).
 
-    The mode itself is the page's (static/web/reorder.js); what the server owes it is the
-    toolbar, each entry's own handle and arrows, the question before leaving, and the
-    endpoint they work against -- and none of that on a service with no entries, where
-    there is no order to rearrange.
+    The order is arranged in the SIDEBAR, where the order is listed: each entry's row carries
+    its handle and arrows, and the Save/Discard strip sits below the sections filter, in the
+    part of the sidebar that never scrolls. The pane keeps the entries themselves and the
+    question before leaving. There is no Reorder button: the first drag starts the mode.
     """
 
     @classmethod
@@ -915,26 +915,25 @@ class ServiceReorderPaneTests(TestCase):
     def page(self, service):
         return self.client.get(reverse('web-tatib-service', args=[service.pk]))
 
-    def test_the_pane_offers_the_reorder_mode_with_its_endpoint(self):
+    def test_every_entry_carries_its_own_handle_and_arrows(self):
         response = self.page(self.tatib)
+        for entry in self.tatib.service_entries.order_by('order_number'):
+            self.assertContains(response, 'data-move-grip="%s"' % entry.pk)
+            self.assertContains(response, 'data-move-up="%s"' % entry.pk)
+            self.assertContains(response, 'data-move-down="%s"' % entry.pk)
+
+    def test_the_answers_sit_below_the_filter_with_their_endpoint(self):
+        response = self.page(self.tatib)
+        self.assertContains(response, 'ch__reorder')          # the strip
         self.assertContains(response, 'data-reorder-group')
         self.assertContains(response, 'data-reorder-endpoint="%s"' % reverse('web-entry-reorder'))
         self.assertContains(response, 'data-reorder-for="%s"' % self.tatib.pk)
-        self.assertContains(response, 'data-reorder-start')
         self.assertContains(response, 'data-reorder-save')
         self.assertContains(response, 'data-reorder-discard')
-        # the state itself is the page's: the panes are siblings of the toolbar, so the
-        # attribute has to sit on their shared parent (static/web/reorder.js)
-        self.assertNotContains(response, 'data-reorder="off"')
 
-    def test_every_entry_carries_its_own_handle_and_arrows(self):
-        response = self.page(self.tatib)
-        entries = self.tatib.service_entries.order_by('order_number')
-        for entry in entries:
-            self.assertContains(response, 'data-entry-pk="%s"' % entry.pk)
-            self.assertContains(response, 'data-move-up="%s"' % entry.pk)
-            self.assertContains(response, 'data-move-down="%s"' % entry.pk)
-        self.assertContains(response, 'data-move-grip')
+    def test_there_is_no_reorder_button(self):
+        # the mode is entered by dragging: a button would be a second way in
+        self.assertNotContains(self.page(self.tatib), 'data-reorder-start')
 
     def test_the_question_before_leaving_offers_all_three_answers(self):
         response = self.page(self.tatib)
@@ -943,10 +942,11 @@ class ServiceReorderPaneTests(TestCase):
         self.assertContains(response, 'data-reorder-leave')
         self.assertContains(response, 'data-reorder-and-save')
 
-    def test_a_service_with_no_entries_offers_no_reorder_mode(self):
+    def test_a_service_with_no_entries_offers_no_reorder_chrome(self):
         response = self.page(self.empty)
         self.assertNotContains(response, 'data-reorder-group')
         self.assertNotContains(response, 'data-reorder-confirm')
+        self.assertNotContains(response, 'data-move-grip')
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')

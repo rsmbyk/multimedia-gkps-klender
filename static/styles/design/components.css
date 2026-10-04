@@ -1538,11 +1538,11 @@ kbd {
 
 /* ---------- reorder mode (spec 006, slice 3) -------------------------------- */
 
-/* One attribute drives the whole mode. The toolbar swaps its own buttons, the pane's add
-   controls go away (there is one thing to do, and the edit/delete acts belong to the
-   other one), and every entry grows a handle. These rules come last so the mode wins over
-   the hover-driven reveal above, which is more specific than it looks. */
-.reorder { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 16px; }
+/* ONE attribute, on the document ROOT, drives the whole mode: the answers strip in the
+   sidebar, the handles on its rows, and the pane losing its add controls. They live in
+   different subtrees -- the strip and the handles are the sidebar's, the adds are the
+   pane's -- and only the root is above them all. These rules come last so the mode wins
+   over the hover-driven reveal above, which is more specific than it looks. */
 .reorder__btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 12px;
@@ -1560,6 +1560,57 @@ kbd {
 .reorder__btn--save {
   border-color: var(--active-bg); background: var(--active-bg); color: var(--active-ink);
 }
+.reorder__status {
+  flex: 1 1 100%; margin: 0;
+  font: 500 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; color: var(--danger);
+}
+.reorder__status:empty { display: none; }
+
+/* The answers, right below the sections filter, in the part of the sidebar that never
+   scrolls -- which is where the filter sits too. They are not there until an order is being
+   rearranged: there is no Reorder button, the first drag is what starts it. */
+.ch__reorder { display: none; }
+:root[data-reorder="on"] .ch__reorder {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 0 12px 12px;
+}
+:root[data-reorder="on"] .entry__add { display: none; }
+
+/* The order is arranged where it is listed: each entry's row carries its handle and its
+   arrows. They show when the row is hovered or one of them holds focus (so a keyboard can
+   reach them at all), and stay up the whole time the mode is on. */
+.toc__move {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 2px; border-radius: 8px;
+  background: var(--canvas);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--ease);
+}
+#chList li:hover .toc__move,
+.toc__move:focus-within,
+:root[data-reorder="on"] .toc__move { opacity: 1; pointer-events: auto; }
+.toc__grip {
+  display: inline-flex; align-items: center; padding: 3px 4px;
+  color: var(--head-ink);
+  border: 1px dashed var(--divider);
+  border-radius: 6px;
+  cursor: grab;
+}
+.toc__grip svg { width: 14px; height: 14px; }
+.toc__arrow {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; padding: 0;
+  color: var(--head-ink);
+  background: none; border: 0; border-radius: 6px;
+  cursor: pointer;
+}
+.toc__arrow svg { width: 14px; height: 14px; }
+.toc__arrow:hover { color: var(--ink); background: var(--icon-hover-bg); }
+.toc__arrow:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+/* the controls sit over the row's right end: give the label room so nothing hides */
+:root[data-section="tatib"] #chList .songrow__t { padding-right: 78px; }
+#chList li.is-dragging { opacity: .55; outline: 1px dashed var(--focus); outline-offset: 2px; }
 
 /* The question before leaving draws its answers with the modal buttons' own geometry --
    same height, padding, radius and font -- but keeps its OWN class names: the entry
@@ -1587,34 +1638,6 @@ kbd {
 .reorder__answer--primary { border: 0; background: var(--active-bg); color: var(--active-ink); }
 .reorder__answer--danger { border: 1px solid var(--danger); color: var(--danger); }
 .reorder__answer--danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
-.reorder__pending { display: none; align-items: center; gap: 8px; }
-.reorder__hint {
-  display: none; flex: 1 1 240px; margin: 0;
-  font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
-}
-.reorder__status {
-  flex: 1 1 100%; margin: 0;
-  font: 500 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; color: var(--danger);
-}
-.reorder__status:empty { display: none; }
+/* Taken out with the pane's own toolbar: the mode is arranged in the sidebar now, and these
+   rules described controls that no longer exist. */
 
-[data-reorder="on"] [data-reorder-start] { display: none; }
-[data-reorder="on"] .reorder__pending { display: inline-flex; }
-[data-reorder="on"] .reorder__hint { display: block; }
-[data-reorder="on"] .entry__add { display: none; }
-
-/* The entry's own handle and arrows. Shown only in the mode, and never on hover: a
-   keyboard has to reach them, so they are simply there while reordering. */
-.entry__move { display: none; }
-[data-reorder="on"] .entry__move {
-  display: inline-flex; align-items: center; gap: 4px; padding: 0 0 10px;
-}
-.entry__grip {
-  display: inline-flex; align-items: center; padding: 5px 8px;
-  color: var(--head-ink);
-  border: 1px dashed var(--divider);
-  border-radius: 8px;
-  cursor: grab;
-}
-.entry__grip svg { width: 16px; height: 16px; }
-.tatib__item--entry.is-dragging { opacity: .5; outline: 1px dashed var(--focus); outline-offset: 6px; }

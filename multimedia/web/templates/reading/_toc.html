@@ -5,6 +5,34 @@
 <li><a class="songrow{% if not item.titled %} songrow--cont{% endif %}" href="#ti-{{ item.anchor }}"
        data-i="{{ item.anchor }}" data-num="{{ item.n }}" data-txt="{{ item.txt|lower }}">
   <span class="songrow__c">{{ item.n }}</span>
-  <span class="songrow__t">{{ item.label }}</span></a></li>
+  <span class="songrow__t">{{ item.label }}</span></a>
+{% if item.entry %}
+{% comment %}An entry's own handle and arrows, IN THE SIDEBAR: the order is arranged where
+the order is listed. They start the reorder mode themselves -- there is no Reorder button --
+and they sit outside the row's link so a click on them is never a jump.{% endcomment %}
+<span class="toc__move">
+  <span class="toc__grip" data-move-grip="{{ item.pk }}" title="Drag to reorder" aria-hidden="true">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" aria-hidden="true">
+      <path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/>
+    </svg>
+  </span>
+  <button type="button" class="toc__arrow" data-move-up="{{ item.pk }}"
+          aria-label="Move up" title="Move up">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10 15.5v-11M5.5 9L10 4.5 14.5 9"/>
+    </svg>
+  </button>
+  <button type="button" class="toc__arrow" data-move-down="{{ item.pk }}"
+          aria-label="Move down" title="Move down">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10 4.5v11M5.5 11l4.5 4.5L14.5 11"/>
+    </svg>
+  </button>
+</span>
+{% endif %}
+</li>
 {% endif %}
 {% endfor %}

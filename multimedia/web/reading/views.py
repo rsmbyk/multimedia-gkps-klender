@@ -455,6 +455,7 @@ def _entry_blocks(service, items, toc, text_count):
         label = title or entry.get_kind_display()
         toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
                     'label': label[:60], 'titled': bool(title),
+                    'pk': entry.pk, 'entry': True,
                     'txt': f'{title} {body}'})
     return text_count
 

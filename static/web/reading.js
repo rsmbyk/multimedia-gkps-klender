@@ -1064,6 +1064,14 @@
     if (freshChAdd && chTop && chTop.parentNode) {
       chTop.parentNode.insertBefore(freshChAdd, chTop.nextSibling);
     }
+    /* the Tata Ibadah reorder strip: created and dropped with the section that owns it,
+       right below the filter where the sidebar does not scroll */
+    var oldChOrder = document.querySelector('.ch__reorder');
+    if (oldChOrder) oldChOrder.parentNode.removeChild(oldChOrder);
+    var freshChOrder = doc.querySelector('.ch__reorder');
+    if (freshChOrder && chTop && chTop.parentNode) {
+      chTop.parentNode.insertBefore(freshChOrder, chTop.nextSibling);
+    }
 
     bindPanelTiles();
     bindPanelTips();

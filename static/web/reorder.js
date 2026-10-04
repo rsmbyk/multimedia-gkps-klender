@@ -1,18 +1,20 @@
-/* Reordering a service order (spec 006, slice 3).
+/* Reordering a Tata Ibadah's entries (spec 006, slice 3).
  *
- * The order is changed in the PAGE and shown at once -- in the pane and in the sidebar's
- * contents list -- but nothing is saved until Save; Discard puts back what was there.
- * While the mode is on the pane's add controls are gone (there is one thing to do), and
- * leaving with unsaved changes asks first: the shell's own in-page navigation is
- * intercepted through navigate() in reading.js, and a tab close through beforeunload.
+ * The order is ARRANGED IN THE SIDEBAR, where the order is listed: each entry's row carries
+ * the handle and the arrows, and there is NO Reorder button -- the first drag, or the first
+ * arrow press, is what starts rearranging. The strip below the sidebar's filter then appears
+ * with Save and Discard, and the pane on the right follows the order.
+ *
+ * Nothing is written until Save; Discard puts back what was there. Leaving with unsaved
+ * changes asks first: the shell's own in-page navigation is intercepted through navigate()
+ * in reading.js, and a tab close through beforeunload.
+ *
+ * ONE state attribute, on the document root, drives all of it: the strip, the sidebar's
+ * handles and the pane's hidden add controls live in different subtrees, and only the root
+ * is above them all.
  *
  * Everything is DELEGATED and resolved from the document on each use: the shell swaps the
- * reading pane in place, so a handler bound to the nodes at load time is bound to nothing
- * after the first swap.
- *
- * One unit is a section AND the add row that follows it: the add row is anchored to the
- * item it follows, so moving one without the other would leave a later add pointing at the
- * wrong place.
+ * reading pane in place, and re-creates the strip with the section that owns it.
  */
 (function () {
   'use strict';
@@ -20,28 +22,38 @@
   function group() { return document.querySelector('[data-reorder-group]'); }
   function pane() { return document.getElementById('readBody'); }
   function list() { return document.getElementById('chList'); }
+  function root() { return document.documentElement; }
 
   var on = false;                 /* the reorder mode */
-  var origin = [];                /* the order it had when the mode was entered */
-  var nodes = {};                 /* pk -> that entry's own nodes, as read */
+  var origin = [];                /* the order the rows were in when it started */
+  var numbers = {};               /* pk -> the number its row showed then */
+  var nodes = {};                 /* pk -> that entry's own nodes in the pane */
   var pending = null;             /* what to run once a guarded question is answered */
   var drag = null;
   var swallow = false;            /* the click that follows a drag, to be swallowed */
 
-  function sections() {
-    var body = pane();
-    return body ? [].slice.call(body.querySelectorAll('section[data-entry-pk]')) : [];
-  }
-  function pkOf(section) { return Number(section.dataset.entryPk); }
-  function unitOf(section) {
-    var unit = [section];
-    var next = section.nextElementSibling;
-    if (next && next.classList.contains('entry__add')) unit.push(next);
-    return unit;
-  }
-  function order() { return sections().map(pkOf); }
-  function node(pk) { return pane() && pane().querySelector('section[data-entry-pk="' + pk + '"]'); }
+  /* ---------- the sidebar's rows ------------------------------------------- */
 
+  function rowOf(pk) {
+    var l = list();
+    return l ? l.querySelector('a[data-i="e' + pk + '"]') : null;
+  }
+  function rowFor(pk) { var link = rowOf(pk); return link ? link.closest('li') : null; }
+  function rows() {
+    var l = list();
+    if (!l) return [];
+    return [].slice.call(l.children).filter(function (item) {
+      var link = item.querySelector('a[data-i]');
+      return !!link && link.dataset.i.charAt(0) === 'e';
+    });
+  }
+  function pkOfRow(item) {
+    var grip = item.querySelector('[data-move-grip]');
+    if (grip) return Number(grip.dataset.moveGrip);
+    var link = item.querySelector('a[data-i]');
+    return link ? Number(link.dataset.i.slice(1)) : null;
+  }
+  function order() { return rows().map(pkOfRow); }
   function changed() {
     var now = order();
     return now.length !== origin.length || now.some(function (pk, index) {
@@ -49,46 +61,52 @@
     });
   }
 
-  /* Read the pane: which entry is which, and the order they are in now. */
-  function read() {
-    nodes = {};
-    var order = [];
-    sections().forEach(function (section) {
-      var pk = pkOf(section);
-      nodes[pk] = unitOf(section);
-      order.push(pk);
+  /* Put the rows in a given order (they are the last rows in the list, so appending lands
+     them right), renumber them to what that order would show, and move the pane to match. */
+  function place(what) {
+    var l = list();
+    if (!l) return;
+    what.forEach(function (pk) {
+      var item = rowFor(pk);
+      if (item) l.appendChild(item);
     });
-    return order;
+  }
+  function renumber() {
+    var l = list();
+    if (!l) return;
+    /* the numbers come from the sidebar's own non-entry rows, which the server numbered */
+    var others = [].slice.call(l.querySelectorAll('a[data-i]')).filter(function (link) {
+      return link.dataset.i.charAt(0) !== 'e';
+    }).map(function (link) { return Number(link.dataset.num) || 0; });
+    var base = others.length ? Math.max.apply(null, others) : 0;
+    order().forEach(function (pk, index) {
+      var link = rowOf(pk);
+      var cell = link && link.querySelector('.songrow__c');
+      if (cell) cell.textContent = String(base + index + 1);
+    });
   }
 
-  /* Put the pane into a given order. Re-appending moves the existing nodes, so the
-     markup, the handlers and every anchor stay as they are. The entries are the last
-     thing in the pane, so appending lands them in the right place. */
-  function applyOrder(what) {
+  /* ---------- the pane follows --------------------------------------------- */
+
+  /* A unit is a section AND the add row that follows it: the add row is anchored to the item
+     it follows, so moving one without the other would leave a later add pointing at the
+     wrong place. */
+  function readNodes() {
+    nodes = {};
+    var body = pane();
+    if (!body) return;
+    [].slice.call(body.querySelectorAll('section[data-entry-pk]')).forEach(function (section) {
+      var unit = [section];
+      var next = section.nextElementSibling;
+      if (next && next.classList.contains('entry__add')) unit.push(next);
+      nodes[Number(section.dataset.entryPk)] = unit;
+    });
+  }
+  function applyPaneOrder(what) {
     var body = pane();
     if (!body) return;
     what.forEach(function (pk) {
       (nodes[pk] || []).forEach(function (each) { body.appendChild(each); });
-    });
-  }
-
-  /* The sidebar's contents list follows the drag immediately. Its own numbers are the
-     server's item numbers, so they are renumbered here to match -- the numbers the
-     sidebar would show once this order is saved. */
-  function preview(what) {
-    var rows = list();
-    if (!rows) return;
-    var others = [].slice.call(rows.querySelectorAll('a[data-i]')).filter(function (row) {
-      return !/^e\d+$/.test(row.dataset.i);
-    }).map(function (row) { return Number(row.dataset.num) || 0; });
-    var base = others.length ? Math.max.apply(null, others) : 0;
-    what.forEach(function (pk, index) {
-      var row = rows.querySelector('a[data-i="e' + pk + '"]');
-      if (!row) return;
-      var item = row.closest('li');
-      rows.appendChild(item);                       /* the entries are the last rows */
-      var cell = row.querySelector('.songrow__c');
-      if (cell) cell.textContent = String(base + index + 1);
     });
   }
 
@@ -97,36 +115,43 @@
     if (line) line.textContent = message || '';
   }
 
-  /* ---------- the mode ------------------------------------------------------- */
+  /* ---------- the mode ------------------------------------------------------ */
 
   function enter() {
-    var g = group();
-    if (!g || on) return;
+    if (on) return true;
+    if (!group()) return false;
     if (window.gkpsDisplay && window.gkpsDisplay.locked()) {
       window.gkpsDisplay.refuse();                  /* the display owns the order */
-      return;
+      return false;
     }
-    origin = read();
-    if (!origin.length) return;
+    if (!rows().length) return false;
+    origin = order();
+    numbers = {};
+    rows().forEach(function (item) {
+      var cell = item.querySelector('.songrow__c');
+      numbers[pkOfRow(item)] = cell ? cell.textContent : '';
+    });
+    readNodes();
     on = true;
-    /* ONE state attribute, and on the PANE: the toolbar is a sibling of the entries, not
-       their parent, so a state on it could not reach them. Absent means off. */
-    pane().dataset.reorder = 'on';
+    root().dataset.reorder = 'on';
     status('');
+    return true;
   }
 
-  function leave() {
+  function leave(restore) {
+    if (restore) {
+      place(origin);
+      Object.keys(numbers).forEach(function (pk) {
+        var link = rowOf(Number(pk));
+        var cell = link && link.querySelector('.songrow__c');
+        if (cell) cell.textContent = numbers[pk];
+      });
+      applyPaneOrder(origin);
+    }
     on = false;
     pending = null;
-    var body = pane();
-    if (body) body.dataset.reorder = 'off';
+    root().dataset.reorder = 'off';
     status('');
-  }
-
-  function discard() {
-    applyOrder(origin);
-    preview(origin);
-    leave();
   }
 
   function csrf() {
@@ -134,21 +159,20 @@
     return match ? decodeURIComponent(match[2]) : '';
   }
 
-  /* Save, then either carry on with what the person was doing (the guard's answer) or
-     refresh the shell in place, so the sidebar's numbers come from the server. */
+  /* Save, then either carry on with what the person was doing (the guard's answer) or let
+     the shell refresh in place, so every list comes back from the server. */
   function save(next) {
-    var g = group();
-    if (!g) return;
-    var order_ = order();
+    var strip = group();
+    if (!strip) return;
     status('Saving...');
-    fetch(g.dataset.reorderEndpoint, {
+    fetch(strip.dataset.reorderEndpoint, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {'Content-Type': 'application/json', 'X-Requested-With': 'fetch',
                 'X-CSRFToken': csrf()},
       body: JSON.stringify({
-        tatib: Number(g.dataset.reorderFor),
-        entries: order_.map(function (pk, index) {
+        tatib: Number(strip.dataset.reorderFor),
+        entries: order().map(function (pk, index) {
           return {entry: pk, order_number: index + 1};
         }),
       }),
@@ -156,7 +180,7 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
     }).then(function () {
-      leave();
+      leave(false);
       if (next) { next(); return; }                 /* carry on to where they were going */
       document.dispatchEvent(new CustomEvent('editor:saved', {detail: {id: null}}));
     }).catch(function () {
@@ -164,74 +188,104 @@
     });
   }
 
-  /* ---------- moving one entry ---------------------------------------------- */
-
-  function placeBefore(unit, reference) {
-    // reference is the node the unit goes in front of; null appends it last
-    var body = pane();
-    unit.forEach(function (each) {
-      if (reference) reference.parentNode.insertBefore(each, reference);
-      else body.appendChild(each);
-    });
-  }
+  /* ---------- moving one entry --------------------------------------------- */
 
   function moveBy(pk, step) {
-    var order_ = order();
-    var at = order_.indexOf(pk);
+    if (!enter()) return;
+    var what = order();
+    var at = what.indexOf(pk);
     var to = at + step;
-    if (at < 0 || to < 0 || to >= order_.length) return;
-    var moving = order_.slice();
-    moving.splice(to, 0, moving.splice(at, 1)[0]);
-    var unit = unitOf(node(pk));
-    var reference = node(moving[to + 1]);
-    placeBefore(unit, reference);
-    preview(order());
+    if (at < 0 || to < 0 || to >= what.length) return;
+    var moved = what.slice();
+    moved.splice(to, 0, moved.splice(at, 1)[0]);
+    place(moved);
+    renumber();
+    applyPaneOrder(order());
     status('');
   }
 
-  /* ---------- dragging ------------------------------------------------------ */
+  /* ---------- dragging a row ------------------------------------------------ */
 
   function startDrag(event, pk) {
-    if (!on) return;
+    if (event.button !== 0) return;
+    if (!enter()) return;
+    var item = rowFor(pk);
+    if (!item) return;
     event.preventDefault();
-    var section = node(pk);
-    if (!section) return;
-    drag = {pk: pk, unit: unitOf(section), section: section, at: event.clientY, moved: false};
-    section.classList.add('is-dragging');
+    drag = {pk: pk, row: item, start: event.clientY, y: event.clientY, moved: false};
+    item.classList.add('is-dragging');
+    /* The gesture belongs to this row for its whole journey: without capture, the browser
+       hands the sequence to whatever is under the pointer next, and a drag that carried a
+       row over its neighbours lost the rest of its moves. */
+    if (item.setPointerCapture && event.pointerId != null) {
+      try { item.setPointerCapture(event.pointerId); } catch (e) { /* no capture */ }
+    }
   }
 
   function moveDrag(event) {
     if (!drag) return;
-    if (Math.abs(event.clientY - drag.at) > 4) drag.moved = true;
+    drag.y = event.clientY;                  /* the module's OWN record of the pointer */
+    if (Math.abs(event.clientY - drag.start) > 3) drag.moved = true;
     if (!drag.moved) return;
-    var over = null;
-    var middle = 0;
-    var every = sections();
-    for (var i = 0; i < every.length; i += 1) {
-      var box = every[i].getBoundingClientRect();
-      if (event.clientY >= box.top && event.clientY <= box.bottom) {
-        over = every[i];
-        middle = box.top + box.height / 2;
-        break;
-      }
-    }
-    if (!over || over === drag.section) return;
-    if (event.clientY < middle) placeBefore(drag.unit, over);
-    else placeBefore(drag.unit, unitOf(over).pop().nextSibling);
-    preview(order());
+    /* The row FOLLOWS the pointer visually and the move is committed on release. Moving the
+       node during the drag would remove it from the document mid-gesture, and the browser
+       answers a pointer whose target has gone with `pointercancel` -- which ended the drag
+       after its first step. */
+    drag.row.style.position = 'relative';
+    drag.row.style.zIndex = '2';
+    drag.row.style.transform = 'translateY(' + Math.round(event.clientY - drag.start) + 'px)';
   }
 
   function endDrag() {
     if (!drag) return;
-    drag.section.classList.remove('is-dragging');
-    /* A drag that ended on a link would otherwise fire its click: the entry is full of
-       jump links, and a reorder that jumps the page is not what anyone asked for. */
-    if (drag.moved) swallow = true;
+    var moved = drag.moved;
+    var captured = drag.row;
+    /* The drop is where the pointer was last SEEN by this module, not whatever coordinates
+       the release event carries: the two disagreed in practice, and the row landed a
+       position or two short of where it was let go. */
+    var dropped = typeof drag.y === 'number' ? drag.y : drag.start;
+    if (captured.releasePointerCapture) {
+      try { captured.releasePointerCapture(1); } catch (e) { /* it was never captured */ }
+    }
+    drag.row.classList.remove('is-dragging');
+    drag.row.style.transform = '';
+    drag.row.style.zIndex = '';
+    drag.row.style.position = '';
+    if (moved) {
+      /* A drag that ended on a row would otherwise fire its link: the row jumps to the
+         entry, and a reorder that jumps the page is not what anyone asked for. */
+      swallow = true;
+      /* Where it was dropped: the first OTHER row whose middle sits below the pointer, or
+         the end of the list when there is none. */
+      var others = rows().filter(function (item) { return item !== drag.row; });
+      var target = null;
+      for (var i = 0; i < others.length; i += 1) {
+        var box = others[i].getBoundingClientRect();
+        if (dropped < box.top + box.height / 2) { target = others[i]; break; }
+      }
+      var l = list();
+      if (target) l.insertBefore(drag.row, target);
+      else l.appendChild(drag.row);
+      renumber();
+      applyPaneOrder(order());
+    }
     drag = null;
-    preview(order());
   }
 
   /* ---------- what the person does ----------------------------------------- */
+
+  document.addEventListener('pointerdown', function (event) {
+    if (event.button !== 0) return;
+    var grip = event.target.closest('[data-move-grip]');
+    if (grip) { startDrag(event, Number(grip.dataset.moveGrip)); return; }
+    /* once the mode is on, anywhere on the row is a handle */
+    var item = on ? event.target.closest('#chList li') : null;
+    if (item) startDrag(event, pkOfRow(item));
+  });
+  document.addEventListener('pointermove', moveDrag);
+  document.addEventListener('pointerup', endDrag);
+  document.addEventListener('pointercancel', endDrag);
+  window.addEventListener('blur', endDrag);
 
   /* A drag that ended on a link must not fire it as well. Capture phase, so this beats the
      shell's own click handling -- which would otherwise navigate mid-reorder. */
@@ -248,7 +302,7 @@
       event.preventDefault();
       var pkUp = Number(up.dataset.moveUp);
       moveBy(pkUp, -1);
-      var again = node(pkUp) && node(pkUp).querySelector('[data-move-up]');
+      var again = rowFor(pkUp) && rowFor(pkUp).querySelector('[data-move-up]');
       if (again) again.focus();                     /* keep the keyboard's place */
       return;
     }
@@ -257,13 +311,8 @@
       event.preventDefault();
       var pkDown = Number(down.dataset.moveDown);
       moveBy(pkDown, 1);
-      var next = node(pkDown) && node(pkDown).querySelector('[data-move-down]');
+      var next = rowFor(pkDown) && rowFor(pkDown).querySelector('[data-move-down]');
       if (next) next.focus();
-      return;
-    }
-    if (event.target.closest('[data-reorder-start]')) {
-      event.preventDefault();
-      enter();
       return;
     }
     if (event.target.closest('[data-reorder-save]')) {
@@ -273,21 +322,10 @@
     }
     if (event.target.closest('[data-reorder-discard]')) {
       event.preventDefault();
-      discard();
+      leave(true);
       return;
     }
   });
-
-  document.addEventListener('pointerdown', function (event) {
-    if (!on || event.button !== 0) return;
-    /* the grip, or anywhere on the entry: in reorder mode the whole entry is a handle */
-    var section = event.target.closest('section[data-entry-pk]');
-    if (section) startDrag(event, Number(section.dataset.entryPk));
-  });
-  document.addEventListener('pointermove', moveDrag);
-  document.addEventListener('pointerup', endDrag);
-  document.addEventListener('pointercancel', endDrag);
-  window.addEventListener('blur', endDrag);
 
   /* ---------- the question before leaving ---------------------------------- */
 
@@ -306,7 +344,7 @@
       var carrying = pending;
       pending = null;
       if (d) d.close();
-      discard();
+      leave(true);
       if (carrying) carrying();
       return;
     }
@@ -320,8 +358,8 @@
     }
   });
 
-  /* The shell asks before it swaps the pane (reading.js, navigate): a reorder that has
-     not been saved must not disappear without a word. */
+  /* The shell asks before it swaps the pane (reading.js, navigate): an order that has not
+     been saved must not disappear without a word. */
   window.gkpsUnsaved = {
     holds: function () { return on && changed(); },
     ask: function (proceed) {
@@ -338,14 +376,14 @@
     event.returnValue = '';                        /* a tab close asks too */
   });
 
-  /* A swap brings its own toolbar: whatever was pending went with the old pane, and the
-     pane keeps the attribute (it is the swapped element's parent, so clear it here). */
+  /* A swap brings its own rows and its own strip: whatever was pending went with the old
+     ones, and only the ROOT carries the attribute, so clear it here. */
   document.addEventListener('shell:page', function () {
     on = false;
     origin = [];
+    numbers = {};
     pending = null;
-    var body = pane();
-    if (body) body.dataset.reorder = 'off';
+    root().dataset.reorder = 'off';
     status('');
   });
 })();

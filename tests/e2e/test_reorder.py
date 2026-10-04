@@ -1,9 +1,11 @@
 """Reordering a Tata Ibadah's entries (spec 006, slice 3).
 
-The order is changed in the page -- dragged or arrowed -- and shown at once in the pane and
-in the sidebar's contents list, but nothing is saved until Save. Discard puts back what was
-there, and leaving with an unsaved order asks first, on the shell's own in-page navigation
-and on a tab close.
+The order is ARRANGED IN THE SIDEBAR, where it is listed: each entry's row carries the handle
+and the arrows, and there is no Reorder button -- the first drag, or the first arrow press, is
+what starts rearranging. Save and Discard appear below the sidebar's filter, and the pane on
+the right follows. Nothing is written until Save; Discard puts back what was there, and
+leaving with an unsaved order asks first, on the shell's own in-page navigation and on a tab
+close.
 """
 from datetime import date
 import unittest
@@ -92,69 +94,120 @@ class ReorderE2ETests(StaticLiveServerTestCase):
     def _sidebar_order(self, page):
         return page.evaluate("""() => [].slice.call(
           document.querySelectorAll('#chList a[data-i]'))
-          .filter(function (a) { return /^e\\d+$/.test(a.dataset.i); })
+          .filter(function (a) { return a.dataset.i.charAt(0) === 'e'; })
           .map(function (a) { return Number(a.dataset.i.slice(1)); })""")
 
+    def _sidebar_numbers(self, page):
+        return page.evaluate("""() => [].slice.call(
+          document.querySelectorAll('#chList a[data-i]'))
+          .filter(function (a) { return a.dataset.i.charAt(0) === 'e'; })
+          .map(function (a) { return a.querySelector('.songrow__c').textContent; })""")
+
     def _state(self, page):
-        """The mode's own attribute: on the pane, which is every entry's parent."""
-        return page.get_attribute('#readBody', 'data-reorder')
+        """The mode's own attribute: on the document root, above every subtree it drives."""
+        return page.get_attribute('html', 'data-reorder')
+
+    def _row(self, page, pk):
+        return page.locator('#chList li', has=page.locator('[data-move-grip="%d"]' % pk))
+
+    def _press(self, page, pk, direction):
+        """The row's control is revealed by hovering the row, as it is for a person."""
+        row = self._row(page, pk)
+        row.hover()
+        page.wait_for_timeout(150)
+        row.locator('[data-move-%s]' % direction).click()
+        page.wait_for_timeout(200)
 
     def _start(self, page):
-        page.click('[data-reorder-start]')
-        page.wait_for_timeout(200)
+        """No Reorder button: a move starts the mode. Moving the first row up moves nothing."""
+        self._press(page, self.first.pk, 'up')
+
+    # --- where the chrome lives ----------------------------------------------
+
+    def test_the_handles_are_in_the_sidebar_and_the_answers_below_its_filter(self):
+        page = self._page(self._service_url())
+        # the handles are the sidebar's, one per entry, and the page's pane has none
+        self.assertEqual(page.locator('#chList [data-move-grip]').count(), 3)
+        self.assertEqual(page.locator('#readBody [data-move-grip]').count(), 0)
+        self.assertEqual(page.locator('#readBody [data-move-up]').count(), 0)
+        # and there is no Reorder button at all
+        self.assertEqual(page.locator('[data-reorder-start]').count(), 0)
+        self.assertEqual(self._state(page), None)          # not rearranging yet
+        self.assertTrue(page.locator('.ch__reorder').is_hidden())   # nor any answers
+
+        # the strip lives in the sidebar and outside the list that scrolls. Measure it while
+        # it is SHOWN: a hidden element's rect is all zeros, which is not a measurement
+        self._start(page)
+        strip = page.locator('.ch__reorder')
+        self.assertEqual(strip.count(), 1)
+        self.assertTrue(strip.is_visible())
+        self.assertTrue(page.evaluate(
+            "() => document.querySelector('.ch__reorder').closest('#chapters') !== null"))
+        self.assertTrue(page.evaluate(
+            "() => document.querySelector('.ch__reorder').closest('#chBody') === null"))
+        self.assertGreaterEqual(
+            page.evaluate("""() => {
+              const strip = document.querySelector('.ch__reorder').getBoundingClientRect();
+              const top = document.querySelector('.ch__top').getBoundingClientRect();
+              return Math.round(strip.top - top.bottom);
+            }"""), -1)
 
     # --- the mode ------------------------------------------------------------
 
-    def test_the_mode_hides_the_adds_and_previews_the_new_order(self):
+    def test_dragging_a_handle_starts_the_mode_and_shows_the_answers(self):
         page = self._page(self._service_url())
         self.assertEqual(self._order_in_pane(page), [self.first.pk, self.second.pk, self.third.pk])
         self.assertEqual(self._sidebar_order(page), [self.first.pk, self.second.pk, self.third.pk])
+        self.assertEqual(self._state(page), None)
 
-        self._start(page)
+        # a drag on the handle is what starts it
+        row = self._row(page, self.first.pk)
+        row.hover()
+        page.wait_for_timeout(150)
+        grip = page.locator('[data-move-grip="%d"]' % self.first.pk)
+        box = grip.bounding_box()
+        target = self._row(page, self.third.pk).bounding_box()
+        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+        page.mouse.down()
+        page.mouse.move(box['x'] + box['width'] / 2, target['y'] + target['height'] - 4, steps=10)
+        page.mouse.up()
+        page.wait_for_timeout(300)
+
         self.assertEqual(self._state(page), 'on')
-        self.assertFalse(page.locator('[data-reorder-save]').is_hidden())
-        self.assertFalse(page.locator('[data-reorder-discard]').is_hidden())
-        self.assertTrue(page.locator('[data-reorder-start]').is_hidden())
-        # the add controls are gone while there is an order to arrange
+        self.assertTrue(page.locator('[data-reorder-save]').is_visible())
+        self.assertTrue(page.locator('[data-reorder-discard]').is_visible())
+        # the pane's add controls are gone: there is one thing to do
         self.assertEqual(page.evaluate("""() => [].slice.call(
           document.querySelectorAll('.entry__add')).filter(function (row) {
             return getComputedStyle(row).display !== 'none'; }).length"""), 0)
 
-        # the arrow moves the last entry up, and the sidebar follows at once
-        page.click('[data-move-up="%d"]' % self.third.pk)
-        page.wait_for_timeout(200)
-        self.assertEqual(self._order_in_pane(page), [self.first.pk, self.third.pk, self.second.pk])
-        self.assertEqual(self._sidebar_order(page), [self.first.pk, self.third.pk, self.second.pk])
+        # the drag moved it in the sidebar, the pane followed, and the rows renumbered
+        self.assertEqual(self._sidebar_order(page)[-1], self.first.pk,
+                         self._sidebar_order(page))
+        self.assertEqual(self._order_in_pane(page), self._sidebar_order(page))
+        self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
 
-    def test_a_drag_moves_an_entry_and_the_sidebar_follows(self):
+    def test_the_arrows_move_a_row_and_the_pane_follows(self):
         page = self._page(self._service_url())
-        self._start(page)
-        box = page.locator('section[data-entry-pk="%d"]' % self.first.pk).bounding_box()
-        target = page.locator('section[data-entry-pk="%d"]' % self.third.pk).bounding_box()
-        page.mouse.move(box['x'] + 40, box['y'] + 12)
-        page.mouse.down()
-        page.mouse.move(box['x'] + 40, target['y'] + target['height'] - 8, steps=10)
-        page.mouse.up()
-        page.wait_for_timeout(250)
-        moved = self._order_in_pane(page)
-        self.assertEqual(moved[-1], self.first.pk, moved)          # it travelled to the end
-        self.assertEqual(self._sidebar_order(page), moved)         # and the sidebar agrees
+        self._press(page, self.third.pk, 'up')
+        self.assertEqual(self._state(page), 'on')
+        self.assertEqual(self._sidebar_order(page), [self.first.pk, self.third.pk, self.second.pk])
+        self.assertEqual(self._order_in_pane(page), [self.first.pk, self.third.pk, self.second.pk])
+        self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
 
     def test_discard_puts_the_order_back(self):
         page = self._page(self._service_url())
-        self._start(page)
-        page.click('[data-move-down="%d"]' % self.first.pk)
-        page.wait_for_timeout(200)
-        self.assertEqual(self._order_in_pane(page)[0], self.second.pk)
+        self._press(page, self.first.pk, 'down')
+        self.assertEqual(self._sidebar_order(page)[0], self.second.pk)
 
         page.click('[data-reorder-discard]')
-        page.wait_for_timeout(200)
-        self.assertEqual(self._order_in_pane(page),
-                         [self.first.pk, self.second.pk, self.third.pk])
+        page.wait_for_timeout(250)
         self.assertEqual(self._sidebar_order(page),
                          [self.first.pk, self.second.pk, self.third.pk])
+        self.assertEqual(self._order_in_pane(page),
+                         [self.first.pk, self.second.pk, self.third.pk])
         self.assertEqual(self._state(page), 'off')
-        # and the add controls are back
+        # and the pane's add controls are back
         page.locator('section[data-entry-pk="%d"]' % self.first.pk).hover()
         page.wait_for_timeout(300)
         self.assertFalse(page.locator('.entry__add').first.is_hidden())
@@ -169,14 +222,12 @@ class ReorderE2ETests(StaticLiveServerTestCase):
 
     def test_save_writes_the_new_order_and_leaves_the_mode(self):
         page = self._page(self._service_url())
-        self._start(page)
-        page.click('[data-move-down="%d"]' % self.first.pk)
-        page.wait_for_timeout(150)
+        self._press(page, self.first.pk, 'down')
         page.click('[data-reorder-save]')
         page.wait_for_function(
-            "document.getElementById('readBody').dataset.reorder === 'off'",
+            "document.documentElement.dataset.reorder === 'off'",
             timeout=8000)
-        self.assertEqual(self._order_in_pane(page),
+        self.assertEqual(self._sidebar_order(page),
                          [self.second.pk, self.first.pk, self.third.pk])
         self._close_browser()
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
@@ -187,9 +238,7 @@ class ReorderE2ETests(StaticLiveServerTestCase):
 
     def test_leaving_for_another_tata_ibadah_asks_first(self):
         page = self._page(self._service_url())
-        self._start(page)
-        page.click('[data-move-down="%d"]' % self.first.pk)
-        page.wait_for_timeout(200)
+        self._press(page, self.first.pk, 'down')
 
         # a sidebar pick: another Tata Ibadah
         page.click('a[href="%s"]' % reverse('web-tatib-service', args=[self.other.pk]))
@@ -220,18 +269,14 @@ class ReorderE2ETests(StaticLiveServerTestCase):
 
     def test_the_search_asks_before_it_takes_the_pane_away(self):
         page = self._page(self._service_url())
-        self._start(page)
-        page.click('[data-move-down="%d"]' % self.first.pk)
-        page.wait_for_timeout(200)
+        self._press(page, self.first.pk, 'down')
         page.click('#railSearch')                     # the shell's own way to the search
         page.wait_for_timeout(400)
         self.assertTrue(page.locator('[data-reorder-confirm]').is_visible())
 
     def test_closing_the_tab_asks_too(self):
         page = self._page(self._service_url())
-        self._start(page)
-        page.click('[data-move-down="%d"]' % self.first.pk)
-        page.wait_for_timeout(200)
+        self._press(page, self.first.pk, 'down')
         prevented = page.evaluate("""() => {
           const event = new Event('beforeunload', {cancelable: true});
           window.dispatchEvent(event);
@@ -241,7 +286,7 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         # and it stops asking once the order is the server's
         page.click('[data-reorder-save]')
         page.wait_for_function(
-            "document.getElementById('readBody').dataset.reorder === 'off'",
+            "document.documentElement.dataset.reorder === 'off'",
             timeout=8000)
         self.assertFalse(page.evaluate("""() => {
           const event = new Event('beforeunload', {cancelable: true});
