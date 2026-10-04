@@ -1615,7 +1615,7 @@ kbd {
    second, and a travel long enough to read as smooth on a single move reads as the list
    lagging behind the hand when it restarts on every step. */
 @media (prefers-reduced-motion: no-preference) {
-  #chList.is-dragging li:not(.is-dragging) { transition: transform 90ms var(--ease); }
+  #chList.is-dragging li:not(.is-dragging) { transition: transform 60ms var(--ease); }
 }
 
 /* The question before leaving draws its answers with the modal buttons' own geometry --
