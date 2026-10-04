@@ -181,8 +181,8 @@
     if (restore) {
       place(origin);
       Object.keys(numbers).forEach(function (pk) {
-        var link = rowOf(Number(pk));
-        var cell = link && link.querySelector('.songrow__c');
+        var item = rowFor(Number(pk));
+        var cell = item && item.querySelector('.songrow__c');
         if (cell) cell.textContent = numbers[pk];
       });
       applyPaneOrder(origin);
@@ -262,26 +262,32 @@
     gap.setAttribute('aria-hidden', 'true');
     gap.style.height = Math.round(box.height) + 'px';
     item.parentNode.insertBefore(gap, item);
-    drag = {pk: pk, row: item, gap: gap, start: event.clientY, y: event.clientY, moved: false};
+    var mids = [];
+    rows().forEach(function (each) {
+      if (each === item) return;
+      var rect = each.getBoundingClientRect();
+      mids.push({pk: pkOfRow(each), middle: rect.top + rect.height / 2});
+    });
+    drag = {pk: pk, row: item, gap: gap, mids: mids, start: event.clientY, y: event.clientY,
+            moved: false};
     item.classList.add('is-dragging');
     if (item.setPointerCapture && event.pointerId != null) {
       try { item.setPointerCapture(event.pointerId); } catch (e) { /* no capture */ }
     }
   }
 
-  /* Where the gap goes for a pointer at y: the first OTHER row whose middle sits below it, or
-     the end of the list. Used while dragging and once more on release, because the last move
-     event the module saw can be a step behind the pointer's own final position. */
+  /* Where the gap goes for a pointer at y, measured against the rows' midpoints AS THEY WERE
+     WHEN THE DRAG STARTED. The gap takes a row's worth of space, so measuring live moves the
+     goalposts with every step -- the rows below shift by a row, the pointer falls above the
+     next midpoint, and the gap stalls one place short of where it was released. */
   function placeGapAt(y) {
-    var others = rows().filter(function (item) { return item !== drag.row; });
     var target = null;
-    for (var i = 0; i < others.length; i += 1) {
-      var box = others[i].getBoundingClientRect();
-      if (y < box.top + box.height / 2) { target = others[i]; break; }
+    for (var i = 0; i < drag.mids.length; i += 1) {
+      if (y < drag.mids[i].middle) { target = drag.mids[i].pk; break; }
     }
     var l = list();
-    if (target) l.insertBefore(drag.gap, target);
-    else l.appendChild(drag.gap);
+    if (target == null) l.appendChild(drag.gap);
+    else l.insertBefore(drag.gap, rowFor(target));
   }
 
   function moveDrag(event) {
