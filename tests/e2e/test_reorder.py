@@ -208,6 +208,24 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertEqual(self._order_in_pane(page), self._sidebar_order(page))
         self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
 
+    def test_the_morph_starts_at_once_with_no_delay(self):
+        """`--ease` is a whole shorthand value (200ms + a curve). Naming a duration beside it
+        makes the token's own 200ms a DELAY: the rows sat still, then travelled, and shortening
+        the duration could not be felt. The travel must start at once, at rest and while
+        dragging."""
+        delay = """() => getComputedStyle([].slice.call(document.getElementById('chList').children)
+          .filter(li => !!li.querySelector('[data-move-grip]'))[0]).transitionDelay"""
+        page = self._page(self._service_url())
+        self.assertEqual(page.evaluate(delay), '0s')
+        grip = page.locator('[data-move-grip]').first
+        grip.hover()
+        box = grip.bounding_box()
+        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+        page.mouse.down()
+        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2 + 60, steps=6)
+        self.assertEqual(page.evaluate(delay), '0s')
+        page.mouse.up()
+
     def test_a_break_can_be_moved_in_the_order(self):
         page = self._page(self._service_url())
         grip = page.locator('[data-move-grip="%d"]' % self.break_.pk)

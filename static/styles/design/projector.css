@@ -37,7 +37,8 @@ body.projector {
   --display-head: #FFD166;
   /* The design system's --ease carries its own duration, so it cannot go inside a
      shorthand that also names one: `transition: opacity 220ms var(--ease)` parses as
-     duration + 200ms DELAY. The timing curve alone lives here. */
+     duration + 200ms DELAY. The timing curve alone lives here (and now in tokens.css as
+     --ease-timing, for the app's own shorthands). */
   --display-ease: cubic-bezier(.32, .72, .28, 1);
 }
 

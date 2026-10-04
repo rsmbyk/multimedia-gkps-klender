@@ -895,7 +895,7 @@ li:hover > .row-edit,
    quotes their first line, dimmed + italic so they look like prose, not nav */
 .songrow--cont .songrow__t { color: var(--head-ink); font-style: italic; }
 .tatib__flash {
-  animation: tatibFlash 1.3s var(--ease) 1;
+  animation: tatibFlash 1.3s var(--ease-timing) 1;
 }
 @keyframes tatibFlash {
   0%, 30% { background: var(--active-flash); }
@@ -1608,14 +1608,14 @@ kbd {
    never from nothing, so the eye follows the one thing that moved -- and the row under the
    pointer keeps up with the pointer instead of lagging behind it. Reduced motion: instant. */
 @media (prefers-reduced-motion: no-preference) {
-  #chList li:not(.is-dragging) { transition: transform 160ms var(--ease); }
+  #chList li:not(.is-dragging) { transition: transform 160ms var(--ease-timing); }
 }
 
 /* Shorter while a drag is in flight. The rows are being pushed out of the way many times a
    second, and a travel long enough to read as smooth on a single move reads as the list
    lagging behind the hand when it restarts on every step. */
 @media (prefers-reduced-motion: no-preference) {
-  #chList.is-dragging li:not(.is-dragging) { transition: transform 60ms var(--ease); }
+  #chList.is-dragging li:not(.is-dragging) { transition: transform 60ms var(--ease-timing); }
 }
 
 /* The question before leaving draws its answers with the modal buttons' own geometry --
