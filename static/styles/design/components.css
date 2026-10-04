@@ -1601,22 +1601,12 @@ kbd {
 .toc__grip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 /* the grip sits over the row's right end: give the label room so nothing hides */
 :root[data-section="tatib"] #chList .songrow__t { padding-right: 30px; }
-#chList li.is-dragging { z-index: 2; }
+#chList li.is-dragging { z-index: 2; outline: 1px dashed var(--focus); outline-offset: -1px; }
 #chList li.is-dragging .songrow { opacity: .85; }
 
-/* Where the row will land, shown while it is being dragged: the gap travels with the
-   pointer, and the row itself rides under it. */
-#chList li.toc__placeholder {
-  margin: 0; padding: 0;
-  list-style: none;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--focus) 8%, transparent);
-  outline: 1px dashed var(--divider); outline-offset: -1px;
-}
-
 /* The rows morph as they change places: the travel is animated from where each row was,
-   never from nothing, so the eye follows the one thing that moved. Reduced motion makes it
-   instant. */
+   never from nothing, so the eye follows the one thing that moved -- and the row under the
+   pointer keeps up with the pointer instead of lagging behind it. Reduced motion: instant. */
 @media (prefers-reduced-motion: no-preference) {
   #chList li:not(.is-dragging) { transition: transform 160ms var(--ease); }
 }

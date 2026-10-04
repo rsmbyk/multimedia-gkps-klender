@@ -113,18 +113,6 @@
     });
   }
 
-  /* Where the row would sit if it were let go now: the rows, with the drag's own place
-     taken from the gap, which is what the numbers are renumbered against while dragging. */
-  function orderWithGap() {
-    var l = list();
-    var out = [];
-    [].slice.call(l.children).forEach(function (item) {
-      if (item === drag.gap) { out.push(drag.pk); return; }
-      if (item.querySelector('[data-move-grip]')) out.push(pkOfRow(item));
-    });
-    return out;
-  }
-
   /* ---------- the pane follows --------------------------------------------- */
 
   /* A unit is a section AND the add row that follows it: the add row is anchored to the item
@@ -253,22 +241,17 @@
     var item = rowFor(pk);
     if (!item) return;
     event.preventDefault();
-    /* The row keeps its place in the list and rides under the pointer; a GAP takes its place
-       and travels instead. Nothing is inserted or removed under the pointer, which is what
-       would make the browser cancel the gesture. */
-    var box = item.getBoundingClientRect();
-    var gap = document.createElement('li');
-    gap.className = 'toc__placeholder';
-    gap.setAttribute('aria-hidden', 'true');
-    gap.style.height = Math.round(box.height) + 'px';
-    item.parentNode.insertBefore(gap, item);
+    /* The row ITSELF travels through the list -- no gap is inserted beside it. A gap would
+       stand in addition to the row that is still occupying its own space, so the list would
+       gain a row and everything below would be pushed down. What the person sees while
+       dragging is the order they will get. */
     var mids = [];
     rows().forEach(function (each) {
       if (each === item) return;
       var rect = each.getBoundingClientRect();
       mids.push({pk: pkOfRow(each), middle: rect.top + rect.height / 2});
     });
-    drag = {pk: pk, row: item, gap: gap, mids: mids, start: event.clientY, y: event.clientY,
+    drag = {pk: pk, row: item, mids: mids, start: event.clientY, y: event.clientY,
             moved: false};
     item.classList.add('is-dragging');
     if (item.setPointerCapture && event.pointerId != null) {
@@ -276,18 +259,18 @@
     }
   }
 
-  /* Where the gap goes for a pointer at y, measured against the rows' midpoints AS THEY WERE
-     WHEN THE DRAG STARTED. The gap takes a row's worth of space, so measuring live moves the
-     goalposts with every step -- the rows below shift by a row, the pointer falls above the
-     next midpoint, and the gap stalls one place short of where it was released. */
-  function placeGapAt(y) {
+  /* Where the row goes for a pointer at y, measured against the OTHER rows' midpoints as they
+     were when the drag started. Frozen on purpose: the row moving through the list changes the
+     layout under the pointer, so measuring live would move the goalposts with every step and
+     the row would stall a place short of where it was released. */
+  function placeRowAt(y) {
     var target = null;
     for (var i = 0; i < drag.mids.length; i += 1) {
       if (y < drag.mids[i].middle) { target = drag.mids[i].pk; break; }
     }
     var l = list();
-    if (target == null) l.appendChild(drag.gap);
-    else l.insertBefore(drag.gap, rowFor(target));
+    if (target == null) l.appendChild(drag.row);
+    else l.insertBefore(drag.row, rowFor(target));
   }
 
   function moveDrag(event) {
@@ -295,15 +278,10 @@
     drag.y = event.clientY;
     if (Math.abs(event.clientY - drag.start) > 3) drag.moved = true;
     if (!drag.moved) return;
-    drag.row.style.position = 'relative';
-    drag.row.style.zIndex = '2';
-    drag.row.style.transform = 'translateY(' + Math.round(event.clientY - drag.start) + 'px)';
-    /* The gap goes where the row would land if it were let go here, so the space it will
-       occupy is visible while dragging, the other rows part around it, and the numbers read
-       what the list would be. */
     var before = snapshot();
-    placeGapAt(drag.y);
-    renumber(orderWithGap());
+    placeRowAt(drag.y);
+    /* the numbers read the order the drag has produced, and the rows that parted animate */
+    renumber();
     morph(before);
   }
 
@@ -311,23 +289,20 @@
     if (!drag) return;
     var moved = drag.moved;
     var item = drag.row;
-    var gap = drag.gap;
     var before = snapshot();
     item.classList.remove('is-dragging');
-    item.style.transform = '';
-    item.style.zIndex = '';
-    item.style.position = '';
     if (moved) {
-      if (event && typeof event.clientY === 'number') placeGapAt(event.clientY);
-      /* The row goes where the GAP is, so the drop is decided by the document rather than by
-         pointer arithmetic -- the gap is where the person saw it land. */
+      if (event && typeof event.clientY === 'number') {
+        before = snapshot();
+        placeRowAt(event.clientY);          /* one last placement with the release's own Y */
+      }
+      /* A drag that ended on a row would otherwise fire its link: the row jumps to the entry,
+         and a reorder that jumps the page is not what anyone asked for. */
       swallow = true;
-      item.parentNode.insertBefore(item, gap);
       renumber();
       morph(before);
       applyPaneOrder(order());
     }
-    if (gap.parentNode) gap.parentNode.removeChild(gap);
     drag = null;
   }
 
