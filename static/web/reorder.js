@@ -254,6 +254,7 @@
     drag = {pk: pk, row: item, mids: mids, start: event.clientY, y: event.clientY,
             moved: false};
     item.classList.add('is-dragging');
+    list().classList.add('is-dragging');    /* the list shortens the morph while a drag runs */
     if (item.setPointerCapture && event.pointerId != null) {
       try { item.setPointerCapture(event.pointerId); } catch (e) { /* no capture */ }
     }
@@ -291,6 +292,7 @@
     var item = drag.row;
     var before = snapshot();
     item.classList.remove('is-dragging');
+    list().classList.remove('is-dragging');
     if (moved) {
       if (event && typeof event.clientY === 'number') {
         before = snapshot();
