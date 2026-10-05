@@ -1,9 +1,9 @@
 # Spec 007: The old rows — editable, and one running order
 
-- **Status:** Draft — needs the owner's Accept (SDD gate; no implementation before that)
+- **Status:** Accepted (owner, 2026-10-05)
 - **Item:** [ITEM-008](../../backlog/items/ITEM-008-old-rows.md)
 - **Plan:** [./plan.md](./plan.md) · **Tasks:** [./tasks.md](./tasks.md)
-- **Bump:** minor (to confirm)
+- **Bump:** minor (0.11.0 after spec 006 ships as 0.10.0)
 
 ## Intent
 
@@ -39,7 +39,7 @@ working over the same rows.
 
 - Moving the old rows into entries (plan 006, slice 6) and retiring the old paths — still separate
   and owner-triggered.
-- Reorder by drag (plan 006, slice 3).
+- Adding old rows to drag reorder. Existing entry-only drag reorder keeps old rows in place.
 - Any change to the old dock, the old API, or the OBS sources and projection.
 
 ## Domain rules
@@ -55,6 +55,8 @@ working over the same rows.
 - **Deleting an old row removes it from the running order and closes the gap.**
 - **The rules stay the model's own.** The pane's endpoints add nothing to what the old dock already
   enforces.
+- **Legacy API writes remain compatible.** Its reorder endpoint still renumbers old rows alone.
+  The next pane insertion, delete, or entry reorder normalizes the shared sequence again.
 
 ## Acceptance scenarios
 
@@ -92,16 +94,17 @@ working over the same rows.
 
 ## Traceability
 
-Filled per slice as it lands.
+| Acceptance | Implementation | Regression evidence |
+| --- | --- | --- |
+| Edit existing text and note rows from the pane; old dock sees edits | `multimedia/web/reading/legacy_items.py`, `multimedia/web/reading/views.py`, `multimedia/web/templates/reading/_old_item_form.html`, `static/web/entries.js` | `LegacyTatibItemEditorTests`, `tests/e2e/test_old_rows.py::LegacyRowE2ETests.test_editing_a_legacy_row_from_home_updates_the_pane_and_old_api` |
+| Confirm deletion and close the gap across old rows and entries | `old_item_delete`, `_compact_service_order` in `multimedia/web/reading/views.py` | `LegacyTatibItemEditorTests.test_delete_removes_the_old_row_and_keeps_the_remaining_order`, `LegacyRowE2ETests.test_deleting_a_legacy_row_requires_confirmation_and_removes_it_from_old_api` |
+| Insert immediately after the clicked old row; display one order | `0006_unified_service_order.py`, `_ordered_service_rows`, `entry_save`, `reading/tatib.html` | `UnifiedServiceOrderMigrationTests`, `ServiceEntryViewTests`, `ServiceProjectorTests`, `LegacyRowE2ETests.test_adding_under_the_second_old_row_places_the_entry_immediately_after_it` |
+| Preserve old API and OBS surfaces | Existing `multimedia/api/tatib/` and `multimedia/obs/` are unmodified | `LegacyTatibApiCompatibilityTests`, `LegacyObsRouteCompatibilityTests`; existing entry reorder E2E and its shared-order regressions |
 
-## Open questions for Accept
+## Acceptance decisions (owner, 2026-10-05)
 
-1. **The order namespace.** I propose one sequence per Tata Ibadah, with a migration that renumbers
-   the entries after the old rows while preserving the order the pane shows today. The alternative
-   is to leave the two blocks and accept that an insertion under an old row still lands at the end
-   of the entry block. Which do you want? (I recommend the first — it is what your report asked
-   for.)
-2. **Editing an old row versus migrating it.** Editing keeps both systems reading the same row, so
-   the old dock never goes stale. Moving the old rows into entries would give everything one model,
-   but freezes what the old dock sees. I propose editing, and leaving the migration for later.
-3. **Bump.** minor, on top of spec 006's 0.10.0, because of the renumbering migration. Confirm.
+1. **Order namespace:** one contiguous sequence per Tata Ibadah. The migration renumbers entries after
+   old rows while preserving the order the pane shows today.
+2. **Editing versus migrating:** edit the existing `TataIbadahItem` rows; do not move them into
+   `ServiceEntry` in this spec. The old dock continues to read the same rows.
+3. **Version bump:** minor, to `0.11.0` after spec 006 ships as `0.10.0`.

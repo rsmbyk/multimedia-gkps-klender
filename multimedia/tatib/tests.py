@@ -5,7 +5,9 @@ model is exercised alongside, because both have to work in the same service.
 """
 
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.db import connection
+from django.db.migrations.executor import MigrationExecutor
+from django.test import TestCase, TransactionTestCase
 from rest_framework.test import APITestCase
 
 from multimedia.bible import models as bible
@@ -191,3 +193,56 @@ class LegacyTatibApiCompatibilityTests(APITestCase):
         self.first.refresh_from_db()
         self.second.refresh_from_db()
         self.assertEqual((self.first.order_number, self.second.order_number), (2, 1))
+
+
+class UnifiedServiceOrderMigrationTests(TransactionTestCase):
+    """The migration preserves today's old-rows-then-entries reading order."""
+
+    migrate_from = [('tatib', '0005_serviceentry')]
+    migrate_to = [('tatib', '0006_unified_service_order')]
+
+    def migrate(self, targets):
+        executor = MigrationExecutor(connection)
+        executor.migrate(targets)
+        return executor.loader.project_state(targets).apps
+
+    def setUp(self):
+        super().setUp()
+        old_apps = self.migrate(self.migrate_from)
+        TataIbadah = old_apps.get_model('tatib', 'TataIbadah')
+        LegacyItem = old_apps.get_model('tatib', 'TataIbadahItem')
+        ServiceEntry = old_apps.get_model('tatib', 'ServiceEntry')
+        service = TataIbadah.objects.create(name='Existing service')
+        self.service_id = service.pk
+        self.old_ids = [
+            LegacyItem.objects.create(tatib=service, item_type=0, title='Opening',
+                                      text='First legacy row', order_number=4).pk,
+            LegacyItem.objects.create(tatib=service, item_type=0, title='Closing',
+                                      text='Second legacy row', order_number=9).pk,
+        ]
+        self.entry_ids = [
+            ServiceEntry.objects.create(tatib=service, kind=0, title='Hymn',
+                                        text='First entry', order_number=1).pk,
+            ServiceEntry.objects.create(tatib=service, kind=0, title='Prayer',
+                                        text='Second entry', order_number=3).pk,
+        ]
+        self.apps = self.migrate(self.migrate_to)
+
+    def tearDown(self):
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())
+        super().tearDown()
+
+    def test_existing_legacy_order_is_kept_and_entries_follow_it(self):
+        LegacyItem = self.apps.get_model('tatib', 'TataIbadahItem')
+        ServiceEntry = self.apps.get_model('tatib', 'ServiceEntry')
+        self.assertEqual(
+            list(LegacyItem.objects.filter(tatib_id=self.service_id)
+                 .order_by('order_number').values_list('pk', 'order_number')),
+            [(self.old_ids[0], 1), (self.old_ids[1], 2)],
+        )
+        self.assertEqual(
+            list(ServiceEntry.objects.filter(tatib_id=self.service_id)
+                 .order_by('order_number').values_list('pk', 'order_number')),
+            [(self.entry_ids[0], 3), (self.entry_ids[1], 4)],
+        )

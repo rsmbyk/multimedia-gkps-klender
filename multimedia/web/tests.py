@@ -508,6 +508,7 @@ class EditorViewTests(TestCase):
         self.assertNotContains(self.client.get(reverse('web-bible')), 'data-editor-open')
 
 
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class ServiceEntryViewTests(TestCase):
     """The service entry endpoints (spec 006, slice 2).
 
@@ -680,11 +681,20 @@ class ServiceEntryViewTests(TestCase):
         entry.refresh_from_db()
         self.assertEqual((entry.order_number, entry.title), (3, 'Baru'))
 
-    def test_deleting_an_entry(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+    def test_deleting_an_entry_closes_the_gap_across_both_tables(self):
+        first = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Opening', text='First', order_number=1)
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=2)
+        last = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Closing', text='Last', order_number=3)
         response = self.client.post(reverse('web-entry-delete', kwargs={'pk': entry.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertFalse(tatib.ServiceEntry.objects.filter(pk=entry.pk).exists())
+        first.refresh_from_db()
+        last.refresh_from_db()
+        self.assertEqual((first.order_number, last.order_number), (1, 2))
 
     @override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True)
     def test_the_editor_gate_covers_entries(self):
@@ -815,6 +825,38 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual([(e.order_number, e.text) for e in self.tatib.service_entries.all()],
                          [(1, 'a'), (2, 'c'), (3, 'b')])
 
+    def test_text_entry_is_inserted_after_a_legacy_row_and_shifts_later_rows(self):
+        first = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Opening', text='Legacy one', order_number=1)
+        second = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Hymn', text='Legacy two', order_number=2)
+        third = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Prayer', text='Legacy three', order_number=3)
+        existing = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Later entry',
+                             text='Entry after the old rows', order_number=4)
+
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.TEXT, 'title': 'Inserted', 'text': 'New entry',
+            'after': f'l{second.pk}',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        inserted = tatib.ServiceEntry.objects.get(title='Inserted')
+        third.refresh_from_db()
+        existing.refresh_from_db()
+        self.assertEqual(
+            sorted([(item.order_number, item.text) for item in
+                    tatib.TataIbadahItem.objects.filter(tatib=self.tatib)] +
+                   [(entry.order_number, entry.text) for entry in
+                    tatib.ServiceEntry.objects.filter(tatib=self.tatib)]),
+            [(1, 'Legacy one'), (2, 'Legacy two'), (3, 'New entry'),
+             (4, 'Legacy three'), (5, 'Entry after the old rows')],
+        )
+        self.assertEqual((first.order_number, inserted.order_number), (1, 3))
+
     # --- an empty service, and what the sidebar lists -----------------------
 
     def test_an_empty_service_invites_its_first_item(self):
@@ -874,6 +916,23 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn(f'href="#ti-e{entry.pk}"', toc)            # the row points at its block
         self.assertIn(f'id="ti-e{entry.pk}"', html)
 
+    @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+    def test_the_pane_and_contents_list_follow_the_shared_order(self):
+        legacy = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Legacy second', text='Old words', order_number=2)
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Entry first',
+                          text='New words', order_number=1)
+
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        pane = html.split('id="readBody"', 1)[1]
+        toc = html.split('id="chList"', 1)[1]
+        self.assertLess(pane.index('Entry first'), pane.index('Legacy second'))
+        self.assertLess(toc.index('Entry first'), toc.index('Legacy second'))
+        self.assertIn(f'href="#ti-e{entry.pk}"', toc)
+        self.assertIn(f'href="#ti-{legacy.order_number}"', toc)
+
     def test_the_verses_of_a_song_come_back_all_included(self):
         response = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))
         self.assertEqual(response.status_code, 200)
@@ -899,16 +958,16 @@ class ServiceEntryReorderTests(TestCase):
     def setUpTestData(cls):
         cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III')
         cls.other = tatib.TataIbadah.objects.create(name='Ibadah Sore')
-        # A legacy item lives in the same service on its own numbering: the reorder must
-        # leave it, and every old row, exactly as it is.
+        # This fixture is one valid shared sequence: entries can move in their slots,
+        # while a legacy row between them keeps its place.
         cls.legacy = tatib.TataIbadahItem.objects.create(
             tatib=cls.tatib, item_type=tatib.TataIbadahItemType.TEXT,
-            title='Pembukaan', text='KJ 120', order_number=7)
+            title='Pujian', text='KJ 120', order_number=2)
 
     def setUp(self):
         self.first = self.make(1, 'Pembukaan', 'Kasih karunia')
-        self.second = self.make(2, 'Pujian', 'Bersyukurlah')
-        self.third = self.make(3, 'Penutup', 'Amin')
+        self.second = self.make(3, 'Penutup', 'Amin')
+        self.third = self.make(4, 'Doa', 'Bersyukurlah')
         self.elsewhere = tatib.ServiceEntry.objects.create(
             tatib=self.other, kind=tatib.ServiceEntryKind.TEXT,
             title='Sore', text='Selamat sore', order_number=1)
@@ -938,13 +997,13 @@ class ServiceEntryReorderTests(TestCase):
         response = self.post([self.third, self.first, self.second])
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.order_now(),
-                         [(self.third.pk, 1), (self.first.pk, 2), (self.second.pk, 3)])
+                         [(self.third.pk, 1), (self.first.pk, 3), (self.second.pk, 4)])
 
     def test_the_reorder_answers_with_the_order_it_left(self):
         response = self.post([self.third, self.first, self.second])
         self.assertEqual([row['entry'] for row in response.json()['entries']],
                          [self.third.pk, self.first.pk, self.second.pk])
-        self.assertEqual([row['order_number'] for row in response.json()['entries']], [1, 2, 3])
+        self.assertEqual([row['order_number'] for row in response.json()['entries']], [1, 3, 4])
 
     def test_the_numbers_stay_contiguous_from_one(self):
         # a list that names only one entry: it goes first, the rest follow in the order
@@ -952,13 +1011,27 @@ class ServiceEntryReorderTests(TestCase):
         response = self.post([self.second])
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.order_now(),
-                         [(self.second.pk, 1), (self.first.pk, 2), (self.third.pk, 3)])
+                         [(self.second.pk, 1), (self.first.pk, 3), (self.third.pk, 4)])
 
     def test_a_reorder_leaves_the_legacy_items_alone(self):
         self.post([self.third, self.first, self.second])
         self.legacy.refresh_from_db()
-        self.assertEqual(self.legacy.order_number, 7)
+        self.assertEqual(self.legacy.order_number, 2)
         self.assertEqual(self.legacy.text, 'KJ 120')
+
+    def test_reorder_repairs_the_shared_order_after_the_old_api_renumbers_only_old_rows(self):
+        old_response = self.client.post('/api/tatib/items/reorder',
+                                        data=json.dumps({'items': [
+                                            {'item': self.legacy.pk, 'order_number': 1}]}),
+                                        content_type='application/json')
+        self.assertEqual(old_response.status_code, 200)
+        response = self.post([self.third, self.first, self.second])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.order_now(),
+                         [(self.third.pk, 2), (self.first.pk, 3), (self.second.pk, 4)])
+        self.legacy.refresh_from_db()
+        self.assertEqual(self.legacy.order_number, 1)
+        self.assertEqual([row['order_number'] for row in response.json()['entries']], [2, 3, 4])
 
     # --- what it refuses ----------------------------------------------------
 
@@ -966,7 +1039,7 @@ class ServiceEntryReorderTests(TestCase):
         response = self.post([self.first, self.elsewhere])
         self.assertEqual(response.status_code, 400)
         self.assertEqual(self.order_now(),
-                         [(self.first.pk, 1), (self.second.pk, 2), (self.third.pk, 3)])
+                         [(self.first.pk, 1), (self.second.pk, 3), (self.third.pk, 4)])
 
     def test_a_reorder_without_its_service_is_refused(self):
         response = self.client.post(self.url(),
@@ -990,7 +1063,7 @@ class ServiceEntryReorderTests(TestCase):
     def test_a_reorder_is_refused_when_editors_need_a_login(self):
         self.assertEqual(self.post([self.first, self.second, self.third]).status_code, 403)
         self.assertEqual(self.order_now(),
-                         [(self.first.pk, 1), (self.second.pk, 2), (self.third.pk, 3)])
+                         [(self.first.pk, 1), (self.second.pk, 3), (self.third.pk, 4)])
 
 
 class ServiceReorderPaneTests(TestCase):
@@ -1198,6 +1271,18 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('Tuhan adalah gembalaku', screens[0])
         self.assertIn('Salam', screens[1])
 
+    def test_projector_follows_the_shared_order_not_the_model_type(self):
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, order_number=2, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Legacy second', text='Old words')
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Entry first', text='New words')
+
+        screens = self.screens()
+
+        self.assertEqual(len(screens), 2)
+        self.assertIn('Entry first', screens[0])
+        self.assertIn('Legacy second', screens[1])
+
     def test_a_lyric_change_reaches_a_fresh_projection(self):
         """What Update fetches is resolved at request time: the lyrics are the song's
         own, so an edit reaches every service that uses it."""
@@ -1267,3 +1352,103 @@ class LegacyObsRouteCompatibilityTests(TestCase):
                 self.assertEqual(reverse(name), path)
                 response = self.client.get(reverse(name))
                 self.assertEqual(response.status_code, 200)
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class LegacyTatibItemEditorTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.service = tatib.TataIbadah.objects.create(name='Ibadah Minggu III')
+        cls.first = tatib.TataIbadahItem.objects.create(
+            tatib=cls.service, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Pembukaan', text='KJ 120', order_number=1)
+        cls.break_item = tatib.TataIbadahItem.objects.create(
+            tatib=cls.service, item_type=tatib.TataIbadahItemType.END_OF_SECTION,
+            title='', text='Catatan operator', order_number=2)
+        cls.last = tatib.TataIbadahItem.objects.create(
+            tatib=cls.service, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Penutup', text='Doa', order_number=3)
+
+    def test_old_rows_render_edit_and_delete_controls(self):
+        html = self.client.get(reverse('web-tatib-service', args=[self.service.pk])).content.decode()
+        for item in (self.first, self.break_item, self.last):
+            self.assertIn(f'data-old-item-edit="{item.pk}"', html)
+            self.assertIn(f'data-old-item-delete="{item.pk}"', html)
+
+    def test_old_row_add_controls_carry_a_stable_insertion_marker(self):
+        html = self.client.get(reverse('web-tatib-service', args=[self.service.pk])).content.decode()
+        for item in (self.first, self.break_item, self.last):
+            self.assertIn(f'data-entry-after="l{item.pk}"', html)
+
+    def test_text_item_form_prefills_its_title_and_text(self):
+        response = self.client.get(reverse('web-old-item-edit', args=[self.first.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-old-item-form="text"')
+        self.assertContains(response, 'value="Pembukaan"')
+        self.assertContains(response, 'KJ 120')
+
+    def test_text_item_update_changes_only_its_title_and_text(self):
+        response = self.client.post(reverse('web-old-item-save', args=[self.first.pk]), {
+            'title': 'Nyanyian Pembukaan', 'text': 'KJ 152',
+            'item_type': tatib.TataIbadahItemType.END_OF_SECTION,
+        })
+        self.assertEqual(response.status_code, 200)
+        self.first.refresh_from_db()
+        self.break_item.refresh_from_db()
+        self.assertEqual((self.first.item_type, self.first.title, self.first.text),
+                         (tatib.TataIbadahItemType.TEXT, 'Nyanyian Pembukaan', 'KJ 152'))
+        self.assertEqual(self.break_item.text, 'Catatan operator')
+
+    def test_text_item_rejects_blank_text_without_saving(self):
+        response = self.client.post(reverse('web-old-item-save', args=[self.first.pk]), {
+            'title': 'Pembukaan', 'text': '   ',
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'aria-invalid="true"', status_code=400)
+        self.first.refresh_from_db()
+        self.assertEqual(self.first.text, 'KJ 120')
+
+    def test_end_of_section_form_edits_its_note(self):
+        form = self.client.get(reverse('web-old-item-edit', args=[self.break_item.pk]))
+        self.assertContains(form, 'data-old-item-form="end_of_section"')
+        self.assertNotContains(form, 'name="title"')
+        response = self.client.post(reverse('web-old-item-save', args=[self.break_item.pk]), {
+            'text': 'A moment of silence',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.break_item.refresh_from_db()
+        self.assertEqual(self.break_item.text, 'A moment of silence')
+
+    def test_delete_removes_the_old_row_and_keeps_the_remaining_order(self):
+        entry = tatib.ServiceEntry.objects.create(
+            tatib=self.service, kind=tatib.ServiceEntryKind.TEXT,
+            title='Later', text='Entry', order_number=4)
+        response = self.client.post(reverse('web-old-item-delete', args=[self.break_item.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(tatib.TataIbadahItem.objects.filter(pk=self.break_item.pk).exists())
+        self.assertEqual(list(self.service.tataibadahitem_set.order_by('order_number')
+                              .values_list('pk', flat=True)), [self.first.pk, self.last.pk])
+        self.last.refresh_from_db()
+        entry.refresh_from_db()
+        self.assertEqual((self.first.order_number, self.last.order_number, entry.order_number),
+                         (1, 2, 3))
+
+    def test_old_row_writes_are_post_only(self):
+        self.assertEqual(self.client.get(reverse('web-old-item-save', args=[self.first.pk])).status_code,
+                         405)
+        self.assertEqual(self.client.get(reverse('web-old-item-delete', args=[self.first.pk])).status_code,
+                         405)
+
+    @override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True)
+    def test_old_row_writes_respect_the_editor_login_mitigation(self):
+        save = self.client.post(reverse('web-old-item-save', args=[self.first.pk]),
+                                {'title': 'Changed', 'text': 'Changed'})
+        delete = self.client.post(reverse('web-old-item-delete', args=[self.first.pk]))
+        self.assertEqual((save.status_code, delete.status_code), (403, 403))
+        self.first.refresh_from_db()
+        self.assertEqual((self.first.title, self.first.text), ('Pembukaan', 'KJ 120'))
+
+    def test_old_row_writes_reject_a_missing_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        page = client.get(reverse('web-tatib-service', args=[self.service.pk]))
+        self.assertEqual(page.status_code, 200)
+        response = client.post(reverse('web-old-item-delete', args=[self.first.pk]))
+        self.assertEqual(response.status_code, 403)

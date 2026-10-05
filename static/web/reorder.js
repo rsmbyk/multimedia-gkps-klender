@@ -26,7 +26,7 @@
 
   var on = false;                 /* the reorder mode */
   var origin = [];                /* the order the rows were in when it started */
-  var numbers = {};               /* pk -> the number its row showed then */
+  var numbers = [];               /* each text row's number before the preview */
   var nodes = {};                 /* pk -> that entry's own nodes in the pane */
   var pending = null;             /* what to run once a guarded question is answered */
   var drag = null;
@@ -60,28 +60,36 @@
     });
   }
 
-  /* Put the rows in a given order (they are the last rows in the list, so appending lands
-     them right), renumber them to what that order would show, and move the pane to match. */
+  /* Reorder only entry rows in their existing slots; old rows keep their positions. */
   function place(what) {
     var l = list();
     if (!l) return;
-    what.forEach(function (pk) {
-      var item = rowFor(pk);
-      if (item) l.appendChild(item);
+    var slots = rows();
+    var slotSet = new Set(slots);
+    var moving = what.map(rowFor).filter(Boolean);
+    var cursor = 0;
+    var children = [].slice.call(l.children).map(function (item) {
+      return slotSet.has(item) ? moving[cursor++] : item;
+    });
+
+    /* Move only nodes that changed position. Replacing the whole list detaches the
+       grabbed row and cancels its pointer capture before the gesture finishes. */
+    children.forEach(function (item, index) {
+      if (l.children[index] !== item) l.insertBefore(item, l.children[index] || null);
     });
   }
-  function renumber(what) {
+  function renumber() {
     var l = list();
     if (!l) return;
-    /* the numbers come from the sidebar's own non-entry rows, which the server numbered */
-    var others = [].slice.call(l.querySelectorAll('a[data-i]')).filter(function (link) {
-      return link.dataset.i.charAt(0) !== 'e';
-    }).map(function (link) { return Number(link.dataset.num) || 0; });
-    var base = others.length ? Math.max.apply(null, others) : 0;
-    (what || order()).forEach(function (pk, index) {
-      var item = rowFor(pk);
-      var cell = item && item.querySelector('.songrow__c');   /* a break's row has none */
-      if (cell) cell.textContent = String(base + index + 1);
+    var number = 0;
+    [].slice.call(l.children).forEach(function (item) {
+      var link = item.querySelector('a[data-i]');
+      var entryBreak = item.classList.contains('toc__eos')
+        && !!item.querySelector('[data-move-grip]');
+      if (link || entryBreak) number += 1;
+      var cell = item.querySelector('.songrow__c');   /* breaks have no visible number */
+      if (cell) cell.textContent = String(number);
+      if (link) link.dataset.num = String(number);
     });
   }
 
@@ -132,9 +140,16 @@
   function applyPaneOrder(what) {
     var body = pane();
     if (!body) return;
-    what.forEach(function (pk) {
-      (nodes[pk] || []).forEach(function (each) { body.appendChild(each); });
+    var slotNodes = Object.keys(nodes).reduce(function (all, pk) {
+      return all.concat(nodes[pk]);
+    }, []);
+    var slotSet = new Set(slotNodes);
+    var moving = [].concat.apply([], what.map(function (pk) { return nodes[pk] || []; }));
+    var cursor = 0;
+    var children = [].slice.call(body.children).map(function (item) {
+      return slotSet.has(item) ? moving[cursor++] : item;
     });
+    body.replaceChildren.apply(body, children);
   }
 
   function status(message) {
@@ -153,10 +168,15 @@
     }
     if (!rows().length) return false;
     origin = order();
-    numbers = {};
-    rows().forEach(function (item) {
+    numbers = [];
+    var l = list();
+    [].slice.call(l ? l.children : []).forEach(function (item) {
       var cell = item.querySelector('.songrow__c');
-      numbers[pkOfRow(item)] = cell ? cell.textContent : '';
+      if (cell) {
+        var link = item.querySelector('a[data-i]');
+        numbers.push({cell: cell, text: cell.textContent, link: link,
+                      dataNum: link ? link.dataset.num : null});
+      }
     });
     readNodes();
     on = true;
@@ -169,10 +189,9 @@
     if (drag) cancelDrag();
     if (restore) {
       place(origin);
-      Object.keys(numbers).forEach(function (pk) {
-        var item = rowFor(Number(pk));
-        var cell = item && item.querySelector('.songrow__c');
-        if (cell) cell.textContent = numbers[pk];
+      numbers.forEach(function (saved) {
+        saved.cell.textContent = saved.text;
+        if (saved.link) saved.link.dataset.num = saved.dataNum;
       });
       applyPaneOrder(origin);
     }
@@ -200,8 +219,10 @@
                 'X-CSRFToken': csrf()},
       body: JSON.stringify({
         tatib: Number(strip.dataset.reorderFor),
-        entries: order().map(function (pk, index) {
-          return {entry: pk, order_number: index + 1};
+        entries: order().map(function (pk) {
+          var item = rowFor(pk);
+          return {entry: pk, order_number: item
+            ? Array.prototype.indexOf.call(list().children, item) + 1 : 0};
         }),
       }),
     }).then(function (response) {
@@ -236,10 +257,10 @@
 
   /* ---------- dragging a row ------------------------------------------------ */
 
-  function clearGhost() {
-    if (!drag) return;
-    if (drag.ghost) drag.ghost.remove();
-    drag.row.classList.remove('is-dragging');
+  function clearGhost(current) {
+    if (!current) return;
+    if (current.ghost) current.ghost.remove();
+    current.row.classList.remove('is-dragging');
     var l = list();
     if (l) l.classList.remove('is-dragging', 'is-grabbing');
   }
@@ -285,16 +306,16 @@
 
   function cancelDrag() {
     if (!drag) return;
-    var gestureOrder = drag.order;
-    clearGhost();
-    if (drag.moved && list() === drag.row.parentNode) {
+    var current = drag;
+    drag = null;  /* moving a captured node can fire pointercancel again during place() */
+    clearGhost(current);
+    if (current.moved && list() === current.row.parentNode) {
       var before = snapshot();
-      place(gestureOrder);
+      place(current.order);
       renumber();
       morph(before);
-      applyPaneOrder(gestureOrder);
+      applyPaneOrder(current.order);
     }
-    drag = null;
   }
 
   function startDrag(event, pk) {
@@ -330,9 +351,13 @@
     for (var i = 0; i < drag.mids.length; i += 1) {
       if (y < drag.mids[i].middle) { target = drag.mids[i].pk; break; }
     }
-    var l = list();
-    if (target == null) l.appendChild(drag.row);
-    else l.insertBefore(drag.row, rowFor(target));
+    var what = order();
+    var at = what.indexOf(drag.pk);
+    if (at < 0) return;
+    what.splice(at, 1);
+    var to = target == null ? what.length : what.indexOf(target);
+    what.splice(to < 0 ? what.length : to, 0, drag.pk);
+    place(what);
   }
 
   function moveDrag(event) {
@@ -357,7 +382,7 @@
     if (!drag) return;
     var moved = drag.moved;
     var before = snapshot();
-    clearGhost();
+    clearGhost(drag);
     if (moved) {
       if (event && typeof event.clientY === 'number') {
         before = snapshot();
@@ -480,7 +505,7 @@
     if (drag) cancelDrag();
     on = false;
     origin = [];
-    numbers = {};
+    numbers = [];
     pending = null;
     root().dataset.reorder = 'off';
     status('');

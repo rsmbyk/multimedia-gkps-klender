@@ -571,3 +571,72 @@ class ReorderE2ETests(StaticLiveServerTestCase):
           window.dispatchEvent(event);
           return event.defaultPrevented;
         }"""))
+
+    def test_reordering_entries_keeps_legacy_rows_in_their_shared_slots(self):
+        self._close_browser()
+        legacy = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Pembacaan', text='KJ 120', order_number=2)
+        self.second.order_number = 3
+        self.second.save(update_fields=['order_number'])
+        self.third.order_number = 5
+        self.third.save(update_fields=['order_number'])
+        self.setUp_browser()
+
+        page = self._page(self._service_url())
+        self._press(page, self.first.pk, 'down')
+        self.assertEqual(page.evaluate("""() => [].slice.call(
+          document.querySelectorAll('#chList > li')).map(li => {
+            const grip = li.querySelector('[data-move-grip]');
+            if (grip) return 'e' + grip.dataset.moveGrip;
+            const link = li.querySelector('a[data-i]');
+            return link ? 'l' + link.dataset.i : 'l' + li.dataset.i;
+          })"""), [f'e{self.second.pk}', 'l2', f'e{self.first.pk}',
+                  f'e{self.break_.pk}', f'e{self.third.pk}'])
+        self.assertEqual(page.evaluate("""() => [].slice.call(
+          document.querySelectorAll('#readBody > [id^="ti-"]')).map(node => {
+            const id = node.id.slice(3);
+            return id.charAt(0) === 'e' ? id : 'l' + id;
+          })"""), [f'e{self.second.pk}', 'l2', f'e{self.first.pk}',
+                  f'e{self.break_.pk}', f'e{self.third.pk}'])
+        self.assertEqual(self._sidebar_numbers(page), ['1', '3', '5'])
+
+        page.click('[data-reorder-save]')
+        page.wait_for_function("document.documentElement.dataset.reorder === 'off'", timeout=8000)
+        self._close_browser()
+        actual = sorted(
+            [(row.order_number, 'entry', row.pk) for row in self.tatib.service_entries.all()]
+            + [(row.order_number, 'legacy', row.pk)
+               for row in self.tatib.tataibadahitem_set.all()])
+        self.assertEqual(actual, [
+            (1, 'entry', self.second.pk), (2, 'legacy', legacy.pk),
+            (3, 'entry', self.first.pk), (4, 'entry', self.break_.pk),
+            (5, 'entry', self.third.pk),
+        ])
+
+    def test_a_section_break_preview_follows_its_sidebar_slot_between_old_rows(self):
+        self._close_browser()
+        legacy = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Pembacaan', text='KJ 120', order_number=2)
+        self.second.order_number = 3
+        self.second.save(update_fields=['order_number'])
+        self.third.order_number = 4
+        self.third.save(update_fields=['order_number'])
+        self.break_.order_number = 5
+        self.break_.save(update_fields=['order_number'])
+        self.setUp_browser()
+
+        page = self._page(self._service_url())
+        self._press(page, self.break_.pk, 'up')
+        pane_anchors = page.locator('#readBody > [data-anchor]').evaluate_all(
+            '(nodes) => nodes.map(node => node.dataset.anchor)')
+        sidebar_anchors = page.locator('#chList > li').evaluate_all("""(nodes) => nodes.map(li => {
+            const link = li.querySelector('[data-i]');
+            return link ? link.dataset.i : li.dataset.i;
+          })""")
+        self.assertEqual(pane_anchors, [
+            f'e{self.first.pk}', str(legacy.order_number), f'e{self.second.pk}',
+            f'e{self.break_.pk}', f'e{self.third.pk}',
+        ])
+        self.assertEqual(sidebar_anchors, pane_anchors)

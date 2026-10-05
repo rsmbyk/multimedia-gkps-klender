@@ -10,6 +10,21 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-06
+
+### Added
+
+- The Tata Ibadah reading pane can edit or delete existing `TataIbadahItem` text and
+  end-of-section rows in the shared editor dialog; the old OBS dock sees the same edits.
+
+### Changed
+
+- Old rows and new service entries share a contiguous running order. Existing services
+  retain their visible order during migration; adding after either kind and deleting a row
+  shift both kinds together. The pane, contents list, and service projector follow it.
+- Existing entry reorder keeps old rows in their positions and repairs the shared order
+  after a legacy API reorder. Old OBS pages, API routes, and response shapes stay in place.
+
 ## [0.10.0] - 2026-10-06
 
 ### Added

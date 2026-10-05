@@ -149,9 +149,12 @@ def build_entry_form(kind, data=None, instance=None, tatib=None):
 
 
 def next_order_number(tatib):
-    """Where a new entry goes: after the last one in the service."""
-    last = tatib.service_entries.order_by('-order_number').first()
-    return (last.order_number if last else 0) + 1
+    """The next number after both old rows and entries in the shared order."""
+    last_legacy = (tatib.tataibadahitem_set.order_by('-order_number')
+                   .values_list('order_number', flat=True).first() or 0)
+    last_entry = (tatib.service_entries.order_by('-order_number')
+                  .values_list('order_number', flat=True).first() or 0)
+    return max(last_legacy, last_entry) + 1
 
 
 def scripture_books():

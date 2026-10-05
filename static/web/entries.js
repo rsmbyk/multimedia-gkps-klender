@@ -64,6 +64,11 @@
     return (modal.dataset.entryEditUrl || '/editor/entry/0/edit/').replace('/0/', '/' + id + '/');
   }
 
+  function oldItemEditUrl(id) {
+    return (modal.dataset.oldItemEditUrl || '/editor/item/0/edit/').replace('/0/', '/' + id + '/');
+  }
+
+
   /* ---------- the dropdowns -------------------------------------------------
      A picker is a trigger plus a menu. The book pick and the song pick filter
      their own options from inside; the verse pick is a checklist whose trigger
@@ -415,11 +420,11 @@
 
   /* ---------- the delete confirmation --------------------------------------- */
 
-  function confirmDelete(id) {
+  function confirmDelete(id, oldItem) {
     announce('');
     content.innerHTML =
       '<div class="editor__confirm">'
-      + '<p class="editor__confirm-title">Delete this entry?</p>'
+      + '<p class="editor__confirm-title">Delete this ' + (oldItem ? 'row' : 'entry') + '?</p>'
       + '<p class="editor__hint">The service order stays as it was otherwise; only this item goes.</p>'
       + '<div class="editor__actions">'
       + '<button type="button" class="editor__cancel" data-editor-close>Cancel</button>'
@@ -427,7 +432,9 @@
       + '</div></div>';
     if (!modal.open) modal.showModal();
     content.querySelector('[data-confirm-delete]').addEventListener('click', function () {
-      var pattern = modal.dataset.entryDeleteUrl || '/editor/entry/0/delete/';
+      var pattern = oldItem
+        ? (modal.dataset.oldItemDeleteUrl || '/editor/item/0/delete/')
+        : (modal.dataset.entryDeleteUrl || '/editor/entry/0/delete/');
       announce('Deleting...');
       fetch(pattern.replace('/0/', '/' + id + '/'), {
         method: 'POST', credentials: 'same-origin',
@@ -445,12 +452,18 @@
     /* Display mode lives in this browser (spec 006, slice 4): while a Tata Ibadah is
        on screen, an entry write is declined here, with the reason, rather than at the
        endpoint -- which keeps the current API exactly as it is. */
-    if (event.target.closest('[data-entry-delete], [data-entry-edit], [data-entry-open]') &&
+    if (event.target.closest('[data-entry-delete], [data-entry-edit], [data-entry-open], ' +
+                             '[data-old-item-delete], [data-old-item-edit]') &&
         window.gkpsDisplay && window.gkpsDisplay.locked()) {
       event.preventDefault();
       window.gkpsDisplay.refuse();
       return;
     }
+
+    var oldDel = event.target.closest('[data-old-item-delete]');
+    if (oldDel) { event.preventDefault(); confirmDelete(oldDel.dataset.oldItemDelete, true); return; }
+    var oldEdit = event.target.closest('[data-old-item-edit]');
+    if (oldEdit) { event.preventDefault(); load(oldItemEditUrl(oldEdit.dataset.oldItemEdit)); return; }
     var del = event.target.closest('[data-entry-delete]');
     if (del) { event.preventDefault(); confirmDelete(del.dataset.entryDelete); return; }
     var edit = event.target.closest('[data-entry-edit]');
