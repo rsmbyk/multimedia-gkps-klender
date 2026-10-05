@@ -6,7 +6,7 @@ from multimedia.songs import models
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Book
-        fields = '__all__'
+        exclude = ('is_deleted', 'deleted_at', 'deleted_by')
 
 
 class SongSerializer(serializers.ModelSerializer):
@@ -14,14 +14,17 @@ class SongSerializer(serializers.ModelSerializer):
     book_id = serializers.PrimaryKeyRelatedField(
         write_only=True,
         source='book',
-        queryset=models.Book.objects.all(),)
+        queryset=models.Book.objects.active(),)
 
     class Meta:
         model = models.Song
-        fields = '__all__'
+        exclude = ('is_deleted', 'deleted_at', 'deleted_by')
 
 
 class VerseSerializer(serializers.ModelSerializer):
+    song = serializers.PrimaryKeyRelatedField(
+        queryset=models.Song.objects.active().filter(book__is_deleted=False))
+
     class Meta:
         model = models.Verse
-        fields = '__all__'
+        exclude = ('is_deleted', 'deleted_at', 'deleted_by')

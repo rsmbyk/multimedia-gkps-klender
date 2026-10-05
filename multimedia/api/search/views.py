@@ -6,7 +6,8 @@ from multimedia.songs import models
 
 
 class SongSearchView(ListAPIView):
-    queryset = models.Verse.objects.all()
+    queryset = models.Verse.objects.active().filter(
+        song__is_deleted=False, song__book__is_deleted=False)
     serializer_class = serializers.SongSearchResultSerializer
     pagination_class = pagination.SearchPagination
 

@@ -33,6 +33,7 @@
 {% else %}
 <section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.entry %} data-entry-pk="{{ item.pk }}"{% endif %}>
 {% if item.title %}<h2 class="read__sec">{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
+{% if item.deleted_target %}<p class="entry__deleted-warning" role="status">This song, songbook, or an included verse was deleted.</p>{% endif %}
 {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
 {% for para in item.paras %}<p class="tatib__tx">{% if para.speaker %}<span class="tatib__sp">{{ para.speaker }}.</span> {% endif %}{{ para.text }}</p>
 {% endfor %}

@@ -271,7 +271,7 @@ def entry_reorder(request):
 def entry_song_options(request):
     """The song pick's options, grouped by songbook, filtered by q."""
     query = (request.GET.get('q') or '').strip()
-    songs = song_models.Song.objects.select_related('book')
+    songs = song_models.Song.objects.active().filter(book__is_deleted=False).select_related('book')
     if query:
         songs = songs.filter(Q(title__icontains=query) | Q(number__icontains=query))
     songs = songs.order_by('book__name', 'number', 'title')
@@ -287,8 +287,10 @@ def entry_song_options(request):
 
 
 def entry_song_verses(request, pk):
-    song = get_object_or_404(song_models.Song, pk=pk)
-    numbers = list(song.verse_set.order_by('number').values_list('number', flat=True))
+    song = get_object_or_404(
+        song_models.Song.objects.active().filter(book__is_deleted=False), pk=pk)
+    numbers = list(song.verse_set.filter(is_deleted=False)
+                   .order_by('number').values_list('number', flat=True))
     return JsonResponse({'verses': numbers, 'title': song.title or ''})
 
 
@@ -326,7 +328,8 @@ _TITLE_NUMBER = re.compile(r'^\s*\d+\s*[.\-)\u2013]?\s*')
 def _songbooks(selected_id=None):
     # Largest collections first: the accepted mockup's panel order (HAL, KJ,
     # PKJ, NKB, HARIAN, ANTIFON, AJAR) is exactly descending song count.
-    books = (song_models.Book.objects.annotate(song_total=Count('song'))
+    books = (song_models.Book.objects.active()
+             .annotate(song_total=Count('song', filter=Q(song__is_deleted=False)))
              .order_by('-song_total', 'name', 'lang'))
     return [{'id': book.pk, 'name': book.name, 'short': book.short_name or '',
              'hymn': book.is_hymn_book, 'current': book.pk == selected_id}
@@ -338,7 +341,8 @@ def _song_rows(book, current_id=None):
     # tiebreak. Every song in the corpus currently shares one `modified` timestamp, so
     # that tiebreak is what you actually see -- and it has to differ from the A-Z key
     # below, or the toggle would look like it did nothing (spec 005).
-    songs = book.song_set.order_by(F('modified').desc(nulls_last=True), 'title')
+    songs = book.song_set.filter(is_deleted=False).order_by(
+        F('modified').desc(nulls_last=True), 'title')
     rows = []
     for song in songs:
         numbered = book.is_hymn_book and song.number is not None
@@ -440,15 +444,17 @@ def _entry_blocks(service, items, toc, text_count):
         anchor = f'e{entry.pk}'
         title, body = entry.resolve()
         kind_key = entry_forms.kind_name(entry.kind)
+        deleted_target = entry.target_deleted
         # A passage or a song shows its REFERENCE here, not its text: the pane is the
         # running order, and the words belong on the display.
         shows_text = kind_key not in ('scripture', 'song')
         block = {'entry': True, 'anchor': anchor, 'pk': entry.pk, 'kind': kind_key,
                  'kind_label': entry.get_kind_display(), 'title': title,
+                 'deleted_target': deleted_target,
                  'paras': _paragraphs(body) if (body and shows_text) else [],
                  'note': entry.title if entry.kind == tatib_models.ServiceEntryKind.SECTION_BREAK
                          else ''}
-        if kind_key in ('scripture', 'song'):
+        if kind_key in ('scripture', 'song') and not deleted_target:
             block['jump'] = _entry_jump(entry)
         items.append(block)
         text_count += 1
@@ -796,7 +802,7 @@ class BookDetailView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         book = get_object_or_404(
-            song_models.Book.objects.select_related('lang'), pk=self.kwargs['book_id'])
+            song_models.Book.objects.active().select_related('lang'), pk=self.kwargs['book_id'])
         context.update(_shell('kidung', 'open', 'open', False, 'landing', ch_mode='song'))
         context.update({
             'page_title': f'{book.name} — GKPS Klender',
@@ -819,13 +825,15 @@ class SongDetailView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         song = get_object_or_404(
-            song_models.Song.objects.select_related('book'), pk=self.kwargs['song_id'])
+            song_models.Song.objects.active().filter(book__is_deleted=False)
+            .select_related('book'), pk=self.kwargs['song_id'])
         book = song.book
         if book.is_hymn_book and song.number is not None:
             citation = f'{book.name} {song.number}{song.sub_number.upper()}'
         else:
             citation = book.name
-        verses = [verse.lyric for verse in song.verse_set.order_by('number')]
+        verses = [verse.lyric for verse in song.verse_set.filter(is_deleted=False)
+                  .order_by('number')]
         context.update(_shell('kidung', 'open', 'open', True, 'reading', ch_mode='song'))
         context.update({'editor_book_id': book.pk, 'book_is_hymn': book.is_hymn_book})
         context.update({

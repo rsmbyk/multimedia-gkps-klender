@@ -179,6 +179,36 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'Di waktu pagi aku bersyukur')
         self.assertContains(response, 'read__eyebrow')
 
+    def test_deleted_song_is_hidden_from_song_detail_and_search(self):
+        self.next_song.delete()
+        detail = self.client.get(reverse('web-song', args=[self.next_song.pk]))
+        search = self.client.get(reverse('web-search'), {'q': 'Di Waktu Malam'})
+        self.assertEqual(detail.status_code, 404)
+        self.assertFalse(any(
+            row['url'] == reverse('web-song', args=[self.next_song.pk])
+            for group in search.context['result_groups'] for row in group['rows']))
+
+    def test_deleted_songbook_is_hidden_with_its_songs(self):
+        self.nkb.delete()
+        self.assertNotContains(self.client.get(reverse('web-books')), 'Nyanyikanlah Kidung Baru')
+        self.assertEqual(self.client.get(reverse('web-book', args=[self.nkb.pk])).status_code, 404)
+        self.assertEqual(self.client.get(reverse('web-song', args=[self.song.pk])).status_code, 404)
+
+    def test_deleted_verse_is_hidden_from_song_detail_and_search(self):
+        self.song.verse_set.get(number=1).delete()
+        detail = self.client.get(reverse('web-song', args=[self.song.pk]))
+        search = self.client.get(reverse('web-search'), {'q': 'aku bersyukur'})
+        self.assertNotContains(detail, 'Di waktu pagi aku bersyukur')
+        self.assertNotContains(search, 'Di Waktu Pagi')
+
+    def test_legacy_song_pages_hide_deleted_books_and_songs(self):
+        self.harian.delete()
+        self.next_song.delete()
+        book_page = self.client.get(reverse('web-songs-songs', args=[self.harian.pk]))
+        song_page = self.client.get(reverse('web-songs-verses', args=[self.next_song.pk]))
+        self.assertEqual(book_page.status_code, 404)
+        self.assertEqual(song_page.status_code, 404)
+
     def test_unknown_song_is_404(self):
         self.assertEqual(self.client.get(reverse('web-song', args=[9999])).status_code, 404)
 
@@ -333,6 +363,31 @@ class EditorViewTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content[:400])
         self.harian.refresh_from_db()
         self.assertEqual(self.harian.name, 'Kidung Harian Baru')
+
+    def test_deleted_songbook_and_song_targets_cannot_be_edited_or_created_into(self):
+        deleted_book = songs.Book.objects.create(
+            lang=self.harian.lang, name='Deleted editor book', short_name='DEB')
+        deleted_song = songs.Song.objects.create(book=self.harian, title='Deleted editor song')
+        deleted_book_song = songs.Song.objects.create(book=deleted_book, title='Child song')
+        deleted_book.delete()
+        deleted_song.delete()
+
+        self.assertEqual(self.client.get(reverse(
+            'web-editor-edit', kwargs={'kind': 'songbook', 'pk': deleted_book.pk})).status_code, 404)
+        self.assertEqual(self.client.post(self.save_url('songbook', deleted_book.pk), {
+            'name': 'Restored by edit', 'short_name': 'DEB', 'lang': self.harian.lang_id,
+        }).status_code, 404)
+        self.assertEqual(self.client.get(reverse(
+            'web-editor-edit', kwargs={'kind': 'song', 'pk': deleted_song.pk})).status_code, 404)
+        self.assertEqual(self.client.post(self.save_url('song', deleted_song.pk), {
+            'title': 'Restored by edit', 'number': '', 'sub_number': '', 'key': '',
+        }).status_code, 404)
+        self.assertEqual(self.client.post(self.save_url('song'), {
+            'book': deleted_book.pk, 'title': 'Created under deleted book', 'number': '',
+            'sub_number': '', 'key': '',
+        }).status_code, 404)
+        self.assertFalse(songs.Song.objects.filter(title='Created under deleted book').exists())
+        self.assertTrue(songs.Song.objects.filter(pk=deleted_book_song.pk).exists())
 
     def test_hymn_songbook_cannot_be_edited(self):
         self.assertEqual(self.client.get(reverse(
@@ -580,6 +635,17 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.tatib.service_entries.get().resolve(), ('', ''))
 
+    def test_deleted_song_cannot_be_added_as_a_new_service_entry(self):
+        deleted_song = songs.Song.objects.create(
+            book=self.songbook, number=153, title='Deleted entry target')
+        songs.Verse.objects.create(song=deleted_song, number=1, lyric='Do not include')
+        deleted_song.delete()
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': deleted_song.pk, 'verses': ['1'],
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(self.tatib.service_entries.filter(song=deleted_song).exists())
+
     def test_the_next_entry_lands_after_the_last_one(self):
         self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
         self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'b'})
@@ -627,11 +693,40 @@ class ServiceEntryViewTests(TestCase):
 
     # --- what the pickers need ---------------------------------------------
 
+    def test_a_deleted_saved_song_remains_available_when_editing_its_existing_entry(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.song.delete()
+        form = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
+        self.assertEqual(form.status_code, 200)
+        response = self.client.post(reverse('web-entry-save', kwargs={'pk': entry.pk}), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': ['1', '2', '3'],
+        })
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        entry.refresh_from_db()
+        self.assertEqual(entry.song_id, self.song.pk)
+
     def test_the_song_options_are_grouped_by_songbook_and_searchable(self):
         response = self.client.get(reverse('web-entry-song-options') + '?q=kuasa')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Kidung Jemaat')
         self.assertContains(response, f'data-song="{self.song.pk}"')
+
+    def test_song_picker_and_verse_picker_exclude_deleted_rows_and_parents(self):
+        deleted_song = songs.Song.objects.create(
+            book=self.songbook, number=154, title='Deleted picker song')
+        deleted_book = songs.Book.objects.create(
+            lang=self.songbook.lang, name='Deleted picker book', short_name='DPB')
+        child_song = songs.Song.objects.create(book=deleted_book, title='Child of deleted book')
+        deleted_verse = self.song.verse_set.get(number=2)
+        deleted_song.delete()
+        deleted_book.delete()
+        deleted_verse.delete()
+
+        options = self.client.get(reverse('web-entry-song-options'))
+        verses = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))
+        self.assertNotContains(options, f'data-song="{deleted_song.pk}"')
+        self.assertNotContains(options, f'data-song="{child_song.pk}"')
+        self.assertEqual(verses.json()['verses'], [1, 3])
 
     def test_the_song_fragment_checks_every_verse_of_its_song(self):
         entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
@@ -683,6 +778,14 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn(reverse('web-song', args=[self.song.pk]), pane)
         self.assertIn('Kidung Jemaat 152', pane)                 # its reference, as the jump
         self.assertNotIn('bait 1', pane)                         # no lyrics: the display has those
+
+    def test_a_song_entry_warns_when_its_target_has_been_soft_deleted(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.song.verse_set.get(number=2).delete()
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn('entry__deleted-warning', html)
+        self.assertIn('This song, songbook, or an included verse was deleted.', html)
 
     def test_the_add_controls_sit_on_each_item(self):
         entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
@@ -1144,3 +1247,23 @@ class ServiceProjectorTests(TestCase):
             with self.subTest(url=name):
                 response = self.client.get(reverse(name, args=args))
                 self.assertNotIn('data-project-open', response.content.decode())
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class LegacyObsRouteCompatibilityTests(TestCase):
+    def test_existing_obs_pages_keep_their_paths_and_render(self):
+        routes = {
+            'obs-bible-dock': '/obs/bible/dock',
+            'obs-bible-source': '/obs/bible/source',
+            'obs-songs-dock': '/obs/songs/dock',
+            'obs-songs-source': '/obs/songs/source',
+            'obs-tatib-dock': '/obs/tatib/dock',
+            'obs-tatib-source': '/obs/tatib/source',
+            'obs-project-source': '/obs/project/source',
+            'obs-project-settings': '/obs/project/settings',
+        }
+        for name, path in routes.items():
+            with self.subTest(route=name):
+                self.assertEqual(reverse(name), path)
+                response = self.client.get(reverse(name))
+                self.assertEqual(response.status_code, 200)

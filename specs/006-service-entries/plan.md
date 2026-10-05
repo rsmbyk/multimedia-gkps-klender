@@ -1,6 +1,6 @@
 # Plan 006: Service entries
 
-- **Status:** Accepted (owner, 2026-10-03) — needs the owner's Accept (SDD gate)
+- **Status:** Accepted (owner, 2026-10-03)
 - **Spec:** [./spec.md](./spec.md)
 - **Bump:** minor (0.9.0 → 0.10.0)
 
@@ -51,6 +51,64 @@ Ibadah, search) and `beforeunload`.
 
 Tests: the drag and its sidebar preview, Discard restoring the previous order, the guard on each
 exit path, and adds being unavailable while reorder mode is on.
+
+### Accepted amendment to slice 3 — ghost under the pointer (owner, 2026-10-04)
+
+Keep the existing live DOM reorder as the single source of truth. After the movement threshold,
+show an inert visual copy outside the list at the pointer's grab offset while the actual row
+stays in flow but is transparent; never add a second layout slot or delay the copy's movement.
+Keep the existing morph, renumbering, release and keyboard paths. Clean the copy up on release
+and cancellation; cancellation restores only this gesture's starting order, not earlier unsaved
+changes. Verify in a browser with geometry and order assertions for both a normal entry and a
+section break. Owner accepted this amendment on 2026-10-04; implement with test-first coverage.
+
+### Accepted amendment to slice 3 — no hover tint while grabbing (owner, 2026-10-05)
+
+Use the active grab state after the movement threshold, not the broader unsaved/reorder mode,
+to suppress hover backgrounds on the service-entry list and its ghost. Preserve selected styling
+and keyboard focus. Test computed backgrounds before, during and after a pointer drag, including
+cancellation. Owner accepted this amendment on 2026-10-05; implement with test-first coverage.
+
+### Accepted amendment — empty Bible header row (owner, 2026-10-05)
+
+The 34px `min-height` on `.read__head-top` supports the Tata Ibadah project button added
+in this spec, but it also reserves an empty line above the Bible chapter title and TB/SIM
+switcher. On the live reader, the empty eyebrow has `display: none` while its parent still
+measures 34px; the stage's separate 40px top padding is intentional. Collapse the parent
+when it has no visible child; do not remove the row from song or Tata Ibadah pages. Pin
+its geometry from the home click-through route at desktop and phone widths in a browser
+test, plus a populated-header control. Owner accepted this amendment on 2026-10-05.
+
+### Accepted amendment to slice 3 — visible destination slot (owner, 2026-10-05)
+
+Style the existing `is-dragging` row's box as a tinted, outlined destination slot while
+keeping the row's own text and controls invisible; its inert ghost remains outside the list.
+Because `placeRowAt()` already moves that row through the DOM, the indicator follows the
+actual previewed order without a second placeholder or a new drop algorithm. Clear it with
+the existing drag cleanup on release, pointercancel, blur, and page swap. Test geometry and
+computed styling at the beginning, middle, end, and across a section break, plus row count,
+list height, selected/hover/focus styling, and keyboard-only reordering. Owner accepted
+this amendment on 2026-10-05.
+
+### Accepted amendment to slice 3 — remove the destination slot ring (owner, 2026-10-05)
+
+Remove only the inset `box-shadow` on the existing `is-dragging` slot; retain its tint
+and the separate ghost shadow. First update the destination-slot browser test to require
+no shadow or outline on that slot and observe it fail, then change the CSS and verify
+geometry, ghost, keyboard focus, and cleanup with targeted browser coverage. Owner accepted
+this amendment on 2026-10-05.
+
+### Accepted amendment — Bible language switch motion (owner, 2026-10-05)
+
+Keep the TB/SIM anchors and existing edition switching. Give the control one persistent,
+non-interactive selected background behind them; move it using a transform tied to the
+current pressed state rather than animating layout or painting each anchor separately.
+Synchronize that state when the reading stage is replaced or a saved language is restored.
+Disable the transform transition under `prefers-reduced-motion: reduce`, avoid an initial
+slide on load, and preserve focus, unavailable-language handling, and no-JS fallback.
+Before implementation, add browser coverage from home through the Bible chapter: both
+directions, mid-transition position, final state, fixed geometry, unavailable and reduced
+motion states. Owner accepted this amendment on 2026-10-05.
 
 ### Slice 4 — the new display and display mode
 

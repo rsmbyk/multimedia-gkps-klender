@@ -320,7 +320,8 @@
    <div class="read__row">
     <h1 class="read__title"><span id="readName">{{ read_name|default:'' }}</span> <span class="read__no" id="readNo">{{ read_no|default:'' }}</span></h1>
     {% if read_show_lang %}
-    <div class="read__lang" role="group" aria-label="Choose reading translation">
+    <div class="read__lang" role="group" aria-label="Choose reading translation" data-edition="{% if read_lang == 'sim' %}sim{% else %}tb{% endif %}">
+     <span class="read__lang-thumb" aria-hidden="true"></span>
      <a id="langTb" href="{{ lang_tb_url|default:'?ed=tb' }}" aria-pressed="{% if read_lang == 'sim' %}false{% else %}true{% endif %}" title="New Translation (Indonesian)">TB</a>
      <a id="langSim" href="{{ lang_sim_url|default:'?ed=sim' }}" aria-pressed="{% if read_lang == 'sim' %}true{% else %}false{% endif %}" title="Simalungun translation"{% if not has_sim %} data-empty="true" aria-disabled="true"{% endif %}>SIM</a>
     </div>

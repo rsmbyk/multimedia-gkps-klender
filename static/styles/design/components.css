@@ -542,7 +542,7 @@ li:hover > .row-edit,
    control appears beside it. */
 .read__head-top {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; min-height: 34px;
+  gap: 12px;
 }
 .read__project { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin: 0; }
 .read__project-btn {
@@ -764,12 +764,32 @@ li:hover > .row-edit,
 .read__lang {
   display: inline-flex;
   flex: none;
+  position: relative;
   margin: 0 0 0 auto;
   padding: 3px;
   background: var(--rail-bg);
   border: 1px solid var(--divider);
   border-radius: 9px;
 }
+/* A single decorative thumb moves behind the two equal-width labels.
+   Without JS the selected anchor keeps its server-rendered background. */
+.read__lang-thumb { display: none; }
+.read__lang.is-enhanced .read__lang-thumb {
+  display: block;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc((100% - 8px) / 2);
+  height: 30px;
+  border-radius: 6px;
+  background: var(--active-bg);
+  pointer-events: none;
+  transition: transform var(--ease);
+}
+.read__lang.is-enhanced[data-edition="sim"] .read__lang-thumb {
+  transform: translateX(100%);
+}
+.read__lang.is-enhanced a { position: relative; transition: color var(--ease); }
 .read__lang button,
 .read__lang a {
   min-width: 52px; height: 30px;
@@ -790,6 +810,11 @@ li:hover > .row-edit,
   background: var(--active-bg);
   color: var(--active-ink);
   font-weight: 640;
+}
+.read__lang.is-enhanced a[aria-pressed="true"] { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  /* !important beats the shell-wide .01ms duration clamp: no transition at all */
+  .read__lang.is-enhanced .read__lang-thumb { transition: none !important; }
 }
 
 .read__body { margin-top: 8px; padding-bottom: var(--pad-top); }
@@ -890,6 +915,11 @@ li:hover > .row-edit,
   margin-right: .15em;
 }
 .tatib__item { scroll-margin-top: 44px; }
+.entry__deleted-warning {
+  margin: 6px 0 12px;
+  font: 560 13px/1.45 ui-sans-serif, system-ui, sans-serif;
+  color: var(--danger);
+}
 .tatib__item + .tatib__item { margin-top: 2px; }
 /* heading-less items read as continuation of the section above: the TOC
    quotes their first line, dimmed + italic so they look like prose, not nav */
@@ -1601,12 +1631,33 @@ kbd {
 .toc__grip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 /* the grip sits over the row's right end: give the label room so nothing hides */
 :root[data-section="tatib"] #chList .songrow__t { padding-right: 30px; }
-#chList li.is-dragging { z-index: 2; outline: 1px dashed var(--focus); outline-offset: -1px; }
-#chList li.is-dragging .songrow { opacity: .85; }
+/* The real row is the sole destination slot. Hide its contents, not its box;
+   its tint marks the space without a ring. */
+#chList li.is-dragging {
+  visibility: visible;
+  background: color-mix(in srgb, var(--active-bg) 18%, var(--canvas));
+  border-radius: 9px;
+}
+#chList li.is-dragging > * { visibility: hidden; }
+/* Pointer capture can leave a row hovered during a grab. Suppress only that tint,
+   not the selected row's background or keyboard focus. */
+#chList.is-grabbing li:hover > .songrow:not([aria-current="true"]),
+#chList.is-grabbing .songrow:hover:not([aria-current="true"]),
+.reorder__ghost .songrow:hover:not([aria-current="true"]) {
+  background: transparent;
+}
+/* A visual copy tracks the pointer; the actual row is still the list's one slot. */
+.reorder__ghost {
+  position: fixed; z-index: 1000; box-sizing: border-box;
+  pointer-events: none; transition: none !important;
+  border-radius: 9px; background: var(--canvas); color: var(--ink);
+  box-shadow: var(--shadow);
+  opacity: .94;
+}
+.reorder__ghost .toc__grip { opacity: 1; cursor: grabbing; }
 
-/* The rows morph as they change places: the travel is animated from where each row was,
-   never from nothing, so the eye follows the one thing that moved -- and the row under the
-   pointer keeps up with the pointer instead of lagging behind it. Reduced motion: instant. */
+/* The other rows morph as they change places; the fixed ghost above tracks the pointer
+   instantly rather than inheriting this animation. Reduced motion: instant. */
 @media (prefers-reduced-motion: no-preference) {
   #chList li:not(.is-dragging) { transition: transform 160ms var(--ease-timing); }
 }

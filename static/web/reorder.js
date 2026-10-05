@@ -1,8 +1,8 @@
 /* Reordering a Tata Ibadah's entries (spec 006, slice 3).
  *
  * The order is ARRANGED IN THE SIDEBAR, where the order is listed: each entry's row carries
- * the handle and the arrows, and there is NO Reorder button -- the first drag, or the first
- * arrow press, is what starts rearranging. The strip below the sidebar's filter then appears
+ * the grip, and there is NO Reorder button -- the first drag, or a keyboard arrow press
+ * on the focused grip, is what starts rearranging. The strip below the sidebar's filter then appears
  * with Save and Discard, and the pane on the right follows the order.
  *
  * Nothing is written until Save; Discard puts back what was there. Leaving with unsaved
@@ -166,6 +166,7 @@
   }
 
   function leave(restore) {
+    if (drag) cancelDrag();
     if (restore) {
       place(origin);
       Object.keys(numbers).forEach(function (pk) {
@@ -235,6 +236,67 @@
 
   /* ---------- dragging a row ------------------------------------------------ */
 
+  function clearGhost() {
+    if (!drag) return;
+    if (drag.ghost) drag.ghost.remove();
+    drag.row.classList.remove('is-dragging');
+    var l = list();
+    if (l) l.classList.remove('is-dragging', 'is-grabbing');
+  }
+
+  function makeGhost(event) {
+    var rect = drag.row.getBoundingClientRect();
+    var copy = document.createElement('div');
+    copy.className = 'reorder__ghost';
+    copy.dataset.reorderGhost = '';
+    copy.setAttribute('aria-hidden', 'true');
+    copy.inert = true;
+    /* Keep the row's paint, including its grip, but none of its controls or IDs. */
+    copy.innerHTML = drag.row.innerHTML;
+    [].slice.call(copy.querySelectorAll('a, button, [id], [tabindex], [data-move-grip]'))
+      .forEach(function (node) {
+        if (node.matches('a, button')) {
+          var decoration = document.createElement('span');
+          decoration.className = node.className;
+          decoration.innerHTML = node.innerHTML;
+          node.replaceWith(decoration);
+        } else {
+          node.removeAttribute('id');
+          node.removeAttribute('tabindex');
+          node.removeAttribute('data-move-grip');
+        }
+      });
+    /* A section break is its own flex row rather than a child link. */
+    if (drag.row.classList.contains('toc__eos')) copy.classList.add('toc__eos');
+    copy.style.width = rect.width + 'px';
+    copy.style.height = rect.height + 'px';
+    document.body.appendChild(copy);
+    drag.ghost = copy;
+    drag.offsetX = drag.x - rect.left;
+    drag.offsetY = drag.start - rect.top;
+    positionGhost(event);
+  }
+
+  function positionGhost(event) {
+    if (!drag || !drag.ghost) return;
+    drag.ghost.style.left = (event.clientX - drag.offsetX) + 'px';
+    drag.ghost.style.top = (event.clientY - drag.offsetY) + 'px';
+  }
+
+  function cancelDrag() {
+    if (!drag) return;
+    var gestureOrder = drag.order;
+    clearGhost();
+    if (drag.moved && list() === drag.row.parentNode) {
+      var before = snapshot();
+      place(gestureOrder);
+      renumber();
+      morph(before);
+      applyPaneOrder(gestureOrder);
+    }
+    drag = null;
+  }
+
   function startDrag(event, pk) {
     if (event.button !== 0) return;
     if (!enter()) return;
@@ -251,9 +313,8 @@
       var rect = each.getBoundingClientRect();
       mids.push({pk: pkOfRow(each), middle: rect.top + rect.height / 2});
     });
-    drag = {pk: pk, row: item, mids: mids, start: event.clientY, y: event.clientY,
-            moved: false};
-    item.classList.add('is-dragging');
+    drag = {pk: pk, row: item, mids: mids, start: event.clientY, x: event.clientX,
+            y: event.clientY, order: order(), moved: false};
     list().classList.add('is-dragging');    /* the list shortens the morph while a drag runs */
     if (item.setPointerCapture && event.pointerId != null) {
       try { item.setPointerCapture(event.pointerId); } catch (e) { /* no capture */ }
@@ -277,8 +338,14 @@
   function moveDrag(event) {
     if (!drag) return;
     drag.y = event.clientY;
-    if (Math.abs(event.clientY - drag.start) > 3) drag.moved = true;
+    if (!drag.moved && Math.abs(event.clientY - drag.start) > 3) {
+      drag.moved = true;
+      makeGhost(event);
+      drag.row.classList.add('is-dragging');
+      list().classList.add('is-grabbing');
+    }
     if (!drag.moved) return;
+    positionGhost(event);
     var before = snapshot();
     placeRowAt(drag.y);
     /* the numbers read the order the drag has produced, and the rows that parted animate */
@@ -289,10 +356,8 @@
   function endDrag(event) {
     if (!drag) return;
     var moved = drag.moved;
-    var item = drag.row;
     var before = snapshot();
-    item.classList.remove('is-dragging');
-    list().classList.remove('is-dragging');
+    clearGhost();
     if (moved) {
       if (event && typeof event.clientY === 'number') {
         before = snapshot();
@@ -322,8 +387,8 @@
   }, true);
   document.addEventListener('pointermove', moveDrag, true);
   document.addEventListener('pointerup', endDrag, true);
-  document.addEventListener('pointercancel', endDrag, true);
-  window.addEventListener('blur', endDrag, true);
+  document.addEventListener('pointercancel', cancelDrag, true);
+  window.addEventListener('blur', cancelDrag, true);
   /* A drag that ended on a link must not fire it as well. Capture phase, so this beats the
      shell's own click handling -- which would otherwise navigate mid-reorder. */
   document.addEventListener('click', function (event) {
@@ -412,6 +477,7 @@
   /* A swap brings its own rows and its own strip: whatever was pending went with the old
      ones, and only the ROOT carries the attribute, so clear it here. */
   document.addEventListener('shell:page', function () {
+    if (drag) cancelDrag();
     on = false;
     origin = [];
     numbers = {};

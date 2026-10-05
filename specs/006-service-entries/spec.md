@@ -182,6 +182,108 @@ This is an addition to the production app, not a replacement of it.
 - **When** I press Discard
 - **Then** the entries return to the order they had before the drag
 
+### Accepted amendment — pointer-following reorder preview (owner, 2026-10-04)
+
+The sidebar still reorders its **real** rows live; no placeholder is inserted. Once a grip
+moves beyond the drag threshold, a non-interactive visual copy of that entry follows the mouse
+at the point where it was grabbed, without a transition or delay. The real row remains in the
+list as its one layout slot and becomes visually hidden for the gesture. Other rows keep their
+short morph and the list does not grow or push every row below down. The copy is outside the
+list, has no duplicate ids or active links/buttons, and is hidden from assistive technology.
+This applies to ordinary entries and section breaks alike. On release, the copy disappears and
+the real row appears at its previewed position; on cancellation, the copy disappears and this
+**gesture's** order is restored without discarding earlier unsaved moves. Save, Discard, a page
+swap, or window blur cannot leave a stranded copy. Keyboard grip moves stay as they are.
+
+- **Given** a service order with an ordinary entry or a section break
+- **When** I grab its sidebar grip and move the pointer
+- **Then** its visual copy follows that pointer without lag, while the real row retains one
+  layout slot, the order previews live, and the list's height does not grow
+- **When** I release the pointer
+- **Then** the copy disappears and the real row remains at the previewed position
+- **When** the gesture is cancelled instead
+- **Then** the copy disappears and the order from immediately before that gesture returns
+
+### Accepted amendment — suppress entry hover while grabbing (owner, 2026-10-05)
+
+While a sidebar entry is actively grabbed (after the drag threshold), entry rows beneath the
+pointer do not acquire a hover background. The pointer-following ghost itself also has no hover
+highlight. The current/selected entry keeps its existing selected styling. On release or cancel,
+ordinary hover returns immediately; simply entering reorder mode with the keyboard does not
+suppress hover or keyboard focus indicators.
+
+- **Given** a service order with entries visible in the sidebar
+- **When** I hover an entry before grabbing another
+- **Then** its normal hover background appears
+- **When** I grab an entry and drag across other rows
+- **Then** none of those rows nor the ghost gains a hover highlight; the selected row retains
+  its selected background
+- **When** I release or cancel the drag
+- **Then** the row under the pointer can show its normal hover background again
+
+### Accepted amendment — collapse the empty Bible header row (owner, 2026-10-05)
+
+The shared reader header's top row was given a 34px minimum height for the Tata Ibadah
+project button. Bible chapters have neither a visible eyebrow nor a project button, but the
+empty row still occupies those 34px above the book title and TB/SIM control. Collapse that
+row only when it contains no visible content. Keep the stage's intentional 40px top padding,
+the title/control spacing, and the song citation and Tata Ibadah date/project header intact.
+
+- **Given** a Bible chapter read page reached from the home shell
+- **When** the page has no eyebrow or project control
+- **Then** there is no empty row above the book title and TB/SIM control, at desktop or phone widths
+- **Given** a song or Tata Ibadah reading page with a visible eyebrow or project control
+- **Then** that header content retains its space and remains visible
+
+### Accepted amendment — highlight the grabbed entry's destination slot (owner, 2026-10-05)
+
+During an active pointer drag, the real row already occupies the one layout slot where the
+entry will land. Show that **existing slot** as a tinted, outlined space with the grabbed
+entry's dimensions, while keeping its content hidden and its pointer-following ghost above
+the list. The highlight travels with the live reorder to the beginning, middle, or end,
+including across section breaks. Do not insert another row, increase list height, or turn on
+hover tint for other entries. Remove the slot highlight on release or cancellation; a cancel
+restores that gesture's starting order. Before the drag threshold and for keyboard moves,
+retain the current styling and behavior.
+
+- **Given** I grab an ordinary entry or section break and move beyond the drag threshold
+- **When** its destination changes in the sidebar
+- **Then** its one in-flow slot shows a visible highlight at the live destination; the
+  ghost still follows the pointer and the list keeps the same number of rows and height
+- **When** I release or cancel, blur the window, or navigate away
+- **Then** no slot highlight remains and existing release/cancel order rules still hold
+
+### Accepted amendment — remove the destination slot ring (owner, 2026-10-05)
+
+Keep the existing tinted destination slot during an active drag, but remove its inset
+ring. Its contents stay hidden and its dimensions, live position, pointer-following ghost,
+hover behavior, and release/cancel cleanup remain unchanged. Do not remove the ghost's
+separate shadow or the grip's keyboard focus indicator.
+
+- **Given** a dragged entry has a visible destination slot
+- **Then** that slot has a tinted background but no outline or inset shadow
+- **When** the drag ends or is cancelled
+- **Then** the existing cleanup and ordering behavior still apply
+
+### Accepted amendment — morph the Bible language switch (owner, 2026-10-05)
+
+On the Bible reading page, the TB/SIM control's selected background slides between its
+segments when switching between available translations. The highlight stays within the
+control; neither the control nor the header changes size or position. Translation text and
+`aria-pressed` update with the selection as they do now. A disabled/unavailable translation
+cannot move the highlight. On a freshly opened chapter, the highlight starts on its selected
+translation without sliding in from the other side. Reduced-motion preference removes the
+travel, leaving an immediate state change. Preserve the links, focus indicator, keyboard
+operation, and existing no-JavaScript navigation.
+
+- **Given** a chapter with both translations
+- **When** I switch TB → SIM or SIM → TB
+- **Then** one selected background moves smoothly to the chosen segment, while the
+  displayed translation and pressed state agree and the header geometry stays fixed
+- **Given** a translation is unavailable or reduced motion is requested
+- **Then** an unavailable choice leaves selection unchanged, and reduced motion switches
+  the highlight without travel
+
 ### Scenario: Leaving with unsaved order asks first
 
 - **Given** a reordered, unsaved service order
@@ -445,6 +547,44 @@ Two defects this round found and fixed, both invisible to a source read:
 Verified live: background `rgb(20,19,15)`, ink `rgb(245,243,238)`, face
 `"CMG Sans", "Source Sans Pro", sans-serif`, 0px off centre on both axes, the arriving screen
 animating `screenIn` while the leaving one fades, and the off state fading 1 → 0.25 → 0.05 → 0.
+
+### Accepted amendment — Bible language switch motion (owner, 2026-10-05)
+
+- Implementation: `static/styles/design/components.css` and `static/web/reading.js` keep the
+  selected edition filled, move the shared highlight with a transform, synchronize it on initial
+  render and shell swaps, and preserve the real links for keyboard and no-JavaScript use.
+- E2E: `tests/e2e/test_reading.py` — four language-switch cases cover both travel directions and
+  settled geometry, stored-edition initialization without travel, unavailable editions, reduced
+  motion, keyboard focus, the pressed state, and no-JavaScript navigation.
+- Verified: all four targeted browser tests passed. The collected, served page also restored a
+  saved SIM edition from the home-to-reader click path with no highlight animation on initialization.
+
+### Slice 5 — soft deletion and compatibility
+
+- Models and migrations: `multimedia/songs/models.py`,
+  `multimedia/songs/migrations/0013_book_is_deleted_song_is_deleted_verse_is_deleted.py`, and
+  `0014_book_deleted_at_book_deleted_by_song_deleted_at_and_more.py`. Book, Song and Verse retain
+  their rows and foreign-key references; admin delete records the actor/time and uses soft-delete
+  semantics for single and bulk operations.
+- Active browsing and resolution: `multimedia/songs/search.py`,
+  `multimedia/web/reading/{views.py,search.py,editors.py,entries.py}` and
+  `multimedia/web/songs/views.py` hide deleted targets from ordinary browse, search, and new-entry
+  choices, while an existing ServiceEntry can still resolve and edit its saved deleted target.
+  The reading view warns when a saved entry points at a deleted target; its resolver keeps the
+  `(title, body)` contract.
+- API compatibility and filtering: `multimedia/api/songs/{views.py,serializers.py,urls.py}`,
+  `multimedia/api/search/{views.py,serializers.py}` and
+  `multimedia/api/bookmarks/{views.py,serializers.py}` omit deleted records from ordinary reads,
+  reject writes to deleted targets, and do not expose the new soft-delete metadata in existing
+  response shapes. The existing Tata Ibadah list/items/reorder routes retain their legacy payloads.
+- Tests: `multimedia/songs/tests.py`, `multimedia/web/tests.py`,
+  `multimedia/tatib/tests.py`, and `multimedia/api/{songs,search,bookmarks}/tests.py` cover
+  persistence, admin deletion, saved references, warnings, active-only lists, write validation,
+  bookmark behavior, legacy API shapes, and all eight existing OBS page paths.
+- Verified: `manage.py check`, `makemigrations --check --dry-run`, and the 162-test app/API
+  regression run passed. `showmigrations songs` confirms migrations 0013 and 0014 are applied.
+  The four targeted language-switch E2E tests passed separately. No existing OBS template, script,
+  URLconf, or endpoint implementation was changed; the new service projector remains additive.
 
 ## Open questions for Accept
 

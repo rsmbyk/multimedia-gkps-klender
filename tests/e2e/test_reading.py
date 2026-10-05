@@ -86,6 +86,17 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 tatib=self.big, item_type=tatib.TataIbadahItemType.TEXT,
                 title='Bagian %02d' % n, text='Isi bagian %02d' % n, order_number=n)
 
+        if self._testMethodName in (
+            'test_bible_language_highlight_slides_without_reflow',
+            'test_bible_language_highlight_static_and_reduced_motion',
+            'test_bible_language_highlight_starts_in_place_without_travel',
+            'test_bible_language_links_keep_keyboard_and_no_js_navigation',
+        ):
+            sim_lang = bible.Language.objects.create(name='Simalungun')
+            sim_version = bible.Version.objects.create(lang=sim_lang, name='Simalungun', abbreviation='SIM')
+            sim_book = bible.BookTranslation.objects.create(version=sim_version, book=self.mat, translation='Mateus')
+            bible.Verse.objects.create(book_translation=sim_book, chapter=5, verse=13, text='Garam ni dunia.')
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -247,6 +258,186 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('#chList .ch-num').nth(4).click()
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
         self.assertEqual(page.url, start)        # one page, no address changes
+
+    def test_empty_bible_header_row_does_not_reserve_space(self):
+        for width in (1440, 390):
+            with self.subTest(width=width):
+                page = self._page(width=width)
+                page.goto(self.live_server_url + reverse('web-home'))
+                page.locator('.rail [data-panel="alkitab"]').click()
+                page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+                page.locator('#chList .ch-num').nth(4).click()
+                expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+                self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
+                geometry = page.evaluate('''() => {
+                  const box = selector => document.querySelector(selector).getBoundingClientRect();
+                  const stage = document.querySelector('.stage');
+                  return {
+                    rowHeight: box('.read__head-top').height,
+                    titleTop: box('.read__title').top,
+                    toggleTop: box('.read__lang').top,
+                    stageTop: box('.stage').top,
+                    paddingTop: parseFloat(getComputedStyle(stage).paddingTop),
+                    titleVisible: box('.read__title').height > 0,
+                    toggleVisible: box('.read__lang').height > 0
+                  };
+                }''')
+                self.assertLessEqual(geometry['rowHeight'], 1, geometry)
+                self.assertTrue(geometry['titleVisible'] and geometry['toggleVisible'], geometry)
+                self.assertEqual(geometry['paddingTop'], 40, geometry)
+                self.assertAlmostEqual(min(geometry['titleTop'], geometry['toggleTop']),
+                                       geometry['stageTop'] + geometry['paddingTop'], delta=1)
+                page.close()
+
+    def test_bible_language_highlight_slides_without_reflow(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('.rail [data-panel="alkitab"]').click()
+        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+        page.locator('#chList .ch-num').nth(4).click()
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        switch = page.locator('.read__lang')
+        expect(switch.locator('.read__lang-thumb')).to_have_count(1)
+        geometry = switch.bounding_box()
+        header = page.locator('.read__head').bounding_box()
+        # stretch the travel to a known long duration so it can be paused and
+        # sampled deterministically; the move stays transform-only
+        switch.locator('.read__lang-thumb').evaluate('el => el.style.transitionDuration = "3000ms"')
+        for label, text, pressed in [('SIM', 'Garam ni dunia.', '#langSim'),
+                                      ('TB', 'Kamu adalah garam dunia.', '#langTb')]:
+            switch.get_by_text(label, exact=True).click()
+            expect(page.get_by_text(text)).to_be_visible()
+            expect(page.locator(pressed)).to_have_attribute('aria-pressed', 'true')
+            state = switch.evaluate('''el => {
+              const thumb = el.querySelector('.read__lang-thumb');
+              const animation = thumb.getAnimations().find(a => a.transitionProperty === 'transform');
+              if (animation) { animation.pause(); animation.currentTime = animation.effect.getTiming().duration / 2; }
+              return { animation: !!animation,
+                       middle: thumb.getBoundingClientRect().left,
+                       start: el.querySelector('#langTb').getBoundingClientRect().left,
+                       end: el.querySelector('#langSim').getBoundingClientRect().left };
+            }''')
+            self.assertTrue(state['animation'], state)
+            self.assertGreater(state['middle'], state['start'] + 3, state)
+            self.assertLess(state['middle'], state['end'] - 3, state)
+            self.assertEqual(switch.bounding_box(), geometry)
+            self.assertEqual(page.locator('.read__head').bounding_box(), header)
+            switch.locator('.read__lang-thumb').evaluate('el => el.getAnimations().forEach(a => a.finish())')
+            end = switch.locator('.read__lang-thumb').bounding_box()
+            target = page.locator(pressed).bounding_box()
+            self.assertAlmostEqual(end['x'], target['x'], delta=1)
+            self.assertAlmostEqual(end['width'], target['width'], delta=1)
+        switch.locator('.read__lang-thumb').evaluate('el => el.style.transitionDuration = ""')
+        page.close()
+
+    def test_bible_language_highlight_static_and_reduced_motion(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('.rail [data-panel="alkitab"]').click()
+        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+        page.locator('#chList .ch-num').nth(19).click()  # TB-only chapter
+        switch = page.locator('.read__lang')
+        expect(switch.locator('.read__lang-thumb')).to_have_count(1)
+        expect(page.locator('#langSim')).to_have_attribute('aria-disabled', 'true')
+        before = switch.locator('.read__lang-thumb').bounding_box()
+        address = page.url
+        page.locator('#langSim').dispatch_event('click')  # real click is disabled by aria-disabled
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        self.assertEqual(switch.get_attribute('data-edition'), 'tb')
+        self.assertEqual(switch.locator('.read__lang-thumb').bounding_box(), before)
+        self.assertEqual(page.url, address)
+        page.close()
+
+        page = self._page()
+        page.emulate_media(reduced_motion='reduce')
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('.rail [data-panel="alkitab"]').click()
+        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+        page.locator('#chList .ch-num').nth(4).click()
+        switch = page.locator('.read__lang')
+        expect(switch.locator('.read__lang-thumb')).to_have_count(1)
+        page.locator('#langSim').click()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
+        self.assertAlmostEqual(switch.locator('.read__lang-thumb').bounding_box()['x'],
+                               page.locator('#langSim').bounding_box()['x'], delta=1)
+        self.assertEqual(switch.locator('.read__lang-thumb').evaluate('el => el.getAnimations().length'), 0)
+        self.assertEqual(switch.locator('.read__lang-thumb')
+                         .evaluate('el => getComputedStyle(el).transitionDuration'), '0s')
+        page.close()
+
+    def test_bible_language_highlight_starts_in_place_without_travel(self):
+        page = self._page()
+        page.add_init_script("try { localStorage.setItem('gkps-lang', 'sim') } catch (e) {}")
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('.rail [data-panel="alkitab"]').click()
+        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+        page.locator('#chList .ch-num').nth(4).click()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
+        switch = page.locator('.read__lang')
+        expect(switch.locator('.read__lang-thumb')).to_have_count(1)
+        expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
+        self.assertEqual(switch.get_attribute('data-edition'), 'sim')
+        thumb = switch.locator('.read__lang-thumb')
+        self.assertAlmostEqual(thumb.bounding_box()['x'],
+                               page.locator('#langSim').bounding_box()['x'], delta=1)
+        self.assertEqual(thumb.evaluate('el => el.getAnimations().length'), 0)
+        # the highlight must not carry the old state or slide in.
+        page.locator('#langTb').click()
+        page.locator('#chList .ch-num').nth(19).click()  # chapter 20, TB only
+        expect(page.get_by_text('Janganlah kamu kuatir')).to_be_visible()
+        switch = page.locator('.read__lang')
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        expect(page.locator('#langSim')).to_have_attribute('aria-disabled', 'true')
+        self.assertEqual(switch.get_attribute('data-edition'), 'tb')
+        thumb = switch.locator('.read__lang-thumb')
+        self.assertAlmostEqual(thumb.bounding_box()['x'],
+                               page.locator('#langTb').bounding_box()['x'], delta=1)
+        self.assertEqual(thumb.evaluate('el => el.getAnimations().length'), 0)
+        page.close()
+
+    def test_bible_language_links_keep_keyboard_and_no_js_navigation(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('.rail [data-panel="alkitab"]').click()
+        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+        page.locator('#chList .ch-num').nth(4).click()
+        sim = page.locator('#langSim')
+        sim.focus()
+        sim.press('Enter')
+        expect(sim).to_have_attribute('aria-pressed', 'true')
+        self.assertEqual(page.evaluate('document.activeElement.id'), 'langSim')
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        page.locator('#langTb').press('Enter')
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        self.assertEqual(page.evaluate('document.activeElement.id'), 'langTb')
+        page.close()
+
+        context = self.browser.new_context(java_script_enabled=False, viewport={'width': 1280, 'height': 900})
+        page = context.new_page()
+        chapter_url = self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5])
+        page.goto(chapter_url + '?ed=sim')
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        self.assertNotIn('is-enhanced', page.locator('.read__lang').get_attribute('class') or '')
+        page.locator('#langTb').click()
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        self.assertIn('ed=tb', page.url)
+        context.close()
+
+    def test_populated_reading_headers_keep_their_space(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        self._search(page, 'waktu pagi')
+        page.locator('.result-group[data-kind="songs"] .result-row').first.click()
+        expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
+        expect(page.locator('#readEyebrow')).to_be_visible()
+        self.assertGreaterEqual(page.locator('.read__head-top').bounding_box()['height'], 34)
+
+        page.locator('.rail [data-panel="tatib"]').click()
+        page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
+        expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
+        self.assertGreaterEqual(page.locator('.read__head-top').bounding_box()['height'], 34)
 
     def test_sidebar_click_never_scrolls_the_list(self):
         page = self._page()

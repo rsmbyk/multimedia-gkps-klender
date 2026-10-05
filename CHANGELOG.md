@@ -10,6 +10,27 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-06
+
+### Added
+
+- Service entries let one Tata Ibadah hold text, scripture, song, and section-break items in
+  one ordered list, with add/edit/delete controls in its reading pane.
+- A separate service projector at `/obs/service/<id>/` displays the running order and keeps
+  its browser-local display state separate from the existing OBS docks and sources.
+- The Bible TB/SIM selector now has a persistent selected state and a transform-only moving
+  highlight, synchronized on initial load and in-place reading navigation.
+
+### Changed
+
+- Service-entry reorder remains a draft until Save or Discard, and warns before a navigation
+  can discard unsaved changes. The existing `TataIbadahItem` rows and API remain compatible.
+- Songs, songbooks, and verses are soft-deleted: ordinary browse/search/API paths hide deleted
+  targets, saved service entries retain their references and show a warning, and admin deletion
+  records the actor and time without removing rows.
+- Existing bookmark and song API payloads do not expose soft-delete metadata; writes and reorder
+  reject deleted targets.
+
 ## [0.9.0] - 2026-10-03
 
 ### Added

@@ -1,7 +1,7 @@
 """Reordering a Tata Ibadah's entries (spec 006, slice 3).
 
-The order is ARRANGED IN THE SIDEBAR, where it is listed: each entry's row carries the handle
-and the arrows, and there is no Reorder button -- the first drag, or the first arrow press, is
+The order is ARRANGED IN THE SIDEBAR, where it is listed: each entry's row carries a grip
+and there is no Reorder button -- the first drag, or an arrow press on the focused grip, is
 what starts rearranging. Save and Discard appear below the sidebar's filter, and the pane on
 the right follows. Nothing is written until Save; Discard puts back what was there, and
 leaving with an unsaved order asks first, on the shell's own in-page navigation and on a tab
@@ -225,6 +225,232 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2 + 60, steps=6)
         self.assertEqual(page.evaluate(delay), '0s')
         page.mouse.up()
+
+    def _drag_start(self, page, pk):
+        grip = page.locator('[data-move-grip="%d"]' % pk)
+        grip.hover()
+        box = grip.bounding_box()
+        self.assertIsNotNone(box)
+        x, y = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x, y + 10, steps=3)
+        return x, y
+
+    def test_drag_preview_follows_pointer_without_a_second_layout_slot(self):
+        page = self._page(self._service_url())
+        initial = page.evaluate("""() => ({
+          height: document.querySelector('#chList').getBoundingClientRect().height,
+          children: document.querySelector('#chList').children.length
+        })""")
+        x, y = self._drag_start(page, self.first.pk)
+        ghost = page.locator('[data-reorder-ghost]')
+        self.assertEqual(ghost.count(), 1)
+        self.assertTrue(page.evaluate("""() => {
+          const g = document.querySelector('[data-reorder-ghost]');
+          const row = document.querySelector('[data-move-grip="%d"]');
+          return g.parentElement === document.body && g.getAttribute('aria-hidden') === 'true'
+            && g.inert && !g.querySelector('a, button, [id], [data-move-grip], [tabindex]')
+            && getComputedStyle(g).pointerEvents === 'none'
+            && getComputedStyle(g).position === 'fixed'
+            && getComputedStyle(g).transitionDuration === '0s'
+            && getComputedStyle(g.querySelector('.toc__grip')).opacity === '1'
+            && getComputedStyle(row.closest('li')).visibility === 'visible'
+            && getComputedStyle(row.closest('li').firstElementChild).visibility === 'hidden';
+        }""" % self.first.pk))
+        first = ghost.bounding_box()
+        self.assertIsNotNone(first)
+        page.mouse.move(x + 37, y + 32, steps=1)
+        second = ghost.bounding_box()
+        self.assertIsNotNone(second)
+        self.assertAlmostEqual(second['x'] - first['x'], 37, delta=2)
+        self.assertAlmostEqual(second['y'] - first['y'], 22, delta=2)
+        during = page.evaluate("""() => ({
+          height: document.querySelector('#chList').getBoundingClientRect().height,
+          children: document.querySelector('#chList').children.length
+        })""")
+        self.assertEqual(during, initial)
+        target = self._row(page, self.third.pk).bounding_box()
+        self.assertIsNotNone(target)
+        page.mouse.move(x + 37, target['y'] + target['height'] - 4, steps=6)
+        self.assertEqual(self._row_order(page),
+                         [self.second.pk, self.third.pk, self.first.pk, self.break_.pk])
+        page.mouse.up()
+        self.assertEqual(ghost.count(), 0)
+        self.assertEqual(self._row_order(page),
+                         [self.second.pk, self.third.pk, self.first.pk, self.break_.pk])
+
+    def test_grabbed_entry_highlights_its_one_live_destination_slot(self):
+        page = self._page(self._service_url())
+        list_ = page.locator('#chList')
+        initial = list_.evaluate('''el => ({height: el.getBoundingClientRect().height,
+          children: el.children.length})''')
+        row = self._row(page, self.second.pk)
+        original_box = row.bounding_box()
+        assert original_box is not None
+        original_height = original_box['height']
+        grip = row.locator('[data-move-grip]')
+        grip.hover()
+        box = grip.bounding_box()
+        self.assertIsNotNone(box)
+        x, y = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+        page.mouse.move(x, y)
+        page.mouse.down()
+        self.assertFalse(row.evaluate('el => el.classList.contains("is-dragging")'))
+        page.mouse.move(x, y + 10, steps=3)
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 1)
+
+        def assert_slot(index):
+            self.assertEqual(self._row_order(page).index(self.second.pk), index)
+            self.assertEqual(list_.evaluate('''el => ({height: el.getBoundingClientRect().height,
+              children: el.children.length})'''), initial)
+            slot_box = row.bounding_box()
+            assert slot_box is not None
+            self.assertAlmostEqual(slot_box['height'], original_height, delta=1)
+            self.assertTrue(row.evaluate('''el => {
+              const style = getComputedStyle(el);
+              const child = getComputedStyle(el.firstElementChild);
+              return el.classList.contains('is-dragging')
+                && style.visibility === 'visible' && child.visibility === 'hidden'
+                && style.backgroundColor !== 'rgba(0, 0, 0, 0)'
+                && style.boxShadow === 'none'
+                && style.outlineStyle === 'none';
+            }'''))
+
+        assert_slot(1)
+        first = self._row(page, self.first.pk).bounding_box()
+        page.mouse.move(x, first['y'] + 2, steps=4)
+        assert_slot(0)
+        last = self._row(page, self.break_.pk).bounding_box()
+        page.mouse.move(x, last['y'] + last['height'] - 2, steps=5)
+        assert_slot(3)
+        page.mouse.up()
+        self.assertFalse(row.evaluate('el => el.classList.contains("is-dragging")'))
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
+
+    def test_hover_tint_disappears_only_while_grabbing(self):
+        page = self._page(self._service_url())
+        row = self._row(page, self.second.pk)
+        link = row.locator('.songrow')
+        page.mouse.move(0, 0)
+        page.wait_for_timeout(250)
+        resting = link.evaluate('(el) => getComputedStyle(el).backgroundColor')
+        row.hover()
+        page.wait_for_timeout(250)
+        hover = link.evaluate('(el) => getComputedStyle(el).backgroundColor')
+        self.assertNotEqual(hover, resting)
+        x, y = self._drag_start(page, self.first.pk)
+        self.assertTrue(page.locator('#chList').evaluate(
+            '(el) => el.classList.contains("is-grabbing")'))
+        target = row.bounding_box()
+        self.assertIsNotNone(target)
+        page.mouse.move(target['x'] + target['width'] / 2,
+                        target['y'] + target['height'] / 2, steps=5)
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 1)
+        page.wait_for_timeout(250)
+        # Pointer capture and the visible destination slot can retain hover on the
+        # grabbed row. Force the target's pseudo-state to check the other row too.
+        cdp = page.context.new_cdp_session(page)
+        cdp.send('DOM.enable')
+        cdp.send('CSS.enable')
+        document = cdp.send('DOM.getDocument')['root']['nodeId']
+        li = cdp.send('DOM.querySelector', {
+            'nodeId': document,
+            'selector': '#chList li:has([data-move-grip="%d"])' % self.second.pk
+        })['nodeId']
+        anchor = cdp.send('DOM.querySelector', {
+            'nodeId': li, 'selector': '.songrow'
+        })['nodeId']
+        self.assertTrue(li and anchor)
+        cdp.send('CSS.forcePseudoState', {'nodeId': li, 'forcedPseudoClasses': ['hover']})
+        cdp.send('CSS.forcePseudoState', {'nodeId': anchor, 'forcedPseudoClasses': ['hover']})
+        page.wait_for_timeout(250)
+        self.assertEqual(link.evaluate('(el) => getComputedStyle(el).backgroundColor'), resting)
+        link.evaluate('(el) => el.setAttribute("aria-current", "true")')
+        page.wait_for_timeout(250)
+        selected = link.evaluate('(el) => getComputedStyle(el).backgroundColor')
+        self.assertEqual(selected, page.evaluate("""() => {
+          const swatch = document.createElement('div');
+          swatch.style.backgroundColor = 'var(--active-bg)';
+          document.body.appendChild(swatch);
+          const color = getComputedStyle(swatch).backgroundColor;
+          swatch.remove();
+          return color;
+        }"""))
+        link.evaluate('(el) => el.removeAttribute("aria-current")')
+        ghost_link = page.locator('[data-reorder-ghost] .songrow')
+        self.assertTrue(ghost_link.evaluate(
+            '(el) => getComputedStyle(el).backgroundColor.endsWith(", 0)")'))
+        cdp.send('CSS.forcePseudoState', {'nodeId': anchor, 'forcedPseudoClasses': []})
+        cdp.send('CSS.forcePseudoState', {'nodeId': li, 'forcedPseudoClasses': []})
+        page.mouse.up()
+        self.assertFalse(page.locator('#chList').evaluate(
+            '(el) => el.classList.contains("is-grabbing")'))
+        row.hover()
+        page.wait_for_timeout(250)
+        self.assertEqual(link.evaluate('(el) => getComputedStyle(el).backgroundColor'), hover)
+
+    def test_page_swap_removes_a_drag_preview(self):
+        page = self._page(self._service_url())
+        self._drag_start(page, self.first.pk)
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 1)
+        page.evaluate('() => document.dispatchEvent(new Event("shell:page"))')
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
+        self.assertFalse(self._row(page, self.first.pk).evaluate(
+            'el => el.classList.contains("is-dragging")'))
+        self.assertEqual(self._state(page), 'off')
+
+    def test_cancel_restores_only_this_gesture_not_earlier_unsaved_moves(self):
+        page = self._page(self._service_url())
+        self._press(page, self.first.pk, 'down')
+        before = self._row_order(page)
+        x, y = self._drag_start(page, self.break_.pk)
+        page.mouse.move(x, y - 90, steps=8)
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 1,
+                         page.evaluate("""() => ({state: document.documentElement.dataset.reorder,
+                           dragging: document.querySelector('#chList').className,
+                           row: document.querySelector('[data-move-grip="%d"]').closest('li').className})"""
+                           % self.break_.pk))
+        page.locator('[data-move-grip="%d"]' % self.break_.pk).dispatch_event(
+            'pointercancel', {'pointerId': 1})
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
+        self.assertFalse(self._row(page, self.break_.pk).evaluate(
+            'el => el.classList.contains("is-dragging")'))
+        self.assertFalse(page.locator('#chList').evaluate(
+            '(el) => el.classList.contains("is-grabbing")'))
+        self.assertEqual(self._row_order(page), before)
+        self.assertEqual(self._state(page), 'on')
+        page.click('[data-reorder-discard]')
+        self.assertEqual(self._row_order(page),
+                         [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
+
+    def test_break_preview_follows_pointer_before_window_blur(self):
+        page = self._page(self._service_url())
+        before = self._row_order(page)
+        x, y = self._drag_start(page, self.break_.pk)
+        ghost = page.locator('[data-reorder-ghost]')
+        self.assertEqual(ghost.count(), 1)
+        first = ghost.bounding_box()
+        self.assertIsNotNone(first)
+        page.mouse.move(x + 25, y - 18, steps=1)
+        slot = self._row(page, self.break_.pk)
+        self.assertTrue(slot.evaluate('''el => {
+          const style = getComputedStyle(el);
+          return el.classList.contains('is-dragging')
+            && style.visibility === 'visible'
+            && getComputedStyle(el.firstElementChild).visibility === 'hidden'
+            && style.backgroundColor !== 'rgba(0, 0, 0, 0)'
+            && style.boxShadow === 'none'
+            && style.outlineStyle === 'none';
+        }'''))
+        second = ghost.bounding_box()
+        self.assertIsNotNone(second)
+        self.assertAlmostEqual(second['x'] - first['x'], 25, delta=2)
+        self.assertAlmostEqual(second['y'] - first['y'], -28, delta=2)
+        page.evaluate('() => window.dispatchEvent(new Event("blur"))')
+        self.assertEqual(ghost.count(), 0)
+        self.assertFalse(slot.evaluate('el => el.classList.contains("is-dragging")'))
+        self.assertEqual(self._row_order(page), before)
 
     def test_a_break_can_be_moved_in_the_order(self):
         page = self._page(self._service_url())

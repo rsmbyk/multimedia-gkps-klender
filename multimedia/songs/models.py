@@ -1,7 +1,51 @@
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 from multimedia.songs.validators import BookShortNameUniqueValidator
+
+
+class SoftDeleteQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_deleted=False)
+
+    def delete(self):
+        deleted = self.active().update(is_deleted=True, deleted_at=timezone.now())
+        return deleted, {self.model._meta.label: deleted}
+
+
+class SoftDeleteManager(models.Manager.from_queryset(SoftDeleteQuerySet)):
+    pass
+
+
+class SoftDeleteModel(models.Model):
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, editable=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, models.SET_NULL, null=True, blank=True,
+        related_name='%(app_label)s_%(class)s_deleted', editable=False)
+    objects = SoftDeleteManager()
+
+    class Meta:
+        abstract = True
+
+    def soft_delete(self, deleted_by=None, using=None):
+        database = using or self._state.db or 'default'
+        deleted_at = timezone.now()
+        updates = {'is_deleted': True, 'deleted_at': deleted_at}
+        if deleted_by is not None:
+            updates['deleted_by'] = deleted_by
+        deleted = type(self).objects.using(database).filter(
+            pk=self.pk, is_deleted=False).update(**updates)
+        self.is_deleted = True
+        self.deleted_at = deleted_at
+        if deleted_by is not None:
+            self.deleted_by = deleted_by
+        return deleted, {self._meta.label: deleted}
+
+    def delete(self, using=None, keep_parents=False):
+        return self.soft_delete(using=using)
 
 
 class Language(models.Model):
@@ -11,7 +55,7 @@ class Language(models.Model):
         return self.name
 
 
-class Book(models.Model):
+class Book(SoftDeleteModel):
     lang = models.ForeignKey(Language, models.PROTECT)
     name = models.CharField(max_length=32)
     short_name = models.CharField(
@@ -43,7 +87,7 @@ class Key(models.TextChoices):
     B = 'b'
 
 
-class Song(models.Model):
+class Song(SoftDeleteModel):
     book = models.ForeignKey(Book, models.PROTECT)
     number = models.PositiveIntegerField(blank=True, null=True)
     sub_number = models.CharField(max_length=1, blank=True)
@@ -69,7 +113,7 @@ class Song(models.Model):
         unique_together = ['book', 'number', 'sub_number']
 
 
-class Verse(models.Model):
+class Verse(SoftDeleteModel):
     song = models.ForeignKey(Song, models.CASCADE)
     number = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     lyric = models.TextField()

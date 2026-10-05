@@ -77,9 +77,15 @@ class SongEntryForm(ServiceEntryForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        song_queryset = song_models.Song.objects.active().filter(book__is_deleted=False)
+        if self.instance.pk and self.instance.song_id:
+            song_queryset |= song_models.Song.objects.filter(pk=self.instance.song_id)
+        self.fields['song'].queryset = song_queryset
         self.song = self._chosen_song()
-        numbers = list(self.song.verse_set.order_by('number').values_list('number', flat=True)) \
-            if self.song else []
+        numbers = list(self.song.verse_set.filter(is_deleted=False)
+                       .order_by('number').values_list('number', flat=True)) if self.song else []
+        if self.instance.pk and self.instance.song_id == getattr(self.song, 'pk', None):
+            numbers = sorted(set(numbers) | set(self.instance.verses or []))
         self.fields['verses'].choices = [(n, str(n)) for n in numbers]
 
     def _chosen_song(self):
@@ -87,7 +93,7 @@ class SongEntryForm(ServiceEntryForm):
             chosen = self.data.get('song')
         else:
             chosen = getattr(self.instance, 'song_id', None)
-        return song_models.Song.objects.filter(pk=chosen).first() if chosen else None
+        return self.fields['song'].queryset.filter(pk=chosen).first() if chosen else None
 
     def clean_verses(self):
         return sorted(int(number) for number in self.cleaned_data.get('verses') or [])

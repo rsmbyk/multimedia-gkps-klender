@@ -265,6 +265,7 @@
     if (readEl) readEl.setAttribute('lang', ed === 'tb' ? 'id' : 'sim');
     if (langTb) langTb.setAttribute('aria-pressed', String(ed !== 'sim'));
     if (langSim) langSim.setAttribute('aria-pressed', String(ed === 'sim'));
+    if (langTb) langTb.parentElement.dataset.edition = ed;
     if (persist) { try { localStorage.setItem('gkps-lang', ed); } catch (e) {} }
     decorateChapters();
   }
@@ -279,15 +280,19 @@
         setEdition(want, true);
       });
     });
+    if (langTb) langTb.parentElement.classList.add('is-enhanced');
   }
+  function restoreSavedEdition() {
+    try {
+      var savedLang = localStorage.getItem('gkps-lang');
+      if ((savedLang === 'tb' || savedLang === 'sim') && savedLang !== currentEdition()
+          && editionBlock(savedLang)) {
+        setEdition(savedLang, false);
+      }
+    } catch (e) {}
+  }
+  restoreSavedEdition();
   bindLangLinks();
-  try {
-    var savedLang = localStorage.getItem('gkps-lang');
-    if ((savedLang === 'tb' || savedLang === 'sim') && savedLang !== currentEdition()
-        && editionBlock(savedLang)) {
-      setEdition(savedLang, false);
-    }
-  } catch (e) {}
 
   /* ---------- shared helpers ---------- */
   function prefersReduce() {
@@ -997,6 +1002,7 @@
       root.dataset.ch = fresh.ch;
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
+      restoreSavedEdition();
       bindLangLinks();
       bindSearchForm();
       bindFieldClears();
