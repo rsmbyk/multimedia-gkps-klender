@@ -18,10 +18,10 @@
 - [x] Set `bump: patch` on the ITEM and spec header
 - [x] Update `VERSION`, `CHANGELOG.md`, and ITEM `release_version` in the same PR
 - [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in the same PR
-- [ ] Conventional Commit + draft PR linking `./spec.md`
+- [x] Conventional Commit + draft PR linking `./spec.md`
 
 ## Done when
 
-- [ ] All acceptance scenarios in `./spec.md` hold in light and dark themes
-- [ ] Token contrast and targeted browser tests are green
-- [ ] Board, tasks, and version are complete in the implementation PR
+- [x] All acceptance scenarios in `./spec.md` hold in light and dark themes
+- [x] Token contrast and targeted browser tests are green
+- [x] Board, tasks, and version are complete in the implementation PR

@@ -1,13 +1,13 @@
 ---
 id: ITEM-009
 title: 'Softer selected-item tint in reading sidebars'
-status: in-progress
+status: in-review
 type: chore
 priority: P2
 effort: S
 spec: specs/008-sidebar-selection-tint/spec.md
 branch: feat/008-sidebar-selection-tint
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/264
 archived_at:
 archive_reason:
 bump: patch
