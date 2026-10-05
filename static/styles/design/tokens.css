@@ -24,6 +24,7 @@
   --icon: #222220;
   --icon-hover-bg: rgba(31, 31, 29, .08);
   --active-bg: #1C5C3C;        /* GKPS forest green in place of the reference red */
+  --sidebar-selected-bg: #B9C6B9; /* softer accent for selected reading-sidebar rows */
   --active-ink: #FFFFFF;
   --divider: #D9D6CD;
   --tip-bg: #1F1F1D;
@@ -80,6 +81,7 @@
   --icon: #E8E6E0;
   --icon-hover-bg: rgba(255, 255, 255, .09);
   --active-bg: #7C9CF0;         /* GKPS royal blue (#143792), lifted for dark surfaces */
+  --sidebar-selected-bg: #393F4F; /* softer accent for selected reading-sidebar rows */
   --active-ink: #0D1838;
   --active-flash: rgba(124, 156, 240, .22);
   --divider: #3A362F;

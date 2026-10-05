@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-10-05
+
+### Changed
+
+- Softer theme-aware selected-row tint for Bible books and chapters, songbooks, songs, and Tata Ibadah services; selected text remains readable in both themes.
+
 ## [0.9.0] - 2026-10-03
 
 ### Added

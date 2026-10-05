@@ -636,9 +636,9 @@ li:hover > .row-edit,
 /* The row keeps its hover look while the pointer is on its own edit control. */
 #panelBody li:hover > a:not([aria-current="true"]),
 #chList li:hover > a:not([aria-current="true"]) { background: var(--icon-hover-bg); }
-.book[aria-current="true"] {
-  background: var(--active-bg);
-  color: var(--active-ink);
+#panelBody .book[aria-current="true"] {
+  background: var(--sidebar-selected-bg);
+  color: var(--ink);
 }
 .book__n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 22px; }
 /* abbreviation — shown only in mini mode */
@@ -978,7 +978,7 @@ li:hover > .row-edit,
   line-height: 22px;
   color: var(--head-ink);
 }
-.book[aria-current="true"] .book__s { color: inherit; opacity: .8; }
+#panelBody .book[aria-current="true"] .book__s { color: inherit; }
 .is-hidden { display: none !important; }
 
 .panel__empty {
@@ -1172,14 +1172,14 @@ li:hover > .row-edit,
 }
 .songrow:hover { background: var(--icon-hover-bg); }
 #chList li:hover > .songrow:not([aria-current="true"]) { background: var(--icon-hover-bg); }
-.songrow[aria-current="true"] { background: var(--active-bg); color: var(--active-ink); }
+#chList .songrow[aria-current="true"] { background: var(--sidebar-selected-bg); color: var(--ink); }
 .songrow__c {
   flex: none;
   font: 560 13px/1.4 ui-sans-serif, system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   min-width: 3.4rem;
 }
-.songrow[aria-current="true"] .songrow__c { color: var(--active-ink); }
+#chList .songrow[aria-current="true"] .songrow__c { color: var(--ink); }
 .songrow__t { min-width: 0; }
 .ch-num {
   width: var(--btn); height: var(--btn);
@@ -1195,7 +1195,7 @@ li:hover > .row-edit,
   transition: background var(--ease), color var(--ease);
 }
 .ch-num:hover { background: var(--icon-hover-bg); color: var(--ink); text-decoration: none; }
-.ch-num[aria-current="true"] { background: var(--active-bg); color: var(--active-ink); }
+#chList .ch-num[aria-current="true"] { background: var(--sidebar-selected-bg); color: var(--ink); }
 
 /* One shared 44px collapse control: placed beside the search field in either
    the books/services panel or the second-level list. */

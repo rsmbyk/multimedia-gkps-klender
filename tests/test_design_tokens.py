@@ -21,6 +21,7 @@ TEXT_PAIRS = [
     ('--head-ink', '--canvas'),
     ('--ink', '--rail-bg'),
     ('--active-ink', '--active-bg'),
+    ('--ink', '--sidebar-selected-bg'),
     ('--tip-ink', '--tip-bg'),
     ('--danger', '--canvas'),
 ]

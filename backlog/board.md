@@ -18,7 +18,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-008](./items/ITEM-008-old-rows.md) | The old rows — editable, and one running order | Edit/Delete on old TataIbadahItem rows from the pane, and one running order so an insertion lands after the clicked row | feat | P1 | L | [007](../specs/007-service-order-editor/spec.md) | 2026-10-04 |
 
-
 ## Ready
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
@@ -29,6 +28,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-007](./items/ITEM-007-service-entries.md) | Service entries | One Tata Ibadah holds texts, scriptures, songs and section breaks; drag reorder with save/discard; its own projector, current OBS untouched | feat | P1 | L | [006](../specs/006-service-entries/spec.md) | 2026-10-03 |
+| [ITEM-009](./items/ITEM-009-sidebar-selection-tint.md) | Softer selected-item tint in reading sidebars | Softer selected highlight for Bible books and chapters, songbooks, songs, and Tata Ibadah services | chore | P2 | S | [008](../specs/008-sidebar-selection-tint/spec.md) | 2026-10-05 |
 
 ## In review
 
