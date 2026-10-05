@@ -1,6 +1,6 @@
 # Plan 005: Sidebar editors for Kidung and Tata Ibadah
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-006

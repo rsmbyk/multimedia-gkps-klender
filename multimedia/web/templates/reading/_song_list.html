@@ -1,7 +1,13 @@
 {% for song in songs %}
 <li><a class="songrow" href="{% url 'web-song' song.id %}" data-i="{{ song.id }}"
-       data-t="{{ song.sort_title }}" data-m="{{ song.modified_key }}"
+       data-t="{{ song.sort_title }}" data-o="{{ forloop.counter0 }}" data-m="{{ song.modified_key }}"
        {% if song.number_display %}data-num="{{ song.number_display }}" {% endif %}{% if song.current %} aria-current="true"{% endif %}>
   {% if song.number_display %}<span class="songrow__c">{{ song.number_display }}</span>{% endif %}
-  <span class="songrow__t">{{ song.title }}</span></a></li>
+  <span class="songrow__t">{{ song.title }}</span></a>{% if editor_enabled and not book_is_hymn %}
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="{{ song.id }}"
+            aria-label="Edit {{ song.title }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button>{% endif %}</li>
 {% endfor %}

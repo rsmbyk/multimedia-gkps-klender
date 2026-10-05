@@ -1,7 +1,7 @@
 # Spec: Sidebar editors for Kidung and Tata Ibadah
 
 - **ID:** 005
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-006
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -37,6 +37,27 @@ rows — from the same three sidebars that already list them, without leaving th
 - A permissions model of its own (only the one-setting hook below), revision history, drafts,
   or an approval flow.
 - OBS, the public API, bookmarks, the maintenance page.
+
+## Changed in this round's review
+
+- The song list's sort pair stays *last modified* (default) <-> *alphabetical* as accepted;
+  what changed is why it now moves. Every song in the corpus imports with a single `modified`
+  timestamp, so all rows tie and the *last modified* order is decided by its tiebreak -- the
+  file's own order, which was the alphabetical order -- making the toggle a no-op. The
+  alphabetical key now ignores a title's own leading `435. `, so the two orders differ on
+  every songbook. Song *numbers* stay a hymn-book concept; nothing in the UI names them.
+- The song list's add button moved out of the toolbar to a full-width row below the filter.
+  Inline, it displaced the sort control from the position the accepted mockup gives it.
+- A hymn songbook shows no add button either, and its create endpoint refuses a
+  hand-crafted request. The first round's rule was read as covering *editing* only, which
+  left a new song into a published hymn corpus possible through the create path.
+- The add buttons are now inserted from the page that arrives when the shell swaps a section
+  in place. They live outside the swapped regions, so the previous in-place update could only
+  reach a button that already existed -- and the search-first home has none, which is why they
+  were missing for anyone who landed on the home and clicked through, the path the owner
+  actually uses. A page that has none gets one inserted; Alkitab drops it again.
+- Hovering a row's own edit control keeps the row's hover styling, and that control carries a
+  pointer cursor, so the list never appears to lose its affordance under the pointer.
 
 ## Domain rules
 
@@ -136,12 +157,16 @@ team; the spec pins it as the first thing to revisit.
 
 ## Traceability
 
-- Domain/app tests: `multimedia/web/tests.py` (create/update for each record, the constraint
-  matrix, CSRF, the login hook, hymn exclusion in the rendered shell)
-- E2E: `tests/e2e/test_editor.py` (the three add flows, an edit flow, hover-reveal and
-  keyboard reach, the error path, and that the stage survives a save)
-- Implementation: `multimedia/web/reading/editors.py` (forms + helpers),
-  `multimedia/web/reading/views.py` + `urls.py` (POST endpoints),
-  `multimedia/web/templates/reading/` (`_editor_modal.html`, add/edit controls),
-  `static/styles/design/components.css`, `static/web/editors.js`,
-  `static/web/reading.js` (the `shell:applied` event)
+- Domain/app tests: `multimedia/web/tests.py` — `EditorViewTests` (create/update for each
+  record, the constraint matrix, CSRF, POST-only, the login hook, hymn exclusion in the
+  rendered shell)
+- E2E: `tests/e2e/test_editor.py` — `EditorE2ETests` (the three add flows, both edit flows,
+  the hover reveal with its keyboard reach, the error path, and the stage surviving a save)
+- Implementation: `multimedia/web/reading/editors.py` (forms + accept/save helpers),
+  `multimedia/web/reading/views.py` (`editor_form`, `editor_save`),
+  `multimedia/web/reading/context_processors.py` (`editor_enabled`),
+  `multimedia/web/urls.py` (four `/editor/...` routes),
+  `multimedia/web/templates/reading/{_editor_modal,_editor_form}.html` plus the add buttons
+  and row controls in `base.html`, `_songbooks_panel.html`, `_song_list.html`,
+  `_tatib_panel.html`; `static/web/editors.js`; the `refresh` kind in
+  `static/web/reading.js`; `static/styles/design/components.css`

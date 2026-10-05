@@ -49,6 +49,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         # bulk first, so the reveal tests have a list long enough to travel
         for n in range(1, 31):
             songs.Song.objects.create(book=self.harian, title='Lagu %02d' % n)
+        # Created last, so it is the newest by `modified`: the default order and the
+        # alphabetical one have to be observably different.
         songs.Song.objects.create(book=self.harian, title='Alpha')
         songs.Song.objects.create(book=self.harian, title='Zebra')
 
@@ -316,18 +318,20 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(search_clear).to_be_hidden()
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()   # results stay
 
-    def test_song_sort_toggle_on_non_hymn_books(self):
+    def test_song_sort_toggles_between_last_modified_and_alphabetical(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-book', args=[self.harian.id]))
         sort = page.locator('#songSort')
         expect(sort).to_be_visible()
         rows = page.locator('#chList .songrow')
-        expect(rows.first).to_have_attribute('data-t', 'Zebra')   # newest first
+        expect(sort).to_have_attribute('data-order', 'm')
+        expect(rows.first).to_contain_text('Zebra')      # last modified: Zebra is newest
         sort.click()
-        expect(rows.first).to_have_attribute('data-t', 'Alpha')   # alphabetical
         expect(sort).to_have_attribute('data-order', 'title')
+        expect(rows.first).to_contain_text('Alpha')      # alphabetical
         sort.click()
-        expect(rows.first).to_have_attribute('data-t', 'Zebra')
+        expect(sort).to_have_attribute('data-order', 'm')
+        expect(rows.first).to_contain_text('Zebra')      # and back again
 
     # --- sidebar reveals (owner review round 2) ---
 

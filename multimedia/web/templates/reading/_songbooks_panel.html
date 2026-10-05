@@ -4,6 +4,12 @@
          data-name="{{ book.id }}" data-sim="{{ book.short }}"
          aria-label="{{ book.name }}{% if book.short %} ({{ book.short }}){% endif %}"{% if book.current %} aria-current="true"{% endif %}>
     <span class="book__n">{{ book.name }}</span>
-    {% if book.short %}<span class="book__s">{{ book.short }}</span>{% endif %}</a></li>
+    {% if book.short %}<span class="book__s">{{ book.short }}</span>{% endif %}</a>{% if editor_enabled and not book.hymn %}
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="{{ book.id }}"
+            aria-label="Edit {{ book.name }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button>{% endif %}</li>
   {% endfor %}
 </ul></section>

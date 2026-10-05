@@ -83,7 +83,8 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 ### Out of scope
 
 - OBS surfaces, the public APIs, the editor under `/manage/`, bookmarks.
-- Model/data changes beyond `Song.modified` (migration 0012, added in the review round so
+- Model/data changes beyond `Song.modified` (kept on the model, but no longer the sort
+  key -- see the correction below) (migration 0012, added in the review round so
   non-hymn song lists can sort by recency): reading renders the existing `bible.*`,
   `songs.*`, `tatib.*` data.
 - The maintenance page (spec 003) — standalone, unchanged.
@@ -133,8 +134,9 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   sections.*;
   testament heads *Perjanjian Lama / Perjanjian Baru*; template head *Templates*; mode
   button *Show Tata Ibadah templates* ↔ *Show dated Tata Ibadah*; reader editions *TB* and
-  *SIM*; song-list sort control *Sort: recently updated — switch to alphabetical* ↔
-  *Sort: alphabetical — switch to recently updated* (non-hymn songbooks only).
+  *SIM*; song-list sort control *Sort: last modified — switch to alphabetical* ↔
+  *Sort: alphabetical — switch to last modified* (non-hymn songbooks only; see the
+  correction at the end of this document).
 - **Search covers the whole corpus.** Bible: every book name and alias, `Book chapter:verse`
   references (ranges included), and verse text (both translations, one hit per verse). Kidung:
   every songbook full name and abbreviation, song titles, and lyric text. Tata Ibadah:
@@ -186,8 +188,9 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   name names what it clears, derived from the field's own label (*Clear books*, *Clear
   songbooks*, *Clear songs*, *Clear Tata Ibadah*, *Clear search*).
 - **Song lists sort by recency or alphabetically.** A non-hymn songbook (`is_hymn_book`
-  false) shows a sort control in the chapters toolbar — *recently updated* (default, by
-  `Song.modified`, newest first) ↔ *alphabetical* — applied in place without a reload. Hymn
+  false) shows a sort control in the chapters toolbar — *last modified* (default:
+  newest first, the file's own order breaking a tie) ↔ *alphabetical*, whose key drops a title's own
+  leading `435. ` — applied in place without a reload. Hymn
   songbooks keep their number order and hide the control.
 - **Nested sidebars are parent-first.** A click on a closed or mini section expands the
   parent panel; a click on the open parent closes it and its child; on narrow screens the
@@ -231,7 +234,11 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
   **not** ported — any non-empty query searches; (2) a sidebar click no longer recentres the
   row (it moves a list only to un-clip a row, and centres only in the two reveal cases); the
   mockup's own single-document navigation is now matched by the implementation (one page, no
-  address changes); (3) the mockup's *recently updated* sort needs real timestamps —
+  address changes); (3) the sort pair originally read *recently updated* /*alphabetical*, which
+  could not work on the real corpus (every song imports with one `modified` timestamp, so all
+  rows tied and the toggle looked inert) — **corrected in review** to keep *last modified* /
+  *alphabetical*, which differ on every songbook; the mockup's own control is unchanged and
+  still matches (3) ~~the mockup's *recently updated* sort needs real timestamps —
   `Song.modified` supplies them, and until the first edits land the default order matches
   alphabetical for untouched rows; (4) the collapse control's window glyph is replaced by a
   **double chevron** (`«`), with single chevron and chevron-plus-bar shown as alternatives.
@@ -324,7 +331,7 @@ Bible/Tata Ibadah entries). Nothing from that direction ships.
 ### Scenario: Song lists sort by recency or alphabetically
 
 - **Given** a non-hymn songbook whose songs carry `modified` stamps
-- **Then** a sort control offers *recently updated* (default) ↔ *alphabetical* and re-orders
+- **Then** a sort control offers *last modified* (default) ↔ *alphabetical* and re-orders
   the list in place
 - **And** hymn songbooks keep number order and show no sort control
 

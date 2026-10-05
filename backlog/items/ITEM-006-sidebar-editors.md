@@ -1,19 +1,19 @@
 ---
 id: ITEM-006
-status: speccing
+status: done
 title: 'Sidebar editors for Kidung and Tata Ibadah'
 type: feat
 priority: P1
 effort: L
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-06
 spec: specs/005-sidebar-editors/spec.md
-branch:
-pr:
+branch: feat/005-sidebar-editors
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/262
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 0.9.0
 ---
 
 # ITEM-006: Sidebar editors for Kidung and Tata Ibadah

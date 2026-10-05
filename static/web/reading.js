@@ -53,7 +53,7 @@
   var chSearchEl = document.querySelector('.ch__search');
 
   var activeSection = root.dataset.section || 'alkitab';
-  var songSort = 'm';                    /* 'm' = recently updated, 'title' = A-Z */
+  var songSort = 'm';                    /* 'm' = last modified, 'title' = alphabetical */
   var navBeforeCh = null;
   var pendingAnchor = null;
   var railCloseTimer = null;
@@ -150,9 +150,20 @@
       tipTimer = window.setTimeout(function () { showTip(el); }, HOVER_DELAY);
     });
     el.addEventListener('pointerleave', hideTip);
-    el.addEventListener('focus', function () { showTip(el); });
+    el.addEventListener('focus', function () {
+      /* Closing a panel puts focus back on its rail tile, and a pointer-driven focus
+         must not raise the label: only a keyboard focus should (review report). */
+      if (!el.matches(':focus-visible')) return;
+      showTip(el);
+    });
     el.addEventListener('blur', hideTip);
   }
+  /* A rail click leaves focus on the tile, and a focused tile keeps its label up --
+     which reads as a stuck tooltip once the sidebar it opened has closed. */
+  rail.addEventListener('click', function () {
+    hideTip();
+    window.setTimeout(hideTip, 260);         /* after any re-focus the state change does */
+  });
   rail.querySelectorAll('.rail__btn[data-tip]').forEach(function (btn) {
     bindTip(btn);
     btn.addEventListener('keydown', function (event) {
@@ -194,10 +205,15 @@
     });
     el.addEventListener('pointerleave', hideTileTip);
     el.addEventListener('focus', function () {
-      if (root.dataset.nav === 'mini') showTileTip(el);
+      if (root.dataset.nav === 'mini' && el.matches(':focus-visible')) showTileTip(el);
     });
     el.addEventListener('blur', hideTileTip);
   }
+  /* Every tooltip is about a state that a transition is about to change: a focused
+     tile keeps its own label up, and a tile's floating label can be showing under the
+     pointer as the panel closes, where no pointerleave ever arrives. Clear them all at
+     each transition rather than guessing which one is up. */
+  function hideTips() { hideTip(); hideTileTip(); }
   function bindPanelTips() {
     panelBody.querySelectorAll('.book').forEach(bindFloatTip);
   }
@@ -447,6 +463,7 @@
   });
 
   function openChaptersInPlace(name) {
+    hideTips();
     cancelPendingRailClose();
     if (mqNarrow.matches && root.dataset.nav !== 'closed') {
       navBeforeCh = root.dataset.nav;
@@ -464,6 +481,7 @@
     window.requestAnimationFrame(updateChInds);
   }
   function closeChapters(restorePanel) {
+    hideTips();
     if (root.dataset.ch !== 'open') return;
     root.dataset.ch = 'closed';
     hideTileTip();
@@ -623,11 +641,17 @@
       var rx = x.querySelector('.songrow');
       var ry = y.querySelector('.songrow');
       if (songSort === 'title') {
-        return String(rx.dataset.t || '').localeCompare(String(ry.dataset.t || ''), 'id');
+        /* The key ignores a title's own leading "435. ", or A-Z would just repeat
+           the file order. */
+        var xt = String(rx.dataset.t || '');
+        var yt = String(ry.dataset.t || '');
+        if (xt !== yt) return xt < yt ? -1 : 1;
+        return (parseInt(rx.dataset.o, 10) || 0) - (parseInt(ry.dataset.o, 10) || 0);
       }
-      /* Microsecond keys; title breaks a tie so both surfaces agree exactly. */
+      /* Last modified, newest first. Every song in the corpus currently shares one
+         timestamp, so the tiebreak -- the file's own order -- is what you see. */
       var recent = (parseFloat(ry.dataset.m) || 0) - (parseFloat(rx.dataset.m) || 0);
-      return recent || String(rx.dataset.t || '').localeCompare(String(ry.dataset.t || ''), 'id');
+      return recent || (parseInt(rx.dataset.o, 10) || 0) - (parseInt(ry.dataset.o, 10) || 0);
     });
     var frag = document.createDocumentFragment();
     rows.forEach(function (li) { frag.appendChild(li); });
@@ -637,8 +661,8 @@
   function syncSortBtn() {
     var recent = songSort === 'm';
     var label = recent
-      ? 'Sort: recently updated \u2014 switch to alphabetical'
-      : 'Sort: alphabetical \u2014 switch to recently updated';
+      ? 'Sort: last modified \u2014 switch to alphabetical'
+      : 'Sort: alphabetical \u2014 switch to last modified';
     songSortBtn.setAttribute('aria-label', label);
     songSortBtn.title = label;
     songSortBtn.dataset.order = recent ? 'm' : 'title';
@@ -759,6 +783,7 @@
   });
 
   function openPanel() {
+    hideTips();
     cancelPendingRailClose();
     if (mqNarrow.matches && root.dataset.ch === 'open') closeChapters();
     if (root.dataset.chMode === 'song' && mqSongNarrow.matches
@@ -778,6 +803,7 @@
     if (snapshot) restorePos(snapshot);
   }
   function closePanel() {
+    hideTips();
     cancelPendingRailClose();
     root.dataset.nav = 'closed';
     syncState();
@@ -911,7 +937,8 @@
     var fresh = doc.documentElement.dataset;
     var kind = opts.kind || 'lists';
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
-      || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results';
+      || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results'
+      || kind === 'refresh';
 
     /* shared first column: books / songbooks / services */
     panelTitleEl.textContent = txt(doc, '#panelTitle');
@@ -983,6 +1010,55 @@
       root.dataset.ch = fresh.ch || root.dataset.ch;
     }
 
+    /* The sidebar add buttons sit outside the swapped regions, so they cannot be
+       updated in place: a page that never had one (the search-first home) has no
+       element to update, which is exactly how they went missing on the home ->
+       section path. Swap them whole from the page that just arrived instead, and
+       drop them when it has none (Alkitab). */
+    /* The mode toggle belongs to the Tata Ibadah toolbar only. Syncing the toolbar's
+       labels was not enough: on the home -> section path the button itself was absent,
+       so the section's toggle never appeared and the collapse sat in its place. */
+    (function () {
+      var toolbarEl = document.querySelector('.panel__filter');
+      if (!toolbarEl) return;
+      var live = document.getElementById('tatibMode');
+      var fresh = doc.querySelector('#tatibMode');
+      if (fresh && !live) {
+        toolbarEl.insertBefore(fresh.cloneNode(true), toolbarEl.firstChild);
+        live = document.getElementById('tatibMode');
+      } else if (live && !fresh) {
+        live.parentNode.removeChild(live);
+        live = null;
+      } else if (live && fresh) {
+        ['href', 'aria-label', 'title', 'hidden'].forEach(function (attr) {
+          if (fresh.hasAttribute(attr)) live.setAttribute(attr, fresh.getAttribute(attr));
+          else live.removeAttribute(attr);
+        });
+        live.innerHTML = fresh.innerHTML;
+      }
+      /* One deterministic order, whatever the swap left behind: the mockup's
+         [field, toggle, collapse]. Appending each in turn re-parents them. */
+      [toolbarEl.querySelector('.filter-box'), live,
+       document.getElementById('panelCollapse')].forEach(function (el) {
+        if (el && el.parentNode) el.parentNode.appendChild(el);
+      });
+    })();
+    var panelEl = document.getElementById('panel');
+    var panelFilter = panelEl && panelEl.querySelector('.panel__filter');
+    var oldPanelAdd = document.getElementById('panelAdd');
+    if (oldPanelAdd) oldPanelAdd.parentNode.removeChild(oldPanelAdd);
+    var freshPanelAdd = doc.querySelector('#panelAdd');
+    if (freshPanelAdd && panelFilter && panelFilter.parentNode) {
+      panelFilter.parentNode.insertBefore(freshPanelAdd, panelFilter.nextSibling);
+    }
+    var chTop = document.querySelector('.ch__top');
+    var oldChAdd = document.querySelector('.ch__add');
+    if (oldChAdd) oldChAdd.parentNode.removeChild(oldChAdd);
+    var freshChAdd = doc.querySelector('.ch__add');
+    if (freshChAdd && chTop && chTop.parentNode) {
+      chTop.parentNode.insertBefore(freshChAdd, chTop.nextSibling);
+    }
+
     bindPanelTiles();
     bindPanelTips();
     bindChRows();
@@ -1031,6 +1107,18 @@
       var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
       if (target) revealSearchTarget(target);
     }
+    if (kind === 'refresh' && opts.what) {
+      /* a save just closed its modal: show the row it touched */
+      var saved = chList.querySelector('[data-editor-id="' + opts.what + '"]')
+        || panelBody.querySelector('[data-editor-id="' + opts.what + '"]');
+      if (saved) {
+        var row = saved.closest('a') || saved;
+        var scroller = panelBody.contains(row) ? panelBody : chBody;
+        revealRow(row, scroller);
+        row.classList.add('row-flash');
+        saved.focus({ preventScroll: true });
+      }
+    }
     if (kind === 'search') {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
@@ -1065,6 +1153,10 @@
   /* ---------- Escape closes the innermost open layer ---------- */
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Escape') return;
+    /* an open modal (the editors' <dialog>) is the innermost layer: the browser
+       closes it and the keypress must stop there, or Esc also closes the sidebar
+       behind it (review report) */
+    if (document.querySelector('dialog[open]')) return;
     if (root.dataset.ch === 'open') {
       closeChapters(true);
       var row = panelBody.querySelector('.book[aria-current="true"]');
@@ -1149,6 +1241,13 @@
   railSearch.addEventListener('click', openSearch);
   var railLogo = document.querySelector('.rail__logo');
   if (railLogo) railLogo.addEventListener('click', openSearch);
+
+  /* A sidebar editor saved something: re-render the page's regions in place, so
+     every list, the panel selection and the reading stage agree again. */
+  document.addEventListener('editor:saved', function (event) {
+    navigate(window.location.pathname + window.location.search,
+             { kind: 'refresh', what: event.detail && event.detail.id });
+  });
 
   /* ---------- reveal search targets ---------- */
   function revealSearchTarget(target) {

@@ -18,14 +18,16 @@ import re
 from urllib.parse import quote
 
 from django.db.models import Count, F
-from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
+                         JsonResponse)
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.generic import TemplateView
 
 from multimedia.bible import models as bible_models
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
+from multimedia.web.reading import editors
 from multimedia.web.reading import search as search_lib
 
 TESTAMENTS = (('old', 'Perjanjian Lama'), ('new', 'Perjanjian Baru'))
@@ -81,6 +83,48 @@ def _shell(section, nav, ch, read_on, home_state, ch_mode='chapter'):
     }
 
 
+# ---------- sidebar editors (spec 005) ----------
+# GET renders the modal's form (empty, or prefilled when editing); POST validates
+# and saves, answering JSON on success and the re-rendered form on error. Both are
+# server-authoritative: the rules hold even when the modal is bypassed.
+
+
+def _editor_fragment_context(kind, form, pk):
+    kwargs = {'kind': kind, 'pk': pk} if pk else {'kind': kind}
+    return {
+        'form': form,
+        'kind': kind,
+        'title': editors.form_title(kind, pk),
+        'save_url': reverse('web-editor-save' if pk else 'web-editor-save-new', kwargs=kwargs),
+        'target_id': pk or '',
+    }
+
+
+def editor_form(request, kind, pk=None):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    form, _target = editors.build_form(kind, request, pk)
+    if form is None:
+        raise Http404('Not editable.')
+    return render(request, 'reading/_editor_form.html',
+                  _editor_fragment_context(kind, form, pk))
+
+
+def editor_save(request, kind, pk=None):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    form, target = editors.build_form(kind, request, pk, data=request.POST)
+    if form is None:
+        raise Http404('Not editable.')
+    if not form.is_valid():
+        return render(request, 'reading/_editor_form.html',
+                      _editor_fragment_context(kind, form, pk), status=400)
+    saved = editors.save_form(kind, form, target)
+    return JsonResponse({'ok': True, 'id': saved.pk})
+
+
 def _books_groups(selected_id=None):
     info_map = search_lib.bible_book_index()
     groups = []
@@ -101,22 +145,26 @@ def _books_groups(selected_id=None):
     return groups
 
 
+# A leading "435. " / "435)" / "435 -" inside a title: the alphabetical key drops it.
+_TITLE_NUMBER = re.compile(r'^\s*\d+\s*[.\-)\u2013]?\s*')
+
+
 def _songbooks(selected_id=None):
     # Largest collections first: the accepted mockup's panel order (HAL, KJ,
     # PKJ, NKB, HARIAN, ANTIFON, AJAR) is exactly descending song count.
     books = (song_models.Book.objects.annotate(song_total=Count('song'))
              .order_by('-song_total', 'name', 'lang'))
     return [{'id': book.pk, 'name': book.name, 'short': book.short_name or '',
-             'current': book.pk == selected_id} for book in books]
+             'hymn': book.is_hymn_book, 'current': book.pk == selected_id}
+            for book in books]
 
 
 def _song_rows(book, current_id=None):
-    if book.is_hymn_book:
-        # A hymn book's file order already is its song-number order.
-        songs = book.song_set.order_by('number', 'sub_number', 'title')
-    else:
-        # Non-hymn books default to the sort toggle's "recently updated".
-        songs = book.song_set.order_by(F('modified').desc(nulls_last=True), 'title')
+    # The default is "last modified", newest first, with the file's own order as the
+    # tiebreak. Every song in the corpus currently shares one `modified` timestamp, so
+    # that tiebreak is what you actually see -- and it has to differ from the A-Z key
+    # below, or the toggle would look like it did nothing (spec 005).
+    songs = book.song_set.order_by(F('modified').desc(nulls_last=True), 'title')
     rows = []
     for song in songs:
         numbered = book.is_hymn_book and song.number is not None
@@ -124,7 +172,9 @@ def _song_rows(book, current_id=None):
             'id': song.pk,
             'number_display': song.book_number if numbered else '',
             'title': song.title or '(untitled)',
-            'sort_title': song.title,
+            # The A-Z key. Plenty of titles carry their own leading "435. ", which
+            # would make alphabetical order identical to the number order.
+            'sort_title': _TITLE_NUMBER.sub('', song.title or '').lower(),
             'modified_key': str(int(song.modified.timestamp() * 1000000)) if song.modified else '',
             'current': song.pk == current_id,
         })
@@ -446,6 +496,8 @@ class BookDetailView(TemplateView):
             'show_song_sort': not book.is_hymn_book,
             'ch_title': f'Song list — {book.name}',
             'book_name': book.name,
+            'editor_book_id': book.pk,
+            'book_is_hymn': book.is_hymn_book,
         })
         return context
 
@@ -466,6 +518,7 @@ class SongDetailView(TemplateView):
             citation = book.name
         verses = [verse.lyric for verse in song.verse_set.order_by('number')]
         context.update(_shell('kidung', 'open', 'open', True, 'reading', ch_mode='song'))
+        context.update({'editor_book_id': book.pk, 'book_is_hymn': book.is_hymn_book})
         context.update({
             'page_title': f'{citation} — GKPS Klender',
             'songbooks': _songbooks(book.pk),
@@ -510,7 +563,10 @@ class TatibView(TemplateView):
             'page_title': f'{service.name} — GKPS Klender' if service else 'Tata Ibadah — GKPS Klender',
             'tatib_groups': _tatib_groups(mode, service.pk if service else None),
             'show_tatib_mode': True,
-            'tatib_mode_url': f'?mode={other_mode}',
+            # Absolute on purpose: the search-first home swaps this button into the live
+            # page, where a relative "?mode=..." resolves against /home/ and lands on the
+            # search home -- which closes the panel and shows Alkitab (review report).
+            'tatib_mode_url': reverse('web-tatib') + f'?mode={other_mode}',
             'tatib_mode_pressed': 'true' if mode == 'template' else 'false',
             'tatib_mode_label': ('Show dated Tata Ibadah' if mode == 'template'
                                  else 'Show Tata Ibadah templates'),

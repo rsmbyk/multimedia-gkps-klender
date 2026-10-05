@@ -10,6 +10,65 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-03
+
+### Added
+
+- Sidebar editors (spec 005): a full-width accent add button below the filter in the
+  songbook, song and Tata Ibadah sidebars, and a hover/focus-revealed edit control on every
+  row of those lists. Each opens a modal — a native `<dialog>` in the reading design — that
+  creates or edits the record through a server-rendered form, refreshes the page's regions
+  in place on save, and shows validation errors beside their fields without closing.
+- Songbook fields: name, short name, language, hymn flag. Song fields: number, sub-number,
+  title, key — with the number required for a hymn. Tata Ibadah fields: name, date, active,
+  plus an optional first section on create, because a service only appears in the public
+  lists once it has one.
+- `SIDEBAR_EDITORS_REQUIRE_LOGIN` (default off): set it true to hide every editor control
+  from anonymous visitors and refuse their writes with 403, without touching the UI code.
+
+### Changed
+
+- Hymn songbooks and the songs inside them are read-only: they render no edit control at
+  all, checked against the data rather than a list of names, and their write endpoints
+  refuse the request even when it is hand-crafted. That now includes *adding* a song: a
+  hymn book shows no add button, and a hand-crafted create is refused like any other
+  hymn-book write (found in review, where the create path had been left open).
+- The forms mirror the models' own rules, so a duplicate short name, a duplicate
+  `(book, number, sub_number)` and a numberless hymn are refused server-side; CSRF is
+  required on every write.
+- Song lists sort *last modified* (newest first, the file's own order breaking a tie) or
+  *alphabetically*, whose key ignores a title's own leading `435. `. Without that, the two
+  orders would be identical: every song in the corpus imports with one `modified` timestamp,
+  so all rows tie and the alphabetical order is what the list already shows. The song list's
+  add button also moved out of the toolbar to a full-width row below the filter, so the sort
+  control keeps the place it has in the accepted mockup.
+- Hovering a row's edit control no longer drops the row's hover styling, and the control
+  carries a pointer cursor like the rest of the row.
+- Escape inside an editor's modal closes only the modal: the page's own Escape handling
+  looked through it and closed the sidebar behind it too.
+- The Tata Ibadah mode toggle works when it is reached by clicking through from the home. Its
+  link was relative (`?mode=template`), which only resolves on `/tatib/`; swapped into the home
+  it became `/home/?mode=template` -- the search home -- so the panel closed and Alkitab
+  appeared. It is absolute now, and it is synced (or removed) with its section, so it keeps the
+  slot the mockup gives it instead of leaving the collapse there.
+- Closing a sidebar no longer reveals a row's edit control: the row link kept focus, and
+  `:focus-within` counted as hover.
+- A rail tile's label no longer appears when a sidebar closes. Closing the panel returns focus
+  to its tile on purpose (that is the focus management, and it is right), but the label was
+  raised by *any* focus; it now answers keyboard focus only, via `:focus-visible`. Any tooltip
+  still up when a sidebar's state changes is cleared at the transition.
+- The add buttons are inserted from the page that arrives when the shell swaps a section in
+  place. They sit outside the swapped regions, and the search-first home has no such button
+  to update, so they used to be missing for anyone who landed on the home and clicked through
+  to a section -- the path the site is designed around. Regression-tested on that path.
+
+### Security
+
+- **Accepted risk (owner decision, 2026-10-03): anyone may write through these forms.** The
+  corpus of a publicly reachable deployment is editable by anyone who can reach it. The
+  login hook above is the documented mitigation and the first thing to switch on before the
+  site is exposed beyond the team.
+
 ## [0.8.0] - 2026-10-03
 
 ### Added
