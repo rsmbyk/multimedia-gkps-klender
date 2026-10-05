@@ -15,10 +15,3 @@ class TataIbadahItemAdmin(admin.ModelAdmin):
     autocomplete_fields = ('tatib',)
     search_fields = ('tatib__name', 'text')
     list_filter = ('item_type',)
-
-
-@admin.register(models.ServiceEntry)
-class ServiceEntryAdmin(admin.ModelAdmin):
-    autocomplete_fields = ('tatib', 'book_translation', 'song')
-    search_fields = ('tatib__name', 'title', 'text')
-    list_filter = ('kind',)

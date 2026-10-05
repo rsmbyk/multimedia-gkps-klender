@@ -1,12 +1,12 @@
 ---
 id: ITEM-006
-status: in-review
+status: done
 title: 'Sidebar editors for Kidung and Tata Ibadah'
 type: feat
 priority: P1
 effort: L
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-06
 spec: specs/005-sidebar-editors/spec.md
 branch: feat/005-sidebar-editors
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/262
