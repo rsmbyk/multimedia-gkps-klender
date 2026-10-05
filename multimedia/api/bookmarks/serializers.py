@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from multimedia.api.bookmarks import validators
 from multimedia.bookmarks import models
-from multimedia.songs.models import Verse
+from multimedia.songs.models import Song, Verse
 
 
 class SongBookmarkSerializer(serializers.ModelSerializer):
@@ -18,6 +18,8 @@ class SongBookmarkSerializer(serializers.ModelSerializer):
 
 
 class SongBookmarkItemSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    song = serializers.PrimaryKeyRelatedField(
+        queryset=Song.objects.active().filter(book__is_deleted=False))
     verse_info = serializers.SerializerMethodField(read_only=True)
     song_info = serializers.SerializerMethodField(read_only=True)
     order_number = serializers.IntegerField(read_only=True)
@@ -25,7 +27,7 @@ class SongBookmarkItemSerializer(DynamicFieldsMixin, serializers.ModelSerializer
     def get_verse_info(self, obj: models.SongBookmarkItem):
         def retrieve_verse(number):
             try:
-                verse = obj.song.verse_set.get(number=number)
+                verse = obj.song.verse_set.get(number=number, is_deleted=False)
                 return {'number': verse.number, 'lyric': verse.lyric}
             except Verse.DoesNotExist:
                 return {'number': number, 'lyric': ''}
@@ -57,7 +59,8 @@ class SongBookmarkItemSerializer(DynamicFieldsMixin, serializers.ModelSerializer
 
 
 class SongBookmarkItemReorderSerializer(serializers.Serializer):
-    item = serializers.PrimaryKeyRelatedField(queryset=models.SongBookmarkItem.objects.all())
+    item = serializers.PrimaryKeyRelatedField(queryset=models.SongBookmarkItem.objects.filter(
+        song__is_deleted=False, song__book__is_deleted=False))
     order_number = serializers.IntegerField()
 
 

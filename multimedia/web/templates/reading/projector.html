@@ -1,0 +1,47 @@
+{% load static %}
+{% comment %}
+The new service projector (spec 006, slice 4). What the congregation sees: white on
+black, in the face the current projector uses, and nothing but the header and the
+words -- no controls, because the operator drives it from the keyboard (left/right to
+move, space to turn the display on and off).
+
+It carries one screen per thing to show and keeps no server record of what is on
+screen: which screen is showing lives in the operator's browser and travels between
+that browser's tabs over the display channel (web/projector.js, web/display.js).
+{% endcomment %}
+<!doctype html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title }}</title>
+<link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+<link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'styles/design/projector.css' %}">
+</head>
+<body class="projector" data-display-channel="gkps-service-display"
+      data-service="{{ service_id }}" data-current-screen="0" data-showing="false">
+
+<main class="projector__screen" id="projectorScreen">
+  <div class="projector__screens" id="projectorScreens">
+    {% for screen in screens %}
+    <section class="screen{% if screen.blank %} is-blank{% endif %}" data-screen="{{ forloop.counter0 }}"
+             aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
+      {% if screen.header %}<h1 class="screen__head">{{ screen.header }}</h1>{% endif %}
+      {% if screen.lines %}
+      <div class="screen__lines">
+        {% for line in screen.lines %}<p class="screen__line">{{ line }}</p>{% endfor %}
+      </div>
+      {% endif %}
+    </section>
+    {% endfor %}
+  </div>
+
+  {% if not screens %}
+  <p class="projector__empty">Nothing to show yet: this Tata Ibadah has no items.</p>
+  {% endif %}
+</main>
+
+<script src="{% static 'web/projector.js' %}"></script>
+</body>
+</html>

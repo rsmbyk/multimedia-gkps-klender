@@ -139,6 +139,8 @@ def build_form(kind, request, pk=None, data=None):
     query = data if data is not None else request.GET
     if kind == 'songbook':
         instance = _record(song_models.Book, pk) if pk else None
+        if pk and instance is None:
+            return None, None
         if instance is not None and instance.is_hymn_book:
             return None, None                    # hymn songbooks are read-only
         return SongbookForm(data=data, instance=instance), instance
@@ -160,7 +162,12 @@ def build_form(kind, request, pk=None, data=None):
 
 def _record(model, pk):
     try:
-        return model.objects.get(pk=pk)
+        records = model.objects
+        if model is song_models.Book:
+            records = records.active()
+        elif model is song_models.Song:
+            records = records.active().filter(book__is_deleted=False)
+        return records.get(pk=pk)
     except (model.DoesNotExist, ValueError, TypeError):
         return None
 

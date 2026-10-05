@@ -265,6 +265,7 @@
     if (readEl) readEl.setAttribute('lang', ed === 'tb' ? 'id' : 'sim');
     if (langTb) langTb.setAttribute('aria-pressed', String(ed !== 'sim'));
     if (langSim) langSim.setAttribute('aria-pressed', String(ed === 'sim'));
+    if (langTb) langTb.parentElement.dataset.edition = ed;
     if (persist) { try { localStorage.setItem('gkps-lang', ed); } catch (e) {} }
     decorateChapters();
   }
@@ -279,15 +280,19 @@
         setEdition(want, true);
       });
     });
+    if (langTb) langTb.parentElement.classList.add('is-enhanced');
   }
+  function restoreSavedEdition() {
+    try {
+      var savedLang = localStorage.getItem('gkps-lang');
+      if ((savedLang === 'tb' || savedLang === 'sim') && savedLang !== currentEdition()
+          && editionBlock(savedLang)) {
+        setEdition(savedLang, false);
+      }
+    } catch (e) {}
+  }
+  restoreSavedEdition();
   bindLangLinks();
-  try {
-    var savedLang = localStorage.getItem('gkps-lang');
-    if ((savedLang === 'tb' || savedLang === 'sim') && savedLang !== currentEdition()
-        && editionBlock(savedLang)) {
-      setEdition(savedLang, false);
-    }
-  } catch (e) {}
 
   /* ---------- shared helpers ---------- */
   function prefersReduce() {
@@ -905,6 +910,12 @@
 
   function navigate(url, opts) {
     if (!url || navBusy) return;
+    /* Unsaved work in the pane asks first -- an order being rearranged (spec 006, slice 3).
+       It owns the navigation from here: it answers, then calls back. */
+    if (window.gkpsUnsaved && window.gkpsUnsaved.holds()) {
+      window.gkpsUnsaved.ask(function () { navigate(url, opts); });
+      return;
+    }
     /* Leaving the result set by any route: remember where in it the reader was,
        so the search icon can come back to that offset. */
     if (root.dataset.home === 'results'
@@ -991,6 +1002,7 @@
       root.dataset.ch = fresh.ch;
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
+      restoreSavedEdition();
       bindLangLinks();
       bindSearchForm();
       bindFieldClears();
@@ -1058,6 +1070,14 @@
     if (freshChAdd && chTop && chTop.parentNode) {
       chTop.parentNode.insertBefore(freshChAdd, chTop.nextSibling);
     }
+    /* the Tata Ibadah reorder strip: created and dropped with the section that owns it,
+       right below the filter where the sidebar does not scroll */
+    var oldChOrder = document.querySelector('.ch__reorder');
+    if (oldChOrder) oldChOrder.parentNode.removeChild(oldChOrder);
+    var freshChOrder = doc.querySelector('.ch__reorder');
+    if (freshChOrder && chTop && chTop.parentNode) {
+      chTop.parentNode.insertBefore(freshChOrder, chTop.nextSibling);
+    }
 
     bindPanelTiles();
     bindPanelTips();
@@ -1084,6 +1104,12 @@
       railSearch.setAttribute('href', searchPath);
     }
     document.title = doc.title;
+
+    /* Anything the arriving page carries and another script owns -- the project
+       button, for one -- needs its hook run again: the swap replaced the node the
+       earlier binding sat on, which is how a control can be present on a deep link
+       and dead on the path a person actually clicks through. */
+    document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
 
     /* per-kind endings */
     if (kind === 'rail') {
@@ -1245,7 +1271,10 @@
   /* A sidebar editor saved something: re-render the page's regions in place, so
      every list, the panel selection and the reading stage agree again. */
   document.addEventListener('editor:saved', function (event) {
-    navigate(window.location.pathname + window.location.search,
+    /* In-page navigation does not change location: a service opened from /home/
+       still has /home/ in the address bar. Refresh the URL that supplied the
+       displayed stage, not the landing page behind it. */
+    navigate(readKind() ? stageInfo.url : window.location.pathname + window.location.search,
              { kind: 'refresh', what: event.detail && event.detail.id });
   });
 

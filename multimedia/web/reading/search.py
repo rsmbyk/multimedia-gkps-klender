@@ -21,7 +21,7 @@ turn ``target`` into URLs; templates render the rest.
 import re
 import unicodedata
 
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 
 from multimedia.bible import models as bible_models
 from multimedia.songs import models as song_models
@@ -269,7 +269,8 @@ def _song_hits(phrase, words, raw, songbooks):
             entry['score'] = score
             hits.append(entry)
     criteria = (Q(title__icontains=raw) | Q(book__name__icontains=raw)
-                | Q(book__short_name__icontains=raw) | Q(verse__lyric__icontains=raw))
+                | Q(book__short_name__icontains=raw)
+                | Q(verse__is_deleted=False, verse__lyric__icontains=raw))
     if raw.isdigit():
         criteria |= Q(number__icontains=raw)
     if len(words) > 1:
@@ -277,16 +278,17 @@ def _song_hits(phrase, words, raw, songbooks):
         for word in words:
             all_words &= (Q(title__icontains=word) | Q(book__name__icontains=word)
                           | Q(book__short_name__icontains=word)
-                          | Q(verse__lyric__icontains=word))
+                          | Q(verse__is_deleted=False, verse__lyric__icontains=word))
         criteria |= all_words
-    ids = set(song_models.Song.objects.filter(criteria).values_list('id', flat=True))
+    active_songs = song_models.Song.objects.active().filter(book__is_deleted=False)
+    ids = set(active_songs.filter(criteria).values_list('id', flat=True))
     match = _SONG_REF_RE.match(normalize(raw))
     if match:
         ref_book = next((book for book in songbooks
                          if normalize(book.short_name or '') == match.group('name')
                          or normalize(book.name) == match.group('name')), None)
         if ref_book is not None:
-            reference_songs = song_models.Song.objects.filter(
+            reference_songs = active_songs.filter(
                 book=ref_book, number=int(match.group('number')))
             if match.group('sub'):
                 reference_songs = reference_songs.filter(
@@ -294,8 +296,10 @@ def _song_hits(phrase, words, raw, songbooks):
             ids.update(reference_songs.values_list('id', flat=True))
     if not ids:
         return _ranked_rows(hits, phrase)
-    queryset = (song_models.Song.objects.filter(pk__in=ids)
-                .select_related('book').prefetch_related('verse_set'))
+    queryset = (active_songs.filter(pk__in=ids).select_related('book')
+                .prefetch_related(Prefetch(
+                    'verse_set',
+                    queryset=song_models.Verse.objects.active().order_by('number'))))
     for song in queryset:
         citation = song.book_number if song.number else song.book.name
         entry = _entry(
@@ -364,7 +368,7 @@ def search(query):
         return result
     words = phrase.split(' ')
     books = bible_book_index()
-    songbooks = list(song_models.Book.objects.order_by('id'))
+    songbooks = list(song_models.Book.objects.active().order_by('id'))
     result.groups['bible'] = _bible_hits(phrase, words, raw, books)
     result.groups['songs'] = _song_hits(phrase, words, raw, songbooks)
     result.groups['tatib'] = _tatib_hits(phrase, words, raw)

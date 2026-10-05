@@ -16,9 +16,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from multimedia.web.reading import views as reading_views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('multimedia.api.urls')),
+    # The new service projector (spec 006, slice 4). A path of its own under /obs/,
+    # beside the OBS routes rather than inside them: the current dock, its sources
+    # and its pages keep serving the current data untouched.
+    path('obs/service/<int:service_id>/', reading_views.service_projector,
+         name='web-service-projector'),
     path('obs/', include('multimedia.obs.urls')),
     path('', include('multimedia.web.urls')),
 ]

@@ -6,16 +6,103 @@
 
 {% block ch_rows %}{% if service_id %}{% include 'reading/_toc.html' %}{% endif %}{% endblock %}
 
+{% comment %}The project button rides with the date, at the top right of the page.{% endcomment %}
+{% block read_actions %}{% if service_id %}
+<div class="read__project" data-project-group data-display-channel="gkps-service-display">
+  <button type="button" class="read__project-btn" data-project-open
+          data-projector-url="{{ projector_url }}" data-project-service="{{ service_id }}"
+          data-label-project="Project" data-label-stop="Stop projecting"
+          aria-label="Project" title="Project">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+      <circle cx="6.7" cy="9.7" r="1.7"/>
+      <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+    </svg>
+    <span data-project-label>Project</span>
+  </button>
+  <button type="button" class="read__project-btn" data-project-update hidden>Update the current state</button>
+  <p class="read__project-note" data-project-note role="status" hidden></p>
+</div>
+{% endif %}{% endblock %}
+
 {% block read_body %}
 {% for item in items %}
 {% if item.eos %}
-<div class="tatib__eos" id="ti-{{ item.anchor }}">{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
+<div class="tatib__eos" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}">{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
 {% else %}
-<section class="tatib__item" id="ti-{{ item.anchor }}">
-{% if item.title %}<h2 class="read__sec">{{ item.title }}</h2>{% endif %}
+<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.entry %} data-entry-pk="{{ item.pk }}"{% endif %}>
+{% if item.title %}<h2 class="read__sec">{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
+{% if item.deleted_target %}<p class="entry__deleted-warning" role="status">This song, songbook, or an included verse was deleted.</p>{% endif %}
+{% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
 {% for para in item.paras %}<p class="tatib__tx">{% if para.speaker %}<span class="tatib__sp">{{ para.speaker }}.</span> {% endif %}{{ para.text }}</p>
 {% endfor %}
+{% if item.entry %}{% if item.note and item.eos %}<span class="tatib__note">{{ item.note }}</span>{% endif %}{% endif %}
 </section>
 {% endif %}
+{% if editor_enabled %}
+<div class="entry__add" data-entry-after="{{ item.anchor }}" role="group" aria-label="Add after this item">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">+ Break</button>
+  {% if item.entry %}
+  <span class="entry__acts">
+    <button type="button" class="entry__ctrl" data-entry-edit="{{ item.pk }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+      Edit
+    </button>
+    <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="{{ item.pk }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+      Delete
+    </button>
+  </span>
+  {% endif %}
+</div>
+{% endif %}
 {% endfor %}
+{% if editor_enabled and not items %}
+<div class="entry__empty">
+  <p class="entry__empty-title">This Tata Ibadah is empty.</p>
+  <p class="entry__empty-hint">Add the first item to start preparing the service.</p>
+  <div class="entry__empty-actions">
+    <button type="button" class="entry__empty-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/></svg>
+      <span>Add Passage</span>
+    </button>
+    <button type="button" class="entry__empty-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/></svg>
+      <span>Add Song</span>
+    </button>
+    <button type="button" class="entry__empty-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/></svg>
+      <span>Add Text</span>
+    </button>
+    <button type="button" class="entry__empty-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12h17M7 7.5l5 5 5-5M7 16.5l5-5 5 5" opacity=".45"/><path d="M3.5 12h17"/></svg>
+      <span>Add Break</span>
+    </button>
+  </div>
+</div>
+{% endif %}
+{% if editor_enabled and has_entries %}
+{% comment %}The question before leaving with an unsaved order (spec 006, slice 3). Three
+answers, all the modal buttons' own geometry: keep editing (the safe one, and the default
+for Escape and the backdrop), discard, or save and carry on.{% endcomment %}
+<dialog class="editor" id="reorderConfirm" data-reorder-confirm aria-labelledby="reorderAsk">
+  <div class="editor__content">
+    <div class="reorder__ask">
+      <h2 class="reorder__ask-title" id="reorderAsk">Save the new order?</h2>
+      <p class="reorder__ask-hint">You have rearranged this Tata Ibadah and not saved it.</p>
+      <div class="reorder__ask-actions">
+        <button type="button" class="reorder__answer" data-reorder-stay>Keep editing</button>
+        <button type="button" class="reorder__answer reorder__answer--danger" data-reorder-leave>Discard</button>
+        <button type="button" class="reorder__answer reorder__answer--primary" data-reorder-and-save>Save</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+{% endif %}
 {% endblock %}

@@ -22,6 +22,7 @@ TEXT_PAIRS = [
     ('--ink', '--rail-bg'),
     ('--active-ink', '--active-bg'),
     ('--tip-ink', '--tip-bg'),
+    ('--danger', '--canvas'),
 ]
 UI_PAIRS = [
     ('--icon', '--rail-bg'),

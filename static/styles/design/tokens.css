@@ -29,11 +29,18 @@
   --tip-bg: #1F1F1D;
   --tip-ink: #FFFFFF;
   --head-ink: #646357;           /* group headers + meta on canvas */
+  --danger: #B3261E;             /* destructive actions, invalid fields */
   --focus: #1C5C3C;
   --active-flash: rgba(28, 92, 60, .16);
   --shadow: 0 6px 18px -10px rgba(20,20,18,.5);
 
   --ease: 200ms cubic-bezier(.32, .72, .28, 1);
+  /* The same curve WITHOUT the duration. `--ease` is a whole shorthand value on purpose --
+     most rules write `transition: color var(--ease)` and want the duration with it -- but a
+     rule that names its own duration must use this one: two time values in a transition or
+     animation shorthand are duration and DELAY, so `transition: transform 60ms var(--ease)`
+     waited 200ms before every morph, and no amount of shortening the duration could be felt. */
+  --ease-timing: cubic-bezier(.32, .72, .28, 1);
   --nav-w: 18.5rem;                /* books panel, expanded: widest row
                                       (Kisah Para Rasul / Lahoan Ni Apostel)
                                       measures 281px incl. chrome */
@@ -79,6 +86,7 @@
   --tip-bg: #EDEBE5;
   --tip-ink: #16150F;
   --head-ink: #9C9A91;
+  --danger: #FF9E9A;            /* lifted for dark surfaces */
   --focus: #7C9CF0;
   --shadow: 0 6px 18px -10px rgba(0,0,0,.9);
 }

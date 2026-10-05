@@ -1,0 +1,123 @@
+{% comment %}One kind's fields (spec 006, slice 2). The modal posts this fragment back.{% endcomment %}
+<h2 class="editor__title" id="editorTitle">{{ title }}</h2>
+<form class="editor__form" data-entry-form="{{ kind }}" action="{{ save_url }}" method="post">
+  {% csrf_token %}
+  {% if not entry and after %}<input type="hidden" name="after" value="{{ after }}">{% endif %}
+  {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+
+  {% if kind == 'scripture' %}
+  <div class="editor__field{% if form.book_translation.errors %} is-invalid{% endif %}">
+    <label id="entry-book-label" for="entry-book-trigger">Book</label>
+    <div class="editor__picker" data-entry-picker="book">
+      <button type="button" class="editor__picker-trigger" id="entry-book-trigger"
+              data-picker-trigger aria-label="Book" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-book-menu"{% if form.book_translation.errors %} aria-invalid="true"{% endif %}>
+        <span data-picker-label>Choose a book</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-book-menu" hidden>
+        <input type="search" placeholder="Filter books..." aria-label="Filter books" autocomplete="off">
+        <div class="editor__picker-options" data-picker-options role="listbox" aria-label="Books">
+          {% regroup books by testament_label as testaments %}
+          {% for testament in testaments %}
+          <div class="editor__picker-group" data-picker-group>
+            <p class="editor__songgroup-label">{{ testament.grouper }}</p>
+            {% for book in testament.list %}
+            <button type="button" role="option" class="editor__songoption" data-book="{{ book.id }}"
+                    data-chapters="{{ book.chapters }}" data-book-name="{{ book.name }}"
+                    aria-selected="false">{{ book.name }}</button>
+            {% endfor %}
+          </div>
+          {% endfor %}
+          <p class="editor__hint" data-picker-empty hidden>No matching books.</p>
+        </div>
+      </div>
+      <select name="book_translation" id="id_book_translation" hidden>
+        <option value=""></option>
+        {% for book in books %}
+        <option value="{{ book.id }}" data-chapters="{{ book.chapters }}"
+                {% if form.book_translation.value|stringformat:'s' == book.id|stringformat:'s' %}selected{% endif %}>{{ book.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% for error in form.book_translation.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  <div class="editor__row">
+    <div class="editor__field{% if form.chapter.errors %} is-invalid{% endif %}">
+      <label for="id_chapter">Chapter</label>
+      <select name="chapter" id="id_chapter" data-initial="{{ form.chapter.value|default:1 }}"
+              {% if form.chapter.errors %}aria-invalid="true"{% endif %}></select>
+      {% for error in form.chapter.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="editor__field{% if form.verse_start.errors %} is-invalid{% endif %}">
+      <label for="id_verse_start">From verse</label>
+      <select name="verse_start" id="id_verse_start" data-initial="{{ form.verse_start.value|default:1 }}"
+              {% if form.verse_start.errors %}aria-invalid="true"{% endif %}></select>
+      {% for error in form.verse_start.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="editor__field{% if form.verse_end.errors %} is-invalid{% endif %}">
+      <label for="id_verse_end">To verse <span class="editor__hint">(optional)</span></label>
+      <span class="editor__end-wrap" data-end-wrap tabindex="0" aria-describedby="entry-end-tip">
+        <select name="verse_end" id="id_verse_end" data-initial="{{ form.verse_end.value|default_if_none:'' }}"
+                {% if form.verse_end.errors %}aria-invalid="true"{% endif %}></select>
+        <span class="editor__end-tip" id="entry-end-tip" role="tooltip">No verses available after the start verse number.</span>
+      </span>
+      {% for error in form.verse_end.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+  </div>
+
+  {% elif kind == 'song' %}
+  <div class="editor__field{% if form.song.errors %} is-invalid{% endif %}">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu"{% if form.song.errors %} aria-invalid="true"{% endif %}>
+        <span data-picker-label>{% if song %}{{ song.title }}{% else %}Choose a song{% endif %}</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="{{ form.song.value|default:'' }}">
+    </div>
+    {% for error in form.song.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  <div class="editor__field{% if form.verses.errors %} is-invalid{% endif %}">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu"{% if form.verses.errors %} aria-invalid="true"{% endif %}>
+        <span data-verses-summary>Pick a song first</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses>{{ form.verses }}</div>
+      </div>
+    </div>
+    {% for error in form.verses.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+
+  {% else %}
+  <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}">
+    <label for="id_title">{% if kind == 'section_break' %}Label{% else %}Title{% endif %} <span class="editor__hint">(optional)</span></label>
+    <input type="text" name="title" id="id_title" maxlength="64" value="{{ form.title.value|default:'' }}"
+           {% if form.title.errors %}aria-invalid="true"{% endif %}>
+    {% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  {% if kind == 'text' %}
+  <div class="editor__field{% if form.text.errors %} is-invalid{% endif %}">
+    <label for="id_text">Text</label>
+    <textarea name="text" id="id_text" rows="6"{% if form.text.errors %} aria-invalid="true"{% endif %}>{{ form.text.value|default:'' }}</textarea>
+    {% for error in form.text.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {% for error in form.non_field_errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit"{% if kind == 'text' and not form.text.value %} disabled{% endif %}>Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>

@@ -1,4 +1,5 @@
 from datetime import date
+import json
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase, override_settings
@@ -10,7 +11,16 @@ from multimedia.tatib import models as tatib
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class ReadingViewsTests(TestCase):
+class ReadingViewTests(TestCase):
+    """The public reading pages (spec 004): the search-first shell, Alkitab, Kidung, Tata
+    Ibadah, and the manage redirects.
+
+    Named for what it tests on purpose. It was called `EditorViewTests` -- the same name as
+    the sidebar editors' class further down this module -- so Python kept only the later
+    binding and these 23 tests had not run since spec 005 landed (the file's 100 tests
+    collected as 77). Two test classes in one module must never share a name.
+    """
+
     @classmethod
     def setUpTestData(cls):
         lang = songs.Language.objects.create(name='Indonesian')
@@ -152,12 +162,12 @@ class ReadingViewsTests(TestCase):
         self.assertNotContains(page, 'id="songAdd"')
         # (#panelAdd is the songbook section's, which stays available: a new songbook
         # is not a hymn-book write)
-        url = reverse('web-editor-save-new', kwargs={'kind': 'song'})
+        url = reverse('web-editor-save-new', kwargs={'kind': tatib.ServiceEntryKind.SONG})
         post = self.client.post(url, {'book': self.nkb.pk, 'title': 'Diselundupkan',
                                       'number': '', 'sub_number': '', 'key': ''})
         self.assertEqual(post.status_code, 404)
         self.assertFalse(songs.Song.objects.filter(title='Diselundupkan').exists())
-        form = self.client.get(reverse('web-editor-new', kwargs={'kind': 'song'}),
+        form = self.client.get(reverse('web-editor-new', kwargs={'kind': tatib.ServiceEntryKind.SONG}),
                                {'book': self.nkb.pk})
         self.assertEqual(form.status_code, 404)
 
@@ -168,6 +178,36 @@ class ReadingViewsTests(TestCase):
         self.assertContains(response, 'NKB 12')
         self.assertContains(response, 'Di waktu pagi aku bersyukur')
         self.assertContains(response, 'read__eyebrow')
+
+    def test_deleted_song_is_hidden_from_song_detail_and_search(self):
+        self.next_song.delete()
+        detail = self.client.get(reverse('web-song', args=[self.next_song.pk]))
+        search = self.client.get(reverse('web-search'), {'q': 'Di Waktu Malam'})
+        self.assertEqual(detail.status_code, 404)
+        self.assertFalse(any(
+            row['url'] == reverse('web-song', args=[self.next_song.pk])
+            for group in search.context['result_groups'] for row in group['rows']))
+
+    def test_deleted_songbook_is_hidden_with_its_songs(self):
+        self.nkb.delete()
+        self.assertNotContains(self.client.get(reverse('web-books')), 'Nyanyikanlah Kidung Baru')
+        self.assertEqual(self.client.get(reverse('web-book', args=[self.nkb.pk])).status_code, 404)
+        self.assertEqual(self.client.get(reverse('web-song', args=[self.song.pk])).status_code, 404)
+
+    def test_deleted_verse_is_hidden_from_song_detail_and_search(self):
+        self.song.verse_set.get(number=1).delete()
+        detail = self.client.get(reverse('web-song', args=[self.song.pk]))
+        search = self.client.get(reverse('web-search'), {'q': 'aku bersyukur'})
+        self.assertNotContains(detail, 'Di waktu pagi aku bersyukur')
+        self.assertNotContains(search, 'Di Waktu Pagi')
+
+    def test_legacy_song_pages_hide_deleted_books_and_songs(self):
+        self.harian.delete()
+        self.next_song.delete()
+        book_page = self.client.get(reverse('web-songs-songs', args=[self.harian.pk]))
+        song_page = self.client.get(reverse('web-songs-verses', args=[self.next_song.pk]))
+        self.assertEqual(book_page.status_code, 404)
+        self.assertEqual(song_page.status_code, 404)
 
     def test_unknown_song_is_404(self):
         self.assertEqual(self.client.get(reverse('web-song', args=[9999])).status_code, 404)
@@ -324,6 +364,31 @@ class EditorViewTests(TestCase):
         self.harian.refresh_from_db()
         self.assertEqual(self.harian.name, 'Kidung Harian Baru')
 
+    def test_deleted_songbook_and_song_targets_cannot_be_edited_or_created_into(self):
+        deleted_book = songs.Book.objects.create(
+            lang=self.harian.lang, name='Deleted editor book', short_name='DEB')
+        deleted_song = songs.Song.objects.create(book=self.harian, title='Deleted editor song')
+        deleted_book_song = songs.Song.objects.create(book=deleted_book, title='Child song')
+        deleted_book.delete()
+        deleted_song.delete()
+
+        self.assertEqual(self.client.get(reverse(
+            'web-editor-edit', kwargs={'kind': 'songbook', 'pk': deleted_book.pk})).status_code, 404)
+        self.assertEqual(self.client.post(self.save_url('songbook', deleted_book.pk), {
+            'name': 'Restored by edit', 'short_name': 'DEB', 'lang': self.harian.lang_id,
+        }).status_code, 404)
+        self.assertEqual(self.client.get(reverse(
+            'web-editor-edit', kwargs={'kind': 'song', 'pk': deleted_song.pk})).status_code, 404)
+        self.assertEqual(self.client.post(self.save_url('song', deleted_song.pk), {
+            'title': 'Restored by edit', 'number': '', 'sub_number': '', 'key': '',
+        }).status_code, 404)
+        self.assertEqual(self.client.post(self.save_url('song'), {
+            'book': deleted_book.pk, 'title': 'Created under deleted book', 'number': '',
+            'sub_number': '', 'key': '',
+        }).status_code, 404)
+        self.assertFalse(songs.Song.objects.filter(title='Created under deleted book').exists())
+        self.assertTrue(songs.Song.objects.filter(pk=deleted_book_song.pk).exists())
+
     def test_hymn_songbook_cannot_be_edited(self):
         self.assertEqual(self.client.get(reverse(
             'web-editor-edit', kwargs={'kind': 'songbook', 'pk': self.nkb.pk})).status_code, 404)
@@ -361,7 +426,7 @@ class EditorViewTests(TestCase):
     def test_a_hymn_song_cannot_be_edited(self):
         song = songs.Song.objects.get(book=self.nkb, number=12)
         self.assertEqual(self.client.get(reverse(
-            'web-editor-edit', kwargs={'kind': 'song', 'pk': song.pk})).status_code, 404)
+            'web-editor-edit', kwargs={'kind': tatib.ServiceEntryKind.SONG, 'pk': song.pk})).status_code, 404)
 
     def test_editing_a_free_song(self):
         song = songs.Song.objects.create(book=self.harian, title='Alpha')
@@ -441,3 +506,764 @@ class EditorViewTests(TestCase):
         self.assertContains(self.client.get(reverse('web-tatib')),
                             'data-editor-open="tatib"')
         self.assertNotContains(self.client.get(reverse('web-bible')), 'data-editor-open')
+
+
+class ServiceEntryViewTests(TestCase):
+    """The service entry endpoints (spec 006, slice 2).
+
+    Written before the endpoints exist: every one names the URL it expects, so the
+    red run is a page of NoReverseMatch until the wiring lands.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III')
+
+        b_lang = bible.Language.objects.create(name='Indonesia')
+        version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru', abbreviation='TB')
+        book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
+        cls.matius = bible.BookTranslation.objects.create(
+            version=version, book=book, translation='Matius')
+        bible.BookTranslation.objects.create(
+            version=version, book=bible.Book.objects.create(
+                name='Mrk', testament='new', number_of_chapters=16), translation='Markus')
+        for number in range(1, 6):
+            bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=number,
+                                       text=f'ayat {number}')
+
+        s_lang = songs.Language.objects.create(name='Indonesian')
+        cls.songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat',
+                                                 short_name='KJ', is_hymn_book=True)
+        cls.song = songs.Song.objects.create(book=cls.songbook, number=152,
+                                             title='Ada Kuasa dalam DarahNya')
+        for number in (1, 2, 3):
+            songs.Verse.objects.create(song=cls.song, number=number, lyric=f'bait {number}')
+
+    def new_url(self, kind):
+        return reverse('web-entry-new') + f'?kind={kind}&tatib={self.tatib.pk}'
+
+    def save_new_url(self):
+        return reverse('web-entry-save-new') + f'?tatib={self.tatib.pk}'
+
+    def make(self, **fields):
+        fields.setdefault('order_number', 1)
+        return tatib.ServiceEntry.objects.create(tatib=self.tatib, **fields)
+
+    # --- the form fragment per kind ----------------------------------------
+
+    def test_the_new_fragment_offers_the_fields_its_kind_needs(self):
+        cases = {
+            'text': ['name="title"', 'name="text"'],
+            'scripture': ['name="book_translation"', 'name="chapter"', 'name="verse_start"',
+                          'name="verse_end"'],
+            'song': ['name="song"', 'id="entry-verses"'],
+            'section_break': [],
+        }
+        for kind, needles in cases.items():
+            with self.subTest(kind=kind):
+                response = self.client.get(self.new_url(kind))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, f'data-entry-form="{kind}"')   # the kind is the form's
+                for needle in needles:
+                    self.assertContains(response, needle)
+
+    def test_the_scripture_fragment_groups_searchable_books_by_testament(self):
+        response = self.client.get(self.new_url('scripture'))
+        self.assertContains(response, 'Matius')
+        self.assertContains(response, 'data-chapters="28"')
+        self.assertContains(response, 'Perjanjian Baru')
+        self.assertContains(response, 'data-entry-picker="book"')
+        self.assertContains(response, 'placeholder="Filter books..."')
+
+    def test_the_chapter_endpoint_returns_actual_verse_numbers(self):
+        response = self.client.get(reverse('web-entry-chapter-verses',
+                                           kwargs={'pk': self.matius.pk, 'chapter': 5}))
+        self.assertEqual(response.json()['verses'], [1, 2, 3, 4, 5])
+
+    def test_song_picker_and_verse_checkboxes_live_in_dropdowns(self):
+        response = self.client.get(self.new_url('song'))
+        self.assertContains(response, 'data-entry-picker="song"')
+        self.assertContains(response, 'placeholder="Search songs..."')
+        self.assertContains(response, 'data-verses-trigger')
+        self.assertContains(response, 'data-verses-summary')
+
+    def test_text_and_break_titles_say_optional(self):
+        self.assertContains(self.client.get(self.new_url('text')), 'Title <span class="editor__hint">(optional)</span>')
+        self.assertContains(self.client.get(self.new_url('section_break')),
+                            'Label <span class="editor__hint">(optional)</span>')
+
+    def test_empty_text_is_rejected_and_field_marked(self):
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.TEXT, 'title': 'Heading', 'text': '   ',
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'is-invalid', status_code=400)
+        self.assertContains(response, 'aria-invalid="true"', status_code=400)
+        self.assertFalse(self.tatib.service_entries.exists())
+
+    def test_shared_dialog_has_cancel_but_no_x_button(self):
+        html = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk])).content.decode()
+        self.assertNotIn('class="editor__close"', html)
+        self.assertIn('data-editor-close', self.client.get(self.new_url('text')).content.decode())
+
+    # --- creating ----------------------------------------------------------
+
+    def test_creating_a_text_entry_appends_it_to_the_service(self):
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': tatib.ServiceEntryKind.TEXT, 'title': 'Salam', 'text': 'Kasih karunia'})
+        self.assertEqual(response.status_code, 200)
+        entry = self.tatib.service_entries.get()
+        self.assertEqual(response.json()['id'], entry.pk)
+        self.assertEqual(entry.order_number, 1)
+
+    def test_creating_a_scripture_entry(self):
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SCRIPTURE, 'book_translation': self.matius.pk, 'chapter': 5,
+            'verse_start': 2, 'verse_end': 4})
+        self.assertEqual(response.status_code, 200)
+        entry = self.tatib.service_entries.get()
+        self.assertEqual(entry.resolve(), ('Matius 5:2-4', '2 ayat 2\n\n3 ayat 3\n\n4 ayat 4'))
+
+    def test_creating_a_song_entry_stores_the_verses_it_includes(self):
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': ['1', '3']})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.tatib.service_entries.get().verses, [1, 3])
+
+    def test_creating_a_section_break_without_a_label(self):
+        response = self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.SECTION_BREAK, 'title': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.tatib.service_entries.get().resolve(), ('', ''))
+
+    def test_deleted_song_cannot_be_added_as_a_new_service_entry(self):
+        deleted_song = songs.Song.objects.create(
+            book=self.songbook, number=153, title='Deleted entry target')
+        songs.Verse.objects.create(song=deleted_song, number=1, lyric='Do not include')
+        deleted_song.delete()
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': deleted_song.pk, 'verses': ['1'],
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(self.tatib.service_entries.filter(song=deleted_song).exists())
+
+    def test_the_next_entry_lands_after_the_last_one(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
+        self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'b'})
+        self.assertEqual([e.order_number for e in self.tatib.service_entries.all()], [1, 2])
+
+    # --- refusing ----------------------------------------------------------
+
+    def test_a_song_entry_without_verses_is_refused_and_writes_nothing(self):
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': []})
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'at least one verse', status_code=400)
+        self.assertFalse(self.tatib.service_entries.exists())
+
+    def test_a_passage_without_a_chapter_is_refused(self):
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SCRIPTURE, 'book_translation': self.matius.pk, 'verse_start': 2})
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(self.tatib.service_entries.exists())
+
+    def test_the_endpoints_are_post_only(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        self.assertEqual(self.client.get(reverse('web-entry-save-new')).status_code, 405)
+        self.assertEqual(self.client.get(reverse('web-entry-save',
+                                                 kwargs={'pk': entry.pk})).status_code, 405)
+
+    def test_editing_an_entry_keeps_its_place(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=3)
+        response = self.client.post(reverse('web-entry-save', kwargs={'pk': entry.pk}),
+                                    {'kind': tatib.ServiceEntryKind.TEXT, 'title': 'Baru', 'text': 'b'})
+        self.assertEqual(response.status_code, 200)
+        entry.refresh_from_db()
+        self.assertEqual((entry.order_number, entry.title), (3, 'Baru'))
+
+    def test_deleting_an_entry(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        response = self.client.post(reverse('web-entry-delete', kwargs={'pk': entry.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(tatib.ServiceEntry.objects.filter(pk=entry.pk).exists())
+
+    @override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True)
+    def test_the_editor_gate_covers_entries(self):
+        self.assertEqual(self.client.get(self.new_url('text')).status_code, 403)
+        self.assertEqual(self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.TEXT}).status_code, 403)
+
+    # --- what the pickers need ---------------------------------------------
+
+    def test_a_deleted_saved_song_remains_available_when_editing_its_existing_entry(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.song.delete()
+        form = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
+        self.assertEqual(form.status_code, 200)
+        response = self.client.post(reverse('web-entry-save', kwargs={'pk': entry.pk}), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': ['1', '2', '3'],
+        })
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        entry.refresh_from_db()
+        self.assertEqual(entry.song_id, self.song.pk)
+
+    def test_the_song_options_are_grouped_by_songbook_and_searchable(self):
+        response = self.client.get(reverse('web-entry-song-options') + '?q=kuasa')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Kidung Jemaat')
+        self.assertContains(response, f'data-song="{self.song.pk}"')
+
+    def test_song_picker_and_verse_picker_exclude_deleted_rows_and_parents(self):
+        deleted_song = songs.Song.objects.create(
+            book=self.songbook, number=154, title='Deleted picker song')
+        deleted_book = songs.Book.objects.create(
+            lang=self.songbook.lang, name='Deleted picker book', short_name='DPB')
+        child_song = songs.Song.objects.create(book=deleted_book, title='Child of deleted book')
+        deleted_verse = self.song.verse_set.get(number=2)
+        deleted_song.delete()
+        deleted_book.delete()
+        deleted_verse.delete()
+
+        options = self.client.get(reverse('web-entry-song-options'))
+        verses = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))
+        self.assertNotContains(options, f'data-song="{deleted_song.pk}"')
+        self.assertNotContains(options, f'data-song="{child_song.pk}"')
+        self.assertEqual(verses.json()['verses'], [1, 3])
+
+    def test_the_song_fragment_checks_every_verse_of_its_song(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        response = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="verses"')
+        html = response.content.decode()
+        for number in (1, 2, 3):                       # checked, whatever the attribute order
+            self.assertRegex(html, rf'value="{number}"[^>]*checked')
+
+    # --- the pane: entries in the service's own stage ----------------------
+
+    def test_the_service_stage_renders_its_entries_after_its_legacy_items(self):
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='PAMUNGKAHNI', text='Paragenda: ...', order_number=1)
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='Kasih karunia')
+        response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('PAMUNGKAHNI', html)                       # the legacy item, untouched
+        self.assertIn('Kasih karunia', html)
+        self.assertIn('tatib__item--entry', html)
+        self.assertLess(html.index('PAMUNGKAHNI'), html.index('Kasih karunia'))
+
+    def test_a_service_without_entries_renders_as_it_did_before(self):
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='PAMUNGKAHNI', text='Paragenda: ...', order_number=1)
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn('PAMUNGKAHNI', html)
+        self.assertNotIn('tatib__item--entry', html)
+        self.assertIn('PAMUNGKAHNI', html.split('entry__add')[0])   # nothing injected before it
+
+    def test_a_scripture_entry_offers_a_jump_to_its_passage(self):
+        self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=4)
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn(f'/bible/{self.matius.book_id}/5/', html)
+        self.assertIn('?v=2&amp;to=4', html)
+
+    def test_a_song_entry_offers_a_jump_to_its_song(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        pane = html.split('id="readBody"')[1]
+        self.assertIn(reverse('web-song', args=[self.song.pk]), pane)
+        self.assertIn('Kidung Jemaat 152', pane)                 # its reference, as the jump
+        self.assertNotIn('bait 1', pane)                         # no lyrics: the display has those
+
+    def test_a_song_entry_warns_when_its_target_has_been_soft_deleted(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.song.verse_set.get(number=2).delete()
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn('entry__deleted-warning', html)
+        self.assertIn('This song, songbook, or an included verse was deleted.', html)
+
+    def test_the_add_controls_sit_on_each_item(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        for kind in ('scripture', 'song', 'text', 'section_break'):
+            self.assertIn(f'data-entry-open="{kind}"', html)
+        self.assertIn(f'data-entry-after="e{entry.pk}"', html)
+
+    def test_invalid_insertion_form_keeps_its_after_marker(self):
+        first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk,
+            'verses': [], 'after': f'e{first.pk}',
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, f'name="after" value="e{first.pk}"', status_code=400)
+
+    def test_an_entry_is_inserted_after_the_item_whose_control_was_used(self):
+        # after, never before: the new entry takes the next place and the rest move down
+        first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=1)
+        second = self.make(kind=tatib.ServiceEntryKind.TEXT, text='b', order_number=2)
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'c', 'after': f'e{first.pk}'})
+        self.assertEqual(response.status_code, 200)
+        second.refresh_from_db()
+        self.assertEqual([(e.order_number, e.text) for e in self.tatib.service_entries.all()],
+                         [(1, 'a'), (2, 'c'), (3, 'b')])
+
+    # --- an empty service, and what the sidebar lists -----------------------
+
+    def test_an_empty_service_invites_its_first_item(self):
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn('This Tata Ibadah is empty', html)
+        for label in ('Add Passage', 'Add Song', 'Add Text', 'Add Break'):
+            self.assertIn(label, html)
+        self.assertIn('entry__empty-btn', html)
+
+    def test_a_service_built_only_from_entries_is_listed_in_the_sidebar(self):
+        # the sidebar used to keep only services with a legacy text item, which would
+        # have made a service of entries invisible
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
+        response = self.client.get(reverse('web-tatib') + '?mode=template')
+        self.assertContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
+
+    def test_an_empty_service_is_listed_so_it_can_be_filled(self):
+        # the owner's call: an empty service has to be reachable, and its page says so
+        response = self.client.get(reverse('web-tatib') + '?mode=template')
+        self.assertContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
+
+    def test_every_entry_carries_its_own_edit_and_delete(self):
+        first = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
+        second = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Doa', text='b',
+                           order_number=2)
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        for entry in (first, second):
+            self.assertIn(f'data-entry-edit="{entry.pk}"', html)
+            self.assertIn(f'data-entry-delete="{entry.pk}"', html)
+
+    def test_the_legacy_items_themselves_carry_no_edit_or_delete(self):
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='PAMUNGKAHNI', text='a', order_number=1)
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='b')
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertEqual(html.count('data-entry-edit="'), 1)      # the entry's, not the item's
+        self.assertEqual(html.count('data-entry-open="scripture"'), 2)   # both rows add
+
+    def test_a_service_with_only_entries_is_not_empty(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertNotIn('This Tata Ibadah is empty', html)
+        self.assertIn('entry__add-btn', html)             # the per-item controls, instead
+
+    def test_the_contents_list_carries_the_entries_too(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                          chapter=5, verse_start=2)
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        toc = html.split('id="chList"')[1]
+        self.assertIn('Matius 5:2', toc)
+        self.assertIn(f'href="#ti-e{entry.pk}"', toc)            # the row points at its block
+        self.assertIn(f'id="ti-e{entry.pk}"', html)
+
+    def test_the_verses_of_a_song_come_back_all_included(self):
+        response = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['verses'], [1, 2, 3])
+
+    def test_the_verse_count_of_a_chapter(self):
+        response = self.client.get(reverse('web-entry-chapter-verses',
+                                           kwargs={'pk': self.matius.pk, 'chapter': 5}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], 5)
+
+
+class ServiceEntryReorderTests(TestCase):
+    """The reorder endpoint (spec 006, slice 3).
+
+    It follows the conventions the current item API already uses: one POST of
+    `{entry, order_number}` pairs to a `/reorder` URL, answering with the order it left
+    behind, rather than a per-row endpoint. Written before the endpoint exists, so the
+    red run is a page of NoReverseMatch.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III')
+        cls.other = tatib.TataIbadah.objects.create(name='Ibadah Sore')
+        # A legacy item lives in the same service on its own numbering: the reorder must
+        # leave it, and every old row, exactly as it is.
+        cls.legacy = tatib.TataIbadahItem.objects.create(
+            tatib=cls.tatib, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Pembukaan', text='KJ 120', order_number=7)
+
+    def setUp(self):
+        self.first = self.make(1, 'Pembukaan', 'Kasih karunia')
+        self.second = self.make(2, 'Pujian', 'Bersyukurlah')
+        self.third = self.make(3, 'Penutup', 'Amin')
+        self.elsewhere = tatib.ServiceEntry.objects.create(
+            tatib=self.other, kind=tatib.ServiceEntryKind.TEXT,
+            title='Sore', text='Selamat sore', order_number=1)
+
+    def make(self, order, title, text):
+        return tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.TEXT, title=title, text=text,
+            order_number=order)
+
+    def url(self):
+        return reverse('web-entry-reorder')
+
+    def post(self, entries, service=None):
+        payload = {'tatib': (service or self.tatib).pk,
+                   'entries': [{'entry': entry.pk, 'order_number': number}
+                               for number, entry in enumerate(entries, 1)]}
+        return self.client.post(self.url(), data=json.dumps(payload),
+                                content_type='application/json')
+
+    def order_now(self, service=None):
+        return list((service or self.tatib).service_entries
+                    .order_by('order_number').values_list('pk', 'order_number'))
+
+    # --- what a reorder does ------------------------------------------------
+
+    def test_a_reorder_renumbers_the_entries_in_the_posted_order(self):
+        response = self.post([self.third, self.first, self.second])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.order_now(),
+                         [(self.third.pk, 1), (self.first.pk, 2), (self.second.pk, 3)])
+
+    def test_the_reorder_answers_with_the_order_it_left(self):
+        response = self.post([self.third, self.first, self.second])
+        self.assertEqual([row['entry'] for row in response.json()['entries']],
+                         [self.third.pk, self.first.pk, self.second.pk])
+        self.assertEqual([row['order_number'] for row in response.json()['entries']], [1, 2, 3])
+
+    def test_the_numbers_stay_contiguous_from_one(self):
+        # a list that names only one entry: it goes first, the rest follow in the order
+        # they were in, and nothing is left with a hole or a duplicate
+        response = self.post([self.second])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.order_now(),
+                         [(self.second.pk, 1), (self.first.pk, 2), (self.third.pk, 3)])
+
+    def test_a_reorder_leaves_the_legacy_items_alone(self):
+        self.post([self.third, self.first, self.second])
+        self.legacy.refresh_from_db()
+        self.assertEqual(self.legacy.order_number, 7)
+        self.assertEqual(self.legacy.text, 'KJ 120')
+
+    # --- what it refuses ----------------------------------------------------
+
+    def test_an_entry_from_another_service_is_refused(self):
+        response = self.post([self.first, self.elsewhere])
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self.order_now(),
+                         [(self.first.pk, 1), (self.second.pk, 2), (self.third.pk, 3)])
+
+    def test_a_reorder_without_its_service_is_refused(self):
+        response = self.client.post(self.url(),
+                                    data=json.dumps({'entries': [{'entry': self.first.pk,
+                                                                  'order_number': 1}]}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_a_service_that_is_not_there_is_refused(self):
+        response = self.post([self.first], service=self.tatib)
+        self.assertEqual(response.status_code, 200)          # the real one still works
+        missing = self.client.post(self.url(),
+                                   data=json.dumps({'tatib': 99999, 'entries': []}),
+                                   content_type='application/json')
+        self.assertEqual(missing.status_code, 400)
+
+    def test_a_reorder_is_post_only(self):
+        self.assertEqual(self.client.get(self.url()).status_code, 405)
+
+    @override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True)
+    def test_a_reorder_is_refused_when_editors_need_a_login(self):
+        self.assertEqual(self.post([self.first, self.second, self.third]).status_code, 403)
+        self.assertEqual(self.order_now(),
+                         [(self.first.pk, 1), (self.second.pk, 2), (self.third.pk, 3)])
+
+
+class ServiceReorderPaneTests(TestCase):
+    """Where the reorder chrome lives (spec 006, slice 3).
+
+    The order is arranged in the SIDEBAR, where the order is listed: each entry's row carries
+    its handle and arrows, and the Save/Discard strip sits below the sections filter, in the
+    part of the sidebar that never scrolls. The pane keeps the entries themselves and the
+    question before leaving. There is no Reorder button: the first drag starts the mode.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III')
+        cls.empty = tatib.TataIbadah.objects.create(name='Ibadah Sore')
+
+    def setUp(self):
+        tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.TEXT, title='Pembukaan',
+            text='Kasih karunia', order_number=1)
+        self.second = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.TEXT, title='Penutup',
+            text='Amin', order_number=2)
+
+    def page(self, service):
+        return self.client.get(reverse('web-tatib-service', args=[service.pk]))
+
+    def test_every_entry_carries_its_own_handle(self):
+        response = self.page(self.tatib)
+        for entry in self.tatib.service_entries.order_by('order_number'):
+            self.assertContains(response, 'data-move-grip="%s"' % entry.pk)
+        # only the grip: no arrows beside it, and nothing wrapped around it
+        self.assertNotContains(response, 'data-move-up')
+        self.assertNotContains(response, 'data-move-down')
+        self.assertNotContains(response, 'toc__move')
+        self.assertNotContains(response, 'toc__arrow')
+
+    def test_a_section_break_carries_a_handle_too(self):
+        """A break is an entry like any other: it can be moved in the order."""
+        break_ = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Doa',
+            order_number=3)
+        response = self.page(self.tatib)
+        self.assertContains(response, 'data-move-grip="%s"' % break_.pk)
+        # and it is not announced as hidden: it now holds a focusable control
+        self.assertContains(response, 'aria-label="Reorder this break')
+
+    def test_the_answers_sit_below_the_filter_with_their_endpoint(self):
+        response = self.page(self.tatib)
+        self.assertContains(response, 'ch__reorder')          # the strip
+        self.assertContains(response, 'data-reorder-group')
+        self.assertContains(response, 'data-reorder-endpoint="%s"' % reverse('web-entry-reorder'))
+        self.assertContains(response, 'data-reorder-for="%s"' % self.tatib.pk)
+        self.assertContains(response, 'data-reorder-save')
+        self.assertContains(response, 'data-reorder-discard')
+
+    def test_there_is_no_reorder_button(self):
+        # the mode is entered by dragging: a button would be a second way in
+        self.assertNotContains(self.page(self.tatib), 'data-reorder-start')
+
+    def test_the_question_before_leaving_offers_all_three_answers(self):
+        response = self.page(self.tatib)
+        self.assertContains(response, 'data-reorder-confirm')
+        self.assertContains(response, 'Keep editing')
+        self.assertContains(response, 'data-reorder-leave')
+        self.assertContains(response, 'data-reorder-and-save')
+
+    def test_a_service_with_no_entries_offers_no_reorder_chrome(self):
+        response = self.page(self.empty)
+        self.assertNotContains(response, 'data-reorder-group')
+        self.assertNotContains(response, 'data-reorder-confirm')
+        self.assertNotContains(response, 'data-move-grip')
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class ServiceProjectorTests(TestCase):
+    """The new service projector (spec 006, slice 4).
+
+    Written before the page exists: the URL it names does not resolve yet, so the
+    first run is a page of NoReverseMatch.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu III',
+                                                    date=date(2026, 7, 12))
+
+        b_lang = bible.Language.objects.create(name='Indonesia')
+        version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru',
+                                               abbreviation='TB')
+        book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
+        cls.matius = bible.BookTranslation.objects.create(
+            version=version, book=book, translation='Matius')
+        bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=2, text='ayat 2')
+        bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=3,
+                                   text='ayat 3', title='Berbahagia')
+
+        s_lang = songs.Language.objects.create(name='Indonesian')
+        cls.songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat',
+                                                 short_name='KJ', is_hymn_book=True)
+        cls.song = songs.Song.objects.create(book=cls.songbook, number=152,
+                                             title='Ada Kuasa dalam DarahNya')
+        for number in (1, 2):
+            songs.Verse.objects.create(song=cls.song, number=number, lyric=f'bait {number}')
+
+    def projector_url(self):
+        return reverse('web-service-projector', args=[self.tatib.pk])
+
+    def make(self, order, **fields):
+        return tatib.ServiceEntry.objects.create(tatib=self.tatib, order_number=order, **fields)
+
+    def html(self):
+        response = self.client.get(self.projector_url())
+        self.assertEqual(response.status_code, 200)
+        return response.content.decode()
+
+    # --- the page and its path --------------------------------------------
+
+    def test_the_projector_lives_on_a_path_of_its_own(self):
+        self.assertEqual(self.projector_url(), f'/obs/service/{self.tatib.pk}/')
+
+    def test_an_unknown_service_is_a_404(self):
+        response = self.client.get(reverse('web-service-projector', args=[99999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_it_is_a_page_of_its_own_with_nothing_but_the_words(self):
+        html = self.html()
+        self.assertIn('styles/design/tokens.css', html)      # the product's own dark palette
+        self.assertIn('styles/design/projector.css', html)   # the display's own stylesheet
+        self.assertIn('data-theme="dark"', html)             # pinned: a display is not a page
+        self.assertNotIn('rail__menu', html)                 # not the reading shell
+        self.assertNotIn('panelBody', html)
+        self.assertIn('gkps-service-display', html)          # its own channel
+        self.assertNotIn('<button', html)                    # no controls on screen
+        self.assertNotIn('data-projector', html)
+
+    # --- what it shows ----------------------------------------------------
+
+    def screens(self, html=None):
+        return (html or self.html()).split('<section class="screen')[1:]
+
+    def test_a_passage_is_one_verse_a_screen_headed_by_its_reference_and_title(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=3)
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)                    # one verse at a time
+        self.assertIn('Matius 5:2', screens[0])
+        self.assertIn('ayat 2', screens[0])
+        self.assertNotIn('ayat 3', screens[0])
+        self.assertIn('Matius 5:3', screens[1])
+        self.assertIn('Berbahagia', screens[1])              # the verse's own title, when it has one
+        self.assertIn('ayat 3', screens[1])
+
+    def test_a_text_shows_two_lines_at_a_time_under_its_own_header(self):
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
+                  text='satu\ndua\ntiga\nempat\nlima')
+        screens = self.screens()
+        self.assertEqual(len(screens), 3)                    # two, two, then the last alone
+        for block in screens:
+            self.assertIn('Salam', block)
+        self.assertIn('satu', screens[0])
+        self.assertIn('dua', screens[0])
+        self.assertNotIn('tiga', screens[0])
+        self.assertIn('tiga', screens[1])
+        self.assertIn('empat', screens[1])
+        self.assertIn('lima', screens[2])
+
+    def test_a_song_shows_its_lyrics_alone_in_pairs(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)                    # a verse to a screen
+        self.assertIn('bait 1', screens[0])
+        self.assertNotIn('bait 2', screens[0])
+        self.assertIn('bait 2', screens[1])
+        self.assertNotIn('Kidung Jemaat', screens[0])         # the words alone: no citation
+        self.assertNotIn('screen__head', screens[0])
+
+    def test_a_blank_line_holds_a_line_alone(self):
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, text='satu\ndua\n\ntiga')
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)
+        self.assertIn('dua', screens[0])
+        self.assertNotIn('tiga', screens[0])
+        self.assertIn('tiga', screens[1])
+
+    def test_a_section_break_shows_nothing(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
+        screens = self.screens()
+        self.assertEqual(len(screens), 1)
+        self.assertIn('is-blank', screens[0])
+        self.assertNotIn('Persembahan', screens[0])          # the operator's note stays off screen
+        self.assertNotIn('screen__head', screens[0])
+        self.assertNotIn('screen__line', screens[0])
+
+    def test_the_legacy_rows_ride_along_before_the_entries(self):
+        """A service built before spec 006 still displays: the pane's order is the
+        display's order, and its rows take the same shape."""
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, order_number=1, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Nas', text='Tuhan adalah gembalaku')
+        self.make(2, kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='Tuhan beserta kita')
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)
+        self.assertIn('Nas', screens[0])
+        self.assertIn('Tuhan adalah gembalaku', screens[0])
+        self.assertIn('Salam', screens[1])
+
+    def test_a_lyric_change_reaches_a_fresh_projection(self):
+        """What Update fetches is resolved at request time: the lyrics are the song's
+        own, so an edit reaches every service that uses it."""
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1])
+        self.assertIn('bait 1', self.html())
+        songs.Verse.objects.filter(song=self.song, number=1).update(lyric='bait satu yang baru')
+        self.assertIn('bait satu yang baru', self.html())
+
+    def test_the_display_starts_at_its_first_screen_and_off(self):
+        html = self.html()
+        self.assertIn('data-current-screen="0"', html)
+        self.assertIn('data-showing="false"', html)
+
+    # --- the shell's project button ---------------------------------------
+
+    def test_the_reading_page_offers_the_project_button_with_its_icon(self):
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        self.assertIn('data-project-open', html)
+        self.assertIn(f'data-projector-url="/obs/service/{self.tatib.pk}/"', html)
+        self.assertIn('data-project-service="', html)        # which service it would display
+        self.assertIn('gkps-service-display', html)          # the same channel
+        self.assertIn('data-project-label', html)            # the icon rides beside a label
+        self.assertIn('Stop projecting', html)               # the label it takes while displaying
+        self.assertIn('Update the current state', html)
+        self.assertIn('data-project-update hidden', html)    # the update control waits its turn
+        self.assertIn('data-project-note', html)             # and a place to say why a click was declined
+        # it rides with the date, at the top right, above the service's own words
+        self.assertLess(html.index('read__head-top'), html.index('data-project-open'))
+        self.assertLess(html.index('data-project-open'), html.index('readBody'))
+
+    def test_the_reading_page_shows_only_the_reference_for_a_passage_and_a_song(self):
+        """The pane is the running order: the words belong on the display."""
+        self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=3)
+        self.make(2, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        pane = html.split('id="readBody"')[1]
+        self.assertIn('Matius 5:2-3', pane)
+        self.assertIn('Kidung Jemaat 152', pane)
+        self.assertNotIn('ayat 2', pane)
+        self.assertNotIn('bait 1', pane)
+
+    def test_the_project_button_is_only_on_a_service(self):
+        for name, args in (('web-home', []), ('web-tatib', []), ('web-search', [])):
+            with self.subTest(url=name):
+                response = self.client.get(reverse(name, args=args))
+                self.assertNotIn('data-project-open', response.content.decode())
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class LegacyObsRouteCompatibilityTests(TestCase):
+    def test_existing_obs_pages_keep_their_paths_and_render(self):
+        routes = {
+            'obs-bible-dock': '/obs/bible/dock',
+            'obs-bible-source': '/obs/bible/source',
+            'obs-songs-dock': '/obs/songs/dock',
+            'obs-songs-source': '/obs/songs/source',
+            'obs-tatib-dock': '/obs/tatib/dock',
+            'obs-tatib-source': '/obs/tatib/source',
+            'obs-project-source': '/obs/project/source',
+            'obs-project-settings': '/obs/project/settings',
+        }
+        for name, path in routes.items():
+            with self.subTest(route=name):
+                self.assertEqual(reverse(name), path)
+                response = self.client.get(reverse(name))
+                self.assertEqual(response.status_code, 200)

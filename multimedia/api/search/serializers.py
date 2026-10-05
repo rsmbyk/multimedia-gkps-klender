@@ -13,4 +13,4 @@ class SongSearchResultSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Verse
-        fields = '__all__'
+        fields = ('id', 'song', 'number', 'lyric')
