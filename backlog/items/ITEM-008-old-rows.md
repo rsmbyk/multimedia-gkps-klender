@@ -1,13 +1,13 @@
 ---
 id: ITEM-008
 title: The old rows — editable, and one running order
-status: in-progress
+status: in-review
 type: feat
 priority: P1
 effort: L
 spec: specs/007-service-order-editor/spec.md
 branch: feat/007-service-order-editor
-pr:
+pr: 265
 bump: minor
 release_version: 0.11.0
 created: 2026-10-04

@@ -38,4 +38,4 @@
 - [x] Traceability in ./spec.md filled
 - [x] `VERSION`, changelog and ITEM `release_version` set to 0.11.0 in this branch
 - [x] Full Django suite: 292 tests, no skips; `check` and `makemigrations --check --dry-run` green
-- [ ] Draft PR open; ITEM and board moved to In review with its number in the same PR
+- [x] Draft PR #265 open; ITEM and board moved to In review with its number in the same PR
