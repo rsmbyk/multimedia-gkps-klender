@@ -1,0 +1,16 @@
+{% for group in books_groups %}
+<section class="group" data-testament="{{ group.testament }}">
+  <h3 class="group__head">{{ group.label }}</h3>
+  <ul>
+    {% for book in group.books %}
+    <li><a class="book" href="{% url 'web-bible-book' book.id %}"
+           data-name="{{ book.display }}" data-sim="{{ book.other }}"
+           data-tip="{{ book.display }}{% if book.other %} — {{ book.other }}{% endif %}"
+           aria-label="{{ book.display }}{% if book.other %} ({{ book.other }}){% endif %}"{% if book.current %} aria-current="true"{% endif %}>
+      <span class="book__n">{{ book.display }}</span>
+      <span class="book__a">{{ book.abbr }}</span>
+      {% if book.other %}<span class="book__s">{{ book.other }}</span>{% endif %}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endfor %}

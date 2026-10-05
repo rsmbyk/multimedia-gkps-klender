@@ -1,36 +1,5 @@
 {% extends 'reading/base.html' %}
 
-{% block title %}Multimedia GKPS Klender{% endblock %}
+{% block title %}GKPS Klender — Search Alkitab, Kidung, and Tata Ibadah{% endblock %}
 
-{% block content %}
-{% if query %}
-    <h1 class="page-title">Search</h1>
-    <p class="muted">{{ results|length }} result{{ results|length|pluralize }} for “{{ query }}”.</p>
-    {% if results %}
-    <ul class="song-list">
-        {% for song in results %}
-        <li class="song-list__item">
-            <a class="song-list__link" href="{% url 'web-song' song.id %}">
-                <span class="song-list__number">{{ song.book_number }}</span>
-                <span class="song-list__title">{{ song.title }}</span>
-                {% if song.key %}<span class="song-list__key">{{ song.get_key_display|upper }}</span>{% endif %}
-            </a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p class="empty">No songs match “{{ query }}”.</p>
-    {% endif %}
-    <p><a class="link" href="{% url 'web-home' %}">Clear search</a></p>
-{% else %}
-    <section class="hero">
-        <h1 class="hero__title">Bible and songs, always at hand</h1>
-        <p class="hero__lead">Browse the songbooks or search for a song by title or number.</p>
-    </section>
-    <section>
-        <h2 class="section-title">Songbooks</h2>
-        {% include 'reading/_books.html' %}
-        <p><a class="link" href="{% url 'web-books' %}">See all songbooks</a></p>
-    </section>
-{% endif %}
-{% endblock %}
+{% block panel_body %}{% include 'reading/_books_panel.html' %}{% endblock %}

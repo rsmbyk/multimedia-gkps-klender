@@ -1,393 +1,1156 @@
 /*
  * Components — Multimedia GKPS Klender
  *
- * The project's own design language, built on tokens.css. No Semantic/Fomantic
- * dependency: the public reading pages use only this file.
+ * Ported from the accepted mockup (spec 004): the icon rail, push panels with
+ * clip-wipe, the reader stage, tooltips, and the print block. Design tokens
+ * live in tokens.css; the :root[data-*] rules below are the shell's state
+ * machine, driven by static/web/reading.js.
+ *
+ * Parity note: while spec 004 is being verified, edit this file only in step
+ * with the mockup at scratch/revamp-mockup/index-search-indonesian-terms.html.
  */
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
+/* ============================================================
+   Everything hand-written. No framework, no icon library, no
+   web fonts. Icons are inline SVG with stroke="currentColor".
+   ============================================================ */
 
-html {
-    -webkit-text-size-adjust: 100%;
+*, *::before, *::after { box-sizing: border-box; }
+
+:root[data-nav="open"] { --books-w: var(--panel-w); }
+:root[data-nav="mini"] { --books-w: var(--mini-w); }
+/* Tata Ibadah's service list matches the max-width of its item/contents pane.
+   Reserve the same reading-stage space used by that pane at tighter widths. */
+:root[data-section="tatib"] {
+  --nav-w: min(26rem, calc(100vw - var(--rail-w) - 20rem));
 }
+:root[data-ch="open"] { --ch-w-shown: var(--ch-w); --reserve-ch: var(--ch-w); }
+/* The song list reuses the chapters column as a wide pane. It can remain
+   visible beside the main rail when its songbook/service list is hidden. */
+:root[data-ch="open"][data-ch-mode="song"] {
+  --ch-w-shown: var(--songsp-w); --reserve-ch: var(--songlist-reserve);
+}
+/* Bible alone has a genuine mini-rail; its mini expand control and scroll
+   indicators do not apply to songbooks or Tata Ibadah. */
+:root:not([data-section="alkitab"]) .panel__expand,
+:root:not([data-section="alkitab"]) .panel__ind { display: none !important; }
+
+html, body { height: 100%; }
 
 body {
-    margin: 0;
-    font-family: var(--font-sans);
-    font-size: var(--step-0);
-    line-height: var(--leading);
-    color: var(--ink);
-    background: var(--bg);
+  margin: 0;
+  display: flex;
+  background: var(--canvas);
+  color: var(--ink);
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--ease), color var(--ease);
 }
 
-img {
-    max-width: 100%;
-    height: auto;
+/* ============================================================
+   The rail
+   ============================================================ */
+.rail {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  /* above the panels (25/24): the rail's ::after tooltip is painted into its
+     stacking context and overflows rightward over a panel beside the rail.
+     The mini .ftip (40) still floats above everything. */
+  z-index: 30;
+  width: var(--rail-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  background: var(--rail-bg);
+  border-right: 1px solid var(--divider);
+  transition: background var(--ease), border-color var(--ease);
 }
 
-a {
-    color: var(--blue-700);
-    text-decoration: none;
+/* ---------- logo tile ---------- */
+.rail__logo {
+  flex: none;
+  width: var(--logo);
+  height: var(--logo);
+  display: grid;
+  place-items: center;
+  padding: 5px;                /* lets the mark breathe inside the tile */
+  border-radius: 50%;          /* circle */
+  background: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(20,20,18,.12), 0 3px 8px rgba(20,20,18,.22);
+  overflow: hidden;
+  text-decoration: none;
+}
+.rail__logo img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
-a:hover {
-    text-decoration: underline;
+/* ---------- menu — vertically centred in the space between logo and toggle ---------- */
+.rail__menu {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;    /* the menu buttons sit at the rail's vertical centre */
+  gap: 16px;                  /* 44px button + 16px = 60px centres */
+  margin: 16px 0;             /* keeps clear of logo/toggle if the viewport is short */
+  padding: 0;
+  list-style: none;
+  overflow: visible;          /* tooltips may extend past the rail */
+}
+.rail__menu li { margin: 0; }
+
+.rail__btn {
+  position: relative;
+  width: var(--btn);
+  height: var(--btn);
+  /* the mockup's controls are <button>s, so their UA font metrics apply;
+     links mirror them so computed styles stay identical */
+  font-size: 13.3333px;
+  line-height: normal;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: var(--r-btn);
+  color: var(--icon);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--ease), color var(--ease);
+  /* clears the rail so tooltips can overhang to the right */
+  overflow: visible;
+}
+.rail__btn svg { width: 24px; height: 24px; display: block; }
+
+.rail__btn:hover { background: var(--icon-hover-bg); }
+.rail__menu .rail__btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
 }
 
-:focus-visible {
-    outline: 2px solid var(--gkps-blue);
-    outline-offset: 2px;
+.rail__btn[aria-current="page"] {
+  background: var(--active-bg);
+  color: var(--active-ink);
+}
+/* while its panel is open, the Alkitab button reads exactly like the active
+   menu (Kidung): same active accent fill, same contrasting icon — main rail only, so the
+   panel's own .rail__btn-styled controls don't inherit the look */
+.rail .rail__btn[aria-expanded="true"] {
+  background: var(--active-bg);
+  color: var(--active-ink);
 }
 
-/* Layout */
-.container {
-    width: 100%;
-    max-width: var(--container);
-    margin: 0 auto;
-    padding: 0 var(--space-4);
+/* ---------- bottom: dark-mode toggle ---------- */
+.rail__foot {
+  flex: none;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.rail__theme { position: relative; }
+.rail__theme svg {
+  grid-area: 1 / 1;
+  transition: opacity var(--ease), transform var(--ease);
+}
+/* the icon shows the mode you will GET, so icon, tooltip and aria-label agree */
+.rail__theme .moon { opacity: 1; transform: none; }
+.rail__theme .sun  { opacity: 0; transform: rotate(40deg) scale(.65); }
+:root[data-theme="dark"] .rail__theme .moon { opacity: 0; transform: rotate(-40deg) scale(.65); }
+:root[data-theme="dark"] .rail__theme .sun  { opacity: 1; transform: none; }
+
+/* ============================================================
+   Tooltip — appears after a hover DELAY, instantly after
+   focus. Pure CSS is used only for the transition; the delay
+   and the open-state attribute are driven by the script.
+   ============================================================ */
+.rail__btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + var(--tip-x));   /* measured from the button, lands ~10px past the RAIL edge */
+  top: 50%;
+  z-index: 30;
+  padding: 7px 11px;
+  border-radius: 7px;
+  background: var(--tip-bg);
+  color: var(--tip-ink);
+  font: 500 13px/1.25 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  letter-spacing: -.005em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  /* translateY(-50%) is applied in the SAME transform as the slide, so the tip
+     stays vertically centred on the icon instead of drifting below it */
+  transform: translate(-6px, -50%) scale(.94);
+  transform-origin: left center;
+  transition: opacity 130ms ease, transform 130ms ease;
+}
+.rail__btn[data-tip-open="true"]::after {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, -50%) scale(1);
 }
 
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-    border: 0;
+/* mini book tiles use a FLOATING tooltip element instead of a pseudo-element:
+   the panel's clip-path would slice a child at the panel border, a fixed-position
+   node outside the panel cannot be clipped */
+.ftip {
+  position: fixed;
+  z-index: 40;
+  padding: 7px 11px;
+  border-radius: 7px;
+  background: var(--tip-bg);
+  color: var(--tip-ink);
+  font: 500 13px/1.25 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  letter-spacing: -.005em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translate(-6px, -50%) scale(.94);
+  transform-origin: left center;
+  transition: opacity 130ms ease, transform 130ms ease;
+}
+.ftip.show {
+  opacity: 1;
+  transform: translate(0, -50%) scale(1);
 }
 
-.skip-link {
-    position: absolute;
-    left: var(--space-3);
-    top: -3rem;
-    z-index: 10;
-    padding: var(--space-2) var(--space-4);
-    background: var(--blue-700);
-    color: #fff;
-    border-radius: var(--radius);
-    transition: top 0.15s ease;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+  .panel, .chapters { transition-delay: 0s !important; }
 }
 
-.skip-link:focus {
-    top: var(--space-3);
+/* ============================================================
+   Nested panel — pushes the stage; wipes alone, slides when replaced
+   ============================================================ */
+.panel {
+  position: fixed;
+  top: 0; left: var(--rail-w); bottom: 0;
+  z-index: 25;
+  width: var(--panel-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+  border-right: 1px solid var(--divider);
+  /* collapsible: wipes open from the rail edge; contents never reflow */
+  clip-path: inset(0 100% 0 0);
+  visibility: hidden;
+  /* 0s duration + 200ms delay keeps rows focusable until the wipe finishes */
+  /* On close, keep a mini panel at mini width through the wipe; reset its
+     hidden box only afterward so it never fans outward before disappearing. */
+  transition: transform var(--ease), clip-path var(--ease),
+              width 0s linear 200ms, background var(--ease), box-shadow var(--ease),
+              visibility 0s linear 200ms;
+}
+[data-nav="open"] .panel,
+[data-nav="mini"] .panel {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  /* visibility must flip INSTANTLY on entry; the base rule's 200ms delay is
+     for the wipe-out only. Without this override the panel wipes open blank
+     and the content pops in when the animation ends. */
+  transition: transform var(--ease), clip-path var(--ease), width var(--ease),
+              background var(--ease), box-shadow var(--ease), visibility 0s;
+}
+[data-nav="open"] .panel { box-shadow: var(--shadow); }
+/* When a third-level pane replaces its parent, slide the intact list behind
+   the main rail. The chapter pane follows the same edge, even on phones;
+   Bible's mini state remains a separate 80px-width morph. */
+:root[data-ch="open"][data-nav="closed"] .panel {
+  transform: translateX(-100%);
+  clip-path: inset(0);
+}
+/* collapsed mode: the panel becomes a scrollable mini rail, same width and
+   item rhythm as the main sidebar */
+[data-nav="mini"] .panel {
+  width: var(--mini-w);
+  background: var(--rail-bg);
+  border-right: 1px solid var(--divider);
 }
 
-/* Header */
-.site-header {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+/* collapse button is placed beside each panel's search field; it shares the
+   44px square control used by the second-level sidebar */
+/* ---------- search filter (fixed, does not scroll) ---------- */
+.panel__filter {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  /* The 44px control row stays centred on the logo at y=40px; the 38px
+     search field aligns to that same centre. */
+  padding: 18px 16px;
+}
+/* mini mode: the search field is replaced by an expand icon */
+.panel__expand {
+  flex: none;
+  display: none;
+  place-items: center;
+  padding: 18px 0 18px;          /* 44px button centre lands on 40px */
+}
+.panel__expand button {
+  width: var(--btn); height: var(--btn);
+  display: grid; place-items: center;
+  background: none; border: 0; border-radius: 8px;
+  color: var(--icon);
+  cursor: pointer;
+  transition: background var(--ease);
+}
+.panel__expand button:hover { background: var(--icon-hover-bg); }
+.panel__expand svg { width: 20px; height: 20px; }
+[data-nav="mini"] .panel__filter { display: none; }
+[data-nav="mini"] .panel__expand { display: grid; }
+/* ---------- mini mode: the panel as a scrollable second rail ---------- */
+[data-nav="mini"] .group__head { display: none; }
+[data-nav="mini"] .group + .group { margin-top: 8px; padding-top: 8px; }
+[data-nav="mini"] .panel__body {
+  padding: 0 0 8px;
+  scrollbar-width: none;
+}
+[data-nav="mini"] .panel__body::-webkit-scrollbar { display: none; }
+[data-nav="mini"] .group ul {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;                     /* same pitch as the main rail */
+}
+[data-nav="mini"] .book {
+  position: relative;              /* tooltip anchors here, beside the mini rail */
+  width: var(--btn); height: var(--btn);   /* same size as the main rail items */
+  min-height: 0;
+  padding: 0;
+  display: grid; place-items: center;
+  /* the base rule's space-between (a flex declaration) still applies in grid
+     and overrides place-items — explicitly re-center the content axis */
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 590;
+  letter-spacing: .01em;
+  color: var(--icon);
+}
+[data-nav="mini"] .book__s { display: none; }
+[data-nav="mini"] .book__n { display: none; }
+[data-nav="mini"] .book__a {
+  display: block;
+  width: 100%;
+  text-align: center;            /* glyphs dead-centre in the tile */
+  overflow: visible;
+  white-space: nowrap;
+}
+[data-nav="mini"] .group li + li { margin-top: 0; }   /* exact 60px pitch: 44 + 16 */
+
+/* scroll-end chevrons — replace the scrollbar in mini mode only */
+.panel__ind {
+  flex: none;
+  display: none;
+  place-items: center;
+  width: 100%; height: 26px;
+  padding: 0;
+  background: none; border: 0;
+  color: var(--head-ink);
+  cursor: pointer;
+  transition: color var(--ease);
+}
+[data-nav="mini"] .panel__ind.show { display: grid; }
+.panel__ind:hover { color: var(--ink); }
+.panel__ind svg { width: 15px; height: 15px; }
+.panel__scrollwrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+[data-nav="mini"] .panel__scrollwrap .panel__body { flex: 1; }
+.panel__filter .filter-box { position: relative; flex: 1; min-width: 0; }
+.panel__filter .filter-box > svg {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 15px; height: 15px;
+  color: var(--head-ink);
+  pointer-events: none;
+}
+.panel__filter input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 36px;
+  font: 500 14px/1 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--rail-bg);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  transition: border-color var(--ease), box-shadow var(--ease), background var(--ease);
+}
+.panel__filter input::placeholder { color: var(--head-ink); }
+.panel__filter input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.panel__filter input:focus {
+  outline: none;
+  background: var(--canvas);
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
 }
 
-.header-inner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-4);
-    padding-top: var(--space-3);
-    padding-bottom: var(--space-3);
+/* ---------- clear control inside search and filter fields ---------- */
+.panel__filter input, .ch__search input { padding-right: 34px; }   /* room for the × */
+.search-home__input { padding-right: 92px; }
+.field-clear {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; padding: 0; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: none; color: var(--head-ink);
+  cursor: pointer; transition: background var(--ease), color var(--ease);
+}
+.panel__filter .field-clear, .ch__search .field-clear { right: 8px; }
+.search-home .field-clear { right: 58px; width: 26px; height: 26px; }
+.field-clear svg { width: 12px; height: 12px; }
+.field-clear:hover { background: var(--icon-hover-bg); color: var(--ink); }
+.field-clear:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.field-clear[hidden] { display: none; }   /* author display beats UA [hidden] */
+
+/* ---------- scroll body with sticky testament headers ---------- */
+.panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* the browser's own scroll anchoring drifts ~16px at mode switches because
+     sticky headers appear/disappear above the anchor; we manage anchoring */
+  overflow-anchor: none;
+  padding: 0 10px 20px;
+  scrollbar-width: thin;          /* visible in the expanded list */
+  scrollbar-color: var(--divider) transparent;
+}
+.group__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 10px 8px 7px;
+  background: var(--canvas);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: var(--head-ink);
+}
+/* separator between testaments — carried on the GROUP, not the sticky header,
+   so it scrolls away and never rides the pinned part (mini mode reuses it) */
+.group + .group {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid var(--divider);
+}
+.group ul { margin: 0; padding: 0; list-style: none; }
+.group li + li { margin-top: 1px; }
+.book {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 14.5px;
+  text-decoration: none;
+  transition: background var(--ease);
+}
+.book:hover { background: var(--icon-hover-bg); }
+.book[aria-current="true"] {
+  background: var(--active-bg);
+  color: var(--active-ink);
+}
+.book__n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 22px; }
+/* abbreviation — shown only in mini mode */
+.book__a { display: none; }
+/* ============================================================
+   Reading view — a chapter rendered in the stage
+   ============================================================ */
+/* Unified search starts as a quiet landing page; results dock near the top.
+   The main rail remains available in either state. */
+.search-home {
+  min-height: calc(100svh - var(--pad-top) - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.search-home__inner { width: min(100%, 610px); text-align: center; }
+.search-home__logo { display: block; width: 96px; height: 96px; object-fit: contain; margin: 0 auto 26px; }
+.search-home__form { position: relative; width: 100%; }
+.search-home__input {
+  width: 100%; height: 56px; padding: 0 66px 0 22px;
+  border: 1px solid var(--divider); border-radius: 14px;
+  background: var(--canvas); color: var(--ink);
+  font: 400 16px/1.2 ui-sans-serif, system-ui, sans-serif;
+  box-shadow: var(--shadow);
+}
+.search-home__input::placeholder { color: var(--head-ink); }
+.search-home__input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.search-home__submit {
+  position: absolute; right: 6px; top: 6px;
+  width: 44px; height: 44px; display: grid; place-items: center;
+  border: 0; border-radius: 9px; background: var(--active-bg); color: var(--active-ink);
+  cursor: pointer;
+}
+.search-home__submit svg { width: 20px; height: 20px; }
+.search-home__submit:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.search-home__hint { margin: 18px 0 0; font-size: 13px; color: var(--head-ink); }
+[data-read="on"] .search-home { display: none; }
+.search-results[hidden], .search-home[hidden] { display: none; }
+[data-home="results"] .search-home { min-height: 0; padding: 6px 0 26px; }
+[data-home="results"] .search-home__logo,
+[data-home="results"] .search-home__hint { display: none; }
+[data-read="on"] .search-results { display: none; }
+.search-results { width: min(100%, 690px); margin: 0 auto; padding-bottom: 48px; }
+.search-results__intro { margin: 0 0 26px; color: var(--head-ink); font-size: 14px; }
+.result-group { margin: 0 0 30px; }
+.result-group__head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin: 0 0 8px;
+}
+.result-group__title { margin: 0; font-size: 18px; font-weight: 650; }
+.result-group__count { color: var(--head-ink); font-size: 13px; }
+.result-list { list-style: none; margin: 0; padding: 0; }
+.result-row {
+  display: block; width: 100%; padding: 14px 0; border: 0;
+  border-bottom: 1px solid var(--divider); border-radius: 0;
+  background: none; color: var(--ink); cursor: pointer;
+  font: inherit; text-align: left;
+  text-decoration: none;
+}
+.result-row:hover .result-row__title { text-decoration: underline; text-underline-offset: 3px; }
+.result-row:focus-visible, .result-more:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 3px;
+}
+.result-row__title { display: block; font-size: 16px; font-weight: 610; line-height: 1.35; }
+.result-row__meta { display: block; margin-top: 3px; font-size: 12px; color: var(--head-ink); }
+.result-row__excerpt {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden; margin-top: 6px; color: var(--head-ink);
+  font-size: 14px; line-height: 1.5;
+}
+.result-more {
+  display: inline-block;    /* the mockup's button box; anchors need it said */
+  margin: 12px 0 0; padding: 7px 0; border: 0; background: none;
+  color: var(--ink); font: 600 14px/1.4 ui-sans-serif, system-ui, sans-serif;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.result-empty { color: var(--head-ink); line-height: 1.6; }
+
+.stage__demo { transition: opacity var(--ease); }
+.read { display: none; }
+[data-read="on"] .stage__demo { display: none; }
+[data-read="on"] .read { display: block; }
+
+.read__head { margin-bottom: 30px; }
+/* the index header ("Sidebar · langkah pertama") renders through the demo's
+   generic .stage__demo p override: 16.5px / 1.65, weight 600, .12em tracking,
+   uppercase, ink at opacity .78. Match that actual computed style. */
+.read__eyebrow {
+  margin: 0 0 10px;
+  font-size: 16.5px;
+  font-weight: 600;
+  line-height: 1.65;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: .78;
+}
+/* title left, toggle flush right on one line; wraps only if it truly cannot
+   fit (~320px) — never overflows the viewport */
+.read__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+.read__title {
+  margin: 0;
+  min-width: 0;
+  font: 620 clamp(1.9rem, 1.2rem + 2vw, 2.7rem)/1.08 ui-serif, Georgia, 'Times New Roman', serif;
+  letter-spacing: -.02em;
+}
+.read__no {
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: inherit;
+  color: var(--head-ink);
+  margin-left: .35em;
 }
 
-.brand {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    color: var(--ink);
-    font-weight: 600;
+/* language segmented control — the only header furniture.
+   margin-left:auto keeps it flush right on its own line when the header wraps */
+.read__lang {
+  display: inline-flex;
+  flex: none;
+  margin: 0 0 0 auto;
+  padding: 3px;
+  background: var(--rail-bg);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+}
+.read__lang button,
+.read__lang a {
+  min-width: 52px; height: 30px;
+  padding: 0 12px;
+  font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .03em;
+  color: var(--head-ink);
+  background: none; border: 0; border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+}
+.read__lang button:hover,
+.read__lang a:hover { color: var(--ink); }
+/* anchors mirror the mockup's button content metrics (centered glyphs, no underline) */
+.read__lang a { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.read__lang button[aria-pressed="true"],
+.read__lang a[aria-pressed="true"] {
+  background: var(--active-bg);
+  color: var(--active-ink);
+  font-weight: 640;
 }
 
-.brand:hover {
-    text-decoration: none;
+.read__body { margin-top: 8px; padding-bottom: var(--pad-top); }
+/* in read mode the stage's own bottom padding folds into the verse block's,
+   so the gap under the last verse == the gap above the header (40px) */
+[data-read="on"] .stage { padding-bottom: 0; }
+.v {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr);   /* text column can always shrink */
+  column-gap: .15rem;
+  margin: 0;
+  font: 400 clamp(1.06rem, 1rem + .3vw, 1.18rem)/1.78 ui-serif, Georgia, 'Times New Roman', serif;
+  padding: 1.6px 0;
+}
+.v[data-search-target="true"] {
+  scroll-margin-top: 24px;
+  background: var(--active-flash);
+  border-radius: 3px;
+}
+.v__n {
+  font: 590 11px/2.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .05em;
+  font-variant-numeric: tabular-nums;
+  color: var(--head-ink);
+  text-align: right;
+  padding-right: .9rem;
+  user-select: none;
+}
+/* Pericope titles: classic study-Bible treatment — italic serif in full ink,
+   clearly above verse text weight, still quieter than the big book title */
+.read__sec {
+  grid-column: 1 / -1;
+  margin: 32px 0 8px;
+  text-align: center;
+  font: italic 500 clamp(17px, 1rem + .5vw, 22px)/1.4 ui-serif, Georgia, 'Times New Roman', serif;
+  letter-spacing: .01em;
+  color: var(--ink);
+}
+.read__body > .v:first-child { margin-top: 0; }
+.read__body > .read__sec:first-child { margin-top: 8px; }
+/* The TB/SIM edition blocks wrap the same content; their first child must
+   keep the same collapsed top margin as a direct child of .read__body. */
+.read__ed > .v:first-child { margin-top: 0; }
+.read__ed > .read__sec:first-child { margin-top: 8px; }
+/* the TB/SIM toggle belongs to the bible reader only */
+.read[data-kind="song"] .read__lang,
+.read[data-kind="tatib"] .read__lang { display: none; }
+
+/* --- Tata Ibadah stage --- */
+/* item heads reuse .read__sec but read as an ORDER, not hymn pericopes:
+   left-aligned sans labels, numbered by JS to match the contents rail */
+.read[data-kind="tatib"] .read__sec {
+  text-align: left;
+  font: 640 clamp(15px, 14px + .3vw, 17px)/1.4 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .03em;
+  font-style: normal;
+  color: var(--ink);
+  margin: 30px 0 6px;
+  scroll-margin-top: 44px;
+}
+.read[data-kind="tatib"] .tatib__tx {
+  margin: 0 0 4px;
+  font: 400 clamp(1.06rem, 1rem + .3vw, 1.18rem)/1.78 ui-serif, Georgia, 'Times New Roman', serif;
+}
+/* END_OF_SECTION: the OBS dock prints '--- END OF SECTION ---'; its text
+   field is a liturgist's private cue (often NEXT <name>) — shown small/dim
+   under the rule, never as content */
+.tatib__eos {
+  margin: 34px auto 34px;
+  width: min(220px, 60%);
+  border: 0;
+  border-top: 1px solid var(--divider);
+  position: relative;
+  scroll-margin-top: 44px;
+}
+.tatib__eos::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: -3px;
+  width: 5px; height: 5px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--divider);
+}
+.tatib__note {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  font: 500 11.5px/1.4 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--head-ink);
+}
+/* liturgist/jemaat speaker initials lead each line in the real texts */
+.tatib__sp {
+  font: 640 .82em/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .02em;
+  color: var(--head-ink);
+  margin-right: .15em;
+}
+.tatib__item { scroll-margin-top: 44px; }
+.tatib__item + .tatib__item { margin-top: 2px; }
+/* heading-less items read as continuation of the section above: the TOC
+   quotes their first line, dimmed + italic so they look like prose, not nav */
+.songrow--cont .songrow__t { color: var(--head-ink); font-style: italic; }
+.tatib__flash {
+  animation: tatibFlash 1.3s var(--ease) 1;
+}
+@keyframes tatibFlash {
+  0%, 30% { background: var(--active-flash); }
+  100% { background: transparent; }
+}
+/* A contents quicklink is never "current", so a reveal flashes it instead of
+   selecting it. The row tint holds long enough to be noticed before it fades;
+   the short-lived reading-stage flash keeps its own timing above. */
+.songrow.tatib__flash { animation: tatibRowFlash 2.6s linear 1; }
+@keyframes tatibRowFlash {
+  0%, 50% { background: var(--active-flash); }
+  100% { background: transparent; }
+}
+/* contents rail: END_OF_SECTION shows as a short rule, not a row */
+.toc__eos { display: flex; align-items: center; padding: 6px 18px; }
+.toc__eosline { flex: 1; border-top: 1px solid var(--divider); }
+
+/* chapter tiles with no text in this demo are visibly inactive.
+   Do NOT fade with opacity: head-ink at .5 composites to ~2:1 (fails 3:1);
+   the token colour alone still reads muted against live tiles. */
+.ch-num.no-data {
+  color: var(--head-ink);
+  cursor: default;
+}
+.ch-num.no-data:hover { background: none; color: var(--head-ink); }
+
+/* unreadable chapters in the rail get the same quiet look as the mini rail */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+[data-read="on"] .read__body { animation: fade-up 320ms cubic-bezier(.32, .72, .28, 1); }
+
+/* Below 1273px the third-level list replaces its parent. Start at the
+   parent's right edge and slide to the rail as the parent slides behind it;
+   the same moving edge carries it back on return. */
+@media (max-width: 1272px) {
+  :root[data-ch="open"][data-ch-mode="song"] .chapters { left: var(--rail-w); }
 }
 
-.brand__logo {
-    border-radius: 50%;
+/* chapters rail needs its own shadow when floating on narrow screens */
+@media (max-width: 720px) {
+  /* Keep the translating parent's width stable, including Bible's book list:
+     its trailing edge must stay attached to the incoming child on phones. */
+  :root[data-section="alkitab"],
+  :root[data-section="kidung"] {
+    --panel-w: min(var(--nav-w), calc(100vw - var(--rail-w) - 2rem));
+  }
+  /* Match the TataIbadahItem drawer's mobile width: viewport minus rail + 12px. */
+  :root[data-section="tatib"] {
+    --nav-w: min(26rem, calc(100vw - var(--rail-w) - 12px));
+    --panel-w: var(--nav-w);
+  }
+  .chapters { box-shadow: var(--shadow); }
+  /* phone: the song list floats over the stage instead of squeezing it —
+     a full-width drawer the tapped song closes */
+  :root[data-ch="open"][data-ch-mode="song"] { --ch-w-shown: 0px; }
+  :root[data-ch-mode="song"] .chapters {
+    width: calc(100vw - var(--rail-w) - 12px);
+    max-width: 26rem;
+  }
 }
 
-.brand__name {
-    font-size: var(--step-1);
-    letter-spacing: -0.01em;
+@media (max-width: 480px) {
+  /* the verse-number gutter must not eat the text column here */
+  .v { grid-template-columns: 1.7rem minmax(0, 1fr); }
+  .v__n { padding-right: .45rem; }
+  .stage { padding-left: 14px; padding-right: 14px; }
+  .read__head { margin-bottom: 22px; }
 }
 
-.search {
-    display: flex;
-    flex: 1 1 16rem;
-    gap: var(--space-2);
-    min-width: 12rem;
-    margin-left: auto;
+.read { scroll-margin-top: 24px; }
+/* Simalungun name, dimmed, after the Indonesian one.
+   No max-width cap: the panel is sized so nothing ever ellipsizes. */
+.book__s {
+  flex: none;
+  overflow: visible;
+  white-space: nowrap;
+  font-size: 12.5px;
+  line-height: 22px;
+  color: var(--head-ink);
+}
+.book[aria-current="true"] .book__s { color: inherit; opacity: .8; }
+.is-hidden { display: none !important; }
+
+.panel__empty {
+  margin: 4px 18px 0;
+  font-size: 14px;
+  color: var(--head-ink);
 }
 
-.search__input {
-    flex: 1;
-    padding: var(--space-2) var(--space-3);
-    font: inherit;
-    color: inherit;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+.sr {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-.search__button {
-    padding: var(--space-2) var(--space-4);
-    font: inherit;
-    font-weight: 600;
-    color: #fff;
-    background: var(--gkps-green);
-    border: 0;
-    border-radius: var(--radius);
-    cursor: pointer;
+/* ============================================================
+   Chapters rail — abbrev-like third column, opens beside books
+   ============================================================ */
+.chapters {
+  position: fixed;
+  top: 0; left: calc(var(--rail-w) + var(--books-w)); bottom: 0;
+  width: var(--col-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--rail-bg);
+  border-right: 1px solid var(--divider);
+  clip-path: inset(0 100% 0 0);
+  visibility: hidden;
+  z-index: 24;
+  transition: left var(--ease), clip-path var(--ease), background var(--ease),
+              box-shadow var(--ease), visibility 0s linear 200ms;
+}
+[data-ch="open"] .chapters {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  transition: left var(--ease), clip-path var(--ease), background var(--ease),
+              box-shadow var(--ease), visibility 0s;
+}
+/* The column changes role/width only while closed. Opening on desktop wipes
+   from its settled position; on phones it follows the retreating parent. */
+:root { --col-w: var(--ch-w); }
+:root[data-ch-mode="song"] { --col-w: var(--songsp-w); }
+
+/* top: collapse control (rail mode) or search + sort (song mode) */
+.ch__top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 12px;
+}
+.ch__tools {
+  flex: 1;
+  min-width: 0;
+  display: none;                  /* only the song list has a search header */
+  justify-content: center;
+}
+:root[data-ch-mode="song"] .ch__tools { display: flex; }
+/* in song mode the collapse button reads as "close", which is what it does */
+.ch__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.ch__search .filter-box { position: relative; flex: 1; min-width: 0; }
+.ch__search .filter-box svg {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 15px; height: 15px;
+  color: var(--head-ink);
+  pointer-events: none;
+}
+.ch__search input {
+  width: 100%;
+  height: 38px;
+  padding: 0 34px 0 34px;
+  font: 400 14px/1 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  outline: none;
+  -webkit-appearance: textfield; appearance: textfield;
+  transition: border-color var(--ease), background var(--ease);
+}
+.ch__search input::placeholder { color: var(--head-ink); }
+.ch__search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.ch__search input:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+.ch__search[hidden] { display: none; }   /* author display beats UA [hidden] */
+/* one button, two glyphs inside: which order is active (A-Z vs recent) */
+.ch__sort {
+  flex: none;
+  position: relative;
+  width: 38px; height: 38px;
+  font-size: 13.3333px;      /* mirrors the mockup's button UA metrics */
+  line-height: normal;
+  display: grid; place-items: center;
+  background: var(--canvas);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  color: var(--icon);
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease);
+  text-decoration: none;
+}
+.ch__sort:hover { border-color: var(--head-ink); background: var(--icon-hover-bg); }
+.ch__sort[hidden] { display: none; }
+.ch__sort svg { width: 17px; height: 17px; }
+.ch__sort-mark {
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font: 700 9px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .02em;
+  color: var(--head-ink);
+}
+.ch__sort[data-order="title"] .ch__sort-mark::after { content: "AZ"; }
+.ch__sort[data-order="m"] .ch__sort-mark {
+  right: 4px; bottom: 3px;
+  width: 11px; height: 11px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+.ch__sort[data-order="m"] .ch__sort-mark::after {
+  content: "";
+  position: absolute;
+  left: calc(50% - .75px); bottom: 50%;
+  width: 1.5px; height: 4px;
+  background: currentColor;
+  transform: rotate(40deg);
+  transform-origin: 50% 100%;
+}
+/* The service-list search shares a mode switch with the song-list sort icon.
+   Both modes keep a visible icon; the pressed state names the template view. */
+.panel__filter .panel__mode { display: none; }
+:root[data-section="tatib"] .panel__filter .panel__mode { display: grid; }
+.panel__mode .panel__mode-template { display: none; }
+.panel__mode[aria-pressed="true"] .panel__mode-template { display: block; }
+.panel__mode[aria-pressed="true"] .panel__mode-dated { display: none; }
+.panel__mode[aria-pressed="true"] {
+  border-color: var(--focus);
+  color: var(--focus);
+}
+.panel__mode:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
-.search__button:hover {
-    background: var(--green-600);
+.ch__wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ch__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  padding: 0 0 8px;
+  scrollbar-width: none;
+}
+.ch__body::-webkit-scrollbar { display: none; }
+.ch__body ul {
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px;                      /* same 60px pitch as the rails */
+}
+/* song mode: left-aligned rows, citation then full title */
+:root[data-ch-mode="song"] .ch__body ul {
+  align-items: stretch;
+  gap: 1px;
+  padding: 0 10px;
+}
+.songrow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 14.5px;
+  text-decoration: none;
+  transition: background var(--ease);
+}
+.songrow:hover { background: var(--icon-hover-bg); }
+.songrow[aria-current="true"] { background: var(--active-bg); color: var(--active-ink); }
+.songrow__c {
+  flex: none;
+  font: 560 13px/1.4 ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  min-width: 3.4rem;
+}
+.songrow[aria-current="true"] .songrow__c { color: var(--active-ink); }
+.songrow__t { min-width: 0; }
+.ch-num {
+  width: var(--btn); height: var(--btn);
+  display: grid; place-items: center;
+  padding: 0;
+  border: 0; border-radius: 8px;
+  background: none;
+  color: var(--icon);
+  font: 590 13px/1 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+}
+.ch-num:hover { background: var(--icon-hover-bg); color: var(--ink); text-decoration: none; }
+.ch-num[aria-current="true"] { background: var(--active-bg); color: var(--active-ink); }
+
+/* One shared 44px collapse control: placed beside the search field in either
+   the books/services panel or the second-level list. */
+.ch__collapse {
+  flex: none;
+  width: var(--btn); height: var(--btn);
+  display: grid; place-items: center;
+  background: none; border: 0; border-radius: 8px;
+  color: var(--icon);
+  cursor: pointer;
+  transition: background var(--ease);
+}
+.ch__collapse:hover { background: var(--icon-hover-bg); }
+.ch__collapse svg { width: 20px; height: 20px; }
+/* in song mode there is nothing to collapse to: the button just closes */
+
+.ch__empty {
+  flex: none;
+  margin: 0 18px 14px;
+  font-size: 14px;
+  color: var(--head-ink);
 }
 
-/* Content */
-.content {
-    padding-top: var(--space-6);
-    padding-bottom: var(--space-8);
+/* chapters scroll indicators: same furniture as the books mini rail */
+.ch__ind {
+  flex: none;
+  display: none;
+  place-items: center;
+  width: 100%; height: 26px;
+  padding: 0;
+  background: none; border: 0;
+  color: var(--head-ink);
+  cursor: pointer;
+  transition: color var(--ease);
+}
+.ch__ind:hover { color: var(--ink); }
+.ch__ind svg { width: 15px; height: 15px; }
+[data-ch="open"] .ch__ind.show { display: grid; }
+/* Kidung sidebars never show scroll chevrons */
+:root[data-ch-mode="song"] .ch__ind { display: none !important; }
+
+.stage {
+  margin-left: calc(var(--rail-w) + var(--books-w) + var(--ch-w-shown));
+  flex: 1;
+  min-width: 0;
+  padding: var(--pad-top) clamp(24px, 5vw, 64px) 64px;
+  transition: margin-left var(--ease);
+}
+/* one rule covers closed/open/mini and chapters: the --books-w / --ch-w-shown
+   tokens are 0 whenever a column is hidden, so both columns push in step */
+.stage__eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .55;
+}
+.stage__demo h1 {
+  margin: 0 0 12px;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  font-weight: 660;
+  letter-spacing: -.035em;
+  line-height: 1.08;
+}
+.stage__demo p {
+  margin: 0 0 28px;
+  max-width: 46ch;
+  font-size: 16.5px;
+  line-height: 1.65;
+  opacity: .78;
+}
+.hint {
+  display: inline-block;
+  padding: 9px 14px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  font-size: 14px;
+  opacity: .8;
+}
+kbd {
+  font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 3px 5px;
 }
 
-.hero {
-    margin-bottom: var(--space-6);
-    padding: var(--space-6) 0;
-    border-bottom: 1px solid var(--border);
+/* below tablet width there is nothing left to push: the panel reverts to a
+   floating overlay so the stage is not crushed to sliver width */
+@media (max-width: 720px) {
+  .panel { box-shadow: var(--shadow); }
+  .stage { padding-left: 18px; padding-right: 18px; }
+  .read__title { font-size: clamp(1.45rem, 6.5vw, 2.4rem); }
+  [data-nav="open"] .stage { margin-left: var(--rail-w); }
+}
+@media print {
+  .rail, .panel, .chapters, .search-home, .read__lang, .result-more {
+    display: none !important;
+  }
+  body { display: block; }
+  .stage { margin: 0 !important; width: 100%; padding: 0 !important; transition: none !important; }
+  .result-row { break-inside: avoid; }
 }
 
-.hero__title {
-    max-width: 20ch;
-    margin: 0 0 var(--space-3);
-    font-size: clamp(1.75rem, 1rem + 3vw, 2.75rem);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-}
+/* Edition blocks (TB / SIM): the wrapper must not create a box of its own,
+   or margin collapsing shifts the first heading by 4px vs the mockup. */
+.read__ed { display: contents; }
+.read__ed[hidden] { display: none; }
 
-.hero__lead {
-    max-width: 48ch;
-    margin: 0;
-    font-size: var(--step-1);
-    color: var(--ink-soft);
-}
-
-.section-title,
-.page-title {
-    margin: 0 0 var(--space-4);
-    font-size: var(--step-2);
-    letter-spacing: -0.01em;
-}
-
-.page-header {
-    margin-bottom: var(--space-5);
-}
-
-.muted {
-    color: var(--muted);
-}
-
-/* Book list */
-.book-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: var(--space-3);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.book-card__link {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    height: 100%;
-    padding: var(--space-4);
-    color: var(--ink);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-1);
-}
-
-.book-card__link:hover {
-    text-decoration: none;
-    border-color: var(--gkps-green);
-    transform: translateY(-1px);
-}
-
-.book-card__name {
-    font-size: var(--step-1);
-    font-weight: 600;
-}
-
-.book-card__meta {
-    font-size: var(--step--1);
-    color: var(--muted);
-}
-
-.tag {
-    color: var(--green-600);
-}
-
-/* Song list */
-.song-list {
-    display: grid;
-    gap: 1px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-}
-
-.song-list__item {
-    background: var(--surface);
-}
-
-.song-list__link {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    color: var(--ink);
-}
-
-.song-list__link:hover {
-    background: var(--green-100);
-    text-decoration: none;
-}
-
-.song-list__number {
-    min-width: 5.5ch;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    color: var(--gkps-blue);
-}
-
-.song-list__title {
-    flex: 1;
-}
-
-.song-list__key {
-    font-size: var(--step--1);
-    font-variant-numeric: tabular-nums;
-    color: var(--muted);
-}
-
-/* Breadcrumb */
-.breadcrumb {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    margin-bottom: var(--space-4);
-    font-size: var(--step--1);
-    color: var(--muted);
-}
-
-.breadcrumb a {
-    color: var(--muted);
-}
-
-/* Song reading */
-.song {
-    max-width: 42rem;
-}
-
-.song__header {
-    margin-bottom: var(--space-5);
-    padding-bottom: var(--space-4);
-    border-bottom: 2px solid var(--gkps-green);
-}
-
-.song__number {
-    margin: 0 0 var(--space-1);
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--gkps-blue);
-}
-
-.song__title {
-    margin: 0 0 var(--space-2);
-    font-size: var(--step-3);
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-}
-
-.song__meta {
-    margin: 0;
-    font-size: var(--step--1);
-    color: var(--muted);
-}
-
-.song__lyrics {
-    font-family: var(--font-serif);
-    font-size: 1.1875rem;
-    line-height: 1.8;
-}
-
-.verse {
-    display: grid;
-    grid-template-columns: 2.5rem 1fr;
-    gap: var(--space-2);
-    padding: var(--space-3) 0;
-}
-
-.verse + .verse {
-    border-top: 1px solid var(--border);
-}
-
-.verse__number {
-    padding-top: 0.35rem;
-    font-family: var(--font-sans);
-    font-size: var(--step--1);
-    font-weight: 700;
-    color: var(--gkps-green);
-}
-
-.verse__lyric {
-    margin: 0;
-    white-space: pre-line;
-}
-
-.song-nav {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-top: var(--space-6);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--border);
-}
-
-.song-nav a {
-    font-weight: 600;
-}
-
-/* Maintenance notice */
+/* Maintenance notice (spec 003): standalone page, outside the shell. */
 .maintenance {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: var(--space-6) var(--space-4);
+    padding: 32px 16px;
+    background: var(--canvas);
+    color: var(--ink);
 }
 
 .maintenance__card {
     max-width: 34rem;
-    padding: var(--space-7) var(--space-6);
+    padding: 48px 32px;
     text-align: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-1);
+    background: var(--rail-bg);
+    border: 1px solid var(--divider);
+    border-radius: 16px;
 }
 
 .maintenance__logo {
@@ -397,62 +1160,19 @@ a:hover {
 }
 
 .maintenance__title {
-    margin: var(--space-4) 0 var(--space-3);
-    font-size: var(--step-3);
+    margin: 16px 0 12px;
+    font-size: 1.75rem;
     line-height: 1.2;
     letter-spacing: -0.01em;
 }
 
 .maintenance__lead {
-    margin: 0 0 var(--space-2);
-    font-size: var(--step-1);
-    color: var(--ink-soft);
+    margin: 0 0 8px;
+    font-size: 1.0625rem;
 }
 
 .maintenance__note {
     margin: 0;
-    font-size: var(--step--1);
-    color: var(--muted);
-}
-
-/* States */
-.empty {
-    padding: var(--space-5);
-    text-align: center;
-    color: var(--muted);
-    background: var(--surface);
-    border: 1px dashed var(--border);
-    border-radius: var(--radius-lg);
-}
-
-.link {
-    font-weight: 600;
-}
-
-/* Footer */
-.site-footer {
-    padding: var(--space-5) 0;
-    font-size: var(--step--1);
-    color: var(--muted);
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-}
-
-/* Print */
-@media print {
-    .site-header,
-    .site-footer,
-    .song-nav,
-    .breadcrumb,
-    .search {
-        display: none;
-    }
-
-    body {
-        background: #fff;
-    }
-
-    .song__lyrics {
-        font-size: 12pt;
-    }
+    font-size: 0.9375rem;
+    color: var(--head-ink);
 }

@@ -1,0 +1,9 @@
+<section class="group"><ul>
+  {% for book in songbooks %}
+  <li><a class="book" href="{% url 'web-book' book.id %}"
+         data-name="{{ book.id }}" data-sim="{{ book.short }}"
+         aria-label="{{ book.name }}{% if book.short %} ({{ book.short }}){% endif %}"{% if book.current %} aria-current="true"{% endif %}>
+    <span class="book__n">{{ book.name }}</span>
+    {% if book.short %}<span class="book__s">{{ book.short }}</span>{% endif %}</a></li>
+  {% endfor %}
+</ul></section>

@@ -50,6 +50,10 @@ class Song(models.Model):
     title = models.CharField(max_length=64)
     is_untitled = models.BooleanField(default=False)
     key = models.CharField(max_length=4, blank=True, choices=Key.choices)
+    modified = models.DateTimeField(
+        null=True, auto_now=True,
+        help_text='Stamped on every save; rows that predate tracking share '
+                  'the migration timestamp.')
 
     @property
     def book_number(self):
