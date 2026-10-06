@@ -9,21 +9,29 @@ pages from one context share it (that is one laptop with two tabs), a second
 context is another laptop and must not be affected.
 """
 
+import unittest
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
 from django.urls import reverse
-from tests.e2e.base import BaseE2ETestCase
 
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 
+try:
+    from playwright.sync_api import sync_playwright
+
+    HAS_PLAYWRIGHT = True
+except ImportError:  # pragma: no cover - depends on environment
+    HAS_PLAYWRIGHT = False
+
 
 @tag('e2e')
+@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
+class ProjectorE2ETests(StaticLiveServerTestCase):
     def setUp(self):
         super().setUp()
         self.service = tatib.TataIbadah.objects.create(
@@ -77,18 +85,25 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
             tatib=self.long_service, order_number=1, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=long_translation, chapter=23, verse_start=1)
 
+        self._playwright = sync_playwright().start()
+        try:
+            self.browser = self._playwright.chromium.launch()
+        except Exception as error:  # pragma: no cover - depends on environment
+            self._playwright.stop()
+            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
+
     def tearDown(self):
+        self._close_browser()
         super().tearDown()
 
     def _close_browser(self):
-        pass
+        if getattr(self, '_playwright', None) is not None:
+            self.browser.close()
+            self._playwright.stop()
+            self._playwright = None
 
-    def _page(self, url, context=None, **kwargs):
-        if context is None:
-            if kwargs:
-                context = self._new_context(**kwargs)
-            else:
-                return self._new_page()
+    def _page(self, url, context=None):
+        context = context or self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = context.new_page()
         page.goto(self.live_server_url + url)
         page.wait_for_load_state('networkidle')
@@ -103,8 +118,8 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
     def _slides(self, page):
         return page.eval_on_selector_all(
             '.slide', 'els => els.map(e => ({slide: e.dataset.slide, kind: e.dataset.kind,'
-                      ' active: e.classList.contains("is-active"),'
-                      ' hidden: e.getAttribute("aria-hidden")}))')
+                     ' active: e.classList.contains("is-active"),'
+                     ' hidden: e.getAttribute("aria-hidden")}))')
 
     # --- only the words, on the product's dark palette ------------------------
 
@@ -178,15 +193,16 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         self.assertEqual(box['boxSizing'], 'border-box', box)
         self.assertGreaterEqual(box['top'], 0, box)
         self.assertLessEqual(box['bottom'], box['viewport'],
-                              'the display box runs past the bottom of the window: %s' % box)
+                             'the display box runs past the bottom of the window: %s' % box)
         self.assertGreaterEqual(box['left'], 0, box)
         self.assertLessEqual(box['right'], box['width'], box)
         self.assertLessEqual(box['scrollHeight'], box['viewport'],
-                              'the display page scrolls: %s' % box)
+                             'the display page scrolls: %s' % box)
 
     def test_the_header_and_the_words_sit_in_the_middle_of_the_screen(self):
         page = self._page(self._projector_url())
         page.keyboard.press('End')                        # a screen with both a header and a line
+        page.wait_for_timeout(300)
         page.wait_for_function(
             "() => !!document.querySelector('.screen.is-active .screen__line')")
         centred = page.evaluate("""() => {
@@ -250,7 +266,8 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
             "() => getComputedStyle(document.querySelector('.screen.is-active')).opacity"), '0')
 
     def test_reduced_motion_makes_every_move_instant(self):
-        context = self._new_context(viewport={'width': 1440, 'height': 900}, reduced_motion='reduce')
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900},
+                                           reduced_motion='reduce')
         page = self._page(self._projector_url(), context)
         page.keyboard.press('ArrowRight')
         page.wait_for_timeout(50)
@@ -289,7 +306,7 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
           head: (e.querySelector('.screen__head') || {}).textContent || null,
           lines: [...e.querySelectorAll('.screen__line')].map(p => p.textContent)}))""")
         self.assertEqual([s['blank'] for s in shape],
-                          [False, False, False, True, False, False, False])
+                         [False, False, False, True, False, False, False])
         self.assertEqual(shape[0]['head'], 'Nas')        # a legacy row takes the same shape
         self.assertEqual(shape[0]['lines'], ['Mazmur 23'])
         self.assertEqual(shape[1]['lines'], ['Tuhan adalah gembalaku, takkan kekurangan aku.'])
@@ -432,7 +449,7 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
     # --- the button, its two states, and the lock across tabs ----------------
 
     def test_project_button_opens_the_display_and_locks_the_browser(self):
-        context = self._new_context(viewport={'width': 1440, 'height': 900})
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = self._page(self._service_url(), context)
         self.assertIn('Project', page.locator('[data-project-open]').inner_text())
         self.assertTrue(page.locator('[data-project-update]').is_hidden())
@@ -456,7 +473,9 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         # and an entry write is declined there, with the reason, in both tabs
         for other in (page, tab):
             other.locator('.tatib__item').first.hover()
+            other.wait_for_timeout(200)
             other.locator('[data-entry-open="text"]').first.click()
+            other.wait_for_timeout(300)
             self.assertEqual(other.locator('dialog[open]').count(), 0)
             self.assertFalse(other.locator('[data-project-note]').is_hidden())
             self.assertIn('Stop projecting', other.locator('[data-project-note]').inner_text())
@@ -471,11 +490,12 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         page.wait_for_function("!document.querySelector('dialog[open]')")
 
         # a second BROWSER is another laptop: its own state, and not locked
-        alone = self._new_context(viewport={'width': 1440, 'height': 900})
+        alone = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         laptop = self._page(self._service_url(), alone)
         self.assertIn('Project', laptop.locator('[data-project-open]').inner_text())
         self.assertEqual(laptop.get_attribute('[data-project-group]', 'data-displaying'), 'false')
         laptop.locator('.tatib__item').first.hover()
+        laptop.wait_for_timeout(200)
         laptop.locator('[data-entry-open="text"]').first.click()
         laptop.wait_for_selector('dialog[open]')          # it may still prepare its service
         laptop.keyboard.press('Escape')
@@ -486,12 +506,13 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         self.assertIn('Project', page.locator('[data-project-open]').inner_text())
         self.assertIn('Project', tab.locator('[data-project-open]').inner_text())
         tab.locator('.tatib__item').first.hover()
+        tab.wait_for_timeout(200)
         tab.locator('[data-entry-open="text"]').first.click()
         tab.wait_for_selector('dialog[open]')
         tab.keyboard.press('Escape')
 
     def test_the_toggle_in_the_projector_stops_it_for_the_whole_browser(self):
-        context = self._new_context(viewport={'width': 1440, 'height': 900})
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = self._page(self._service_url(), context)
         with page.expect_popup() as popup_info:
             page.click('[data-project-open]')
@@ -512,7 +533,7 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         also leaves a beat behind (web/projector.js); the opener knows at once, and the
         other tab hears the stop it posts. Nobody presses Stop.
         """
-        context = self._new_context(viewport={'width': 1440, 'height': 900})
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = self._page(self._service_url(), context)
         with page.expect_popup() as popup_info:
             page.click('[data-project-open]')
@@ -535,6 +556,7 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
 
         # the write lock went with the window
         page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(200)
         page.locator('[data-entry-open="text"]').first.click()
         page.wait_for_selector('dialog[open]')
         page.keyboard.press('Escape')
@@ -545,10 +567,12 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         """From the home page, the way the operator gets there. The shell swaps the
         reading pane IN PLACE, so a project button bound to the node it sat on at
         load is present and dead on exactly this path -- and works on a deep link."""
-        context = self._new_context(viewport={'width': 1440, 'height': 900})
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = self._page(reverse('web-home'), context)
         page.locator('[data-panel="tatib"]').click()
+        page.wait_for_timeout(700)
         page.locator(f'.book[href="{self._service_url()}"]').click()   # the service row
+        page.wait_for_timeout(1000)
         self.assertEqual(page.locator('[data-project-open]').count(), 1)
         self.assertIn('Project', page.locator('[data-project-open]').inner_text())
 
@@ -561,14 +585,16 @@ class ProjectorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
 
         # the lock reaches the swapped pane too
         page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(250)
         page.locator('[data-entry-open="text"]').first.click()
+        page.wait_for_timeout(300)
         self.assertEqual(page.locator('dialog[open]').count(), 0)
         self.assertIn('Stop projecting', page.locator('[data-project-note]').inner_text())
 
     # --- Update re-reads what is on screen -----------------------------------
 
     def test_update_re_reads_the_page_and_keeps_the_place(self):
-        context = self._new_context(viewport={'width': 1440, 'height': 900})
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = self._page(self._service_url(), context)
         with page.expect_popup() as popup_info:
             page.click('[data-project-open]')
