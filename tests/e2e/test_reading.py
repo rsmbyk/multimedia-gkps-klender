@@ -217,6 +217,77 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.reload()
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
 
+    def test_sidebar_selection_tint_matches_theme_for_all_current_rows(self):
+        page = self._page()
+        home_url = self.live_server_url + reverse('web-home')
+        expected = {
+            'light': {'background': 'rgb(185, 198, 185)', 'color': 'rgb(31, 31, 29)'},
+            'dark': {'background': 'rgb(57, 63, 79)', 'color': 'rgb(245, 243, 238)'},
+        }
+
+        def assert_selected_row(selector, theme):
+            selected = page.locator(selector)
+            expect(selected).to_have_count(1)
+            actual = selected.evaluate("""el => ({
+                background: getComputedStyle(el).backgroundColor,
+                color: getComputedStyle(el).color,
+                citation: el.querySelector('.songrow__c')
+                  ? getComputedStyle(el.querySelector('.songrow__c')).color : null,
+                secondary: el.querySelector('.book__s') ? {
+                  color: getComputedStyle(el.querySelector('.book__s')).color,
+                  opacity: getComputedStyle(el.querySelector('.book__s')).opacity
+                } : null
+            })""")
+            self.assertEqual(actual['background'], expected[theme]['background'], selector)
+            self.assertEqual(actual['color'], expected[theme]['color'], selector)
+            if '.songrow[' in selector:
+                self.assertEqual(actual['citation'], expected[theme]['color'])
+            if actual['secondary']:
+                self.assertEqual(actual['secondary']['color'], expected[theme]['color'])
+                self.assertEqual(actual['secondary']['opacity'], '1')
+
+        def open_sidebar_tile(section, title, theme):
+            page.goto(home_url)
+            expect(page.locator('html')).to_have_attribute('data-theme', theme)
+            page.locator('.rail [data-panel="%s"]' % section).click()
+            expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+            tile = page.locator('#panelBody .book').filter(has_text=title).first
+            expect(tile).to_be_visible()
+            tile.click()
+            expect(page).to_have_url(home_url)
+            return tile
+
+        page.emulate_media(color_scheme='light')
+        page.goto(home_url)
+        expect(page.locator('html')).to_have_attribute('data-theme', 'light')
+
+        for theme in ('light', 'dark'):
+            if theme == 'dark':
+                page.locator('#themeBtn').click()
+                expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+
+            open_sidebar_tile('alkitab', 'Matius', theme)
+            assert_selected_row('#panelBody .book[aria-current="true"]', theme)
+
+            open_sidebar_tile('alkitab', 'Matius', theme)
+            expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+            page.get_by_role('link', name='Matius chapter 5').click()
+            expect(page).to_have_url(home_url)
+            assert_selected_row('#chList .ch-num[aria-current="true"]', theme)
+
+            open_sidebar_tile('kidung', 'Nyanyikanlah Kidung Baru', theme)
+            assert_selected_row('#panelBody .book[aria-current="true"]', theme)
+
+            open_sidebar_tile('kidung', 'Nyanyikanlah Kidung Baru', theme)
+            song = page.locator('#chList .songrow').filter(has_text='Di Waktu Pagi').first
+            expect(song).to_be_visible()
+            song.click()
+            expect(page).to_have_url(home_url)
+            assert_selected_row('#chList .songrow[aria-current="true"]', theme)
+
+            open_sidebar_tile('tatib', 'Ibadah Minggu III', theme)
+            assert_selected_row('#panelBody .book[aria-current="true"]', theme)
+
     def test_print_shows_reading_content_only(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-song', args=[self.song.id]))

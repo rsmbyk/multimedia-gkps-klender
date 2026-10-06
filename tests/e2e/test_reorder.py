@@ -371,7 +371,7 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         selected = link.evaluate('(el) => getComputedStyle(el).backgroundColor')
         self.assertEqual(selected, page.evaluate("""() => {
           const swatch = document.createElement('div');
-          swatch.style.backgroundColor = 'var(--active-bg)';
+          swatch.style.backgroundColor = 'var(--sidebar-selected-bg)';
           document.body.appendChild(swatch);
           const color = getComputedStyle(swatch).backgroundColor;
           swatch.remove();
