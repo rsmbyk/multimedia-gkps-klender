@@ -26,12 +26,12 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-014](./items/ITEM-014-hide-songbook-fields.md) | Hide short name and hymn-book fields in songbook forms | Remove the short-name and hymn-book controls from songbook create/edit forms while preserving stored values | chore | P2 | S | [012](../specs/012-hide-songbook-fields/spec.md) | 2026-10-06 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-014](./items/ITEM-014-hide-songbook-fields.md) | Hide short name and hymn-book fields in songbook forms | Remove the short-name and hymn-book controls from songbook create/edit forms while preserving stored values | chore | P2 | S | [012](../specs/012-hide-songbook-fields/spec.md) | [#272](https://github.com/rsmbyk/multimedia-gkps-klender/pull/272) | 2026-10-06 |
 
 ## Done
 
