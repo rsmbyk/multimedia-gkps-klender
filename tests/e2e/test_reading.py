@@ -1,8 +1,8 @@
 """End-to-end tests for the public reading experience (spec 004).
 
 Runs under Django's test runner (``python manage.py test``) via
-``StaticLiveServerTestCase`` with a shared browser from ``BaseE2ETestCase``.
-Skips cleanly when Playwright or its browser binary is unavailable.
+``StaticLiveServerTestCase``. Skips cleanly when Playwright or its browser
+binary is unavailable, so the unit suite stays runnable everywhere.
 
 One-time setup::
 
@@ -10,6 +10,7 @@ One-time setup::
     playwright install chromium
 """
 
+import unittest
 from datetime import date, timedelta
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -19,17 +20,19 @@ from django.urls import reverse
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
-from tests.e2e.base import BaseE2ETestCase
 
 try:
-    from playwright.sync_api import expect
+    from playwright.sync_api import expect, sync_playwright
+
+    HAS_PLAYWRIGHT = True
 except ImportError:  # pragma: no cover - depends on environment
-    pass
+    HAS_PLAYWRIGHT = False
 
 
 @tag('e2e')
+@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class ReadingE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
+class ReadingE2ETests(StaticLiveServerTestCase):
     # LiveServerTestCase runs against a real server thread, so fixtures are
     # created per test (committed) rather than in setUpTestData, and Playwright
     # starts only after the ORM work — its event loop must not overlap Django's
@@ -95,11 +98,21 @@ class ReadingE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
             sim_book = bible.BookTranslation.objects.create(version=sim_version, book=self.mat, translation='Mateus')
             bible.Verse.objects.create(book_translation=sim_book, chapter=5, verse=13, text='Garam ni dunia.')
 
+        self._playwright = sync_playwright().start()
+        try:
+            self.browser = self._playwright.chromium.launch()
+        except Exception as error:  # pragma: no cover - depends on environment
+            self._playwright.stop()
+            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
+
     def tearDown(self):
+        self.browser.close()
+        self._playwright.stop()
         super().tearDown()
 
-    def _page(self, viewport=None):
-        return self._new_page(viewport)
+    def _page(self, width=1280, height=900):
+        page = self.browser.new_page(viewport={'width': width, 'height': height})
+        return page
 
     def _search(self, page, query):
         field = page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')
@@ -321,7 +334,7 @@ class ReadingE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
     def test_empty_bible_header_row_does_not_reserve_space(self):
         for width in (1440, 390):
             with self.subTest(width=width):
-                page = self._page(viewport={'width': width, 'height': 900})
+                page = self._page(width=width)
                 page.goto(self.live_server_url + reverse('web-home'))
                 page.locator('.rail [data-panel="alkitab"]').click()
                 page.locator('#panelBody .book').filter(has_text='Matius').first.click()
@@ -473,7 +486,7 @@ class ReadingE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         self.assertEqual(page.evaluate('document.activeElement.id'), 'langTb')
         page.close()
 
-        context = self._new_context(java_script_enabled=False, viewport={'width': 1280, 'height': 900})
+        context = self.browser.new_context(java_script_enabled=False, viewport={'width': 1280, 'height': 900})
         page = context.new_page()
         chapter_url = self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5])
         page.goto(chapter_url + '?ed=sim')
@@ -506,6 +519,7 @@ class ReadingE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
 
         page.evaluate(body + '.scrollTop = 0')
         page.evaluate("document.querySelectorAll('#chList .ch-num')[4].click()")
+        page.wait_for_timeout(300)
         self.assertEqual(page.evaluate(body + '.scrollTop'), 0)   # visible row: no move
 
         # a row clipped at the top edge is nudged just enough to be fully visible
@@ -516,6 +530,7 @@ class ReadingE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         before = page.evaluate(body + '.scrollTop')
         self.assertGreater(before, 0, 'fixture list did not scroll')
         page.evaluate("document.querySelector('#chList .ch-num:not(.no-data)').click()")
+        page.wait_for_timeout(300)
         after = page.evaluate(body + '.scrollTop')
         self.assertLessEqual(after, before)
         self.assertLess(before - after, 45)      # nudged, never centred
@@ -759,7 +774,9 @@ class ReadingE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
             if not more.count():
                 break
             more.first.click()
+            page.wait_for_timeout(250)
         page.evaluate('window.scrollTo(0, 400)')
+        page.wait_for_timeout(150)
         offset = page.evaluate('window.scrollY')
         self.assertGreater(offset, 0, 'the result page did not scroll')
         # leave through the sidebars, never through a result
@@ -771,6 +788,7 @@ class ReadingE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
         self.assertTrue(stored.startswith(reverse('web-search') + '?q=kasih'), stored)
         page.locator('#railSearch').click()
         page.wait_for_selector('#searchStatus')
+        page.wait_for_timeout(250)
         expect(page.get_by_text('Results for').first).to_be_visible()
         resumed = page.evaluate('window.scrollY')
         self.assertGreater(resumed, 100, f'the result set was not resumed at an offset: {resumed}')
