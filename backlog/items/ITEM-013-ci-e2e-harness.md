@@ -1,6 +1,6 @@
 ---
 id: ITEM-013
-status: in_progress
+status: in_review
 title: 'Restore reliable CI and E2E execution'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-06
 updated: 2026-10-06
 spec: specs/010-fast-pr-feedback-ci/spec.md
 branch: fix/013-ci-e2e-harness
-pr:
+pr: 271
 archived_at:
 archive_reason:
 bump: none
@@ -40,4 +40,4 @@ Repair regressions in the accepted CI workflow: E2E module import/discovery, Dja
 
 - Spec: [Spec 010 — Fast PR feedback and repository CI](../../specs/010-fast-pr-feedback-ci/spec.md)
 - Related: [ITEM-011 — original CI implementation](./ITEM-011-fast-pr-feedback-ci.md)
-- Pull request: pending
+- Pull request: [#271](https://github.com/rsmbyk/multimedia-gkps-klender/pull/271)
