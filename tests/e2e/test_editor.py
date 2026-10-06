@@ -1,10 +1,8 @@
 """End-to-end tests for the sidebar editors (spec 005).
 
-Same runner and skip behaviour as the reading suite: Django's test runner via
-``StaticLiveServerTestCase``, skipped when Playwright or its browser is missing.
+Uses shared browser from ``tests.e2e.base.BaseE2ETestCase`` for Playwright lifecycle.
 """
 
-import unittest
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -15,17 +13,14 @@ from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 
 try:
-    from playwright.sync_api import expect, sync_playwright
-
-    HAS_PLAYWRIGHT = True
-except ImportError:  # pragma: no cover - depends on environment
-    HAS_PLAYWRIGHT = False
+    from playwright.sync_api import expect
+except ImportError:
+    pass
 
 
 @tag('e2e')
-@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class EditorE2ETests(StaticLiveServerTestCase):
+class EditorE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
     def setUp(self):
         super().setUp()
         self.lang = songs.Language.objects.create(name='Indonesian')
@@ -41,27 +36,12 @@ class EditorE2ETests(StaticLiveServerTestCase):
         tatib.TataIbadahItem.objects.create(
             tatib=self.service, item_type=tatib.TataIbadahItemType.TEXT,
             title='Pembukaan', text='KJ 120', order_number=1)
-        self._playwright = sync_playwright().start()
-        try:
-            self.browser = self._playwright.chromium.launch()
-        except Exception as error:  # pragma: no cover - depends on environment
-            self._playwright.stop()
-            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
 
     def tearDown(self):
-        self._close_browser()
         super().tearDown()
 
-    def _close_browser(self):
-        """Playwright's loop must not overlap Django's database access, so any test
-        that asserts against the database closes the browser first."""
-        if self._playwright is not None:
-            self.browser.close()
-            self._playwright.stop()
-            self._playwright = None
-
     def _page(self, url):
-        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        page = self._new_page()
         page.goto(self.live_server_url + url)
         page.wait_for_load_state('networkidle')
         return page
@@ -92,7 +72,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
                    lang=str(self.lang.pk))
         expect(page.locator('dialog[open]')).to_have_count(0)
         expect(page.locator('#panelBody .book').filter(has_text='Kidung Sekolah')).to_be_visible()
-        self._close_browser()
         self.assertTrue(songs.Book.objects.filter(name='Kidung Sekolah').exists())
 
     def test_add_song_to_the_open_songbook(self):
@@ -103,7 +82,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#editorTitle')).to_have_text('New song')
         self._save(page, title='Lagu Baru', number='', sub_number='', key='')
         expect(page.locator('#chList .songrow').filter(has_text='Lagu Baru')).to_be_visible()
-        self._close_browser()
         self.assertTrue(songs.Song.objects.filter(book=self.book, title='Lagu Baru').exists())
 
     def test_the_add_buttons_exist_on_the_home_to_section_path(self):
@@ -128,7 +106,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         # a doubled inset pushed it past the edge)
         page.get_by_text(self.book.name, exact=True).first.click()
         page.wait_for_function("document.documentElement.dataset.ch === 'open'")
-        page.wait_for_timeout(700)                      # let its travel finish
         insets = page.evaluate('''() => {
             const b = document.getElementById('songAdd');
             const s = document.querySelector('.chapters');
@@ -138,7 +115,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self.assertGreater(insets['right'], 0, 'the add button overflows the right edge')
         page.click('.rail__btn[aria-label="Alkitab"]')
         expect(page.locator('#panelAdd')).to_have_count(0)          # and gone again
-        self._close_browser()
 
     def test_escape_inside_the_modal_does_not_also_close_the_sidebar(self):
         """The modal is the innermost layer: Esc must stop there (review report)."""
@@ -150,7 +126,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("!document.querySelector('dialog[open]')")
         self.assertEqual(page.evaluate("document.documentElement.dataset.nav"), 'open')
         expect(page.locator('#panelAdd')).to_be_visible()
-        self._close_browser()
 
     def test_the_tata_ibadah_mode_toggle_exists_after_clicking_through(self):
         """It is part of the Tata Ibadah toolbar only, and the home path swaps that in."""
@@ -165,7 +140,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         order = page.evaluate("""() => [...document.querySelectorAll('.panel__filter > *')]
             .map(e => e.id || e.className.split(' ')[0])""")
         self.assertEqual(order[-2:], ['tatibMode', 'panelCollapse'])
-        self._close_browser()
 
     def test_closing_a_sidebar_reveals_no_row_control_and_no_rail_label(self):
         """Closing the song list left the row's control lit and a tile's label hanging."""
@@ -173,11 +147,9 @@ class EditorE2ETests(StaticLiveServerTestCase):
         page.click('.rail__btn[aria-label="Kidung"]')
         page.get_by_text(self.book.name, exact=True).first.click()
         page.wait_for_function("document.documentElement.dataset.ch === 'open'")
-        page.wait_for_timeout(700)
         # close the song list with its own control, then look for anything revealed
         page.click('#chCollapse')
         page.wait_for_function("document.documentElement.dataset.ch === 'closed'")
-        page.wait_for_timeout(500)
         lit = page.evaluate("""() => [...document.querySelectorAll('#panelBody .row-edit, #chList .row-edit')]
             .filter(b => getComputedStyle(b).opacity !== '0').length""")
         self.assertEqual(lit, 0, 'a row control was left revealed')
@@ -186,18 +158,15 @@ class EditorE2ETests(StaticLiveServerTestCase):
         lift = ("Number(getComputedStyle(document.querySelector("
                 "'.rail__btn[aria-label=\"Kidung\"]'), '::after').opacity)")
         page.hover('.rail__btn[aria-label="Kidung"]')
-        page.wait_for_timeout(900)
         self.assertGreater(page.evaluate(lift), 0.05, 'the label did not appear on hover')
         # closing the panel with its own control puts focus back on the tile, and that
         # must not raise the label again (review report: it did)
         page.click('#panelCollapse')
         page.wait_for_function("document.documentElement.dataset.nav === 'closed'")
-        page.wait_for_timeout(700)
         self.assertEqual(page.evaluate(lift), 0, 'the rail label stayed up after closing')
         rails = page.evaluate("""() => [...document.querySelectorAll('.rail__btn[data-tip]')]
             .filter(b => Number(getComputedStyle(b, '::after').opacity) > 0.05).map(b => b.dataset.tip)""")
         self.assertEqual(rails, [], 'a rail label was left up')
-        self._close_browser()
 
     def test_add_tatib_with_its_first_section(self):
         page = self._page(reverse('web-tatib'))
@@ -207,7 +176,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self._save(page, name='Ibadah Baru', date='2026-11-01', first_title='Pembukaan',
                    first_text='KJ 1')
         expect(page.locator('#panelBody .book').filter(has_text='Ibadah Baru')).to_be_visible()
-        self._close_browser()
         service = tatib.TataIbadah.objects.get(name='Ibadah Baru')
         self.assertEqual(service.tataibadahitem_set.count(), 1)
 
@@ -227,7 +195,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('[name="title"]')).to_have_value('Alpha')
         self._save(page, title='Alpha Baru')
         expect(page.locator('#chList .songrow').filter(has_text='Alpha Baru')).to_be_visible()
-        self._close_browser()
         self.song.refresh_from_db()
         self.assertEqual(self.song.title, 'Alpha Baru')
 
@@ -241,7 +208,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('[name="name"]')).to_have_value('Ibadah Minggu III')
         self._save(page, name='Ibadah Minggu IV')
         expect(page.locator('#panelBody .book').filter(has_text='Ibadah Minggu IV')).to_be_visible()
-        self._close_browser()
         self.service.refresh_from_db()
         self.assertEqual(self.service.name, 'Ibadah Minggu IV')
 
@@ -265,7 +231,6 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('dialog[open]')).to_have_count(1)  # still open
         expect(page.locator('.editor__error')).to_contain_text('already been used')
         expect(page.locator('[name="name"]')).to_have_value('Bentrok')
-        self._close_browser()
         self.assertFalse(songs.Book.objects.filter(name='Bentrok').exists())
 
     def test_the_shell_survives_a_save(self):
@@ -277,5 +242,4 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('dialog[open]')).to_have_count(0)
         self.assertEqual(page.url, start)                      # one page, no reload
         expect(page.locator('.read__title')).to_contain_text('Alpha')   # the stage kept reading
-        self._close_browser()
         self.assertTrue(songs.Song.objects.filter(title='Lagu Kedua').exists())

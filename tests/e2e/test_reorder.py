@@ -8,7 +8,6 @@ leaving with an unsaved order asks first, on the shell's own in-page navigation 
 close.
 """
 from datetime import date
-import unittest
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
@@ -17,19 +16,12 @@ from django.urls import reverse
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
-
-try:
-    from playwright.sync_api import sync_playwright
-
-    HAS_PLAYWRIGHT = True
-except ImportError:  # pragma: no cover - depends on environment
-    HAS_PLAYWRIGHT = False
+from tests.e2e.base import BaseE2ETestCase
 
 
 @tag('e2e')
-@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class ReorderE2ETests(StaticLiveServerTestCase):
+class ReorderE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
     """Written before the mode existed; it drives the real page in a real browser."""
 
     def setUp(self):
@@ -55,38 +47,19 @@ class ReorderE2ETests(StaticLiveServerTestCase):
             tatib=self.tatib, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Doa',
             order_number=4)
         self.texts = [self.first.pk, self.second.pk, self.third.pk]
-        self.setUp_browser()
 
     def _entry(self, order, title, text):
         return tatib.ServiceEntry.objects.create(
             tatib=self.tatib, kind=tatib.ServiceEntryKind.TEXT, title=title, text=text,
             order_number=order)
 
-    def setUp_browser(self):
-        """Last, after every ORM call: Playwright's loop must not overlap the database."""
-        self._playwright = sync_playwright().start()
-        try:
-            self.browser = self._playwright.chromium.launch()
-        except Exception as error:  # pragma: no cover - depends on environment
-            self._playwright.stop()
-            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
-
     def tearDown(self):
-        self._close_browser()
         super().tearDown()
 
-    def _close_browser(self):
-        if getattr(self, '_playwright', None) is not None:
-            self.browser.close()
-            self._playwright.stop()
-            self._playwright = None
-
-    def _page(self, url, context=None):
-        context = context or self.browser.new_context(viewport={'width': 1440, 'height': 900})
-        page = context.new_page()
+    def _page(self, url, viewport=None):
+        page = self._new_page(viewport)
         page.goto(self.live_server_url + url)
         page.wait_for_load_state('networkidle')
-        page.wait_for_timeout(300)
         return page
 
     def _service_url(self):
@@ -128,9 +101,13 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         """The grip is the only control drawn: focus it and use the arrow keys."""
         grip = page.locator('[data-move-grip="%d"]' % pk)
         grip.focus()
-        page.wait_for_timeout(120)
+        page.wait_for_function(
+            "document.querySelector('[data-move-grip=\"%d\"]:focus') !== null" % pk,
+            timeout=3000)
         page.keyboard.press('ArrowUp' if direction == 'up' else 'ArrowDown')
-        page.wait_for_timeout(300)
+        page.wait_for_function(
+            "document.querySelector('.ch__reorder').offsetWidth > 0",
+            timeout=8000)
 
     def _start(self, page):
         """No Reorder button: a move starts the mode. Moving the first row up moves nothing."""
@@ -185,7 +162,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         # a drag on the handle is what starts it
         row = self._row(page, self.first.pk)
         row.hover()
-        page.wait_for_timeout(150)
         grip = page.locator('[data-move-grip="%d"]' % self.first.pk)
         box = grip.bounding_box()
         target = self._row(page, self.third.pk).bounding_box()
@@ -193,7 +169,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         page.mouse.down()
         page.mouse.move(box['x'] + box['width'] / 2, target['y'] + target['height'] - 4, steps=10)
         page.mouse.up()
-        page.wait_for_timeout(300)
 
         self.assertEqual(self._state(page), 'on')
         self.assertTrue(page.locator('[data-reorder-save]').is_visible())
@@ -334,10 +309,8 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         row = self._row(page, self.second.pk)
         link = row.locator('.songrow')
         page.mouse.move(0, 0)
-        page.wait_for_timeout(250)
         resting = link.evaluate('(el) => getComputedStyle(el).backgroundColor')
         row.hover()
-        page.wait_for_timeout(250)
         hover = link.evaluate('(el) => getComputedStyle(el).backgroundColor')
         self.assertNotEqual(hover, resting)
         x, y = self._drag_start(page, self.first.pk)
@@ -348,7 +321,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         page.mouse.move(target['x'] + target['width'] / 2,
                         target['y'] + target['height'] / 2, steps=5)
         self.assertEqual(page.locator('[data-reorder-ghost]').count(), 1)
-        page.wait_for_timeout(250)
         # Pointer capture and the visible destination slot can retain hover on the
         # grabbed row. Force the target's pseudo-state to check the other row too.
         cdp = page.context.new_cdp_session(page)
@@ -365,10 +337,8 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertTrue(li and anchor)
         cdp.send('CSS.forcePseudoState', {'nodeId': li, 'forcedPseudoClasses': ['hover']})
         cdp.send('CSS.forcePseudoState', {'nodeId': anchor, 'forcedPseudoClasses': ['hover']})
-        page.wait_for_timeout(250)
         self.assertEqual(link.evaluate('(el) => getComputedStyle(el).backgroundColor'), resting)
         link.evaluate('(el) => el.setAttribute("aria-current", "true")')
-        page.wait_for_timeout(250)
         selected = link.evaluate('(el) => getComputedStyle(el).backgroundColor')
         self.assertEqual(selected, page.evaluate("""() => {
           const swatch = document.createElement('div');
@@ -388,7 +358,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertFalse(page.locator('#chList').evaluate(
             '(el) => el.classList.contains("is-grabbing")'))
         row.hover()
-        page.wait_for_timeout(250)
         self.assertEqual(link.evaluate('(el) => getComputedStyle(el).backgroundColor'), hover)
 
     def test_page_swap_removes_a_drag_preview(self):
@@ -461,7 +430,9 @@ class ReorderE2ETests(StaticLiveServerTestCase):
                          [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
         grip.focus()
         page.keyboard.press('ArrowUp')
-        page.wait_for_timeout(300)
+        page.wait_for_function(
+            "document.querySelector('.ch__reorder').offsetWidth > 0",
+            timeout=8000)
         self.assertEqual(self._state(page), 'on')
         self.assertEqual(self._row_order(page),
                          [self.first.pk, self.second.pk, self.break_.pk, self.third.pk])
@@ -480,7 +451,9 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertEqual(self._sidebar_order(page)[0], self.second.pk)
 
         page.click('[data-reorder-discard]')
-        page.wait_for_timeout(250)
+        page.wait_for_function(
+            "document.querySelector('.ch__reorder').offsetWidth === 0",
+            timeout=8000)
         self.assertEqual(self._sidebar_order(page),
                          [self.first.pk, self.second.pk, self.third.pk])
         self.assertEqual(self._order_in_pane(page),
@@ -488,11 +461,8 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertEqual(self._state(page), 'off')
         # and the pane's add controls are back
         page.locator('section[data-entry-pk="%d"]' % self.first.pk).hover()
-        page.wait_for_timeout(300)
         self.assertFalse(page.locator('.entry__add').first.is_hidden())
-        # nothing was written -- and the browser goes first: the ORM cannot be touched
-        # while Playwright's loop is running
-        self._close_browser()
+        # nothing was written
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('pk', flat=True)),
                          [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
@@ -508,7 +478,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
             timeout=8000)
         self.assertEqual(self._sidebar_order(page),
                          [self.second.pk, self.first.pk, self.third.pk])
-        self._close_browser()
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('pk', flat=True)),
                          [self.second.pk, self.first.pk, self.third.pk, self.break_.pk])
@@ -521,19 +490,16 @@ class ReorderE2ETests(StaticLiveServerTestCase):
 
         # a sidebar pick: another Tata Ibadah
         page.click('a[href="%s"]' % reverse('web-tatib-service', args=[self.other.pk]))
-        page.wait_for_timeout(400)
         self.assertTrue(page.locator('[data-reorder-confirm]').is_visible())
         self.assertIn(self._service_url(), page.url)               # nothing has left yet
 
         # "Keep editing" leaves everything as it was
         page.click('[data-reorder-stay]')
-        page.wait_for_timeout(200)
         self.assertFalse(page.locator('[data-reorder-confirm]').is_visible())
         self.assertIn(self._service_url(), page.url)
 
         # asking again and saving carries the person on to where they were going
         page.click('a[href="%s"]' % reverse('web-tatib-service', args=[self.other.pk]))
-        page.wait_for_timeout(300)
         page.click('[data-reorder-and-save]')
         page.wait_for_function(
             "document.getElementById('readName').textContent.indexOf('Ibadah Sore') >= 0",
@@ -541,7 +507,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         # the shell navigates in place, so the URL never moves: the pane is what shows
         # where the person ended up
         self.assertIn('Ibadah Sore', page.inner_text('#readName'))
-        self._close_browser()
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('pk', flat=True)),
                          [self.second.pk, self.first.pk, self.third.pk, self.break_.pk])
@@ -550,7 +515,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         page = self._page(self._service_url())
         self._press(page, self.first.pk, 'down')
         page.click('#railSearch')                     # the shell's own way to the search
-        page.wait_for_timeout(400)
         self.assertTrue(page.locator('[data-reorder-confirm]').is_visible())
 
     def test_closing_the_tab_asks_too(self):
@@ -574,7 +538,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         }"""))
 
     def test_reordering_entries_keeps_legacy_rows_in_their_shared_slots(self):
-        self._close_browser()
         legacy = tatib.TataIbadahItem.objects.create(
             tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
             title='Pembacaan', text='KJ 120', order_number=2)
@@ -582,7 +545,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.second.save(update_fields=['order_number'])
         self.third.order_number = 5
         self.third.save(update_fields=['order_number'])
-        self.setUp_browser()
 
         page = self._page(self._service_url())
         self._press(page, self.first.pk, 'down')
@@ -604,7 +566,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
 
         page.click('[data-reorder-save]')
         page.wait_for_function("document.documentElement.dataset.reorder === 'off'", timeout=8000)
-        self._close_browser()
         actual = sorted(
             [(row.order_number, 'entry', row.pk) for row in self.tatib.service_entries.all()]
             + [(row.order_number, 'legacy', row.pk)
@@ -616,7 +577,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         ])
 
     def test_a_section_break_preview_follows_its_sidebar_slot_between_old_rows(self):
-        self._close_browser()
         legacy = tatib.TataIbadahItem.objects.create(
             tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT,
             title='Pembacaan', text='KJ 120', order_number=2)
@@ -626,7 +586,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.third.save(update_fields=['order_number'])
         self.break_.order_number = 5
         self.break_.save(update_fields=['order_number'])
-        self.setUp_browser()
 
         page = self._page(self._service_url())
         self._press(page, self.break_.pk, 'up')

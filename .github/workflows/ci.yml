@@ -196,18 +196,13 @@ jobs:
         run: python manage.py test --exclude-tag=e2e --noinput -v 1
 
   browser-e2e:
-    name: Browser E2E / ${{ matrix.module }}
+    name: Browser E2E
     needs: changes
     if: needs.changes.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      max-parallel: 6
-      matrix:
-        module: ${{ fromJson(needs.changes.outputs.e2e_modules) }}
     concurrency:
-      group: ci-e2e-${{ github.event.pull_request.number || github.ref }}-${{ matrix.module }}
+      group: ci-e2e-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
     services:
       postgres:
@@ -225,6 +220,7 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://multimedia_ci@127.0.0.1:5432/multimedia_ci
+      DJANGO_LIVE_SERVER_ADDRESS: 127.0.0.1:8765
     steps:
       - uses: actions/checkout@v7
         with:
@@ -242,19 +238,8 @@ jobs:
         run: python manage.py collectstatic --noinput
       - name: Install Chromium and system libraries
         run: python -m playwright install --with-deps chromium
-      - name: Verify browser launch
-        run: |
-          python - <<'PY'
-          from playwright.sync_api import sync_playwright
-
-          with sync_playwright() as playwright:
-              browser = playwright.chromium.launch()
-              browser.close()
-          PY
-      - name: Run E2E module
-        env:
-          TEST_MODULE: ${{ matrix.module }}
-        run: python manage.py test "$TEST_MODULE" --noinput -v 1
+      - name: Run all E2E tests
+        run: python manage.py test tests.e2e --noinput -v 1
 
   result:
     name: CI result

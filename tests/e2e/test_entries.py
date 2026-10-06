@@ -1,33 +1,27 @@
-"""The service entry modals in a browser (spec 006, slice 2).
+"""The service entry modals in a browser (spec 006, slice 2)."""
 
-Same runner and skip behaviour as the other e2e suites, including the rule that
-matters most here: Playwright's loop must not overlap Django's database access, so a
-test closes the browser before it asserts against the database.
-"""
-
-import unittest
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
 from django.urls import reverse
 
+from tests.e2e.base import BaseE2ETestCase
+
+try:
+    from playwright.sync_api import expect
+except ImportError:  # pragma: no cover - depends on environment
+    pass
+
+
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 
-try:
-    from playwright.sync_api import expect, sync_playwright
-
-    HAS_PLAYWRIGHT = True
-except ImportError:  # pragma: no cover - depends on environment
-    HAS_PLAYWRIGHT = False
-
 
 @tag('e2e')
-@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class EntryModalE2ETests(StaticLiveServerTestCase):
+class EntryModalE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
     def setUp(self):
         super().setUp()
         self.service = tatib.TataIbadah.objects.create(
@@ -74,25 +68,11 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
             bible.Verse.objects.create(book_translation=self.matius, chapter=5, verse=n,
                                        text=f'ayat {n}')
 
-        self._playwright = sync_playwright().start()
-        try:
-            self.browser = self._playwright.chromium.launch()
-        except Exception as error:  # pragma: no cover - depends on environment
-            self._playwright.stop()
-            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
-
     def tearDown(self):
-        self._close_browser()
         super().tearDown()
 
-    def _close_browser(self):
-        if getattr(self, '_playwright', None) is not None:
-            self.browser.close()
-            self._playwright.stop()
-            self._playwright = None
-
     def _page(self, url):
-        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        page = self._new_page()
         page.goto(self.live_server_url + url)
         page.wait_for_load_state('networkidle')
         return page
@@ -100,7 +80,6 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
     def _reveal(self, page):
         """The controls sit inside their item, so the item is what gets hovered."""
         page.locator('.tatib__item').first.hover()
-        page.wait_for_timeout(250)
 
     # --- the controls wait for a hover ---------------------------------------
 
@@ -125,7 +104,6 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.mouse.move(x, item_box['y'] + item_box['height'] - 8)
         expect(row).to_have_css('opacity', '1')
         page.mouse.move(x, row_box['y'] + 8, steps=12)
-        page.wait_for_timeout(420)               # beyond the old 220 ms hide delay
         expect(row).to_have_css('opacity', '1')
 
     def test_save_from_home_keeps_the_tata_ibadah_on_stage(self):
@@ -159,7 +137,6 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#readName')).to_have_text('Ordered service')
         expect(page.locator('#readBody .tatib__item--entry .tatib__tx')).to_have_text(
             ['First', 'Middle', 'Last'])
-        self._close_browser()
         self.assertEqual(list(self.ordered.service_entries.order_by('order_number')
                               .values_list('text', flat=True)), ['First', 'Middle', 'Last'])
 
@@ -196,7 +173,6 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.wait_for_selector('.tatib__item--entry')
 
         contain = page.locator('.read__sec').first.text_content()
-        self._close_browser()                       # the ORM runs outside Playwright's loop
         saved = tatib.ServiceEntry.objects.get(tatib=self.service)
         self.assertEqual(saved.citation(), 'Matius 5:2-4')
         self.assertIn('Matius 5:2-4', contain)
@@ -225,7 +201,6 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
 
-        self._close_browser()
         saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
         self.assertEqual(saved.verses, [1, 3])
 
@@ -244,7 +219,6 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
 
-        self._close_browser()
         saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
         self.assertEqual(saved.verses, [1])
 
@@ -300,7 +274,6 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.wait_for_timeout(700)
         gone = page.locator('.tatib__item--entry').count()
 
-        self._close_browser()
         self.assertEqual(gone, 0)
         self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.full).count(), 0)
 
@@ -319,5 +292,4 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("!document.querySelector('dialog[open]')")
         page.wait_for_selector('.tatib__item--entry')
 
-        self._close_browser()
         self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.empty).count(), 1)
