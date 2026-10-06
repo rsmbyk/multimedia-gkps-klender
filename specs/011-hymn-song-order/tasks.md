@@ -17,8 +17,8 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` on ITEM-012 and this spec
 - [x] Set `VERSION` to `0.11.3`, add the changelog section, and set ITEM release version for the same PR
-- [ ] Update ITEM-012 + [`backlog/board.md`](../../backlog/board.md) in **the same PR** (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] With PR #270 open, move ITEM-012 and the board to In review and record the PR link; move to Done before merge
+- [x] Create the Conventional Commit and draft PR #270 linking `./spec.md` (same PR; extra commits fine)
 
 ## Verification note
 

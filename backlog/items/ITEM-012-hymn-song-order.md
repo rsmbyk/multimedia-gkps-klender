@@ -1,6 +1,6 @@
 ---
 id: ITEM-012
-status: in_progress
+status: in_review
 title: 'Sort hymn book songs by number and sub-number'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-06
 updated: 2026-10-06
 spec: specs/011-hymn-song-order/spec.md
 branch: fix/011-hymn-song-order
-pr:
+pr: 270
 archived_at:
 archive_reason:
 bump: patch
