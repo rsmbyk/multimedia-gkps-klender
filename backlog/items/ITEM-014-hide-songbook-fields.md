@@ -1,12 +1,12 @@
 ---
 id: ITEM-014
-status: in-review
+status: done
 title: 'Hide short name and hymn-book fields in songbook forms'
 type: chore
 priority: P2
 effort: S
 created: 2026-10-06
-updated: 2026-10-06
+updated: 2026-10-07
 spec: specs/012-hide-songbook-fields/spec.md
 branch: feat/012-hide-songbook-fields
 pr: 272
