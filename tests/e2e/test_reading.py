@@ -98,6 +98,13 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             sim_book = bible.BookTranslation.objects.create(version=sim_version, book=self.mat, translation='Mateus')
             bible.Verse.objects.create(book_translation=sim_book, chapter=5, verse=13, text='Garam ni dunia.')
 
+        if self._testMethodName == 'test_hymn_song_order_is_visible_after_browsing_from_home':
+            songs.Song.objects.create(book=self.book, number=10, title='Ten')
+            songs.Song.objects.create(book=self.book, number=12, sub_number='B', title='Suffix B')
+            songs.Song.objects.create(book=self.book, number=12, sub_number='a', title='Suffix a')
+            songs.Song.objects.create(book=self.book, number=2, title='Two')
+            songs.Song.objects.create(book=self.book, number=None, title='Legacy')
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -582,12 +589,6 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()   # results stay
 
     def test_hymn_song_order_is_visible_after_browsing_from_home(self):
-        songs.Song.objects.create(book=self.book, number=10, title='Ten')
-        songs.Song.objects.create(book=self.book, number=12, sub_number='B', title='Suffix B')
-        songs.Song.objects.create(book=self.book, number=12, sub_number='a', title='Suffix a')
-        songs.Song.objects.create(book=self.book, number=2, title='Two')
-        songs.Song.objects.create(book=self.book, number=None, title='Legacy')
-
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         page.locator('.rail [data-panel="kidung"]').click()
