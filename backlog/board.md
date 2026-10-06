@@ -26,12 +26,12 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-010](./items/ITEM-010-sidebar-tint-legibility.md) | Higher-legibility selected sidebar tint | Light-theme selected fill updated to `#B9D7C9`; dark theme unchanged | chore | P2 | S | [009](../specs/009-sidebar-tint-legibility/spec.md) | 2026-10-06 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-010](./items/ITEM-010-sidebar-tint-legibility.md) | Higher-legibility selected sidebar tint | Light-theme selected fill updated to `#B9D7C9`; dark theme unchanged | chore | P2 | S | [009](../specs/009-sidebar-tint-legibility/spec.md) | [#266](https://github.com/rsmbyk/multimedia-gkps-klender/pull/266) | 2026-10-06 |
 
 ## Done
 

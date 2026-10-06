@@ -1,6 +1,6 @@
 ---
 id: ITEM-010
-status: in_progress
+status: in_review
 title: 'Higher-legibility selected sidebar tint'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-06
 updated: 2026-10-06
 spec: specs/009-sidebar-tint-legibility/spec.md
 branch: feat/009-sidebar-tint-legibility
-pr:
+pr: 266
 archived_at:
 archive_reason:
 bump: patch
