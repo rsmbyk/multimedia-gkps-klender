@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-013](./items/ITEM-013-ci-e2e-harness.md) | Restore reliable CI and E2E execution | Restore the safe Playwright lifecycle and fail-closed CI test-scope detection | fix | P1 | M | [010](../specs/010-fast-pr-feedback-ci/spec.md) | 2026-10-06 |
 
 
 ## In review

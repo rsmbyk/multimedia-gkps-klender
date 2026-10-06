@@ -44,26 +44,11 @@ jobs:
           python - <<'PY'
           import json
           import os
-          import subprocess
           import urllib.error
           import urllib.parse
           import urllib.request
           from pathlib import Path
-
-          def changed_paths(base, head):
-              if not base or not head or set(base) == {'0'}:
-                  return None
-              result = subprocess.run(
-                  ['git', 'diff', '--name-only', base, head],
-                  check=True, capture_output=True, text=True)
-              return result.stdout.splitlines()
-
-          def docs_only(paths):
-              if paths is None:
-                  return False
-              excluded = ('docs/', 'specs/', 'backlog/')
-              excluded_files = {'VERSION', 'CHANGELOG.md'}
-              return all(path.startswith(excluded) or path in excluded_files for path in paths)
+          from scripts.ci_test_scope import changed_paths, docs_only
 
           def api_json(url):
               request = urllib.request.Request(url, headers={
@@ -127,12 +112,8 @@ jobs:
                   if not previous_sha:
                       run_e2e = True
                   else:
-                      try:
-                          new_paths = changed_paths(previous_sha, os.environ.get('PR_HEAD_SHA'))
-                          run_e2e = new_paths is None or not docs_only(new_paths)
-                      except subprocess.CalledProcessError:
-                          # A force-push or unavailable old commit must never suppress coverage.
-                          run_e2e = True
+                      new_paths = changed_paths(previous_sha, os.environ.get('PR_HEAD_SHA'))
+                      run_e2e = new_paths is None or not docs_only(new_paths)
 
           modules = sorted(
               f'tests.e2e.{path.stem}'
@@ -196,13 +177,18 @@ jobs:
         run: python manage.py test --exclude-tag=e2e --noinput -v 1
 
   browser-e2e:
-    name: Browser E2E
+    name: Browser E2E / ${{ matrix.module }}
     needs: changes
     if: needs.changes.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        module: ${{ fromJson(needs.changes.outputs.e2e_modules) }}
     concurrency:
-      group: ci-e2e-${{ github.event.pull_request.number || github.ref }}
+      group: ci-e2e-${{ github.event.pull_request.number || github.ref }}-${{ matrix.module }}
       cancel-in-progress: true
     services:
       postgres:
@@ -220,7 +206,6 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://multimedia_ci@127.0.0.1:5432/multimedia_ci
-      DJANGO_LIVE_SERVER_ADDRESS: 127.0.0.1:8765
     steps:
       - uses: actions/checkout@v7
         with:
@@ -238,8 +223,19 @@ jobs:
         run: python manage.py collectstatic --noinput
       - name: Install Chromium and system libraries
         run: python -m playwright install --with-deps chromium
-      - name: Run all E2E tests
-        run: python manage.py test tests.e2e --noinput -v 1
+      - name: Verify browser launch
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+
+          with sync_playwright() as playwright:
+              browser = playwright.chromium.launch()
+              browser.close()
+          PY
+      - name: Run E2E module
+        env:
+          TEST_MODULE: ${{ matrix.module }}
+        run: python manage.py test "$TEST_MODULE" --noinput -v 1
 
   result:
     name: CI result
