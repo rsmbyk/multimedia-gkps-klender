@@ -221,7 +221,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         home_url = self.live_server_url + reverse('web-home')
         expected = {
-            'light': {'background': 'rgb(185, 198, 185)', 'color': 'rgb(31, 31, 29)'},
+            'light': {'background': 'rgb(185, 215, 201)', 'color': 'rgb(31, 31, 29)'},
             'dark': {'background': 'rgb(57, 63, 79)', 'color': 'rgb(245, 243, 238)'},
         }
 

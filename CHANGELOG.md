@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-10-06
+
+### Changed
+
+- Light-theme selected reading-sidebar tint is now pale mint `#B9D7C9` for stronger near-black
+  text contrast; dark-theme selection remains unchanged.
+
 ## [0.11.1] - 2026-10-06
 
 ### Changed

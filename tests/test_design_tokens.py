@@ -77,6 +77,12 @@ class TokenContrastTests(SimpleTestCase):
     def test_light_text_pairs_meet_aa(self):
         self._assert_pairs(LIGHT_SELECTOR, TEXT_PAIRS, TEXT_MIN)
 
+    def test_light_sidebar_selected_tint_is_high_contrast_mint(self):
+        light = _block(self.css, LIGHT_SELECTOR)
+        selected_bg = light['--sidebar-selected-bg']
+        self.assertEqual(selected_bg, '#B9D7C9')
+        self.assertGreaterEqual(contrast(light['--ink'], selected_bg), 7.0)
+
     def test_light_ui_pairs_meet_aa(self):
         self._assert_pairs(LIGHT_SELECTOR, UI_PAIRS, UI_MIN)
 
