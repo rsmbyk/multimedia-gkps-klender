@@ -27,7 +27,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
-
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
@@ -37,6 +36,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-012](./items/ITEM-012-hymn-song-order.md) | Sort hymn book songs by number and sub-number | Restore numeric number and sub-number order in public hymn-book lists | fix | P1 | S | [011](../specs/011-hymn-song-order/spec.md) | develop | 2026-10-06 |
 | [ITEM-013](./items/ITEM-013-ci-e2e-harness.md) | Restore reliable CI and E2E execution | Restore the safe Playwright lifecycle and fail-closed CI test-scope detection | fix | P1 | M | [010](../specs/010-fast-pr-feedback-ci/spec.md) | develop | 2026-10-06 |
 | [ITEM-011](./items/ITEM-011-fast-pr-feedback-ci.md) | Fast PR feedback and repository CI | Fast checks for draft PR updates; parallel full browser E2E on ready-for-review PRs | chore | P1 | M | [010](../specs/010-fast-pr-feedback-ci/spec.md) | develop | 2026-10-06 |
 | [ITEM-010](./items/ITEM-010-sidebar-tint-legibility.md) | Higher-legibility selected sidebar tint | Light-theme selected fill updated to `#B9D7C9`; dark theme unchanged | chore | P2 | S | [009](../specs/009-sidebar-tint-legibility/spec.md) | develop | 2026-10-06 |

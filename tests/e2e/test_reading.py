@@ -98,6 +98,13 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             sim_book = bible.BookTranslation.objects.create(version=sim_version, book=self.mat, translation='Mateus')
             bible.Verse.objects.create(book_translation=sim_book, chapter=5, verse=13, text='Garam ni dunia.')
 
+        if self._testMethodName == 'test_hymn_song_order_is_visible_after_browsing_from_home':
+            songs.Song.objects.create(book=self.book, number=10, title='Ten')
+            songs.Song.objects.create(book=self.book, number=12, sub_number='B', title='Suffix B')
+            songs.Song.objects.create(book=self.book, number=12, sub_number='a', title='Suffix a')
+            songs.Song.objects.create(book=self.book, number=2, title='Two')
+            songs.Song.objects.create(book=self.book, number=None, title='Legacy')
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -580,6 +587,21 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#searchQuery')).to_have_value('')
         expect(search_clear).to_be_hidden()
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()   # results stay
+
+    def test_hymn_song_order_is_visible_after_browsing_from_home(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('.rail [data-panel="kidung"]').click()
+        page.locator('#panelBody .book').filter(has_text=self.book.name).first.click()
+
+        rows = page.locator('#chList .songrow')
+        expect(rows).to_have_count(6)
+        self.assertEqual(
+            rows.evaluate_all("els => els.map(el => el.dataset.num || "
+                              "el.querySelector('.songrow__t').textContent.trim())"),
+            ['NKB 2', 'NKB 10', 'NKB 12', 'NKB 12A', 'NKB 12B', 'Legacy'],
+        )
+        expect(page.locator('#songSort')).to_be_hidden()
 
     def test_song_sort_toggles_between_last_modified_and_alphabetical(self):
         page = self._page()

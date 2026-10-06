@@ -20,6 +20,7 @@ from urllib.parse import quote
 
 from django.db import transaction
 from django.db.models import Count, F, Q
+from django.db.models.functions import Lower
 from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
                          JsonResponse)
 from django.shortcuts import get_object_or_404, render
@@ -403,12 +404,16 @@ def _songbooks(selected_id=None):
 
 
 def _song_rows(book, current_id=None):
-    # The default is "last modified", newest first, with the file's own order as the
-    # tiebreak. Every song in the corpus currently shares one `modified` timestamp, so
-    # that tiebreak is what you actually see -- and it has to differ from the A-Z key
-    # below, or the toggle would look like it did nothing (spec 005).
-    songs = book.song_set.filter(is_deleted=False).order_by(
-        F('modified').desc(nulls_last=True), 'title')
+    active_songs = book.song_set.filter(is_deleted=False)
+    if book.is_hymn_book:
+        songs = active_songs.order_by(
+            F('number').asc(nulls_last=True), Lower('sub_number'), 'title')
+    else:
+        # The default is "last modified", newest first, with the file's own order as the
+        # tiebreak. Every song in the corpus currently shares one `modified` timestamp, so
+        # that tiebreak is what you actually see -- and it has to differ from the A-Z key
+        # below, or the toggle would look like it did nothing (spec 005).
+        songs = active_songs.order_by(F('modified').desc(nulls_last=True), 'title')
     rows = []
     for song in songs:
         numbered = book.is_hymn_book and song.number is not None

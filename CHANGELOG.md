@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.11.3] - 2026-10-06
+
+### Fixed
+
+- Public hymn-book song lists now sort numerically by song number and case-insensitively
+  by sub-number, with unnumbered legacy songs listed last.
+
 ## [0.11.2] - 2026-10-06
 
 ### Changed
