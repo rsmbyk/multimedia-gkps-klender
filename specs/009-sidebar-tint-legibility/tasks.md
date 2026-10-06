@@ -18,11 +18,11 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump` on the ITEM and spec header
 - [x] Set `VERSION` to `0.11.2`, add its changelog section, and set the ITEM `release_version` to `0.11.2`
-- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in **this PR** (In review while open; Done before merge)
+- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in **this PR** (In review while open; Done before merge)
 - [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
 ## Done when
 
-- [ ] All acceptance scenarios in spec.md hold
-- [ ] Tests named above are green, including the targeted automated E2E check
-- [ ] Board, tasks, and version (if any) are complete in this PR
+- [x] All acceptance scenarios in spec.md hold
+- [x] Tests named above are green, including the targeted automated E2E check
+- [x] Board, tasks, and version (if any) are complete in this PR

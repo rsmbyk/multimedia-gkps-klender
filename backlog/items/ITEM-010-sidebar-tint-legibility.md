@@ -1,6 +1,6 @@
 ---
 id: ITEM-010
-status: in_review
+status: done
 title: 'Higher-legibility selected sidebar tint'
 type: chore
 priority: P2
