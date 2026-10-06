@@ -26,7 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-
+| [ITEM-012](./items/ITEM-012-hymn-song-order.md) | Sort hymn book songs by number and sub-number | Restore numeric number and sub-number order in public hymn-book lists | fix | P1 | S | [011](../specs/011-hymn-song-order/spec.md) | 2026-10-06 |
 
 ## In review
 

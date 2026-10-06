@@ -131,6 +131,22 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'Song list')
         self.assertFalse(response.context['show_song_sort'])   # hymns keep number order
 
+    def test_hymn_songs_are_ordered_by_number_then_casefolded_sub_number(self):
+        songs.Song.objects.create(book=self.nkb, number=10, title='Ten')
+        songs.Song.objects.create(book=self.nkb, number=12, sub_number='B', title='Suffix B')
+        songs.Song.objects.create(book=self.nkb, number=12, sub_number='a', title='Suffix a')
+        songs.Song.objects.create(book=self.nkb, number=2, title='Two')
+        songs.Song.objects.create(book=self.nkb, number=None, title='Legacy')
+
+        response = self.client.get(reverse('web-book', args=[self.nkb.id]))
+
+        self.assertEqual(
+            [row['title'] for row in response.context['songs']],
+            ['Two', 'Ten', 'Di Waktu Pagi', 'Suffix a', 'Suffix B',
+             'Di Waktu Malam', 'Legacy'],
+        )
+        self.assertFalse(response.context['show_song_sort'])
+
     def test_non_hymn_book_offers_the_sort_toggle(self):
         response = self.client.get(reverse('web-book', args=[self.harian.id]))
         self.assertEqual(response.status_code, 200)
