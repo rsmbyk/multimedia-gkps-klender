@@ -1,6 +1,6 @@
 ---
 id: ITEM-011
-status: in_review
+status: done
 title: 'Fast PR feedback and repository CI'
 type: chore
 priority: P1
