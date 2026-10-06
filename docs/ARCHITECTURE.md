@@ -71,10 +71,19 @@ Public reading pages use the project's own design language (`static/styles/desig
 ## Testing
 
 - Django test runner (`manage.py test`); coverage output `.coverage` / `coverage-python.xml`.
-- E2E: **Playwright (Python)**, driven from Django `StaticLiveServerTestCase` and run under
-  `python manage.py test` (`tests/e2e/`); dev dependency in `requirements-dev.txt`
-  (`playwright install chromium` once).
-- CI: none on `main` yet.
+- Local fast lane: `docker compose exec -T web python manage.py test --exclude-tag=e2e --noinput -v 1`,
+  with `manage.py check` and `manage.py makemigrations --check --dry-run`.
+- E2E: **Playwright (Python)**, driven from Django `StaticLiveServerTestCase` under
+  `tests/e2e/`; every E2E test class has the Django `e2e` tag. Browser tests run through
+  `python manage.py test` after `playwright install chromium`.
+- CI: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs the fast lane for relevant PR
+  updates to `develop`/`main` and pushes to those branches. Draft PRs do not run browser tests;
+  ready-for-review PRs run each E2E module in parallel. Relevant code changes rerun E2E, while
+  docs/spec/backlog/version/changelog-only changes do not. Every job uses its own ephemeral
+  PostgreSQL service; no production data or credentials are configured.
+- The current GitHub plan does not allow branch-protection/ruleset enforcement for this private
+  repository, so maintainers must manually confirm the fast check and every E2E shard are green
+  before merging.
 
 ## Hosting
 

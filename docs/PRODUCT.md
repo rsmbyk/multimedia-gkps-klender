@@ -60,5 +60,3 @@ Sequenced slices:
 ## Parked
 
 - Backfilling as-built behavior into numbered specs (owner-accepted slice).
-- Choosing the E2E tool for this stack.
-- CI for tests.

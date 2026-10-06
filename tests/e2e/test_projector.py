@@ -13,7 +13,7 @@ import unittest
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import override_settings
+from django.test import override_settings, tag
 from django.urls import reverse
 
 from multimedia.bible import models as bible
@@ -28,6 +28,7 @@ except ImportError:  # pragma: no cover - depends on environment
     HAS_PLAYWRIGHT = False
 
 
+@tag('e2e')
 @unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class ProjectorE2ETests(StaticLiveServerTestCase):
