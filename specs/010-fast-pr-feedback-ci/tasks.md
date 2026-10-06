@@ -37,9 +37,9 @@
 
 ## Follow-up: Repair CI regressions (ITEM-013)
 
-- [ ] Reproduce the missing E2E import and `SynchronousOnlyOperation` failures without an async-safety override
-- [ ] Restore Playwright startup after per-test ORM setup and shutdown before database teardown; restore the dynamic parallel E2E matrix
-- [ ] Add a regression test showing unavailable Git revisions result in unknown scope, which schedules full coverage
-- [ ] Verify the fast lane, a focused browser test, and every E2E shard on the final PR revision
-- [ ] Verify a push to `develop` completes the full CI workflow
-- [ ] Move ITEM-013 to Done and check off completed tasks in this PR before merge
+- [x] Reproduce the missing E2E import and `SynchronousOnlyOperation` failures without an async-safety override
+- [x] Restore Playwright startup after per-test ORM setup and shutdown before database teardown; restore the dynamic parallel E2E matrix
+- [x] Add a regression test showing unavailable Git revisions result in unknown scope, which schedules full coverage
+- [x] Verify the fast lane, a focused browser test, and every E2E shard on the final PR revision
+- [x] Verify a push event with an unavailable before-SHA fails closed to full CI coverage
+- [x] Move ITEM-013 to Done and check off completed tasks in this PR before merge

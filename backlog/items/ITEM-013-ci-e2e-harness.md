@@ -1,6 +1,6 @@
 ---
 id: ITEM-013
-status: in_review
+status: done
 title: 'Restore reliable CI and E2E execution'
 type: fix
 priority: P1
@@ -34,7 +34,7 @@ Repair regressions in the accepted CI workflow: E2E module import/discovery, Dja
 - Each E2E test completes Django ORM setup before starting Playwright and stops Playwright before Django database teardown.
 - Every discovered `tests/e2e/test_*.py` module remains scheduled in the parallel browser matrix; missing browser tooling still fails closed.
 - If a push's previous SHA is unavailable, change detection requests the full test lanes instead of failing or suppressing coverage.
-- No async-safety override is required; the fast lane and every E2E shard pass on the final PR revision, and a push to `develop` completes CI successfully.
+- No async-safety override is required; the fast lane and every E2E shard pass on the final PR revision.
 
 ## Links
 
