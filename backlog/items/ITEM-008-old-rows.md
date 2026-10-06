@@ -1,7 +1,7 @@
 ---
 id: ITEM-008
 title: The old rows — editable, and one running order
-status: in-review
+status: done
 type: feat
 priority: P1
 effort: L
