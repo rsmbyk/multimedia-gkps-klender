@@ -26,12 +26,13 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-011](./items/ITEM-011-fast-pr-feedback-ci.md) | Fast PR feedback and repository CI | Fast checks for draft PR updates; parallel full browser E2E on ready-for-review PRs | chore | P1 | M | [010](../specs/010-fast-pr-feedback-ci/spec.md) | 2026-10-06 |
+
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-011](./items/ITEM-011-fast-pr-feedback-ci.md) | Fast PR feedback and repository CI | Fast checks for draft PR updates; parallel full browser E2E on ready-for-review PRs | chore | P1 | M | [010](../specs/010-fast-pr-feedback-ci/spec.md) | [#267](https://github.com/rsmbyk/multimedia-gkps-klender/pull/267) | 2026-10-06 |
 
 ## Done
 

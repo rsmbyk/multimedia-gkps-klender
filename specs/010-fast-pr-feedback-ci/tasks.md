@@ -20,8 +20,8 @@
 - [ ] Confirm all CI test lanes are green on the final code revision before merge; the owner must enforce this manually under current GitHub plan limits
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: none` on ITEM-011 and this spec; leave `VERSION` and `CHANGELOG.md` unchanged
-- [ ] Update ITEM-011 + [`backlog/board.md`](../../backlog/board.md) in this PR (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] Set ITEM-011 and [`backlog/board.md`](../../backlog/board.md) to In review with PR #267 (move to Done before merge)
+- [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
 ## Done when
 

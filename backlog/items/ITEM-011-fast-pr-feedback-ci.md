@@ -1,6 +1,6 @@
 ---
 id: ITEM-011
-status: in_progress
+status: in_review
 title: 'Fast PR feedback and repository CI'
 type: chore
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-06
 updated: 2026-10-06
 spec: specs/010-fast-pr-feedback-ci/spec.md
 branch: feat/010-fast-feedback-ci
-pr:
+pr: 267
 archived_at:
 archive_reason:
 bump: none
