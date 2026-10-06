@@ -9,7 +9,9 @@
         data-entry-delete-url="{% url 'web-entry-delete' 0 %}"
         data-entry-songs-url="{% url 'web-entry-song-options' %}"
         data-entry-song-verses-url="{% url 'web-entry-song-verses' 0 %}"
-        data-entry-chapter-url="{% url 'web-entry-chapter-verses' 0 0 %}">
+        data-entry-chapter-url="{% url 'web-entry-chapter-verses' 0 0 %}"
+        data-old-item-edit-url="{% url 'web-old-item-edit' 0 %}"
+        data-old-item-delete-url="{% url 'web-old-item-delete' 0 %}">
   <div class="editor__content" id="editorContent" aria-live="polite"></div>
   <p class="editor__status sr" id="editorStatus" role="status"></p>
 </dialog>

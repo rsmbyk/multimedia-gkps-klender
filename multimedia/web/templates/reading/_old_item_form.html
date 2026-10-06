@@ -1,0 +1,21 @@
+<h2 class="editor__title" id="editorTitle">{{ title }}</h2>
+<form class="editor__form" data-old-item-form="{{ kind }}" action="{{ save_url }}" method="post">
+  {% csrf_token %}
+  {% if kind == 'text' %}
+  <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}">
+    <label for="id_title">Title <span class="editor__hint">(optional)</span></label>
+    {{ form.title }}
+    {% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  {% endif %}
+  <div class="editor__field{% if form.text.errors %} is-invalid{% endif %}">
+    <label for="id_text">{{ form.text.label }}</label>
+    {{ form.text }}
+    {% for error in form.text.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  {% for error in form.non_field_errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
