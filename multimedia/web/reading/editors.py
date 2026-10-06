@@ -10,7 +10,6 @@ from django import forms
 from django.conf import settings
 
 from multimedia.songs import models as song_models
-from multimedia.songs.validators import BookShortNameUniqueValidator
 from multimedia.tatib import models as tatib_models
 
 EDITOR_KINDS = ('songbook', 'song', 'tatib')
@@ -30,36 +29,11 @@ def editors_allowed(request):
 class SongbookForm(forms.ModelForm):
     class Meta:
         model = song_models.Book
-        fields = ['name', 'short_name', 'lang', 'is_hymn_book']
-        labels = {'lang': 'Language', 'is_hymn_book': 'Hymn book (its songs stay read-only)'}
+        fields = ['name', 'lang']
+        labels = {'lang': 'Language'}
         error_messages = {
             'unique_together': 'That songbook already exists for this language.',
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # The model's validator counts every row, so keeping an existing short
-        # name on an edit would be rejected. Re-check instance-aware instead.
-        field = self.fields['short_name']
-        field.validators = [v for v in field.validators
-                            if not isinstance(v, BookShortNameUniqueValidator)]
-
-    def _get_validation_exclusions(self):
-        # the model's validator counts every row, so keep it out of the instance
-        # validation as well; clean_short_name re-checks instance-aware below
-        exclude = super()._get_validation_exclusions()
-        exclude.append('short_name')
-        return exclude
-
-    def clean_short_name(self):
-        value = (self.cleaned_data.get('short_name') or '').strip()
-        if value:
-            clash = song_models.Book.objects.filter(short_name=value)
-            if self.instance.pk:
-                clash = clash.exclude(pk=self.instance.pk)
-            if clash.exists():
-                raise forms.ValidationError('This short name has already been used.')
-        return value
 
 
 class SongForm(forms.ModelForm):

@@ -1271,11 +1271,15 @@
   /* A sidebar editor saved something: re-render the page's regions in place, so
      every list, the panel selection and the reading stage agree again. */
   document.addEventListener('editor:saved', function (event) {
-    /* In-page navigation does not change location: a service opened from /home/
-       still has /home/ in the address bar. Refresh the URL that supplied the
-       displayed stage, not the landing page behind it. */
-    navigate(readKind() ? stageInfo.url : window.location.pathname + window.location.search,
-             { kind: 'refresh', what: event.detail && event.detail.id });
+    /* In-page navigation does not change location. Refresh the section that
+       supplied the visible sidebar; if the reader is in another section, keep
+       its stage by swapping only the lists. */
+    var stageMatchesSection = readKind() && stageSection() === activeSection;
+    var url = stageMatchesSection ? stageInfo.url : panelOwner().getAttribute('href');
+    navigate(url, {
+      kind: stageMatchesSection ? 'refresh' : 'lists',
+      what: event.detail && event.detail.id
+    });
   });
 
   /* ---------- reveal search targets ---------- */
