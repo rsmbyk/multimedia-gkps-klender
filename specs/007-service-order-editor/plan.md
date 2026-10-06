@@ -1,10 +1,10 @@
 # Plan 007: The old rows — editable, and one running order
 
-- **Status:** Draft — needs the owner's Accept (SDD gate). No implementation before that.
+- **Status:** Accepted (owner, 2026-10-05)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-008
-- **Bump:** minor (to confirm)
+- **Bump:** minor (0.11.0 after spec 006 ships as 0.10.0)
 
 ## Why
 
@@ -44,12 +44,12 @@ text row: title and text; an end-of-section row: its note), and the pane reveali
 on an old row the way it does on an entry. Nothing reads differently for the old dock.
 
 Slice 2 is the structural one. Today the stage appends the entries after the old rows, each list
-numbered from 1, so "insert after this old row" cannot be represented. Proposal (to confirm): **one
+numbered from 1, so "insert after this old row" cannot be represented. Accepted approach: **one
 order namespace** — a data migration renumbers the entries after the old rows, keeping today's
-visual order exactly (old rows keep their numbers; entries become n+1…n+m), the stage renders the
+visual order exactly (gaps in old rows close first; entries become n+1…n+m), the stage renders the
 merged stream sorted by `order_number`, and an insertion after any element shifts the rows below it
 in both tables. The old dock still shows the old rows in their sequence; only their numbers may
-move.
+move. The owner accepted this order, the keep-old-model choice, and the minor bump on 2026-10-05.
 
 Alternative considered: leave the two blocks and ship slice 1 only. That keeps every number
 untouched, but leaves the insertion order wrong for every old row that is not the last — which is
@@ -67,7 +67,7 @@ the second half of what the owner reported.
 
 - **Renumbering touches production rows.** Only `order_number` changes, and the migration keeps the
   order the pane shows today; tests pin the rendered sequence before and after.
-- **The old dock's own reorder** renumbers its table alone; a later insertion in the pane normalises
-  again. Stated in the spec and pinned by a test.
+- **The old dock's own reorder** renumbers its table alone; the next pane insertion, deletion,
+  or entry reorder normalises again. Stated in the spec and pinned by tests.
 - **Two write surfaces on the old model** (the dock's and this pane's). The pane adds no rule of its
   own; both mirror the model.

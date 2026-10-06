@@ -18,6 +18,7 @@ import json
 import re
 from urllib.parse import quote
 
+from django.db import transaction
 from django.db.models import Count, F, Q
 from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
                          JsonResponse)
@@ -32,6 +33,7 @@ from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
 from multimedia.web.reading import editors
 from multimedia.web.reading import entries as entry_forms
+from multimedia.web.reading import legacy_items
 from multimedia.web.reading import search as search_lib
 
 TESTAMENTS = (('old', 'Perjanjian Lama'), ('new', 'Perjanjian Baru'))
@@ -129,6 +131,55 @@ def editor_save(request, kind, pk=None):
     return JsonResponse({'ok': True, 'id': saved.pk})
 
 
+def old_item_form(request, pk):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    item = get_object_or_404(tatib_models.TataIbadahItem, pk=pk)
+    form = legacy_items.LegacyItemForm(instance=item)
+    kind = legacy_items.kind_name(item)
+    return render(request, 'reading/_old_item_form.html', {
+        'form': form,
+        'kind': kind,
+        'title': 'Edit note' if kind == 'end_of_section' else 'Edit text',
+        'save_url': reverse('web-old-item-save', args=[item.pk]),
+    })
+
+
+def old_item_save(request, pk):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    item = get_object_or_404(tatib_models.TataIbadahItem, pk=pk)
+    form = legacy_items.LegacyItemForm(data=request.POST, instance=item)
+    kind = legacy_items.kind_name(item)
+    context = {
+        'form': form,
+        'kind': kind,
+        'title': 'Edit note' if kind == 'end_of_section' else 'Edit text',
+        'save_url': reverse('web-old-item-save', args=[item.pk]),
+    }
+    if not form.is_valid():
+        return render(request, 'reading/_old_item_form.html', context, status=400)
+    saved = form.save()
+    return JsonResponse({'ok': True, 'id': saved.pk})
+
+
+def old_item_delete(request, pk):
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    item = get_object_or_404(tatib_models.TataIbadahItem, pk=pk)
+    service = item.tatib
+    with transaction.atomic():
+        item.delete()
+        _compact_service_order(service)
+    return JsonResponse({'ok': True})
+
+
 def entry_form(request, kind=None, pk=None):
     """The modal's form fragment: one per kind, or the existing entry's own."""
     if not editors.editors_allowed(request):
@@ -183,22 +234,30 @@ def entry_save(request, pk=None):
         }, status=400)
     if entry is None:
         after = request.POST.get('after', '')
-        # The stage's anchor is "e<pk>" for a ServiceEntry. Never pass that
-        # string to an integer PK lookup (which raises a 500); also avoid
-        # treating a legacy item's numeric order as a ServiceEntry PK.
-        marker = (tatib_models.ServiceEntry.objects.filter(
-            pk=int(after[1:]), tatib=form.tatib).first()
-            if after.startswith('e') and after[1:].isdigit() else None)
-        if marker is not None:
-            # The new entry goes AFTER the clicked entry, never before it.
-            (tatib_models.ServiceEntry.objects
-             .filter(tatib=form.tatib, order_number__gt=marker.order_number)
-             .update(order_number=F('order_number') + 1))
-            form.instance.order_number = marker.order_number + 1
-        else:
-            form.instance.order_number = entry_forms.next_order_number(form.tatib)
-    form.instance.kind = entry_forms.KINDS[kind]      # the URL decides the kind, not the post
-    saved = form.save()
+        with transaction.atomic():
+            # Normalize legacy API reorderings before honoring a saved insertion point.
+            _compact_service_order(form.tatib)
+            marker = None
+            if after.startswith('e') and after[1:].isdigit():
+                marker = tatib_models.ServiceEntry.objects.filter(
+                    pk=int(after[1:]), tatib=form.tatib).first()
+            elif after.startswith('l') and after[1:].isdigit():
+                marker = tatib_models.TataIbadahItem.objects.filter(
+                    pk=int(after[1:]), tatib=form.tatib).first()
+            if marker is not None:
+                # Insert AFTER the clicked element, never before it, shifting both tables.
+                for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
+                    model.objects.filter(tatib=form.tatib,
+                                         order_number__gt=marker.order_number).update(
+                                             order_number=F('order_number') + 1)
+                form.instance.order_number = marker.order_number + 1
+            else:
+                form.instance.order_number = entry_forms.next_order_number(form.tatib)
+            form.instance.kind = entry_forms.KINDS[kind]  # the URL decides, not the post
+            saved = form.save()
+    else:
+        form.instance.kind = entry_forms.KINDS[kind]
+        saved = form.save()
     return JsonResponse({'ok': True, 'id': saved.pk})
 
 
@@ -208,7 +267,10 @@ def entry_delete(request, pk):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
     entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk)
-    entry.delete()
+    service = entry.tatib
+    with transaction.atomic():
+        entry.delete()
+        _compact_service_order(service)
     return JsonResponse({'ok': True})
 
 
@@ -219,12 +281,10 @@ def entry_reorder(request):
     order_number} pairs to a /reorder URL, answering with the order it left behind --
     rather than an endpoint per row.
 
-    What the list NAMES is what moves. Anything it leaves out follows in the order it was
-    already in, and the numbers come out contiguous from 1 either way, so a partial list
-    can never leave a hole or a duplicate. Every named entry must belong to the Tata
-    Ibadah being reordered: a reorder that could move another service's rows is refused
-    rather than half-applied. The legacy TataIbadahItem rows live on their own numbering
-    and are never touched.
+    What the list NAMES is what moves. Anything it leaves out follows in its existing
+    order. Entries exchange their slots in the shared sequence; old rows keep their slots.
+    An old API reorder may have numbered its rows alone, so normalize first. Every named
+    entry must belong to this Tata Ibadah; invalid requests change nothing.
     """
     if not editors.editors_allowed(request):
         return HttpResponseForbidden('Editing is restricted.')
@@ -256,22 +316,28 @@ def entry_reorder(request):
         seen.add(entry.pk)
         moved.append(entry)
 
-    order = moved + list(service.service_entries.exclude(pk__in=seen).order_by('order_number'))
-    for position, entry in enumerate(order, 1):
-        if entry.order_number != position:
+    with transaction.atomic():
+        _compact_service_order(service)
+        current_entries = list(service.service_entries.order_by('order_number', 'pk'))
+        by_pk = {entry.pk: entry for entry in current_entries}
+        positions = [entry.order_number for entry in current_entries]
+        order = [by_pk[entry.pk] for entry in moved]
+        order.extend(entry for entry in current_entries if entry.pk not in seen)
+        for entry, position in zip(order, positions):
             entry.order_number = position
-            entry.save(update_fields=['order_number'])
+        if order:
+            tatib_models.ServiceEntry.objects.bulk_update(order, ['order_number'])
     return JsonResponse({
         'ok': True,
-        'entries': [{'entry': entry.pk, 'order_number': position}
-                    for position, entry in enumerate(order, 1)],
+        'entries': [{'entry': entry.pk, 'order_number': entry.order_number}
+                    for entry in order],
     })
 
 
 def entry_song_options(request):
     """The song pick's options, grouped by songbook, filtered by q."""
     query = (request.GET.get('q') or '').strip()
-    songs = song_models.Song.objects.select_related('book')
+    songs = song_models.Song.objects.active().filter(book__is_deleted=False).select_related('book')
     if query:
         songs = songs.filter(Q(title__icontains=query) | Q(number__icontains=query))
     songs = songs.order_by('book__name', 'number', 'title')
@@ -287,8 +353,10 @@ def entry_song_options(request):
 
 
 def entry_song_verses(request, pk):
-    song = get_object_or_404(song_models.Song, pk=pk)
-    numbers = list(song.verse_set.order_by('number').values_list('number', flat=True))
+    song = get_object_or_404(
+        song_models.Song.objects.active().filter(book__is_deleted=False), pk=pk)
+    numbers = list(song.verse_set.filter(is_deleted=False)
+                   .order_by('number').values_list('number', flat=True))
     return JsonResponse({'verses': numbers, 'title': song.title or ''})
 
 
@@ -326,7 +394,8 @@ _TITLE_NUMBER = re.compile(r'^\s*\d+\s*[.\-)\u2013]?\s*')
 def _songbooks(selected_id=None):
     # Largest collections first: the accepted mockup's panel order (HAL, KJ,
     # PKJ, NKB, HARIAN, ANTIFON, AJAR) is exactly descending song count.
-    books = (song_models.Book.objects.annotate(song_total=Count('song'))
+    books = (song_models.Book.objects.active()
+             .annotate(song_total=Count('song', filter=Q(song__is_deleted=False)))
              .order_by('-song_total', 'name', 'lang'))
     return [{'id': book.pk, 'name': book.name, 'short': book.short_name or '',
              'hymn': book.is_hymn_book, 'current': book.pk == selected_id}
@@ -338,7 +407,8 @@ def _song_rows(book, current_id=None):
     # tiebreak. Every song in the corpus currently shares one `modified` timestamp, so
     # that tiebreak is what you actually see -- and it has to differ from the A-Z key
     # below, or the toggle would look like it did nothing (spec 005).
-    songs = book.song_set.order_by(F('modified').desc(nulls_last=True), 'title')
+    songs = book.song_set.filter(is_deleted=False).order_by(
+        F('modified').desc(nulls_last=True), 'title')
     rows = []
     for song in songs:
         numbered = book.is_hymn_book and song.number is not None
@@ -433,53 +503,70 @@ def _entry_jump(entry):
     return ''
 
 
-def _entry_blocks(service, items, toc, text_count):
-    """The service's entries, after its legacy items. Additive: a service with none
-    renders exactly as it did before (spec 006 keeps the old path working)."""
-    for entry in service.service_entries.order_by('order_number'):
-        anchor = f'e{entry.pk}'
-        title, body = entry.resolve()
-        kind_key = entry_forms.kind_name(entry.kind)
-        # A passage or a song shows its REFERENCE here, not its text: the pane is the
-        # running order, and the words belong on the display.
-        shows_text = kind_key not in ('scripture', 'song')
-        block = {'entry': True, 'anchor': anchor, 'pk': entry.pk, 'kind': kind_key,
-                 'kind_label': entry.get_kind_display(), 'title': title,
-                 'paras': _paragraphs(body) if (body and shows_text) else [],
-                 'note': entry.title if entry.kind == tatib_models.ServiceEntryKind.SECTION_BREAK
-                         else ''}
-        if kind_key in ('scripture', 'song'):
-            block['jump'] = _entry_jump(entry)
-        items.append(block)
-        text_count += 1
-        label = title or entry.get_kind_display()
-        toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
-                    'label': label[:60], 'titled': bool(title),
-                    'pk': entry.pk, 'entry': True,
-                    'txt': f'{title} {body}'})
-    return text_count
+def _ordered_service_rows(service):
+    """Return old rows and entries in their shared Tata Ibadah order."""
+    rows = [(row.order_number, 0, row.pk, 'legacy', row)
+            for row in service.tataibadahitem_set.order_by('order_number', 'pk')]
+    rows.extend((entry.order_number, 1, entry.pk, 'entry', entry)
+                for entry in service.service_entries.order_by('order_number', 'pk'))
+    return [(kind, row) for _number, _kind_order, _pk, kind, row in sorted(rows)]
+
+
+def _compact_service_order(service):
+    """Close gaps across both tables, preserving the order the service currently shows."""
+    legacy_rows, entries = [], []
+    for number, (kind, row) in enumerate(_ordered_service_rows(service), 1):
+        row.order_number = number
+        (legacy_rows if kind == 'legacy' else entries).append(row)
+    if legacy_rows:
+        tatib_models.TataIbadahItem.objects.bulk_update(legacy_rows, ['order_number'])
+    if entries:
+        tatib_models.ServiceEntry.objects.bulk_update(entries, ['order_number'])
 
 
 def _tatib_stage(service):
     items, toc = [], []
     text_count = 0
-    for item in service.tataibadahitem_set.order_by('order_number'):
-        anchor = item.order_number
-        if item.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
-            items.append({'eos': True, 'anchor': anchor, 'note': item.text})
-            toc.append({'eos': True, 'anchor': anchor})
+    for kind, row in _ordered_service_rows(service):
+        if kind == 'legacy':
+            anchor = row.order_number
+            after_marker = f'l{row.pk}'
+            if row.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
+                items.append({'eos': True, 'anchor': anchor, 'note': row.text,
+                              'old_item': True, 'pk': row.pk, 'after_marker': after_marker})
+                toc.append({'eos': True, 'anchor': anchor})
+                continue
+            text_count += 1
+            items.append({'eos': False, 'anchor': anchor, 'title': row.title,
+                          'old_item': True, 'pk': row.pk, 'after_marker': after_marker,
+                          'paras': _paragraphs(row.text)})
+            label = row.title or _first_line(row.text)
+            if len(label) > 60:
+                label = label[:60] + '…'
+            toc.append({'eos': False, 'anchor': anchor, 'n': text_count,
+                        'label': label or f'Section {text_count}',
+                        'titled': bool(row.title), 'txt': f'{row.title} {row.text}'})
             continue
+
+        anchor = f'e{row.pk}'
+        title, body = row.resolve()
+        kind_key = entry_forms.kind_name(row.kind)
+        deleted_target = row.target_deleted
+        # A passage or a song shows its reference here, not its text: the words belong on the display.
+        shows_text = kind_key not in ('scripture', 'song')
+        block = {'entry': True, 'anchor': anchor, 'pk': row.pk, 'kind': kind_key,
+                 'kind_label': row.get_kind_display(), 'title': title,
+                 'deleted_target': deleted_target,
+                 'paras': _paragraphs(body) if (body and shows_text) else [],
+                 'note': row.title if row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK else ''}
+        if kind_key in ('scripture', 'song') and not deleted_target:
+            block['jump'] = _entry_jump(row)
+        items.append(block)
         text_count += 1
-        items.append({'eos': False, 'anchor': anchor, 'title': item.title,
-                      'paras': _paragraphs(item.text)})
-        label = item.title or _first_line(item.text)
-        if len(label) > 60:
-            label = label[:60] + '…'
-        toc.append({'eos': False, 'anchor': anchor, 'n': text_count,
-                    'label': label or f'Section {text_count}',
-                    'titled': bool(item.title),
-                    'txt': f'{item.title} {item.text}'})
-    text_count = _entry_blocks(service, items, toc, text_count)
+        label = title or row.get_kind_display()
+        toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
+                    'label': label[:60], 'titled': bool(title),
+                    'pk': row.pk, 'entry': True, 'txt': f'{title} {body}'})
     return items, toc
 
 
@@ -526,18 +613,19 @@ def _projector_screens(service):
 
     A passage is one verse at a time, headed by its reference and title; a text is
     two lines at a time under its own header; a song is its lyrics alone, two lines
-    at a time; a section break shows nothing -- it is the operator's own note. The
-    legacy rows ride along in the same shape before the entries, so the order on the
-    screen is the order the reading pane shows.
+    at a time; a section break shows nothing -- it is the operator's own note. Old
+    rows and entries follow the same shared order as the reading pane.
     """
     screens = []
-    for item in service.tataibadahitem_set.order_by('order_number'):
-        if item.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
-            screens.append({'blank': True, 'header': '', 'lines': []})
+    for kind, row in _ordered_service_rows(service):
+        if kind == 'legacy':
+            if row.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
+                screens.append({'blank': True, 'header': '', 'lines': []})
+                continue
+            for lines in _line_pairs(row.text):
+                screens.append({'blank': False, 'header': row.title, 'lines': lines})
             continue
-        for lines in _line_pairs(item.text):
-            screens.append({'blank': False, 'header': item.title, 'lines': lines})
-    for entry in service.service_entries.order_by('order_number'):
+        entry = row
         if entry.kind == tatib_models.ServiceEntryKind.SECTION_BREAK:
             screens.append({'blank': True, 'header': '', 'lines': []})
         elif entry.kind == tatib_models.ServiceEntryKind.SCRIPTURE:
@@ -796,7 +884,7 @@ class BookDetailView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         book = get_object_or_404(
-            song_models.Book.objects.select_related('lang'), pk=self.kwargs['book_id'])
+            song_models.Book.objects.active().select_related('lang'), pk=self.kwargs['book_id'])
         context.update(_shell('kidung', 'open', 'open', False, 'landing', ch_mode='song'))
         context.update({
             'page_title': f'{book.name} — GKPS Klender',
@@ -819,13 +907,15 @@ class SongDetailView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         song = get_object_or_404(
-            song_models.Song.objects.select_related('book'), pk=self.kwargs['song_id'])
+            song_models.Song.objects.active().filter(book__is_deleted=False)
+            .select_related('book'), pk=self.kwargs['song_id'])
         book = song.book
         if book.is_hymn_book and song.number is not None:
             citation = f'{book.name} {song.number}{song.sub_number.upper()}'
         else:
             citation = book.name
-        verses = [verse.lyric for verse in song.verse_set.order_by('number')]
+        verses = [verse.lyric for verse in song.verse_set.filter(is_deleted=False)
+                  .order_by('number')]
         context.update(_shell('kidung', 'open', 'open', True, 'reading', ch_mode='song'))
         context.update({'editor_book_id': book.pk, 'book_is_hymn': book.is_hymn_book})
         context.update({

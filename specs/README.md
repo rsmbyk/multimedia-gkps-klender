@@ -24,7 +24,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [004](004-public-site-revamp/spec.md) | Public site revamp | Accepted |
 | [005](005-sidebar-editors/spec.md) | Sidebar editors for Kidung and Tata Ibadah | Accepted |
 | [006](006-service-entries/spec.md) | Service entries — one Tata Ibadah holds texts, scriptures and songs | Accepted |
-| [007](007-service-order-editor/spec.md) | The old rows — editable, and one running order | Draft |
+| [007](007-service-order-editor/spec.md) | The old rows — editable, and one running order | Accepted |
 | [008](008-sidebar-selection-tint/spec.md) | Softer selected-item tint in the reading sidebars | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold

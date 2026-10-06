@@ -29,7 +29,7 @@ def search_songs(query):
         criteria |= Q(book__short_name__iexact=match.group('short'), number=int(match.group('number')))
 
     return (
-        models.Song.objects.filter(criteria)
+        models.Song.objects.active().filter(criteria, book__is_deleted=False)
         .select_related('book')
         .order_by('book__name', 'number', 'sub_number', 'title')
     )

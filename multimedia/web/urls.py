@@ -40,6 +40,11 @@ urlpatterns = [
     path('editor/entry/chapter/<int:pk>/<int:chapter>/', reading_views.entry_chapter_verses,
          name='web-entry-chapter-verses'),
 
+    # Legacy TataIbadahItem editing (spec 007, slice 1). Keep the old rows and API intact.
+    path('editor/item/<int:pk>/edit/', reading_views.old_item_form, name='web-old-item-edit'),
+    path('editor/item/<int:pk>/save/', reading_views.old_item_save, name='web-old-item-save'),
+    path('editor/item/<int:pk>/delete/', reading_views.old_item_delete, name='web-old-item-delete'),
+
     # Sidebar editors (spec 005).
     path('editor/<str:kind>/new/', reading_views.editor_form, name='web-editor-new'),
     path('editor/<str:kind>/new/save/', reading_views.editor_save, name='web-editor-save-new'),

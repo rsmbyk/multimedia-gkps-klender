@@ -1,17 +1,17 @@
 ---
 id: ITEM-008
 title: The old rows — editable, and one running order
-status: speccing
+status: done
 type: feat
 priority: P1
 effort: L
 spec: specs/007-service-order-editor/spec.md
-branch:
-pr:
+branch: feat/007-service-order-editor
+pr: 265
 bump: minor
-release_version:
+release_version: 0.11.0
 created: 2026-10-04
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # ITEM-008: The old rows — editable, and one running order
@@ -34,6 +34,6 @@ the migration, preserving the order the pane shows today.
 - Raised by the owner's review of spec 006 (2026-10-04): "cant see edit and delete on old
   tataibadahitems", and a new entry added "at the last position instead of after the entry you click
   the button at".
-- Spec 006 deliberately left the old model alone and deferred the old-rows migration (plan 006,
-  slice 6); this spec does not migrate anything.
-- Blocked on the owner's Accept of spec 007.
+- Spec 006 deliberately left the old model alone and deferred moving old rows into entries
+  (plan 006, slice 6). Spec 007 retains old rows and migrates only their order numbers.
+- Draft accepted by the owner on 2026-10-05; the implementation branch includes spec 006.

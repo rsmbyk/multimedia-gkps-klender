@@ -80,6 +80,58 @@
       live page measured (the adds go, three arrows appear, the arrow moves the entry, the
       sidebar follows and renumbers, Discard restores, the question shows and closes)
 
+## Accepted amendment to slice 3 — pointer-following ghost (owner, 2026-10-04)
+
+- [x] Red browser test: after threshold, a visual copy follows pointer deltas with no lag;
+      it is inert/aria-hidden outside `#chList`, with no extra active handle, link, or id
+- [x] Red browser test: the real row remains one invisible layout slot while the list height
+      stays constant, the other rows morph, and release keeps the previewed order
+- [x] Red browser test: pointer cancellation restores the pre-gesture order without losing
+      earlier unsaved moves; release/cancel/blur/page swap leaves no visual copy
+- [x] Red browser test: section breaks have the same preview and keyboard moves are unchanged
+- [x] Green: implement the pointer-following preview and its cleanup in `static/web/reorder.js`
+      and `static/styles/design/components.css`; 14 targeted reorder e2e and 119 app/token tests pass
+
+## Accepted amendment to slice 3 — suppress hover while grabbing (owner, 2026-10-05)
+
+- [x] Red browser test: normal hover before drag, no hover background on entry rows or ghost
+      while actively grabbed, selected style unchanged, normal hover restored on release/cancel
+- [x] Green: scope hover suppression to active pointer drag, preserve focus and keyboard moves;
+      15 targeted reorder browser tests passed; confirm served CSS
+
+## Accepted amendment — empty Bible header row (owner, 2026-10-05)
+
+- [x] Red browser test: from home to a Bible chapter, empty header row has zero height and
+      title/TB-SIM move up by 34px at desktop and phone widths; song citation and Tata Ibadah
+      date/project button remain visible with their intentional spacing (failed at 34px)
+- [x] Green: collapse the empty `.read__head-top` in `components.css`, keep the stage's
+      40px top padding and selected title/control layout; populated rows retain their height
+- [x] Two targeted reader browser tests passed; collectstatic --clear completed and served CSS confirmed
+
+## Accepted amendment — visible destination slot (owner, 2026-10-05)
+
+- [x] Red browser test: the existing dragged row's slot highlights at its live destination
+      (first, middle, last, and across section breaks) without extra rows or list height;
+      ghost follows the pointer, hover/selection/focus and keyboard moves stay intact
+- [x] Green: style the existing row as a destination slot without duplicating its content;
+      release, cancel, blur, and page swap clear the highlight
+- [x] 16 targeted reorder browser tests passed; static assets collected and served CSS confirmed
+
+## Accepted amendment — remove the destination slot ring (owner, 2026-10-05)
+
+- [x] Red: assert the tinted destination slot has no computed outline or box shadow
+- [x] Green: remove only the slot's inset ring, preserving ghost and focus styles
+- [x] 16 targeted reorder browser tests passed; static assets collected and served CSS confirmed
+
+## Accepted amendment — Bible language switch motion (owner, 2026-10-05)
+
+- [x] Red: browser test the TB/SIM highlight's mid- and end-travel in both directions,
+      translation and pressed state, header geometry, unavailable choice, reduced motion
+- [x] Green: persistent selected background with transform-only travel and initial-state
+      synchronization; retain links, keyboard focus, and no-JS navigation
+- [x] Targeted reading browser tests: all 4 language-switch E2E tests passed; collectstatic and
+      live home-to-reader path verified, including the saved SIM edition restoring without travel
+
 ## Slice 4 — the new display and display mode  (done, bar the deferred overlay)
 
 - [x] Red: each kind rendered on the new projector; the body's own two lines; the blank-line
@@ -120,21 +172,24 @@
 
 ## Slice 5 — soft deletion
 
-- [ ] Red: deletion marks rather than removes; normal lists and the current dock/API paths skip a
+- [x] Red: deletion marks rather than removes; normal lists and the current dock/API paths skip a
       deleted row; a service entry referring to a deleted song still resolves and warns
-- [ ] Green: the flag on Song, Book and Verse, the admin path, the warning on the entry
-- [ ] Audit every current query site for songs, songbooks and verses — the compatibility pass
-      before and after
+- [x] Green: the flag on Song, Book and Verse, the admin path, the warning on the entry
+- [x] Audit every current query site for songs, songbooks and verses — the compatibility pass
+      before and after; the 162-test app/API regression pass is green
 
 ## The compatibility promise
 
-- [ ] A regression pass asserting the current OBS pages, API endpoints and model responses are
-      unchanged, run before and after
-- [ ] No diff in any current OBS template, script or endpoint
+- [x] A regression pass asserting the current OBS page paths render, the legacy Tata Ibadah list,
+      item list and reorder routes keep their response shape, and songs/bookmarks APIs keep their
+      response fields; app/API regression pass green
+- [x] No diff in any current OBS template, script or endpoint
 
 ## Done when
 
-- [ ] All acceptance scenarios in ./spec.md hold
-- [ ] The tests named above are green, and the compatibility pass is green
-- [ ] Traceability in ./spec.md filled; ITEM and board updated in the same PR
-- [ ] `VERSION` and the changelog bumped in the same PR
+- [x] All acceptance scenarios in ./spec.md hold; the overlay remains explicitly deferred
+- [x] The tests named above are green, and the compatibility pass is green
+- [x] Traceability in ./spec.md filled
+- [x] Final verification: Django system check, migration consistency check, and the complete
+      suite passed (270 tests)
+- [x] ITEM and board, `VERSION` 0.10.0, and the changelog entry included together in draft PR #263

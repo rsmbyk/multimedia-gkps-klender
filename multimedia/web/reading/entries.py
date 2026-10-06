@@ -77,9 +77,15 @@ class SongEntryForm(ServiceEntryForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        song_queryset = song_models.Song.objects.active().filter(book__is_deleted=False)
+        if self.instance.pk and self.instance.song_id:
+            song_queryset |= song_models.Song.objects.filter(pk=self.instance.song_id)
+        self.fields['song'].queryset = song_queryset
         self.song = self._chosen_song()
-        numbers = list(self.song.verse_set.order_by('number').values_list('number', flat=True)) \
-            if self.song else []
+        numbers = list(self.song.verse_set.filter(is_deleted=False)
+                       .order_by('number').values_list('number', flat=True)) if self.song else []
+        if self.instance.pk and self.instance.song_id == getattr(self.song, 'pk', None):
+            numbers = sorted(set(numbers) | set(self.instance.verses or []))
         self.fields['verses'].choices = [(n, str(n)) for n in numbers]
 
     def _chosen_song(self):
@@ -87,7 +93,7 @@ class SongEntryForm(ServiceEntryForm):
             chosen = self.data.get('song')
         else:
             chosen = getattr(self.instance, 'song_id', None)
-        return song_models.Song.objects.filter(pk=chosen).first() if chosen else None
+        return self.fields['song'].queryset.filter(pk=chosen).first() if chosen else None
 
     def clean_verses(self):
         return sorted(int(number) for number in self.cleaned_data.get('verses') or [])
@@ -143,9 +149,12 @@ def build_entry_form(kind, data=None, instance=None, tatib=None):
 
 
 def next_order_number(tatib):
-    """Where a new entry goes: after the last one in the service."""
-    last = tatib.service_entries.order_by('-order_number').first()
-    return (last.order_number if last else 0) + 1
+    """The next number after both old rows and entries in the shared order."""
+    last_legacy = (tatib.tataibadahitem_set.order_by('-order_number')
+                   .values_list('order_number', flat=True).first() or 0)
+    last_entry = (tatib.service_entries.order_by('-order_number')
+                  .values_list('order_number', flat=True).first() or 0)
+    return max(last_legacy, last_entry) + 1
 
 
 def scripture_books():

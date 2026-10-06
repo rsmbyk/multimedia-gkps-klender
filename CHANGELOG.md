@@ -10,11 +10,48 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
-## [0.9.1] - 2026-10-05
+## [0.11.1] - 2026-10-06
 
 ### Changed
 
-- Softer theme-aware selected-row tint for Bible books and chapters, songbooks, songs, and Tata Ibadah services; selected text remains readable in both themes.
+- Softer theme-aware selected-row tint for Bible books and chapters, songbooks, songs,
+  and Tata Ibadah services; selected text remains readable in both themes.
+
+## [0.11.0] - 2026-10-06
+
+### Added
+
+- The Tata Ibadah reading pane can edit or delete existing `TataIbadahItem` text and
+  end-of-section rows in the shared editor dialog; the old OBS dock sees the same edits.
+
+### Changed
+
+- Old rows and new service entries share a contiguous running order. Existing services
+  retain their visible order during migration; adding after either kind and deleting a row
+  shift both kinds together. The pane, contents list, and service projector follow it.
+- Existing entry reorder keeps old rows in their positions and repairs the shared order
+  after a legacy API reorder. Old OBS pages, API routes, and response shapes stay in place.
+
+## [0.10.0] - 2026-10-06
+
+### Added
+
+- Service entries let one Tata Ibadah hold text, scripture, song, and section-break items in
+  one ordered list, with add/edit/delete controls in its reading pane.
+- A separate service projector at `/obs/service/<id>/` displays the running order and keeps
+  its browser-local display state separate from the existing OBS docks and sources.
+- The Bible TB/SIM selector now has a persistent selected state and a transform-only moving
+  highlight, synchronized on initial load and in-place reading navigation.
+
+### Changed
+
+- Service-entry reorder remains a draft until Save or Discard, and warns before a navigation
+  can discard unsaved changes. The existing `TataIbadahItem` rows and API remain compatible.
+- Songs, songbooks, and verses are soft-deleted: ordinary browse/search/API paths hide deleted
+  targets, saved service entries retain their references and show a warning, and admin deletion
+  records the actor and time without removing rows.
+- Existing bookmark and song API payloads do not expose soft-delete metadata; writes and reorder
+  reject deleted targets.
 
 ## [0.9.0] - 2026-10-03
 

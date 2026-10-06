@@ -124,6 +124,14 @@ class ServiceEntry(models.Model):
             return self.title, ''
         return self.title, self.text
 
+    @property
+    def target_deleted(self):
+        if self.kind != ServiceEntryKind.SONG or not self.song_id:
+            return False
+        song = self.song
+        return (song.is_deleted or song.book.is_deleted
+                or song.verse_set.filter(number__in=self.verses or [], is_deleted=True).exists())
+
     def _scripture_body(self):
         verses = (bible_models.Verse.objects
                   .filter(book_translation_id=self.book_translation_id,
@@ -134,5 +142,6 @@ class ServiceEntry(models.Model):
         return '\n\n'.join(f'{v.verse} {v.text}'.strip() for v in verses)
 
     def _song_body(self):
-        verses = self.song.verse_set.filter(number__in=self.verses or []).order_by('number')
+        verses = (self.song.verse_set.filter(number__in=self.verses or [], is_deleted=False)
+                  .order_by('number'))
         return '\n\n'.join((v.lyric or '').strip() for v in verses)

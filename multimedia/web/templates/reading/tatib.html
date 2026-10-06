@@ -33,6 +33,7 @@
 {% else %}
 <section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.entry %} data-entry-pk="{{ item.pk }}"{% endif %}>
 {% if item.title %}<h2 class="read__sec">{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
+{% if item.deleted_target %}<p class="entry__deleted-warning" role="status">This song, songbook, or an included verse was deleted.</p>{% endif %}
 {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
 {% for para in item.paras %}<p class="tatib__tx">{% if para.speaker %}<span class="tatib__sp">{{ para.speaker }}.</span> {% endif %}{{ para.text }}</p>
 {% endfor %}
@@ -40,7 +41,7 @@
 </section>
 {% endif %}
 {% if editor_enabled %}
-<div class="entry__add" data-entry-after="{{ item.anchor }}" role="group" aria-label="Add after this item">
+<div class="entry__add" data-entry-after="{{ item.after_marker|default:item.anchor }}" role="group" aria-label="Add after this item">
   <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
   <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
@@ -53,6 +54,19 @@
       Edit
     </button>
     <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="{{ item.pk }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+      Delete
+    </button>
+  </span>
+  {% elif item.old_item %}
+  <span class="entry__acts">
+    <button type="button" class="entry__ctrl" data-old-item-edit="{{ item.pk }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+      Edit
+    </button>
+    <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="{{ item.pk }}">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
       Delete

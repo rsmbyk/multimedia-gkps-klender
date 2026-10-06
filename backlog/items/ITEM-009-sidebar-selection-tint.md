@@ -1,7 +1,7 @@
 ---
 id: ITEM-009
 title: 'Softer selected-item tint in reading sidebars'
-status: in-review
+status: done
 type: chore
 priority: P2
 effort: S
@@ -11,9 +11,9 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/264
 archived_at:
 archive_reason:
 bump: patch
-release_version: 0.9.1
+release_version: 0.11.1
 created: 2026-10-05
-updated: 2026-10-05
+updated: 2026-10-06
 ---
 
 # ITEM-009: Softer selected-item tint in reading sidebars

@@ -1,17 +1,17 @@
 ---
 id: ITEM-007
 title: Service entries — a Tata Ibadah holds texts, scriptures and songs
-status: in-progress
+status: done
 type: feat
 priority: P1
 effort: L
 spec: specs/006-service-entries/spec.md
 branch: feat/006-service-entries
-pr:
+pr: 263
 bump: minor
-release_version:
+release_version: 0.10.0
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-06
 ---
 
 # ITEM-007: Service entries
@@ -46,4 +46,6 @@ a separate, later slice the owner triggers.
   scripture and song entries.
 - One reading to confirm: "always sync with the songs" is taken to mean *exclusions* are stored
   (a verse added later shows; an unchecked one stays out) rather than a frozen verse list.
-- Blocked on the owner's Accept of spec 006 (and that one confirmation).
+- Accepted spec 006 is implemented on `feat/006-service-entries`; the targeted app/API
+  regression run (162 tests) and four language-switch browser tests pass. Draft PR #263 remains
+  stacked on spec 005; the OBS overlay remains deferred by the accepted spec.

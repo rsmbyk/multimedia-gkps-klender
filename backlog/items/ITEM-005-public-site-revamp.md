@@ -1,12 +1,12 @@
 ---
 id: ITEM-005
-status: in-review
+status: done
 title: 'Public site revamp'
 type: chore
 priority: P1
 effort: L
 created: 2026-10-01
-updated: 2026-10-03
+updated: 2026-10-06
 spec: ../specs/004-public-site-revamp/spec.md
 branch: feat/004-public-site-revamp
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/261
