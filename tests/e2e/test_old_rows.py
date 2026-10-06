@@ -1,26 +1,24 @@
 """Editing and deleting old TataIbadahItem rows from the service pane (spec 007)."""
 
-import unittest
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
 from django.urls import reverse
 
+from tests.e2e.base import BaseE2ETestCase
+
 from multimedia.tatib import models as tatib
 
 try:
-    from playwright.sync_api import expect, sync_playwright
-
-    HAS_PLAYWRIGHT = True
-except ImportError:  # pragma: no cover - depends on environment
-    HAS_PLAYWRIGHT = False
+    from playwright.sync_api import expect
+except ImportError:
+    pass
 
 
 @tag('e2e')
-@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class LegacyRowE2ETests(StaticLiveServerTestCase):
+class LegacyRowE2ETests(BaseE2ETestCase, StaticLiveServerTestCase):
     def setUp(self):
         super().setUp()
         self.service = tatib.TataIbadah.objects.create(
@@ -34,28 +32,12 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         self.last = tatib.TataIbadahItem.objects.create(
             tatib=self.service, item_type=tatib.TataIbadahItemType.TEXT,
             title='Penutup', text='Doa', order_number=3)
-        self._start_browser()
-
-    def _start_browser(self):
-        self._playwright = sync_playwright().start()
-        try:
-            self.browser = self._playwright.chromium.launch()
-        except Exception as error:  # pragma: no cover - depends on environment
-            self._playwright.stop()
-            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
 
     def tearDown(self):
-        self._close_browser()
         super().tearDown()
 
-    def _close_browser(self):
-        if getattr(self, '_playwright', None) is not None:
-            self.browser.close()
-            self._playwright.stop()
-            self._playwright = None
-
     def _open_from_home(self):
-        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        page = self._new_page()
         page.goto(self.live_server_url + reverse('web-home'))
         page.wait_for_load_state('networkidle')
         page.locator('[data-panel="tatib"]').click()
@@ -88,7 +70,6 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#readBody')).to_contain_text('Nyanyian Pembukaan')
         expect(page.locator('#readBody')).to_contain_text('KJ 152')
 
-        self._close_browser()                         # ORM/API assertions stay outside Playwright's loop
         response = self.client.get('/api/tatib/items', {'tatib': self.service.pk})
         self.assertEqual(response.status_code, 200)
         row = response.json()[0]
@@ -105,17 +86,14 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("!document.querySelector('dialog[open]')")
         expect(page.locator('#readBody')).not_to_contain_text('Penutup')
 
-        self._close_browser()
         response = self.client.get('/api/tatib/items', {'tatib': self.service.pk})
         self.assertEqual(response.status_code, 200)
         self.assertEqual([row['id'] for row in response.json()], [self.first.pk, self.middle.pk])
 
     def test_adding_under_the_second_old_row_places_the_entry_immediately_after_it(self):
-        self._close_browser()
         later = tatib.ServiceEntry.objects.create(
             tatib=self.service, kind=tatib.ServiceEntryKind.TEXT,
             title='Later', text='After the old rows', order_number=4)
-        self._start_browser()
 
         page = self._open_from_home()
         add = self._reveal_row_controls(page, self.middle)
@@ -136,7 +114,6 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         ])
         self.assertEqual(page.locator('#chList [data-i]').evaluate_all(
             '(nodes) => nodes.map(node => node.dataset.i)'), anchors)
-        self._close_browser()
         actual = sorted(
             [(row.order_number, 'legacy', row.pk) for row in self.service.tataibadahitem_set.all()]
             + [(row.order_number, 'entry', row.pk) for row in self.service.service_entries.all()])
