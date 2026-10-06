@@ -1,6 +1,6 @@
 ---
 id: ITEM-012
-status: in_review
+status: done
 title: 'Sort hymn book songs by number and sub-number'
 type: fix
 priority: P1
