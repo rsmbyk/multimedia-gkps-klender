@@ -8,6 +8,7 @@ enforce as well as the templates.
 
 from django import forms
 from django.conf import settings
+from django.core.exceptions import NON_FIELD_ERRORS
 
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
@@ -32,7 +33,9 @@ class SongbookForm(forms.ModelForm):
         fields = ['name', 'lang']
         labels = {'lang': 'Language'}
         error_messages = {
-            'unique_together': 'That songbook already exists for this language.',
+            NON_FIELD_ERRORS: {
+                'unique_together': 'That songbook already exists for this language.',
+            },
         }
 
 

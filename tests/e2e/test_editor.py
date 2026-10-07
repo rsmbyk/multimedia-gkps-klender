@@ -281,7 +281,8 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self._fill(page, 'lang', str(self.lang.pk))
         page.click('.editor__save')
         expect(page.locator('dialog[open]')).to_have_count(1)  # still open
-        expect(page.locator('.editor__error')).to_contain_text('already exists for this language')
+        expect(page.locator('.editor__error')).to_contain_text(
+            'That songbook already exists for this language.')
         expect(page.locator('[name="name"]')).to_have_value(self.book.name)
         self._close_browser()
 
