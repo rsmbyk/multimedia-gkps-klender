@@ -10,10 +10,22 @@ class UniqueForNullableDateValidator:
     def __init__(self, field_name, date_field_name):
         self.field_name = field_name
         self.date_field_name = date_field_name
+        self.instance = None
+
+    def set_context(self, serializer):
+        """DRF calls this so validators can exclude the instance on update."""
+        self.instance = getattr(serializer, 'instance', None)
 
     def __call__(self, attrs):
-        name = attrs.get(self.field_name)
-        date = attrs.get(self.date_field_name)
+        instance = self.instance
+        name = attrs.get(
+            self.field_name,
+            getattr(instance, self.field_name, None) if instance else None,
+        )
+        date = attrs.get(
+            self.date_field_name,
+            getattr(instance, self.date_field_name, None) if instance else None,
+        )
 
         query_params = {
             'is_active': True,
@@ -22,6 +34,8 @@ class UniqueForNullableDateValidator:
         }
 
         queryset = models.SongBookmark.objects.filter(**query_params)
+        if instance is not None:
+            queryset = queryset.exclude(pk=instance.pk)
 
         if queryset.exists():
             if date is None:

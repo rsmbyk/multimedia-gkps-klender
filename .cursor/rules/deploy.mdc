@@ -1,0 +1,18 @@
+---
+description: Production deploy runbook — Vercel + main; do not casually change vercel.json/static/prod env
+alwaysApply: true
+---
+
+# Deploy (this repo)
+
+Follow [`docs/DEPLOY.md`](docs/DEPLOY.md) before changing production hosting,
+`vercel.json`, WSGI entry, Vercel static settings, or production env vars.
+
+Summary:
+
+- Production = **Vercel** + **Neon/`DATABASE_URL`**, Git branch **`main`**
+- Keep legacy `vercel.json` `builds` + `routes` → `multimedia/wsgi.py` (`app`)
+- Removing that config previously caused platform 404s with no Django logs
+- On Vercel: WhiteNoise finders (no fragile collectstatic build step)
+- Legacy `builds` warning is cosmetic — do not “fix” it without a tested plan
+- Hosting migrations / zero-config experiments are separate spikes, not cleanups

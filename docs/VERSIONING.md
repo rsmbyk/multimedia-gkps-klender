@@ -1,0 +1,94 @@
+# Versioning
+
+This project uses a **single [Semantic Versioning](https://semver.org/)
+(`MAJOR.MINOR.PATCH`)** number for the whole application (Django, API, web
+admin, and all OBS docks / sources).
+
+See [`CHANGELOG.md`](../CHANGELOG.md) for shipped history. Branching and when
+the version is finalized are defined in [`GIT_FLOW.md`](GIT_FLOW.md).
+
+## Current scheme (from `0.5.0`)
+
+Format: `MAJOR.MINOR.PATCH` (e.g. `0.5.0`)
+
+Git tags use a `v` prefix: `v0.5.0`.
+
+| Bump | When |
+|------|------|
+| **MAJOR** | Breaking changes (API contracts, OBS message shapes, incompatible data migrations) |
+| **MINOR** | New features or notable backward-compatible behavior |
+| **PATCH** | Bug fixes, deploy/plumbing, small tweaks, docs that ship with a tagged release |
+
+There is **one** product version. There are no per-plugin counters (`b` / `s` /
+`t` / `p` / `dj`) and no `v0.4.s30`-style strings in the new scheme.
+
+### Jump to `0.5.0`
+
+Production on the old scheme ended at **`0.4.17`** (per-app counters in the
+changelog and hardcoded OBS template strings). **`0.5.0`** is the first release
+under this document (single SemVer + shared OBS version UI).
+
+Older `CHANGELOG.md` sections keep their historical **App Versions** blocks for
+archive; do not add new ones.
+
+## When the version changes
+
+| On | Action |
+|----|--------|
+| Feature / fix / chore PR into **`develop`** | **Do not** bump SemVer. Add bullets under `## Unreleased` with area labels (below). |
+| **`release/x.y.z`** branch | Choose and finalize `MAJOR.MINOR.PATCH`, rename/move `Unreleased` into `## Version x.y.z`, set the centralized version constant, update the shared OBS footer. |
+| Tag on **`main`** after release merge | `vX.Y.Z` |
+| **`hotfix/*`** | Usually a **PATCH** bump on the hotfix branch; same finalize steps, then merge to `main` and `develop`. |
+
+## Changelog area labels (non-version)
+
+Bullets still carry **area labels** so history stays skimmable. Labels do **not**
+include version numbers.
+
+```text
+[songs] Restore songbooks dropdown loading after Rx regression
+[bible, project] Fix arrow-key navigation in dock and source
+[deploy] Restore vercel.json WSGI routing for production
+[docs] Adopt Git Flow and SemVer versioning
+```
+
+Suggested labels (use what fits; combine with commas when needed):
+
+| Label | Surface |
+|-------|---------|
+| `songs` | Songs OBS dock / source |
+| `bible` | Bible OBS dock / source |
+| `tatib` | Tatib OBS dock / source |
+| `project` | Project OBS source / settings |
+| `api` | REST API |
+| `web` | Django web admin UI |
+| `deploy` | Hosting, Vercel, Docker, static serving |
+| `docs` | Documentation / project conventions |
+| `test` | Test toolchain |
+
+## UI display
+
+- **One shared product version** is defined in
+  [`multimedia/obs/static/obs/common/version.js`](../multimedia/obs/static/obs/common/version.js)
+  as `APP_VERSION` (JS-readable).
+- OBS docks (and project settings) mark nodes with `data-app-version`;
+  `applyAppVersion()` fills them from that constant.
+- Templates and docks must **not** hardcode divergent per-app versions
+  (`v0.4.s30`, etc.).
+
+Bump `APP_VERSION` only on `release/*` or `hotfix/*` when finalizing SemVer.
+
+## Checklist: change on `develop`
+
+1. Implement the behavior (TDD where applicable — see [`TDD.md`](TDD.md)).
+2. Add changelog bullet(s) under `## Unreleased` with area label(s).
+3. Do **not** bump SemVer or create a release section yet.
+
+## Checklist: cutting a release
+
+1. Branch `release/x.y.z` from `develop`.
+2. Decide `MAJOR` / `MINOR` / `PATCH` from the Unreleased bullets.
+3. Turn `Unreleased` into `## Version x.y.z` (no App Versions block).
+4. Set the centralized JS-readable version constant to `x.y.z`.
+5. Confirm the shared OBS footer reads that constant.
+6. Merge to `main` (merge commit), tag `vX.Y.Z`, merge back to `develop`.

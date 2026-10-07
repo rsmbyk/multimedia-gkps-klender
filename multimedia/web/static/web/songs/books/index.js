@@ -1,6 +1,7 @@
 const { BehaviorSubject, skipWhile } = rxjs
 
 import * as doms from '/static/helpers/doms.js'
+import { songsBooksUrl } from '../../api-paths.js'
 
 import * as editBookModal from './modals/edit-book.js'
 import * as deleteBookModal from './modals/delete-book.js'
@@ -152,7 +153,7 @@ const retrieveBooks = () => {
     showLoader()
     displayPlaceholder()
 
-    axios.get('/api/songs/books')
+    axios.get(songsBooksUrl())
         .then(({ data: books }) => booksSubject.next(books))
         .catch(displayErrorView)
 }

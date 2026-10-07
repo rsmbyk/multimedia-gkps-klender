@@ -1,0 +1,21 @@
+---
+description: Vexbook process and SDD permission gate — must-apply, always on
+alwaysApply: true
+---
+
+# Process (vexbook, binding)
+
+Follow [`docs/PROCESS.md`](docs/PROCESS.md) and every must-apply shared doc
+listed there. Today that is:
+
+- [`docs/rules/SDD-GATE.md`](docs/rules/SDD-GATE.md) — hard SDD permission gate.
+
+Summary:
+
+- Plan → Draft `specs/NNN-slug/{plan,spec,tasks}.md` → **STOP** for owner
+  Accept/OK → implement (TDD) → PR linking the spec.
+- Plan work stops at Drafts. Plan approval is not implement permission.
+- One concern per spec; spec `000` is the product baseline.
+- Board, tasks, and version (when `bump` is not `none`) land in the same PR.
+- When product docs conflict with PROCESS, PROCESS wins (see
+  `docs/adr/0001-adopt-vexbook-process.md`).

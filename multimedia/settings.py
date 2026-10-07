@@ -13,10 +13,13 @@ import os
 import sys
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-import dj_database_url
-from decouple import config, Csv, UndefinedValueError
-from django.core.management.utils import get_random_secret_key
+from decouple import config, Csv
+
+from multimedia.env import (
+    build_databases,
+    resolve_secret_key,
+    validate_debug_on_vercel,
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,13 +27,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('DJANGO_SECRET_KEY', default=get_random_secret_key())
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DJANGO_DEBUG', default=True, cast=bool)
+DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='*', cast=Csv())
+validate_debug_on_vercel(debug=DEBUG, vercel=bool(os.environ.get('VERCEL')))
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = resolve_secret_key(
+    debug=DEBUG,
+    secret_key=config('DJANGO_SECRET_KEY', default=None),
+)
+
+ALLOWED_HOSTS = list(config('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv()))
+
+# Vercel injects VERCEL=1 and VERCEL_URL per deployment. Without these hosts,
+# Django returns "Bad Request (400)" for *.vercel.app requests.
+if os.environ.get('VERCEL'):
+    ALLOWED_HOSTS.append('.vercel.app')
+    vercel_url = os.environ.get('VERCEL_URL')
+    if vercel_url:
+        ALLOWED_HOSTS.append(vercel_url)
+
+CSRF_TRUSTED_ORIGINS = list(config('DJANGO_CSRF_TRUSTED_ORIGINS', default='', cast=Csv()))
+if os.environ.get('VERCEL'):
+    vercel_url = os.environ.get('VERCEL_URL')
+    if vercel_url:
+        CSRF_TRUSTED_ORIGINS.append(f'https://{vercel_url}')
 
 # Maintenance mode: the site root serves a notice (HTTP 503) while the reading
 # home stays reachable at /home/. Toggle with the MAINTENANCE_MODE env var.
@@ -51,8 +73,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',
+    'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
     'multimedia.bible',
@@ -98,20 +120,15 @@ WSGI_APPLICATION = 'multimedia.wsgi.app'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+# Local app runtime uses Docker Compose Postgres. Pytest forces Compose
+# Postgres via multimedia.settings_test (ignores .env Neon URLs) and
+# pytest-django uses a separate test_* database.
 
-DEVELOPMENT_MODE = config('DJANGO_DEVELOPMENT_MODE', default=False, cast=bool)
-
-if DEVELOPMENT_MODE is True:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-elif not (len(sys.argv) > 1 and sys.argv[0] == 'manage.py' and sys.argv[1] == 'collectstatic'):
-    DATABASES = {
-        'default': dj_database_url.parse(config('DATABASE_URL')),
-    }
+_skip_database = len(sys.argv) > 1 and 'collectstatic' in sys.argv
+DATABASES = build_databases(
+    database_url=config('DATABASE_URL', default=None),
+    skip_database=_skip_database,
+)
 
 
 # Password validation
@@ -148,7 +165,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / '_static'
 
@@ -156,7 +173,13 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if os.environ.get('VERCEL'):
+    # Vercel serverless does not use a collectstatic manifest in production.
+    # Serve files from repo static dirs at runtime instead of requiring _static.
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    WHITENOISE_USE_FINDERS = True
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

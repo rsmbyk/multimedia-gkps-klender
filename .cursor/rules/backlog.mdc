@@ -1,0 +1,18 @@
+---
+description: In-repo backlog and tracker conventions
+alwaysApply: true
+---
+
+# Backlog / tracker (this repo)
+
+Follow [`backlog/board.md`](backlog/board.md) and [`docs/PROCESS.md`](docs/PROCESS.md). Product notes in [`docs/BACKLOG.md`](docs/BACKLOG.md) remain background; PROCESS wins on conflict. Summary:
+
+- Living board: [`backlog/board.md`](backlog/board.md); items in
+  `backlog/items/ITEM-XXX-slug.md` (from `backlog/items/_template.md`).
+- IDs: `ITEM-<nnn>` (consecutive; legacy `BL-*` migrated per ADR 0001).
+- Statuses: `backlog` → `speccing` → `ready` → `in-progress` → `in-review` →
+  `done`. Backlog column sorted P0–P3.
+- WHEN an item’s status changes, update **both** the item file and the board.
+- Specs stay the intent source; backlog is “what we might do”.
+- Prefer linking planned product / non-trivial work to an `ITEM-*` item.
+- Docs-native only — do not add backlog SaaS toolchains without asking.
