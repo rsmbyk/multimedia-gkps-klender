@@ -120,7 +120,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
         page.click('#songAdd')
         page.wait_for_selector('dialog[open]')
         expect(page.locator('#editorTitle')).to_have_text('New song')
-        self._save(page, title='Lagu Baru', number='', sub_number='', key='')
+        self._save(page, title='Lagu Baru')
         expect(page.locator('#chList .songrow').filter(has_text='Lagu Baru')).to_be_visible()
         self._close_browser()
         self.assertTrue(songs.Song.objects.filter(book=self.book, title='Lagu Baru').exists())
@@ -291,7 +291,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
         start = page.url
         page.click('#songAdd')
         page.wait_for_selector('dialog[open]')
-        self._save(page, title='Lagu Kedua', number='', sub_number='', key='')
+        self._save(page, title='Lagu Kedua')
         expect(page.locator('dialog[open]')).to_have_count(0)
         self.assertEqual(page.url, start)                      # one page, no reload
         expect(page.locator('.read__title')).to_contain_text('Alpha')   # the stage kept reading
