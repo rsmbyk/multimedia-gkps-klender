@@ -333,11 +333,13 @@ class EditorViewTests(TestCase):
 
     # --- the form fragment ---
 
-    def test_new_form_renders_every_field_with_csrf(self):
+    def test_new_songbook_form_omits_short_name_and_hymn_flag(self):
         response = self.client.get(self.new_url('songbook'))
         self.assertEqual(response.status_code, 200)
-        for field in ('name', 'short_name', 'lang', 'is_hymn_book'):
+        for field in ('name', 'lang'):
             self.assertContains(response, 'name="%s"' % field)
+        for field in ('short_name', 'is_hymn_book'):
+            self.assertNotContains(response, 'name="%s"' % field)
         self.assertContains(response, 'csrfmiddlewaretoken')
         self.assertContains(response, 'New songbook')
 
@@ -345,6 +347,8 @@ class EditorViewTests(TestCase):
         response = self.client.get(
             reverse('web-editor-edit', kwargs={'kind': 'songbook', 'pk': self.harian.pk}))
         self.assertContains(response, 'value="Kidung Harian"')
+        self.assertNotContains(response, 'name="short_name"')
+        self.assertNotContains(response, 'name="is_hymn_book"')
         self.assertContains(response, 'Edit songbook')
 
     def test_tatib_edit_form_has_no_section_fields(self):
@@ -357,28 +361,26 @@ class EditorViewTests(TestCase):
 
     # --- songbooks ---
 
-    def test_create_songbook(self):
+    def test_create_songbook_ignores_short_name_and_hymn_flag(self):
         response = self.client.post(self.save_url('songbook'), {
             'name': 'Kidung Baru', 'short_name': 'KB', 'lang': self.harian.lang_id,
-            'is_hymn_book': ''})
+            'is_hymn_book': 'on'})
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()['ok'])
-        self.assertTrue(songs.Book.objects.filter(name='Kidung Baru', short_name='KB').exists())
+        book = songs.Book.objects.get(name='Kidung Baru')
+        self.assertEqual(book.short_name, '')
+        self.assertFalse(book.is_hymn_book)
 
-    def test_duplicate_short_name_is_refused(self):
-        response = self.client.post(self.save_url('songbook'), {
-            'name': 'Lain', 'short_name': 'KH', 'lang': self.harian.lang_id})
-        self.assertEqual(response.status_code, 400)
-        self.assertContains(response, 'already been used', status_code=400)
-        self.assertFalse(songs.Book.objects.filter(name='Lain').exists())
-
-    def test_editing_a_songbook_keeps_its_own_short_name(self):
+    def test_editing_a_songbook_ignores_hidden_values_and_preserves_existing_values(self):
         response = self.client.post(
             self.save_url('songbook', self.harian.pk),
-            {'name': 'Kidung Harian Baru', 'short_name': 'KH', 'lang': self.harian.lang_id})
+            {'name': 'Kidung Harian Baru', 'short_name': 'FORGED',
+             'is_hymn_book': 'on', 'lang': self.harian.lang_id})
         self.assertEqual(response.status_code, 200, response.content[:400])
         self.harian.refresh_from_db()
         self.assertEqual(self.harian.name, 'Kidung Harian Baru')
+        self.assertEqual(self.harian.short_name, 'KH')
+        self.assertFalse(self.harian.is_hymn_book)
 
     def test_deleted_songbook_and_song_targets_cannot_be_edited_or_created_into(self):
         deleted_book = songs.Book.objects.create(

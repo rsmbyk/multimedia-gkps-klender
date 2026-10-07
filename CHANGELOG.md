@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.11.4] - 2026-10-06
+
+### Changed
+
+- Songbook forms hide short name and hymn-book fields; edits preserve existing values, and new songbooks use model defaults.
+
 ## [0.11.3] - 2026-10-06
 
 ### Fixed

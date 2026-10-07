@@ -83,17 +83,36 @@ class EditorE2ETests(StaticLiveServerTestCase):
     # --- the add buttons ---
 
     def test_add_songbook_through_the_modal(self):
-        page = self._page(reverse('web-books'))
+        page = self._page(reverse('web-home'))
         expect(page.locator('dialog[open]')).to_have_count(0)
+        page.click('.rail__btn[aria-label="Kidung"]')
         page.click('#panelAdd')
         page.wait_for_selector('dialog[open]')
         expect(page.locator('#editorTitle')).to_have_text('New songbook')
-        self._save(page, name='Kidung Sekolah', short_name='KS',
-                   lang=str(self.lang.pk))
+        expect(page.locator('[name="short_name"], [name="is_hymn_book"]')).to_have_count(0)
+        self._save(page, name='Kidung Sekolah', lang=str(self.lang.pk))
         expect(page.locator('dialog[open]')).to_have_count(0)
         expect(page.locator('#panelBody .book').filter(has_text='Kidung Sekolah')).to_be_visible()
         self._close_browser()
-        self.assertTrue(songs.Book.objects.filter(name='Kidung Sekolah').exists())
+        book = songs.Book.objects.get(name='Kidung Sekolah')
+        self.assertEqual(book.short_name, '')
+        self.assertFalse(book.is_hymn_book)
+
+    def test_edit_songbook_modal_omits_fields_and_preserves_their_values(self):
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
+        row.hover()
+        row.locator('.row-edit').click()
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('Edit songbook')
+        expect(page.locator('[name="short_name"], [name="is_hymn_book"]')).to_have_count(0)
+        self._save(page, name='Kidung Harian Baru', lang=str(self.lang.pk))
+        expect(page.locator('#panelBody .book').filter(has_text='Kidung Harian Baru')).to_be_visible()
+        self._close_browser()
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.short_name, 'KH')
+        self.assertFalse(self.book.is_hymn_book)
 
     def test_add_song_to_the_open_songbook(self):
         page = self._page(reverse('web-book', args=[self.book.pk]))
@@ -258,15 +277,14 @@ class EditorE2ETests(StaticLiveServerTestCase):
         page = self._page(reverse('web-books'))
         page.click('#panelAdd')
         page.wait_for_selector('dialog[open]')
-        self._fill(page, 'name', 'Bentrok')
-        self._fill(page, 'short_name', 'KH')                 # already used
+        self._fill(page, 'name', self.book.name)             # already used in this language
         self._fill(page, 'lang', str(self.lang.pk))
         page.click('.editor__save')
         expect(page.locator('dialog[open]')).to_have_count(1)  # still open
-        expect(page.locator('.editor__error')).to_contain_text('already been used')
-        expect(page.locator('[name="name"]')).to_have_value('Bentrok')
+        expect(page.locator('.editor__error')).to_contain_text(
+            'That songbook already exists for this language.')
+        expect(page.locator('[name="name"]')).to_have_value(self.book.name)
         self._close_browser()
-        self.assertFalse(songs.Book.objects.filter(name='Bentrok').exists())
 
     def test_the_shell_survives_a_save(self):
         page = self._page(reverse('web-song', args=[self.song.pk]))

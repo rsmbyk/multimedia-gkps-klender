@@ -28,6 +28,8 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [008](008-sidebar-selection-tint/spec.md) | Softer selected-item tint in the reading sidebars | Accepted |
 | [009](009-sidebar-tint-legibility/spec.md) | Higher-legibility selected sidebar tint | Accepted |
 | [010](010-fast-pr-feedback-ci/spec.md) | Fast PR feedback and repository CI | Accepted |
+| [011](011-hymn-song-order/spec.md) | Sort hymn book songs by number and sub-number | Accepted |
+| [012](012-hide-songbook-fields/spec.md) | Hide short name and hymn-book fields in songbook forms | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.
