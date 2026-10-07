@@ -42,45 +42,13 @@ class SongbookForm(forms.ModelForm):
 class SongForm(forms.ModelForm):
     class Meta:
         model = song_models.Song
-        fields = ['number', 'sub_number', 'title', 'key']
+        fields = ['title']
 
     def __init__(self, *args, book=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.book = book or (self.instance.book if self.instance.pk else None)
         if self.book is not None:
             self.instance.book = self.book
-            if self.instance.pk is None:
-                # A new song carries its songbook with the POST (the create URL's
-                # query string does not survive the submit); an edit has it from the
-                # instance. Not a Meta field, so the model's unique_together check is
-                # skipped -- clean() re-checks the trio instance-aware below.
-                self.fields['book'] = forms.IntegerField(
-                    widget=forms.HiddenInput, initial=self.book.pk, required=False)
-        if self.is_hymn:
-            self.fields['number'].required = True
-            self.fields['number'].help_text = 'Required: a hymn is identified by its number.'
-        else:
-            self.fields['number'].help_text = 'Leave empty for a song without a number.'
-
-    @property
-    def is_hymn(self):
-        return bool(self.book is not None and self.book.is_hymn_book)
-
-    def clean(self):
-        cleaned = super().clean()
-        if self.book is None:
-            raise forms.ValidationError('Choose a songbook first.')
-        if self.is_hymn and cleaned.get('number') is None:
-            self.add_error('number', 'A hymn needs a number.')
-        number = cleaned.get('number')
-        if number is not None and self.book is not None:
-            clash = song_models.Song.objects.filter(
-                book=self.book, number=number, sub_number=cleaned.get('sub_number') or '')
-            if self.instance.pk:
-                clash = clash.exclude(pk=self.instance.pk)
-            if clash.exists():
-                self.add_error('number', 'That number is already taken in this songbook.')
-        return cleaned
 
 
 class TataIbadahForm(forms.ModelForm):

@@ -115,8 +115,6 @@ const submitForm = onSuccess => {
             id: id,
             book_id: bookId,
             title: title.trim(),
-            number: null,
-            sub_number: '',
             is_untitled: no_title,
         }
 

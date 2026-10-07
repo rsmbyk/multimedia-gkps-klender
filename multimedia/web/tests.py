@@ -179,8 +179,7 @@ class ReadingViewTests(TestCase):
         # (#panelAdd is the songbook section's, which stays available: a new songbook
         # is not a hymn-book write)
         url = reverse('web-editor-save-new', kwargs={'kind': tatib.ServiceEntryKind.SONG})
-        post = self.client.post(url, {'book': self.nkb.pk, 'title': 'Diselundupkan',
-                                      'number': '', 'sub_number': '', 'key': ''})
+        post = self.client.post(url, {'book': self.nkb.pk, 'title': 'Diselundupkan'})
         self.assertEqual(post.status_code, 404)
         self.assertFalse(songs.Song.objects.filter(title='Diselundupkan').exists())
         form = self.client.get(reverse('web-editor-new', kwargs={'kind': tatib.ServiceEntryKind.SONG}),
@@ -398,11 +397,10 @@ class EditorViewTests(TestCase):
         self.assertEqual(self.client.get(reverse(
             'web-editor-edit', kwargs={'kind': 'song', 'pk': deleted_song.pk})).status_code, 404)
         self.assertEqual(self.client.post(self.save_url('song', deleted_song.pk), {
-            'title': 'Restored by edit', 'number': '', 'sub_number': '', 'key': '',
+            'title': 'Restored by edit',
         }).status_code, 404)
         self.assertEqual(self.client.post(self.save_url('song'), {
-            'book': deleted_book.pk, 'title': 'Created under deleted book', 'number': '',
-            'sub_number': '', 'key': '',
+            'book': deleted_book.pk, 'title': 'Created under deleted book',
         }).status_code, 404)
         self.assertFalse(songs.Song.objects.filter(title='Created under deleted book').exists())
         self.assertTrue(songs.Song.objects.filter(pk=deleted_book_song.pk).exists())
@@ -417,26 +415,16 @@ class EditorViewTests(TestCase):
 
     def test_create_song_in_the_open_songbook(self):
         response = self.client.post(self.save_url('song'), {
-            'book': self.harian.pk, 'title': 'Lagu Baru', 'number': '', 'sub_number': '',
-            'key': ''})
+            'book': self.harian.pk, 'title': 'Lagu Baru'})
         self.assertEqual(response.status_code, 200)
         self.assertTrue(songs.Song.objects.filter(book=self.harian, title='Lagu Baru').exists())
 
     def test_a_hymn_book_refuses_new_songs_entirely(self):
         # A hymn corpus is published work: no new songs, with a number or without.
-        for number in ('', '13'):
-            response = self.client.post(self.save_url('song'), {
-                'book': self.nkb.pk, 'title': 'Hymn Baru', 'number': number,
-                'sub_number': '', 'key': ''})
-            self.assertEqual(response.status_code, 404)
-        self.assertFalse(songs.Song.objects.filter(title='Hymn Baru').exists())
-
-    def test_duplicate_song_number_is_refused(self):
-        songs.Song.objects.create(book=self.harian, number=12, title='Sudah Ada')
         response = self.client.post(self.save_url('song'), {
-            'book': self.harian.pk, 'title': 'Lagu Lain', 'number': '12', 'sub_number': '', 'key': ''})
-        self.assertEqual(response.status_code, 400)
-        self.assertContains(response, 'already taken', status_code=400)
+            'book': self.nkb.pk, 'title': 'Hymn Baru'})
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(songs.Song.objects.filter(title='Hymn Baru').exists())
 
     def test_song_without_a_songbook_is_404(self):
         self.assertEqual(self.client.get(self.new_url('song')).status_code, 404)
@@ -449,7 +437,7 @@ class EditorViewTests(TestCase):
     def test_editing_a_free_song(self):
         song = songs.Song.objects.create(book=self.harian, title='Alpha')
         response = self.client.post(self.save_url('song', song.pk), {
-            'title': 'Alpha Baru', 'number': '', 'sub_number': '', 'key': 'c'})
+            'title': 'Alpha Baru'})
         self.assertEqual(response.status_code, 200, response.content[:400])
         song.refresh_from_db()
         self.assertEqual(song.title, 'Alpha Baru')
