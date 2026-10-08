@@ -1,6 +1,6 @@
 ---
 id: ITEM-015
-status: in progress
+status: in_review
 title: 'Remove songbook language and merge duplicate songbooks'
 type: feat
 priority: P1
@@ -8,12 +8,12 @@ effort: L
 created: 2026-10-07
 updated: 2026-10-07
 spec: specs/013-songbook-language-removal/spec.md
-branch:
-pr:
+branch: feat/026-live-projection-editing
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
 archived_at:
 archive_reason:
 bump: major
-release_version:
+release_version: 1.0.0
 ---
 
 # ITEM-015: Remove songbook language and merge duplicate songbooks

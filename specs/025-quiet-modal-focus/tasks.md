@@ -15,9 +15,9 @@
 - [x] Deliberate Tab focus, genuine hover, and date-picker keyboard interaction retain visible indicators
 - [x] Pointer close/save and validation-rerender regressions pass
 - [x] Fill Traceability with the tested modal/close matrix and actual outcomes
-- [x] Prepare patch bump metadata for ITEM-027; active branch uses 0.12.0 because accepted ITEM-028 carries the higher minor bump
+- [x] Prepare patch bump metadata for ITEM-027; the combined PR uses 1.0.0 because accepted ITEM-015 carries the higher major bump
 - [x] Update ITEM-027 and `backlog/board.md` alongside implementation
-- [ ] Commit/open a draft PR only when requested; run the full browser suite at push
+- [x] Commit and open draft PR #275; full browser CI runs when the PR becomes ready
 
 ## Done when
 

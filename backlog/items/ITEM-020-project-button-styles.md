@@ -1,6 +1,6 @@
 ---
 id: ITEM-020
-status: in_progress
+status: in_review
 title: 'Style Project and Stop projecting as primary and danger actions'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-07
 updated: 2026-10-07
 spec: specs/018-project-button-styles/spec.md
-branch:
-pr:
+branch: feat/026-live-projection-editing
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.0.0
 ---
 
 # ITEM-020: Style Project and Stop projecting as primary and danger actions

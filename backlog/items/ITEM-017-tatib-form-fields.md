@@ -1,6 +1,6 @@
 ---
 id: ITEM-017
-status: in_progress
+status: in_review
 title: 'Remove first-section and active controls from Tata Ibadah forms'
 type: fix
 priority: P1
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-07
 updated: 2026-10-07
 spec: specs/015-tatib-form-fields/spec.md
-branch:
-pr:
+branch: feat/026-live-projection-editing
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.0.0
 ---
 
 # ITEM-017: Remove first-section and active controls from Tata Ibadah forms

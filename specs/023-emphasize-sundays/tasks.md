@@ -15,9 +15,9 @@
 - [x] Verify existing Tata Ibadah date-picker interactions and light/dark theme styling
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` on ITEM-025 and this spec
-- [x] If bump is not `none`: prepare `VERSION`, changelog, and `release_version` (0.11.6)
-- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md); remain In progress until a PR is opened
-- [ ] Conventional Commit + draft PR linking to `./spec.md` (only when requested)
+- [x] If bump is not `none`: include ITEM-025 in the combined `1.0.0` release (major bump from accepted Spec 013)
+- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in PR #275
+- [x] Conventional Commit + draft PR #275 linking to `./spec.md`
 
 ## Done when
 

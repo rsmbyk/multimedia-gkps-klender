@@ -1,6 +1,6 @@
 ---
 id: ITEM-024
-status: in_progress
+status: in_review
 title: 'Let the Tata Ibadah date picker overlap the editor modal'
 type: fix
 priority: P1
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-07
 updated: 2026-10-07
 spec: specs/022-datepicker-over-modal/spec.md
-branch: fix/022-datepicker-over-modal
-pr:
+branch: feat/026-live-projection-editing
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
 archived_at:
 archive_reason:
 bump: patch
-release_version: 0.11.5
+release_version: 1.0.0
 ---
 
 # ITEM-024: Let the Tata Ibadah date picker overlap the editor modal

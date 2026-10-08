@@ -17,9 +17,9 @@
 - [ ] Red/green — E2E in `tests/e2e/test_editor.py` (or mark N/A in the accepted spec)
 - [x] Run `manage.py check`, `makemigrations --check --dry-run`, focused tests and migration verification on a disposable local database
 - [x] Fill Traceability in `./spec.md`
-- [ ] Set `bump: major` on ITEM-015 and this spec; update `VERSION`, changelog, and `release_version` in the implementation PR
-- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in the implementation PR
-- [ ] Conventional Commit + draft PR linking `./spec.md`
+- [x] Set `bump: major` on ITEM-015 and this spec; update `VERSION`, changelog, and `release_version` to 1.0.0 in PR #275
+- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in PR #275
+- [x] Conventional Commit + draft PR #275 linking `./spec.md`
 
 ## Done when
 

@@ -1,6 +1,6 @@
 ---
 id: ITEM-026
-status: in progress
+status: in_review
 title: 'Make Tata Ibadah calendar date cells square'
 type: chore
 priority: P2
@@ -9,11 +9,11 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/024-square-date-cells/spec.md
 branch: feat/026-live-projection-editing
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
 archived_at:
 archive_reason:
 bump: patch
-release_version: 0.12.0
+release_version: 1.0.0
 ---
 
 # ITEM-026: Make Tata Ibadah calendar date cells square

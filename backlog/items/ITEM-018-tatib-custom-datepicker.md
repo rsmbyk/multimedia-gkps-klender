@@ -1,6 +1,6 @@
 ---
 id: ITEM-018
-status: in_progress
+status: in_review
 title: 'Use a custom date picker for Tata Ibadah forms'
 type: feat
 priority: P1
@@ -8,12 +8,12 @@ effort: M
 created: 2026-10-07
 updated: 2026-10-07
 spec: specs/016-tatib-custom-datepicker/spec.md
-branch:
-pr:
+branch: feat/026-live-projection-editing
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.0.0
 ---
 
 # ITEM-018: Use a custom date picker for Tata Ibadah forms
