@@ -135,7 +135,7 @@ class ReorderE2ETests(StaticLiveServerTestCase):
 
     def test_the_start_bar_adds_an_entry_at_the_top(self):
         page = self._page(self._service_url())
-        bar = page.locator('#readBody .entry__add--start')
+        bar = page.locator('#readBody .entry__start')
         self.assertEqual(bar.count(), 1)
         bar.locator('[data-entry-open="text"]').click()
         page.wait_for_selector('dialog[open]')

@@ -1474,8 +1474,11 @@ kbd {
 .tatib__eos:hover + .entry__add,
 .entry__add:hover,
 .entry__add:focus-within { opacity: 1; transition-delay: 0s; }
-/* The start bar has no row above it to hover: it stands on its own. */
-.entry__add--start { opacity: 1; transition: none; }
+/* The start bar has no row above it to hover: it stands on its own, before the first item. */
+.entry__start {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 0 0 10px;
+}
 
 .entry__add-btn {
   display: inline-flex; align-items: center; gap: 6px;

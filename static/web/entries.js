@@ -535,7 +535,8 @@
     event.preventDefault();
     trigger = opener;
     var row = opener.closest('[data-entry-after]');
-    load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib,
-                row ? row.dataset.entryAfter : ''));
+    var after = row ? row.dataset.entryAfter
+                    : (opener.closest('[data-entry-start]') ? 'start' : '');
+    load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after));
   });
 })();
