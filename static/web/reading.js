@@ -910,12 +910,6 @@
 
   function navigate(url, opts) {
     if (!url || navBusy) return;
-    /* Unsaved work in the pane asks first -- an order being rearranged (spec 006, slice 3).
-       It owns the navigation from here: it answers, then calls back. */
-    if (window.gkpsUnsaved && window.gkpsUnsaved.holds()) {
-      window.gkpsUnsaved.ask(function () { navigate(url, opts); });
-      return;
-    }
     /* Leaving the result set by any route: remember where in it the reader was,
        so the search icon can come back to that offset. */
     if (root.dataset.home === 'results'
@@ -1102,6 +1096,8 @@
         ? url.slice(window.location.origin.length) : url;    /* store a path, not an origin */
       try { localStorage.setItem('gkps-search', searchPath); } catch (e) {}
       railSearch.setAttribute('href', searchPath);
+    } else if (kind === 'results' && fresh.home === 'landing' && url.split('?')[0] === '/home/') {
+      resetSearchState();
     }
     document.title = doc.title;
 
@@ -1133,16 +1129,33 @@
       var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
       if (target) revealSearchTarget(target);
     }
-    if (kind === 'refresh' && opts.what) {
-      /* a save just closed its modal: show the row it touched */
-      var saved = chList.querySelector('[data-editor-id="' + opts.what + '"]')
-        || panelBody.querySelector('[data-editor-id="' + opts.what + '"]');
-      if (saved) {
-        var row = saved.closest('a') || saved;
-        var scroller = panelBody.contains(row) ? panelBody : chBody;
-        revealRow(row, scroller);
-        row.classList.add('row-flash');
-        saved.focus({ preventScroll: true });
+    if ((kind === 'refresh' || kind === 'lists') && opts.focusKind) {
+      var focusTarget = null;
+      var scroller = panelBody;
+      if (opts.focusKind === 'songbook' || opts.focusKind === 'song'
+          || opts.focusKind === 'tatib') {
+        var editor = '[data-editor-open="' + opts.focusKind + '"][data-editor-id="' + opts.what + '"]';
+        var opener = chList.querySelector(editor) || panelBody.querySelector(editor);
+        var row = opener && opener.closest('li');
+        focusTarget = row && row.querySelector('a.book, a.songrow');
+        if (focusTarget && chList.contains(focusTarget)) scroller = chBody;
+      } else if (opts.focusKind === 'entry') {
+        focusTarget = readBody.querySelector('[data-entry-pk="' + opts.what + '"]');
+      } else if (opts.focusKind === 'old-item') {
+        focusTarget = readBody.querySelector('[data-old-item-pk="' + opts.what + '"]');
+      } else if (opts.focusKind === 'read') {
+        focusTarget = document.getElementById('read');
+      }
+      if (focusTarget) {
+        if (focusTarget.classList.contains('book') || focusTarget.classList.contains('songrow')) {
+          revealRow(focusTarget, scroller);
+          focusTarget.classList.add('row-flash');
+        }
+        if (focusTarget.tabIndex < 0 && !focusTarget.hasAttribute('tabindex')) {
+          focusTarget.setAttribute('tabindex', '-1');
+        }
+        if (window.gkpsFocus) window.gkpsFocus.restoreQuietly(focusTarget);
+        else focusTarget.focus({ preventScroll: true });
       }
     }
     if (kind === 'search') {
@@ -1236,7 +1249,18 @@
     });
   }
   bindSearchForm();
-  try {
+  /* A fresh unqueried home is a reset, not sidebar browsing within this shell.
+     Both the initial load and an in-place return to that landing use this gate. */
+  function resetSearchState() {
+    try {
+      localStorage.removeItem('gkps-search');
+      localStorage.removeItem('gkps-search-scroll');
+    } catch (e) { /* storage can be unavailable */ }
+    railSearch.setAttribute('href', '/home/');
+  }
+  if (root.dataset.home === 'landing' && window.location.pathname === '/home/'
+      && !window.location.search) resetSearchState();
+  else try {
     if (root.dataset.home === 'results') {
       /* remember the exact result URL, revealed rows included */
       localStorage.setItem('gkps-search', window.location.pathname + window.location.search);
@@ -1282,7 +1306,8 @@
         : panelOwner().getAttribute('href');
     navigate(url, {
       kind: stageMatchesSection ? 'refresh' : 'lists',
-      what: event.detail && event.detail.id
+      what: event.detail && (event.detail.focusId || event.detail.id),
+      focusKind: event.detail && (event.detail.focusKind || event.detail.kind)
     });
   });
 

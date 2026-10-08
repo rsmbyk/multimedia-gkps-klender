@@ -47,8 +47,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             tatib=self.service, order_number=3, kind=tatib.ServiceEntryKind.SECTION_BREAK,
             title='Persembahan')
 
-        s_lang = songs.Language.objects.create(name='Indonesian')
-        songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat', short_name='KJ',
+        songbook = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ',
                                              is_hymn_book=True)
         song = songs.Song.objects.create(book=songbook, number=152, title='Ada Kuasa')
         for number in (1, 2):
@@ -448,7 +447,74 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     # --- the button, its two states, and the lock across tabs ----------------
 
-    def test_project_button_opens_the_display_and_locks_the_browser(self):
+    def test_project_action_uses_primary_then_danger_treatment_in_both_themes(self):
+        page = self._page(reverse('web-home'))
+        page.locator('.rail [data-panel="tatib"]').click()
+        page.locator(f'#panelBody .book[data-name="{self.service.pk}"]').click()
+        page.wait_for_selector('[data-project-open]')
+
+        def colors():
+            return page.evaluate("""() => {
+              const group = document.querySelector('[data-project-group]');
+              const action = group.querySelector('[data-project-open]');
+              const update = group.querySelector('[data-project-update]');
+              const css = getComputedStyle(action);
+              const updateCss = getComputedStyle(update);
+              const tokenColor = property => {
+                const probe = document.createElement('span');
+                probe.style.color = `var(${property})`;
+                document.body.appendChild(probe);
+                const value = getComputedStyle(probe).color;
+                probe.remove();
+                return value;
+              };
+              const tokenBackground = property => {
+                const probe = document.createElement('span');
+                probe.style.backgroundColor = `var(${property})`;
+                document.body.appendChild(probe);
+                const value = getComputedStyle(probe).backgroundColor;
+                probe.remove();
+                return value;
+              };
+              return {displaying: group.dataset.displaying, background: css.backgroundColor,
+                color: css.color, border: css.borderTopColor,
+                primary: tokenBackground('--active-bg'), primaryInk: tokenColor('--active-ink'),
+                danger: tokenColor('--danger'), updateBackground: updateCss.backgroundColor,
+                updateColor: updateCss.color, updateBorder: updateCss.borderTopColor};
+            }""")
+
+        def wait_for_state(expected_state):
+            page.wait_for_function(
+                "expected => document.querySelector('[data-project-group]')"
+                ".dataset.displaying === expected",
+                arg=expected_state)
+
+        for theme in ('light', 'dark'):
+            if theme == 'dark':
+                page.locator('#themeBtn').click()
+            wait_for_state('false')
+            page.mouse.move(1400, 850)
+            page.wait_for_timeout(400)
+            idle = colors()
+            self.assertEqual(idle['displaying'], 'false')
+            self.assertEqual(idle['background'], idle['primary'], idle)
+            self.assertEqual(idle['color'], idle['primaryInk'], idle)
+            with page.expect_popup() as popup_info:
+                page.locator('[data-project-open]').click()
+            popup = popup_info.value
+            page.mouse.move(1400, 850)
+            page.wait_for_timeout(400)
+            active = colors()
+            self.assertEqual(active['displaying'], 'true')
+            self.assertEqual(active['color'], active['danger'])
+            self.assertEqual(active['border'], active['danger'])
+            self.assertEqual(active['updateBackground'], idle['updateBackground'])
+            self.assertEqual(active['updateColor'], idle['updateColor'])
+            self.assertEqual(active['updateBorder'], idle['updateBorder'])
+            page.locator('[data-project-open]').click()
+            popup.close()
+
+    def test_project_button_opens_the_display_and_editing_stays_available(self):
         context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = self._page(self._service_url(), context)
         self.assertIn('Project', page.locator('[data-project-open]').inner_text())
@@ -470,17 +536,17 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertFalse(tab.locator('[data-project-update]').is_hidden())
         self.assertEqual(tab.get_attribute('[data-project-group]', 'data-displaying'), 'true')
 
-        # and an entry write is declined there, with the reason, in both tabs
+        # spec 026: an entry write is NOT declined while projecting -- the modal opens in
+        # both tabs of the projecting browser
         for other in (page, tab):
             other.locator('.tatib__item').first.hover()
             other.wait_for_timeout(200)
             other.locator('[data-entry-open="text"]').first.click()
-            other.wait_for_timeout(300)
-            self.assertEqual(other.locator('dialog[open]').count(), 0)
-            self.assertFalse(other.locator('[data-project-note]').is_hidden())
-            self.assertIn('Stop projecting', other.locator('[data-project-note]').inner_text())
+            other.wait_for_selector('dialog[open]')
+            other.keyboard.press('Escape')
+            other.wait_for_function("!document.querySelector('dialog[open]')")
 
-        # the Tata Ibadah's OWN fields stay editable: only entries are locked
+        # the Tata Ibadah's OWN fields stay editable too
         edit = page.locator('.row-edit[data-editor-open="tatib"]').first
         edit.locator('xpath=..').hover()          # the sidebar reveals it on its row
         page.wait_for_timeout(250)
@@ -489,7 +555,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('Escape')
         page.wait_for_function("!document.querySelector('dialog[open]')")
 
-        # a second BROWSER is another laptop: its own state, and not locked
+        # a second BROWSER is another laptop: its own state
         alone = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         laptop = self._page(self._service_url(), alone)
         self.assertIn('Project', laptop.locator('[data-project-open]').inner_text())
@@ -500,16 +566,11 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         laptop.wait_for_selector('dialog[open]')          # it may still prepare its service
         laptop.keyboard.press('Escape')
 
-        # stopping from the app releases the lock everywhere in this browser
+        # stopping from the app ends the display everywhere in this browser
         page.click('[data-project-open]')                 # Stop projecting
         page.wait_for_timeout(300)
         self.assertIn('Project', page.locator('[data-project-open]').inner_text())
         self.assertIn('Project', tab.locator('[data-project-open]').inner_text())
-        tab.locator('.tatib__item').first.hover()
-        tab.wait_for_timeout(200)
-        tab.locator('[data-entry-open="text"]').first.click()
-        tab.wait_for_selector('dialog[open]')
-        tab.keyboard.press('Escape')
 
     def test_the_toggle_in_the_projector_stops_it_for_the_whole_browser(self):
         context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
@@ -554,7 +615,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertFalse(page.locator('[data-project-note]').is_hidden())
         self.assertIn('stopped', page.locator('[data-project-note]').inner_text())
 
-        # the write lock went with the window
+        # editing is available with or without a window (spec 026)
         page.locator('.tatib__item').first.hover()
         page.wait_for_timeout(200)
         page.locator('[data-entry-open="text"]').first.click()
@@ -583,13 +644,57 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertIn(self._projector_url(), projector.url)
         self.assertIn('Stop projecting', page.locator('[data-project-open]').inner_text())
 
-        # the lock reaches the swapped pane too
+        # editing is available on the swapped pane too (spec 026)
         page.locator('.tatib__item').first.hover()
         page.wait_for_timeout(250)
         page.locator('[data-entry-open="text"]').first.click()
-        page.wait_for_timeout(300)
-        self.assertEqual(page.locator('dialog[open]').count(), 0)
-        self.assertIn('Stop projecting', page.locator('[data-project-note]').inner_text())
+        page.wait_for_selector('dialog[open]')
+        page.keyboard.press('Escape')
+
+    # --- the display follows every saved change (spec 026) --------------------
+
+    def test_a_saved_entry_reaches_the_display_without_update(self):
+        """A save in the shell is written at once, and the display re-reads by itself:
+        nobody presses Update."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        projector = popup_info.value
+        projector.wait_for_load_state('networkidle')
+
+        asked = []
+        projector.on('request', lambda request: asked.append(request.url))
+
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(250)
+        page.locator('[data-entry-open="text"]').first.click()
+        page.wait_for_selector('dialog[open]')
+        page.fill('#id_text', 'Berita baru untuk layar')
+        page.click('.editor__save')
+        page.wait_for_function("!document.querySelector('dialog[open]')", timeout=8000)
+        page.wait_for_timeout(800)
+        self.assertTrue([url for url in asked if self._projector_url() in url],
+                        f'the display must re-read after a save: {asked}')
+
+    def test_a_reorder_reaches_the_display_without_update(self):
+        """A drop is written at once, and the display re-reads by itself."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        projector = popup_info.value
+        projector.wait_for_load_state('networkidle')
+
+        asked = []
+        projector.on('request', lambda request: asked.append(request.url))
+
+        grip = page.locator('[data-move-grip]').first
+        grip.focus()
+        page.keyboard.press('ArrowDown')
+        page.wait_for_timeout(900)
+        self.assertTrue([url for url in asked if self._projector_url() in url],
+                        f'the display must re-read after a reorder: {asked}')
 
     # --- Update re-reads what is on screen -----------------------------------
 
@@ -612,6 +717,10 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         asked = []
         projector.on('request', lambda request: asked.append(request.url))
         page.click('[data-project-update]')
+        self.assertFalse(page.locator('[data-project-note]').is_hidden())
+        self.assertEqual(
+            page.locator('[data-project-note]').inner_text(),
+            'The display is re-reading this Tata Ibadah.')
         page.wait_for_timeout(700)
         self.assertTrue([url for url in asked if self._projector_url() in url],
                         f'Update must re-read the page: {asked}')     # fresh lyrics reach it

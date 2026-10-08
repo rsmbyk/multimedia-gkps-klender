@@ -18,6 +18,43 @@
   var content = document.getElementById('editorContent');
   var status = document.getElementById('editorStatus');
 
+  var trigger = null;
+  var focusTools = window.gkpsFocus || {
+    restoreQuietly: function (target) {
+      if (!target) return;
+      target.setAttribute('tabindex', '-1');
+      target.classList.add('focus-restore-quiet');
+      target.focus({ preventScroll: true });
+    }
+  };
+
+  function focusTargetFor(opener) {
+    if (!opener) return null;
+    var entryId = opener.dataset.entryEdit || opener.dataset.entryDelete;
+    var oldItemId = opener.dataset.oldItemEdit || opener.dataset.oldItemDelete;
+    if (entryId) return document.querySelector('[data-entry-pk="' + entryId + '"]');
+    if (oldItemId) return document.querySelector('[data-old-item-pk="' + oldItemId + '"]');
+    if (opener.hasAttribute('data-entry-open')) {
+      var addRow = opener.closest('[data-entry-after]');
+      return (addRow && addRow.previousElementSibling) || document.getElementById('read');
+    }
+    return null;
+  }
+
+  function targetAfterDelete(id, oldItem) {
+    var selector = oldItem ? '[data-old-item-pk="' : '[data-entry-pk="';
+    var deleted = document.querySelector(selector + id + '"]');
+    var items = Array.prototype.slice.call(document.querySelectorAll(
+      '#readBody [data-entry-pk], #readBody [data-old-item-pk]'));
+    var index = items.indexOf(deleted);
+    var target = index < 0 ? null : items[index + 1] || items[index - 1];
+    if (!target) return { kind: 'read', id: null };
+    if (target.hasAttribute('data-entry-pk')) {
+      return { kind: 'entry', id: target.dataset.entryPk };
+    }
+    return { kind: 'old-item', id: target.dataset.oldItemPk };
+  }
+
   function announce(message) { if (status) status.textContent = message || ''; }
 
   /* The delete is a POST without a form, so it carries the token the way Django
@@ -27,6 +64,12 @@
     return match ? decodeURIComponent(match[2]) : '';
   }
   function close() { if (modal.open) modal.close(); }
+
+  modal.addEventListener('close', function () {
+    var target = focusTargetFor(trigger);
+    if (target && document.contains(target)) focusTools.restoreQuietly(target);
+    trigger = null;
+  });
 
   function get(url) {
     return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
@@ -442,35 +485,55 @@
       }).then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         announce('');
+        var focus = targetAfterDelete(id, oldItem);
         close();
-        document.dispatchEvent(new CustomEvent('editor:saved', { detail: { id: id } }));
+        document.dispatchEvent(new CustomEvent('editor:saved', {
+          detail: {
+            id: id,
+            kind: oldItem ? 'old-item' : 'entry',
+            focusKind: focus.kind,
+            focusId: focus.id
+          }
+        }));
       }).catch(function () { announce('Could not delete. Try again.'); });
     });
   }
 
   document.addEventListener('click', function (event) {
-    /* Display mode lives in this browser (spec 006, slice 4): while a Tata Ibadah is
-       on screen, an entry write is declined here, with the reason, rather than at the
-       endpoint -- which keeps the current API exactly as it is. */
-    if (event.target.closest('[data-entry-delete], [data-entry-edit], [data-entry-open], ' +
-                             '[data-old-item-delete], [data-old-item-edit]') &&
-        window.gkpsDisplay && window.gkpsDisplay.locked()) {
+    /* Spec 026: projecting no longer refuses an entry write. The operator keeps working
+       while a Tata Ibadah is on screen, and the display follows every change. */
+    var oldDel = event.target.closest('[data-old-item-delete]');
+    if (oldDel) {
       event.preventDefault();
-      window.gkpsDisplay.refuse();
+      trigger = oldDel;
+      confirmDelete(oldDel.dataset.oldItemDelete, true);
       return;
     }
-
-    var oldDel = event.target.closest('[data-old-item-delete]');
-    if (oldDel) { event.preventDefault(); confirmDelete(oldDel.dataset.oldItemDelete, true); return; }
     var oldEdit = event.target.closest('[data-old-item-edit]');
-    if (oldEdit) { event.preventDefault(); load(oldItemEditUrl(oldEdit.dataset.oldItemEdit)); return; }
+    if (oldEdit) {
+      event.preventDefault();
+      trigger = oldEdit;
+      load(oldItemEditUrl(oldEdit.dataset.oldItemEdit));
+      return;
+    }
     var del = event.target.closest('[data-entry-delete]');
-    if (del) { event.preventDefault(); confirmDelete(del.dataset.entryDelete); return; }
+    if (del) {
+      event.preventDefault();
+      trigger = del;
+      confirmDelete(del.dataset.entryDelete);
+      return;
+    }
     var edit = event.target.closest('[data-entry-edit]');
-    if (edit) { event.preventDefault(); load(editUrl(edit.dataset.entryEdit)); return; }
+    if (edit) {
+      event.preventDefault();
+      trigger = edit;
+      load(editUrl(edit.dataset.entryEdit));
+      return;
+    }
     var opener = event.target.closest('[data-entry-open]');
     if (!opener || opener.disabled) return;
     event.preventDefault();
+    trigger = opener;
     var row = opener.closest('[data-entry-after]');
     load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib,
                 row ? row.dataset.entryAfter : ''));

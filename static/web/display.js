@@ -7,7 +7,8 @@
  * every tab hears about a change at once).
  *
  * This file is the SHELL side: the project button, its Stop projecting and Update
- * the current state states, and the entry lock. The projector window has its own
+ * the current state states, and the re-read it asks for after every saved change
+ * (spec 026). The projector window has its own
  * script (web/projector.js); both speak the same messages:
  *
  *     {type: 'show', service: <id>, slide: <slide id>}   an entry is on screen
@@ -22,8 +23,9 @@
  * person actually clicks through. Hence no held nodes, and a re-sync on
  * `shell:page`.
  *
- * The lock is the shell declining an action, never a server rule, which is what
- * keeps the current API exactly as it is.
+ * Nothing here is a server rule: editing was never blocked by the API, and as of spec
+ * 026 the shell does not block it either -- the operator keeps working while a Tata
+ * Ibadah is on screen, and every saved change makes the display re-read itself.
  */
 (function () {
   'use strict';
@@ -73,11 +75,17 @@
 
   /* ---------- the button's two states --------------------------------------- */
 
+  /* Is THIS page's Tata Ibadah the one on screen in this browser? */
+  function isHere() {
+    var n = nodes();
+    if (!n.open) return false;
+    return state.on === true && state.service === Number(n.open.dataset.projectService);
+  }
+
   function sync() {
     var n = nodes();
     if (!n.group || !n.open) return;
-    var service = Number(n.open.dataset.projectService);
-    var here = state.on === true && state.service === service;
+    var here = isHere();
     var text = here ? (n.open.dataset.labelStop || 'Stop projecting')
                     : (n.open.dataset.labelProject || 'Project');
     n.group.dataset.displaying = here ? 'true' : 'false';
@@ -90,7 +98,7 @@
     if (n.update) n.update.hidden = !here;
   }
 
-  /* A click the display mode refused: say why, briefly, where the person is looking. */
+  /* Lifecycle and Update feedback, said briefly, where the person is looking. */
   var noteTimer = null;
   function say(message) {
     var n = nodes();
@@ -126,7 +134,7 @@
     }
     if (event.target.closest('[data-project-update]')) {
       event.preventDefault();
-      post({type: 'update'});
+      reflow();
       say('The display is re-reading this Tata Ibadah.');
     }
   });
@@ -205,16 +213,28 @@
      this browser's display mode until it is told. */
   document.addEventListener('shell:page', sync);
 
-  /* ---------- the entry lock ------------------------------------------------ */
+  /* ---------- the re-read after a change (spec 026) -------------------------
+     The display is given its truth by the server: every saved change here asks the
+     projector window to re-read the page. Only the service on screen needs it, so a
+     page showing another Tata Ibadah stays out of it. The Update button and this hook
+     are the same act. */
 
-  var LOCKED = 'This browser is displaying a Tata Ibadah. Stop projecting first.';
+  function reflow() {
+    if (!isHere()) return;
+    post({type: 'update'});
+  }
 
   window.gkpsDisplay = {
-    locked: function () { return state.on === true; },
-    reason: LOCKED,
-    refuse: function () { say(LOCKED); },
+    /* This page's Tata Ibadah is the one on screen in this browser. */
+    live: isHere,
+    /* Ask the display to re-read, when it is showing this page's Tata Ibadah. */
+    changed: reflow,
     channel: channelName,
   };
+
+  /* `editor:saved` fires after an entry save/delete (entries.js), a sidebar editor
+     save (editors.js), and a reorder write (reorder.js). One seam, every change. */
+  document.addEventListener('editor:saved', reflow);
 
   sync();
 })();

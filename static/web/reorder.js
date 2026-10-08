@@ -1,20 +1,15 @@
-/* Reordering a Tata Ibadah's entries (spec 006, slice 3).
+/* Reordering a Tata Ibadah's entries (spec 006, slice 3; spec 026).
  *
  * The order is ARRANGED IN THE SIDEBAR, where the order is listed: each entry's row carries
- * the grip, and there is NO Reorder button -- the first drag, or a keyboard arrow press
- * on the focused grip, is what starts rearranging. The strip below the sidebar's filter then appears
- * with Save and Discard, and the pane on the right follows the order.
+ * the grip, and there is NO Reorder button -- the first drag, or a keyboard arrow press on the
+ * focused grip, is what starts rearranging. The pane on the right follows the order.
  *
- * Nothing is written until Save; Discard puts back what was there. Leaving with unsaved
- * changes asks first: the shell's own in-page navigation is intercepted through navigate()
- * in reading.js, and a tab close through beforeunload.
- *
- * ONE state attribute, on the document root, drives all of it: the strip, the sidebar's
- * handles and the pane's hidden add controls live in different subtrees, and only the root
- * is above them all.
+ * A change is written AS SOON AS IT IS MADE (spec 026): a completed drop, or a settled keyboard
+ * move, posts the whole order, and the display re-reads. There is no mode, no Save and no
+ * Discard, and nothing unsaved to lose -- so the shell never has to ask before it navigates.
  *
  * Everything is DELEGATED and resolved from the document on each use: the shell swaps the
- * reading pane in place, and re-creates the strip with the section that owns it.
+ * reading pane in place, and re-creates the sidebar with the section that owns it.
  */
 (function () {
   'use strict';
@@ -22,15 +17,14 @@
   function group() { return document.querySelector('[data-reorder-group]'); }
   function pane() { return document.getElementById('readBody'); }
   function list() { return document.getElementById('chList'); }
-  function root() { return document.documentElement; }
 
-  var on = false;                 /* the reorder mode */
-  var origin = [];                /* the order the rows were in when it started */
-  var numbers = [];               /* each text row's number before the preview */
   var nodes = {};                 /* pk -> that entry's own nodes in the pane */
-  var pending = null;             /* what to run once a guarded question is answered */
+  var settled = [];               /* the last order the server confirmed */
   var drag = null;
   var swallow = false;            /* the click that follows a drag, to be swallowed */
+  var inFlight = false;           /* one write at a time */
+  var queued = false;             /* a newer order arrived while a write was in flight */
+  var keyboardTimer = null;
 
   /* ---------- the sidebar's rows ------------------------------------------- */
 
@@ -53,12 +47,6 @@
     return grip ? Number(grip.dataset.moveGrip) : null;
   }
   function order() { return rows().map(pkOfRow); }
-  function changed() {
-    var now = order();
-    return now.length !== origin.length || now.some(function (pk, index) {
-      return pk !== origin[index];
-    });
-  }
 
   /* Reorder only entry rows in their existing slots; old rows keep their positions. */
   function place(what) {
@@ -157,90 +145,83 @@
     if (line) line.textContent = message || '';
   }
 
-  /* ---------- the mode ------------------------------------------------------ */
-
-  function enter() {
-    if (on) return true;
-    if (!group()) return false;
-    if (window.gkpsDisplay && window.gkpsDisplay.locked()) {
-      window.gkpsDisplay.refuse();                  /* the display owns the order */
-      return false;
-    }
-    if (!rows().length) return false;
-    origin = order();
-    numbers = [];
-    var l = list();
-    [].slice.call(l ? l.children : []).forEach(function (item) {
-      var cell = item.querySelector('.songrow__c');
-      if (cell) {
-        var link = item.querySelector('a[data-i]');
-        numbers.push({cell: cell, text: cell.textContent, link: link,
-                      dataNum: link ? link.dataset.num : null});
-      }
-    });
-    readNodes();
-    on = true;
-    root().dataset.reorder = 'on';
-    status('');
-    return true;
-  }
-
-  function leave(restore) {
-    if (drag) cancelDrag();
-    if (restore) {
-      place(origin);
-      numbers.forEach(function (saved) {
-        saved.cell.textContent = saved.text;
-        if (saved.link) saved.link.dataset.num = saved.dataNum;
-      });
-      applyPaneOrder(origin);
-    }
-    on = false;
-    pending = null;
-    root().dataset.reorder = 'off';
-    status('');
-  }
-
   function csrf() {
     var match = document.cookie.match(/(^|;\s*)csrftoken=([^;]+)/);
     return match ? decodeURIComponent(match[2]) : '';
   }
 
-  /* Save, then either carry on with what the person was doing (the guard's answer) or let
-     the shell refresh in place, so every list comes back from the server. */
-  function save(next) {
+  /* ---------- writing the order (spec 026) ---------------------------------
+     Every change is written at once. One request is in flight at a time; if another drop
+     lands while it runs, only the newest order is sent next, so a burst settles on the last
+     one. The full order goes every time, so a single write repairs an earlier failure. */
+
+  function body() {
     var strip = group();
-    if (!strip) return;
-    status('Saving...');
+    if (!strip) return null;
+    return JSON.stringify({
+      tatib: Number(strip.dataset.reorderFor),
+      entries: order().map(function (pk) {
+        var item = rowFor(pk);
+        return {entry: pk, order_number: item
+          ? Array.prototype.indexOf.call(list().children, item) + 1 : 0};
+      }),
+    });
+  }
+
+  /* Put the list back to the last order the server confirmed. */
+  function restore(saved) {
+    if (!saved || !saved.length) return;
+    readNodes();
+    var before = snapshot();
+    place(saved);
+    renumber();
+    morph(before);
+    applyPaneOrder(saved);
+  }
+
+  function send() {
+    var strip = group();
+    var payload = body();
+    if (!strip || payload == null) return;
+    inFlight = true;
+    status('');
     fetch(strip.dataset.reorderEndpoint, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {'Content-Type': 'application/json', 'X-Requested-With': 'fetch',
                 'X-CSRFToken': csrf()},
-      body: JSON.stringify({
-        tatib: Number(strip.dataset.reorderFor),
-        entries: order().map(function (pk) {
-          var item = rowFor(pk);
-          return {entry: pk, order_number: item
-            ? Array.prototype.indexOf.call(list().children, item) + 1 : 0};
-        }),
-      }),
+      body: payload,
     }).then(function (response) {
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
     }).then(function () {
-      leave(false);
-      if (next) { next(); return; }                 /* carry on to where they were going */
-      document.dispatchEvent(new CustomEvent('editor:saved', {detail: {id: null}}));
+      inFlight = false;
+      settled = order();
+      if (queued) { queued = false; send(); return; }
+      if (window.gkpsDisplay && window.gkpsDisplay.changed) window.gkpsDisplay.changed();
     }).catch(function () {
-      status('Could not save the new order. Nothing was changed.');
+      inFlight = false;
+      queued = false;
+      status('Could not save the new order. It has been put back.');
+      restore(settled);
     });
+  }
+
+  function persist() {
+    if (inFlight) { queued = true; return; }
+    send();
+  }
+
+  /* A held arrow key would fire a write per repeat: settle on the final order first. */
+  function persistSoon() {
+    window.clearTimeout(keyboardTimer);
+    keyboardTimer = window.setTimeout(persist, 250);
   }
 
   /* ---------- moving one entry --------------------------------------------- */
 
   function moveBy(pk, step) {
-    if (!enter()) return;
+    readNodes();
     var what = order();
     var at = what.indexOf(pk);
     var to = at + step;
@@ -252,7 +233,7 @@
     renumber();
     morph(before);
     applyPaneOrder(order());
-    status('');
+    persistSoon();
   }
 
   /* ---------- dragging a row ------------------------------------------------ */
@@ -320,7 +301,9 @@
 
   function startDrag(event, pk) {
     if (event.button !== 0) return;
-    if (!enter()) return;
+    window.clearTimeout(keyboardTimer);     /* the drop's own write supersedes a pending one */
+    keyboardTimer = null;
+    readNodes();
     var item = rowFor(pk);
     if (!item) return;
     event.preventDefault();
@@ -396,6 +379,7 @@
       applyPaneOrder(order());
     }
     drag = null;
+    if (moved) persist();                   /* the drop is the write (spec 026) */
   }
 
   /* ---------- what the person does ----------------------------------------- */
@@ -423,19 +407,6 @@
     event.stopPropagation();
   }, true);
 
-  document.addEventListener('click', function (event) {
-    if (event.target.closest('[data-reorder-save]')) {
-      event.preventDefault();
-      save(null);
-      return;
-    }
-    if (event.target.closest('[data-reorder-discard]')) {
-      event.preventDefault();
-      leave(true);
-      return;
-    }
-  });
-
   /* The grip is a button: a keyboard can take hold of it and move the row with the arrow
      keys. It is the only control there is -- no arrows are drawn -- so this is what keeps
      the order rearrangable without a pointer. */
@@ -450,64 +421,15 @@
     if (again) again.focus();                     /* keep the keyboard's place */
   });
 
-  /* ---------- the question before leaving ---------------------------------- */
-
-  function dialog() { return document.querySelector('[data-reorder-confirm]'); }
-
-  document.addEventListener('click', function (event) {
-    var d = dialog();
-    if (event.target.closest('[data-reorder-stay]')) {
-      event.preventDefault();
-      if (d) d.close();
-      pending = null;
-      return;
-    }
-    if (event.target.closest('[data-reorder-leave]')) {
-      event.preventDefault();
-      var carrying = pending;
-      pending = null;
-      if (d) d.close();
-      leave(true);
-      if (carrying) carrying();
-      return;
-    }
-    if (event.target.closest('[data-reorder-and-save]')) {
-      event.preventDefault();
-      var carry = pending;
-      pending = null;
-      if (d) d.close();
-      save(carry);
-      return;
-    }
-  });
-
-  /* The shell asks before it swaps the pane (reading.js, navigate): an order that has not
-     been saved must not disappear without a word. */
-  window.gkpsUnsaved = {
-    holds: function () { return on && changed(); },
-    ask: function (proceed) {
-      var d = dialog();
-      pending = proceed;
-      if (d && !d.open) d.showModal();
-      else if (proceed) proceed();
-    },
-  };
-
-  window.addEventListener('beforeunload', function (event) {
-    if (!on || !changed()) return;
-    event.preventDefault();
-    event.returnValue = '';                        /* a tab close asks too */
-  });
-
-  /* A swap brings its own rows and its own strip: whatever was pending went with the old
-     ones, and only the ROOT carries the attribute, so clear it here. */
+  /* A swap brings its own rows: the order that mattered went with the old ones. */
   document.addEventListener('shell:page', function () {
     if (drag) cancelDrag();
-    on = false;
-    origin = [];
-    numbers = [];
-    pending = null;
-    root().dataset.reorder = 'off';
+    window.clearTimeout(keyboardTimer);
+    keyboardTimer = null;
+    nodes = {};
+    settled = order();
     status('');
   });
+
+  settled = order();
 })();
