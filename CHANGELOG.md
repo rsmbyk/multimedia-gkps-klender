@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-08
+
+### Added
+
+- A **Single-Screen Text** service entry kind: the whole body on one projector screen, the font shrinking to fit and only ellipsizing when it cannot shrink further.
+
 ## [1.0.2] - 2026-10-08
 
 ### Removed

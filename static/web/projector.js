@@ -84,24 +84,47 @@
               || head.scrollHeight > stage.clientHeight * 0.45) && fontSize > 10);
   }
 
+  /* Does the words block spill past the display's own box? (Shared by the fit loop
+     and the single-screen truncation.) */
+  function textOverflows(head, lines, box, range) {
+    if (lines.scrollHeight > stage.clientHeight - (head ? head.offsetHeight : 0) - 8) {
+      return true;
+    }
+    range.selectNodeContents(lines);
+    var ink = range.getBoundingClientRect();
+    return (ink.top < box.top + 4 || ink.bottom > box.bottom - 4
+            || ink.left < box.left - 1 || ink.right > box.right + 2);
+  }
+
   function resizeTextFont(head, lines) {
     if (!lines) return;
     var box = stage.getBoundingClientRect();
     var range = document.createRange();
-    var overflows = function () {
-      if (lines.scrollHeight > stage.clientHeight - (head ? head.offsetHeight : 0) - 8) {
-        return true;
-      }
-      range.selectNodeContents(lines);
-      var ink = range.getBoundingClientRect();
-      return (ink.top < box.top + 4 || ink.bottom > box.bottom - 4
-              || ink.left < box.left - 1 || ink.right > box.right + 2);
-    };
     var fontSize = 100;
     do {
       lines.style.fontSize = fontSize + 'px';
       fontSize -= 1;
-    } while (overflows() && fontSize > 1);
+    } while (textOverflows(head, lines, box, range) && fontSize > 1);
+  }
+
+  /* A single-screen text that still spills at the smallest size: drop its trailing
+     lines, then its trailing characters, and end on an ellipsis. It never hangs over
+     the screen. */
+  function truncateText(head, lines) {
+    if (!lines) return;
+    var box = stage.getBoundingClientRect();
+    var range = document.createRange();
+    if (!textOverflows(head, lines, box, range)) return;
+    var rows = [].slice.call(lines.querySelectorAll('.screen__line'));
+    while (rows.length > 1 && textOverflows(head, lines, box, range)) {
+      rows.pop().remove();
+    }
+    var last = lines.querySelector('.screen__line:last-child');
+    if (!last) return;
+    while (last.textContent.length > 0 && textOverflows(head, lines, box, range)) {
+      last.textContent = last.textContent.slice(0, -1);
+    }
+    last.textContent = last.textContent.replace(/\s+$/, '') + '\u2026';
   }
 
   function fit(active) {
@@ -110,6 +133,7 @@
     var lines = active.querySelector('.screen__lines');
     resizeTitleFont(head);
     resizeTextFont(head, lines);
+    if (active.dataset.fit === 'single') truncateText(head, lines);
   }
 
   /* ---------- showing ------------------------------------------------------- */

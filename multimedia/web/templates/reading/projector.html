@@ -25,7 +25,8 @@ that browser's tabs over the display channel (web/projector.js, web/display.js).
 <main class="projector__screen" id="projectorScreen">
   <div class="projector__screens" id="projectorScreens">
     {% for screen in screens %}
-    <section class="screen{% if screen.blank %} is-blank{% endif %}" data-screen="{{ forloop.counter0 }}"
+    <section class="screen{% if screen.blank %} is-blank{% endif %}{% if screen.single %} screen--single{% endif %}"
+             data-screen="{{ forloop.counter0 }}"{% if screen.single %} data-fit="single"{% endif %}
              aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
       {% if screen.header %}<h1 class="screen__head">{{ screen.header }}</h1>{% endif %}
       {% if screen.lines %}

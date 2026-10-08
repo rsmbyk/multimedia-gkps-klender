@@ -15,6 +15,7 @@ from multimedia.tatib import models as tatib_models
 
 KINDS = {
     'text': tatib_models.ServiceEntryKind.TEXT,
+    'single_screen_text': tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT,
     'scripture': tatib_models.ServiceEntryKind.SCRIPTURE,
     'song': tatib_models.ServiceEntryKind.SONG,
     'section_break': tatib_models.ServiceEntryKind.SECTION_BREAK,
@@ -108,6 +109,7 @@ class SongEntryForm(ServiceEntryForm):
 
 FORMS = {
     'text': TextEntryForm,
+    'single_screen_text': TextEntryForm,
     'section_break': SectionBreakEntryForm,
     'scripture': ScriptureEntryForm,
     'song': SongEntryForm,
@@ -115,7 +117,8 @@ FORMS = {
 
 
 TITLES = {
-    'text': 'text', 'scripture': 'passage', 'song': 'song', 'section_break': 'break',
+    'text': 'text', 'single_screen_text': 'single-screen text', 'scripture': 'passage',
+    'song': 'song', 'section_break': 'break',
 }
 
 

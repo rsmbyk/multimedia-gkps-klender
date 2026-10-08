@@ -1,6 +1,6 @@
 ---
 id: ITEM-031
-status: speccing
+status: done
 title: 'One-screen text entry that auto-fits its font'
 type: feat
 priority: P2
@@ -8,12 +8,12 @@ effort: M
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/029-single-screen-text/spec.md
-branch:
-pr:
+branch: feat/029-single-screen-text
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/279
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.1.0
 ---
 
 # ITEM-031: One-screen text entry that auto-fits its font

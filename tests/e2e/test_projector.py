@@ -84,6 +84,14 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             tatib=self.long_service, order_number=1, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=long_translation, chapter=23, verse_start=1)
 
+        # a single-screen text: the whole body on one screen, shrunk to fit
+        self.single_service = tatib.TataIbadah.objects.create(
+            name='Ibadah Satu Layar', date=date(2026, 9, 13), is_active=True)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.single_service, order_number=1,
+            kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
+            text='\n'.join(f'Baris {n} dari doa yang panjang ini.' for n in range(1, 30)))
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -444,6 +452,31 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         # ... so a screen of them is roomier than the same rows merely wrapped
         self.assertGreater(pair['pitch'], single['pitch'] + pair['size'] * 0.25, measured)
         self.assertTrue(measured['insideWindow'], measured)
+
+    def test_a_single_screen_text_fits_its_whole_body_on_one_screen(self):
+        page = self._page(reverse('web-service-projector', args=[self.single_service.pk]))
+        page.keyboard.press('Space')                          # turn the display on
+        page.wait_for_timeout(200)
+        measured = page.evaluate("""() => {
+          const screens = document.querySelectorAll('.screen');
+          const active = document.querySelector('.screen.is-active');
+          const stage = document.getElementById('projectorScreens').getBoundingClientRect();
+          const lines = active.querySelector('.screen__lines');
+          const range = document.createRange();
+          range.selectNodeContents(lines);
+          const ink = range.getBoundingClientRect();
+          return {count: screens.length, fit: active.dataset.fit,
+                  fontSize: parseFloat(getComputedStyle(lines).fontSize),
+                  inside: ink.top >= stage.top - 1 && ink.bottom <= stage.bottom + 1,
+                  text: lines.innerText};
+        }""")
+        page.close()
+        self.assertEqual(measured['count'], 1)                 # the whole body, one screen
+        self.assertEqual(measured['fit'], 'single')
+        self.assertLess(measured['fontSize'], 100)             # the font shrank to fit
+        self.assertIn('Baris 1 ', measured['text'])
+        self.assertIn('Baris 29 ', measured['text'])           # nothing dropped while it fits
+        self.assertTrue(measured['inside'], measured)
 
     # --- the button, its two states, and the lock across tabs ----------------
 

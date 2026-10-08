@@ -639,6 +639,12 @@ def _projector_screens(service):
         elif entry.kind == tatib_models.ServiceEntryKind.SONG:
             for lines in _line_pairs(entry.resolve()[1]):
                 screens.append({'blank': False, 'header': '', 'lines': lines})
+        elif entry.kind == tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT:
+            # The whole body on one screen; blank lines are paragraph breaks, not new
+            # screens, and the fit loop shrinks (then, if need be, truncates) it.
+            header, body = entry.resolve()
+            screens.append({'blank': False, 'header': header,
+                            'lines': (body or '').split('\n'), 'single': True})
         else:                                            # a text entry
             header, body = entry.resolve()
             for lines in _line_pairs(body):

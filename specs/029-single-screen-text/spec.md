@@ -1,7 +1,7 @@
 # Spec 029: Single-screen text entry
 
 - **ID:** 029
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-031
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

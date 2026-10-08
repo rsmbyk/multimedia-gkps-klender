@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-031](./items/ITEM-031-one-screen-fitted-text.md) | One-screen text entry that auto-fits its font | A text kind that shows its whole body on one screen, shrinking the font to fit, then ellipsizing | feat | P2 | M | [029](../specs/029-single-screen-text/spec.md) | 2026-10-08 |
 | [ITEM-032](./items/ITEM-032-add-entry-at-start.md) | Add a service entry at the beginning of a Tata Ibadah | Insert at order 1 instead of only after a row, across entries and legacy rows | feat | P2 | M | [030](../specs/030-add-entry-at-start/spec.md) | 2026-10-08 |
 | [ITEM-033](./items/ITEM-033-clamp-pane-text.md) | Show only the first lines of a text in the Tata Ibadah pane | Clamp a long text entry to a few lines so the running order stays readable | chore | P2 | S | [031](../specs/031-clamp-pane-text/spec.md) | 2026-10-08 |
 | [ITEM-034](./items/ITEM-034-entry-preview-modal.md) | Preview a service entry's full content in a modal | View-only, headerless modal with the full text/passage/lyrics; sticky close; Esc/overlay dismiss | feat | P2 | L | [032](../specs/032-entry-preview-modal/spec.md) | 2026-10-08 |
@@ -66,6 +65,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-031](./items/ITEM-031-one-screen-fitted-text.md) | One-screen text entry that auto-fits its font | A text kind that shows its whole body on one screen, shrinking the font to fit, then ellipsizing | feat | P2 | M | [029](../specs/029-single-screen-text/spec.md) | develop | 2026-10-08 |
 | [ITEM-030](./items/ITEM-030-remove-update-button.md) | Remove the Update the current state button | Drop the manual re-read control now that saved changes reach the display on their own | chore | P2 | S | [028](../specs/028-remove-update-button/spec.md) | develop | 2026-10-08 |
 | [ITEM-029](./items/ITEM-029-remove-projection-note.md) | Remove the projection status note | Drop the status line under the Project / Stop projecting controls | fix | P2 | S | [027](../specs/027-remove-projection-note/spec.md) | develop | 2026-10-08 |
 | [ITEM-014](./items/ITEM-014-hide-songbook-fields.md) | Hide short name and hymn-book fields in songbook forms | Remove the short-name and hymn-book controls from songbook create/edit forms while preserving stored values | chore | P2 | S | [012](../specs/012-hide-songbook-fields/spec.md) | develop | 2026-10-07 |
