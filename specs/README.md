@@ -64,6 +64,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [044](044-passage-translation-toggle/spec.md) | Add a TB/SIM toggle to the passage modal book picker | Draft |
 | [045](045-custom-chapter-verse-dropdowns/spec.md) | Make the passage modal's chapter/verse dropdowns custom | Draft |
 | [046](046-sidebar-text-two-lines/spec.md) | Show the first two text lines in the service sidebar | Draft |
+| [047](047-stabilise-flaky-e2e/spec.md) | Stabilise the flaky E2E tests | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.
