@@ -1,7 +1,7 @@
 # Spec 033: Float the entry controls over each item, top-right
 
 - **ID:** 033
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-035
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

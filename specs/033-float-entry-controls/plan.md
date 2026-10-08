@@ -1,6 +1,6 @@
 # Plan 033: Float the entry controls over each item, top-right
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-035
