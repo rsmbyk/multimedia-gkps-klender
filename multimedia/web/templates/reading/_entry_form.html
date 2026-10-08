@@ -22,9 +22,12 @@
           <div class="editor__picker-group" data-picker-group>
             <p class="editor__songgroup-label">{{ testament.grouper }}</p>
             {% for book in testament.list %}
-            <button type="button" role="option" class="editor__songoption" data-book="{{ book.id }}"
-                    data-chapters="{{ book.chapters }}" data-book-name="{{ book.name }}"
-                    aria-selected="false">{{ book.name }}</button>
+            <button type="button" role="option" class="editor__songoption editor__songoption--book" data-book="{{ book.id }}"
+                    data-chapters="{{ book.chapters }}" data-book-name="{{ book.display }}"
+                    data-book-other="{{ book.other }}" aria-selected="{% if book.selected %}true{% else %}false{% endif %}">
+              <span class="book__n">{{ book.display }}</span>
+              {% if book.other %}<span class="book__s">{{ book.other }}</span>{% endif %}
+            </button>
             {% endfor %}
           </div>
           {% endfor %}
@@ -35,7 +38,11 @@
         <option value=""></option>
         {% for book in books %}
         <option value="{{ book.id }}" data-chapters="{{ book.chapters }}"
-                {% if form.book_translation.value|stringformat:'s' == book.id|stringformat:'s' %}selected{% endif %}>{{ book.name }}</option>
+                {% if form.book_translation.value|stringformat:'s' == book.id|stringformat:'s' %}selected{% endif %}>{{ book.display }}</option>
+        {% if book.selected and not book.selected_translation_is_primary %}
+        <option value="{{ book.selected_translation_id }}" data-chapters="{{ book.chapters }}"
+                data-primary-book="{{ book.id }}" selected>{{ book.selected_translation_name }}</option>
+        {% endif %}
         {% endfor %}
       </select>
     </div>

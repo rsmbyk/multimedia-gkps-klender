@@ -1,7 +1,7 @@
 # Spec 041: Show TB/SIM book names in the passage modal's book picker
 
 - **ID:** 041
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-043
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -31,6 +31,8 @@ main text and the SIM translation as the dimmed secondary on the right.
 - **One book, one item.** A book appears once, whatever translations it has.
 - **The stored value resolves.** Selecting a book stores a `BookTranslation` that yields the book's
   chapters and verses.
+- **Keep an existing selection.** Editing an entry preserves its saved translation until a book is
+  explicitly chosen; a new choice stores that book's primary `BookTranslation`.
 - **Filterable by either name.** The picker's search matches the TB or the SIM name.
 
 ## Acceptance scenarios
@@ -47,6 +49,14 @@ main text and the SIM translation as the dimmed secondary on the right.
 - **Given** a book selected in the picker
 - **When** I pick a chapter and a starting verse
 - **Then** the chapters and verses are offered as before
+
+### Scenario: Editing an existing SIM passage
+
+- **Given** a saved passage that uses the SIM translation
+- **When** I open its editor without choosing another book
+- **Then** the same book remains selected and its saved translation remains unchanged
+- **When** I choose a book from the picker
+- **Then** the book's primary translation is selected
 
 ### Scenario: Filtering
 

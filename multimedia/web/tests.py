@@ -3,12 +3,15 @@ import json
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
+from multimedia.web.reading import entries as entry_forms
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -621,6 +624,82 @@ class ServiceEntryViewTests(TestCase):
         self.assertContains(response, 'Perjanjian Baru')
         self.assertContains(response, 'data-entry-picker="book"')
         self.assertContains(response, 'placeholder="Filter books..."')
+
+    def test_scripture_books_use_one_tb_row_with_both_translation_names(self):
+        sim_language = bible.Language.objects.create(name='Simalungun')
+        sim_version = bible.Version.objects.create(
+            lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
+        bible.BookTranslation.objects.create(
+            version=sim_version, book=self.matius.book, translation='Mateus')
+
+        rows = entry_forms.scripture_books()
+        self.assertEqual(len(rows), 2)
+        row = next(row for row in rows if row['id'] == self.matius.pk)
+        self.assertEqual(row['display'], 'Matius')
+        self.assertEqual(row['other'], 'Mateus')
+        self.assertEqual(row['testament_label'], 'Perjanjian Baru')
+        self.assertEqual(row['chapters'], 28)
+
+    def test_editing_a_saved_sim_passage_keeps_its_translation_selected(self):
+        sim_language = bible.Language.objects.create(name='Simalungun')
+        sim_version = bible.Version.objects.create(
+            lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
+        sim_matius = bible.BookTranslation.objects.create(
+            version=sim_version, book=self.matius.book, translation='Mateus')
+        bible.Verse.objects.create(
+            book_translation=sim_matius, chapter=5, verse=2, text='Ayat Simalungun')
+        entry = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE,
+                          book_translation=sim_matius, chapter=5, verse_start=2)
+
+        response = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertEqual(html.count(f'data-book="{self.matius.pk}"'), 1)
+        self.assertRegex(
+            html, rf'<button[^>]*data-book="{self.matius.pk}"[^>]*aria-selected="true"')
+        self.assertRegex(
+            html, rf'<option value="{sim_matius.pk}"[^>]*data-primary-book="{self.matius.pk}"'
+                 rf'[^>]*selected>Mateus</option>')
+
+        response = self.client.post(reverse('web-entry-save', kwargs={'pk': entry.pk}), {
+            'kind': tatib.ServiceEntryKind.SCRIPTURE, 'book_translation': sim_matius.pk,
+            'chapter': 5, 'verse_start': 2, 'verse_end': '',
+        })
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        entry.refresh_from_db()
+        self.assertEqual(entry.book_translation_id, sim_matius.pk)
+
+    def test_invalid_oversized_book_translation_id_renders_a_validation_error(self):
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SCRIPTURE,
+            'book_translation': '9' * 5000,
+            'chapter': 1,
+            'verse_start': 1,
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'Select a valid choice', status_code=400)
+        self.assertFalse(self.tatib.service_entries.exists())
+
+    def test_out_of_range_translation_pk_is_rejected_before_model_lookup(self):
+        max_pk = next(validator.limit_value for validator in bible.BookTranslation._meta.pk.validators
+                      if isinstance(validator, MaxValueValidator))
+        field = entry_forms.ScriptureEntryForm().fields['book_translation']
+        with patch.object(field.queryset, 'get', side_effect=AssertionError('unexpected lookup')):
+            with self.assertRaises(ValidationError):
+                field.clean(str(max_pk + 1))
+
+    def test_out_of_range_book_translation_pk_renders_a_validation_error(self):
+        max_pk = next(validator.limit_value for validator in bible.BookTranslation._meta.pk.validators
+                      if isinstance(validator, MaxValueValidator))
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SCRIPTURE,
+            'book_translation': str(max_pk + 1),
+            'chapter': 1,
+            'verse_start': 1,
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'Select a valid choice', status_code=400)
+        self.assertFalse(self.tatib.service_entries.exists())
 
     def test_the_chapter_endpoint_returns_actual_verse_numbers(self):
         response = self.client.get(reverse('web-entry-chapter-verses',

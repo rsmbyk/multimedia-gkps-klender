@@ -200,7 +200,8 @@ def entry_form(request, kind=None, pk=None):
     return render(request, 'reading/_entry_form.html', {
         'form': form, 'kind': kind, 'entry': None if pk is None else entry,
         'title': entry_forms.entry_title(kind, None if pk is None else entry),
-        'tatib': tatib, 'books': entry_forms.scripture_books(),
+        'tatib': tatib, 'books': entry_forms.scripture_books(
+            form['book_translation'].value() if kind == 'scripture' else None),
         'song': getattr(form, 'song', None),
         'after': request.GET.get('after') if pk is None else None,
         'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
@@ -227,7 +228,8 @@ def entry_save(request, pk=None):
         return render(request, 'reading/_entry_form.html', {
             'form': form, 'kind': kind, 'entry': entry,
             'title': entry_forms.entry_title(kind, entry), 'tatib': form.tatib,
-            'books': entry_forms.scripture_books(),
+            'books': entry_forms.scripture_books(
+                form['book_translation'].value() if kind == 'scripture' else None),
             'song': getattr(form, 'song', None),
             'after': request.POST.get('after') if pk is None else None,
             'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',

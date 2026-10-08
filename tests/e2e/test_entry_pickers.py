@@ -32,7 +32,17 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=lang, name='Terjemahan Baru', abbreviation='TB')
         book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
-        bible.BookTranslation.objects.create(version=version, book=book, translation='Matius')
+        self.mat_tb = bible.BookTranslation.objects.create(
+            version=version, book=book, translation='Matius')
+        sim_language = bible.Language.objects.create(name='Simalungun')
+        sim_version = bible.Version.objects.create(
+            lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
+        self.mat_sim = bible.BookTranslation.objects.create(
+            version=sim_version, book=book, translation='Mateus')
+        bible.Verse.objects.create(
+            book_translation=self.mat_tb, chapter=1, verse=1, text='Pada mulanya')
+        bible.Verse.objects.create(
+            book_translation=self.mat_sim, chapter=1, verse=7, text='Na parjolo')
 
         songbook = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ',
                                              is_hymn_book=True)
@@ -45,6 +55,9 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=1, kind=tatib.ServiceEntryKind.TEXT,
             title='Salam', text='Kasih karunia')
+        self.sim_entry = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.SCRIPTURE,
+            book_translation=self.mat_sim, chapter=1, verse_start=7)
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -81,6 +94,61 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
                   contentBottom: content.bottom,
                   windowWidth: window.innerWidth, windowHeight: window.innerHeight};
         }""", picker)
+
+    def test_book_picker_shows_tb_and_sim_once_and_keeps_primary_translation(self):
+        page = self._page()
+        self._open_modal(page, 'scripture')
+        picker = page.locator('[data-entry-picker="book"]')
+        picker.locator('[data-picker-trigger]').click()
+
+        options = picker.locator('[data-picker-options] [data-book]')
+        expect(options).to_have_count(1)
+        option = options.first
+        expect(option.locator('.book__n')).to_have_text('Matius')
+        expect(option.locator('.book__s')).to_have_text('Mateus')
+        layout = option.evaluate("""button => {
+          const main = button.querySelector('.book__n').getBoundingClientRect();
+          const secondary = button.querySelector('.book__s').getBoundingClientRect();
+          const style = getComputedStyle(button);
+          return {mainRight: main.right, secondaryLeft: secondary.left,
+                  secondaryRight: secondary.right, optionRight: button.getBoundingClientRect().right,
+                  paddingRight: parseFloat(style.paddingRight),
+                  mainColor: getComputedStyle(button.querySelector('.book__n')).color,
+                  secondaryColor: getComputedStyle(button.querySelector('.book__s')).color};
+        }""")
+        self.assertLessEqual(layout['mainRight'], layout['secondaryLeft'])
+        self.assertAlmostEqual(layout['optionRight'] - layout['secondaryRight'],
+                               layout['paddingRight'], delta=3)
+        self.assertNotEqual(layout['mainColor'], layout['secondaryColor'])
+        filter_box = picker.locator('input[type="search"]')
+        filter_box.fill('Mateus')
+        expect(option).to_be_visible()
+        filter_box.fill('Matius')
+        expect(option).to_be_visible()
+        filter_box.fill('missing')
+        expect(option).to_be_hidden()
+        filter_box.fill('')
+        option.click()
+
+        expect(page.locator('[name=book_translation]')).to_have_value(str(self.mat_tb.pk))
+        expect(page.locator('[name=chapter]')).to_have_value('1')
+        expect(page.locator('[name=verse_start]')).to_have_value('1')
+
+    def test_editing_a_sim_passage_keeps_the_saved_translation_in_the_picker(self):
+        page = self._page()
+        edit = page.locator(f'[data-entry-edit="{self.sim_entry.pk}"]')
+        edit.hover()
+        edit.click()
+
+        picker = page.locator('[data-entry-picker="book"]')
+        option = picker.locator('[data-picker-options] [data-book]')
+        expect(option).to_have_count(1)
+        expect(option).to_have_attribute('aria-selected', 'true')
+        expect(picker.locator('[data-picker-label]')).to_have_text('Mateus')
+        expect(page.locator('[name=book_translation]')).to_have_value(str(self.mat_sim.pk))
+        expect(page.locator('[name=chapter]')).to_have_value('1')
+        expect(page.locator('[name=verse_start] option')).to_have_count(1)
+        expect(page.locator('[name=verse_start]')).to_have_value('7')
 
     def test_the_book_menu_is_capped_to_the_viewport_not_the_dialog(self):
         page = self._page()
