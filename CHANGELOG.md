@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-08
+
+### Removed
+
+- The projection pane no longer shows the **Update the current state** control; saved changes still reach the display on their own.
+
 ## [1.0.1] - 2026-10-08
 
 ### Removed

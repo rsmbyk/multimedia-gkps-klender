@@ -1,6 +1,6 @@
 # Plan 028: Remove the "Update the current state" button
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-030

@@ -6,9 +6,9 @@
  * localStorage (so a tab opened later already knows) and the display channel (so
  * every tab hears about a change at once).
  *
- * This file is the SHELL side: the project button, its Stop projecting and Update
- * the current state states, and the re-read it asks for after every saved change
- * (spec 026). The projector window has its own
+ * This file is the SHELL side: the project button, its Stop projecting state, and
+ * the re-read it asks for after every saved change (spec 026). The projector window
+ * has its own
  * script (web/projector.js); both speak the same messages:
  *
  *     {type: 'show', service: <id>, slide: <slide id>}   an entry is on screen
@@ -68,7 +68,6 @@
     return {
       group: container,
       open: container && container.querySelector('[data-project-open]'),
-      update: container && container.querySelector('[data-project-update]'),
     };
   }
 
@@ -94,7 +93,6 @@
     else n.open.textContent = text;
     n.open.setAttribute('aria-label', text);
     n.open.title = text;
-    if (n.update) n.update.hidden = !here;
   }
 
   document.addEventListener('click', function (event) {
@@ -119,10 +117,6 @@
       post({type: 'show', service: service, screen: 0});
       sync();
       return;
-    }
-    if (event.target.closest('[data-project-update]')) {
-      event.preventDefault();
-      reflow();
     }
   });
 
