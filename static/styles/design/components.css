@@ -955,10 +955,9 @@ li:hover > .row-edit,
    field is a liturgist's private cue (often NEXT <name>) — shown small/dim
    under the rule, never as content */
 .tatib__eos {
-  margin: 34px auto 34px;
-  width: min(220px, 60%);
+  margin: 34px 0 34px;
   border: 0;
-  border-top: 1px solid var(--divider);
+  border-top: 2px solid var(--divider);
   position: relative;
   scroll-margin-top: 44px;
 }

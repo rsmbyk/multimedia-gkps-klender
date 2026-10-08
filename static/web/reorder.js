@@ -118,7 +118,7 @@
     nodes = {};
     var body = pane();
     if (!body) return;
-    [].slice.call(body.querySelectorAll('section[data-entry-pk]')).forEach(function (section) {
+    [].slice.call(body.querySelectorAll('[data-entry-pk]')).forEach(function (section) {
       var unit = [section];
       var next = section.nextElementSibling;
       if (next && next.classList.contains('entry__add')) unit.push(next);

@@ -52,7 +52,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [032](032-entry-preview-modal/spec.md) | Entry preview modal | Accepted |
 | [033](033-float-entry-controls/spec.md) | Float the entry controls over each item, top-right | Accepted |
 | [034](034-item-hover-highlight/spec.md) | Highlight a whole service entry item on hover | Accepted |
-| [035](035-section-break-separation/spec.md) | Give the section break a clear separation | Draft |
+| [035](035-section-break-separation/spec.md) | Give the section break a clear separation | Accepted |
 | [036](036-add-bar-outside-item-hover/spec.md) | Keep the add bar out of the item hover | Draft |
 | [037](037-add-rows-before-after/spec.md) | Reveal the add rows before and after a hovered item | Draft |
 | [038](038-drop-section-break-label/spec.md) | Remove the label from section-break entries | Draft |
