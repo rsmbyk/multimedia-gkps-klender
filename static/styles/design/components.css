@@ -1504,6 +1504,8 @@ kbd {
   background: var(--canvas); color: var(--ink); box-shadow: var(--shadow);
   display: flex; flex-direction: column;
 }
+/* An author display rule beats the UA's rule for a CLOSED dialog: keep it hidden. */
+.preview:not([open]) { display: none; }
 .preview::backdrop { background: rgba(31, 31, 29, .38); }
 .preview__body { padding: 22px; overflow-y: auto; min-height: 0; }
 .preview__foot {
