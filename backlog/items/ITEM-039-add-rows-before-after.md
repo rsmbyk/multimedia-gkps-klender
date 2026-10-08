@@ -1,6 +1,6 @@
 ---
 id: ITEM-039
-status: speccing
+status: in_review
 title: 'Reveal the add rows before and after a hovered item'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: M
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/037-add-rows-before-after/spec.md
-branch:
-pr:
+branch: chore/037-add-rows-before-after
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/289
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.5
 ---
 
 # ITEM-039: Reveal the add rows before and after a hovered item

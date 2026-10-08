@@ -539,4 +539,44 @@
                     : (opener.closest('[data-entry-start]') ? 'start' : '');
     load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after));
   });
+
+  /* ---------- a hovered item reveals its neighbouring add rows (spec 037) ----
+     CSS cannot reach a preceding sibling, so the pair of add rows around the row
+     under the pointer (or holding keyboard focus) is revealed here. Hovering an add
+     row itself reveals only that row (spec 036): the item is not hovered then. The
+     first item's "above" row is the start bar, which is always visible already. */
+  function neighboursOf(item) {
+    return [item.previousElementSibling, item.nextElementSibling].filter(function (node) {
+      return node && node.classList && node.classList.contains('entry__add');
+    });
+  }
+
+  function revealNeighbours(item, on) {
+    neighboursOf(item).forEach(function (row) {
+      row.classList.toggle('is-revealed', on);
+    });
+  }
+
+  function itemOf(node) {
+    return node && node.closest ? node.closest('.tatib__item, .tatib__eos') : null;
+  }
+
+  document.addEventListener('mouseover', function (event) {
+    var item = itemOf(event.target);
+    if (item) revealNeighbours(item, true);
+  });
+  document.addEventListener('mouseout', function (event) {
+    var item = itemOf(event.target);
+    if (!item || item.contains(event.relatedTarget)) return;
+    revealNeighbours(item, false);
+  });
+  document.addEventListener('focusin', function (event) {
+    var item = itemOf(event.target);
+    if (item) revealNeighbours(item, true);
+  });
+  document.addEventListener('focusout', function (event) {
+    var item = itemOf(event.target);
+    if (!item || item.contains(event.relatedTarget)) return;
+    revealNeighbours(item, false);
+  });
 })();

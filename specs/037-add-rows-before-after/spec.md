@@ -1,7 +1,7 @@
 # Spec 037: Reveal the add rows before and after a hovered item
 
 - **ID:** 037
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-039
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

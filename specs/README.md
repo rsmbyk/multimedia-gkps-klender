@@ -54,7 +54,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [034](034-item-hover-highlight/spec.md) | Highlight a whole service entry item on hover | Accepted |
 | [035](035-section-break-separation/spec.md) | Give the section break a clear separation | Accepted |
 | [036](036-add-bar-outside-item-hover/spec.md) | Keep the add bar out of the item hover | Accepted |
-| [037](037-add-rows-before-after/spec.md) | Reveal the add rows before and after a hovered item | Draft |
+| [037](037-add-rows-before-after/spec.md) | Reveal the add rows before and after a hovered item | Accepted |
 | [038](038-drop-section-break-label/spec.md) | Remove the label from section-break entries | Draft |
 | [039](039-hymn-song-sidebar-title/spec.md) | Show the short full title for a hymn song in the service sidebar | Draft |
 | [040](040-picker-menus-past-modal/spec.md) | Let the entry modal picker menus extend past the modal | Draft |
