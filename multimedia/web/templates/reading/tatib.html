@@ -38,7 +38,7 @@
 {% if item.eos %}
 <div class="tatib__eos" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}>{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
 {% else %}
-<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.entry %} data-entry-pk="{{ item.pk }}"{% elif item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}>
+<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.clipped %} data-clipped="true"{% endif %}{% if item.entry %} data-entry-pk="{{ item.pk }}"{% elif item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}>
 {% if item.title %}<h2 class="read__sec">{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
 {% if item.deleted_target %}<p class="entry__deleted-warning" role="status">This song, songbook, or an included verse was deleted.</p>{% endif %}
 {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}

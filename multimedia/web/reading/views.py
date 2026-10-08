@@ -501,6 +501,23 @@ def _paragraphs(text):
     return paras
 
 
+PANE_TEXT_LINES = 3
+
+
+def _clamped_paragraphs(text):
+    """A text's pane lines: at most PANE_TEXT_LINES, hard-truncated with a trailing "…"
+    when the rest is hidden (blank lines count). Returns the lines and whether it was
+    clipped, so the preview can be offered only for hidden words."""
+    paras = _paragraphs(text)
+    if len(paras) <= PANE_TEXT_LINES:
+        return paras, False
+    kept = paras[:PANE_TEXT_LINES]
+    last = dict(kept[-1])
+    last['text'] = last['text'].rstrip() + '…'
+    kept[-1] = last
+    return kept, True
+
+
 def _entry_jump(entry):
     """Where a passage or a song entry points, the way a search result does."""
     if entry.kind == tatib_models.ServiceEntryKind.SCRIPTURE and entry.book_translation_id:
@@ -549,9 +566,10 @@ def _tatib_stage(service):
                 toc.append({'eos': True, 'anchor': anchor})
                 continue
             text_count += 1
+            paras, clipped = _clamped_paragraphs(row.text)
             items.append({'eos': False, 'anchor': anchor, 'title': row.title,
                           'old_item': True, 'pk': row.pk, 'after_marker': after_marker,
-                          'paras': _paragraphs(row.text)})
+                          'paras': paras, 'clipped': clipped})
             label = row.title or _first_line(row.text)
             if len(label) > 60:
                 label = label[:60] + '…'
@@ -566,10 +584,11 @@ def _tatib_stage(service):
         deleted_target = row.target_deleted
         # A passage or a song shows its reference here, not its text: the words belong on the display.
         shows_text = kind_key not in ('scripture', 'song')
+        paras, clipped = _clamped_paragraphs(body) if (body and shows_text) else ([], False)
         block = {'entry': True, 'anchor': anchor, 'pk': row.pk, 'kind': kind_key,
                  'kind_label': row.get_kind_display(), 'title': title,
                  'deleted_target': deleted_target,
-                 'paras': _paragraphs(body) if (body and shows_text) else [],
+                 'paras': paras, 'clipped': clipped,
                  'note': row.title if row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK else ''}
         if kind_key in ('scripture', 'song') and not deleted_target:
             block['jump'] = _entry_jump(row)
