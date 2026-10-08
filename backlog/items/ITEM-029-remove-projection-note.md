@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/027-remove-projection-note/spec.md
 branch: fix/027-remove-projection-note
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/276
 archived_at:
 archive_reason:
 bump: patch
