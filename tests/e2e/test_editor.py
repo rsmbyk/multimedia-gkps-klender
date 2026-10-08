@@ -492,6 +492,14 @@ class EditorE2ETests(StaticLiveServerTestCase):
 
         initial_trigger_top = trigger.bounding_box()['y']
         content.evaluate('el => { el.scrollTop = 0; }')
+        # The picker repositions on the content's scroll event, which lands after this
+        # call: wait for the calendar to re-anchor before reading its geometry.
+        page.wait_for_function('''() => {
+          const trigger = document.querySelector('[data-date-picker-trigger]').getBoundingClientRect();
+          const calendar = document.querySelector('[data-date-picker-calendar]').getBoundingClientRect();
+          return Math.abs(calendar.top - trigger.bottom - 8) < 2
+              || Math.abs(trigger.top - calendar.bottom - 8) < 2;
+        }''', timeout=4000)
         scrolled = page.evaluate('''() => {
           const trigger = document.querySelector('[data-date-picker-trigger]').getBoundingClientRect();
           const calendar = document.querySelector('[data-date-picker-calendar]').getBoundingClientRect();

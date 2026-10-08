@@ -62,6 +62,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-049](./items/ITEM-049-stabilise-flaky-e2e.md) | Stabilise the flaky E2E tests | Wait for the date-picker re-anchor and the search-offset restore to settle before asserting | test | P2 | S | [047](../specs/047-stabilise-flaky-e2e/spec.md) | develop | 2026-10-08 |
 | [ITEM-034](./items/ITEM-034-entry-preview-modal.md) | Preview a service entry's full content in a modal | View-only, headerless modal with the full text/passage/lyrics; sticky close; Esc/overlay dismiss | feat | P2 | L | [032](../specs/032-entry-preview-modal/spec.md) | develop | 2026-10-08 |
 | [ITEM-033](./items/ITEM-033-clamp-pane-text.md) | Show only the first lines of a text in the Tata Ibadah pane | Clamp a long text entry to a few lines so the running order stays readable | chore | P2 | S | [031](../specs/031-clamp-pane-text/spec.md) | develop | 2026-10-08 |
 | [ITEM-032](./items/ITEM-032-add-entry-at-start.md) | Add a service entry at the beginning of a Tata Ibadah | Insert at order 1 instead of only after a row, across entries and legacy rows | feat | P2 | M | [030](../specs/030-add-entry-at-start/spec.md) | develop | 2026-10-08 |

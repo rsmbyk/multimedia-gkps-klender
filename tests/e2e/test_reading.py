@@ -819,8 +819,16 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertTrue(stored.startswith(reverse('web-search') + '?q=kasih'), stored)
         page.locator('#railSearch').click()
         page.wait_for_selector('#searchStatus')
-        page.wait_for_timeout(250)
         expect(page.get_by_text('Results for').first).to_be_visible()
+        # The remembered offset is restored with an animation: wait for the scroll to
+        # settle before reading it, rather than racing a fixed pause.
+        page.wait_for_function('''() => {
+          const y = window.scrollY;
+          if (window.__lastY === y) { window.__stable = (window.__stable || 0) + 1; }
+          else { window.__stable = 0; }
+          window.__lastY = y;
+          return window.__stable >= 5 && y > 100;
+        }''', timeout=5000)
         resumed = page.evaluate('window.scrollY')
         self.assertGreater(resumed, 100, f'the result set was not resumed at an offset: {resumed}')
         self.assertLessEqual(resumed, offset)
