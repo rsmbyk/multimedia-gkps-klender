@@ -1,6 +1,6 @@
 ---
 id: ITEM-035
-status: in_review
+status: done
 title: 'Float the entry controls over each item, top-right'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/033-float-entry-controls/spec.md
 branch: chore/033-float-entry-controls
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/285
 archived_at:
 archive_reason:
 bump: patch

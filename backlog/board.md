@@ -43,7 +43,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-035](./items/ITEM-035-float-entry-controls.md) | Float the entry controls over each item, top-right | Preview/Edit/Delete over the text with a brief backing, shown on hover | chore | P2 | S | [033](../specs/033-float-entry-controls/spec.md) | — | 2026-10-08 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-017](./items/ITEM-017-tatib-form-fields.md) | Remove first-section and active controls from Tata Ibadah forms | Create empty active services and preserve activation on edit | fix | P1 | S | [015](../specs/015-tatib-form-fields/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -62,6 +61,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-035](./items/ITEM-035-float-entry-controls.md) | Float the entry controls over each item, top-right | Preview/Edit/Delete over the text with a brief backing, shown on hover | chore | P2 | S | [033](../specs/033-float-entry-controls/spec.md) | develop | 2026-10-08 |
 | [ITEM-049](./items/ITEM-049-stabilise-flaky-e2e.md) | Stabilise the flaky E2E tests | Wait for the date-picker re-anchor and the search-offset restore to settle before asserting | test | P2 | S | [047](../specs/047-stabilise-flaky-e2e/spec.md) | develop | 2026-10-08 |
 | [ITEM-034](./items/ITEM-034-entry-preview-modal.md) | Preview a service entry's full content in a modal | View-only, headerless modal with the full text/passage/lyrics; sticky close; Esc/overlay dismiss | feat | P2 | L | [032](../specs/032-entry-preview-modal/spec.md) | develop | 2026-10-08 |
 | [ITEM-033](./items/ITEM-033-clamp-pane-text.md) | Show only the first lines of a text in the Tata Ibadah pane | Clamp a long text entry to a few lines so the running order stays readable | chore | P2 | S | [031](../specs/031-clamp-pane-text/spec.md) | develop | 2026-10-08 |
