@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-029](./items/ITEM-029-remove-projection-note.md) | Remove the projection status note | Drop the status line under the Project / Stop projecting controls | fix | P2 | S | [027](../specs/027-remove-projection-note/spec.md) | 2026-10-08 |
 
 ## Ready
 
