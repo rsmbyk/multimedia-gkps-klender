@@ -246,7 +246,13 @@ def entry_save(request, pk=None):
             elif after.startswith('l') and after[1:].isdigit():
                 marker = tatib_models.TataIbadahItem.objects.filter(
                     pk=int(after[1:]), tatib=form.tatib).first()
-            if marker is not None:
+            if after == 'start':
+                # Insert at the beginning: shift every row up one and take order 1.
+                for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
+                    model.objects.filter(tatib=form.tatib).update(
+                        order_number=F('order_number') + 1)
+                form.instance.order_number = 1
+            elif marker is not None:
                 # Insert AFTER the clicked element, never before it, shifting both tables.
                 for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
                     model.objects.filter(tatib=form.tatib,

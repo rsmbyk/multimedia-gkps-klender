@@ -693,6 +693,21 @@ class ServiceEntryViewTests(TestCase):
         self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'b'})
         self.assertEqual([e.order_number for e in self.tatib.service_entries.all()], [1, 2])
 
+    def test_a_new_entry_can_be_inserted_at_the_beginning(self):
+        legacy = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, order_number=1, item_type=tatib.TataIbadahItemType.TEXT,
+            title='Old', text='old')
+        self.make(kind=tatib.ServiceEntryKind.TEXT, text='a', order_number=2)
+        self.client.post(self.save_new_url(),
+                         {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'b', 'after': 'start'})
+        legacy.refresh_from_db()
+        self.assertEqual(self.tatib.service_entries.get(text='b').order_number, 1)
+        self.assertEqual(legacy.order_number, 2)              # the legacy row shifted up too
+        self.assertEqual(self.tatib.service_entries.get(text='a').order_number, 3)
+        order = sorted([legacy.order_number]
+                       + [e.order_number for e in self.tatib.service_entries.all()])
+        self.assertEqual(order, [1, 2, 3])                    # still contiguous
+
     # --- refusing ----------------------------------------------------------
 
     def test_a_song_entry_without_verses_is_refused_and_writes_nothing(self):
@@ -811,7 +826,9 @@ class ServiceEntryViewTests(TestCase):
                                        args=[self.tatib.pk])).content.decode()
         self.assertIn('PAMUNGKAHNI', html)
         self.assertNotIn('tatib__item--entry', html)
-        self.assertIn('PAMUNGKAHNI', html.split('entry__add')[0])   # nothing injected before it
+        pane = html.split('id="readBody"')[1]
+        self.assertIn('data-entry-after="start"', pane)      # the start bar rides above it
+        self.assertLess(pane.index('data-entry-after="start"'), pane.index('PAMUNGKAHNI'))
 
     def test_a_scripture_entry_offers_a_jump_to_its_passage(self):
         self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
@@ -938,7 +955,7 @@ class ServiceEntryViewTests(TestCase):
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
         self.assertEqual(html.count('data-entry-edit="'), 1)      # the entry's, not the item's
-        self.assertEqual(html.count('data-entry-open="scripture"'), 2)   # both rows add
+        self.assertEqual(html.count('data-entry-open="scripture"'), 3)   # the start bar and both rows
 
     def test_a_service_with_only_entries_is_not_empty(self):
         self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
