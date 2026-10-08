@@ -1,6 +1,6 @@
 ---
 id: ITEM-049
-status: in_review
+status: done
 title: 'Stabilise the flaky E2E tests'
 type: test
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/047-stabilise-flaky-e2e/spec.md
 branch: test/047-stabilise-flaky-e2e
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/284
 archived_at:
 archive_reason:
 bump: none
