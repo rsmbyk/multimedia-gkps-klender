@@ -42,6 +42,7 @@ class ServiceEntryKind(models.IntegerChoices):
     SCRIPTURE = 1
     SONG = 2
     SECTION_BREAK = 3
+    SINGLE_SCREEN_TEXT = 4
 
 
 class ServiceEntry(models.Model):
@@ -84,7 +85,8 @@ class ServiceEntry(models.Model):
 
     def clean(self):
         errors = {}
-        if self.kind == ServiceEntryKind.TEXT and not (self.text or '').strip():
+        if self.kind in (ServiceEntryKind.TEXT, ServiceEntryKind.SINGLE_SCREEN_TEXT) \
+                and not (self.text or '').strip():
             errors['text'] = 'A text entry needs its text.'
         if self.kind == ServiceEntryKind.SCRIPTURE:
             if not self.book_translation_id or not self.chapter or not self.verse_start:

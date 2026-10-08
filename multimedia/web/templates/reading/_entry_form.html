@@ -105,7 +105,7 @@
            {% if form.title.errors %}aria-invalid="true"{% endif %}>
     {% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
   </div>
-  {% if kind == 'text' %}
+  {% if kind == 'text' or kind == 'single_screen_text' %}
   <div class="editor__field{% if form.text.errors %} is-invalid{% endif %}">
     <label for="id_text">Text</label>
     <textarea name="text" id="id_text" rows="6"{% if form.text.errors %} aria-invalid="true"{% endif %}>{{ form.text.value|default:'' }}</textarea>
@@ -117,7 +117,7 @@
   {% for error in form.non_field_errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
 
   <div class="editor__actions">
-    <button class="editor__save" type="submit"{% if kind == 'text' and not form.text.value %} disabled{% endif %}>Save</button>
+    <button class="editor__save" type="submit"{% if kind == 'text' or kind == 'single_screen_text' %}{% if not form.text.value %} disabled{% endif %}{% endif %}>Save</button>
     <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
   </div>
 </form>

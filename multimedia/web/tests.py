@@ -593,6 +593,7 @@ class ServiceEntryViewTests(TestCase):
     def test_the_new_fragment_offers_the_fields_its_kind_needs(self):
         cases = {
             'text': ['name="title"', 'name="text"'],
+            'single_screen_text': ['name="title"', 'name="text"'],
             'scripture': ['name="book_translation"', 'name="chapter"', 'name="verse_start"',
                           'name="verse_end"'],
             'song': ['name="song"', 'id="entry-verses"'],
@@ -632,12 +633,14 @@ class ServiceEntryViewTests(TestCase):
                             'Label <span class="editor__hint">(optional)</span>')
 
     def test_empty_text_is_rejected_and_field_marked(self):
-        response = self.client.post(self.save_new_url(), {
-            'kind': tatib.ServiceEntryKind.TEXT, 'title': 'Heading', 'text': '   ',
-        })
-        self.assertEqual(response.status_code, 400)
-        self.assertContains(response, 'is-invalid', status_code=400)
-        self.assertContains(response, 'aria-invalid="true"', status_code=400)
+        for kind in (tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT):
+            with self.subTest(kind=kind):
+                response = self.client.post(self.save_new_url(), {
+                    'kind': kind, 'title': 'Heading', 'text': '   ',
+                })
+                self.assertEqual(response.status_code, 400)
+                self.assertContains(response, 'is-invalid', status_code=400)
+                self.assertContains(response, 'aria-invalid="true"', status_code=400)
         self.assertFalse(self.tatib.service_entries.exists())
 
     def test_shared_dialog_has_cancel_but_no_x_button(self):
@@ -1265,6 +1268,17 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('tiga', screens[1])
         self.assertIn('empat', screens[1])
         self.assertIn('lima', screens[2])
+
+    def test_a_single_screen_text_shows_the_whole_body_on_one_screen(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
+                  text='baris satu\nbaris dua\n\nbaris empat')
+        screens = self.screens()
+        self.assertEqual(len(screens), 1)                    # the whole body, one screen
+        self.assertIn('data-fit="single"', screens[0])
+        self.assertIn('Doa', screens[0])
+        self.assertIn('baris satu', screens[0])
+        self.assertIn('baris dua', screens[0])
+        self.assertIn('baris empat', screens[0])
 
     def test_a_song_shows_its_lyrics_alone_in_pairs(self):
         self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])

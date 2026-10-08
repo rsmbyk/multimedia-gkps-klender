@@ -46,7 +46,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [026](026-live-projection-editing/spec.md) | Keep editing while projecting, and keep the display in step | Accepted |
 | [027](027-remove-projection-note/spec.md) | Remove the projection status note | Accepted |
 | [028](028-remove-update-button/spec.md) | Remove the "Update the current state" button | Accepted |
-| [029](029-single-screen-text/spec.md) | Single-screen text entry | Draft |
+| [029](029-single-screen-text/spec.md) | Single-screen text entry | Accepted |
 | [030](030-add-entry-at-start/spec.md) | Add a service entry at the beginning | Draft |
 | [031](031-clamp-pane-text/spec.md) | Clamp a text entry in the Tata Ibadah pane | Draft |
 | [032](032-entry-preview-modal/spec.md) | Entry preview modal | Draft |
