@@ -588,6 +588,11 @@ class ServiceEntryViewTests(TestCase):
         fields.setdefault('order_number', 1)
         return tatib.ServiceEntry.objects.create(tatib=self.tatib, **fields)
 
+    def pane(self):
+        html = self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).content.decode()
+        return html.split('id="readBody"')[1]
+
     # --- the form fragment per kind ----------------------------------------
 
     def test_the_new_fragment_offers_the_fields_its_kind_needs(self):
@@ -862,6 +867,40 @@ class ServiceEntryViewTests(TestCase):
         for kind in ('scripture', 'song', 'text', 'section_break'):
             self.assertIn(f'data-entry-open="{kind}"', html)
         self.assertIn(f'data-entry-after="e{entry.pk}"', html)
+
+    # --- clamping a text in the pane (spec 031) -----------------------------
+
+    def test_a_long_text_is_clamped_to_three_lines_with_an_ellipsis(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, text='satu\ndua\ntiga\nempat\nlima')
+        pane = self.pane()
+        self.assertIn('satu', pane)
+        self.assertIn('dua', pane)
+        self.assertIn('tiga…', pane)                          # the kept third line, marked
+        self.assertNotIn('empat', pane)
+        self.assertNotIn('lima', pane)
+        self.assertIn('data-clipped="true"', pane)
+
+    def test_blank_lines_count_toward_the_pane_clamp(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, text='satu\n\ntiga\nempat')
+        pane = self.pane()
+        self.assertIn('data-clipped="true"', pane)
+        self.assertIn('tiga…', pane)
+        self.assertNotIn('empat', pane)
+
+    def test_a_short_text_is_not_clamped(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, text='satu\ndua\ntiga')
+        pane = self.pane()
+        self.assertNotIn('tiga…', pane)
+        self.assertNotIn('data-clipped', pane)
+
+    def test_a_legacy_text_row_is_clamped_too(self):
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT, order_number=1,
+            title='Old', text='satu\ndua\ntiga\nempat')
+        pane = self.pane()
+        self.assertIn('tiga…', pane)
+        self.assertNotIn('empat', pane)
+        self.assertIn('data-clipped="true"', pane)
 
     def test_invalid_insertion_form_keeps_its_after_marker(self):
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')

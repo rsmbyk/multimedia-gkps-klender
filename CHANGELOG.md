@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-08
+
+### Changed
+
+- A text entry's pane shows only its first three lines, hard-truncated with an ellipsis; the hidden remainder is marked so the preview can be offered.
+
 ## [1.2.1] - 2026-10-08
 
 ### Fixed

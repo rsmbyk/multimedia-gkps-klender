@@ -1,7 +1,7 @@
 # Spec 031: Clamp a text entry in the Tata Ibadah pane
 
 - **ID:** 031
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-033
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
