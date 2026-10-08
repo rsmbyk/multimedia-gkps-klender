@@ -1,7 +1,7 @@
 # Spec 028: Remove the "Update the current state" button
 
 - **ID:** 028
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-030
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

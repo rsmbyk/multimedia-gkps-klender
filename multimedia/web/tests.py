@@ -1342,8 +1342,6 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('gkps-service-display', html)          # the same channel
         self.assertIn('data-project-label', html)            # the icon rides beside a label
         self.assertIn('Stop projecting', html)               # the label it takes while displaying
-        self.assertIn('Update the current state', html)
-        self.assertIn('data-project-update hidden', html)    # the update control waits its turn
         # it rides with the date, at the top right, above the service's own words
         self.assertLess(html.index('read__head-top'), html.index('data-project-open'))
         self.assertLess(html.index('data-project-open'), html.index('readBody'))

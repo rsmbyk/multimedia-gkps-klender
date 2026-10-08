@@ -28,7 +28,8 @@ it, never on the server).
   There is no saved/unsaved distinction, nothing to discard, and no "leave without saving" question.
 - After every successful entry add / edit / delete / reorder, the running projector re-reads and
   follows, keeping its place.
-- The **Update the current state** button keeps working as the manual re-read.
+- The projector keeps its place across a re-read. *(Spec 028 removed the manual **Update the current
+  state** control; the automatic follow is now the only re-read.)*
 
 ### Out of scope
 
@@ -119,11 +120,9 @@ it, never on the server).
 - **When** I drop an entry into a new position
 - **Then** the projector re-reads and shows the new order without my pressing Update the current state
 
-### Scenario: The manual re-read still works
+### Scenario: A re-read keeps the place (manual control superseded by spec 028)
 
-- **Given** the projector is open and showing a Tata Ibadah, and something it shows was changed
-  elsewhere
-- **When** I press Update the current state
+- **Given** the projector is open and showing a Tata Ibadah, and a saved change makes it re-read
 - **Then** the projector re-reads the page and keeps its place, as before
 
 ### Scenario: A failed reorder write is surfaced
@@ -136,6 +135,7 @@ it, never on the server).
 
 - Domain/app tests: `multimedia/web/tests.py`.
 - E2E: `tests/e2e/test_projector.py`, `tests/e2e/test_reorder.py`.
+- Amended by: spec 028 (the manual Update control is removed; the automatic follow remains).
 - Implementation: `static/web/display.js`, `static/web/projector.js`, `static/web/reorder.js`,
   `static/web/entries.js`, `static/web/reading.js`,
   `multimedia/web/templates/reading/{base,tatib}.html`.

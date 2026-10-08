@@ -457,9 +457,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             return page.evaluate("""() => {
               const group = document.querySelector('[data-project-group]');
               const action = group.querySelector('[data-project-open]');
-              const update = group.querySelector('[data-project-update]');
               const css = getComputedStyle(action);
-              const updateCss = getComputedStyle(update);
               const tokenColor = property => {
                 const probe = document.createElement('span');
                 probe.style.color = `var(${property})`;
@@ -479,8 +477,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
               return {displaying: group.dataset.displaying, background: css.backgroundColor,
                 color: css.color, border: css.borderTopColor,
                 primary: tokenBackground('--active-bg'), primaryInk: tokenColor('--active-ink'),
-                danger: tokenColor('--danger'), updateBackground: updateCss.backgroundColor,
-                updateColor: updateCss.color, updateBorder: updateCss.borderTopColor};
+                danger: tokenColor('--danger')};
             }""")
 
         def wait_for_state(expected_state):
@@ -508,9 +505,6 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             self.assertEqual(active['displaying'], 'true')
             self.assertEqual(active['color'], active['danger'])
             self.assertEqual(active['border'], active['danger'])
-            self.assertEqual(active['updateBackground'], idle['updateBackground'])
-            self.assertEqual(active['updateColor'], idle['updateColor'])
-            self.assertEqual(active['updateBorder'], idle['updateBorder'])
             page.locator('[data-project-open]').click()
             popup.close()
 
@@ -518,7 +512,6 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = self._page(self._service_url(), context)
         self.assertIn('Project', page.locator('[data-project-open]').inner_text())
-        self.assertTrue(page.locator('[data-project-update]').is_hidden())
 
         with page.expect_popup() as popup_info:
             page.click('[data-project-open]')
@@ -526,14 +519,12 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         projector.wait_for_load_state('networkidle')
         self.assertIn(self._projector_url(), projector.url)
 
-        # the button now offers the way out and the way to refresh
+        # the button now offers the way out
         self.assertIn('Stop projecting', page.locator('[data-project-open]').inner_text())
-        self.assertFalse(page.locator('[data-project-update]').is_hidden())
 
         # a second TAB of the same browser is already in display mode
         tab = self._page(self._service_url(), context)
         self.assertIn('Stop projecting', tab.locator('[data-project-open]').inner_text())
-        self.assertFalse(tab.locator('[data-project-update]').is_hidden())
         self.assertEqual(tab.get_attribute('[data-project-group]', 'data-displaying'), 'true')
 
         # spec 026: an entry write is NOT declined while projecting -- the modal opens in
@@ -693,29 +684,3 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.wait_for_timeout(900)
         self.assertTrue([url for url in asked if self._projector_url() in url],
                         f'the display must re-read after a reorder: {asked}')
-
-    # --- Update re-reads what is on screen -----------------------------------
-
-    def test_update_re_reads_the_page_and_keeps_the_place(self):
-        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
-        page = self._page(self._service_url(), context)
-        with page.expect_popup() as popup_info:
-            page.click('[data-project-open]')
-        projector = popup_info.value
-        projector.wait_for_load_state('networkidle')
-        projector.keyboard.press('ArrowRight')            # the text entry
-        projector.wait_for_timeout(200)
-        projector.keyboard.press('ArrowRight')            # the section break
-        projector.wait_for_timeout(200)
-        self.assertIn('Kasih karunia', projector.locator('.screen.is-active').inner_text())
-        projector.keyboard.press('ArrowRight')            # the section break: a blank screen
-        projector.wait_for_timeout(200)
-        self.assertEqual(projector.locator('.screen.is-active').inner_text().strip(), '')
-
-        asked = []
-        projector.on('request', lambda request: asked.append(request.url))
-        page.click('[data-project-update]')
-        page.wait_for_timeout(700)
-        self.assertTrue([url for url in asked if self._projector_url() in url],
-                        f'Update must re-read the page: {asked}')     # fresh lyrics reach it
-        self.assertEqual(projector.locator('.screen.is-active').inner_text().strip(), '')

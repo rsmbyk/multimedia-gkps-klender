@@ -1,6 +1,6 @@
 ---
 id: ITEM-030
-status: speccing
+status: done
 title: 'Remove the Update the current state button'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/028-remove-update-button/spec.md
-branch:
-pr:
+branch: fix/028-remove-update-button
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/278
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.0.2
 ---
 
 # ITEM-030: Remove the Update the current state button
