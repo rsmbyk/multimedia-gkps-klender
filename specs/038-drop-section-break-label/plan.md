@@ -1,6 +1,6 @@
 # Plan 038: Remove the label from section-break entries
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-040

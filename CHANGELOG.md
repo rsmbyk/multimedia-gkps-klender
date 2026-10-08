@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.6] - 2026-10-08
+
+### Changed
+
+- A section-break entry no longer has a label: the editor offers no label field and the divider shows none. A text entry keeps its title and a legacy end-of-section row keeps its note.
+
 ## [1.3.5] - 2026-10-08
 
 ### Changed

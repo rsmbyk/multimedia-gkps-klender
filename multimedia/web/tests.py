@@ -634,10 +634,11 @@ class ServiceEntryViewTests(TestCase):
         self.assertContains(response, 'data-verses-trigger')
         self.assertContains(response, 'data-verses-summary')
 
-    def test_text_and_break_titles_say_optional(self):
+    def test_only_a_text_title_says_optional(self):
         self.assertContains(self.client.get(self.new_url('text')), 'Title <span class="editor__hint">(optional)</span>')
-        self.assertContains(self.client.get(self.new_url('section_break')),
-                            'Label <span class="editor__hint">(optional)</span>')
+        break_form = self.client.get(self.new_url('section_break')).content.decode()
+        self.assertNotIn('name="title"', break_form)          # a break has no label (spec 038)
+        self.assertNotIn('Label', break_form)
 
     def test_empty_text_is_rejected_and_field_marked(self):
         for kind in (tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT):
@@ -948,8 +949,8 @@ class ServiceEntryViewTests(TestCase):
             text='Doa syafaat', order_number=2)
         pane = self.pane()
         self.assertEqual(pane.count('class="tatib__eos"'), 2)   # one divider each
-        self.assertIn('Persembahan', pane)                     # the break's own label
-        self.assertIn('Doa syafaat', pane)                     # the legacy note
+        self.assertNotIn('Persembahan', pane)                  # a break carries no label (spec 038)
+        self.assertIn('Doa syafaat', pane)                     # the legacy note still shows
         self.assertNotIn('tatib__item--entry', pane)           # a break is not a heading item
         self.assertIn('data-entry-edit="', pane)               # the divider carries its controls
 

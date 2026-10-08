@@ -46,9 +46,10 @@ class ServiceEntryTests(TestCase):
         entry = self._entry(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='Kasih karunia')
         self.assertEqual(entry.resolve(), ('Salam', 'Kasih karunia'))
 
-    def test_a_section_break_resolves_to_its_label_and_no_body(self):
+    def test_a_section_break_resolves_to_nothing(self):
+        # A break is a divider, not a titled entry (spec 038): any stored title is unused.
         entry = self._entry(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='PAMUNGKAHNI')
-        self.assertEqual(entry.resolve(), ('PAMUNGKAHNI', ''))
+        self.assertEqual(entry.resolve(), ('', ''))
 
     def test_a_scripture_entry_cites_its_range_and_joins_its_verses(self):
         entry = self._entry(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,

@@ -59,8 +59,10 @@ class TextEntryForm(ServiceEntryForm):
 
 
 class SectionBreakEntryForm(ServiceEntryForm):
+    """A break is just a break: no label (spec 038)."""
+
     class Meta(ServiceEntryForm.Meta):
-        fields = ['kind', 'title']
+        fields = ['kind']
 
 
 class ScriptureEntryForm(ServiceEntryForm):
