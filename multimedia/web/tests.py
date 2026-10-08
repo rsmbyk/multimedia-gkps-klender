@@ -827,8 +827,8 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('PAMUNGKAHNI', html)
         self.assertNotIn('tatib__item--entry', html)
         pane = html.split('id="readBody"')[1]
-        self.assertIn('data-entry-after="start"', pane)      # the start bar rides above it
-        self.assertLess(pane.index('data-entry-after="start"'), pane.index('PAMUNGKAHNI'))
+        self.assertIn('data-entry-start', pane)              # the start bar rides above it
+        self.assertLess(pane.index('data-entry-start'), pane.index('PAMUNGKAHNI'))
 
     def test_a_scripture_entry_offers_a_jump_to_its_passage(self):
         self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,

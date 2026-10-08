@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-08
+
+### Fixed
+
+- The "add at the beginning" start bar gets its own markup, so it no longer collides with the per-item add controls.
+
 ## [1.2.0] - 2026-10-08
 
 ### Added
