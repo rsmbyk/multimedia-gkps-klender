@@ -271,7 +271,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         expect(item).to_be_focused()
         self.assertEqual(item.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
         page.wait_for_timeout(300)
-        expect(page.locator('.entry__add').first).to_have_css('opacity', '0')
+        expect(page.locator('.entry__acts').first).to_have_css('opacity', '0')
 
     def test_editing_an_entry_and_deleting_it_after_a_confirmation(self):
         page = self._page(reverse('web-tatib-service', args=[self.full.pk]))
@@ -310,9 +310,9 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.mouse.move(1400, 850)
         expect(saved_item).to_be_focused()
         self.assertEqual(page.evaluate('getComputedStyle(document.activeElement).outlineStyle'), 'none')
-        controls = page.locator('.entry__add .entry__ctrl')
+        controls = page.locator('.entry__acts .entry__ctrl')
         self.assertEqual(controls.count(), 2)
-        expect(page.locator('.entry__add').first).to_have_css('opacity', '0')
+        expect(page.locator('.entry__acts').first).to_have_css('opacity', '0')
         self.assertEqual(page.locator('.tatib__item--entry').count(), 1)
 
         self._reveal(page)

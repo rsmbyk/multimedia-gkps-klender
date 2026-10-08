@@ -50,7 +50,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [030](030-add-entry-at-start/spec.md) | Add a service entry at the beginning | Accepted |
 | [031](031-clamp-pane-text/spec.md) | Clamp a text entry in the Tata Ibadah pane | Accepted |
 | [032](032-entry-preview-modal/spec.md) | Entry preview modal | Accepted |
-| [033](033-float-entry-controls/spec.md) | Float the entry controls over each item, top-right | Draft |
+| [033](033-float-entry-controls/spec.md) | Float the entry controls over each item, top-right | Accepted |
 | [034](034-item-hover-highlight/spec.md) | Highlight a whole service entry item on hover | Draft |
 | [035](035-section-break-separation/spec.md) | Give the section break a clear separation | Draft |
 | [036](036-add-bar-outside-item-hover/spec.md) | Keep the add bar out of the item hover | Draft |

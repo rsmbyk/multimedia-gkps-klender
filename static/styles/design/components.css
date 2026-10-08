@@ -1480,23 +1480,24 @@ kbd {
   padding: 0 0 10px;
 }
 
-/* ---------- the entry preview (spec 032) ---------------------------------- */
+/* ---------- the entry controls (spec 032/033) ----------------------------- */
 
-/* The pane row is the positioning context for its Preview control, which shows on
-   hover or keyboard focus. */
-.tatib__item { position: relative; }
-.entry__preview {
+/* The controls belong to their item: preview, Edit and Delete float at its
+   top-right, over the words, on a brief backing. They show while the item is
+   hovered or holds keyboard focus, and always where there is no hover. */
+.tatib__item, .tatib__eos { position: relative; }
+.entry__acts {
   position: absolute; right: 8px; top: 8px;
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 9px; border: 1px solid var(--divider); border-radius: 8px;
-  background: var(--canvas); color: var(--head-ink); cursor: pointer;
-  font: 500 12px/1.2 ui-sans-serif, system-ui, sans-serif;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px; border: 1px solid var(--divider); border-radius: 9px;
+  background: var(--canvas);
   opacity: 0; transition: opacity var(--ease);
 }
-.entry__preview svg { width: 14px; height: 14px; }
-.tatib__item:hover .entry__preview { opacity: 1; }
-.entry__preview:hover { color: var(--ink); border-color: var(--focus); }
-.entry__preview:focus-visible { opacity: 1; outline: 2px solid var(--focus); outline-offset: 2px; }
+.tatib__item:hover .entry__acts,
+.tatib__eos:hover .entry__acts,
+.entry__acts:focus-within { opacity: 1; }
+/* A touch device has no hover to reveal them with: show them outright. */
+@media (hover: none) and (pointer: coarse) { .entry__acts { opacity: 1; } }
 
 .preview {
   width: min(44rem, calc(100vw - 32px)); max-height: calc(100vh - 48px);
@@ -1613,11 +1614,6 @@ kbd {
   color: var(--danger); border-color: var(--danger);
   background: color-mix(in srgb, var(--danger) 12%, transparent);
 }
-
-/* Edit and Delete act on the entry above, so they sit at the row's far end,
-   away from the four ways of adding something after it -- and they travel as one
-   group, so a narrow column wraps the pair together instead of splitting them. */
-.entry__acts { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
 
 /* ---------- the entry modals ---------------------------------------------- */
 

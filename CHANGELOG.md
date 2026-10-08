@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-08
+
+### Changed
+
+- An entry's controls (preview, Edit, Delete) float at its top-right over the text on a brief backing, shown while the item is hovered or holds keyboard focus.
+
 ## [1.3.0] - 2026-10-08
 
 ### Added

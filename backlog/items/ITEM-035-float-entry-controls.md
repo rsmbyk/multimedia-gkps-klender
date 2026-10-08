@@ -1,6 +1,6 @@
 ---
 id: ITEM-035
-status: speccing
+status: in_review
 title: 'Float the entry controls over each item, top-right'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/033-float-entry-controls/spec.md
-branch:
+branch: chore/033-float-entry-controls
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.1
 ---
 
 # ITEM-035: Float the entry controls over each item, top-right

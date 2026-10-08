@@ -941,6 +941,18 @@ class ServiceEntryViewTests(TestCase):
         self.make(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Doa')
         self.assertNotIn('data-preview-open', self.html())
 
+    # --- the entry controls live in the item (spec 033) ---------------------
+
+    def test_the_entry_controls_live_in_the_item_not_the_add_bar(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
+        html = self.html()
+        item = html.split(f'data-entry-pk="{entry.pk}"')[1].split('</section>')[0]
+        self.assertIn(f'data-entry-edit="{entry.pk}"', item)
+        self.assertIn(f'data-entry-delete="{entry.pk}"', item)
+        bar = html.split(f'data-entry-after="e{entry.pk}"')[1].split('</div>')[0]
+        self.assertNotIn('entry__ctrl', bar)
+        self.assertNotIn('data-entry-edit', bar)
+
     def test_invalid_insertion_form_keeps_its_after_marker(self):
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
         response = self.client.post(self.save_new_url(), {
