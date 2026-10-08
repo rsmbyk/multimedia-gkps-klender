@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/028-remove-update-button/spec.md
 branch: fix/028-remove-update-button
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/278
 archived_at:
 archive_reason:
 bump: patch
