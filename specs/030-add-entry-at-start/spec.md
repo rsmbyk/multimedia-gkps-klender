@@ -1,7 +1,7 @@
 # Spec 030: Add a service entry at the beginning
 
 - **ID:** 030
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-032
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

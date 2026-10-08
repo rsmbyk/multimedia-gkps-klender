@@ -131,6 +131,22 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         """The order's own write (spec 026): a drop or a settled keyboard move posts it."""
         return page.expect_response(lambda response: '/editor/entry/reorder/' in response.url)
 
+    # --- adding at the start (spec 030) --------------------------------------
+
+    def test_the_start_bar_adds_an_entry_at_the_top(self):
+        page = self._page(self._service_url())
+        bar = page.locator('#readBody .entry__add--start')
+        self.assertEqual(bar.count(), 1)
+        bar.locator('[data-entry-open="text"]').click()
+        page.wait_for_selector('dialog[open]')
+        self.assertEqual(page.input_value('input[name="after"]'), 'start')
+        page.fill('textarea[name="text"]', 'Pembuka baru')
+        page.click('.editor__save')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        page.wait_for_timeout(500)
+        first = page.locator('#readBody section[data-entry-pk]').first
+        self.assertIn('Pembuka baru', first.inner_text())
+
     # --- where the chrome lives ----------------------------------------------
 
     def test_the_handles_are_in_the_sidebar_and_the_endpoint_below_its_filter(self):

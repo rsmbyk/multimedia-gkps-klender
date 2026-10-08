@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-08
+
+### Added
+
+- Add a service entry at the beginning of a Tata Ibadah: a start bar above the first row inserts at order 1, shifting entries and legacy rows together.
+
 ## [1.1.0] - 2026-10-08
 
 ### Added

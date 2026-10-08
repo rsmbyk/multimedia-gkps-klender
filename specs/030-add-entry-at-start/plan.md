@@ -1,6 +1,6 @@
 # Plan 030: Add a service entry at the beginning
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-032

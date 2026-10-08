@@ -1,6 +1,6 @@
 ---
 id: ITEM-032
-status: speccing
+status: in_review
 title: 'Add a service entry at the beginning of a Tata Ibadah'
 type: feat
 priority: P2
@@ -8,12 +8,12 @@ effort: M
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/030-add-entry-at-start/spec.md
-branch:
+branch: feat/030-add-entry-at-start
 pr:
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.2.0
 ---
 
 # ITEM-032: Add a service entry at the beginning of a Tata Ibadah
