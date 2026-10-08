@@ -1,6 +1,6 @@
 ---
 id: ITEM-036
-status: in_review
+status: done
 title: 'Highlight a whole service entry item on hover'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/034-item-hover-highlight/spec.md
 branch: chore/034-item-hover-highlight
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/286
 archived_at:
 archive_reason:
 bump: patch
