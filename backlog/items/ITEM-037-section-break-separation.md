@@ -1,6 +1,6 @@
 ---
 id: ITEM-037
-status: in_review
+status: done
 title: 'Give the section break a clear separation in the Tata Ibadah pane'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/035-section-break-separation/spec.md
 branch: chore/035-section-break-separation
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/287
 archived_at:
 archive_reason:
 bump: patch
