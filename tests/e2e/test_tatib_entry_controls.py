@@ -32,6 +32,9 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=1, kind=tatib.ServiceEntryKind.TEXT,
             title='Salam', text='Kasih karunia beserta kita')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.TEXT,
+            title='Penutup', text='Amin')
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -94,6 +97,40 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         expect(bar).to_have_css('opacity', '0')
         item.hover()
         expect(bar).to_have_css('opacity', '1')
+
+    def test_hovering_an_item_reveals_the_add_rows_around_it(self):
+        page = self._page()
+        second = page.locator('.tatib__item').nth(1)
+        above = page.locator('.entry__add').nth(0)     # the row between the two items
+        below = page.locator('.entry__add').nth(1)     # the row after the second item
+        page.mouse.move(1400, 850)
+        expect(above).to_have_css('opacity', '0')
+        expect(below).to_have_css('opacity', '0')
+        second.hover()
+        expect(above).to_have_css('opacity', '1')
+        expect(below).to_have_css('opacity', '1')
+
+    def test_focus_within_an_item_reveals_the_add_rows_around_it(self):
+        page = self._page()
+        second = page.locator('.tatib__item').nth(1)
+        above = page.locator('.entry__add').nth(0)
+        below = page.locator('.entry__add').nth(1)
+        page.mouse.move(1400, 850)
+        expect(above).to_have_css('opacity', '0')
+        second.locator('[data-entry-edit]').first.focus()
+        expect(above).to_have_css('opacity', '1')
+        expect(below).to_have_css('opacity', '1')
+
+    def test_moving_onto_an_add_row_shows_only_that_row(self):
+        page = self._page()
+        second = page.locator('.tatib__item').nth(1)
+        above = page.locator('.entry__add').nth(0)
+        below = page.locator('.entry__add').nth(1)
+        second.hover()
+        expect(below).to_have_css('opacity', '1')
+        above.hover()
+        expect(above).to_have_css('opacity', '1')
+        expect(below).to_have_css('opacity', '0')
 
     def test_the_no_hover_rule_shows_the_controls(self):
         # Chromium in CI cannot emulate a touch (no-hover, coarse-pointer) device, so

@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-10-08
+
+### Changed
+
+- Hovering (or focusing) an entry reveals the add row above it and the add row below it, so either side can be inserted into.
+
 ## [1.3.4] - 2026-10-08
 
 ### Fixed
