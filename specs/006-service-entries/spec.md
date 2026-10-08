@@ -345,6 +345,23 @@ operation, and existing no-JavaScript navigation.
 - **Then** their responses are unchanged, and the existing Tata Ibadah items, docks, sources and
   projection behave exactly as before
 
+### Accepted amendment — editing and the display stay live (owner, 2026-10-08)
+
+Spec 026 supersedes the lock and the transactional reorder in this spec:
+
+- **The entry lock is removed.** Projecting no longer refuses an add, edit, delete or reorder, in
+  any tab of the displaying browser. The domain rule *"The entry lock belongs to the browser that
+  is displaying"* and the scenario *"Display mode blocks entry edits across that browser's tabs"*
+  no longer hold.
+- **Reorder is no longer held until Save.** A completed drop, or a settled keyboard move, is
+  written at once; there is no Save, no Discard, and no "leaving with unsaved changes" question.
+  The rule *"Reorder is transactional in the UI"* and the scenario *"Reorder holds until saved"*
+  no longer hold.
+- **The display re-reads after every saved change.** An entry add / edit / delete or a reorder
+  makes the running projector follow without the operator pressing Update.
+
+See [spec 026](../026-live-projection-editing/spec.md).
+
 ## Traceability
 
 Filled per slice as it lands.

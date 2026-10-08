@@ -48,16 +48,8 @@ class SoftDeleteModel(models.Model):
         return self.soft_delete(using=using)
 
 
-class Language(models.Model):
-    name = models.CharField(max_length=16, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
 class Book(SoftDeleteModel):
-    lang = models.ForeignKey(Language, models.PROTECT)
-    name = models.CharField(max_length=32)
+    name = models.CharField(max_length=32, unique=True)
     short_name = models.CharField(
         max_length=8,
         blank=True,
@@ -65,11 +57,10 @@ class Book(SoftDeleteModel):
     is_hymn_book = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.name} ({self.lang})'
+        return self.name
 
     class Meta:
-        ordering = ['-is_hymn_book', 'name', 'lang']
-        unique_together = ['lang', 'name']
+        ordering = ['-is_hymn_book', 'name']
 
 
 class Key(models.TextChoices):

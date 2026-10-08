@@ -26,6 +26,19 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | 2026-10-07 |
+| [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | 2026-10-07 |
+| [ITEM-017](./items/ITEM-017-tatib-form-fields.md) | Remove first-section and active controls from Tata Ibadah forms | Create empty active services and preserve activation on edit | fix | P1 | S | [015](../specs/015-tatib-form-fields/spec.md) | 2026-10-07 |
+| [ITEM-018](./items/ITEM-018-tatib-custom-datepicker.md) | Use a custom date picker for Tata Ibadah forms | Replace native date input with an accessible calendar | feat | P1 | M | [016](../specs/016-tatib-custom-datepicker/spec.md) | 2026-10-07 |
+| [ITEM-019](./items/ITEM-019-tatib-full-month-header.md) | Show a full month name in the Tata Ibadah date header | Use the full Indonesian month name above dated service titles | fix | P2 | S | [017](../specs/017-tatib-full-month-header/spec.md) | 2026-10-07 |
+| [ITEM-020](./items/ITEM-020-project-button-styles.md) | Style Project and Stop projecting as primary and danger actions | Style projection start/stop according to action state | chore | P2 | S | [018](../specs/018-project-button-styles/spec.md) | 2026-10-07 |
+| [ITEM-021](./items/ITEM-021-search-reset-state.md) | Clear remembered search when the home is reset | Reset stale query/scroll state while preserving results during sidebar browsing | fix | P1 | S | [019](../specs/019-search-reset-state/spec.md) | 2026-10-07 |
+| [ITEM-022](./items/ITEM-022-tatib-date-popover-default.md) | Use a date popover with a Sunday default | Show calendar beneath the field and preselect the nearest Sunday for a new service | feat | P1 | S | [020](../specs/020-tatib-date-popover-default/spec.md) | 2026-10-07 |
+| [ITEM-024](./items/ITEM-024-calendar-over-modal.md) | Let the Tata Ibadah date picker overlap the editor modal | Keep the open calendar visible over the scrollable modal content and within the viewport | fix | P1 | S | [022](../specs/022-datepicker-over-modal/spec.md) | 2026-10-07 |
+| [ITEM-025](./items/ITEM-025-emphasize-sundays.md) | Make Sundays more prominent in the Tata Ibadah date picker | Add a theme-aware Sunday cue while preserving selected and today states | chore | P2 | S | [023](../specs/023-emphasize-sundays/spec.md) | 2026-10-08 |
+| [ITEM-026](./items/ITEM-026-square-date-cells.md) | Make Tata Ibadah calendar date cells square | Equal-width/height date cells while preserving Sunday accents and popover behavior | chore | P2 | S | [024](../specs/024-square-date-cells/spec.md) | 2026-10-08 |
+| [ITEM-027](./items/ITEM-027-quiet-modal-focus.md) | Avoid automatic row outlines after modal close | Quiet automatic restoration across modals without removing deliberate keyboard focus | fix | P1 | M | [025](../specs/025-quiet-modal-focus/spec.md) | 2026-10-08 |
+| [ITEM-028](./items/ITEM-028-live-projection-editing.md) | Keep editing while projecting, and follow every change | Allow add/edit/delete/reorder during projection; reorder persists on drop; the display follows every change | feat | P1 | M | [026](../specs/026-live-projection-editing/spec.md) | 2026-10-08 |
 
 ## In review
 

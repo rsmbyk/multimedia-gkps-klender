@@ -10,6 +10,31 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-08
+
+### Changed
+
+- The projection lock is removed: a Tata Ibadah's entries can be added, edited, deleted and reordered while it is being projected, from any tab of the projecting browser.
+- A reorder is written as soon as it is dropped, or a keyboard move settles; the Save/Discard strip and the unsaved-order leave prompt are gone.
+- The projector follows every saved change: an add, edit, delete or reorder makes the open display re-read by itself, without pressing Update the current state.
+
+### Fixed
+
+- Tata Ibadah date-picker day cells and blank slots are square across supported viewport sizes while preserving rounded corners, Sunday emphasis, and calendar behavior.
+- Automatic modal focus restoration no longer leaves row outlines or idle edit actions visible; deliberate keyboard focus indicators remain visible.
+
+## [0.11.6] - 2026-10-08
+
+### Changed
+
+- Sunday headings and dates stand out in the Tata Ibadah date picker with bold, theme-aware accents and lightly tinted date cells; selected dates and today indicators remain distinct.
+
+## [0.11.5] - 2026-10-07
+
+### Fixed
+
+- The Tata Ibadah date picker now escapes the editor's scroll clipping, stays anchored while scrolling, and remains in the viewport.
+
 ## [0.11.4] - 2026-10-06
 
 ### Changed

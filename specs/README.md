@@ -30,6 +30,20 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [010](010-fast-pr-feedback-ci/spec.md) | Fast PR feedback and repository CI | Accepted |
 | [011](011-hymn-song-order/spec.md) | Sort hymn book songs by number and sub-number | Accepted |
 | [012](012-hide-songbook-fields/spec.md) | Hide short name and hymn-book fields in songbook forms | Accepted |
+| [013](013-songbook-language-removal/spec.md) | Remove songbook language and merge duplicate songbooks | Accepted |
+| [014](014-editor-focus-cleanup/spec.md) | Clear stale row-edit visibility after modal close | Accepted |
+| [015](015-tatib-form-fields/spec.md) | Remove first-section and active controls from Tata Ibadah forms | Accepted |
+| [016](016-tatib-custom-datepicker/spec.md) | Use a custom date picker for Tata Ibadah forms | Accepted |
+| [017](017-tatib-full-month-header/spec.md) | Show a full month name in the Tata Ibadah date header | Accepted |
+| [018](018-project-button-styles/spec.md) | Style Project and Stop projecting as primary and danger actions | Accepted |
+| [019](019-search-reset-state/spec.md) | Clear remembered search when the home is reset | Accepted |
+| [020](020-tatib-date-popover-default/spec.md) | Use a date popover with a Sunday default | Accepted |
+| [021](021-hide-projection-lock-note/spec.md) | Hide the projection-lock explanation | Superseded by 026 |
+| [022](022-datepicker-over-modal/spec.md) | Let the Tata Ibadah date picker overlap the editor modal | Accepted |
+| [023](023-emphasize-sundays/spec.md) | Make Sundays more prominent in the Tata Ibadah date picker | Accepted |
+| [024](024-square-date-cells/spec.md) | Make Tata Ibadah calendar date cells square | Accepted |
+| [025](025-quiet-modal-focus/spec.md) | Avoid automatic row outlines after modal close | Accepted |
+| [026](026-live-projection-editing/spec.md) | Keep editing while projecting, and keep the display in step | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.

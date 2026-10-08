@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
 
@@ -11,11 +12,10 @@ from multimedia.tatib.models import ServiceEntry, ServiceEntryKind, TataIbadah
 class SearchSongsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        lang = models.Language.objects.create(name='Indonesian')
         cls.nkb = models.Book.objects.create(
-            lang=lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
         cls.other = models.Book.objects.create(
-            lang=lang, name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
+            name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
         cls.pagi = models.Song.objects.create(book=cls.nkb, number=12, title='Di Waktu Pagi', key='c')
         cls.malam = models.Song.objects.create(book=cls.nkb, number=13, title='Di Waktu Malam', key='d')
         cls.kj = models.Song.objects.create(book=cls.other, number=12, title='Haleluya', key='g')
@@ -45,11 +45,21 @@ class SearchSongsTests(TestCase):
         self.assertNotIn(self.pagi, search_songs('waktu pagi'))
 
 
+class BookContractTests(TestCase):
+    def test_songbook_has_no_language_field(self):
+        self.assertNotIn('lang', {field.name for field in models.Book._meta.get_fields()})
+
+    def test_songbook_names_are_globally_unique(self):
+        models.Book.objects.create(name='One name')
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                models.Book.objects.create(name='One name')
+
+
 class SoftDeleteTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        language = models.Language.objects.create(name='Simalungun')
-        cls.book = models.Book.objects.create(lang=language, name='Ende-Enden', short_name='EE')
+        cls.book = models.Book.objects.create(name='Ende-Enden', short_name='EE')
         cls.song = models.Song.objects.create(book=cls.book, number=1, title='Ende')
         cls.verse = models.Verse.objects.create(song=cls.song, number=1, lyric='Lirik')
 
@@ -72,8 +82,7 @@ class SoftDeleteAdminTests(TestCase):
         User = get_user_model()
         cls.admin = User.objects.create(
             username='soft-delete-admin', is_staff=True, is_superuser=True)
-        language = models.Language.objects.create(name='Admin language')
-        cls.book = models.Book.objects.create(lang=language, name='Admin songbook')
+        cls.book = models.Book.objects.create(name='Admin songbook')
         cls.song = models.Song.objects.create(book=cls.book, title='Referenced song')
         models.Verse.objects.create(song=cls.song, number=1, lyric='A verse')
         service = TataIbadah.objects.create(name='Admin service')

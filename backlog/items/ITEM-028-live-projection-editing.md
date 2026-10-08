@@ -8,7 +8,7 @@ effort: M
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/026-live-projection-editing/spec.md
-branch:
+branch: feat/026-live-projection-editing
 pr:
 archived_at:
 archive_reason:

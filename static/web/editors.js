@@ -14,6 +14,13 @@
   var content = document.getElementById('editorContent');
   var status = document.getElementById('editorStatus');
   var trigger = null;
+  var focusTools = window.gkpsFocus || {
+    restoreQuietly: function (target) {
+      if (!target) return;
+      target.classList.add('focus-restore-quiet');
+      target.focus({ preventScroll: true });
+    }
+  };
 
   function urlFor(kind, id, book) {
     var pattern = modal.dataset.editorNew;
@@ -40,8 +47,10 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.text();
     }).then(function (html) {
+      document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
       content.innerHTML = html;
       if (!modal.open) modal.showModal();
+      document.dispatchEvent(new CustomEvent('date-picker:initialize'));
       var first = content.querySelector('input:not([type=hidden]), select, textarea');
       if (first) first.focus();
     }).catch(function (error) {
@@ -60,8 +69,10 @@
     }).then(function (response) {
       if (response.status === 400) {
         return response.text().then(function (html) {
+          document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
           content.innerHTML = html;
           announce('Please correct the highlighted fields.');
+          document.dispatchEvent(new CustomEvent('date-picker:initialize'));
           var invalid = content.querySelector('.is-invalid input, .is-invalid select, .is-invalid textarea');
           if (invalid) invalid.focus();
           /* the entry modals re-wire their own controls onto the fresh fragment */
@@ -76,8 +87,9 @@
         announce('Could not save. Try again.');
         return null;
       }
-      return response.json().then(function (data) {
+      response.json().then(function (data) {
         announce('');
+        trigger = null;
         close();
         document.dispatchEvent(new CustomEvent('editor:saved', { detail: data }));
       });
@@ -107,9 +119,18 @@
   });
 
   modal.addEventListener('close', function () {
+    delete modal.dataset.focusRestorePending;
+    document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
     content.innerHTML = '';
     announce('');
-    if (trigger && document.contains(trigger)) trigger.focus();
+    if (trigger && document.contains(trigger)) {
+      var focusTarget = trigger;
+      if (trigger.classList.contains('row-edit')) {
+        var row = trigger.closest('li');
+        focusTarget = row && row.querySelector('a.book, a.songrow') || trigger;
+      }
+      focusTools.restoreQuietly(focusTarget);
+    }
     trigger = null;
   });
 })();

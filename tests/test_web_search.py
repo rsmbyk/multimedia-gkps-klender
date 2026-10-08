@@ -55,9 +55,9 @@ class CorpusSearchTests(TestCase):
                                    text='Pada mulanya Allah menciptakan langit dan bumi.')
 
         # --- Songs ---
-        song_lang = songs.Language.objects.create(name='Indonesian')
-        kj = songs.Book.objects.create(lang=song_lang, name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
-        pkj = songs.Book.objects.create(lang=song_lang, name='Pelengkap Kidung Jemaat', short_name='PKJ', is_hymn_book=True)
+        song_lang = None
+        kj = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
+        pkj = songs.Book.objects.create(name='Pelengkap Kidung Jemaat', short_name='PKJ', is_hymn_book=True)
         cls.kj120 = songs.Song.objects.create(book=kj, number=120, title='Sebab Kasih-Nya Kekal')
         songs.Verse.objects.create(song=cls.kj120, number=1, lyric='Kasih setia-Mu tak berkesudahan, ya Tuhan')
         songs.Verse.objects.create(song=cls.kj120, number=2, lyric='Pagi hari aku bersyukur pada-Mu')
@@ -67,7 +67,7 @@ class CorpusSearchTests(TestCase):
         songs.Verse.objects.create(song=cls.kj100, number=1, lyric='Kasih itu sabar, kasih itu murah hati')
         cls.pkj120 = songs.Song.objects.create(book=pkj, number=120, title='Kasih Jemaat Terpilih')
         songs.Verse.objects.create(song=cls.pkj120, number=1, lyric='Pujilah Tuhan, hai jemaat')
-        harian = songs.Book.objects.create(lang=song_lang, name='Kidung Harian', short_name='', is_hymn_book=False)
+        harian = songs.Book.objects.create(name='Kidung Harian', short_name='', is_hymn_book=False)
         cls.harian_song = songs.Song.objects.create(book=harian, number=None, title='Doa Pagi')
         songs.Verse.objects.create(song=cls.harian_song, number=1, lyric='Kasih setia setiap hari')
 

@@ -49,9 +49,8 @@ class VerseAdmin(SoftDeleteAdmin):
 
 
 class BookAdmin(SoftDeleteAdmin):
-    list_filter = ['is_deleted', 'lang', 'is_hymn_book']
+    list_filter = ['is_deleted', 'is_hymn_book']
     search_fields = ['name', 'short_name']
 
 
-admin.site.register(models.Language)
 admin.site.register(models.Book, BookAdmin)

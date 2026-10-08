@@ -6,9 +6,8 @@ from multimedia.songs import models
 class SongSearchSoftDeleteTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        language = models.Language.objects.create(name='Search language')
-        active_book = models.Book.objects.create(lang=language, name='Search book')
-        deleted_book = models.Book.objects.create(lang=language, name='Deleted search book')
+        active_book = models.Book.objects.create(name='Search book')
+        deleted_book = models.Book.objects.create(name='Deleted search book')
         active_song = models.Song.objects.create(book=active_book, title='Search song')
         deleted_song = models.Song.objects.create(book=active_book, title='Deleted search song')
         song_in_deleted_book = models.Song.objects.create(

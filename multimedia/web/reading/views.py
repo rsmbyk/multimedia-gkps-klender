@@ -96,7 +96,7 @@ def _shell(section, nav, ch, read_on, home_state, ch_mode='chapter'):
 # server-authoritative: the rules hold even when the modal is bypassed.
 
 
-def _editor_fragment_context(kind, form, pk):
+def _editor_fragment_context(kind, form, pk, target=None):
     kwargs = {'kind': kind, 'pk': pk} if pk else {'kind': kind}
     return {
         'form': form,
@@ -104,17 +104,18 @@ def _editor_fragment_context(kind, form, pk):
         'title': editors.form_title(kind, pk),
         'save_url': reverse('web-editor-save' if pk else 'web-editor-save-new', kwargs=kwargs),
         'target_id': pk or '',
+        'book_id': target.pk if kind == 'song' and not pk and target else '',
     }
 
 
 def editor_form(request, kind, pk=None):
     if not editors.editors_allowed(request):
         return HttpResponseForbidden('Editing is restricted.')
-    form, _target = editors.build_form(kind, request, pk)
+    form, target = editors.build_form(kind, request, pk)
     if form is None:
         raise Http404('Not editable.')
     return render(request, 'reading/_editor_form.html',
-                  _editor_fragment_context(kind, form, pk))
+                  _editor_fragment_context(kind, form, pk, target))
 
 
 def editor_save(request, kind, pk=None):
@@ -127,9 +128,9 @@ def editor_save(request, kind, pk=None):
         raise Http404('Not editable.')
     if not form.is_valid():
         return render(request, 'reading/_editor_form.html',
-                      _editor_fragment_context(kind, form, pk), status=400)
+                      _editor_fragment_context(kind, form, pk, target), status=400)
     saved = editors.save_form(kind, form, target)
-    return JsonResponse({'ok': True, 'id': saved.pk})
+    return JsonResponse({'ok': True, 'id': saved.pk, 'kind': kind})
 
 
 def old_item_form(request, pk):
@@ -165,7 +166,7 @@ def old_item_save(request, pk):
     if not form.is_valid():
         return render(request, 'reading/_old_item_form.html', context, status=400)
     saved = form.save()
-    return JsonResponse({'ok': True, 'id': saved.pk})
+    return JsonResponse({'ok': True, 'id': saved.pk, 'kind': 'old-item'})
 
 
 def old_item_delete(request, pk):
@@ -259,7 +260,7 @@ def entry_save(request, pk=None):
     else:
         form.instance.kind = entry_forms.KINDS[kind]
         saved = form.save()
-    return JsonResponse({'ok': True, 'id': saved.pk})
+    return JsonResponse({'ok': True, 'id': saved.pk, 'kind': 'entry'})
 
 
 def entry_delete(request, pk):
@@ -397,7 +398,7 @@ def _songbooks(selected_id=None):
     # PKJ, NKB, HARIAN, ANTIFON, AJAR) is exactly descending song count.
     books = (song_models.Book.objects.active()
              .annotate(song_total=Count('song', filter=Q(song__is_deleted=False)))
-             .order_by('-song_total', 'name', 'lang'))
+             .order_by('-song_total', 'name'))
     return [{'id': book.pk, 'name': book.name, 'short': book.short_name or '',
              'hymn': book.is_hymn_book, 'current': book.pk == selected_id}
             for book in books]
@@ -889,7 +890,7 @@ class BookDetailView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         book = get_object_or_404(
-            song_models.Book.objects.active().select_related('lang'), pk=self.kwargs['book_id'])
+            song_models.Book.objects.active(), pk=self.kwargs['book_id'])
         context.update(_shell('kidung', 'open', 'open', False, 'landing', ch_mode='song'))
         context.update({
             'page_title': f'{book.name} — GKPS Klender',
@@ -991,6 +992,6 @@ class TatibView(TemplateView):
             'read_no': '',
         })
         if service is not None:
-            context['read_eyebrow'] = (search_lib.format_date_short(service.date)
+            context['read_eyebrow'] = (search_lib.format_date_long(service.date)
                                        if service.date else 'Tata Ibadah')
         return context
