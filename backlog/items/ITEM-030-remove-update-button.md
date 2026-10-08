@@ -1,6 +1,6 @@
 ---
 id: ITEM-030
-status: in_review
+status: done
 title: 'Remove the Update the current state button'
 type: chore
 priority: P2
