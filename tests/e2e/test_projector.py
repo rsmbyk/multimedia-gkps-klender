@@ -612,8 +612,6 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 "document.querySelector('[data-project-group]').dataset.displaying === 'false'",
                 timeout=10000)
             self.assertIn('Project', other.locator('[data-project-open]').inner_text())
-        self.assertFalse(page.locator('[data-project-note]').is_hidden())
-        self.assertIn('stopped', page.locator('[data-project-note]').inner_text())
 
         # editing is available with or without a window (spec 026)
         page.locator('.tatib__item').first.hover()
@@ -717,10 +715,6 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         asked = []
         projector.on('request', lambda request: asked.append(request.url))
         page.click('[data-project-update]')
-        self.assertFalse(page.locator('[data-project-note]').is_hidden())
-        self.assertEqual(
-            page.locator('[data-project-note]').inner_text(),
-            'The display is re-reading this Tata Ibadah.')
         page.wait_for_timeout(700)
         self.assertTrue([url for url in asked if self._projector_url() in url],
                         f'Update must re-read the page: {asked}')     # fresh lyrics reach it

@@ -1,6 +1,6 @@
 ---
 id: ITEM-029
-status: speccing
+status: in_review
 title: 'Remove the projection status note'
 type: fix
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/027-remove-projection-note/spec.md
-branch:
+branch: fix/027-remove-projection-note
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.0.1
 ---
 
 # ITEM-029: Remove the projection status note

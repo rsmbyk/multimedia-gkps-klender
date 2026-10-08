@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-08
+
+### Removed
+
+- The projection controls no longer print a status line beneath them; Update and the automatic stop-when-the-window-closes keep working without narrating.
+
 ## [1.0.0] - 2026-10-08
 
 ### Added

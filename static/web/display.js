@@ -69,7 +69,6 @@
       group: container,
       open: container && container.querySelector('[data-project-open]'),
       update: container && container.querySelector('[data-project-update]'),
-      note: container && container.querySelector('[data-project-note]'),
     };
   }
 
@@ -98,17 +97,6 @@
     if (n.update) n.update.hidden = !here;
   }
 
-  /* Lifecycle and Update feedback, said briefly, where the person is looking. */
-  var noteTimer = null;
-  function say(message) {
-    var n = nodes();
-    if (!n.note) return;
-    n.note.textContent = message;
-    n.note.hidden = false;
-    window.clearTimeout(noteTimer);
-    noteTimer = window.setTimeout(function () { n.note.hidden = true; }, 6000);
-  }
-
   document.addEventListener('click', function (event) {
     var open = event.target.closest('[data-project-open]');
     if (open) {
@@ -135,7 +123,6 @@
     if (event.target.closest('[data-project-update]')) {
       event.preventDefault();
       reflow();
-      say('The display is re-reading this Tata Ibadah.');
     }
   });
 
@@ -171,7 +158,6 @@
     write({service: state.service, screen: state.screen, on: false});
     post({type: 'stop'});
     sync();
-    say('The projector window is gone, so the display stopped.');
   }
 
   function watch(win) {
