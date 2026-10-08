@@ -1,6 +1,6 @@
 # Plan 041: Show TB/SIM book names in the passage modal's book picker
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-043
@@ -20,6 +20,7 @@ items read the same way.
   dimmed secondary on the right.
 - The picker's filter matches either name.
 - The stored value stays a `BookTranslation` that resolves chapters and verses.
+- Editing an existing passage keeps its saved translation until a book is explicitly chosen; a new choice stores that book's primary translation.
 
 **Out:**
 

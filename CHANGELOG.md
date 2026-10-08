@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.9] - 2026-10-08
+
+### Changed
+
+- Passage book options now list each book once with the TB name primary and SIM name dimmed on the right; selecting stores the primary translation, filtering matches either name, and editing a saved passage preserves its current translation until another book is chosen.
+
 ## [1.3.8] - 2026-10-08
 
 ### Fixed

@@ -9,6 +9,7 @@ model's own rules (the lesson from spec 005).
 """
 
 from django import forms
+from django.core.exceptions import ValidationError
 
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
@@ -65,9 +66,31 @@ class SectionBreakEntryForm(ServiceEntryForm):
         fields = ['kind']
 
 
+class RangeCheckedModelChoiceField(forms.ModelChoiceField):
+    """Reject primary keys outside the database field's range before querying."""
+
+    def to_python(self, value):
+        if value in self.empty_values:
+            return None
+        if isinstance(value, self.queryset.model):
+            value = value.pk
+        pk_field = self.queryset.model._meta.pk
+        try:
+            pk = pk_field.to_python(value)
+            pk_field.run_validators(pk)
+        except (TypeError, ValueError, OverflowError, ValidationError) as exc:
+            raise ValidationError(
+                self.error_messages['invalid_choice'],
+                code='invalid_choice',
+                params={'value': value},
+            ) from exc
+        return super().to_python(pk)
+
+
 class ScriptureEntryForm(ServiceEntryForm):
     class Meta(ServiceEntryForm.Meta):
         fields = ['kind', 'book_translation', 'chapter', 'verse_start', 'verse_end']
+        field_classes = {'book_translation': RangeCheckedModelChoiceField}
 
 
 class SongEntryForm(ServiceEntryForm):
@@ -162,16 +185,46 @@ def next_order_number(tatib):
     return max(last_legacy, last_entry) + 1
 
 
-def scripture_books():
+def scripture_books(selected_translation_pk=None):
     """The books, with the chapter count the modal needs to fill the next dropdown."""
     from multimedia.bible import models as bible_models
+    from multimedia.web.reading import search as search_lib
+
+    selected_translation = None
+    selected_pk = None
+    if selected_translation_pk not in (None, ''):
+        pk_field = bible_models.BookTranslation._meta.pk
+        try:
+            selected_pk = pk_field.to_python(selected_translation_pk)
+            pk_field.run_validators(selected_pk)
+        except (TypeError, ValueError, OverflowError, ValidationError):
+            selected_pk = None
+    if selected_pk is not None:
+        selected_translation = (bible_models.BookTranslation.objects
+                                .only('pk', 'book_id', 'translation')
+                                .filter(pk=selected_pk).first())
+
     rows = []
-    for translation in (bible_models.BookTranslation.objects
-                        .select_related('book', 'version').order_by('book_id')):
-        rows.append({'id': translation.pk, 'name': translation.translation,
-                     'testament_label': ('Perjanjian Lama' if translation.book.testament == 'old'
-                                         else 'Perjanjian Baru'),
-                     'chapters': translation.book.number_of_chapters})
+    for info in search_lib.bible_book_index().values():
+        translations = info['by_version']
+        primary = translations.get('TB') or next(iter(translations.values()), None)
+        if primary is None:
+            continue
+        selected = (selected_translation
+                    if selected_translation and selected_translation.book_id == info['book'].pk
+                    else None)
+        rows.append({
+            'id': primary.pk,
+            'display': info['display'],
+            'other': info['other'],
+            'testament_label': ('Perjanjian Lama' if info['book'].testament == 'old'
+                                else 'Perjanjian Baru'),
+            'chapters': info['book'].number_of_chapters,
+            'selected': selected is not None,
+            'selected_translation_id': selected.pk if selected else None,
+            'selected_translation_name': selected.translation if selected else '',
+            'selected_translation_is_primary': selected is not None and selected.pk == primary.pk,
+        })
     return rows
 
 

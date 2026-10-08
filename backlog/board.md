@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-043](./items/ITEM-043-picker-book-names.md) | Show TB/SIM book names in the passage modal's book picker | One item per book: TB name main, SIM name dimmed on the right, like the sidebar | feat | P2 | M | [041](../specs/041-picker-book-names/spec.md) | 2026-10-08 |
 | [ITEM-044](./items/ITEM-044-song-picker-sort-and-label.md) | Sort and label the add-song picker like the hymn books | Hymns by number, others by title; hymn groups first by id; hymn options "HAL 123 Title" | chore | P2 | S | [042](../specs/042-song-picker-sort-and-label/spec.md) | 2026-10-08 |
 | [ITEM-045](./items/ITEM-045-book-picker-filter.md) | Fix the passage modal book picker's search filter | Make the search actually hide non-matches and match both TB and SIM names | fix | P2 | S | [043](../specs/043-book-picker-filter/spec.md) | 2026-10-08 |
 | [ITEM-046](./items/ITEM-046-passage-translation-toggle.md) | Add a TB/SIM toggle to the passage modal book picker | Flip the picker's translation in place; names swap, the choice is stored, no new field | feat | P2 | M | [044](../specs/044-passage-translation-toggle/spec.md) | 2026-10-08 |
@@ -31,6 +30,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 ## In progress
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-043](./items/ITEM-043-picker-book-names.md) | Show TB/SIM book names in the passage modal's book picker | One item per book: TB name main, SIM name dimmed on the right, like the sidebar | feat | P2 | M | [041](../specs/041-picker-book-names/spec.md) | 2026-10-08 |
 
 ## In review
 

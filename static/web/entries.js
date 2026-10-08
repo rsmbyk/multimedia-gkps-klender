@@ -306,7 +306,8 @@
       var query = (filter.value || '').trim().toLowerCase();
       var visible = 0;
       options.forEach(function (option) {
-        var hit = !query || (option.dataset.bookName || '').toLowerCase().indexOf(query) !== -1;
+        var names = (option.dataset.bookName || '') + ' ' + (option.dataset.bookOther || '');
+        var hit = !query || names.toLowerCase().indexOf(query) !== -1;
         option.hidden = !hit;
         if (hit) visible += 1;
       });
