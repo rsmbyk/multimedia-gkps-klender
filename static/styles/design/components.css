@@ -1659,14 +1659,13 @@ kbd {
 .editor__picker-trigger:disabled { color: var(--head-ink); cursor: default; }
 .editor__picker-trigger:disabled:hover { border-color: var(--divider); }
 .editor__picker-menu {
-  position: absolute; z-index: 4; left: 0; right: 0; top: calc(100% + 6px);
+  position: fixed; z-index: 20;          /* over the dialog, capped to the viewport (spec 040) */
   display: flex; flex-direction: column; gap: 6px;
   max-height: 268px; padding: 8px;
   background: var(--canvas); border: 1px solid var(--divider); border-radius: 10px;
   box-shadow: var(--shadow);
 }
 .editor__picker-menu[hidden] { display: none; }     /* author display beats [hidden] */
-.editor__picker-menu[data-flip="up"] { top: auto; bottom: calc(100% + 6px); }
 .editor__picker-options { min-height: 0; overflow: auto; }
 .editor__picker-group[hidden] { display: none; }
 .editor__picker-options .editor__hint { margin: 6px 8px; }

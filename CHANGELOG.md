@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.8] - 2026-10-08
+
+### Fixed
+
+- The entry modal's book and song menus are capped to the viewport rather than the dialog: they may overlap the dialog's edge, never leave the window, flip up when there is no room below, and stay anchored while the dialog scrolls.
+
 ## [1.3.7] - 2026-10-08
 
 ### Changed

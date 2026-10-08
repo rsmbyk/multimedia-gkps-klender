@@ -134,28 +134,34 @@
     });
   }
 
-  /* Keep a menu inside the dialog's visible area. The modal's content scrolls, so
-     an overhanging menu is CLIPPED (present in the DOM, invisible on screen, and
-     unclickable): instead of letting it overflow, cap it to the room the trigger
-     actually has -- below it, or above it when that side has more -- and let the
-     options inside scroll. Re-checked whenever the menu's own content arrives,
-     which can be after it opened. */
+  /* Keep a menu against the viewport, not the dialog (spec 040). The dialog's content
+     scrolls, so an absolutely-positioned menu is CLIPPED at its box; instead the menu
+     is fixed, anchored to its trigger's rectangle, capped to the room the window has
+     on the chosen side, flipping up when below is tight. The options scroll inside.
+     Re-checked whenever the menu's own content arrives and on scroll/resize. */
   function placeMenu(menu) {
     if (!menu || menu.hidden) return;
     var picker = menu.closest('.editor__picker');
     var trigger = picker && picker.querySelector('[data-picker-trigger], [data-verses-trigger]');
     if (!trigger) return;
-    var room = content.getBoundingClientRect();
-    var triggerBox = trigger.getBoundingClientRect();
-    var below = room.bottom - triggerBox.bottom - 10;
-    var above = triggerBox.top - room.top - 10;
+    var box = trigger.getBoundingClientRect();
+    var gap = 6;
+    var edge = 8;
     var cap = 268;
-    menu.removeAttribute('data-flip');
-    if (below < Math.min(cap, 150) && above > below) {
+    var below = window.innerHeight - box.bottom - gap - edge;
+    var above = box.top - gap - edge;
+    var flip = below < Math.min(cap, 150) && above > below;
+    menu.style.left = box.left + 'px';
+    menu.style.width = box.width + 'px';
+    menu.style.maxHeight = Math.max(84, Math.min(cap, flip ? above : below)) + 'px';
+    if (flip) {
       menu.setAttribute('data-flip', 'up');
-      menu.style.maxHeight = Math.max(84, Math.min(cap, above)) + 'px';
+      menu.style.top = 'auto';
+      menu.style.bottom = (window.innerHeight - box.top + gap) + 'px';
     } else {
-      menu.style.maxHeight = Math.max(84, Math.min(cap, below)) + 'px';
+      menu.removeAttribute('data-flip');
+      menu.style.top = (box.bottom + gap) + 'px';
+      menu.style.bottom = 'auto';
     }
   }
 
@@ -201,6 +207,7 @@
   });
   /* the modal scrolls under an open menu: re-fit it rather than let it clip */
   content.addEventListener('scroll', function () { placeOpenMenus(content); }, { passive: true });
+  window.addEventListener('resize', function () { placeOpenMenus(content); });
   modal.addEventListener('cancel', function (event) {
     if (!content.querySelector('.editor__picker-menu:not([hidden])')) return;
     event.preventDefault();

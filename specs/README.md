@@ -57,7 +57,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [037](037-add-rows-before-after/spec.md) | Reveal the add rows before and after a hovered item | Accepted |
 | [038](038-drop-section-break-label/spec.md) | Remove the label from section-break entries | Accepted |
 | [039](039-hymn-song-sidebar-title/spec.md) | Show the short full title for a hymn song in the service sidebar | Accepted |
-| [040](040-picker-menus-past-modal/spec.md) | Let the entry modal picker menus extend past the modal | Draft |
+| [040](040-picker-menus-past-modal/spec.md) | Let the entry modal picker menus extend past the modal | Accepted |
 | [041](041-picker-book-names/spec.md) | Show TB/SIM book names in the passage modal's book picker | Draft |
 | [042](042-song-picker-sort-and-label/spec.md) | Sort and label the add-song picker like the hymn books | Draft |
 | [043](043-book-picker-filter/spec.md) | Fix the passage modal book picker's search filter | Draft |

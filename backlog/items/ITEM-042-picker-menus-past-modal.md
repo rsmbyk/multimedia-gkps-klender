@@ -1,6 +1,6 @@
 ---
 id: ITEM-042
-status: speccing
+status: in_review
 title: 'Let the entry modal book/song menus extend past the modal'
 type: fix
 priority: P2
@@ -8,12 +8,12 @@ effort: M
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/040-picker-menus-past-modal/spec.md
-branch:
+branch: fix/040-picker-menus-past-modal
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.8
 ---
 
 # ITEM-042: Let the entry modal book/song menus extend past the modal
