@@ -1,6 +1,6 @@
 ---
 id: ITEM-029
-status: in_review
+status: done
 title: 'Remove the projection status note'
 type: fix
 priority: P2

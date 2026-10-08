@@ -23,5 +23,5 @@
 
 ## Done when
 
-- [ ] All acceptance scenarios in `spec.md` hold and focused tests pass
-- [ ] Board, tasks, and version (if any) are complete in this PR
+- [x] All acceptance scenarios in `spec.md` hold and focused tests pass
+- [x] Board, tasks, and version (if any) are complete in this PR
