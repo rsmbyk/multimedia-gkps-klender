@@ -1,6 +1,6 @@
 ---
 id: ITEM-033
-status: in_review
+status: done
 title: 'Show only the first lines of a text in the Tata Ibadah pane'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/031-clamp-pane-text/spec.md
 branch: fix/031-clamp-pane-text
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/282
 archived_at:
 archive_reason:
 bump: patch
