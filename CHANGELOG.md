@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-08
+
+### Added
+
+- A read-only preview for a service entry: a headerless modal with the full text or passage, or a song's selected verses in numbered tabs, dismissed by Esc or a click on the overlay.
+
 ## [1.2.2] - 2026-10-08
 
 ### Changed

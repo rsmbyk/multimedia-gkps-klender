@@ -518,6 +518,18 @@ def _clamped_paragraphs(text):
     return kept, True
 
 
+def _entry_preview(entry, kind_key):
+    """The whole content of an entry, for the read-only preview (spec 032)."""
+    title, body = entry.resolve()
+    if kind_key == 'scripture':
+        return {'kind': 'passage', 'reference': title, 'paras': _paragraphs(body)}
+    song = entry.song
+    verses = song.verse_set.filter(number__in=entry.verses or [], is_deleted=False).order_by('number')
+    return {'kind': 'song', 'book': song.book.name, 'title': song.title,
+            'verses': [{'number': verse.number, 'lines': (verse.lyric or '').split('\n')}
+                       for verse in verses]}
+
+
 def _entry_jump(entry):
     """Where a passage or a song entry points, the way a search result does."""
     if entry.kind == tatib_models.ServiceEntryKind.SCRIPTURE and entry.book_translation_id:
@@ -567,9 +579,11 @@ def _tatib_stage(service):
                 continue
             text_count += 1
             paras, clipped = _clamped_paragraphs(row.text)
+            preview = ({'kind': 'text', 'title': row.title, 'paras': _paragraphs(row.text)}
+                       if clipped else None)
             items.append({'eos': False, 'anchor': anchor, 'title': row.title,
                           'old_item': True, 'pk': row.pk, 'after_marker': after_marker,
-                          'paras': paras, 'clipped': clipped})
+                          'paras': paras, 'clipped': clipped, 'preview': preview})
             label = row.title or _first_line(row.text)
             if len(label) > 60:
                 label = label[:60] + '…'
@@ -592,6 +606,13 @@ def _tatib_stage(service):
                  'note': row.title if row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK else ''}
         if kind_key in ('scripture', 'song') and not deleted_target:
             block['jump'] = _entry_jump(row)
+        preview = None
+        if not deleted_target:
+            if kind_key in ('scripture', 'song'):
+                preview = _entry_preview(row, kind_key)
+            elif clipped:
+                preview = {'kind': 'text', 'title': title, 'paras': _paragraphs(body)}
+        block['preview'] = preview
         items.append(block)
         text_count += 1
         label = title or row.get_kind_display()

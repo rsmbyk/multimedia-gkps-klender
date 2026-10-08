@@ -1,6 +1,6 @@
 ---
 id: ITEM-034
-status: speccing
+status: done
 title: 'Preview a service entry''s full content in a modal'
 type: feat
 priority: P2
@@ -8,12 +8,12 @@ effort: L
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/032-entry-preview-modal/spec.md
-branch:
-pr:
+branch: feat/032-entry-preview-modal
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/283
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.3.0
 ---
 
 # ITEM-034: Preview a service entry's full content in a modal
