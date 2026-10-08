@@ -1,6 +1,6 @@
 # Plan 040: Let the entry modal picker menus extend past the modal
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-042

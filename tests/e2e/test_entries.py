@@ -222,6 +222,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
             page.evaluate("[...document.querySelectorAll('#entry-verses input')].filter(i => i.checked).length"), 3)
         page.locator('#entry-verses input[value="2"]').uncheck()
         expect(page.locator('[data-verses-trigger]')).to_have_text('Verses 1, 3')
+        page.keyboard.press('Escape')       # the open menu overlaps the Save button (spec 040)
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
 

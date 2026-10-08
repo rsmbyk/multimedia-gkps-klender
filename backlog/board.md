@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-042](./items/ITEM-042-picker-menus-past-modal.md) | Let the entry modal book/song menus extend past the modal | Cap the picker menus to the viewport, not the dialog, like the date picker | fix | P2 | M | [040](../specs/040-picker-menus-past-modal/spec.md) | 2026-10-08 |
 | [ITEM-043](./items/ITEM-043-picker-book-names.md) | Show TB/SIM book names in the passage modal's book picker | One item per book: TB name main, SIM name dimmed on the right, like the sidebar | feat | P2 | M | [041](../specs/041-picker-book-names/spec.md) | 2026-10-08 |
 | [ITEM-044](./items/ITEM-044-song-picker-sort-and-label.md) | Sort and label the add-song picker like the hymn books | Hymns by number, others by title; hymn groups first by id; hymn options "HAL 123 Title" | chore | P2 | S | [042](../specs/042-song-picker-sort-and-label/spec.md) | 2026-10-08 |
 | [ITEM-045](./items/ITEM-045-book-picker-filter.md) | Fix the passage modal book picker's search filter | Make the search actually hide non-matches and match both TB and SIM names | fix | P2 | S | [043](../specs/043-book-picker-filter/spec.md) | 2026-10-08 |
@@ -55,6 +54,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-042](./items/ITEM-042-picker-menus-past-modal.md) | Let the entry modal book/song menus extend past the modal | Cap the picker menus to the viewport, not the dialog, like the date picker | fix | P2 | M | [040](../specs/040-picker-menus-past-modal/spec.md) | develop | 2026-10-08 |
 | [ITEM-041](./items/ITEM-041-hymn-song-sidebar-title.md) | Show the short full title for a hymn song in the service sidebar | Label a hymn song entry with its short reference and title, e.g. KJ 435 Marolopolop Tondingki | chore | P2 | S | [039](../specs/039-hymn-song-sidebar-title/spec.md) | develop | 2026-10-08 |
 | [ITEM-040](./items/ITEM-040-drop-section-break-label.md) | Remove the label from section-break entries | Drop the title/label control and usage for the section_break kind | chore | P2 | S | [038](../specs/038-drop-section-break-label/spec.md) | develop | 2026-10-08 |
 | [ITEM-039](./items/ITEM-039-add-rows-before-after.md) | Reveal the add rows before and after a hovered item | Hovering an item shows the add row above it and the one below it | chore | P2 | M | [037](../specs/037-add-rows-before-after/spec.md) | develop | 2026-10-08 |

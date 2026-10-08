@@ -1,6 +1,6 @@
 ---
 id: ITEM-042
-status: speccing
+status: done
 title: 'Let the entry modal book/song menus extend past the modal'
 type: fix
 priority: P2
@@ -8,12 +8,12 @@ effort: M
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/040-picker-menus-past-modal/spec.md
-branch:
-pr:
+branch: fix/040-picker-menus-past-modal
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/292
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.8
 ---
 
 # ITEM-042: Let the entry modal book/song menus extend past the modal
