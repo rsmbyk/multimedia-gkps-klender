@@ -1,6 +1,6 @@
 ---
 id: ITEM-041
-status: in_review
+status: done
 title: 'Show the short full title for a hymn song in the service sidebar'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/039-hymn-song-sidebar-title/spec.md
 branch: chore/039-hymn-song-sidebar-title
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/291
 archived_at:
 archive_reason:
 bump: patch
