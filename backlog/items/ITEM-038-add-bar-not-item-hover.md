@@ -1,6 +1,6 @@
 ---
 id: ITEM-038
-status: in_review
+status: done
 title: 'Keep the add bar out of the item hover'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/036-add-bar-outside-item-hover/spec.md
 branch: chore/036-add-bar-outside-item-hover
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/288
 archived_at:
 archive_reason:
 bump: patch

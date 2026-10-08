@@ -40,7 +40,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-038](./items/ITEM-038-add-bar-not-item-hover.md) | Keep the add bar out of the item hover | Hovering the add buttons must not highlight the item above or reveal its controls | chore | P2 | S | [036](../specs/036-add-bar-outside-item-hover/spec.md) | — | 2026-10-08 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-017](./items/ITEM-017-tatib-form-fields.md) | Remove first-section and active controls from Tata Ibadah forms | Create empty active services and preserve activation on edit | fix | P1 | S | [015](../specs/015-tatib-form-fields/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
