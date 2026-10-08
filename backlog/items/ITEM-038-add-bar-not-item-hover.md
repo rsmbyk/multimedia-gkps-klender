@@ -1,6 +1,6 @@
 ---
 id: ITEM-038
-status: speccing
+status: in_review
 title: 'Keep the add bar out of the item hover'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/036-add-bar-outside-item-hover/spec.md
-branch:
+branch: chore/036-add-bar-outside-item-hover
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.4
 ---
 
 # ITEM-038: Keep the add bar out of the item hover

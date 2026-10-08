@@ -119,7 +119,8 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         item = page.locator('#readBody > .tatib__item').first
         row = page.locator('#readBody > .entry__add').first
         item_box, row_box = item.bounding_box(), row.bounding_box()
-        self.assertLessEqual(row_box['y'], item_box['y'] + item_box['height'] + .5)
+        # The add row is not part of the item (spec 036): it starts below the item's box.
+        self.assertGreaterEqual(row_box['y'], item_box['y'] + item_box['height'] - 1)
         x = row_box['x'] + row_box['width'] * .8  # the blank right side, not a button
         page.mouse.move(x, item_box['y'] + item_box['height'] - 8)
         expect(row).to_have_css('opacity', '1')

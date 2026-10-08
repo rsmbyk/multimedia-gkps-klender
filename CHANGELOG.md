@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-10-08
+
+### Fixed
+
+- Hovering an item's add row no longer counts as hovering the item above: the row starts below the item, so the item is not highlighted and its controls stay hidden.
+
 ## [1.3.3] - 2026-10-08
 
 ### Changed

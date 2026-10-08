@@ -72,6 +72,29 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         page.locator('[data-entry-edit]').first.focus()
         expect(acts).to_have_css('opacity', '1')
 
+    def test_the_add_row_is_not_part_of_the_item(self):
+        page = self._page()
+        item = page.locator('.tatib__item').first
+        bar = page.locator('.entry__add').first
+        acts = page.locator('.entry__acts').first
+        page.mouse.move(1400, 850)
+        expect(acts).to_have_css('opacity', '0')
+        bar.hover()
+        expect(bar).to_have_css('opacity', '1')               # the bar's own buttons show
+        expect(acts).to_have_css('opacity', '0')              # the item above is not revealed
+        expect(item).to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+        item_box, bar_box = item.bounding_box(), bar.bounding_box()
+        self.assertLessEqual(item_box['y'] + item_box['height'], bar_box['y'] + 1)   # no overlap
+
+    def test_hovering_the_item_still_reveals_its_add_row(self):
+        page = self._page()
+        item = page.locator('.tatib__item').first
+        bar = page.locator('.entry__add').first
+        page.mouse.move(1400, 850)
+        expect(bar).to_have_css('opacity', '0')
+        item.hover()
+        expect(bar).to_have_css('opacity', '1')
+
     def test_the_no_hover_rule_shows_the_controls(self):
         # Chromium in CI cannot emulate a touch (no-hover, coarse-pointer) device, so
         # assert the rule that serves one exists and would show the controls.

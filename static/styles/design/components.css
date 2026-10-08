@@ -1465,10 +1465,9 @@ kbd {
   opacity: 0;
   transition: opacity 140ms ease 220ms;
 }
-/* The last text paragraph's 4px bottom margin collapses outside its section.
-   Pull that dead strip into the control row without moving the buttons: a slow
-   pointer between two legacy paragraphs must still hover the row. */
-.tatib__item + .entry__add { margin-top: -4px; padding-top: 4px; }
+/* The add row is not part of the item (spec 036): it starts below the item's box, so
+   hovering it never counts as hovering the item above. The last paragraph's collapsed
+   4px margin simply leaves a small gap. */
 .tatib__item:hover + .entry__add,
 .tatib__eos:hover + .entry__add,
 .entry__add:hover,
