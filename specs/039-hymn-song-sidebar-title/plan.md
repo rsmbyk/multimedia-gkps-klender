@@ -1,6 +1,6 @@
 # Plan 039: Show the short full title for a hymn song in the service sidebar
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-041

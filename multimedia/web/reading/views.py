@@ -627,9 +627,13 @@ def _tatib_stage(service):
         items.append(block)
         text_count += 1
         label = title or row.get_kind_display()
+        if kind_key == 'song' and row.song_id and row.song.book.is_hymn_book:
+            # A hymn song reads by its short reference and title (spec 039).
+            song = row.song
+            label = f'{song.book_number} {song.title}'.strip() if song.title else song.book_number
         toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
                     'label': label[:60], 'titled': bool(title),
-                    'pk': row.pk, 'entry': True, 'txt': f'{title} {body}'})
+                    'pk': row.pk, 'entry': True, 'txt': f'{label} {title} {body}'})
     return items, toc
 
 

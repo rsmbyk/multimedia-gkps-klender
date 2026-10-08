@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.7] - 2026-10-08
+
+### Changed
+
+- In the Tata Ibadah sidebar a hymn song reads as its short reference and title (e.g. `KJ 435 Marolopolop Tondingki`); other songbooks keep their label.
+
 ## [1.3.6] - 2026-10-08
 
 ### Changed

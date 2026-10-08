@@ -932,6 +932,29 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('data-preview-open', html)
         self.assertNotIn('preview__tab', html)
 
+    # --- the sidebar's song label (spec 039) --------------------------------
+
+    def test_a_hymn_song_labels_the_sidebar_with_its_short_full_title(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1])
+        toc = self.html().split('id="chList"')[1]
+        self.assertIn('KJ 152 Ada Kuasa dalam DarahNya', toc)
+
+    def test_a_non_hymn_song_keeps_its_sidebar_label(self):
+        book = songs.Book.objects.create(name='Kidung Eksperimen', short_name='KE')
+        song = songs.Song.objects.create(book=book, number=3, title='Nyanyian Baru')
+        songs.Verse.objects.create(song=song, number=1, lyric='bait')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        toc = self.html().split('id="chList"')[1]
+        self.assertIn('Kidung Eksperimen 3', toc)
+        self.assertNotIn('KE 3 Nyanyian Baru', toc)
+
+    def test_a_title_less_hymn_song_shows_the_short_reference_alone(self):
+        song = songs.Song.objects.create(book=self.songbook, number=200, title='')
+        songs.Verse.objects.create(song=song, number=1, lyric='bait')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        toc = self.html().split('id="chList"')[1]
+        self.assertIn('KJ 200</span>', toc)              # no trailing space
+
     def test_only_a_clipped_text_offers_a_preview(self):
         self.make(kind=tatib.ServiceEntryKind.TEXT, text='satu\ndua\ntiga')
         self.assertNotIn('data-preview-open', self.html())
