@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-10-08
+
+### Changed
+
+- Hovering a service entry highlights the whole item with the shared hover tint, without moving the text.
+
 ## [1.3.1] - 2026-10-08
 
 ### Changed

@@ -1,6 +1,6 @@
 ---
 id: ITEM-036
-status: speccing
+status: in_review
 title: 'Highlight a whole service entry item on hover'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/034-item-hover-highlight/spec.md
-branch:
+branch: chore/034-item-hover-highlight
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.2
 ---
 
 # ITEM-036: Highlight a whole service entry item on hover
