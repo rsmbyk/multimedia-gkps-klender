@@ -1,6 +1,6 @@
 # Plan 036: Keep the add bar out of the item hover
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-038

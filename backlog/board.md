@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-038](./items/ITEM-038-add-bar-not-item-hover.md) | Keep the add bar out of the item hover | Hovering the add buttons must not highlight the item above or reveal its controls | chore | P2 | S | [036](../specs/036-add-bar-outside-item-hover/spec.md) | 2026-10-08 |
 | [ITEM-039](./items/ITEM-039-add-rows-before-after.md) | Reveal the add rows before and after a hovered item | Hovering an item shows the add row above it and the one below it | chore | P2 | M | [037](../specs/037-add-rows-before-after/spec.md) | 2026-10-08 |
 | [ITEM-040](./items/ITEM-040-drop-section-break-label.md) | Remove the label from section-break entries | Drop the title/label control and usage for the section_break kind | chore | P2 | S | [038](../specs/038-drop-section-break-label/spec.md) | 2026-10-08 |
 | [ITEM-041](./items/ITEM-041-hymn-song-sidebar-title.md) | Show the short full title for a hymn song in the service sidebar | Label a hymn song entry with its short reference and title, e.g. KJ 435 Marolopolop Tondingki | chore | P2 | S | [039](../specs/039-hymn-song-sidebar-title/spec.md) | 2026-10-08 |
@@ -59,6 +58,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-038](./items/ITEM-038-add-bar-not-item-hover.md) | Keep the add bar out of the item hover | Hovering the add buttons must not highlight the item above or reveal its controls | chore | P2 | S | [036](../specs/036-add-bar-outside-item-hover/spec.md) | develop | 2026-10-08 |
 | [ITEM-037](./items/ITEM-037-section-break-separation.md) | Give the section break a clear separation in the Tata Ibadah pane | One clear divider, consistent between the legacy rule and the section_break entry | chore | P2 | S | [035](../specs/035-section-break-separation/spec.md) | develop | 2026-10-08 |
 | [ITEM-036](./items/ITEM-036-highlight-item-on-hover.md) | Highlight a whole service entry item on hover | Give the hovered entry a theme-aware row highlight without shifting text | chore | P2 | S | [034](../specs/034-item-hover-highlight/spec.md) | develop | 2026-10-08 |
 | [ITEM-035](./items/ITEM-035-float-entry-controls.md) | Float the entry controls over each item, top-right | Preview/Edit/Delete over the text with a brief backing, shown on hover | chore | P2 | S | [033](../specs/033-float-entry-controls/spec.md) | develop | 2026-10-08 |

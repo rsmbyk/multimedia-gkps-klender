@@ -1,7 +1,7 @@
 # Spec 036: Keep the add bar out of the item hover
 
 - **ID:** 036
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-038
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
