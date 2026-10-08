@@ -588,10 +588,12 @@ class ServiceEntryViewTests(TestCase):
         fields.setdefault('order_number', 1)
         return tatib.ServiceEntry.objects.create(tatib=self.tatib, **fields)
 
-    def pane(self):
-        html = self.client.get(reverse('web-tatib-service',
+    def html(self):
+        return self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
-        return html.split('id="readBody"')[1]
+
+    def pane(self):
+        return self.html().split('id="readBody"')[1]
 
     # --- the form fragment per kind ----------------------------------------
 
@@ -901,6 +903,43 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('tiga…', pane)
         self.assertNotIn('empat', pane)
         self.assertIn('data-clipped="true"', pane)
+
+    # --- the entry preview (spec 032) ---------------------------------------
+
+    def test_a_passage_offers_a_preview_with_its_reference_and_full_text(self):
+        self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                  chapter=5, verse_start=2, verse_end=3)
+        html = self.html()
+        self.assertIn('data-preview-open', html)
+        self.assertIn('preview__ref', html)
+        self.assertIn('Matius 5:2-3', html)
+        self.assertIn('ayat 2', html)
+        self.assertIn('ayat 3', html)
+
+    def test_a_song_preview_lists_its_book_title_and_verse_tabs(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 3])
+        html = self.html()
+        self.assertIn('data-preview-open', html)
+        self.assertIn('Kidung Jemaat', html)
+        self.assertIn('preview__tab', html)
+        self.assertIn('>1<', html)
+        self.assertIn('>3<', html)
+
+    def test_a_song_preview_has_no_tabs_for_a_single_verse(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[2])
+        html = self.html()
+        self.assertIn('data-preview-open', html)
+        self.assertNotIn('preview__tab', html)
+
+    def test_only_a_clipped_text_offers_a_preview(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, text='satu\ndua\ntiga')
+        self.assertNotIn('data-preview-open', self.html())
+        self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=2, text='satu\ndua\ntiga\nempat')
+        self.assertIn('data-preview-open', self.html())
+
+    def test_a_section_break_offers_no_preview(self):
+        self.make(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Doa')
+        self.assertNotIn('data-preview-open', self.html())
 
     def test_invalid_insertion_form_keeps_its_after_marker(self):
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')

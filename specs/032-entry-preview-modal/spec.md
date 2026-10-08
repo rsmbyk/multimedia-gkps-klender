@@ -1,7 +1,7 @@
 # Spec 032: Entry preview modal
 
 - **ID:** 032
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-034
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
