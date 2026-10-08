@@ -1344,7 +1344,6 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('Stop projecting', html)               # the label it takes while displaying
         self.assertIn('Update the current state', html)
         self.assertIn('data-project-update hidden', html)    # the update control waits its turn
-        self.assertIn('data-project-note', html)             # and a place to say why a click was declined
         # it rides with the date, at the top right, above the service's own words
         self.assertLess(html.index('read__head-top'), html.index('data-project-open'))
         self.assertLess(html.index('data-project-open'), html.index('readBody'))

@@ -48,6 +48,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-029](./items/ITEM-029-remove-projection-note.md) | Remove the projection status note | Drop the status line under the Project / Stop projecting controls | fix | P2 | S | [027](../specs/027-remove-projection-note/spec.md) | develop | 2026-10-08 |
 | [ITEM-014](./items/ITEM-014-hide-songbook-fields.md) | Hide short name and hymn-book fields in songbook forms | Remove the short-name and hymn-book controls from songbook create/edit forms while preserving stored values | chore | P2 | S | [012](../specs/012-hide-songbook-fields/spec.md) | develop | 2026-10-07 |
 | [ITEM-012](./items/ITEM-012-hymn-song-order.md) | Sort hymn book songs by number and sub-number | Restore numeric number and sub-number order in public hymn-book lists | fix | P1 | S | [011](../specs/011-hymn-song-order/spec.md) | develop | 2026-10-06 |
 | [ITEM-013](./items/ITEM-013-ci-e2e-harness.md) | Restore reliable CI and E2E execution | Restore the safe Playwright lifecycle and fail-closed CI test-scope detection | fix | P1 | M | [010](../specs/010-fast-pr-feedback-ci/spec.md) | develop | 2026-10-06 |

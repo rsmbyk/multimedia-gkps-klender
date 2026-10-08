@@ -44,6 +44,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [024](024-square-date-cells/spec.md) | Make Tata Ibadah calendar date cells square | Accepted |
 | [025](025-quiet-modal-focus/spec.md) | Avoid automatic row outlines after modal close | Accepted |
 | [026](026-live-projection-editing/spec.md) | Keep editing while projecting, and keep the display in step | Accepted |
+| [027](027-remove-projection-note/spec.md) | Remove the projection status note | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.
