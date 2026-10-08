@@ -1,7 +1,7 @@
 # Spec 034: Highlight a whole service entry item on hover
 
 - **ID:** 034
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-036
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

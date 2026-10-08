@@ -1499,6 +1499,22 @@ kbd {
 /* A touch device has no hover to reveal them with: show them outright. */
 @media (hover: none) and (pointer: coarse) { .entry__acts { opacity: 1; } }
 
+/* ---------- the hovered row (spec 034) ------------------------------------ */
+
+/* Hovering an entry reads as one row: the whole item takes the shared hover fill,
+   bled into the gutter with a matching negative margin so no text moves. */
+.tatib__item, .tatib__eos { border-radius: 9px; transition: background var(--ease); }
+.tatib__item {
+  margin-left: -10px; margin-right: -10px;
+  padding-left: 10px; padding-right: 10px;
+}
+.tatib__item:hover, .tatib__eos:hover, .tatib__item:focus-within {
+  background: var(--icon-hover-bg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tatib__item, .tatib__eos { transition: none; }
+}
+
 .preview {
   width: min(44rem, calc(100vw - 32px)); max-height: calc(100vh - 48px);
   padding: 0; border: 0; border-radius: 14px;
