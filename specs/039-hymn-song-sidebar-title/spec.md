@@ -1,7 +1,7 @@
 # Spec 039: Show the short full title for a hymn song in the service sidebar
 
 - **ID:** 039
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-041
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
