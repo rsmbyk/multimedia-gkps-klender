@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-10-08
+
+### Changed
+
+- A section break draws one clear full-width divider, the same for a legacy end-of-section row and a section_break entry, with its note beneath it.
+
 ## [1.3.2] - 2026-10-08
 
 ### Changed

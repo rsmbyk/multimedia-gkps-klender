@@ -595,6 +595,16 @@ def _tatib_stage(service):
         anchor = f'e{row.pk}'
         title, body = row.resolve()
         kind_key = entry_forms.kind_name(row.kind)
+        if kind_key == 'section_break':
+            # One divider for both shapes: a section_break entry draws the same rule as
+            # a legacy END_OF_SECTION row, carrying its own controls.
+            items.append({'eos': True, 'anchor': anchor, 'note': title,
+                          'entry': True, 'pk': row.pk, 'after_marker': anchor})
+            text_count += 1
+            toc.append({'eos': True, 'anchor': anchor, 'n': text_count,
+                        'label': title[:60], 'titled': bool(title),
+                        'pk': row.pk, 'entry': True, 'txt': title})
+            continue
         deleted_target = row.target_deleted
         # A passage or a song shows its reference here, not its text: the words belong on the display.
         shows_text = kind_key not in ('scripture', 'song')

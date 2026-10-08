@@ -1,7 +1,7 @@
 # Spec 035: Give the section break a clear separation
 
 - **ID:** 035
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-037
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

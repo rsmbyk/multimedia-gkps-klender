@@ -1,6 +1,6 @@
 # Plan 035: Give the section break a clear separation
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-037

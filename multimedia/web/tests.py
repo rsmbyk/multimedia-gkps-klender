@@ -941,6 +941,18 @@ class ServiceEntryViewTests(TestCase):
         self.make(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Doa')
         self.assertNotIn('data-preview-open', self.html())
 
+    def test_a_section_break_renders_the_same_divider_as_a_legacy_row(self):
+        self.make(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.END_OF_SECTION,
+            text='Doa syafaat', order_number=2)
+        pane = self.pane()
+        self.assertEqual(pane.count('class="tatib__eos"'), 2)   # one divider each
+        self.assertIn('Persembahan', pane)                     # the break's own label
+        self.assertIn('Doa syafaat', pane)                     # the legacy note
+        self.assertNotIn('tatib__item--entry', pane)           # a break is not a heading item
+        self.assertIn('data-entry-edit="', pane)               # the divider carries its controls
+
     # --- the entry controls live in the item (spec 033) ---------------------
 
     def test_the_entry_controls_live_in_the_item_not_the_add_bar(self):

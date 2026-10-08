@@ -364,7 +364,8 @@ See [spec 026](../026-live-projection-editing/spec.md).
 
 ## Traceability
 
-Amended by: spec 039 (a hymn song entry's sidebar label).
+Amended by: spec 035 (a `section_break` entry's pane rendering), spec 039 (a hymn song entry's
+sidebar label).
 
 Filled per slice as it lands.
 
