@@ -364,6 +364,8 @@ See [spec 026](../026-live-projection-editing/spec.md).
 
 ## Traceability
 
+Amended by: spec 039 (a hymn song entry's sidebar label).
+
 Filled per slice as it lands.
 
 ### Slice 1 — the model (landed 2026-10-03)

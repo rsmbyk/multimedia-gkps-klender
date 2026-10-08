@@ -45,6 +45,25 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [025](025-quiet-modal-focus/spec.md) | Avoid automatic row outlines after modal close | Accepted |
 | [026](026-live-projection-editing/spec.md) | Keep editing while projecting, and keep the display in step | Accepted |
 | [027](027-remove-projection-note/spec.md) | Remove the projection status note | Accepted |
+| [028](028-remove-update-button/spec.md) | Remove the "Update the current state" button | Draft |
+| [029](029-single-screen-text/spec.md) | Single-screen text entry | Draft |
+| [030](030-add-entry-at-start/spec.md) | Add a service entry at the beginning | Draft |
+| [031](031-clamp-pane-text/spec.md) | Clamp a text entry in the Tata Ibadah pane | Draft |
+| [032](032-entry-preview-modal/spec.md) | Entry preview modal | Draft |
+| [033](033-float-entry-controls/spec.md) | Float the entry controls over each item, top-right | Draft |
+| [034](034-item-hover-highlight/spec.md) | Highlight a whole service entry item on hover | Draft |
+| [035](035-section-break-separation/spec.md) | Give the section break a clear separation | Draft |
+| [036](036-add-bar-outside-item-hover/spec.md) | Keep the add bar out of the item hover | Draft |
+| [037](037-add-rows-before-after/spec.md) | Reveal the add rows before and after a hovered item | Draft |
+| [038](038-drop-section-break-label/spec.md) | Remove the label from section-break entries | Draft |
+| [039](039-hymn-song-sidebar-title/spec.md) | Show the short full title for a hymn song in the service sidebar | Draft |
+| [040](040-picker-menus-past-modal/spec.md) | Let the entry modal picker menus extend past the modal | Draft |
+| [041](041-picker-book-names/spec.md) | Show TB/SIM book names in the passage modal's book picker | Draft |
+| [042](042-song-picker-sort-and-label/spec.md) | Sort and label the add-song picker like the hymn books | Draft |
+| [043](043-book-picker-filter/spec.md) | Fix the passage modal book picker's search filter | Draft |
+| [044](044-passage-translation-toggle/spec.md) | Add a TB/SIM toggle to the passage modal book picker | Draft |
+| [045](045-custom-chapter-verse-dropdowns/spec.md) | Make the passage modal's chapter/verse dropdowns custom | Draft |
+| [046](046-sidebar-text-two-lines/spec.md) | Show the first two text lines in the service sidebar | Draft |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.
