@@ -54,8 +54,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
                 tatib=self.legacy, order_number=order,
                 item_type=tatib.TataIbadahItemType.TEXT, text=text)
 
-        s_lang = songs.Language.objects.create(name='Indonesian')
-        songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat', short_name='KJ',
+        songbook = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ',
                                              is_hymn_book=True)
         self.song = songs.Song.objects.create(book=songbook, number=152, title='Ada Kuasa')
         for number in (1, 2, 3):
@@ -260,8 +259,23 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
 
     # --- editing and deleting -------------------------------------------------
 
+    def test_entry_cancel_restores_service_item_without_outline_or_revealed_actions(self):
+        page = self._page(reverse('web-tatib-service', args=[self.full.pk]))
+        item = page.locator('.tatib__item').first
+        item.hover()
+        page.locator('[data-entry-edit]').first.click()
+        page.wait_for_selector('dialog[open]')
+        page.mouse.move(1400, 850)
+        page.keyboard.press('Escape')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        expect(item).to_be_focused()
+        self.assertEqual(item.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+        page.wait_for_timeout(300)
+        expect(page.locator('.entry__add').first).to_have_css('opacity', '0')
+
     def test_editing_an_entry_and_deleting_it_after_a_confirmation(self):
         page = self._page(reverse('web-tatib-service', args=[self.full.pk]))
+        entry_id = page.locator('.tatib__item--entry').first.get_attribute('data-entry-pk')
         self._reveal(page)
         page.locator('[data-entry-edit]').first.click()
         page.wait_for_selector('dialog[open]')
@@ -271,6 +285,9 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("!document.querySelector('dialog[open]')")
         page.wait_for_selector('.tatib__item--entry')
         expect(page.locator('.tatib__tx').first).to_contain_text('baru')
+        saved_item = page.locator(f'.tatib__item--entry[data-entry-pk="{entry_id}"]')
+        expect(saved_item).to_be_focused(timeout=5000)
+        self.assertEqual(saved_item.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
 
         # delete asks first; the two answers are one size, the destructive one last
         self._reveal(page)
@@ -290,6 +307,12 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
             page.locator('[data-confirm-delete]').evaluate('el => getComputedStyle(el).font'))
         page.click('.editor__cancel')
         page.wait_for_function("!document.querySelector('dialog[open]')")
+        page.mouse.move(1400, 850)
+        expect(saved_item).to_be_focused()
+        self.assertEqual(page.evaluate('getComputedStyle(document.activeElement).outlineStyle'), 'none')
+        controls = page.locator('.entry__add .entry__ctrl')
+        self.assertEqual(controls.count(), 2)
+        expect(page.locator('.entry__add').first).to_have_css('opacity', '0')
         self.assertEqual(page.locator('.tatib__item--entry').count(), 1)
 
         self._reveal(page)
@@ -299,6 +322,8 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("!document.querySelector('dialog[open]')")
         page.wait_for_timeout(700)
         gone = page.locator('.tatib__item--entry').count()
+        self.assertEqual(page.evaluate('document.activeElement.id'), 'read')
+        self.assertEqual(page.evaluate('getComputedStyle(document.activeElement).outlineStyle'), 'none')
 
         self._close_browser()
         self.assertEqual(gone, 0)
@@ -317,7 +342,9 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.fill('[name=text]', 'Pembukaan')
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
-        page.wait_for_selector('.tatib__item--entry')
+        created = page.locator('.tatib__item--entry').first
+        expect(created).to_be_focused(timeout=5000)
+        self.assertEqual(created.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
 
         self._close_browser()
         self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.empty).count(), 1)

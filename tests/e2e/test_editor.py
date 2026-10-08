@@ -5,7 +5,7 @@ Same runner and skip behaviour as the reading suite: Django's test runner via
 """
 
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
@@ -28,13 +28,12 @@ except ImportError:  # pragma: no cover - depends on environment
 class EditorE2ETests(StaticLiveServerTestCase):
     def setUp(self):
         super().setUp()
-        self.lang = songs.Language.objects.create(name='Indonesian')
         self.hymn = songs.Book.objects.create(
-            lang=self.lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
         self.hymn_song = songs.Song.objects.create(
             book=self.hymn, number=12, title='Di Waktu Pagi', key='c')
         self.book = songs.Book.objects.create(
-            lang=self.lang, name='Kidung Harian', short_name='KH', is_hymn_book=False)
+            name='Kidung Harian', short_name='KH', is_hymn_book=False)
         self.song = songs.Song.objects.create(book=self.book, title='Alpha')
         self.service = tatib.TataIbadah.objects.create(
             name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
@@ -67,6 +66,15 @@ class EditorE2ETests(StaticLiveServerTestCase):
         return page
 
     def _fill(self, page, name, value):
+        if name == 'date':
+            page.locator('[data-date-picker-trigger]').click()
+            target = date.fromisoformat(value)
+            month_delta = (target.year - date.today().year) * 12 + target.month - date.today().month
+            control = '[data-date-picker-next]' if month_delta > 0 else '[data-date-picker-prev]'
+            for _ in range(abs(month_delta)):
+                page.locator(control).click()
+            page.locator(f'[data-date="{value}"]').click()
+            return
         widget = page.locator(f'[name="{name}"]')
         if widget.evaluate('el => el.tagName') == 'SELECT':
             page.select_option(f'[name="{name}"]', value)
@@ -78,7 +86,19 @@ class EditorE2ETests(StaticLiveServerTestCase):
             self._fill(page, name, value)
         page.click('.editor__save')
         # a <dialog> is never detached; it just loses its open attribute
-        page.wait_for_function("!document.querySelector('dialog[open]')")
+        try:
+            page.wait_for_function("!document.querySelector('dialog[open]')", timeout=10000)
+        except Exception as error:
+            state = page.evaluate('''() => ({
+              status: document.getElementById('editorStatus')?.textContent,
+              content: document.getElementById('editorContent')?.innerText,
+              invalid: [...document.querySelectorAll('#editorContent .is-invalid')]
+                .map(el => el.innerText),
+              action: document.querySelector('#editorContent form')?.action,
+              controls: [...document.querySelectorAll('#editorContent form input')]
+                .map(el => ({name: el.name, type: el.type, valueLength: el.value.length}))
+            })''')
+            raise AssertionError(f'Editor remained open after save: {state}') from error
 
     # --- the add buttons ---
 
@@ -89,8 +109,8 @@ class EditorE2ETests(StaticLiveServerTestCase):
         page.click('#panelAdd')
         page.wait_for_selector('dialog[open]')
         expect(page.locator('#editorTitle')).to_have_text('New songbook')
-        expect(page.locator('[name="short_name"], [name="is_hymn_book"]')).to_have_count(0)
-        self._save(page, name='Kidung Sekolah', lang=str(self.lang.pk))
+        expect(page.locator('[name="short_name"], [name="is_hymn_book"], [name="lang"]')).to_have_count(0)
+        self._save(page, name='Kidung Sekolah')
         expect(page.locator('dialog[open]')).to_have_count(0)
         expect(page.locator('#panelBody .book').filter(has_text='Kidung Sekolah')).to_be_visible()
         self._close_browser()
@@ -106,8 +126,8 @@ class EditorE2ETests(StaticLiveServerTestCase):
         row.locator('.row-edit').click()
         page.wait_for_selector('dialog[open]')
         expect(page.locator('#editorTitle')).to_have_text('Edit songbook')
-        expect(page.locator('[name="short_name"], [name="is_hymn_book"]')).to_have_count(0)
-        self._save(page, name='Kidung Harian Baru', lang=str(self.lang.pk))
+        expect(page.locator('[name="short_name"], [name="is_hymn_book"], [name="lang"]')).to_have_count(0)
+        self._save(page, name='Kidung Harian Baru')
         expect(page.locator('#panelBody .book').filter(has_text='Kidung Harian Baru')).to_be_visible()
         self._close_browser()
         self.book.refresh_from_db()
@@ -218,17 +238,377 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(rails, [], 'a rail label was left up')
         self._close_browser()
 
-    def test_add_tatib_with_its_first_section(self):
+    def test_tatib_date_picker_selects_clears_and_supports_keyboard(self):
+        page = self._page(reverse('web-tatib'))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('input[type="date"]')).to_have_count(0)
+        date_value = page.locator('[name="date"]')
+        expect(date_value).to_have_attribute('type', 'hidden')
+
+        trigger = page.locator('[data-date-picker-trigger]')
+        calendar = page.locator('[data-date-picker-calendar]')
+        expect(calendar).to_be_hidden()
+        date_picker = page.locator('[data-date-picker]')
+        trigger.click()
+        expect(calendar).to_be_visible()
+        grid = calendar.locator('[data-date-picker-grid]')
+        first_week = grid.locator('.editor__date-row').first
+        expect(first_week).to_have_css('display', 'grid')
+        column_count = first_week.evaluate(
+            'el => getComputedStyle(el).gridTemplateColumns.split(" ").length')
+        self.assertEqual(column_count, 7)
+        today = date.today()
+        target = today + timedelta(days=1)
+        calendar.locator('[data-date-today]').focus()
+        page.keyboard.press('ArrowRight')
+        page.keyboard.press('Enter')
+        expect(date_value).to_have_value(target.isoformat())
+        expected_label = page.evaluate("""value => {
+          const [year, month, day] = value.split('-').map(Number);
+          return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric', month: 'long', year: 'numeric'
+          }).format(new Date(year, month - 1, day));
+        }""", target.isoformat())
+        expect(trigger).to_have_text(expected_label)
+
+        trigger.click()
+        expect(calendar).to_be_visible()
+        page.locator('#editorTitle').click()
+        expect(calendar).to_be_hidden()
+
+        trigger.click()
+        expect(calendar).to_be_visible()
+        page.keyboard.press('Escape')
+        expect(calendar).to_be_hidden()
+        expect(trigger).to_be_focused()
+        date_picker.locator('[data-date-picker-clear]').click()
+        expect(date_value).to_have_value('')
+
+    def test_new_tatib_date_picker_defaults_to_the_upcoming_sunday_popover(self):
+        page = self._page(reverse('web-tatib'))
+        page.clock.install(time=datetime(2026, 10, 7, 12, tzinfo=timezone.utc))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+
+        date_value = page.locator('[name="date"]')
+        trigger = page.locator('[data-date-picker-trigger]')
+        calendar = page.locator('[data-date-picker-calendar]')
+        date_picker = page.locator('[data-date-picker]')
+        expect(date_value).to_have_value('2026-10-11')
+        expect(trigger).to_contain_text('11 Oktober 2026')
+        picker_height = date_picker.bounding_box()['height']
+
+        trigger.click()
+        expect(calendar).to_be_visible()
+        expect(calendar).to_have_css('position', 'fixed')
+        expect(calendar).to_have_attribute('popover', 'manual')
+        expect(calendar).to_have_css('display', 'block')
+        trigger_box = trigger.bounding_box()
+        picker_after = date_picker.bounding_box()
+        calendar_box = calendar.bounding_box()
+        self.assertAlmostEqual(picker_after['height'], picker_height)
+        self.assertAlmostEqual(
+            calendar_box['y'] - (trigger_box['y'] + trigger_box['height']), 8, delta=2)
+        expect(calendar.locator('[data-date="2026-10-11"]')).to_have_attribute(
+            'aria-selected', 'true')
+
+    def test_date_picker_cells_are_square_across_widths_and_month_lengths(self):
+        for width, height in ((1440, 900), (390, 844), (320, 500), (1440, 360)):
+            with self.subTest(viewport=(width, height)):
+                page = self._page(reverse('web-home'))
+                page.set_viewport_size({'width': width, 'height': height})
+                page.reload(wait_until='networkidle')
+                page.clock.install(time=datetime(2027, 2, 7, 12, tzinfo=timezone.utc))
+                page.click('.rail__btn[aria-label="Tata Ibadah"]')
+                page.click('#panelAdd')
+                page.wait_for_selector('dialog[open]')
+                picker = page.locator('[data-date-picker]')
+                closed_height = picker.bounding_box()['height']
+                page.locator('[data-date-picker-trigger]').click()
+                calendar = page.locator('[data-date-picker-calendar]')
+                expect(calendar).to_be_visible()
+
+                for previous_months, weeks in ((0, 4), (3, 6), (1, 5)):
+                    for _ in range(previous_months):
+                        calendar.locator('[data-date-picker-prev]').click()
+                    geometry = calendar.evaluate('''el => {
+                      const bounds = el.getBoundingClientRect();
+                      return {
+                        cells: [...el.querySelectorAll('.editor__date-day, .editor__date-empty')]
+                          .map(cell => {
+                            const box = cell.getBoundingClientRect();
+                            return {width: box.width, height: box.height};
+                          }),
+                        weeks: el.querySelectorAll('.editor__date-row').length,
+                        left: bounds.left, top: bounds.top,
+                        right: bounds.right, bottom: bounds.bottom,
+                        viewportWidth: innerWidth, viewportHeight: innerHeight,
+                      };
+                    }''')
+                    self.assertEqual(geometry['weeks'], weeks, geometry)
+                    for cell in geometry['cells']:
+                        self.assertGreater(cell['width'], 0)
+                        self.assertAlmostEqual(cell['width'], cell['height'], delta=1)
+                    self.assertGreaterEqual(geometry['left'], 0, geometry)
+                    self.assertGreaterEqual(geometry['top'], 0, geometry)
+                    self.assertLessEqual(geometry['right'], geometry['viewportWidth'], geometry)
+                    self.assertLessEqual(geometry['bottom'], geometry['viewportHeight'], geometry)
+                    expect(calendar.locator('.editor__date-day').first).to_have_css(
+                        'border-radius', '8px')
+                    self.assertAlmostEqual(picker.bounding_box()['height'], closed_height)
+                page.close()
+
+    def test_date_picker_emphasizes_sundays_in_light_and_dark_themes(self):
+        page = self._page(reverse('web-home'))
+        page.clock.install(time=datetime(2026, 10, 4, 12, tzinfo=timezone.utc))
+        page.click('.rail__btn[aria-label="Tata Ibadah"]')
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        page.locator('[data-date-picker-trigger]').click()
+        calendar = page.locator('[data-date-picker-calendar]')
+        expect(calendar).to_be_visible()
+
+        selected_sunday = calendar.locator('[data-date="2026-10-04"]')
+        sunday = calendar.locator('[data-date="2026-10-11"]')
+        weekday = calendar.locator('[data-date="2026-10-06"]')
+        sunday_heading = calendar.locator('.editor__date-weekdays [data-date-sunday]')
+        expect(sunday).to_have_attribute('data-date-sunday', '')
+        expect(sunday_heading).to_have_count(1)
+        expect(selected_sunday).to_have_attribute('aria-selected', 'true')
+        expect(selected_sunday).to_have_attribute('aria-current', 'date')
+
+        for theme in ('light', 'dark'):
+            page.evaluate('(theme) => document.documentElement.dataset.theme = theme', theme)
+            sunday_style = sunday.evaluate('''el => {
+              const style = getComputedStyle(el);
+              return {weight: Number(style.fontWeight), color: style.color,
+                      background: style.backgroundColor};
+            }''')
+            weekday_style = weekday.evaluate('''el => {
+              const style = getComputedStyle(el);
+              return {weight: Number(style.fontWeight), color: style.color,
+                      background: style.backgroundColor};
+            }''')
+            heading_style = sunday_heading.evaluate('''el => {
+              const style = getComputedStyle(el);
+              return {weight: Number(style.fontWeight), color: style.color};
+            }''')
+            selected_style = selected_sunday.evaluate('''el => ({
+              background: getComputedStyle(el).backgroundColor,
+              color: getComputedStyle(el).color
+            })''')
+            active_colors = page.evaluate('''() => {
+              const style = getComputedStyle(document.documentElement);
+              return {background: style.getPropertyValue('--active-bg').trim(),
+                      color: style.getPropertyValue('--active-ink').trim()};
+            }''')
+            self.assertGreater(sunday_style['weight'], weekday_style['weight'], theme)
+            self.assertNotEqual(sunday_style['color'], weekday_style['color'], theme)
+            self.assertNotEqual(sunday_style['background'], weekday_style['background'], theme)
+            self.assertGreater(heading_style['weight'], 600, theme)
+            self.assertEqual(selected_style['background'], page.evaluate(
+                "color => { const probe = document.createElement('div'); "
+                "probe.style.backgroundColor = color; document.body.append(probe); "
+                "const value = getComputedStyle(probe).backgroundColor; probe.remove(); return value; }",
+                active_colors['background']))
+            self.assertEqual(selected_style['color'], page.evaluate(
+                "color => { const probe = document.createElement('div'); "
+                "probe.style.color = color; document.body.append(probe); "
+                "const value = getComputedStyle(probe).color; probe.remove(); return value; }",
+                active_colors['color']))
+            selected_sunday.hover()
+            expect(selected_sunday).to_have_css('background-color', selected_style['background'])
+            expect(selected_sunday).to_have_css('color', selected_style['color'])
+            selected_sunday.focus()
+            page.keyboard.press('ArrowDown')
+            expect(sunday).to_be_focused()
+            expect(sunday).to_have_css('outline-style', 'solid')
+            expect(sunday).to_have_css('outline-width', '2px')
+
+        weekday.click()
+        expect(page.locator('[name="date"]')).to_have_value('2026-10-06')
+        page.locator('[data-date-picker-trigger]').click()
+        expect(selected_sunday).to_have_attribute('aria-selected', 'false')
+        expect(selected_sunday).to_have_attribute('aria-current', 'date')
+        for theme in ('light', 'dark'):
+            page.evaluate('(theme) => document.documentElement.dataset.theme = theme', theme)
+            expect(selected_sunday).to_have_css('border-top-color', sunday.evaluate(
+                'el => getComputedStyle(el).color'))
+            expect(selected_sunday).to_have_css('border-top-width', '1px')
+
+    def test_new_tatib_date_picker_defaults_to_today_when_opened_on_sunday(self):
+        page = self._page(reverse('web-tatib'))
+        page.clock.install(time=datetime(2026, 10, 11, 12, tzinfo=timezone.utc))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+
+        expect(page.locator('[name="date"]')).to_have_value('2026-10-11')
+        expect(page.locator('[data-date-picker-trigger]')).to_contain_text('11 Oktober 2026')
+
+    def test_date_picker_dropdown_overlaps_the_scrollable_modal_content(self):
+        page = self._page(reverse('web-tatib'))
+        page.set_viewport_size({'width': 1440, 'height': 500})
+        page.clock.install(time=datetime(2026, 10, 7, 12, tzinfo=timezone.utc))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        page.add_style_tag(content='''
+            #editorContent { height: 110px !important; max-height: 110px !important;
+                              flex: 0 0 110px !important; }
+        ''')
+        content = page.locator('#editorContent')
+        content.evaluate('el => { el.scrollTop = el.scrollHeight; }')
+        trigger = page.locator('[data-date-picker-trigger]')
+        trigger.click()
+        calendar = page.locator('[data-date-picker-calendar]')
+        expect(calendar).to_be_visible()
+
+        geometry = page.evaluate('''() => {
+          const content = document.getElementById('editorContent');
+          const calendar = document.querySelector('[data-date-picker-calendar]');
+          const before = content.getBoundingClientRect();
+          const bounds = calendar.getBoundingClientRect();
+          const clipBottom = before.top + content.clientHeight;
+          const overlapY = Math.max(bounds.top + 1, clipBottom + 2);
+          const overlapX = Math.max(bounds.left + 1, Math.min(bounds.right - 1,
+            window.innerWidth / 2));
+          const hit = overlapY < bounds.bottom
+            && document.elementFromPoint(overlapX, overlapY)
+              ?.closest('[data-date-picker-calendar]') === calendar;
+          return {
+            top: bounds.top, right: bounds.right, bottom: bounds.bottom,
+            clipBottom, overlapY, hit,
+            viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,
+            contentHeight: content.clientHeight, scrollHeight: content.scrollHeight,
+          };
+        }''')
+        self.assertTrue(geometry['bottom'] > geometry['clipBottom'], geometry)
+        self.assertTrue(geometry['hit'], geometry)
+        self.assertGreaterEqual(geometry['top'], 0, geometry)
+        self.assertGreaterEqual(geometry['right'], 0, geometry)
+        self.assertLessEqual(geometry['bottom'], geometry['viewportHeight'], geometry)
+        self.assertLessEqual(geometry['right'], geometry['viewportWidth'], geometry)
+        self.assertEqual(geometry['contentHeight'], 110, geometry)
+
+        initial_trigger_top = trigger.bounding_box()['y']
+        content.evaluate('el => { el.scrollTop = 0; }')
+        scrolled = page.evaluate('''() => {
+          const trigger = document.querySelector('[data-date-picker-trigger]').getBoundingClientRect();
+          const calendar = document.querySelector('[data-date-picker-calendar]').getBoundingClientRect();
+          return {triggerTop: trigger.top, triggerBottom: trigger.bottom,
+                  calendarTop: calendar.top, calendarBottom: calendar.bottom};
+        }''')
+        self.assertNotAlmostEqual(scrolled['triggerTop'], initial_trigger_top)
+        self.assertTrue(
+            abs(scrolled['calendarTop'] - scrolled['triggerBottom'] - 8) < 2
+            or abs(scrolled['triggerTop'] - scrolled['calendarBottom'] - 8) < 2,
+            scrolled)
+
+        page.evaluate('''() => {
+          window.__resizeEvents = 0;
+          window.addEventListener('resize', () => { window.__resizeEvents += 1; });
+        }''')
+        page.set_viewport_size({'width': 400, 'height': 360})
+        page.wait_for_function('window.__resizeEvents > 0')
+        resized = page.evaluate('''() => {
+          const calendar = document.querySelector('[data-date-picker-calendar]').getBoundingClientRect();
+          return {left: calendar.left, top: calendar.top, right: calendar.right,
+                  bottom: calendar.bottom, width: document.documentElement.clientWidth,
+                  height: document.documentElement.clientHeight};
+        }''')
+        self.assertGreaterEqual(resized['left'], 8, resized)
+        self.assertGreaterEqual(resized['top'], 8, resized)
+        self.assertLessEqual(resized['right'], resized['width'] - 8, resized)
+        self.assertLessEqual(resized['bottom'], resized['height'] - 8, resized)
+
+        page.keyboard.press('Escape')
+        expect(calendar).to_be_hidden()
+        trigger.click()
+        expect(calendar).to_be_visible()
+        page.locator('#editorModal').evaluate('dialog => dialog.close()')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        expect(page.locator('[data-date-picker-calendar]:popover-open')).to_have_count(0)
+
+    def test_tatib_date_picker_submits_iso_date(self):
+        page = self._page(reverse('web-tatib'))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        selected = date.today() + timedelta(days=2)
+        page.locator('[data-date-picker-trigger]').click()
+        page.wait_for_selector('[data-date-picker-calendar]:not([hidden])')
+        if selected.month != date.today().month:
+            page.locator('[data-date-picker-next]').click()
+        iso_date = selected.isoformat()
+        page.locator(f'[data-date="{iso_date}"]').click()
+        page.fill('[name="name"]', 'Date picker service')
+        page.locator('.editor__save').click()
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        self._close_browser()
+        service = tatib.TataIbadah.objects.get(name='Date picker service')
+        self.assertEqual(service.date, selected)
+
+    def test_tatib_date_picker_loads_saved_date_and_clears_on_edit(self):
+        page = self._page(reverse('web-tatib'))
+        row = page.locator(f'li:has(.book[data-name="{self.service.pk}"])')
+        row.hover()
+        row.locator('.row-edit').click()
+        page.wait_for_selector('dialog[open]')
+
+        saved_date = self.service.date.isoformat()
+        expect(page.locator('[name="date"]')).to_have_value(saved_date)
+        page.locator('[data-date-picker-trigger]').click()
+        calendar = page.locator('[data-date-picker-calendar]')
+        expect(calendar).to_be_visible()
+        expect(page.locator(f'[data-date="{saved_date}"]')).to_have_attribute(
+            'aria-selected', 'true')
+        expect(page.locator('[data-date-picker-month]')).to_contain_text('Agustus 2026')
+        page.locator('[data-date-picker-clear]').click()
+        expect(page.locator('[name="date"]')).to_have_value('')
+        expect(calendar).to_be_hidden()
+        page.fill('[name="name"]', 'Recurring service')
+        page.locator('.editor__save').click()
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        self._close_browser()
+        self.service.refresh_from_db()
+        self.assertIsNone(self.service.date)
+
+    def test_tatib_date_picker_survives_validation_rerender(self):
+        page = self._page(reverse('web-tatib'))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        today = date.today()
+        date_value = page.locator('[name="date"]')
+        calendar = page.locator('[data-date-picker]')
+        page.locator('[data-date-picker-trigger]').click()
+        calendar.locator('[data-date-today]').click()
+        page.locator('[name="name"]').evaluate("el => el.removeAttribute('maxlength')")
+        page.locator('[name="name"]').fill('x' * 65)
+        page.locator('.editor__save').click()
+        expect(page.locator('dialog[open]')).to_be_visible()
+        expect(page.locator('.editor__error')).to_be_visible()
+        expect(page.locator('[name="name"]')).to_have_value('x' * 65)
+        expect(page.locator('input[type="date"]')).to_have_count(0)
+        expect(page.locator('[name="date"]')).to_have_value(today.isoformat())
+        page.locator('[data-date-picker-trigger]').click()
+        expect(page.locator('[data-date-picker-calendar]')).to_be_visible()
+        page.keyboard.press('Escape')
+        expect(page.locator('[data-date-picker-calendar]')).to_be_hidden()
+
+    def test_add_empty_active_tatib(self):
         page = self._page(reverse('web-tatib'))
         page.click('#panelAdd')
         page.wait_for_selector('dialog[open]')
         expect(page.locator('#editorTitle')).to_have_text('New Tata Ibadah')
-        self._save(page, name='Ibadah Baru', date='2026-11-01', first_title='Pembukaan',
-                   first_text='KJ 1')
+        expect(page.locator('[name="first_title"], [name="first_text"], [name="is_active"]')).to_have_count(0)
+        self._save(page, name='Ibadah Baru', date='2026-11-01')
         expect(page.locator('#panelBody .book').filter(has_text='Ibadah Baru')).to_be_visible()
+        page.get_by_text('Ibadah Baru', exact=True).click()
+        expect(page.locator('.entry__empty')).to_be_visible()
+        expect(page.locator('[data-entry-open="scripture"]')).to_be_visible()
         self._close_browser()
         service = tatib.TataIbadah.objects.get(name='Ibadah Baru')
-        self.assertEqual(service.tataibadahitem_set.count(), 1)
+        self.assertTrue(service.is_active)
+        self.assertEqual(service.tataibadahitem_set.count(), 0)
 
     # --- editing ---
 
@@ -264,7 +644,170 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self.service.refresh_from_db()
         self.assertEqual(self.service.name, 'Ibadah Minggu IV')
 
-    def test_hymn_songbooks_and_their_songs_offer_no_control(self):
+    def test_pointer_closed_editor_does_not_leave_its_row_control_visible(self):
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        book_row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
+        book_edit = book_row.locator('.row-edit')
+        book_row.hover()
+        expect(book_edit).to_have_css('opacity', '1')
+        book_edit.click()
+        page.wait_for_selector('dialog[open]')
+        page.locator('.editor__cancel').click()
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        expect(book_edit).to_have_css('opacity', '0')
+        self.assertEqual(book_edit.evaluate('el => getComputedStyle(el).pointerEvents'), 'none')
+        book_row.hover()
+        expect(book_edit).to_have_css('opacity', '1')
+
+        page.get_by_text(self.book.name, exact=True).first.click()
+        page.wait_for_function("document.documentElement.dataset.ch === 'open'")
+        song_row = page.locator(f'li:has(.songrow[data-i="{self.song.pk}"])')
+        song_edit = song_row.locator('.row-edit')
+        song_row.hover()
+        song_edit.click()
+        page.wait_for_selector('dialog[open]')
+        page.locator('.editor__cancel').click()
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        expect(song_edit).to_have_css('opacity', '0')
+
+        page.click('.rail__btn[aria-label="Tata Ibadah"]')
+        tatib_row = page.locator(f'li:has(.book[data-name="{self.service.pk}"])')
+        tatib_edit = tatib_row.locator('.row-edit')
+        tatib_row.hover()
+        tatib_edit.click()
+        page.wait_for_selector('dialog[open]')
+        page.locator('.editor__cancel').click()
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        expect(tatib_edit).to_have_css('opacity', '0')
+
+    def test_sidebar_save_restores_focus_to_the_matching_kind_row(self):
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        self._save(page, name='Focus Test Songbook')
+        book_link = page.locator('#panelBody .book').filter(has_text='Focus Test Songbook')
+        expect(book_link).to_be_focused(timeout=5000)
+        self.assertEqual(book_link.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+        book_id = book_link.get_attribute('data-name')
+        book_row = page.locator(f'li:has(.book[data-name="{book_id}"])')
+        book_row.hover()
+        book_row.locator('.row-edit').click()
+        page.wait_for_selector('dialog[open]')
+        self._save(page, name='Edited Focus Test Songbook')
+        book_link = page.locator('#panelBody .book').filter(has_text='Edited Focus Test Songbook')
+        expect(book_link).to_be_focused(timeout=5000)
+        self.assertEqual(book_link.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+
+        book_link.click()
+        page.wait_for_function("document.documentElement.dataset.ch === 'open'")
+        page.click('#songAdd')
+        page.wait_for_selector('dialog[open]')
+        self._save(page, title='Focus Test Song')
+        song_link = page.locator('#chList .songrow').filter(has_text='Focus Test Song')
+        expect(song_link).to_be_focused(timeout=5000)
+        self.assertEqual(song_link.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+        song_id = song_link.get_attribute('data-i')
+        song_row = page.locator(f'li:has(.songrow[data-i="{song_id}"])')
+        song_row.hover()
+        song_row.locator('.row-edit').click()
+        page.wait_for_selector('dialog[open]')
+        self._save(page, title='Edited Focus Test Song')
+        song_link = page.locator('#chList .songrow').filter(has_text='Edited Focus Test Song')
+        expect(song_link).to_be_focused(timeout=5000)
+        self.assertEqual(song_link.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+
+        page.click('.rail__btn[aria-label="Tata Ibadah"]')
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+        self._save(page, name='Focus Test Tata Ibadah', date='2026-11-01')
+        tatib_link = page.locator('#panelBody .book').filter(has_text='Focus Test Tata Ibadah')
+        expect(tatib_link).to_be_focused(timeout=5000)
+        self.assertEqual(tatib_link.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+        tatib_id = tatib_link.get_attribute('data-name')
+        tatib_row = page.locator(f'li:has(.book[data-name="{tatib_id}"])')
+        tatib_row.hover()
+        tatib_row.locator('.row-edit').click()
+        page.wait_for_selector('dialog[open]')
+        self._save(page, name='Edited Focus Test Tata Ibadah')
+        tatib_link = page.locator('#panelBody .book').filter(has_text='Edited Focus Test Tata Ibadah')
+        expect(tatib_link).to_be_focused(timeout=5000)
+        self.assertEqual(tatib_link.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+        self._close_browser()
+
+    def test_modal_restoration_quiets_row_outlines_but_keyboard_focus_remains_visible(self):
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+
+        def close_editor(row, key):
+            link = row.locator('a.book, a.songrow')
+            control = row.locator('.row-edit')
+            row.hover()
+            control.click()
+            page.wait_for_selector('dialog[open]')
+            page.mouse.move(1400, 850)
+            if key == 'Enter':
+                page.locator('.editor__cancel').focus()
+            page.keyboard.press(key)
+            page.wait_for_function("!document.querySelector('dialog[open]')")
+            expect(link).to_be_focused()
+            self.assertEqual(link.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+            expect(control).to_have_css('opacity', '0')
+            page.keyboard.press('Tab')
+            expect(control).to_be_focused()
+            expect(control).to_have_css('outline-style', 'solid')
+            expect(control).to_have_css('outline-width', '2px')
+            page.mouse.move(1400, 850)
+
+        book_row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
+        close_editor(book_row, 'Escape')
+        book_row.locator('.book').click()
+        page.wait_for_function("document.documentElement.dataset.ch === 'open'")
+        song_row = page.locator(f'li:has(.songrow[data-i="{self.song.pk}"])')
+        close_editor(song_row, 'Enter')
+        page.click('.rail__btn[aria-label="Tata Ibadah"]')
+        tatib_row = page.locator(f'li:has(.book[data-name="{self.service.pk}"])')
+        close_editor(tatib_row, 'Escape')
+        self._close_browser()
+
+    def test_keyboard_close_does_not_leave_row_edit_control_visible(self):
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
+        link = row.locator('.book')
+        control = row.locator('.row-edit')
+
+        for close_key in ('Escape', 'Enter'):
+            link.focus()
+            page.keyboard.press('Tab')
+            expect(control).to_be_focused()
+            page.keyboard.press('Enter')
+            page.wait_for_selector('dialog[open]')
+            page.mouse.move(1400, 850)
+            if close_key == 'Enter':
+                page.locator('.editor__cancel').focus()
+            page.keyboard.press(close_key)
+            page.wait_for_function("!document.querySelector('dialog[open]')")
+            expect(link).to_be_focused()
+            expect(control).to_have_css('opacity', '0')
+            self.assertEqual(control.evaluate('el => getComputedStyle(el).pointerEvents'), 'none')
+            page.keyboard.press('Tab')
+            expect(control).to_be_focused()
+            expect(control).to_have_css('opacity', '1')
+            page.mouse.move(1400, 850)
+
+    def test_keyboard_can_tab_to_a_hidden_row_edit_control(self):
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
+        control = row.locator('.row-edit')
+        row.locator('.book').focus()
+        page.keyboard.press('Tab')
+        expect(control).to_be_focused()
+        expect(control).to_have_css('opacity', '1')
+
+    def test_hymn_rows_do_not_offer_edit_controls(self):
         page = self._page(reverse('web-book', args=[self.hymn.pk]))
         self.assertEqual(page.locator('#chList .row-edit').count(), 0)   # its songs
         hymn_panel = self._page(reverse('web-books'))
@@ -277,12 +820,12 @@ class EditorE2ETests(StaticLiveServerTestCase):
         page = self._page(reverse('web-books'))
         page.click('#panelAdd')
         page.wait_for_selector('dialog[open]')
-        self._fill(page, 'name', self.book.name)             # already used in this language
-        self._fill(page, 'lang', str(self.lang.pk))
+        self._fill(page, 'name', self.book.name)             # already used globally
+        expect(page.locator('[name="lang"]')).to_have_count(0)
         page.click('.editor__save')
         expect(page.locator('dialog[open]')).to_have_count(1)  # still open
         expect(page.locator('.editor__error')).to_contain_text(
-            'That songbook already exists for this language.')
+            'That songbook already exists.')
         expect(page.locator('[name="name"]')).to_have_value(self.book.name)
         self._close_browser()
 

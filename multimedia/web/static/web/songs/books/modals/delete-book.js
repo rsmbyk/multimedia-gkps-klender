@@ -3,7 +3,6 @@ import * as toasts from '/static/helpers/toasts.js'
 const modal = $('#modal-delete-book')
 
 const name = modal.find('#modal-delete-book-name')
-const lang = modal.find('#modal-delete-book-lang')
 
 const buttonDelete = modal.find('#modal-delete-book-button-delete')
 const buttonCancel = modal.find('#modal-delete-book-button-cancel')
@@ -39,7 +38,6 @@ const sendDeleteRequest = (book, onSuccess) => {
 
 const updateBookInfo = book => {
     name.text(book.name)
-    lang.text(book.lang === 1 ? 'Simalungun' : 'Indonesia')
 }
 
 const updateModalConfig = (book, onSuccess) => {

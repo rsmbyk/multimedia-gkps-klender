@@ -6,11 +6,8 @@ from multimedia.songs import models
 class SongApiSoftDeleteTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        language = models.Language.objects.create(name='Indonesian')
-        cls.active_book = models.Book.objects.create(
-            lang=language, name='Active Book', short_name='AB')
-        cls.deleted_book = models.Book.objects.create(
-            lang=language, name='Deleted Book', short_name='DB')
+        cls.active_book = models.Book.objects.create(name='Active Book', short_name='AB')
+        cls.deleted_book = models.Book.objects.create(name='Deleted Book', short_name='DB')
         cls.active_song = models.Song.objects.create(
             book=cls.active_book, number=1, title='Active Song')
         cls.deleted_song = models.Song.objects.create(
@@ -35,7 +32,8 @@ class SongApiSoftDeleteTests(APITestCase):
         self.assertEqual([row['id'] for row in books], [self.active_book.pk])
         self.assertEqual([row['id'] for row in songs], [self.active_song.pk])
         self.assertEqual([row['id'] for row in verses], [self.active_verse.pk])
-        self.assertEqual(set(books[0]), {'id', 'lang', 'name', 'short_name', 'is_hymn_book'})
+        self.assertEqual(set(books[0]), {'id', 'name', 'short_name', 'is_hymn_book'})
+        self.assertNotIn('lang', books[0])
         self.assertEqual(set(songs[0]), {
             'id', 'number', 'sub_number', 'title', 'is_untitled', 'key', 'modified', 'book'})
         self.assertEqual(set(verses[0]), {'id', 'song', 'number', 'lyric'})

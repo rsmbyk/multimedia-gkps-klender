@@ -7,9 +7,8 @@ from multimedia.songs import models as song_models
 class SongBookmarkSoftDeleteTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        language = song_models.Language.objects.create(name='Bookmark')
-        book = song_models.Book.objects.create(lang=language, name='Bookmark book')
-        deleted_book = song_models.Book.objects.create(lang=language, name='Deleted bookmark book')
+        book = song_models.Book.objects.create(name='Bookmark book')
+        deleted_book = song_models.Book.objects.create(name='Deleted bookmark book')
         active_song = song_models.Song.objects.create(book=book, title='Bookmarked active song')
         deleted_song = song_models.Song.objects.create(book=book, title='Bookmarked deleted song')
         song_in_deleted_book = song_models.Song.objects.create(

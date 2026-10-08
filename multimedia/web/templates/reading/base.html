@@ -251,14 +251,12 @@
   {% endif %}
 
   {% if section == 'tatib' and has_entries %}
-  {% comment %}The reorder mode's own answers, right below the sections filter and in the
-  part of the sidebar that never scrolls: they appear the moment an order is being
-  rearranged (the mode is entered by dragging an entry's handle, not by a button here).{% endcomment %}
+  {% comment %}The reorder endpoint and its error line, right below the sections filter. There is
+  no Reorder button and no Save: a drop, or a settled keyboard move, is written at once (spec 026),
+  so only a failed write has anything to say here.{% endcomment %}
   <div class="ch__reorder" data-reorder-group
        data-reorder-endpoint="{% url 'web-entry-reorder' %}"
        data-reorder-for="{{ service_id }}">
-    <button type="button" class="reorder__btn reorder__btn--save" data-reorder-save>Save</button>
-    <button type="button" class="reorder__btn" data-reorder-discard>Discard</button>
     <p class="reorder__status" data-reorder-status role="status"></p>
   </div>
   {% endif %}
@@ -333,9 +331,11 @@
 </main>
 
 {% include 'reading/_editor_modal.html' %}
+<script src="{% static 'web/focus.js' %}"></script>
 <script src="{% static 'web/reading.js' %}"></script>
 <script src="{% static 'web/display.js' %}"></script>
 <script src="{% static 'web/editors.js' %}"></script>
+<script src="{% static 'web/date-picker.js' %}"></script>
 <script src="{% static 'web/entries.js' %}"></script>
 <script src="{% static 'web/reorder.js' %}"></script>
 </body>

@@ -8,7 +8,6 @@ enforce as well as the templates.
 
 from django import forms
 from django.conf import settings
-from django.core.exceptions import NON_FIELD_ERRORS
 
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
@@ -30,11 +29,10 @@ def editors_allowed(request):
 class SongbookForm(forms.ModelForm):
     class Meta:
         model = song_models.Book
-        fields = ['name', 'lang']
-        labels = {'lang': 'Language'}
+        fields = ['name']
         error_messages = {
-            NON_FIELD_ERRORS: {
-                'unique_together': 'That songbook already exists for this language.',
+            'name': {
+                'unique': 'That songbook already exists.',
             },
         }
 
@@ -52,25 +50,16 @@ class SongForm(forms.ModelForm):
 
 
 class TataIbadahForm(forms.ModelForm):
-    first_title = forms.CharField(required=False, max_length=64, label='First section title')
-    first_text = forms.CharField(
-        required=False, widget=forms.Textarea(attrs={'rows': 4}), label='First section text')
-
     class Meta:
         model = tatib_models.TataIbadah
-        fields = ['name', 'date', 'is_active']
+        fields = ['name', 'date']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            # sections are not edited here
-            self.fields.pop('first_title')
-            self.fields.pop('first_text')
-        else:
+        self.fields['date'].widget = forms.HiddenInput(attrs={'data-date-picker-value': ''})
+        if not self.instance.pk:
             self.fields['date'].help_text = (
                 'Leave empty for a recurring template (shown under Templates).')
-            self.fields['first_title'].help_text = (
-                'A service appears in the lists once it has a section.')
 
 
 def build_form(kind, request, pk=None, data=None):
@@ -118,21 +107,8 @@ def _record(model, pk):
 
 
 def save_form(kind, form, target):
-    """Persist a valid form; returns the saved object.
-
-    A new Tata Ibadah also gets its optional first section, because the public
-    lists only show services that have one -- without it the service would be
-    saved but invisible, which reads as a failed save.
-    """
-    obj = form.save()
-    if kind == 'tatib' and target is None:
-        title = (form.cleaned_data.get('first_title') or '').strip()
-        text = (form.cleaned_data.get('first_text') or '').strip()
-        if title or text:
-            tatib_models.TataIbadahItem.objects.create(
-                tatib=obj, item_type=tatib_models.TataIbadahItemType.TEXT,
-                title=title, text=text, order_number=1)
-    return obj
+    """Persist a valid editor form without changing fields it does not expose."""
+    return form.save()
 
 
 def form_title(kind, pk):

@@ -8,7 +8,8 @@
  * It shares the display state with the app's tabs over the same channel (see
  * web/display.js): whatever the operator does here, the shell hears. Update re-reads
  * the whole page -- how a song whose lyrics changed reaches the screen -- and the
- * screen that was showing stays where it was.
+ * screen that was showing stays where it was. Spec 026: the shell asks for that same
+ * re-read after every saved change, so the screen follows an edit without a press.
  */
 (function () {
   'use strict';
@@ -230,7 +231,9 @@
 
   /* Update: re-read the page (a song's lyrics may have changed) and keep the place. */
   function reflow() {
-    fetch(window.location.href, {credentials: 'same-origin'})
+    /* A saved change reads back at once; no-store keeps a cached page from being served
+       for the read that follows close behind it. */
+    fetch(window.location.href, {credentials: 'same-origin', cache: 'no-store'})
       .then(function (response) { return response.ok ? response.text() : ''; })
       .then(function (html) {
         if (!html) return;

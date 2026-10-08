@@ -4,14 +4,49 @@ modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
   <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
   <form class="editor__form" method="post" action="{{ save_url }}">
     {% csrf_token %}
-    {% for field in form %}{% if field.is_hidden %}{{ field }}{% else %}
+    {% if kind == 'song' and not target_id %}<input type="hidden" name="book" value="{{ book_id }}">{% endif %}
+    {% for field in form %}
+    {% if kind == 'tatib' and field.name == 'date' %}
+    <div class="editor__field editor__date-field{% if field.errors %} is-invalid{% endif %}">
+      <label for="{{ field.id_for_label }}_trigger">{{ field.label }}</label>
+      {{ field }}
+      <div class="editor__date-picker" data-date-picker
+           data-date-picker-default-sunday="{% if not form.is_bound and not target_id %}true{% else %}false{% endif %}">
+        <div class="editor__date-controls">
+          <button class="editor__date-trigger" id="{{ field.id_for_label }}_trigger"
+                  type="button" data-date-picker-trigger aria-haspopup="dialog" aria-expanded="false">
+            <span data-date-picker-label>Choose a date</span>
+          </button>
+          <button class="editor__date-clear" type="button" data-date-picker-clear>Clear date</button>
+          <div class="editor__date-calendar" data-date-picker-calendar popover="manual" role="dialog"
+               aria-label="Choose a date" hidden>
+            <div class="editor__date-nav">
+              <button type="button" data-date-picker-prev aria-label="Previous month">‹</button>
+              <h3 data-date-picker-month aria-live="polite"></h3>
+              <button type="button" data-date-picker-next aria-label="Next month">›</button>
+            </div>
+            <div class="editor__date-weekdays" aria-hidden="true">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
+              <span>Fri</span><span>Sat</span><span data-date-sunday>Sun</span>
+            </div>
+            <div class="editor__date-grid" data-date-picker-grid role="grid"
+                 aria-label="Choose a date"></div>
+          </div>
+        </div>
+      </div>
+      {% if field.help_text %}<p class="editor__help">{{ field.help_text }}</p>{% endif %}
+      {% for error in field.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    {% elif field.is_hidden %}{{ field }}
+    {% else %}
     <div class="editor__field{% if field.errors %} is-invalid{% endif %}">
       <label for="{{ field.id_for_label }}">{{ field.label }}</label>
       {{ field }}
       {% if field.help_text %}<p class="editor__help">{{ field.help_text }}</p>{% endif %}
       {% for error in field.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
     </div>
-    {% endif %}{% endfor %}
+    {% endif %}
+    {% endfor %}
     {% for error in form.non_field_errors %}
     <p class="editor__error" role="alert">{{ error }}</p>
     {% endfor %}

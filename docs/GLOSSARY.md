@@ -19,7 +19,7 @@ still found in the codebase.
 | Canonical | Also called | Definition | Lives in |
 | --- | --- | --- | --- |
 | **Bible** | — | Scripture content: languages, versions, books, translations, verses. | `multimedia/bible`, `/api/bible/`, `/obs/bible/` |
-| **Language** | — | A natural language (e.g. Indonesian, Simalungun). | `bible.Language`, `songs.Language` |
+| **Language** | — | A natural language (e.g. Indonesian, Simalungun). | `bible.Language` |
 | **Version** | Bible version | A named translation/edition of the Bible in a language. | `bible.Version` |
 | **Book** (Bible) | — | A book of the Bible (name, testament, chapter count). | `bible.Book` |
 | **Book translation** | — | A `Book` as it appears in a specific `Version`. | `bible.BookTranslation` |

@@ -29,9 +29,9 @@
 {% block read_body %}
 {% for item in items %}
 {% if item.eos %}
-<div class="tatib__eos" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}">{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
+<div class="tatib__eos" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}>{% if item.note %}<span class="tatib__note">{{ item.note }}</span>{% endif %}</div>
 {% else %}
-<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.entry %} data-entry-pk="{{ item.pk }}"{% endif %}>
+<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.entry %} data-entry-pk="{{ item.pk }}"{% elif item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}>
 {% if item.title %}<h2 class="read__sec">{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
 {% if item.deleted_target %}<p class="entry__deleted-warning" role="status">This song, songbook, or an included verse was deleted.</p>{% endif %}
 {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
@@ -99,23 +99,5 @@
     </button>
   </div>
 </div>
-{% endif %}
-{% if editor_enabled and has_entries %}
-{% comment %}The question before leaving with an unsaved order (spec 006, slice 3). Three
-answers, all the modal buttons' own geometry: keep editing (the safe one, and the default
-for Escape and the backdrop), discard, or save and carry on.{% endcomment %}
-<dialog class="editor" id="reorderConfirm" data-reorder-confirm aria-labelledby="reorderAsk">
-  <div class="editor__content">
-    <div class="reorder__ask">
-      <h2 class="reorder__ask-title" id="reorderAsk">Save the new order?</h2>
-      <p class="reorder__ask-hint">You have rearranged this Tata Ibadah and not saved it.</p>
-      <div class="reorder__ask-actions">
-        <button type="button" class="reorder__answer" data-reorder-stay>Keep editing</button>
-        <button type="button" class="reorder__answer reorder__answer--danger" data-reorder-leave>Discard</button>
-        <button type="button" class="reorder__answer reorder__answer--primary" data-reorder-and-save>Save</button>
-      </div>
-    </div>
-  </div>
-</dialog>
 {% endif %}
 {% endblock %}

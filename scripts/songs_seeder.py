@@ -8,16 +8,7 @@ import re
 
 from django.db import transaction
 
-from multimedia.songs.models import Language, Book, Verse, Song
-
-
-# Language
-
-with open('raw/songs/langs.json') as f:
-    langs_json = json.load(f)
-
-for lang in langs_json:
-    print(Language.objects.get_or_create(name=lang['name']))
+from multimedia.songs.models import Book, Verse, Song
 
 
 # Books
@@ -28,10 +19,11 @@ with open('raw/songs/books.json') as f:
 with transaction.atomic():
     for book in filter(lambda x: x['is_active'], books_json):
         book_object, _ = Book.objects.get_or_create(
-            lang=Language.objects.get(name=book['lang']),
             name=book['name'],
-            short_name=book['short_name'],
-            is_hymn_book=True,
+            defaults={
+                'short_name': book['short_name'],
+                'is_hymn_book': True,
+            },
         )
 
         print(book_object)

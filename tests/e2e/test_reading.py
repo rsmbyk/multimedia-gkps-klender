@@ -40,13 +40,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def setUp(self):
         super().setUp()
-        lang = songs.Language.objects.create(name='Indonesian')
         self.book = songs.Book.objects.create(
-            lang=lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
         self.song = songs.Song.objects.create(book=self.book, number=12, title='Di Waktu Pagi', key='c')
         songs.Verse.objects.create(song=self.song, number=1, lyric='Di waktu pagi aku bersyukur')
         self.harian = songs.Book.objects.create(
-            lang=lang, name='Kidung Harian', short_name='KH', is_hymn_book=False)
+            name='Kidung Harian', short_name='KH', is_hymn_book=False)
         # bulk first, so the reveal tests have a list long enough to travel
         for n in range(1, 31):
             songs.Song.objects.create(book=self.harian, title='Lagu %02d' % n)
@@ -515,6 +514,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
         page.locator('.rail [data-panel="tatib"]').click()
         page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
+        expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
         expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
         self.assertGreaterEqual(page.locator('.read__head-top').bounding_box()['height'], 34)
 
@@ -763,6 +763,36 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         # the logo takes the same route, not a restart
         page.locator('.rail__logo').click()
         page.wait_for_function("document.documentElement.dataset.home === 'landing'")
+        expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
+
+    def test_fresh_home_resets_remembered_search_but_clear_does_not(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        self._search(page, 'kasih')
+        page.wait_for_selector('#searchStatus')
+        stored = page.evaluate("localStorage.getItem('gkps-search')")
+        self.assertTrue(stored.startswith(reverse('web-search') + '?q=kasih'), stored)
+        page.locator('.search-home .field-clear').click()
+        expect(page.locator('#searchQuery')).to_have_value('')
+        expect(page.get_by_text('Results for').first).to_be_visible()
+        self.assertEqual(page.evaluate("localStorage.getItem('gkps-search')"), stored)
+        page.locator('.rail [data-panel="alkitab"]').click()
+        page.wait_for_function("document.documentElement.dataset.section === 'alkitab'")
+        page.evaluate("localStorage.setItem('gkps-search-scroll', '300')")
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.wait_for_load_state('networkidle')
+        expect(page.locator('html')).to_have_attribute('data-home', 'landing')
+        self.assertIsNone(page.evaluate("localStorage.getItem('gkps-search')"),
+                          {'script_has_reset': 'resetSearchState' in page.request.get(
+                              self.live_server_url + '/static/web/reading.js').text(),
+                           'errors': page.evaluate("""() => ({path: location.pathname,
+                             home: document.documentElement.dataset.home,
+                             source: document.querySelector('script[src*=\"reading.js\"]')?.src,
+                             href: document.getElementById('railSearch').getAttribute('href')})""")})
+        self.assertIsNone(page.evaluate("localStorage.getItem('gkps-search-scroll')"))
+        expect(page.locator('#railSearch')).to_have_attribute('href', reverse('web-home'))
+        page.locator('#railSearch').click()
+        expect(page.locator('html')).to_have_attribute('data-home', 'landing')
         expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
 
     def test_search_state_survives_sidebar_browsing(self):

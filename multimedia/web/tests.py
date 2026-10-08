@@ -1,5 +1,6 @@
 from datetime import date
 import json
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase, override_settings
@@ -23,15 +24,14 @@ class ReadingViewTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        lang = songs.Language.objects.create(name='Indonesian')
         cls.nkb = songs.Book.objects.create(
-            lang=lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
         cls.song = songs.Song.objects.create(book=cls.nkb, number=12, title='Di Waktu Pagi', key='c')
         songs.Verse.objects.create(song=cls.song, number=1, lyric='Di waktu pagi aku bersyukur')
         songs.Verse.objects.create(song=cls.song, number=2, lyric='Bersama seluruh ciptaan')
         cls.next_song = songs.Song.objects.create(book=cls.nkb, number=13, title='Di Waktu Malam')
         cls.harian = songs.Book.objects.create(
-            lang=lang, name='Kidung Harian', short_name='', is_hymn_book=False)
+            name='Kidung Harian', short_name='', is_hymn_book=False)
         songs.Song.objects.create(book=cls.harian, title='Alpha')
         songs.Song.objects.create(book=cls.harian, title='Zebra')
 
@@ -160,8 +160,7 @@ class ReadingViewTests(TestCase):
         # song imports with one `modified` timestamp, so with that prefix in the key
         # the alphabetical order would be identical to the last-modified one and the
         # toggle could not be observed to do anything (spec 005).
-        lang = songs.Language.objects.create(name='Uji Bahasa')
-        book = songs.Book.objects.create(lang=lang, name='Uji Urutan', is_hymn_book=False)
+        book = songs.Book.objects.create(name='Uji Urutan', is_hymn_book=False)
         songs.Song.objects.create(book=book, number=2, title='15. Alfabet')
         songs.Song.objects.create(book=book, number=1, title='9. Zebra')
         response = self.client.get(reverse('web-book', args=[book.pk]))
@@ -240,6 +239,19 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'tatib__sp')   # speaker marks
         self.assertContains(response, 'tatib__eos')  # quiet end-of-section note
 
+    def test_tatib_service_header_uses_full_indonesian_month_name(self):
+        response = self.client.get(reverse('web-tatib-service', args=[self.service.id]))
+        self.assertContains(response,
+                            '<p class="read__eyebrow" id="readEyebrow">23 Agustus 2026</p>',
+                            html=True)
+
+    def test_undated_tatib_header_keeps_its_label(self):
+        service = tatib.TataIbadah.objects.create(name='Recurring service', date=None)
+        response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
+        self.assertContains(response,
+                            '<p class="read__eyebrow" id="readEyebrow">Tata Ibadah</p>',
+                            html=True)
+
     def test_tatib_list_groups_by_month(self):
         response = self.client.get(reverse('web-tatib'))
         self.assertEqual(response.status_code, 200)
@@ -270,9 +282,8 @@ class MaintenanceModeTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        lang = songs.Language.objects.create(name='Indonesian')
         cls.book = songs.Book.objects.create(
-            lang=lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
 
     @override_settings(MAINTENANCE_MODE=True)
     def test_root_shows_maintenance_when_on(self):
@@ -310,12 +321,11 @@ class EditorViewTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        lang = songs.Language.objects.create(name='Indonesian')
         cls.nkb = songs.Book.objects.create(
-            lang=lang, name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
         songs.Song.objects.create(book=cls.nkb, number=12, title='Di Waktu Pagi')
         cls.harian = songs.Book.objects.create(
-            lang=lang, name='Kidung Harian', short_name='KH', is_hymn_book=False)
+            name='Kidung Harian', short_name='KH', is_hymn_book=False)
         cls.service = tatib.TataIbadah.objects.create(
             name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
         tatib.TataIbadahItem.objects.create(
@@ -332,12 +342,11 @@ class EditorViewTests(TestCase):
 
     # --- the form fragment ---
 
-    def test_new_songbook_form_omits_short_name_and_hymn_flag(self):
+    def test_new_songbook_form_omits_language_and_hidden_metadata(self):
         response = self.client.get(self.new_url('songbook'))
         self.assertEqual(response.status_code, 200)
-        for field in ('name', 'lang'):
-            self.assertContains(response, 'name="%s"' % field)
-        for field in ('short_name', 'is_hymn_book'):
+        self.assertContains(response, 'name="name"')
+        for field in ('lang', 'short_name', 'is_hymn_book'):
             self.assertNotContains(response, 'name="%s"' % field)
         self.assertContains(response, 'csrfmiddlewaretoken')
         self.assertContains(response, 'New songbook')
@@ -346,35 +355,54 @@ class EditorViewTests(TestCase):
         response = self.client.get(
             reverse('web-editor-edit', kwargs={'kind': 'songbook', 'pk': self.harian.pk}))
         self.assertContains(response, 'value="Kidung Harian"')
-        self.assertNotContains(response, 'name="short_name"')
-        self.assertNotContains(response, 'name="is_hymn_book"')
-        self.assertContains(response, 'Edit songbook')
+        self.assertNotContains(response, 'name="lang"')
+        self.assertContains(response, 'name="name"')
+        self.assertContains(response, 'csrfmiddlewaretoken')
 
-    def test_tatib_edit_form_has_no_section_fields(self):
-        response = self.client.get(
-            reverse('web-editor-edit', kwargs={'kind': 'tatib', 'pk': self.service.pk}))
-        self.assertNotContains(response, 'first_title')
+    def test_new_song_form_carries_its_songbook_id_to_save(self):
+        response = self.client.get(self.new_url('song'), {'book': self.harian.pk})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'name="book" value="{self.harian.pk}"')
+
+    def test_tatib_forms_render_hidden_iso_value_and_custom_date_picker(self):
+        response = self.client.get(self.new_url('tatib'))
+        self.assertContains(response, 'name="date"')
+        self.assertContains(response, 'data-date-picker-value')
+        self.assertContains(response, 'data-date-picker-trigger')
+        self.assertContains(response, 'data-date-picker-calendar')
+        self.assertNotContains(response, 'type="date"')
+
+    def test_tatib_create_and_edit_forms_omit_legacy_and_activation_fields(self):
+        for url in (self.new_url('tatib'), reverse(
+                'web-editor-edit', kwargs={'kind': 'tatib', 'pk': self.service.pk})):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'name="name"')
+                self.assertContains(response, 'name="date"')
+                for field in ('first_title', 'first_text', 'is_active'):
+                    self.assertNotContains(response, 'name="%s"' % field)
 
     def test_unknown_kind_is_404(self):
         self.assertEqual(self.client.get(self.new_url('bible')).status_code, 404)
 
     # --- songbooks ---
 
-    def test_create_songbook_ignores_short_name_and_hymn_flag(self):
+    def test_create_songbook_ignores_hidden_metadata_and_forged_language(self):
         response = self.client.post(self.save_url('songbook'), {
-            'name': 'Kidung Baru', 'short_name': 'KB', 'lang': self.harian.lang_id,
+            'name': 'Kidung Baru', 'short_name': 'KB', 'lang': 'forged',
             'is_hymn_book': 'on'})
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.json()['ok'])
+        self.assertEqual(response.json()['kind'], 'songbook')
         book = songs.Book.objects.get(name='Kidung Baru')
         self.assertEqual(book.short_name, '')
         self.assertFalse(book.is_hymn_book)
 
-    def test_editing_a_songbook_ignores_hidden_values_and_preserves_existing_values(self):
+    def test_editing_a_songbook_ignores_forged_language_and_hidden_values(self):
         response = self.client.post(
             self.save_url('songbook', self.harian.pk),
             {'name': 'Kidung Harian Baru', 'short_name': 'FORGED',
-             'is_hymn_book': 'on', 'lang': self.harian.lang_id})
+             'is_hymn_book': 'on', 'lang': 'forged'})
         self.assertEqual(response.status_code, 200, response.content[:400])
         self.harian.refresh_from_db()
         self.assertEqual(self.harian.name, 'Kidung Harian Baru')
@@ -383,7 +411,7 @@ class EditorViewTests(TestCase):
 
     def test_deleted_songbook_and_song_targets_cannot_be_edited_or_created_into(self):
         deleted_book = songs.Book.objects.create(
-            lang=self.harian.lang, name='Deleted editor book', short_name='DEB')
+            name='Deleted editor book', short_name='DEB')
         deleted_song = songs.Song.objects.create(book=self.harian, title='Deleted editor song')
         deleted_book_song = songs.Song.objects.create(book=deleted_book, title='Child song')
         deleted_book.delete()
@@ -392,7 +420,7 @@ class EditorViewTests(TestCase):
         self.assertEqual(self.client.get(reverse(
             'web-editor-edit', kwargs={'kind': 'songbook', 'pk': deleted_book.pk})).status_code, 404)
         self.assertEqual(self.client.post(self.save_url('songbook', deleted_book.pk), {
-            'name': 'Restored by edit', 'short_name': 'DEB', 'lang': self.harian.lang_id,
+            'name': 'Restored by edit', 'short_name': 'DEB', 'lang': 'forged',
         }).status_code, 404)
         self.assertEqual(self.client.get(reverse(
             'web-editor-edit', kwargs={'kind': 'song', 'pk': deleted_song.pk})).status_code, 404)
@@ -409,7 +437,7 @@ class EditorViewTests(TestCase):
         self.assertEqual(self.client.get(reverse(
             'web-editor-edit', kwargs={'kind': 'songbook', 'pk': self.nkb.pk})).status_code, 404)
         self.assertEqual(self.client.post(self.save_url('songbook', self.nkb.pk), {
-            'name': 'Changed', 'short_name': 'NKB', 'lang': self.nkb.lang_id}).status_code, 404)
+            'name': 'Changed', 'short_name': 'NKB', 'lang': 'forged'}).status_code, 404)
 
     # --- songs ---
 
@@ -444,33 +472,38 @@ class EditorViewTests(TestCase):
 
     # --- Tata Ibadah ---
 
-    def test_create_tatib_with_its_first_section(self):
+    def test_create_tatib_ignores_legacy_fields_and_uses_active_default(self):
         response = self.client.post(self.save_url('tatib'), {
-            'name': 'Ibadah Baru', 'date': '2026-11-01', 'is_active': 'on',
+            'name': 'Ibadah Baru', 'date': '2026-11-01', 'is_active': '',
             'first_title': 'Pembukaan', 'first_text': 'KJ 1'})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, response.content[:400])
         service = tatib.TataIbadah.objects.get(name='Ibadah Baru')
-        self.assertEqual(service.tataibadahitem_set.count(), 1)
-        self.assertEqual(service.tataibadahitem_set.first().order_number, 1)
-
-    def test_create_tatib_without_a_section_still_saves(self):
-        self.client.post(self.save_url('tatib'), {'name': 'Tanpa Bagian', 'date': ''})
-        service = tatib.TataIbadah.objects.get(name='Tanpa Bagian')
+        self.assertTrue(service.is_active)
         self.assertEqual(service.tataibadahitem_set.count(), 0)
 
-    def test_edit_tatib(self):
+    def test_edit_tatib_ignores_activation_post_and_preserves_existing_state(self):
+        inactive_service = tatib.TataIbadah.objects.create(
+            name='Inactive service', date=date(2026, 8, 30), is_active=False)
         response = self.client.post(self.save_url('tatib', self.service.pk), {
-            'name': 'Ibadah Minggu IV', 'date': '2026-08-30', 'is_active': 'on'})
+            'name': 'Ibadah Minggu IV', 'date': '2026-08-30', 'is_active': ''})
         self.assertEqual(response.status_code, 200, response.content[:400])
         self.service.refresh_from_db()
         self.assertEqual(self.service.name, 'Ibadah Minggu IV')
+        self.assertTrue(self.service.is_active)
+
+        response = self.client.post(self.save_url('tatib', inactive_service.pk), {
+            'name': 'Inactive service edited', 'date': '', 'is_active': 'on'})
+        self.assertEqual(response.status_code, 200, response.content[:400])
+        inactive_service.refresh_from_db()
+        self.assertEqual(inactive_service.name, 'Inactive service edited')
+        self.assertFalse(inactive_service.is_active)
 
     # --- the gates ---
 
     def test_csrf_is_enforced(self):
         strict = Client(enforce_csrf_checks=True)
         response = strict.post(self.save_url('songbook'), {
-            'name': 'X', 'short_name': 'X', 'lang': self.harian.lang_id})
+            'name': 'X', 'short_name': 'X', 'lang': 'forged'})
         self.assertEqual(response.status_code, 403)
         self.assertFalse(songs.Book.objects.filter(name='X').exists())
 
@@ -538,9 +571,8 @@ class ServiceEntryViewTests(TestCase):
             bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=number,
                                        text=f'ayat {number}')
 
-        s_lang = songs.Language.objects.create(name='Indonesian')
-        cls.songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat',
-                                                 short_name='KJ', is_hymn_book=True)
+        cls.songbook = songs.Book.objects.create(
+            name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
         cls.song = songs.Song.objects.create(book=cls.songbook, number=152,
                                              title='Ada Kuasa dalam DarahNya')
         for number in (1, 2, 3):
@@ -731,7 +763,7 @@ class ServiceEntryViewTests(TestCase):
         deleted_song = songs.Song.objects.create(
             book=self.songbook, number=154, title='Deleted picker song')
         deleted_book = songs.Book.objects.create(
-            lang=self.songbook.lang, name='Deleted picker book', short_name='DPB')
+            name='Deleted picker book', short_name='DPB')
         child_song = songs.Song.objects.create(book=deleted_book, title='Child of deleted book')
         deleted_verse = self.song.verse_set.get(number=2)
         deleted_song.delete()
@@ -1117,25 +1149,23 @@ class ServiceReorderPaneTests(TestCase):
         # and it is not announced as hidden: it now holds a focusable control
         self.assertContains(response, 'aria-label="Reorder this break')
 
-    def test_the_answers_sit_below_the_filter_with_their_endpoint(self):
+    def test_the_reorder_endpoint_sits_below_the_filter(self):
         response = self.page(self.tatib)
-        self.assertContains(response, 'ch__reorder')          # the strip
+        self.assertContains(response, 'ch__reorder')
         self.assertContains(response, 'data-reorder-group')
         self.assertContains(response, 'data-reorder-endpoint="%s"' % reverse('web-entry-reorder'))
         self.assertContains(response, 'data-reorder-for="%s"' % self.tatib.pk)
-        self.assertContains(response, 'data-reorder-save')
-        self.assertContains(response, 'data-reorder-discard')
+        # spec 026: a change is written at once -- no Save and no Discard
+        self.assertNotContains(response, 'data-reorder-save')
+        self.assertNotContains(response, 'data-reorder-discard')
 
     def test_there_is_no_reorder_button(self):
         # the mode is entered by dragging: a button would be a second way in
         self.assertNotContains(self.page(self.tatib), 'data-reorder-start')
 
-    def test_the_question_before_leaving_offers_all_three_answers(self):
-        response = self.page(self.tatib)
-        self.assertContains(response, 'data-reorder-confirm')
-        self.assertContains(response, 'Keep editing')
-        self.assertContains(response, 'data-reorder-leave')
-        self.assertContains(response, 'data-reorder-and-save')
+    def test_there_is_no_question_before_leaving(self):
+        # spec 026: nothing is ever unsaved, so there is nothing to ask about
+        self.assertNotContains(self.page(self.tatib), 'data-reorder-confirm')
 
     def test_a_service_with_no_entries_offers_no_reorder_chrome(self):
         response = self.page(self.empty)
@@ -1167,9 +1197,8 @@ class ServiceProjectorTests(TestCase):
         bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=3,
                                    text='ayat 3', title='Berbahagia')
 
-        s_lang = songs.Language.objects.create(name='Indonesian')
-        cls.songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat',
-                                                 short_name='KJ', is_hymn_book=True)
+        cls.songbook = songs.Book.objects.create(
+            name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
         cls.song = songs.Song.objects.create(book=cls.songbook, number=152,
                                              title='Ada Kuasa dalam DarahNya')
         for number in (1, 2):

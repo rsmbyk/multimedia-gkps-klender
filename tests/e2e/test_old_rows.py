@@ -87,6 +87,9 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#readName')).to_have_text('Legacy service')
         expect(page.locator('#readBody')).to_contain_text('Nyanyian Pembukaan')
         expect(page.locator('#readBody')).to_contain_text('KJ 152')
+        saved_item = page.locator(f'#readBody [data-old-item-pk="{self.first.pk}"]')
+        expect(saved_item).to_be_focused(timeout=5000)
+        self.assertEqual(saved_item.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
 
         self._close_browser()                         # ORM/API assertions stay outside Playwright's loop
         response = self.client.get('/api/tatib/items', {'tatib': self.service.pk})
@@ -94,6 +97,19 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         row = response.json()[0]
         self.assertEqual((row['id'], row['title'], row['text']),
                          (self.first.pk, 'Nyanyian Pembukaan', 'KJ 152'))
+
+    def test_legacy_item_cancel_restores_row_without_outline_or_revealed_actions(self):
+        page = self._open_from_home()
+        self._reveal_row_controls(page, self.first)
+        item = page.locator(f'#readBody [data-old-item-pk="{self.first.pk}"]')
+        page.locator(f'[data-old-item-edit="{self.first.pk}"]').click()
+        page.wait_for_selector('dialog[open]', timeout=1500)
+        page.mouse.move(1400, 850)
+        page.keyboard.press('Enter')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        expect(item).to_be_focused()
+        self.assertEqual(item.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+        self._close_browser()
 
     def test_deleting_a_legacy_row_requires_confirmation_and_removes_it_from_old_api(self):
         page = self._open_from_home()
@@ -104,6 +120,9 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         page.locator('[data-confirm-delete]').click()
         page.wait_for_function("!document.querySelector('dialog[open]')")
         expect(page.locator('#readBody')).not_to_contain_text('Penutup')
+        target = page.locator(f'#readBody [data-old-item-pk="{self.middle.pk}"]')
+        expect(target).to_be_focused(timeout=5000)
+        self.assertEqual(target.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
 
         self._close_browser()
         response = self.client.get('/api/tatib/items', {'tatib': self.service.pk})

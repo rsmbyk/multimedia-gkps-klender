@@ -1,11 +1,10 @@
-"""Reordering a Tata Ibadah's entries (spec 006, slice 3).
+"""Reordering a Tata Ibadah's entries (spec 006, slice 3; spec 026).
 
 The order is ARRANGED IN THE SIDEBAR, where it is listed: each entry's row carries a grip
 and there is no Reorder button -- the first drag, or an arrow press on the focused grip, is
-what starts rearranging. Save and Discard appear below the sidebar's filter, and the pane on
-the right follows. Nothing is written until Save; Discard puts back what was there, and
-leaving with an unsaved order asks first, on the shell's own in-page navigation and on a tab
-close.
+what starts rearranging. A change is WRITTEN AT ONCE (spec 026): there is no Save and no
+Discard, nothing unsaved, and the shell never asks before it navigates. The pane on the right
+follows the order.
 """
 from datetime import date
 import unittest
@@ -117,10 +116,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
           .filter(function (a) { return a.dataset.i.charAt(0) === 'e'; })
           .map(function (a) { return a.querySelector('.songrow__c').textContent; })""")
 
-    def _state(self, page):
-        """The mode's own attribute: on the document root, above every subtree it drives."""
-        return page.get_attribute('html', 'data-reorder')
-
     def _row(self, page, pk):
         return page.locator('#chList li', has=page.locator('[data-move-grip="%d"]' % pk))
 
@@ -132,13 +127,13 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('ArrowUp' if direction == 'up' else 'ArrowDown')
         page.wait_for_timeout(300)
 
-    def _start(self, page):
-        """No Reorder button: a move starts the mode. Moving the first row up moves nothing."""
-        self._press(page, self.first.pk, 'up')
+    def _write_of(self, page):
+        """The order's own write (spec 026): a drop or a settled keyboard move posts it."""
+        return page.expect_response(lambda response: '/editor/entry/reorder/' in response.url)
 
     # --- where the chrome lives ----------------------------------------------
 
-    def test_the_handles_are_in_the_sidebar_and_the_answers_below_its_filter(self):
+    def test_the_handles_are_in_the_sidebar_and_the_endpoint_below_its_filter(self):
         page = self._page(self._service_url())
         # the handles are the sidebar's, one per entry, and the page's pane has none
         self.assertEqual(page.locator('#chList [data-move-grip]').count(), 4)
@@ -146,68 +141,65 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('#readBody [data-move-up]').count(), 0)
         # and there is no Reorder button at all
         self.assertEqual(page.locator('[data-reorder-start]').count(), 0)
-        self.assertEqual(self._state(page), None)          # not rearranging yet
-        self.assertTrue(page.locator('.ch__reorder').is_hidden())   # nor any answers
-        at_rest = self._list_top(page)
-
-        # the strip lives in the sidebar and outside the list that scrolls. Measure it while
-        # it is SHOWN: a hidden element's rect is all zeros, which is not a measurement
-        self._start(page)
-        strip = page.locator('.ch__reorder')
-        self.assertEqual(strip.count(), 1)
-        self.assertTrue(strip.is_visible())
+        # the endpoint lives in the sidebar, outside the list that scrolls, and there is
+        # no Save, no Discard and no leave-question to find (spec 026)
+        self.assertEqual(page.locator('.ch__reorder').count(), 1)
         self.assertTrue(page.evaluate(
             "() => document.querySelector('.ch__reorder').closest('#chapters') !== null"))
         self.assertTrue(page.evaluate(
             "() => document.querySelector('.ch__reorder').closest('#chBody') === null"))
-        self.assertGreaterEqual(
-            page.evaluate("""() => {
-              const strip = document.querySelector('.ch__reorder').getBoundingClientRect();
-              const top = document.querySelector('.ch__top').getBoundingClientRect();
-              return Math.round(strip.top - top.bottom);
-            }"""), -1)
-        # and it holds its place in the column, so starting a drag does not push the list
-        # down: hidden with visibility, never display
-        self.assertEqual(self._list_top(page), at_rest)
+        self.assertEqual(page.locator('[data-reorder-save]').count(), 0)
+        self.assertEqual(page.locator('[data-reorder-discard]').count(), 0)
+        self.assertEqual(page.locator('[data-reorder-confirm]').count(), 0)
 
-    def _list_top(self, page):
-        return page.evaluate("""() => Math.round(
-          document.querySelector('#chList').getBoundingClientRect().top)""")
+    # --- the drop ------------------------------------------------------------
 
-    # --- the mode ------------------------------------------------------------
-
-    def test_dragging_a_handle_starts_the_mode_and_shows_the_answers(self):
+    def test_dragging_a_handle_reorders_at_once(self):
         page = self._page(self._service_url())
         self.assertEqual(self._order_in_pane(page), [self.first.pk, self.second.pk, self.third.pk])
         self.assertEqual(self._sidebar_order(page), [self.first.pk, self.second.pk, self.third.pk])
-        self.assertEqual(self._state(page), None)
 
-        # a drag on the handle is what starts it
+        # a drag on the handle is what rearranges -- and its release writes the order
         row = self._row(page, self.first.pk)
         row.hover()
         page.wait_for_timeout(150)
         grip = page.locator('[data-move-grip="%d"]' % self.first.pk)
         box = grip.bounding_box()
         target = self._row(page, self.third.pk).bounding_box()
-        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
-        page.mouse.down()
-        page.mouse.move(box['x'] + box['width'] / 2, target['y'] + target['height'] - 4, steps=10)
-        page.mouse.up()
-        page.wait_for_timeout(300)
-
-        self.assertEqual(self._state(page), 'on')
-        self.assertTrue(page.locator('[data-reorder-save]').is_visible())
-        self.assertTrue(page.locator('[data-reorder-discard]').is_visible())
-        # the pane's add controls are gone: there is one thing to do
-        self.assertEqual(page.evaluate("""() => [].slice.call(
-          document.querySelectorAll('.entry__add')).filter(function (row) {
-            return getComputedStyle(row).display !== 'none'; }).length"""), 0)
+        with self._write_of(page) as written:
+            page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+            page.mouse.down()
+            page.mouse.move(box['x'] + box['width'] / 2, target['y'] + target['height'] - 4, steps=10)
+            page.mouse.up()
+        self.assertTrue(written.value.ok)
 
         # the drag moved it in the sidebar, the pane followed, and the rows renumbered
         self.assertEqual(self._sidebar_order(page)[-1], self.first.pk,
                          self._sidebar_order(page))
         self.assertEqual(self._order_in_pane(page), self._sidebar_order(page))
         self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
+        # and the adds never left: there is no mode to take them away
+        self.assertFalse(page.locator('.entry__add').first.is_hidden())
+        self.assertEqual(page.locator('[data-reorder-save]').count(), 0)
+
+    def test_a_drop_is_written_at_once(self):
+        page = self._page(self._service_url())
+        row = self._row(page, self.first.pk)
+        row.hover()
+        page.wait_for_timeout(150)
+        grip = page.locator('[data-move-grip="%d"]' % self.first.pk)
+        box = grip.bounding_box()
+        target = self._row(page, self.third.pk).bounding_box()
+        with self._write_of(page) as written:
+            page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+            page.mouse.down()
+            page.mouse.move(box['x'] + box['width'] / 2, target['y'] + target['height'] - 4, steps=10)
+            page.mouse.up()
+        self.assertTrue(written.value.ok)
+        self._close_browser()
+        self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
+                              .values_list('pk', flat=True)),
+                         [self.second.pk, self.third.pk, self.first.pk, self.break_.pk])
 
     def test_the_morph_starts_at_once_with_no_delay(self):
         """`--ease` is a whole shorthand value (200ms + a curve). Naming a duration beside it
@@ -399,19 +391,15 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
         self.assertFalse(self._row(page, self.first.pk).evaluate(
             'el => el.classList.contains("is-dragging")'))
-        self.assertEqual(self._state(page), 'off')
 
-    def test_cancel_restores_only_this_gesture_not_earlier_unsaved_moves(self):
+    def test_cancel_restores_only_this_gesture_not_earlier_moves(self):
         page = self._page(self._service_url())
-        self._press(page, self.first.pk, 'down')
+        with self._write_of(page):
+            self._press(page, self.first.pk, 'down')
         before = self._row_order(page)
         x, y = self._drag_start(page, self.break_.pk)
         page.mouse.move(x, y - 90, steps=8)
-        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 1,
-                         page.evaluate("""() => ({state: document.documentElement.dataset.reorder,
-                           dragging: document.querySelector('#chList').className,
-                           row: document.querySelector('[data-move-grip="%d"]').closest('li').className})"""
-                           % self.break_.pk))
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 1)
         page.locator('[data-move-grip="%d"]' % self.break_.pk).dispatch_event(
             'pointercancel', {'pointerId': 1})
         self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
@@ -420,10 +408,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertFalse(page.locator('#chList').evaluate(
             '(el) => el.classList.contains("is-grabbing")'))
         self.assertEqual(self._row_order(page), before)
-        self.assertEqual(self._state(page), 'on')
-        page.click('[data-reorder-discard]')
-        self.assertEqual(self._row_order(page),
-                         [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
 
     def test_break_preview_follows_pointer_before_window_blur(self):
         page = self._page(self._service_url())
@@ -453,6 +437,8 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertFalse(slot.evaluate('el => el.classList.contains("is-dragging")'))
         self.assertEqual(self._row_order(page), before)
 
+    # --- the keyboard --------------------------------------------------------
+
     def test_a_break_can_be_moved_in_the_order(self):
         page = self._page(self._service_url())
         grip = page.locator('[data-move-grip="%d"]' % self.break_.pk)
@@ -462,116 +448,52 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         grip.focus()
         page.keyboard.press('ArrowUp')
         page.wait_for_timeout(300)
-        self.assertEqual(self._state(page), 'on')
         self.assertEqual(self._row_order(page),
                          [self.first.pk, self.second.pk, self.break_.pk, self.third.pk])
 
     def test_the_arrows_move_a_row_and_the_pane_follows(self):
         page = self._page(self._service_url())
         self._press(page, self.third.pk, 'up')
-        self.assertEqual(self._state(page), 'on')
         self.assertEqual(self._sidebar_order(page), [self.first.pk, self.third.pk, self.second.pk])
         self.assertEqual(self._order_in_pane(page), [self.first.pk, self.third.pk, self.second.pk])
         self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
 
-    def test_discard_puts_the_order_back(self):
+    def test_an_arrow_move_is_written_at_once(self):
         page = self._page(self._service_url())
-        self._press(page, self.first.pk, 'down')
+        with self._write_of(page) as written:
+            self._press(page, self.first.pk, 'down')
+        self.assertTrue(written.value.ok)
         self.assertEqual(self._sidebar_order(page)[0], self.second.pk)
-
-        page.click('[data-reorder-discard]')
-        page.wait_for_timeout(250)
-        self.assertEqual(self._sidebar_order(page),
-                         [self.first.pk, self.second.pk, self.third.pk])
-        self.assertEqual(self._order_in_pane(page),
-                         [self.first.pk, self.second.pk, self.third.pk])
-        self.assertEqual(self._state(page), 'off')
-        # and the pane's add controls are back
-        page.locator('section[data-entry-pk="%d"]' % self.first.pk).hover()
-        page.wait_for_timeout(300)
-        self.assertFalse(page.locator('.entry__add').first.is_hidden())
-        # nothing was written -- and the browser goes first: the ORM cannot be touched
-        # while Playwright's loop is running
-        self._close_browser()
-        self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
-                              .values_list('pk', flat=True)),
-                         [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
-
-    # --- saving --------------------------------------------------------------
-
-    def test_save_writes_the_new_order_and_leaves_the_mode(self):
-        page = self._page(self._service_url())
-        self._press(page, self.first.pk, 'down')
-        page.click('[data-reorder-save]')
-        page.wait_for_function(
-            "document.documentElement.dataset.reorder === 'off'",
-            timeout=8000)
-        self.assertEqual(self._sidebar_order(page),
-                         [self.second.pk, self.first.pk, self.third.pk])
         self._close_browser()
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('pk', flat=True)),
                          [self.second.pk, self.first.pk, self.third.pk, self.break_.pk])
 
-    # --- leaving with an unsaved order ---------------------------------------
+    # --- leaving never asks (spec 026) ---------------------------------------
 
-    def test_leaving_for_another_tata_ibadah_asks_first(self):
+    def test_leaving_for_another_tata_ibadah_does_not_ask_and_keeps_the_order(self):
         page = self._page(self._service_url())
-        self._press(page, self.first.pk, 'down')
-
-        # a sidebar pick: another Tata Ibadah
+        with self._write_of(page):
+            self._press(page, self.first.pk, 'down')
         page.click('a[href="%s"]' % reverse('web-tatib-service', args=[self.other.pk]))
-        page.wait_for_timeout(400)
-        self.assertTrue(page.locator('[data-reorder-confirm]').is_visible())
-        self.assertIn(self._service_url(), page.url)               # nothing has left yet
-
-        # "Keep editing" leaves everything as it was
-        page.click('[data-reorder-stay]')
-        page.wait_for_timeout(200)
-        self.assertFalse(page.locator('[data-reorder-confirm]').is_visible())
-        self.assertIn(self._service_url(), page.url)
-
-        # asking again and saving carries the person on to where they were going
-        page.click('a[href="%s"]' % reverse('web-tatib-service', args=[self.other.pk]))
-        page.wait_for_timeout(300)
-        page.click('[data-reorder-and-save]')
         page.wait_for_function(
             "document.getElementById('readName').textContent.indexOf('Ibadah Sore') >= 0",
             timeout=8000)
-        # the shell navigates in place, so the URL never moves: the pane is what shows
-        # where the person ended up
+        self.assertEqual(page.locator('[data-reorder-confirm]').count(), 0)
         self.assertIn('Ibadah Sore', page.inner_text('#readName'))
         self._close_browser()
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('pk', flat=True)),
                          [self.second.pk, self.first.pk, self.third.pk, self.break_.pk])
 
-    def test_the_search_asks_before_it_takes_the_pane_away(self):
+    def test_the_search_takes_the_pane_away_without_asking(self):
         page = self._page(self._service_url())
-        self._press(page, self.first.pk, 'down')
-        page.click('#railSearch')                     # the shell's own way to the search
-        page.wait_for_timeout(400)
-        self.assertTrue(page.locator('[data-reorder-confirm]').is_visible())
-
-    def test_closing_the_tab_asks_too(self):
-        page = self._page(self._service_url())
-        self._press(page, self.first.pk, 'down')
-        prevented = page.evaluate("""() => {
-          const event = new Event('beforeunload', {cancelable: true});
-          window.dispatchEvent(event);
-          return event.defaultPrevented;
-        }""")
-        self.assertTrue(prevented)
-        # and it stops asking once the order is the server's
-        page.click('[data-reorder-save]')
-        page.wait_for_function(
-            "document.documentElement.dataset.reorder === 'off'",
-            timeout=8000)
-        self.assertFalse(page.evaluate("""() => {
-          const event = new Event('beforeunload', {cancelable: true});
-          window.dispatchEvent(event);
-          return event.defaultPrevented;
-        }"""))
+        with self._write_of(page):
+            self._press(page, self.first.pk, 'down')
+        page.click('#railSearch')
+        page.wait_for_timeout(500)
+        self.assertEqual(page.locator('[data-reorder-confirm]').count(), 0)
+        self.assertEqual(page.locator('[data-reorder-group]').count(), 0)
 
     def test_reordering_entries_keeps_legacy_rows_in_their_shared_slots(self):
         self._close_browser()
@@ -585,7 +507,8 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.setUp_browser()
 
         page = self._page(self._service_url())
-        self._press(page, self.first.pk, 'down')
+        with self._write_of(page):
+            self._press(page, self.first.pk, 'down')
         self.assertEqual(page.evaluate("""() => [].slice.call(
           document.querySelectorAll('#chList > li')).map(li => {
             const grip = li.querySelector('[data-move-grip]');
@@ -602,8 +525,6 @@ class ReorderE2ETests(StaticLiveServerTestCase):
                   f'e{self.break_.pk}', f'e{self.third.pk}'])
         self.assertEqual(self._sidebar_numbers(page), ['1', '3', '5'])
 
-        page.click('[data-reorder-save]')
-        page.wait_for_function("document.documentElement.dataset.reorder === 'off'", timeout=8000)
         self._close_browser()
         actual = sorted(
             [(row.order_number, 'entry', row.pk) for row in self.tatib.service_entries.all()]

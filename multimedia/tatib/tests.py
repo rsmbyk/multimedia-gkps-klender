@@ -29,8 +29,7 @@ class ServiceEntryTests(TestCase):
             bible.Verse.objects.create(book_translation=cls.matius, chapter=5, verse=number,
                                        text=f'ayat {number}')
 
-        s_lang = songs.Language.objects.create(name='Indonesian')
-        cls.songbook = songs.Book.objects.create(lang=s_lang, name='Kidung Jemaat',
+        cls.songbook = songs.Book.objects.create(name='Kidung Jemaat',
                                                  short_name='KJ', is_hymn_book=True)
         cls.song = songs.Song.objects.create(book=cls.songbook, number=152, title='Ada Kuasa')
         for number in (1, 2, 3):
