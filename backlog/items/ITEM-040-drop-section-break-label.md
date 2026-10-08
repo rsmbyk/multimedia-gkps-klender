@@ -1,6 +1,6 @@
 ---
 id: ITEM-040
-status: speccing
+status: in_review
 title: 'Remove the label from section-break entries'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/038-drop-section-break-label/spec.md
-branch:
+branch: chore/038-drop-section-break-label
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.6
 ---
 
 # ITEM-040: Remove the label from section-break entries

@@ -38,6 +38,9 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
             title='Penutup', text='Amin')
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, order_number=4, item_type=tatib.TataIbadahItemType.END_OF_SECTION,
+            text='Doa syafaat')
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -57,13 +60,17 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         page.wait_for_load_state('networkidle')
         return page
 
-    def test_the_break_reads_as_a_full_width_divider_with_its_note(self):
+    def test_the_break_reads_as_a_full_width_divider(self):
         page = self._page()
-        divider = page.locator('.tatib__eos').first
+        dividers = page.locator('.tatib__eos')
+        self.assertEqual(dividers.count(), 2)
+        entry_break, legacy_break = dividers.nth(0), dividers.nth(1)
         pane = page.locator('#readBody').bounding_box()
-        box = divider.bounding_box()
-        self.assertAlmostEqual(box['width'], pane['width'], delta=40)   # spans the column
-        self.assertIn('persembahan', divider.inner_text().lower())
+        for divider in (entry_break, legacy_break):
+            box = divider.bounding_box()
+            self.assertAlmostEqual(box['width'], pane['width'], delta=40)   # spans the column
+        self.assertNotIn('persembahan', entry_break.inner_text().lower())   # no label (spec 038)
+        self.assertIn('doa syafaat', legacy_break.inner_text().lower())     # the legacy note stays
 
     def test_the_divider_carries_its_own_controls(self):
         page = self._page()

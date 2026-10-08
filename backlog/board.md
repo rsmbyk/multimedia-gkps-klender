@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-040](./items/ITEM-040-drop-section-break-label.md) | Remove the label from section-break entries | Drop the title/label control and usage for the section_break kind | chore | P2 | S | [038](../specs/038-drop-section-break-label/spec.md) | 2026-10-08 |
 | [ITEM-041](./items/ITEM-041-hymn-song-sidebar-title.md) | Show the short full title for a hymn song in the service sidebar | Label a hymn song entry with its short reference and title, e.g. KJ 435 Marolopolop Tondingki | chore | P2 | S | [039](../specs/039-hymn-song-sidebar-title/spec.md) | 2026-10-08 |
 | [ITEM-042](./items/ITEM-042-picker-menus-past-modal.md) | Let the entry modal book/song menus extend past the modal | Cap the picker menus to the viewport, not the dialog, like the date picker | fix | P2 | M | [040](../specs/040-picker-menus-past-modal/spec.md) | 2026-10-08 |
 | [ITEM-043](./items/ITEM-043-picker-book-names.md) | Show TB/SIM book names in the passage modal's book picker | One item per book: TB name main, SIM name dimmed on the right, like the sidebar | feat | P2 | M | [041](../specs/041-picker-book-names/spec.md) | 2026-10-08 |
@@ -39,7 +38,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-039](./items/ITEM-039-add-rows-before-after.md) | Reveal the add rows before and after a hovered item | Hovering an item shows the add row above it and the one below it | chore | P2 | M | [037](../specs/037-add-rows-before-after/spec.md) | — | 2026-10-08 |
+| [ITEM-040](./items/ITEM-040-drop-section-break-label.md) | Remove the label from section-break entries | Drop the title/label control and usage for the section_break kind | chore | P2 | S | [038](../specs/038-drop-section-break-label/spec.md) | — | 2026-10-08 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-017](./items/ITEM-017-tatib-form-fields.md) | Remove first-section and active controls from Tata Ibadah forms | Create empty active services and preserve activation on edit | fix | P1 | S | [015](../specs/015-tatib-form-fields/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

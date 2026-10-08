@@ -123,7 +123,7 @@ class ServiceEntry(models.Model):
         if self.kind == ServiceEntryKind.SONG:
             return self.citation(), self._song_body()
         if self.kind == ServiceEntryKind.SECTION_BREAK:
-            return self.title, ''
+            return '', ''
         return self.title, self.text
 
     @property
