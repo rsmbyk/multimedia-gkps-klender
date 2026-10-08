@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/037-add-rows-before-after/spec.md
 branch: chore/037-add-rows-before-after
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/289
 archived_at:
 archive_reason:
 bump: patch
