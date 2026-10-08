@@ -1,6 +1,6 @@
 ---
 id: ITEM-032
-status: in_review
+status: done
 title: 'Add a service entry at the beginning of a Tata Ibadah'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/030-add-entry-at-start/spec.md
 branch: feat/030-add-entry-at-start
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/280
 archived_at:
 archive_reason:
 bump: minor
