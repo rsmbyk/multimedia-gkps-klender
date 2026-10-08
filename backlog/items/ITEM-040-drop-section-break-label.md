@@ -1,6 +1,6 @@
 ---
 id: ITEM-040
-status: in_review
+status: done
 title: 'Remove the label from section-break entries'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/038-drop-section-break-label/spec.md
 branch: chore/038-drop-section-break-label
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/290
 archived_at:
 archive_reason:
 bump: patch
