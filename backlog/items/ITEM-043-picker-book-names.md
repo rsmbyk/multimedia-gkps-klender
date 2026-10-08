@@ -1,6 +1,6 @@
 ---
 id: ITEM-043
-status: in_review
+status: done
 title: 'Show TB/SIM book names in the passage modal''s book picker'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-08
 spec: specs/041-picker-book-names/spec.md
 branch: feat/041-picker-book-names
-pr: 293
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/293
 archived_at:
 archive_reason:
 bump: patch
