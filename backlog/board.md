@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-050](./items/ITEM-050-book-picker-filter.md) | Make passage book filtering hide non-matches | Hide non-matching book options; match TB/SIM names; restore all on clear | fix | P2 | S | [048](../specs/048-book-picker-filter/spec.md) | 2026-10-09 |
 
 ## In review
 

@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.14] - 2026-10-09
+
+### Fixed
+
+- Passage book picker search now hides non-matching books while matching both TB and SIM names.
+
 ## [1.3.13] - 2026-10-09
 
 ### Changed
