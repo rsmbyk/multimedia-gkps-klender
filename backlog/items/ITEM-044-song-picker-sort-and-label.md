@@ -1,6 +1,6 @@
 ---
 id: ITEM-044
-status: in_review
+status: done
 title: 'Sort and label the add-song picker like the hymn books'
 type: chore
 priority: P2
