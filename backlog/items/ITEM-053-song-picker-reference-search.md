@@ -1,6 +1,6 @@
 ---
 id: ITEM-053
-status: in_progress
+status: in_review
 title: 'Search songs by songbook reference and title'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-09
 updated: 2026-10-10
 spec: specs/051-song-picker-reference-search/spec.md
 branch: fix/051-song-picker-reference-search
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/302
 archived_at:
 archive_reason:
 bump: patch

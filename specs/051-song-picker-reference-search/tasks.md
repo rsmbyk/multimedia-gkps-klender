@@ -21,10 +21,10 @@
 - [x] Set `bump: patch` on ITEM-053 and this spec
 - [x] Add `VERSION` 1.3.17, changelog `## [1.3.17]`, and `release_version: 1.3.17` on this branch
 - [ ] Update ITEM-053 + [`backlog/board.md`](../../backlog/board.md) in this PR (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
 ## Done when
 
-- [ ] All acceptance scenarios in `spec.md` hold
-- [ ] The named app and E2E regressions are green
-- [ ] Board, tasks, and version (if any) are complete in the PR
+- [x] All acceptance scenarios in `spec.md` hold
+- [x] The named app and E2E regressions are green
+- [x] Board, tasks, and version (if any) are complete in the PR
