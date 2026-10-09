@@ -68,6 +68,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [048](048-book-picker-filter/spec.md) | Make the passage book search hide non-matching books | Accepted |
 | [049](049-passage-modal-layout/spec.md) | Center the TB/SIM switch and contain passage number pickers | Accepted |
 | [050](050-song-picker-short-name-search/spec.md) | Search and label songs by songbook short name | Accepted |
+| [051](051-song-picker-reference-search/spec.md) | Search songs by songbook reference and title | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.

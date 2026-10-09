@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-053](./items/ITEM-053-song-picker-reference-search.md) | Search songs by songbook reference and title | Filter by hymn-book name substring; references match book substring + number prefix, optional sub-number/title | fix | P2 | S | [051](../specs/051-song-picker-reference-search/spec.md) | 2026-10-10 |
 
 ## In review
 

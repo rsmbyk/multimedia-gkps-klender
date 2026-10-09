@@ -50,6 +50,18 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
             book=self.songbook, number=152, title='Ada Kuasa')
         for number in (1, 2):
             songs.Verse.objects.create(song=self.song, number=number, lyric=f'bait {number}')
+        if self._testMethodName in {
+                'test_song_picker_searches_by_short_and_full_songbook_reference',
+                'test_song_picker_reference_can_include_the_title',
+                'test_song_picker_searches_by_reference_when_editing'}:
+            self.short_reference_song = songs.Song.objects.create(
+                book=self.songbook, number=123, title='Short Reference Target')
+            self.full_reference_song = songs.Song.objects.create(
+                book=self.songbook, number=235, title='Reference Title Target')
+            other_book = songs.Book.objects.create(
+                name='Other Hymns', short_name='OH', is_hymn_book=True)
+            self.same_title_other_song = songs.Song.objects.create(
+                book=other_book, number=9, title='Reference Title Target')
 
         haleluya = songs.Book.objects.create(
             name='Haleluya', short_name='HAL', is_hymn_book=True)
@@ -66,6 +78,11 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         songs.Song.objects.create(book=zeta, number=2, title='Aardvark Song')
         songs.Song.objects.create(book=alpha, number=2, title='Beta Song')
         songs.Song.objects.create(book=alpha, number=1, title='Alpha Song')
+        if self._testMethodName == 'test_song_picker_filters_songs_by_songbook_name':
+            self.hal_song = songs.Song.objects.get(book=haleluya, title='Hal Song')
+            self.titled_song = songs.Song.objects.create(
+                book=zeta, number=3, title='Kidung Malam')
+            self.kj_songs = list(songs.Song.objects.filter(book=self.songbook))
 
         self.tatib = tatib.TataIbadah.objects.create(
             name='Ibadah Minggu', date=date(2026, 10, 4), is_active=True)
@@ -75,6 +92,25 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         self.sim_entry = tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=self.mat_sim, chapter=1, verse_start=7)
+        if self._testMethodName == 'test_song_picker_searches_by_reference_when_editing':
+            self.reference_entry = tatib.ServiceEntry.objects.create(
+                tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.SONG,
+                song=self.full_reference_song, verses=[1, 2])
+        if self._testMethodName == 'test_song_picker_reference_number_prefix_includes_sub_number':
+            self.kj_prefix_songs = {
+                number: songs.Song.objects.create(
+                    book=self.songbook, number=number, title=f'KJ Number {number}')
+                for number in (12, 120, 123, 129, 130)}
+            self.kj_subnumber_a = songs.Song.objects.create(
+                book=self.songbook, number=12, sub_number='a', title='KJ Twelve A')
+            self.kj_subnumber_b = songs.Song.objects.create(
+                book=self.songbook, number=12, sub_number='b', title='KJ Twelve B')
+            self.pkj = songs.Book.objects.create(
+                name='Pelengkap Kidung Jemaat', short_name='PKJ', is_hymn_book=True)
+            self.pkj_prefix_songs = {
+                number: songs.Song.objects.create(
+                    book=self.pkj, number=number, title=f'PKJ Number {number}')
+                for number in (12, 123)}
         if self._testMethodName == 'test_non_tb_fallback_book_remains_selectable_in_tb_state':
             language = bible.Language.objects.create(name='Alternate')
             version = bible.Version.objects.create(
@@ -115,6 +151,17 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         item.hover()
         page.locator(f'[data-entry-open="{kind}"]').first.click()
         page.wait_for_selector('dialog[open]')
+
+    def _wait_for_song_options(self, page, songs):
+        expected_ids = sorted(str(song.pk) for song in songs)
+        page.wait_for_function(
+            """expected => {
+              const actual = Array.from(document.querySelectorAll('#entry-song-options [data-song]'))
+                .map(option => option.dataset.song).sort();
+              return JSON.stringify(actual) === JSON.stringify(expected);
+            }""",
+            arg=expected_ids,
+            timeout=5000)
 
     def _menu_geometry(self, page, picker):
         return page.evaluate("""pickerName => {
@@ -464,6 +511,86 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(matching_song.count(), 1)
         matching_song.click()
         self.assertEqual(picker.locator('[data-picker-label]').inner_text(), 'KJ 152 Ada Kuasa')
+
+    def test_song_picker_filters_songs_by_songbook_name(self):
+        page = self._page()
+        self._open_modal(page, 'song')
+        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+
+        query_results = (
+            ('kidung jemaat', self.kj_songs),
+            ('kidu', [*self.kj_songs, self.titled_song]),
+            ('maat', self.kj_songs),
+            ('kidung', [*self.kj_songs, self.titled_song]),
+        )
+        for query, expected_songs in query_results:
+            page.fill('#entry-song-search', query)
+            self._wait_for_song_options(page, expected_songs)
+            self.assertEqual(
+                page.locator(f'#entry-song-options [data-song="{self.hal_song.pk}"]').count(), 0)
+
+    def test_song_picker_reference_number_prefix_includes_sub_number(self):
+        page = self._page()
+        self._open_modal(page, 'song')
+        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+
+        page.fill('#entry-song-search', 'kj 12')
+        prefix_matches = [
+            *(self.kj_prefix_songs[number] for number in (12, 120, 123, 129)),
+            self.kj_subnumber_a,
+            self.kj_subnumber_b,
+            *self.pkj_prefix_songs.values(),
+        ]
+        self._wait_for_song_options(page, prefix_matches)
+
+        page.fill('#entry-song-search', 'kj 12a')
+        self._wait_for_song_options(page, [self.kj_subnumber_a])
+
+        page.fill('#entry-song-search', 'pkj 12')
+        self._wait_for_song_options(page, list(self.pkj_prefix_songs.values()))
+
+    def test_song_picker_searches_by_short_and_full_songbook_reference(self):
+        page = self._page()
+        self._open_modal(page, 'song')
+        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+
+        for query, song in (
+                ('kj 123', self.short_reference_song),
+                ('kidung jemaat 235', self.full_reference_song)):
+            page.fill('#entry-song-search', query)
+            page.wait_for_function(
+                "document.querySelectorAll('#entry-song-options [data-song]').length === 1")
+            page.wait_for_function(
+                f"document.querySelector('#entry-song-options [data-song=\\\"{song.pk}\\\"]') !== null")
+            self.assertEqual(
+                page.locator(f'#entry-song-options [data-song="{song.pk}"]').count(), 1)
+
+    def test_song_picker_reference_can_include_the_title(self):
+        page = self._page()
+        self._open_modal(page, 'song')
+        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.fill('#entry-song-search', 'Kidung Jemaat 235 Reference Title Target')
+        page.wait_for_function(
+            "document.querySelectorAll('#entry-song-options [data-song]').length === 1")
+        page.wait_for_function(
+            f"document.querySelector('#entry-song-options [data-song=\\\"{self.full_reference_song.pk}\\\"]') !== null")
+        self.assertEqual(
+            page.locator(f'#entry-song-options [data-song="{self.full_reference_song.pk}"]').count(), 1)
+        self.assertEqual(
+            page.locator(f'#entry-song-options [data-song="{self.same_title_other_song.pk}"]').count(), 0)
+
+    def test_song_picker_searches_by_reference_when_editing(self):
+        page = self._page()
+        edit = page.locator(f'[data-entry-edit="{self.reference_entry.pk}"]')
+        edit.hover()
+        edit.click()
+        page.wait_for_selector('dialog[open]')
+        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.fill('#entry-song-search', 'kidung jemaat 235')
+        page.wait_for_function(
+            "document.querySelectorAll('#entry-song-options [data-song]').length === 1")
+        self.assertEqual(
+            page.locator(f'#entry-song-options [data-song="{self.full_reference_song.pk}"]').count(), 1)
 
     def test_the_book_menu_is_capped_to_the_viewport_not_the_dialog(self):
         page = self._page()
