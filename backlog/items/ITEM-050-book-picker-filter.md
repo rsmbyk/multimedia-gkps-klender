@@ -1,6 +1,6 @@
 ---
 id: ITEM-050
-status: in_progress
+status: in_review
 title: 'Make passage book filtering hide non-matches'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-09
 updated: 2026-10-09
 spec: specs/048-book-picker-filter/spec.md
 branch: fix/048-book-picker-filter
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/299
 archived_at:
 archive_reason:
 bump: patch
