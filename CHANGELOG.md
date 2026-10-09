@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.12] - 2026-10-09
+
+### Changed
+
+- Replace the passage add/edit modal's chapter and verse selects with custom pickers, preserving dynamic options, submitted values and the disabled to-verse tip.
+
 ## [1.3.11] - 2026-10-09
 
 ### Added

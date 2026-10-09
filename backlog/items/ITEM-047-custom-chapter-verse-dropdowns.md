@@ -1,19 +1,19 @@
 ---
 id: ITEM-047
-status: speccing
+status: in_progress
 title: 'Make the passage modal''s chapter/verse dropdowns custom'
 type: refactor
 priority: P2
 effort: M
 created: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-09
 spec: specs/045-custom-chapter-verse-dropdowns/spec.md
-branch:
+branch: refactor/045-custom-chapter-verse-dropdowns
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.12
 ---
 
 # ITEM-047: Make the passage modal's chapter/verse dropdowns custom
@@ -26,12 +26,12 @@ piece.
 
 ## Notes
 
-- **Where.** `_entry_form.html`'s scripture branch renders `<select name="chapter">`,
-  `<select name="verse_start">` and `<select name="verse_end">` (the last inside
-  `.editor__end-wrap` with its disabled-hover tip).
-- **Driven by JS.** `wireScripture()` in `static/web/entries.js` fills them: `fillChapters()` writes
-  the chapter options, `loadVerses()` the verse options, `syncTo()` trims the to-verse list and
-  toggles its disabled state.
+- **Where.** `_entry_form.html`'s scripture branch renders custom picker controls for chapter,
+  verse_start and verse_end, each backed by its hidden native select as the form-value carrier.
+- **Driven by JS.** `wireScripture()` in `static/web/entries.js` fills those selects: `fillChapters()`
+  writes chapter options, `loadVerses()` writes verse options, and `syncTo()` trims the to-verse list
+  and toggles its disabled state. The renderer mirrors each select's options and selected value into
+  its custom menu.
 - **The component to reuse.** The book/song picker: `.editor__picker` with `[data-picker-trigger]`,
   `.editor__picker-menu`, `[data-picker-options]`, `[data-picker-label]`, and the JS in
   `wirePickerMenus()`.
@@ -42,12 +42,13 @@ piece.
   `[data-empty]`) must survive.
 - Applies to the add and edit passage modals (shared fragment).
 
-## Open questions
+## Decisions
 
-- Scope: only the passage modal's chapter/verse controls, or every native select in the editor modals
-  (songbook, song, Tata Ibadah forms)?
-- Keep a native select as a no-JS fallback, or rely on the custom control?
-- Preserve the disabled to-verse tip's exact behaviour?
+- **Scope:** only the passage modal's chapter/verse controls; other editor modals remain out of scope.
+- **Value plumbing:** keep the existing native selects as hidden form-value controls. The custom UI
+  follows the editor's existing JavaScript-driven modal pattern; a separate no-JavaScript fallback is
+  outside this slice.
+- **To-verse tip:** preserve the current disabled state and hover note as specified.
 
 ## Acceptance sketch
 
