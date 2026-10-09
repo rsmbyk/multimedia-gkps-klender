@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.15] - 2026-10-09
+
+### Fixed
+
+- The passage editor now centers TB/SIM above the Book picker and keeps Chapter and verse pickers inside the modal at narrow widths.
+
 ## [1.3.14] - 2026-10-09
 
 ### Fixed

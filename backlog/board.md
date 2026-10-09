@@ -50,6 +50,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-051](./items/ITEM-051-passage-modal-layout.md) | Fix passage modal control placement and overflow | Center TB/SIM above the book picker; keep chapter/verse dropdowns inside the modal | fix | P2 | S | [049](../specs/049-passage-modal-layout/spec.md) | develop | 2026-10-09 |
 | [ITEM-050](./items/ITEM-050-book-picker-filter.md) | Make passage book filtering hide non-matches | Hide non-matching book options; match TB/SIM names; restore all on clear | fix | P2 | S | [048](../specs/048-book-picker-filter/spec.md) | develop | 2026-10-09 |
 | [ITEM-048](./items/ITEM-048-sidebar-text-two-lines.md) | Show the first two text lines for untitled service entries | Quote the first two literal body lines for untitled Text and Single-Screen Text entries; preserve titles and center the grip | chore | P2 | S | [046](../specs/046-sidebar-text-two-lines/spec.md) | develop | 2026-10-09 |
 | [ITEM-047](./items/ITEM-047-custom-chapter-verse-dropdowns.md) | Make the passage modal's chapter/verse dropdowns custom | Replace the native chapter/verse selects with the custom picker for consistency | refactor | P2 | M | [045](../specs/045-custom-chapter-verse-dropdowns/spec.md) | develop | 2026-10-09 |

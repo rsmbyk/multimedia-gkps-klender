@@ -472,14 +472,9 @@ li:hover > .row-edit,
 /* The dialog carries no x: the form's own Cancel, Escape and the backdrop are the
    ways out, and chrome that repeats a control the form already has is noise. */
 .editor__field { margin: 0 0 12px; }
-.editor__field-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  margin: 0 0 5px;
-}
-.editor__field-head > label {
-  display: block; margin: 0;
-  font: 560 12.5px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
-}
+/* The passage translation switch gets its own centered row above Book. */
+.editor__translation-row { display: flex; justify-content: center; margin: 0 0 8px; }
+.read__lang.editor__translation-toggle { margin: 0; }
 .editor__field > label {
   display: block; margin-bottom: 5px;
   font: 560 12.5px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
@@ -573,9 +568,14 @@ li:hover > .row-edit,
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239C9A91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
 }
 .editor__field input[type="search"]::-webkit-search-cancel-button { display: none; }
-/* Chapter, from and to are one row: three short numbers do not need three rows. */
-.editor__row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 12px; }
-.editor__row .editor__field { margin: 0 0 0; }
+/* Chapter has its own row; the verse range stays together when there is room. */
+.editor__row { display: grid; gap: 10px; margin: 0 0 12px; }
+.editor__row--chapter { grid-template-columns: minmax(0, 1fr); }
+.editor__row--range { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.editor__row .editor__field { min-width: 0; margin: 0; }
+@media (max-width: 380px) {
+  .editor__row--range { grid-template-columns: minmax(0, 1fr); }
+}
 .editor__field input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--active-bg); }
 .editor__field input:focus, .editor__field select:focus, .editor__field textarea:focus {
   outline: none; border-color: var(--focus);
@@ -1648,10 +1648,10 @@ kbd {
 /* A picker wears a select's chrome: the trigger is the closed control, the menu
    the open one. The book and song pickers carry their own filter, so the menu is
    a column -- the filter fixed at the top, the options scrolling under it. */
-.editor__picker { position: relative; }
+.editor__picker { position: relative; min-width: 0; }
 .editor__picker-trigger {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  width: 100%; min-height: 38px; padding: 8px 34px 8px 10px; text-align: left;
+  min-width: 0; width: 100%; min-height: 38px; padding: 8px 34px 8px 10px; text-align: left;
   border: 1px solid var(--divider); border-radius: 9px;
   background-color: var(--rail-bg); color: var(--ink);
   font: 500 14px/1.35 ui-sans-serif, system-ui, sans-serif;
