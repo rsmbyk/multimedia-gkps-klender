@@ -12,6 +12,7 @@ from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 from multimedia.web.reading import entries as entry_forms
+from multimedia.web.reading import views as reading_views
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -974,6 +975,158 @@ class ServiceEntryViewTests(TestCase):
         response = self.client.get(reverse('web-entry-song-options') + '?q=kj')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f'data-song="{self.song.pk}"')
+
+    def test_song_options_filter_songs_by_songbook_name(self):
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'kidung jemaat'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Kidung Jemaat')
+        self.assertContains(response, f'data-song="{self.song.pk}"')
+
+    def test_song_options_filter_songs_by_songbook_name_substring(self):
+        pelengkap = songs.Book.objects.create(
+            name='Pelengkap Kidung Jemaat', short_name='PKJ', is_hymn_book=True)
+        pelengkap_song = songs.Song.objects.create(
+            book=pelengkap, number=5, title='Pelengkap Target')
+        haleluya = songs.Book.objects.create(
+            name='Haleluya', short_name='HAL', is_hymn_book=True)
+        other_song = songs.Song.objects.create(
+            book=haleluya, number=1, title='Hal Song')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'maat'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{self.song.pk}"')
+        self.assertContains(response, f'data-song="{pelengkap_song.pk}"')
+        self.assertNotContains(response, f'data-song="{other_song.pk}"')
+
+    def test_song_options_book_filter_keeps_title_matches(self):
+        lagu = songs.Book.objects.create(name='Lagu')
+        titled = songs.Song.objects.create(book=lagu, number=None, title='Kidung Malam')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'kidung'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{self.song.pk}"')
+        self.assertContains(response, f'data-song="{titled.pk}"')
+
+    def test_song_options_book_filter_ignores_non_hymn_book_names(self):
+        lagu = songs.Book.objects.create(name='Lagu', short_name='LAGU')
+        songs.Song.objects.create(book=lagu, number=None, title='Beta Song')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'lagu'})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-song=')
+
+    def test_song_options_book_filter_keeps_the_result_limit(self):
+        for number in range(1000, 1210):
+            songs.Song.objects.create(
+                book=self.songbook, number=number, title=f'Bulk {number}')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'kidung jemaat'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode().count('class="editor__songoption"'), 200)
+
+    def test_song_options_reference_zero_does_not_match_other_single_digit_numbers(self):
+        zero = songs.Song.objects.create(book=self.songbook, number=0, title='Number Zero')
+        one = songs.Song.objects.create(book=self.songbook, number=1, title='Number One')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'kj 0'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{zero.pk}"')
+        self.assertNotContains(response, f'data-song="{one.pk}"')
+
+    def test_song_options_reference_number_is_a_prefix(self):
+        created = {
+            number: songs.Song.objects.create(
+                book=self.songbook, number=number, title=f'Number {number}')
+            for number in (12, 120, 123, 129, 130)}
+        variant = songs.Song.objects.create(
+            book=self.songbook, number=12, sub_number='a', title='Number 12A')
+        sub_number_b = songs.Song.objects.create(
+            book=self.songbook, number=12, sub_number='b', title='Number 12B')
+        pelengkap = songs.Book.objects.create(
+            name='Pelengkap Kidung Jemaat', short_name='PKJ', is_hymn_book=True)
+        pkj_song = songs.Song.objects.create(book=pelengkap, number=12, title='Pelengkap Twelve')
+        pkj_prefix_song = songs.Song.objects.create(
+            book=pelengkap, number=123, title='Pelengkap One Twenty Three')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'kj 12'})
+        self.assertEqual(response.status_code, 200)
+        for number in (12, 120, 123, 129):
+            self.assertContains(response, f'data-song="{created[number].pk}"')
+        self.assertContains(response, f'data-song="{variant.pk}"')
+        self.assertContains(response, f'data-song="{sub_number_b.pk}"')
+        self.assertContains(response, f'data-song="{pkj_song.pk}"')
+        self.assertContains(response, f'data-song="{pkj_prefix_song.pk}"')
+        self.assertNotContains(response, f'data-song="{created[130].pk}"')
+        self.assertNotContains(response, f'data-song="{self.song.pk}"')
+
+    def test_song_options_reference_book_part_is_a_substring(self):
+        kj_song = songs.Song.objects.create(
+            book=self.songbook, number=12, title='KJ Twelve')
+        pkj = songs.Book.objects.create(
+            name='Pelengkap Kidung Jemaat', short_name='PKJ', is_hymn_book=True)
+        pkj_song = songs.Song.objects.create(book=pkj, number=12, title='PKJ Twelve')
+        nkb = songs.Book.objects.create(
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        nkb_song = songs.Song.objects.create(book=nkb, number=12, title='NKB Twelve')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'kidu 12'})
+        self.assertEqual(response.status_code, 200)
+        for song in (kj_song, pkj_song, nkb_song):
+            self.assertContains(response, f'data-song="{song.pk}"')
+
+    def test_song_options_reference_number_prefix_can_include_the_sub_number(self):
+        variant = songs.Song.objects.create(
+            book=self.songbook, number=12, sub_number='a', title='Twelve A')
+        other = songs.Song.objects.create(
+            book=self.songbook, number=12, sub_number='b', title='Twelve B')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'kj 12a'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{variant.pk}"')
+        self.assertNotContains(response, f'data-song="{other.pk}"')
+
+    def test_song_options_match_short_name_and_number(self):
+        song = songs.Song.objects.create(
+            book=self.songbook, number=123, title='Short Reference Target')
+        variant = songs.Song.objects.create(
+            book=self.songbook, number=123, sub_number='a', title='Short Reference Variant')
+        response = self.client.get(reverse('web-entry-song-options') + '?q=kj+123')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{song.pk}"')
+        self.assertContains(response, f'data-song="{variant.pk}"')
+        self.assertNotContains(response, f'data-song="{self.song.pk}"')
+
+    def test_song_options_match_full_book_name_and_number(self):
+        song = songs.Song.objects.create(
+            book=self.songbook, number=235, title='Full Name Reference Target')
+        response = self.client.get(
+            reverse('web-entry-song-options') + '?q=kidung+jemaat+235')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{song.pk}"')
+        self.assertNotContains(response, f'data-song="{self.song.pk}"')
+
+    def test_song_options_match_reference_followed_by_title(self):
+        title = 'Reference Title Target'
+        song = songs.Song.objects.create(book=self.songbook, number=235, title=title)
+        other_book = songs.Book.objects.create(
+            name='Other Hymns', short_name='OH', is_hymn_book=True)
+        other_song = songs.Song.objects.create(book=other_book, number=9, title=title)
+        response = self.client.get(
+            reverse('web-entry-song-options') + '?q=Kidung+Jemaat+235+Reference+Title+Target')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{song.pk}"')
+        self.assertNotContains(response, f'data-song="{other_song.pk}"')
+
+    def test_song_options_match_accented_title_after_reference(self):
+        song = songs.Song.objects.create(
+            book=self.songbook, number=236, title='Señor, yo te alabaré')
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'KJ 236 Señor'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{song.pk}"')
+
+    def test_song_options_ignore_non_decimal_reference_number(self):
+        response = self.client.get(reverse('web-entry-song-options'), {'q': 'KJ ²'})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-song=')
+
+    def test_song_options_ignore_out_of_range_reference_number(self):
+        query = 'KJ 999999999999999999999999999999999999'
+        self.assertIsNone(reading_views._entry_song_reference_filter(query))
+        response = self.client.get(reverse('web-entry-song-options'), {'q': query})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-song=')
 
     def test_song_picker_and_verse_picker_exclude_deleted_rows_and_parents(self):
         deleted_song = songs.Song.objects.create(

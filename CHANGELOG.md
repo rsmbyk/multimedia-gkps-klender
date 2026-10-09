@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.17] - 2026-10-10
+
+### Fixed
+
+- The New song picker searches hymn songbook short/full names and their substrings alongside song titles: `kj`, `kidu`, `maat`, and `kidung jemaat` list songs from matching hymn books within the existing 200-option cap; non-hymn book names remain title-only matches.
+- The New song picker resolves a combined book-and-number-prefix reference, with an optional sub-number letter and trailing title: `kj 12` includes KJ/PKJ numbers 12 and 123 (plus sub-number variants), while `kj 12a` selects only that base number/sub-number.
+
 ## [1.3.16] - 2026-10-09
 
 ### Fixed

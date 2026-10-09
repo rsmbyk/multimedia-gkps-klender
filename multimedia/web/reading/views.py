@@ -18,7 +18,7 @@ import json
 import re
 from urllib.parse import quote
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Case, CharField, Count, F, IntegerField, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
@@ -200,6 +200,69 @@ def _entry_song_option_label(song):
     return f'{book_label}{number} {song.title}'
 
 
+def _entry_song_reference_filter(query):
+    """The picker's ``<book substring> <number prefix>[sub] [title]`` reference."""
+    query_parts = query.split()
+    number_pattern = re.compile(r'(?P<number>[0-9]+)(?P<sub_number>[A-Za-z]?)')
+    number_index = None
+    match = None
+    for index, part in enumerate(query_parts[1:], start=1):
+        candidate = number_pattern.fullmatch(part)
+        if candidate is not None:
+            number_index = index
+            match = candidate
+            break
+    if number_index is None or match is None:
+        return None
+
+    book_query = search_lib.normalize(' '.join(query_parts[:number_index]))
+    if not book_query:
+        return None
+    books = list(song_models.Book.objects.active().filter(is_hymn_book=True)
+                 .only('pk', 'name', 'short_name'))
+    matching_book_ids = [
+        book.pk for book in books
+        if any(book_query in search_lib.normalize(alias)
+               for alias in (book.name, book.short_name) if alias)
+    ]
+    if not matching_book_ids:
+        return None
+
+    number_digits = match.group('number').lstrip('0') or '0'
+    number_field = song_models.Song._meta.get_field('number')
+    _, maximum = connection.ops.integer_field_range(number_field.get_internal_type())
+    if maximum is None:
+        # PositiveIntegerField's portable maximum when a backend doesn't
+        # report its integer range (for example, SQLite).
+        maximum = 2 ** 31 - 1
+    maximum_digits = str(maximum)
+    if (len(number_digits) > len(maximum_digits)
+            or (len(number_digits) == len(maximum_digits)
+                and number_digits > maximum_digits)):
+        return None
+
+    number = int(number_digits)
+    sub_number = match.group('sub_number')
+    if sub_number:
+        number_filter = Q(number=number, sub_number__iexact=sub_number)
+    elif number_digits == '0':
+        number_filter = Q(number=0)
+    else:
+        number_filter = Q()
+        for scale in range(len(maximum_digits) - len(number_digits) + 1):
+            low = number * 10 ** scale
+            if low > maximum:
+                break
+            high = min((number + 1) * 10 ** scale - 1, maximum)
+            number_filter |= Q(number__range=(low, high))
+
+    reference_filter = Q(book_id__in=matching_book_ids) & number_filter
+    title_query = ' '.join(query_parts[number_index + 1:])
+    if title_query:
+        reference_filter &= Q(title__icontains=title_query)
+    return reference_filter
+
+
 def entry_form(request, kind=None, pk=None):
     """The modal's form fragment: one per kind, or the existing entry's own."""
     if not editors.editors_allowed(request):
@@ -369,9 +432,15 @@ def entry_song_options(request):
     query = (request.GET.get('q') or '').strip()
     songs = song_models.Song.objects.active().filter(book__is_deleted=False).select_related('book')
     if query:
-        songs = songs.filter(
-            Q(title__icontains=query) | Q(number__icontains=query)
-            | Q(book__short_name__icontains=query))
+        reference_filter = _entry_song_reference_filter(query)
+        if reference_filter is not None:
+            songs = songs.filter(reference_filter)
+        else:
+            book_filter = Q(book__is_hymn_book=True) & (
+                Q(book__short_name__icontains=query)
+                | Q(book__name__icontains=query))
+            songs = songs.filter(
+                Q(title__icontains=query) | Q(number__icontains=query) | book_filter)
     songs = songs.annotate(
         picker_hymn_first=Case(
             When(book__is_hymn_book=True, then=Value(0)),
