@@ -26,4 +26,4 @@
 
 - [x] All acceptance scenarios in `spec.md` hold
 - [x] Tests named above are green
-- [x] Board, tasks, and version (if any) are complete in the draft PR
+- [x] Board, tasks, and version (if any) are complete in the PR

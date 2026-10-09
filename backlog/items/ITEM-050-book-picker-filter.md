@@ -1,6 +1,6 @@
 ---
 id: ITEM-050
-status: in_review
+status: done
 title: 'Make passage book filtering hide non-matches'
 type: fix
 priority: P2
@@ -32,8 +32,8 @@ follow the existing filter state, while preserving matching on both TB and SIM n
   `[hidden] { display: none }` override now ensures filter state controls visibility.
 - Playwright's browser libraries are not in the app image, so a fresh local web container may skip
   the E2E test until those system dependencies are installed.
-- The focused regression E2E was run red without the CSS override and green with it; the broader
-  E2E suite was not run.
+- The focused regression E2E was run red without the CSS override and green with it; the full
+  browser E2E matrix also passed in CI.
 
 ## Acceptance sketch
 
