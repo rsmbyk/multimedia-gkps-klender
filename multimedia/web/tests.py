@@ -970,6 +970,11 @@ class ServiceEntryViewTests(TestCase):
         self.assertContains(response, 'Kidung Jemaat')
         self.assertContains(response, f'data-song="{self.song.pk}"')
 
+    def test_the_song_options_match_the_songbook_short_name(self):
+        response = self.client.get(reverse('web-entry-song-options') + '?q=kj')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-song="{self.song.pk}"')
+
     def test_song_picker_and_verse_picker_exclude_deleted_rows_and_parents(self):
         deleted_song = songs.Song.objects.create(
             book=self.songbook, number=154, title='Deleted picker song')
@@ -995,6 +1000,12 @@ class ServiceEntryViewTests(TestCase):
         html = response.content.decode()
         for number in (1, 2, 3):                       # checked, whatever the attribute order
             self.assertRegex(html, rf'value="{number}"[^>]*checked')
+
+    def test_song_edit_fragment_shows_the_hymn_reference_as_its_label(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        response = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'KJ 152 Ada Kuasa dalam DarahNya')
 
     def test_service_text_sidebar_labels_use_two_literal_lines_and_respect_scope(self):
         untitled = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=1,

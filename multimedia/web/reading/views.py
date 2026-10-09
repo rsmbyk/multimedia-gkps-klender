@@ -189,6 +189,17 @@ def _entry_book_options(form, kind):
     return books, book_edition
 
 
+def _entry_song_option_label(song):
+    if song is None:
+        return ''
+    if not song.book.is_hymn_book:
+        return song.title
+    book_label = song.book.short_name or song.book.name
+    sub_number = (song.sub_number or '').upper()
+    number = f' {song.number}{sub_number}' if song.number is not None else ''
+    return f'{book_label}{number} {song.title}'
+
+
 def entry_form(request, kind=None, pk=None):
     """The modal's form fragment: one per kind, or the existing entry's own."""
     if not editors.editors_allowed(request):
@@ -210,6 +221,7 @@ def entry_form(request, kind=None, pk=None):
         'title': entry_forms.entry_title(kind, None if pk is None else entry),
         'tatib': tatib, 'books': books, 'book_edition': book_edition,
         'song': getattr(form, 'song', None),
+        'song_label': _entry_song_option_label(getattr(form, 'song', None)),
         'after': request.GET.get('after') if pk is None else None,
         'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
                             kwargs={'pk': pk} if pk else {})
@@ -238,6 +250,7 @@ def entry_save(request, pk=None):
             'title': entry_forms.entry_title(kind, entry), 'tatib': form.tatib,
             'books': books, 'book_edition': book_edition,
             'song': getattr(form, 'song', None),
+            'song_label': _entry_song_option_label(getattr(form, 'song', None)),
             'after': request.POST.get('after') if pk is None else None,
             'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
                                 kwargs={'pk': pk} if pk else {})
@@ -356,7 +369,9 @@ def entry_song_options(request):
     query = (request.GET.get('q') or '').strip()
     songs = song_models.Song.objects.active().filter(book__is_deleted=False).select_related('book')
     if query:
-        songs = songs.filter(Q(title__icontains=query) | Q(number__icontains=query))
+        songs = songs.filter(
+            Q(title__icontains=query) | Q(number__icontains=query)
+            | Q(book__short_name__icontains=query))
     songs = songs.annotate(
         picker_hymn_first=Case(
             When(book__is_hymn_book=True, then=Value(0)),
@@ -390,18 +405,12 @@ def entry_song_options(request):
     groups, current = [], None
     current_book_id = None
     for song in songs[:200]:
-        label = song.book.short_name or song.book.name
+        book_label = song.book.short_name or song.book.name
         if current is None or current_book_id != song.book_id:
             current_book_id = song.book_id
-            current = {'label': label, 'name': song.book.name, 'songs': []}
+            current = {'label': book_label, 'name': song.book.name, 'songs': []}
             groups.append(current)
-        if song.book.is_hymn_book:
-            sub_number = (song.sub_number or '').upper()
-            number = (f' {song.number}{sub_number}'
-                      if song.number is not None else '')
-            option_label = f'{label}{number} {song.title}'
-        else:
-            option_label = song.title
+        option_label = _entry_song_option_label(song)
         current['songs'].append({
             'id': song.pk,
             'title': song.title,

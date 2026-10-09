@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.16] - 2026-10-09
+
+### Fixed
+
+- The New song picker now searches songbook abbreviations, and selected hymn labels retain the short reference.
+
 ## [1.3.15] - 2026-10-09
 
 ### Fixed

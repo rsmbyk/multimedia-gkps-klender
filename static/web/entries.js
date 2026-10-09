@@ -563,7 +563,8 @@
       if (!option) return;
       event.preventDefault();
       hidden.value = option.dataset.song;
-      label.textContent = option.dataset.songTitle || option.textContent.trim();
+      label.textContent = option.dataset.songLabel
+        || option.dataset.songTitle || option.textContent.trim();
       search.value = '';
       list.innerHTML = '';
       closeMenus(scope);
