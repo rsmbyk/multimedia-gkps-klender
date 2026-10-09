@@ -26,7 +26,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-048](./items/ITEM-048-sidebar-text-two-lines.md) | Show the first two text lines for untitled service entries | Quote the first two literal body lines for untitled Text and Single-Screen Text entries; preserve titles and center the grip | chore | P2 | S | [046](../specs/046-sidebar-text-two-lines/spec.md) | 2026-10-09 |
 
 ## In review
 
@@ -45,6 +44,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | [ITEM-026](./items/ITEM-026-square-date-cells.md) | Make Tata Ibadah calendar date cells square | Equal-width/height date cells while preserving Sunday accents and popover behavior | chore | P2 | S | [024](../specs/024-square-date-cells/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-027](./items/ITEM-027-quiet-modal-focus.md) | Avoid automatic row outlines after modal close | Quiet automatic restoration across modals without removing deliberate keyboard focus | fix | P1 | M | [025](../specs/025-quiet-modal-focus/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-028](./items/ITEM-028-live-projection-editing.md) | Keep editing while projecting, and follow every change | Allow add/edit/delete/reorder during projection; reorder persists on drop; the display follows every change | feat | P1 | M | [026](../specs/026-live-projection-editing/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
+| [ITEM-048](./items/ITEM-048-sidebar-text-two-lines.md) | Show the first two text lines for untitled service entries | Quote the first two literal body lines for untitled Text and Single-Screen Text entries; preserve titles and center the grip | chore | P2 | S | [046](../specs/046-sidebar-text-two-lines/spec.md) | [#298](https://github.com/rsmbyk/multimedia-gkps-klender/pull/298) | 2026-10-09 |
 
 ## Done
 
