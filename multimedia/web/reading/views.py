@@ -677,14 +677,22 @@ def _tatib_stage(service):
         block['preview'] = preview
         items.append(block)
         text_count += 1
+        text_kind = kind_key in ('text', 'single_screen_text')
+        two_line_label = text_kind and not title
         label = title or row.get_kind_display()
+        if two_line_label:
+            label = '\n'.join((body or '').split('\n')[:2]) or row.get_kind_display()
         if kind_key == 'song' and row.song_id and row.song.book.is_hymn_book:
             # A hymn song reads by its short reference and title (spec 039).
             song = row.song
             label = f'{song.book_number} {song.title}'.strip() if song.title else song.book_number
+        filter_text = f'{label} {title} {body}'
+        label = label[:60]
+        label_lines = label.split('\n') if two_line_label else None
         toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
-                    'label': label[:60], 'titled': bool(title),
-                    'pk': row.pk, 'entry': True, 'txt': f'{label} {title} {body}'})
+                    'label': label, 'label_lines': label_lines, 'titled': bool(title),
+                    'two_line_label': two_line_label, 'pk': row.pk, 'entry': True,
+                    'txt': filter_text})
     return items, toc
 
 
