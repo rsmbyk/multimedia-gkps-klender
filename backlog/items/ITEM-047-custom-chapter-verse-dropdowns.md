@@ -1,6 +1,6 @@
 ---
 id: ITEM-047
-status: in_review
+status: done
 title: 'Make the passage modal''s chapter/verse dropdowns custom'
 type: refactor
 priority: P2
