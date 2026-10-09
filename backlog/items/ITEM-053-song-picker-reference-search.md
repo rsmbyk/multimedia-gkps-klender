@@ -1,6 +1,6 @@
 ---
 id: ITEM-053
-status: in_review
+status: done
 title: 'Search songs by songbook reference and title'
 type: fix
 priority: P2

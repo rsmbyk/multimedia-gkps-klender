@@ -20,7 +20,7 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` on ITEM-053 and this spec
 - [x] Add `VERSION` 1.3.17, changelog `## [1.3.17]`, and `release_version: 1.3.17` on this branch
-- [ ] Update ITEM-053 + [`backlog/board.md`](../../backlog/board.md) in this PR (In review while open; Done before merge)
+- [x] Update ITEM-053 + [`backlog/board.md`](../../backlog/board.md) in this PR (In review while open; Done before merge)
 - [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
 ## Done when

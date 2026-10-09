@@ -31,8 +31,8 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|| [ITEM-053](./items/ITEM-053-song-picker-reference-search.md) | Search songs by songbook reference and title | Filter by hymn-book name substring; references match book substring + number prefix, optional sub-number/title | fix | P2 | S | [051](../specs/051-song-picker-reference-search/spec.md) | [#302](https://github.com/rsmbyk/multimedia-gkps-klender/pull/302) | 2026-10-10 |
-|| [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
+
+| [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-017](./items/ITEM-017-tatib-form-fields.md) | Remove first-section and active controls from Tata Ibadah forms | Create empty active services and preserve activation on edit | fix | P1 | S | [015](../specs/015-tatib-form-fields/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-018](./items/ITEM-018-tatib-custom-datepicker.md) | Use a custom date picker for Tata Ibadah forms | Replace native date input with an accessible calendar | feat | P1 | M | [016](../specs/016-tatib-custom-datepicker/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -50,6 +50,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-053](./items/ITEM-053-song-picker-reference-search.md) | Search songs by songbook reference and title | Filter by hymn-book name substring; references match book substring + number prefix, optional sub-number/title | fix | P2 | S | [051](../specs/051-song-picker-reference-search/spec.md) | develop | 2026-10-10 |
 | [ITEM-052](./items/ITEM-052-song-picker-short-name-search.md) | Search and label songs by songbook abbreviation | Match short name; keep hymn reference visible after selection | fix | P2 | S | [050](../specs/050-song-picker-short-name-search/spec.md) | develop | 2026-10-09 |
 | [ITEM-051](./items/ITEM-051-passage-modal-layout.md) | Fix passage modal control placement and overflow | Center TB/SIM above the book picker; keep chapter/verse dropdowns inside the modal | fix | P2 | S | [049](../specs/049-passage-modal-layout/spec.md) | develop | 2026-10-09 |
 | [ITEM-050](./items/ITEM-050-book-picker-filter.md) | Make passage book filtering hide non-matches | Hide non-matching book options; match TB/SIM names; restore all on clear | fix | P2 | S | [048](../specs/048-book-picker-filter/spec.md) | develop | 2026-10-09 |
