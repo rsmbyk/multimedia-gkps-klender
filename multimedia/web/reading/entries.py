@@ -207,7 +207,9 @@ def scripture_books(selected_translation_pk=None):
     rows = []
     for info in search_lib.bible_book_index().values():
         translations = info['by_version']
-        primary = translations.get('TB') or next(iter(translations.values()), None)
+        tb = translations.get('TB')
+        sim = translations.get('SIM')
+        primary = tb or next(iter(translations.values()), None)
         if primary is None:
             continue
         selected = (selected_translation
@@ -215,6 +217,10 @@ def scripture_books(selected_translation_pk=None):
                     else None)
         rows.append({
             'id': primary.pk,
+            'tb_id': tb.pk if tb else None,
+            'sim_id': sim.pk if sim else None,
+            'tb_name': tb.translation if tb else info['display'],
+            'sim_name': sim.translation if sim else '',
             'display': info['display'],
             'other': info['other'],
             'testament_label': ('Perjanjian Lama' if info['book'].testament == 'old'
@@ -224,6 +230,10 @@ def scripture_books(selected_translation_pk=None):
             'selected_translation_id': selected.pk if selected else None,
             'selected_translation_name': selected.translation if selected else '',
             'selected_translation_is_primary': selected is not None and selected.pk == primary.pk,
+            'selected_translation_is_sim': selected is not None and sim is not None
+                                          and selected.pk == sim.pk,
+            'selected_edition': 'sim' if selected is not None and sim is not None
+                                and selected.pk == sim.pk else 'tb',
         })
     return rows
 

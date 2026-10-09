@@ -629,7 +629,7 @@ class ServiceEntryViewTests(TestCase):
         sim_language = bible.Language.objects.create(name='Simalungun')
         sim_version = bible.Version.objects.create(
             lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
-        bible.BookTranslation.objects.create(
+        sim_matius = bible.BookTranslation.objects.create(
             version=sim_version, book=self.matius.book, translation='Mateus')
 
         rows = entry_forms.scripture_books()
@@ -637,6 +637,10 @@ class ServiceEntryViewTests(TestCase):
         row = next(row for row in rows if row['id'] == self.matius.pk)
         self.assertEqual(row['display'], 'Matius')
         self.assertEqual(row['other'], 'Mateus')
+        self.assertEqual(row['tb_id'], self.matius.pk)
+        self.assertEqual(row['sim_id'], sim_matius.pk)
+        self.assertEqual(row['tb_name'], 'Matius')
+        self.assertEqual(row['sim_name'], 'Mateus')
         self.assertEqual(row['testament_label'], 'Perjanjian Baru')
         self.assertEqual(row['chapters'], 28)
 
@@ -668,6 +672,55 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content[:500])
         entry.refresh_from_db()
         self.assertEqual(entry.book_translation_id, sim_matius.pk)
+
+    def test_scripture_translation_toggle_renders_both_ids_and_initial_edition(self):
+        sim_language = bible.Language.objects.create(name='Simalungun')
+        sim_version = bible.Version.objects.create(
+            lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
+        sim_matius = bible.BookTranslation.objects.create(
+            version=sim_version, book=self.matius.book, translation='Mateus')
+
+        new_response = self.client.get(self.new_url('scripture'))
+        self.assertEqual(new_response.status_code, 200)
+        new_html = new_response.content.decode()
+        self.assertIn('data-entry-translation-toggle', new_html)
+        self.assertIn('data-edition="tb"', new_html)
+        self.assertIn(f'data-book-tb="{self.matius.pk}"', new_html)
+        self.assertIn(f'data-book-sim="{sim_matius.pk}"', new_html)
+        self.assertRegex(new_html, rf'<option value="{self.matius.pk}"[^>]*data-edition="tb"')
+        self.assertRegex(new_html, rf'<option value="{sim_matius.pk}"[^>]*data-edition="sim"')
+
+        entry = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE,
+                          book_translation=sim_matius, chapter=5, verse_start=1)
+        edit_response = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
+        self.assertEqual(edit_response.status_code, 200)
+        edit_html = edit_response.content.decode()
+        self.assertRegex(edit_html, r'data-entry-translation-toggle[^>]*data-edition="sim"')
+        self.assertRegex(
+            edit_html, rf'<option value="{sim_matius.pk}"[^>]*data-edition="sim"[^>]*selected')
+
+    def test_invalid_scripture_form_keeps_selected_sim_edition(self):
+        sim_language = bible.Language.objects.create(name='Simalungun')
+        sim_version = bible.Version.objects.create(
+            lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
+        sim_matius = bible.BookTranslation.objects.create(
+            version=sim_version, book=self.matius.book, translation='Mateus')
+        bible.Verse.objects.create(
+            book_translation=sim_matius, chapter=1, verse=1, text='Ayat Simalungun')
+
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SCRIPTURE,
+            'book_translation': sim_matius.pk,
+            'chapter': 'not-a-number',
+            'verse_start': 1,
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'aria-invalid="true"', status_code=400)
+        html = response.content.decode()
+        self.assertRegex(html, r'data-entry-translation-toggle[^>]*data-edition="sim"')
+        self.assertRegex(
+            html, rf'<option value="{sim_matius.pk}"[^>]*data-edition="sim"[^>]*selected')
 
     def test_invalid_oversized_book_translation_id_renders_a_validation_error(self):
         response = self.client.post(self.save_new_url(), {

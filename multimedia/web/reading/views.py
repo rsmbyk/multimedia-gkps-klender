@@ -182,6 +182,13 @@ def old_item_delete(request, pk):
     return JsonResponse({'ok': True})
 
 
+def _entry_book_options(form, kind):
+    books = entry_forms.scripture_books(
+        form['book_translation'].value() if kind == 'scripture' else None)
+    book_edition = next((book['selected_edition'] for book in books if book['selected']), 'tb')
+    return books, book_edition
+
+
 def entry_form(request, kind=None, pk=None):
     """The modal's form fragment: one per kind, or the existing entry's own."""
     if not editors.editors_allowed(request):
@@ -197,11 +204,11 @@ def entry_form(request, kind=None, pk=None):
         form = entry_forms.build_entry_form(kind, tatib=tatib)
     if form is None:
         raise Http404('Unknown kind.')
+    books, book_edition = _entry_book_options(form, kind)
     return render(request, 'reading/_entry_form.html', {
         'form': form, 'kind': kind, 'entry': None if pk is None else entry,
         'title': entry_forms.entry_title(kind, None if pk is None else entry),
-        'tatib': tatib, 'books': entry_forms.scripture_books(
-            form['book_translation'].value() if kind == 'scripture' else None),
+        'tatib': tatib, 'books': books, 'book_edition': book_edition,
         'song': getattr(form, 'song', None),
         'after': request.GET.get('after') if pk is None else None,
         'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
@@ -225,11 +232,11 @@ def entry_save(request, pk=None):
     if form is None:
         raise Http404('Unknown kind.')
     if not form.is_valid():
+        books, book_edition = _entry_book_options(form, kind)
         return render(request, 'reading/_entry_form.html', {
             'form': form, 'kind': kind, 'entry': entry,
             'title': entry_forms.entry_title(kind, entry), 'tatib': form.tatib,
-            'books': entry_forms.scripture_books(
-                form['book_translation'].value() if kind == 'scripture' else None),
+            'books': books, 'book_edition': book_edition,
             'song': getattr(form, 'song', None),
             'after': request.POST.get('after') if pk is None else None,
             'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',

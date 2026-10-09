@@ -76,5 +76,6 @@ main text and the SIM translation as the dimmed secondary on the right.
 - Implementation: `multimedia/web/reading/entries.py`,
   `multimedia/web/templates/reading/_entry_form.html`,
   `static/styles/design/components.css`, `static/web/entries.js`.
-- Related: spec 005 (entry modals), spec 040 (picker menus past the modal), spec 043 (the picker's
-  filter must match both names), spec 044 (the TB/SIM toggle that decides which name is primary).
+- Related: spec 005 (entry modals), spec 040 (picker menus past the modal), spec 044 (the TB/SIM
+  toggle that decides which name is primary). The filter requirement formerly tracked by spec 043 is
+  already implemented here; spec 043 is superseded by this spec.

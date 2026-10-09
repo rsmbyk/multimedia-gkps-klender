@@ -1,19 +1,19 @@
 ---
 id: ITEM-046
-status: speccing
+status: in_progress
 title: 'Add a TB/SIM toggle to the passage modal book picker'
 type: feat
 priority: P2
 effort: M
 created: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-09
 spec: specs/044-passage-translation-toggle/spec.md
-branch:
+branch: feat/044-passage-translation-toggle
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.11
 ---
 
 # ITEM-046: Add a TB/SIM toggle to the passage modal book picker
@@ -30,33 +30,32 @@ and secondary book names swap places, and the other dropdowns (chapter, verses) 
 - **The precedent.** The reading page already has the toggle: `.read__lang` with `#langTb` / `#langSim`
   and a thumb (`multimedia/web/templates/reading/base.html`,
   `static/styles/design/components.css`), switching the TB/SIM edition.
-- **The picker.** After spec 041 the book options carry both names (TB and SIM) and one stored
-  `BookTranslation`. The toggle decides which of the two is primary: with TB selected, TB is the main
-  name and SIM the secondary; with SIM selected, they swap.
+- **The picker.** After spec 041 the book options carry both names (TB and SIM). The toggle decides
+  which is primary: TB selected means TB main/SIM secondary; SIM selected means SIM main/TB secondary.
+- **Legacy fallback.** If neither TB nor SIM exists, keep the existing primary translation selectable
+  on the default side.
 - **Not a new field.** No extra form field is added; the existing hidden
-  `select[name=book_translation]` still carries the stored value, and the toggle changes which
-  translation's `BookTranslation` the picker offers.
-- **The rest stays.** The chapter and from/to-verse controls do not change with the toggle; they still
-  follow the chosen book.
-- **Filter.** The picker filter keeps matching both names (spec 043) whichever side the toggle puts
-  them on.
-
-## Open questions
-
-- Editing an existing passage: does the toggle start on the stored translation's side?
-- When the selected book has no verses in the switched-to translation, what happens to the chapter /
-  verse lists?
-- Should switching re-fetch chapters/verses, or only re-letter the picker?
+  `select[name=book_translation]` carries the selected `BookTranslation`. Toggling updates it for the
+  selected book, and choosing a book afterward stores the active translation.
+- **Initial state.** A new passage starts on TB. An edit or validation-error form starts on the edition
+  of its selected `BookTranslation`.
+- **The rest stays.** Toggling does not reload or change chapter/from/to-verse options or selected
+  values. Choosing a different book uses the existing cascade for the active translation.
+- **Filter.** Spec 041 already matches both book names; spec 043 / ITEM-045 was superseded by spec 041.
+  The filter must continue working whichever name is primary.
 
 ## Acceptance sketch
 
-- The passage modal (add and edit) shows a TB/SIM toggle.
-- Toggling it swaps the book dropdown's main and secondary names immediately.
-- Selecting a book stores that translation's `BookTranslation`.
-- The chapter and verse controls are unchanged by the toggle.
+- The passage modal (add and edit) shows a TB/SIM toggle with correct initial state.
+- Toggling it swaps the book dropdown's main and secondary names and updates the selected book's
+  `BookTranslation` at once.
+- Selecting a book stores the active translation's `BookTranslation`.
+- The chapter and from/to-verse controls remain unchanged during a toggle; selecting another book
+  loads the active translation's chapter/verse options through the existing cascade.
+- Filtering either name works in either toggle state.
 
 ## Links
 
 - Spec: [044 — Add a TB/SIM toggle to the passage modal book picker](../../specs/044-passage-translation-toggle/spec.md)
-- Related items: ITEM-043 / spec 041 (TB/SIM names in the picker), ITEM-045 / spec 043 (the filter),
-  ITEM-042 (picker menus past the modal)
+- Related: ITEM-043 / spec 041 (TB/SIM names and filter), ITEM-042 (picker menus past the modal).
+  The former filter item ITEM-045 / spec 043 is archived as superseded by spec 041.

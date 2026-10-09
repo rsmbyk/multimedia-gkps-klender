@@ -1,6 +1,6 @@
 # Plan 044: Add a TB/SIM toggle to the passage modal book picker
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-046
@@ -17,39 +17,48 @@ leaving the modal and without a new field.
 **In:**
 
 - A TB/SIM toggle in the add and edit passage modals, mirroring the reading page's control.
-- Toggling swaps the main and secondary names in the book dropdown at once and points the picker at
-  that translation's `BookTranslation`.
-- The stored `book_translation` is the selected translation's translation.
+- Each book option carries both translations' IDs and names. A new passage starts on TB; an edit or
+  validation re-render reflects the form's currently selected `BookTranslation`.
+- When neither TB nor SIM exists for a book, retain its existing primary fallback on the default side.
+- Toggling swaps the main and secondary names and updates the selected book's hidden
+  `book_translation` value to the same book in the active translation.
+- The two-name filter continues matching either name in both toggle states (the behavior is already
+  implemented by spec 041; spec 043 was superseded by spec 041).
+- Toggling does not reload or change the chapter/verse controls or their current values. Picking a
+  different book continues to use the existing cascade for the active translation.
 
 **Out:**
 
 - A new form field; the existing `book_translation` stores the choice.
-- The chapter and verse controls, which do not change with the toggle.
+- Re-fetching chapter/verse options solely because the toggle changed.
 - The song modal and the other editors.
 
 ## Approach
 
+- `multimedia/web/reading/entries.py` — expose explicit TB/SIM IDs and names per book while retaining
+  the current selected translation for edit/error forms.
 - `multimedia/web/templates/reading/_entry_form.html` — add the toggle to the scripture branch,
-  reusing the reading page's `.read__lang` markup/`data-edition` shape; the book options need both
-  translations' ids and names (spec 041 supplies them).
-- `static/web/entries.js` `wireScripture()` — read the toggle state; on change, swap each option's
-  main/secondary name and repoint its value at the selected translation's `BookTranslation`, then
-  re-letter the trigger label. Keep the filter matching both names (spec 043).
-- `static/styles/design/components.css` — the toggle's chrome, reusing the `.read__lang` styles or a
-  close variant inside the modal.
+  reusing the reading page's `.read__lang` markup/`data-edition` shape; include both translations in
+  the hidden select and both names in each picker option.
+- `static/web/entries.js` `wireScripture()` — initialize from the stored translation (TB for a new
+  form); on change, swap each option's main/secondary name and update the selected book's value, but
+  leave chapter/verse controls and values untouched. Keep the filter matching both names.
+- `static/styles/design/components.css` — style the toggle using the reading page's `.read__lang`
+  treatment inside the modal.
 
 ## TDD
 
-- Domain/app tests: `multimedia/web/tests.py` — the modal renders the toggle (add and edit); the
-  fragment carries both translations' names/ids per book.
-- E2E: `tests/e2e/test_entry_pickers.py` — toggling swaps the main and secondary names; the selected
-  book stores the switched translation; the chapter / verse controls are unchanged.
+- Domain/app tests: `multimedia/web/tests.py` — both add and edit fragments expose both translation
+  IDs/names; add defaults to TB and an existing SIM selection remains SIM.
+- E2E: `tests/e2e/test_entry_pickers.py` — toggling swaps names and the selected book's stored ID;
+  chapter/verse values and options remain unchanged during the toggle; selecting another book follows
+  the active edition; a book with neither TB nor SIM keeps its existing primary fallback selectable.
 
 ## Risks
 
-- **Stored translation.** The picker's value must follow the toggle, or the entry stores the wrong
-  translation.
-- **Missing verses.** A book/chapter without verses in the switched-to translation needs a defined
-  outcome (the open question).
-- **Both names everywhere.** The filter (spec 043) and the trigger label must keep working whichever
-  side is primary.
+- **Stored translation.** The edit/error form's active side must follow its selected
+  `BookTranslation`, or it can silently save the other edition.
+- **Verse lists.** The accepted behavior is to preserve the current chapter/verse controls on a toggle;
+  selecting another book uses the existing translation-specific cascade, including its empty state.
+- **Both names everywhere.** The filter must continue searching both names even though their visual
+  positions swap.

@@ -7,7 +7,20 @@
 
   {% if kind == 'scripture' %}
   <div class="editor__field{% if form.book_translation.errors %} is-invalid{% endif %}">
-    <label id="entry-book-label" for="entry-book-trigger">Book</label>
+    <div class="editor__field-head">
+      <label id="entry-book-label" for="entry-book-trigger">Book</label>
+      <div class="read__lang editor__translation-toggle" role="group"
+           aria-label="Choose passage translation" data-entry-translation-toggle
+           data-edition="{{ book_edition|default:'tb' }}">
+        <span class="read__lang-thumb" aria-hidden="true"></span>
+        <button type="button" data-edition-option="tb"
+                aria-pressed="{% if book_edition != 'sim' %}true{% else %}false{% endif %}"
+                title="New Translation (Indonesian)">TB</button>
+        <button type="button" data-edition-option="sim"
+                aria-pressed="{% if book_edition == 'sim' %}true{% else %}false{% endif %}"
+                title="Simalungun translation">SIM</button>
+      </div>
+    </div>
     <div class="editor__picker" data-entry-picker="book">
       <button type="button" class="editor__picker-trigger" id="entry-book-trigger"
               data-picker-trigger aria-label="Book" aria-haspopup="listbox" aria-expanded="false"
@@ -23,10 +36,12 @@
             <p class="editor__songgroup-label">{{ testament.grouper }}</p>
             {% for book in testament.list %}
             <button type="button" role="option" class="editor__songoption editor__songoption--book" data-book="{{ book.id }}"
-                    data-chapters="{{ book.chapters }}" data-book-name="{{ book.display }}"
-                    data-book-other="{{ book.other }}" aria-selected="{% if book.selected %}true{% else %}false{% endif %}">
-              <span class="book__n">{{ book.display }}</span>
-              {% if book.other %}<span class="book__s">{{ book.other }}</span>{% endif %}
+                    data-book-tb="{{ book.tb_id|default:'' }}" data-book-sim="{{ book.sim_id|default:'' }}"
+                    data-chapters="{{ book.chapters }}" data-book-name="{{ book.tb_name }}"
+                    data-book-other="{{ book.sim_name }}" data-book-name-tb="{{ book.tb_name }}"
+                    data-book-name-sim="{{ book.sim_name }}" aria-selected="{% if book.selected %}true{% else %}false{% endif %}">
+              <span class="book__n">{{ book.tb_name }}</span>
+              {% if book.sim_name %}<span class="book__s">{{ book.sim_name }}</span>{% endif %}
             </button>
             {% endfor %}
           </div>
@@ -37,11 +52,22 @@
       <select name="book_translation" id="id_book_translation" hidden>
         <option value=""></option>
         {% for book in books %}
-        <option value="{{ book.id }}" data-chapters="{{ book.chapters }}"
-                {% if form.book_translation.value|stringformat:'s' == book.id|stringformat:'s' %}selected{% endif %}>{{ book.display }}</option>
-        {% if book.selected and not book.selected_translation_is_primary %}
+        {% if book.tb_id %}
+        <option value="{{ book.tb_id }}" data-chapters="{{ book.chapters }}" data-edition="tb"
+                {% if form.book_translation.value|stringformat:'s' == book.tb_id|stringformat:'s' %}selected{% endif %}>{{ book.tb_name }}</option>
+        {% endif %}
+        {% if book.sim_id %}
+        <option value="{{ book.sim_id }}" data-chapters="{{ book.chapters }}" data-edition="sim"
+                data-primary-book="{{ book.tb_id }}"
+                {% if form.book_translation.value|stringformat:'s' == book.sim_id|stringformat:'s' %}selected{% endif %}>{{ book.sim_name }}</option>
+        {% endif %}
+        {% if not book.tb_id and not book.sim_id %}
+        <option value="{{ book.id }}" data-chapters="{{ book.chapters }}" data-edition="tb"
+                {% if form.book_translation.value|stringformat:'s' == book.id|stringformat:'s' %}selected{% endif %}>{{ book.tb_name }}</option>
+        {% endif %}
+        {% if book.selected and not book.selected_translation_is_primary and not book.selected_translation_is_sim %}
         <option value="{{ book.selected_translation_id }}" data-chapters="{{ book.chapters }}"
-                data-primary-book="{{ book.id }}" selected>{{ book.selected_translation_name }}</option>
+                data-primary-book="{{ book.id }}" data-edition="tb" selected>{{ book.selected_translation_name }}</option>
         {% endif %}
         {% endfor %}
       </select>

@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.11] - 2026-10-09
+
+### Added
+
+- Add an in-place TB/SIM toggle to the passage-book picker; switching updates the selected translation without reloading chapter or verse controls.
+
 ## [1.3.10] - 2026-10-09
 
 ### Changed
