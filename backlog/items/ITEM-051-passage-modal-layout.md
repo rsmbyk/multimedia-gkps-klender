@@ -1,6 +1,6 @@
 ---
 id: ITEM-051
-status: in review
+status: done
 title: 'Fix passage modal control placement and overflow'
 type: fix
 priority: P2

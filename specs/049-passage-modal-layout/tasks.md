@@ -21,7 +21,7 @@
 - [x] Update ITEM-051 + [`backlog/board.md`](../../backlog/board.md) to In review and link PR #300
 - [x] Conventional Commit on this feature branch
 - [x] Open draft PR [#300](https://github.com/rsmbyk/multimedia-gkps-klender/pull/300) against `develop` linking `./spec.md`; set ITEM-051 to In review and add the PR link
-- [ ] Before merge, set ITEM-051 to Done, move the board row to Done, and verify all merge requirements
+- [x] Before merge, set ITEM-051 to Done, move the board row to Done, and verify all merge requirements
 
 ## Done when
 
