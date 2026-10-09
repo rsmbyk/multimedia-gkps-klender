@@ -63,7 +63,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [043](043-book-picker-filter/spec.md) | Fix the passage modal book picker's search filter | Superseded by 041 |
 | [044](044-passage-translation-toggle/spec.md) | Add a TB/SIM toggle to the passage modal book picker | Accepted |
 | [045](045-custom-chapter-verse-dropdowns/spec.md) | Make the passage modal's chapter/verse dropdowns custom | Accepted |
-| [046](046-sidebar-text-two-lines/spec.md) | Show the first two text lines in the service sidebar | Draft |
+| [046](046-sidebar-text-two-lines/spec.md) | Show the first two text lines for untitled service entries | Accepted |
 | [047](047-stabilise-flaky-e2e/spec.md) | Stabilise the flaky E2E tests | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold

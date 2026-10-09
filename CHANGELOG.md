@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.13] - 2026-10-09
+
+### Changed
+
+- Untitled service-entry Text and Single-Screen Text sidebar labels now show up to the first two literal body lines, preserving blank lines, titles and the 60-character cap; the reorder grip stays centered on two-line rows.
+
 ## [1.3.12] - 2026-10-09
 
 ### Changed

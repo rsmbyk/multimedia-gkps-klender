@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-048](./items/ITEM-048-sidebar-text-two-lines.md) | Show the first two text lines in the service sidebar | Quote a text entry's first two lines for both text kinds; keep the grip centered | chore | P2 | S | [046](../specs/046-sidebar-text-two-lines/spec.md) | 2026-10-08 |
 
 ## Ready
 
@@ -27,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-048](./items/ITEM-048-sidebar-text-two-lines.md) | Show the first two text lines for untitled service entries | Quote the first two literal body lines for untitled Text and Single-Screen Text entries; preserve titles and center the grip | chore | P2 | S | [046](../specs/046-sidebar-text-two-lines/spec.md) | 2026-10-09 |
 
 ## In review
 

@@ -1292,6 +1292,8 @@ li:hover > .row-edit,
 }
 .songrow[aria-current="true"] .songrow__c { color: var(--ink); }
 .songrow__t { min-width: 0; }
+.songrow__t--lines { display: flex; flex-direction: column; line-height: 1.35; }
+.songrow__line--blank { min-height: 1.35em; }
 .ch-num {
   width: var(--btn); height: var(--btn);
   display: grid; place-items: center;

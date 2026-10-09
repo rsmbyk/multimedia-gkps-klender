@@ -996,6 +996,44 @@ class ServiceEntryViewTests(TestCase):
         for number in (1, 2, 3):                       # checked, whatever the attribute order
             self.assertRegex(html, rf'value="{number}"[^>]*checked')
 
+    def test_service_text_sidebar_labels_use_two_literal_lines_and_respect_scope(self):
+        untitled = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=1,
+                             text='First line\nSecond line\nThird line')
+        single_screen = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, order_number=2,
+                                  text='Screen one\nScreen two\nScreen three')
+        blank_second = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=3,
+                                 text='Keep this\n\nSkip this')
+        titled = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=4, title='Kept title',
+                           text='Body line one\nBody line two')
+        long_body = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=5,
+                              text=f'{"A" * 50}\n{"B" * 20}\nThird line')
+        long_title = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, order_number=6,
+                               title='T' * 64, text='Short body')
+        empty_body = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=7, text='')
+        passage = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, order_number=8,
+                            book_translation=self.matius, chapter=5, verse_start=2)
+        song = self.make(kind=tatib.ServiceEntryKind.SONG, order_number=9, song=self.song, verses=[1])
+        section_break = self.make(kind=tatib.ServiceEntryKind.SECTION_BREAK, order_number=10)
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT, order_number=11,
+            text='Legacy first\nLegacy second\nLegacy third')
+
+        response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
+        toc = response.context['toc_items']
+        entries = {item['pk']: item for item in toc if item.get('entry')}
+
+        self.assertEqual(entries[untitled.pk]['label'], 'First line\nSecond line')
+        self.assertEqual(entries[single_screen.pk]['label'], 'Screen one\nScreen two')
+        self.assertEqual(entries[blank_second.pk]['label'], 'Keep this\n')
+        self.assertEqual(entries[titled.pk]['label'], 'Kept title')
+        self.assertEqual(entries[long_body.pk]['label'], f'{"A" * 50}\n{"B" * 9}')
+        self.assertEqual(entries[long_title.pk]['label'], 'T' * 60)
+        self.assertEqual(entries[empty_body.pk]['label'], empty_body.get_kind_display())
+        self.assertEqual(entries[passage.pk]['label'], 'Matius 5:2')
+        self.assertEqual(entries[song.pk]['label'], f'{self.song.book_number} {self.song.title}')
+        self.assertEqual(entries[section_break.pk]['label'], section_break.get_kind_display())
+        self.assertEqual(next(item['label'] for item in toc if not item.get('entry')), 'Legacy first')
+
     # --- the pane: entries in the service's own stage ----------------------
 
     def test_the_service_stage_renders_its_entries_after_its_legacy_items(self):

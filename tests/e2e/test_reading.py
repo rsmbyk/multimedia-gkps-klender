@@ -104,6 +104,17 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             songs.Song.objects.create(book=self.book, number=2, title='Two')
             songs.Song.objects.create(book=self.book, number=None, title='Legacy')
 
+        if self._testMethodName == 'test_service_text_sidebar_shows_two_lines_and_centers_grip':
+            self.preview_text_entry = tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=2,
+                text='First line\nSecond line\nThird line')
+            self.titled_text_entry = tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                order_number=3, title='Kept sidebar title', text='Body should not replace title')
+            self.blank_text_entry = tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=4,
+                text='Keep this\n\nSkip this')
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -517,6 +528,45 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
         expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
         self.assertGreaterEqual(page.locator('.read__head-top').bounding_box()['height'], 34)
+
+    def test_service_text_sidebar_shows_two_lines_and_centers_grip(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('.rail [data-panel="tatib"]').click()
+        page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
+
+        row = page.locator(f'#chList .songrow[data-i="e{self.preview_text_entry.pk}"]')
+        label = row.locator('.songrow__t')
+        expect(row).to_be_visible()
+        self.assertEqual(label.locator('.songrow__line').all_inner_texts(),
+                         ['First line', 'Second line'])
+        self.assertGreater(row.bounding_box()['height'], 38)
+
+        grip = row.locator('xpath=..').locator('.toc__grip')
+        row.hover()
+        expect(grip).to_be_visible()
+        centers = row.evaluate("""row => {
+          const grip = row.parentElement.querySelector('.toc__grip');
+          const rowBox = row.getBoundingClientRect();
+          const gripBox = grip.getBoundingClientRect();
+          return {rowHeight: rowBox.height,
+                  delta: (gripBox.top + gripBox.height / 2) - (rowBox.top + rowBox.height / 2)};
+        }""")
+        self.assertLessEqual(abs(centers['delta']), 1, f'grip is not centered: {centers}')
+
+        blank_row = page.locator(f'#chList .songrow[data-i="e{self.blank_text_entry.pk}"]')
+        blank_label = blank_row.locator('.songrow__t')
+        blank_lines = blank_label.locator('.songrow__line')
+        self.assertEqual(blank_lines.count(), 2)
+        self.assertEqual(blank_lines.nth(0).inner_text(), 'Keep this')
+        self.assertEqual(blank_lines.nth(1).get_attribute('class'),
+                         'songrow__line songrow__line--blank')
+        self.assertGreater(blank_row.evaluate("el => el.getBoundingClientRect().height"), 38)
+
+        titled_row = page.locator(f'#chList .songrow[data-i="e{self.titled_text_entry.pk}"]')
+        titled_label = titled_row.locator('.songrow__t')
+        expect(titled_label).to_have_text('Kept sidebar title')
+        self.assertFalse(titled_label.evaluate("el => el.classList.contains('songrow__t--lines')"))
 
     def test_sidebar_click_never_scrolls_the_list(self):
         page = self._page()
