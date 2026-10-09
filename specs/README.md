@@ -60,7 +60,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [040](040-picker-menus-past-modal/spec.md) | Let the entry modal picker menus extend past the modal | Accepted |
 | [041](041-picker-book-names/spec.md) | Show TB/SIM book names in the passage modal's book picker | Accepted |
 | [042](042-song-picker-sort-and-label/spec.md) | Sort and label the add-song picker like the hymn books | Accepted |
-| [043](043-book-picker-filter/spec.md) | Fix the passage modal book picker's search filter | Draft |
+| [043](043-book-picker-filter/spec.md) | Fix the passage modal book picker's search filter | Superseded by 041 |
 | [044](044-passage-translation-toggle/spec.md) | Add a TB/SIM toggle to the passage modal book picker | Draft |
 | [045](045-custom-chapter-verse-dropdowns/spec.md) | Make the passage modal's chapter/verse dropdowns custom | Draft |
 | [046](046-sidebar-text-two-lines/spec.md) | Show the first two text lines in the service sidebar | Draft |

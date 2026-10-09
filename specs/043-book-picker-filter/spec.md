@@ -1,11 +1,15 @@
 # Spec 043: Fix the passage modal book picker's search filter
 
 - **ID:** 043
-- **Status:** Draft
+- **Status:** Superseded by [spec 041](../041-picker-book-names/spec.md)
+  (owner, 2026-10-09)
 - **Item:** ITEM-045
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch
+
+> Spec 041 / ITEM-043 already implemented the TB/SIM filter with the picker, and its E2E test
+> covers both names and no matches (PR #293). A separate implementation is not needed.
 
 ## Intent
 

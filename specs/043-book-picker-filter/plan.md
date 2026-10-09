@@ -1,6 +1,6 @@
 # Plan 043: Fix the passage modal book picker's search filter
 
-- **Status:** Draft
+- **Status:** Superseded by [spec 041](../041-picker-book-names/spec.md)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-045

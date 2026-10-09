@@ -1,8 +1,12 @@
 # Tasks 043: Fix the passage modal book picker's search filter
 
-- **Status:** Draft
+- **Status:** Superseded by [spec 041](../041-picker-book-names/spec.md)
+  (owner, 2026-10-09)
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
+
+> This draft's behavior shipped with Spec 041 / PR #293; no implementation tasks remain for a
+> separate slice.
 
 <!-- Failing test first → implement → green. Check off in order. -->
 
