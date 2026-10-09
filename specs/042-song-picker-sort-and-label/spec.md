@@ -1,7 +1,7 @@
 # Spec 042: Sort and label the add-song picker like the hymn books
 
 - **ID:** 042
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-044
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -32,7 +32,10 @@ shown by short reference and title, non-hymn songbooks in title order shown by t
 - **Hymn groups first, by id.** The songbook groups list hymn songbooks first, ordered by songbook
   id, then non-hymn songbooks ordered by name.
 - **Hymn label.** A hymn option shows the short reference and the title, e.g. `HAL 123 Some Title`.
+- **Unnumbered hymn.** A hymn without a number follows numbered hymns, ordered by title. Its option
+  shows the short reference and title without a number placeholder, e.g. `HAL Some Title`.
 - **Non-hymn label.** A non-hymn option shows just the title.
+- **Collapsed label.** After selection, the closed picker continues to show the title alone.
 
 ## Acceptance scenarios
 
@@ -63,10 +66,24 @@ shown by short reference and title, non-hymn songbooks in title order shown by t
 - **Given** a non-hymn song
 - **Then** the option reads just its title
 
+### Scenario: An unnumbered hymn
+
+- **Given** a hymn book with numbered songs and two songs without numbers
+- **When** I open the song picker
+- **Then** the numbered songs appear first, followed by the unnumbered songs in title order
+- **And** an unnumbered option shows the short book reference and title without `None`
+
+### Scenario: The selected hymn label
+
+- **Given** a hymn song has been selected
+- **When** the picker is closed
+- **Then** its trigger shows the song title alone
+
+
 ## Traceability
 
-- Domain/app tests: `multimedia/web/tests.py`.
-- E2E: `tests/e2e/test_entry_pickers.py`.
+- Domain/app tests: `multimedia/web/tests.py::ServiceEntryViewTests.test_song_options_sort_and_label_by_songbook_type`.
+- E2E: `tests/e2e/test_entry_pickers.py::EntryPickerE2ETests.test_song_picker_sorts_and_labels_by_songbook_type`.
 - Implementation: `multimedia/web/reading/views.py`,
   `multimedia/web/templates/reading/_entry_song_options.html`, `static/web/entries.js`.
 - Related: spec 041 (the book picker's names).

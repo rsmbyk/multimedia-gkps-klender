@@ -1,6 +1,6 @@
 # Plan 042: Sort and label the add-song picker like the hymn books
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-044
@@ -49,6 +49,8 @@ songs, which suits neither the hymnals (read by number) nor the non-hymn songboo
 
 - **Mixed ordering.** One `order_by` cannot express "hymn by number, non-hymn by title"; sort
   deliberately (a `Case`/`When`, or in Python) so the two never interleave wrongly.
-- **The closed label.** The control's label comes from `data-song-title`; leaving it as the plain
-  title while the option shows the short full title is an intentional open question.
+- **The closed label.** Preserve current behavior: the closed control shows the title, while the
+  expanded hymn option includes the short reference.
+- **Songs without numbers.** Numbered hymns come first; unnumbered hymns follow in title order and use
+  a short-reference-plus-title label without a placeholder.
 - **Songbook ids.** Hymn order depends on the stored `Book` ids; keep it stable.

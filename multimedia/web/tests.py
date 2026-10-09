@@ -858,6 +858,39 @@ class ServiceEntryViewTests(TestCase):
         entry.refresh_from_db()
         self.assertEqual(entry.song_id, self.song.pk)
 
+    def test_song_options_sort_and_label_by_songbook_type(self):
+        haleluya = songs.Book.objects.create(
+            name='Haleluya', short_name='HAL', is_hymn_book=True)
+        zeta = songs.Book.objects.create(name='Zeta Songs')
+        alpha = songs.Book.objects.create(name='Alpha Songs')
+
+        for number, sub_number, title in (
+                (4, 'B', 'Number Four B'), (4, 'a', 'Number Four A'),
+                (2, '', 'Number Two'), (None, 'a', 'Unnumbered Z'),
+                (None, 'z', 'Unnumbered A')):
+            songs.Song.objects.create(
+                book=self.songbook, number=number, sub_number=sub_number, title=title)
+        songs.Song.objects.create(book=haleluya, number=1, title='Hal Song')
+        songs.Song.objects.create(book=zeta, number=1, title='Zulu Song')
+        songs.Song.objects.create(book=zeta, number=2, title='Aardvark Song')
+        songs.Song.objects.create(book=alpha, number=2, title='Beta Song')
+        songs.Song.objects.create(book=alpha, number=1, title='Alpha Song')
+
+        response = self.client.get(reverse('web-entry-song-options'))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        group_labels = ['Kidung Jemaat', 'Haleluya', 'Alpha Songs', 'Zeta Songs']
+        group_positions = [html.index(label) for label in group_labels]
+        self.assertEqual(group_positions, sorted(group_positions))
+
+        option_labels = [
+            'KJ 2 Number Two', 'KJ 4A Number Four A', 'KJ 4B Number Four B',
+            'KJ 152 Ada Kuasa dalam DarahNya', 'KJ Unnumbered A', 'KJ Unnumbered Z',
+            'HAL 1 Hal Song', 'Alpha Song', 'Beta Song', 'Aardvark Song', 'Zulu Song',
+        ]
+        option_positions = [html.index(label) for label in option_labels]
+        self.assertEqual(option_positions, sorted(option_positions))
+
     def test_the_song_options_are_grouped_by_songbook_and_searchable(self):
         response = self.client.get(reverse('web-entry-song-options') + '?q=kuasa')
         self.assertEqual(response.status_code, 200)

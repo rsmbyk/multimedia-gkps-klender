@@ -44,11 +44,28 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         bible.Verse.objects.create(
             book_translation=self.mat_sim, chapter=1, verse=7, text='Na parjolo')
 
-        songbook = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ',
-                                             is_hymn_book=True)
-        song = songs.Song.objects.create(book=songbook, number=152, title='Ada Kuasa')
+        self.songbook = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ',
+                                                  is_hymn_book=True)
+        self.song = songs.Song.objects.create(
+            book=self.songbook, number=152, title='Ada Kuasa')
         for number in (1, 2):
-            songs.Verse.objects.create(song=song, number=number, lyric=f'bait {number}')
+            songs.Verse.objects.create(song=self.song, number=number, lyric=f'bait {number}')
+
+        haleluya = songs.Book.objects.create(
+            name='Haleluya', short_name='HAL', is_hymn_book=True)
+        zeta = songs.Book.objects.create(name='Zeta Songs')
+        alpha = songs.Book.objects.create(name='Alpha Songs')
+        for number, sub_number, title in (
+                (4, 'B', 'Number Four B'), (4, 'a', 'Number Four A'),
+                (2, '', 'Number Two'), (None, 'a', 'Unnumbered Z'),
+                (None, 'z', 'Unnumbered A')):
+            songs.Song.objects.create(
+                book=self.songbook, number=number, sub_number=sub_number, title=title)
+        songs.Song.objects.create(book=haleluya, number=1, title='Hal Song')
+        songs.Song.objects.create(book=zeta, number=1, title='Zulu Song')
+        songs.Song.objects.create(book=zeta, number=2, title='Aardvark Song')
+        songs.Song.objects.create(book=alpha, number=2, title='Beta Song')
+        songs.Song.objects.create(book=alpha, number=1, title='Alpha Song')
 
         self.tatib = tatib.TataIbadah.objects.create(
             name='Ibadah Minggu', date=date(2026, 10, 4), is_active=True)
@@ -149,6 +166,26 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(page.locator('[name=chapter]')).to_have_value('1')
         expect(page.locator('[name=verse_start] option')).to_have_count(1)
         expect(page.locator('[name=verse_start]')).to_have_value('7')
+
+    def test_song_picker_sorts_and_labels_by_songbook_type(self):
+        page = self._page()
+        self._open_modal(page, 'song')
+        picker = page.locator('[data-entry-picker="song"]')
+        picker.locator('[data-picker-trigger]').click()
+        options = page.locator('#entry-song-options [data-song]')
+        expect(options).to_have_count(11)
+        groups = page.locator('#entry-song-options .editor__songgroup-label')
+        expect(groups).to_have_text([
+            'Kidung Jemaat', 'Haleluya', 'Alpha Songs', 'Zeta Songs'])
+        labels = options.evaluate_all(
+            "nodes => nodes.map(node => node.innerText.replace(/\\s+/g, ' ').trim())")
+        self.assertEqual(labels, [
+            'KJ 2 Number Two', 'KJ 4A Number Four A', 'KJ 4B Number Four B',
+            'KJ 152 Ada Kuasa', 'KJ Unnumbered A', 'KJ Unnumbered Z',
+            'HAL 1 Hal Song', 'Alpha Song', 'Beta Song', 'Aardvark Song', 'Zulu Song',
+        ])
+        options.first.click()
+        expect(picker.locator('[data-picker-label]')).to_have_text('Number Two')
 
     def test_the_book_menu_is_capped_to_the_viewport_not_the_dialog(self):
         page = self._page()
