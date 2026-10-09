@@ -1,6 +1,6 @@
 ---
 id: ITEM-046
-status: in_progress
+status: in_review
 title: 'Add a TB/SIM toggle to the passage modal book picker'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-09
 spec: specs/044-passage-translation-toggle/spec.md
 branch: feat/044-passage-translation-toggle
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/296
 archived_at:
 archive_reason:
 bump: patch
