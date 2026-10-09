@@ -1,17 +1,19 @@
 ---
 id: ITEM-045
-status: speccing
+status: archived
 title: 'Fix the passage modal book picker''s search filter'
 type: fix
 priority: P2
 effort: S
 created: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-09
 spec: specs/043-book-picker-filter/spec.md
 branch:
 pr:
-archived_at:
-archive_reason:
+archived_at: 2026-10-09
+archive_reason: >
+  Superseded by Spec 041 / ITEM-043, which implemented TB/SIM search and non-match hiding; its
+  targeted E2E test passes.
 bump: patch
 release_version:
 ---
@@ -19,6 +21,12 @@ release_version:
 # ITEM-045: Fix the passage modal book picker's search filter
 
 ## Summary
+
+Superseded by Spec 041 / ITEM-043: the picker already filters by both the TB and SIM names and
+hides non-matches. Its E2E coverage passed locally and in CI. This item is retained as history, not a
+pending implementation.
+
+## Original request
 
 The book picker's search box in the passage modal does not actually filter the list — typing leaves
 every book visible. Fix it, and make it match both the TB and SIM names once the picker shows them
