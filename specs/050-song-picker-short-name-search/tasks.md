@@ -17,11 +17,11 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump` on ITEM-052 and this spec
 - [x] Add `VERSION` 1.3.16, changelog `## [1.3.16]`, and `release_version: 1.3.16` on this branch
-- [ ] Update ITEM-052 + [`backlog/board.md`](../../backlog/board.md) in this PR (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] Update ITEM-052 + [`backlog/board.md`](../../backlog/board.md) in this PR (In review while open; Done before merge)
+- [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
 ## Done when
 
-- [ ] All acceptance scenarios in `spec.md` hold
-- [ ] The named app and E2E regressions are green
-- [ ] Board, tasks, and version (if any) are complete in the PR
+- [x] All acceptance scenarios in `spec.md` hold
+- [x] The named app and E2E regressions are green
+- [x] Board, tasks, and version (if any) are complete in the PR

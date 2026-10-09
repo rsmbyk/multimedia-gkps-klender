@@ -1,6 +1,6 @@
 ---
 id: ITEM-052
-status: in_progress
+status: in_review
 title: 'Search and label songs by songbook abbreviation'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-09
 updated: 2026-10-09
 spec: specs/050-song-picker-short-name-search/spec.md
 branch: fix/050-song-picker-short-name-search
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/301
 archived_at:
 archive_reason:
 bump: patch
