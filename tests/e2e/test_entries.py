@@ -62,6 +62,10 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         # a one-verse song: its checklist has nothing to choose, so it stays shut
         self.solo = songs.Song.objects.create(book=songbook, number=90, title='Bait Tunggal')
         songs.Verse.objects.create(song=self.solo, number=1, lyric='satu')
+        if self._testMethodName == 'test_editing_a_hymn_song_shows_its_reference':
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, order_number=1, kind=tatib.ServiceEntryKind.SONG,
+                song=self.song, verses=[1, 2, 3])
 
         b_lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru',
@@ -272,6 +276,14 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         self._close_browser()
         saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
         self.assertEqual(saved.verses, [1, 3])
+
+    def test_editing_a_hymn_song_shows_its_reference(self):
+        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
+        self._reveal(page)
+        page.locator('[data-entry-edit]').first.click()
+        page.wait_for_selector('dialog[open]')
+        label = page.locator('[data-entry-picker="song"] [data-picker-label]')
+        self.assertEqual(label.inner_text(), 'KJ 152 Ada Kuasa')
 
     def test_single_verse_song_keeps_checked_verse_and_disables_picker(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))

@@ -440,7 +440,30 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
             'HAL 1 Hal Song', 'Alpha Song', 'Beta Song', 'Aardvark Song', 'Zulu Song',
         ])
         options.first.click()
-        expect(picker.locator('[data-picker-label]')).to_have_text('Number Two')
+        self.assertEqual(picker.locator('[data-picker-label]').inner_text(), 'KJ 2 Number Two')
+
+        picker.locator('[data-picker-trigger]').click()
+        page.fill('#entry-song-search', 'Alpha Song')
+        page.wait_for_function("document.querySelectorAll('#entry-song-options [data-song]').length === 1")
+        non_hymn = page.locator('#entry-song-options [data-song]')
+        self.assertEqual(non_hymn.count(), 1)
+        non_hymn.click()
+        self.assertEqual(picker.locator('[data-picker-label]').inner_text(), 'Alpha Song')
+
+    def test_song_picker_searches_by_songbook_short_name(self):
+        page = self._page()
+        self._open_modal(page, 'song')
+        picker = page.locator('[data-entry-picker="song"]')
+        picker.locator('[data-picker-trigger]').click()
+        page.fill('#entry-song-search', 'kj')
+        page.wait_for_function("document.querySelectorAll('#entry-song-options [data-song]').length === 6",
+                               timeout=5000)
+        options = page.locator('#entry-song-options [data-song]')
+        self.assertEqual(options.count(), 6)
+        matching_song = page.locator(f'#entry-song-options [data-song="{self.song.pk}"]')
+        self.assertEqual(matching_song.count(), 1)
+        matching_song.click()
+        self.assertEqual(picker.locator('[data-picker-label]').inner_text(), 'KJ 152 Ada Kuasa')
 
     def test_the_book_menu_is_capped_to_the_viewport_not_the_dialog(self):
         page = self._page()

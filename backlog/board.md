@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-052](./items/ITEM-052-song-picker-short-name-search.md) | Search and label songs by songbook abbreviation | Match short name; keep hymn reference visible after selection | fix | P2 | S | [050](../specs/050-song-picker-short-name-search/spec.md) | 2026-10-09 |
 
 
 ## In review

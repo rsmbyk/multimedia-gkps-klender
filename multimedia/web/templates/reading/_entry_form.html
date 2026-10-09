@@ -143,7 +143,7 @@
       <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
               data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
               aria-controls="entry-song-menu"{% if form.song.errors %} aria-invalid="true"{% endif %}>
-        <span data-picker-label>{% if song %}{{ song.title }}{% else %}Choose a song{% endif %}</span>
+        <span data-picker-label>{% if song %}{{ song_label }}{% else %}Choose a song{% endif %}</span>
       </button>
       <div class="editor__picker-menu" id="entry-song-menu" hidden>
         <input type="search" id="entry-song-search" placeholder="Search songs..."
