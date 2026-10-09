@@ -1657,6 +1657,9 @@ kbd {
   background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
   cursor: pointer; transition: border-color var(--ease), box-shadow var(--ease);
 }
+.editor__picker-trigger [data-picker-label] {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 :root[data-theme="dark"] .editor__picker-trigger {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239C9A91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
 }
@@ -1697,7 +1700,7 @@ kbd {
   font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .04em; text-transform: uppercase; color: var(--head-ink);
 }
-.editor__songoption {
+.editor__picker-option, .editor__songoption {
   display: block; width: 100%; padding: 8px 12px; text-align: left;
   font: 400 14px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
   background: transparent; border: 0; cursor: pointer;
@@ -1707,6 +1710,7 @@ kbd {
 }
 .editor__songoption--book .book__n { flex: 1; }
 .editor__songoption--book .book__s[hidden] { display: none; }
+.editor__picker-option:hover, .editor__picker-option:focus-visible,
 .editor__songoption:hover, .editor__songoption:focus-visible {
   background: var(--icon-hover-bg); outline: none;
 }

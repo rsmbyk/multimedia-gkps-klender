@@ -625,6 +625,26 @@ class ServiceEntryViewTests(TestCase):
         self.assertContains(response, 'data-entry-picker="book"')
         self.assertContains(response, 'placeholder="Filter books..."')
 
+    def test_scripture_fragment_uses_custom_range_pickers_for_add_and_edit(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
+                          chapter=5, verse_start=2, verse_end=4)
+        responses = (
+            self.client.get(self.new_url('scripture')),
+            self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk})),
+        )
+        for response in responses:
+            self.assertEqual(response.status_code, 200)
+            for name in ('chapter', 'verse_start', 'verse_end'):
+                with self.subTest(response=response, field=name):
+                    self.assertContains(response, f'data-entry-picker="{name}"')
+                    self.assertContains(response, f'id="entry-{name}-trigger"')
+                    self.assertContains(response, f'id="entry-{name}-menu"')
+                    self.assertContains(response, f'id="id_{name}" hidden')
+        edit_html = responses[1].content.decode()
+        self.assertIn('data-initial="5"', edit_html)
+        self.assertIn('data-initial="2"', edit_html)
+        self.assertIn('data-initial="4"', edit_html)
+
     def test_scripture_books_use_one_tb_row_with_both_translation_names(self):
         sim_language = bible.Language.objects.create(name='Simalungun')
         sim_version = bible.Version.objects.create(

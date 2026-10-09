@@ -1,7 +1,7 @@
 # Spec 045: Make the passage modal's chapter/verse dropdowns custom
 
 - **ID:** 045
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-047
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -64,7 +64,8 @@ control as the book picker.
 ## Traceability
 
 - Domain/app tests: `multimedia/web/tests.py`.
-- E2E: `tests/e2e/test_entry_pickers.py`.
+- E2E: `tests/e2e/test_entries.py` (`test_adding_and_editing_a_passage_through_custom_pickers`);
+  existing picker/translation compatibility coverage in `tests/e2e/test_entry_pickers.py`.
 - Implementation: `static/web/entries.js`,
   `multimedia/web/templates/reading/_entry_form.html`,
   `static/styles/design/components.css`.

@@ -165,41 +165,84 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
 
     # --- a passage ------------------------------------------------------------
 
-    def test_adding_a_passage_through_the_modal(self):
-        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
+    def test_adding_and_editing_a_passage_through_custom_pickers(self):
+        page = self._page(reverse('web-home'))
+        page.locator('[data-panel="tatib"]').click()
+        service_url = reverse('web-tatib-service', args=[self.service.pk])
+        page.locator(f'.book[href="{service_url}"]').click()
+        page.wait_for_function(
+            "document.querySelector('#readName').textContent.trim() === 'Ibadah Minggu III'")
         # nothing in this service yet, so the invitation is the way in
         page.locator('.entry__empty-btn', has_text='Add Passage').first.click()
         page.wait_for_selector('dialog[open]')
         expect(page.locator('#editorTitle')).to_have_text('New passage')
+        book_trigger = page.locator('[data-entry-picker="book"] [data-picker-trigger]')
+        book_box = book_trigger.bounding_box()
+        assert book_box is not None
+        for name in ('chapter', 'verse_start', 'verse_end'):
+            picker = page.locator(f'[data-entry-picker="{name}"]')
+            trigger = picker.locator('[data-picker-trigger]')
+            expect(trigger).to_be_visible()
+            box = trigger.bounding_box()
+            assert box is not None
+            self.assertAlmostEqual(box['height'], book_box['height'], delta=1)
 
         page.get_by_role('button', name='Book').click()
         page.get_by_placeholder('Filter books...').fill('Matius')
-        expect(page.locator('[data-picker-options]')).to_contain_text('Perjanjian Baru')
-        page.locator('[data-picker-options] button', has_text='Matius').first.click()
+        book_options = page.locator('[data-entry-picker="book"] [data-picker-options]')
+        expect(book_options).to_contain_text('Perjanjian Baru')
+        page.locator('[data-entry-picker="book"] [data-picker-options] button', has_text='Matius').first.click()
         expect(page.locator('[name=chapter]')).to_have_value('1')
-        page.select_option('[name=chapter]', '5')
+        chapter_picker = page.locator('[data-entry-picker="chapter"]')
+        chapter_picker.locator('[data-picker-trigger]').click()
+        chapter_picker.locator('[data-picker-option][data-value="5"]').click()
         expect(page.locator('[name=verse_start]')).to_have_value('1')
         # the chapter's last verse leaves nothing to end a range with: the to-verse
         # shuts off and explains itself on hover
-        page.select_option('[name=verse_start]', '5')
+        start_picker = page.locator('[data-entry-picker="verse_start"]')
+        start_picker.locator('[data-picker-trigger]').click()
+        start_picker.locator('[data-picker-option][data-value="5"]').click()
         expect(page.locator('[name=verse_end]')).to_be_disabled()
+        expect(page.locator('[data-entry-picker="verse_end"] [data-picker-trigger]')).to_be_disabled()
         expect(page.locator('[data-end-wrap]')).to_have_attribute('data-empty', 'true')
         page.hover('[data-end-wrap]')
         expect(page.locator('.editor__end-tip')).to_have_css('opacity', '1')
-        page.select_option('[name=verse_start]', '2')
+        start_picker.locator('[data-picker-trigger]').click()
+        start_picker.locator('[data-picker-option][data-value="2"]').click()
         expect(page.locator('[name=verse_end]')).to_be_enabled()
         expect(page.locator('[name=verse_end] option[value="1"]')).to_have_count(0)
-        expect(page.locator('[name=verse_end]')).to_be_enabled()
-        page.select_option('[name=verse_end]', '4')
+        end_picker = page.locator('[data-entry-picker="verse_end"]')
+        end_picker.locator('[data-picker-trigger]').click()
+        end_picker.locator('[data-picker-option][data-value="4"]').click()
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
         page.wait_for_selector('.tatib__item--entry')
 
         contain = page.locator('.read__sec').first.text_content()
+        self.assertIsNotNone(contain)
+        self.assertIn('Matius 5:2-4', contain or '')
+        row = page.locator('.tatib__item--entry').first
+        row.hover()
+        row.locator('[data-entry-edit]').click()
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('Edit passage')
+        expect(page.locator('[name=chapter]')).to_have_value('5')
+        expect(page.locator('[name=verse_start]')).to_have_value('2')
+        expect(page.locator('[name=verse_end]')).to_have_value('4')
+        expect(page.locator('[data-entry-picker="chapter"] [data-picker-label]')).to_have_text('5')
+        expect(page.locator('[data-entry-picker="verse_start"] [data-picker-label]')).to_have_text('2')
+        expect(page.locator('[data-entry-picker="verse_end"] [data-picker-label]')).to_have_text('4')
+        start_picker = page.locator('[data-entry-picker="verse_start"]')
+        start_picker.locator('[data-picker-trigger]').click()
+        start_picker.locator('[data-picker-option][data-value="3"]').click()
+        end_picker = page.locator('[data-entry-picker="verse_end"]')
+        end_picker.locator('[data-picker-trigger]').click()
+        end_picker.locator('[data-picker-option][data-value="5"]').click()
+        page.click('.editor__save')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
         self._close_browser()                       # the ORM runs outside Playwright's loop
         saved = tatib.ServiceEntry.objects.get(tatib=self.service)
-        self.assertEqual(saved.citation(), 'Matius 5:2-4')
-        self.assertIn('Matius 5:2-4', contain)
+        self.assertEqual(saved.citation(), 'Matius 5:3-5')
 
     # --- a song ---------------------------------------------------------------
 

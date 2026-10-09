@@ -76,24 +76,60 @@
   </div>
   <div class="editor__row">
     <div class="editor__field{% if form.chapter.errors %} is-invalid{% endif %}">
-      <label for="id_chapter">Chapter</label>
-      <select name="chapter" id="id_chapter" data-initial="{{ form.chapter.value|default:1 }}"
-              {% if form.chapter.errors %}aria-invalid="true"{% endif %}></select>
+      <label id="entry-chapter-label" for="entry-chapter-trigger">Chapter</label>
+      <div class="editor__picker" data-entry-picker="chapter">
+        <button type="button" class="editor__picker-trigger" id="entry-chapter-trigger"
+                data-picker-trigger data-placeholder="Choose a chapter" aria-label="Chapter"
+                aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-chapter-menu"
+                disabled {% if form.chapter.errors %}aria-invalid="true"{% endif %}>
+          <span data-picker-label>Choose a chapter</span>
+        </button>
+        <div class="editor__picker-menu" id="entry-chapter-menu" hidden>
+          <div class="editor__picker-options" id="entry-chapter-options" data-picker-options
+               role="listbox" aria-label="Chapters"></div>
+        </div>
+        <select name="chapter" id="id_chapter" hidden disabled
+                data-initial="{{ form.chapter.value|default:1 }}"></select>
+      </div>
       {% for error in form.chapter.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
     </div>
     <div class="editor__field{% if form.verse_start.errors %} is-invalid{% endif %}">
-      <label for="id_verse_start">From verse</label>
-      <select name="verse_start" id="id_verse_start" data-initial="{{ form.verse_start.value|default:1 }}"
-              {% if form.verse_start.errors %}aria-invalid="true"{% endif %}></select>
+      <label id="entry-verse_start-label" for="entry-verse_start-trigger">From verse</label>
+      <div class="editor__picker" data-entry-picker="verse_start">
+        <button type="button" class="editor__picker-trigger" id="entry-verse_start-trigger"
+                data-picker-trigger data-placeholder="Choose a verse" aria-label="From verse"
+                aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-verse_start-menu"
+                disabled {% if form.verse_start.errors %}aria-invalid="true"{% endif %}>
+          <span data-picker-label>Choose a verse</span>
+        </button>
+        <div class="editor__picker-menu" id="entry-verse_start-menu" hidden>
+          <div class="editor__picker-options" id="entry-verse_start-options" data-picker-options
+               role="listbox" aria-label="From verses"></div>
+        </div>
+        <select name="verse_start" id="id_verse_start" hidden disabled
+                data-initial="{{ form.verse_start.value|default:1 }}"></select>
+      </div>
       {% for error in form.verse_start.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
     </div>
     <div class="editor__field{% if form.verse_end.errors %} is-invalid{% endif %}">
-      <label for="id_verse_end">To verse <span class="editor__hint">(optional)</span></label>
-      <span class="editor__end-wrap" data-end-wrap tabindex="0" aria-describedby="entry-end-tip">
-        <select name="verse_end" id="id_verse_end" data-initial="{{ form.verse_end.value|default_if_none:'' }}"
-                {% if form.verse_end.errors %}aria-invalid="true"{% endif %}></select>
-        <span class="editor__end-tip" id="entry-end-tip" role="tooltip">No verses available after the start verse number.</span>
-      </span>
+      <label id="entry-verse_end-label" for="entry-verse_end-trigger">To verse <span class="editor__hint">(optional)</span></label>
+      <div class="editor__end-wrap" data-end-wrap tabindex="0" aria-describedby="entry-end-tip">
+        <div class="editor__picker" data-entry-picker="verse_end">
+          <button type="button" class="editor__picker-trigger" id="entry-verse_end-trigger"
+                  data-picker-trigger data-placeholder="No ending verse" aria-label="To verse"
+                  aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-verse_end-menu"
+                  disabled {% if form.verse_end.errors %}aria-invalid="true"{% endif %}>
+            <span data-picker-label>No ending verse</span>
+          </button>
+          <div class="editor__picker-menu" id="entry-verse_end-menu" hidden>
+            <div class="editor__picker-options" id="entry-verse_end-options" data-picker-options
+                 role="listbox" aria-label="To verses"></div>
+          </div>
+          <select name="verse_end" id="id_verse_end" hidden disabled
+                  data-initial="{{ form.verse_end.value|default_if_none:'' }}"></select>
+        </div>
+        <div class="editor__end-tip" id="entry-end-tip" role="tooltip">No verses available after the start verse number.</div>
+      </div>
       {% for error in form.verse_end.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
     </div>
   </div>

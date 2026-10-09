@@ -1,6 +1,6 @@
 # Plan 045: Make the passage modal's chapter/verse dropdowns custom
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-047
@@ -28,10 +28,9 @@ behaves unevenly. Replace the three native selects with the same custom dropdown
 
 ## Approach
 
-- `static/web/entries.js` — factor the picker's open/close/select plumbing so it can serve the
-  chapter and verse controls too (the book picker's `wirePickerMenus()` and its option rendering are
-  the model). Keep `fillChapters` / `loadVerses` / `syncTo` writing options into the custom menus
-  instead of native `<select>`s, and keep each control's hidden value input in step.
+- `static/web/entries.js` — reuse `wirePickerMenus()` / `placeMenu()`. Keep the existing selects
+  hidden as the successful form controls; `fillChapters`, `loadVerses` and `syncTo` populate them,
+  and a renderer mirrors their options and selected values into the custom menus after each refill.
 - `multimedia/web/templates/reading/_entry_form.html` — render chapter / verse_start / verse_end as
   the custom picker markup (trigger + menu + hidden value), keeping the `.editor__end-wrap` tip on the
   to-verse.
@@ -44,8 +43,8 @@ behaves unevenly. Replace the three native selects with the same custom dropdown
 
 - Domain/app tests: `multimedia/web/tests.py` — the fragment renders the three controls as the custom
   picker markup (with values POSTing), in add and edit.
-- E2E: `tests/e2e/test_entry_pickers.py` — open each control, pick a value, see it reflected; the
-  to-verse disables with its note; the form still saves the right chapter/verses.
+- E2E: `tests/e2e/test_entries.py` — add and edit through each control, exercise the to-verse note,
+  and verify the saved chapter / verse range.
 
 ## Risks
 

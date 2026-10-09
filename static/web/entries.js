@@ -239,6 +239,52 @@
 
     var verses = [];
 
+    function renderRangeControl(control) {
+      var picker = control.closest('.editor__picker');
+      var trigger = picker && picker.querySelector('[data-picker-trigger]');
+      var list = picker && picker.querySelector('[data-picker-options]');
+      if (!trigger || !list) return;
+      list.innerHTML = '';
+      [].slice.call(control.options).forEach(function (option) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'editor__picker-option';
+        item.dataset.pickerOption = 'true';
+        item.dataset.value = option.value;
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', String(option.selected));
+        item.textContent = control.name === 'verse_end' && option.value === ''
+          ? 'No ending verse' : option.textContent.trim();
+        list.appendChild(item);
+      });
+      var selected = control.options[control.selectedIndex];
+      var placeholder = trigger.dataset.placeholder || 'Choose an option';
+      var text = selected
+        ? (control.name === 'verse_end' && selected.value === ''
+          ? 'No ending verse' : selected.textContent.trim())
+        : placeholder;
+      var label = trigger.querySelector('[data-picker-label]');
+      if (label) label.textContent = text;
+      trigger.disabled = control.disabled;
+    }
+
+    function wireRangeControl(control) {
+      var picker = control.closest('.editor__picker');
+      var list = picker && picker.querySelector('[data-picker-options]');
+      if (!list) return;
+      list.addEventListener('click', function (event) {
+        var item = event.target.closest('[data-picker-option]');
+        if (!item || !list.contains(item) || control.disabled) return;
+        event.preventDefault();
+        control.value = item.dataset.value;
+        renderRangeControl(control);
+        closeMenus(scope);
+        control.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+
+    [chapter, from, to].forEach(wireRangeControl);
+
     function numbers(count) {
       var out = '';
       for (var n = 1; n <= count; n += 1) out += '<option value="' + n + '">' + n + '</option>';
@@ -259,10 +305,15 @@
     function fillChapters(wanted) {
       var count = chapterCount();
       chapter.disabled = !count;
-      if (!count) { chapter.innerHTML = ''; return; }
+      if (!count) {
+        chapter.innerHTML = '';
+        renderRangeControl(chapter);
+        return;
+      }
       chapter.innerHTML = numbers(count);
       keep(chapter, wanted);
       if (!chapter.value) chapter.value = '1';
+      renderRangeControl(chapter);
     }
     function syncTo() {
       var start = Number(from.value) || 1;
@@ -277,6 +328,7 @@
         to.disabled = true;
         if (wrap) wrap.setAttribute('data-empty', 'true');
       }
+      renderRangeControl(to);
       return after;
     }
     function chapterUrl(pk, number) {
@@ -294,14 +346,17 @@
           }).join('');
           if (verses.length) from.value = String(verses[0]);
           keep(from, wantedFrom);
+          renderRangeControl(from);
           syncTo();
           keep(to, wantedTo);
+          renderRangeControl(to);
           return verses;
         })
         .catch(function () {
           verses = [];
           from.disabled = true;
           from.innerHTML = '';
+          renderRangeControl(from);
           syncTo();
         });
     }
@@ -405,6 +460,7 @@
       chapter.disabled = true;
       from.disabled = true;
       to.disabled = true;
+      [chapter, from, to].forEach(renderRangeControl);
     }
 
     filter.addEventListener('input', filterBooks);
@@ -412,9 +468,13 @@
       option.addEventListener('click', function () { pickBook(option); closeMenus(scope); });
     });
     chapter.addEventListener('change', function () {
+      renderRangeControl(chapter);
       loadVerses(select.value, Number(chapter.value) || 1);
     });
-    from.addEventListener('change', function () { syncTo(); });
+    from.addEventListener('change', function () {
+      renderRangeControl(from);
+      syncTo();
+    });
   }
 
   /* ---------- the song pick and its verse checklist ------------------------- */

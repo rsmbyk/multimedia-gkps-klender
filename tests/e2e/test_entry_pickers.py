@@ -215,7 +215,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(toggle.locator('[data-edition-option="tb"]')).to_have_attribute(
             'aria-pressed', 'true')
         expect(page.locator('[name=book_translation]')).to_have_value(str(self.mat_tb.pk))
-        expect(page.locator('[data-picker-label]')).to_have_text('Matius')
+        expect(page.locator('[data-entry-picker="book"] [data-picker-label]')).to_have_text('Matius')
         expect(option.locator('.book__n')).to_have_text('Matius')
         expect(option.locator('.book__s')).to_have_text('Mateus')
         after = page.evaluate("""() => ['chapter', 'verse_start', 'verse_end'].map(name => {
@@ -249,7 +249,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         option.click()
 
         expect(page.locator('[name=book_translation]')).to_have_value(str(self.mat_sim.pk))
-        expect(page.locator('[data-picker-label]')).to_have_text('Mateus')
+        expect(page.locator('[data-entry-picker="book"] [data-picker-label]')).to_have_text('Mateus')
         expect(page.locator('[name=chapter]')).to_have_value('1')
         expect(page.locator('[name=verse_start]')).to_have_value('7')
 
