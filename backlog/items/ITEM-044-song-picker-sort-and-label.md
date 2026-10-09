@@ -1,15 +1,15 @@
 ---
 id: ITEM-044
-status: in_progress
+status: in_review
 title: 'Sort and label the add-song picker like the hymn books'
 type: chore
 priority: P2
 effort: S
 created: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-09
 spec: specs/042-song-picker-sort-and-label/spec.md
 branch: chore/042-song-picker-sort-and-label
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/294
 archived_at:
 archive_reason:
 bump: patch

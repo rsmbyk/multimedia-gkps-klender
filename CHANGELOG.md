@@ -10,7 +10,7 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
-## [1.3.10] - 2026-10-08
+## [1.3.10] - 2026-10-09
 
 ### Changed
 
