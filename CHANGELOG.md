@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.10] - 2026-10-08
+
+### Changed
+
+- The add-song picker lists hymn books first by book id and in song-number order, then other songbooks by name and title order; hymn options show the short reference and title, unnumbered hymns follow by title, and the closed selection remains title-only.
+
 ## [1.3.9] - 2026-10-08
 
 ### Changed

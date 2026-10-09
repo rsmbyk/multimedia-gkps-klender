@@ -4,9 +4,7 @@
   <p class="editor__songgroup-label">{{ group.name }}</p>
   {% for song in group.songs %}
   <button type="button" class="editor__songoption" data-song="{{ song.id }}"
-          data-song-title="{{ song.title }}">
-    {% if song.number %}{{ song.number }} — {% endif %}{{ song.title }}
-  </button>
+          data-song-title="{{ song.title }}">{{ song.option_label }}</button>
   {% endfor %}
 </div>
 {% empty %}

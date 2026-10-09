@@ -19,7 +19,7 @@ import re
 from urllib.parse import quote
 
 from django.db import transaction
-from django.db.models import Count, F, Q
+from django.db.models import Case, CharField, Count, F, IntegerField, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
                          JsonResponse)
@@ -350,15 +350,57 @@ def entry_song_options(request):
     songs = song_models.Song.objects.active().filter(book__is_deleted=False).select_related('book')
     if query:
         songs = songs.filter(Q(title__icontains=query) | Q(number__icontains=query))
-    songs = songs.order_by('book__name', 'number', 'title')
+    songs = songs.annotate(
+        picker_hymn_first=Case(
+            When(book__is_hymn_book=True, then=Value(0)),
+            default=Value(1), output_field=IntegerField()),
+        picker_hymn_book_id=Case(
+            When(book__is_hymn_book=True, then=F('book_id')),
+            default=Value(0), output_field=IntegerField()),
+        picker_other_book_name=Case(
+            When(book__is_hymn_book=False, then=F('book__name')),
+            default=Value(''), output_field=CharField()),
+        picker_number_missing=Case(
+            When(book__is_hymn_book=True, number__isnull=True, then=Value(1)),
+            default=Value(0), output_field=IntegerField()),
+        picker_hymn_number=Case(
+            When(book__is_hymn_book=True, then=F('number')),
+            default=Value(0), output_field=IntegerField()),
+        picker_hymn_sub_number=Case(
+            When(book__is_hymn_book=True, number__isnull=False, then=Lower('sub_number')),
+            default=Value(''), output_field=CharField()),
+        picker_other_title=Case(
+            When(book__is_hymn_book=False, then=F('title')),
+            default=Value(''), output_field=CharField()),
+        picker_hymn_title=Case(
+            When(book__is_hymn_book=True, then=F('title')),
+            default=Value(''), output_field=CharField()),
+    ).order_by(
+        'picker_hymn_first', 'picker_hymn_book_id',
+        'picker_other_book_name', 'book_id', 'picker_number_missing',
+        'picker_hymn_number', 'picker_hymn_sub_number',
+        'picker_other_title', 'picker_hymn_title', 'pk')
     groups, current = [], None
+    current_book_id = None
     for song in songs[:200]:
         label = song.book.short_name or song.book.name
-        if current is None or current['label'] != label:
+        if current is None or current_book_id != song.book_id:
+            current_book_id = song.book_id
             current = {'label': label, 'name': song.book.name, 'songs': []}
             groups.append(current)
-        current['songs'].append({'id': song.pk, 'title': song.title,
-                                 'number': song.number})
+        if song.book.is_hymn_book:
+            sub_number = (song.sub_number or '').upper()
+            number = (f' {song.number}{sub_number}'
+                      if song.number is not None else '')
+            option_label = f'{label}{number} {song.title}'
+        else:
+            option_label = song.title
+        current['songs'].append({
+            'id': song.pk,
+            'title': song.title,
+            'number': song.number,
+            'option_label': option_label,
+        })
     return render(request, 'reading/_entry_song_options.html', {'groups': groups})
 
 

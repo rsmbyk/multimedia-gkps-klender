@@ -1,6 +1,6 @@
 ---
 id: ITEM-044
-status: speccing
+status: in_progress
 title: 'Sort and label the add-song picker like the hymn books'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-08
 updated: 2026-10-08
 spec: specs/042-song-picker-sort-and-label/spec.md
-branch:
+branch: chore/042-song-picker-sort-and-label
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.10
 ---
 
 # ITEM-044: Sort and label the add-song picker like the hymn books
@@ -41,21 +41,23 @@ songbooks by name; and label a hymn option as its short reference plus title (e.
   - Group order (owner's decision): hymn songbooks first, ordered by songbook **id**; then non-hymn
     songbooks ordered by **name**.
   - Label: a hymn option shows `HAL 123 Some Title`; a non-hymn option shows only its title.
-- **Selected label.** `entries.js` sets the closed control's label from `data-song-title`
-  (`option.dataset.songTitle || option.textContent.trim()`); decide whether it should carry the short
-  full title too.
+- **Selected label.** `entries.js` uses `data-song-title` for the closed control; keep that plain-title
+  behavior while open hymn options show the short reference plus title.
 - The picker's filter (`q`) still matches title and number.
 
-## Open questions
+## Decisions
 
-- The selected (closed) control's label: plain title as today, or the same short full title?
-- Hymn songs with no number: still ordered last within the book, or by title?
+- The closed picker keeps its current title-only label; the full reference is shown in open hymn options.
+- Numberless hymns appear after numbered ones, ordered by title, and use the short book name plus
+  title without a `None` placeholder.
 
 ## Acceptance sketch
 
 - A hymn book's group lists its songs by number; a non-hymn book's group lists them A–Z.
 - The hymn songbooks appear first, ordered by songbook id; the non-hymn songbooks follow by name.
 - A hymn option reads `HAL 123 Some Title`; a non-hymn option reads just the title.
+- Unnumbered hymns follow numbered ones in title order and show the short reference plus title.
+- The closed selected label remains the title alone.
 
 ## Links
 
