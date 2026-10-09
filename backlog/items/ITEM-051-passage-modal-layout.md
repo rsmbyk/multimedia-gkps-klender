@@ -1,6 +1,6 @@
 ---
 id: ITEM-051
-status: in progress
+status: in review
 title: 'Fix passage modal control placement and overflow'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-09
 updated: 2026-10-09
 spec: specs/049-passage-modal-layout/spec.md
 branch: fix/049-passage-modal-layout
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/300
 archived_at:
 archive_reason:
 bump: patch

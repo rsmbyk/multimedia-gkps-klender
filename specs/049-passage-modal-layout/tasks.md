@@ -18,12 +18,13 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump` on ITEM-051 and this spec
 - [x] Add `VERSION` 1.3.15, changelog `## [1.3.15]`, and `release_version: 1.3.15` on this branch
-- [x] Update ITEM-051 + [`backlog/board.md`](../../backlog/board.md) to In progress on this branch
+- [x] Update ITEM-051 + [`backlog/board.md`](../../backlog/board.md) to In review and link PR #300
 - [x] Conventional Commit on this feature branch
-- [ ] Open a draft PR against `develop` linking `./spec.md`; set ITEM-051 to In review and add the PR link (Done before merge)
+- [x] Open draft PR [#300](https://github.com/rsmbyk/multimedia-gkps-klender/pull/300) against `develop` linking `./spec.md`; set ITEM-051 to In review and add the PR link
+- [ ] Before merge, set ITEM-051 to Done, move the board row to Done, and verify all merge requirements
 
 ## Done when
 
 - [x] All acceptance scenarios in `spec.md` hold
 - [x] The named E2E test is green at narrow and desktop widths
-- [ ] Board, tasks, and version (if any) are complete in the PR
+- [x] Board, tasks, and version (if any) are complete in the PR
