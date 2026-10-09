@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-051](./items/ITEM-051-passage-modal-layout.md) | Fix passage modal control placement and overflow | Center TB/SIM above the book picker; keep chapter/verse dropdowns inside the modal | fix | P2 | S | [049](../specs/049-passage-modal-layout/spec.md) | 2026-10-09 |
 
 
 ## In review

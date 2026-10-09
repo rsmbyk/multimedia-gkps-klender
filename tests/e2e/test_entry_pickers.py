@@ -128,6 +128,121 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
                   windowWidth: window.innerWidth, windowHeight: window.innerHeight};
         }""", picker)
 
+    def test_passage_form_layout_fits_modal_at_narrow_viewport(self):
+        home_url = self.live_server_url + reverse('web-home')
+        service_path = reverse('web-tatib-service', args=[self.tatib.pk])
+
+        for width, height, range_stacks in ((536, 426, False), (320, 720, True),
+                                            (1200, 900, False)):
+            with self.subTest(width=width, height=height):
+                context = self.browser.new_context(viewport={'width': width, 'height': height})
+                page = context.new_page()
+                try:
+                    page.goto(home_url)
+                    page.wait_for_load_state('networkidle')
+                    page.locator('[data-panel="tatib"]').click()
+                    page.locator(f'.book[href="{service_path}"]').click()
+                    page.wait_for_function(
+                        "document.querySelector('#readName').textContent.trim() === 'Ibadah Minggu'")
+                    page.locator('[data-panel="tatib"]').click()
+                    page.wait_for_function(
+                        "document.documentElement.dataset.nav === 'closed'")
+                    self._open_modal(page, 'scripture')
+
+                    for name in ('Book', 'Chapter', 'From verse', 'To verse'):
+                        expect(page.get_by_role('button', name=name)).to_be_visible()
+
+                    layout = page.evaluate("""() => {
+                      const rect = element => {
+                        const r = element.getBoundingClientRect();
+                        return {left: r.left, right: r.right, top: r.top, bottom: r.bottom,
+                                width: r.width, height: r.height};
+                      };
+                      const content = document.querySelector('#editorContent');
+                      const contentRect = rect(content);
+                      const style = getComputedStyle(content);
+                      const left = contentRect.left + content.clientLeft +
+                        parseFloat(style.paddingLeft);
+                      const right = contentRect.right - parseFloat(style.paddingRight);
+                      const byId = id => rect(document.getElementById(id));
+                      return {
+                        innerLeft: left,
+                        innerRight: right,
+                        contentScrollWidth: content.scrollWidth,
+                        contentClientWidth: content.clientWidth,
+                        contentScrollHeight: content.scrollHeight,
+                        contentClientHeight: content.clientHeight,
+                        modalScrollWidth: document.querySelector('#editorModal').scrollWidth,
+                        modalClientWidth: document.querySelector('#editorModal').clientWidth,
+                        pageScrollWidth: document.documentElement.scrollWidth,
+                        windowWidth: window.innerWidth,
+                        toggle: rect(document.querySelector('[data-entry-translation-toggle]')),
+                        bookLabel: byId('entry-book-label'),
+                        bookTrigger: byId('entry-book-trigger'),
+                        chapterLabel: byId('entry-chapter-label'),
+                        chapterTrigger: byId('entry-chapter-trigger'),
+                        chapterField: rect(document.querySelector('.editor__row .editor__field')),
+                        fromLabel: byId('entry-verse_start-label'),
+                        fromTrigger: byId('entry-verse_start-trigger'),
+                        toLabel: byId('entry-verse_end-label'),
+                        toTrigger: byId('entry-verse_end-trigger')
+                      };
+                    }""")
+
+                    toggle, book_label, book = (layout['toggle'], layout['bookLabel'],
+                                                layout['bookTrigger'])
+                    self.assertLessEqual(toggle['bottom'], book_label['top'])
+                    self.assertLessEqual(book_label['bottom'], book['top'])
+                    self.assertAlmostEqual((toggle['left'] + toggle['right']) / 2,
+                                           (book['left'] + book['right']) / 2, delta=1)
+                    self.assertEqual(page.locator('#entry-book-label').get_attribute('for'),
+                                     'entry-book-trigger')
+                    self.assertAlmostEqual(layout['chapterField']['width'],
+                                           layout['innerRight'] - layout['innerLeft'], delta=1)
+
+                    for control in ('chapterLabel', 'chapterTrigger', 'fromLabel', 'fromTrigger',
+                                    'toLabel', 'toTrigger'):
+                        self.assertGreaterEqual(layout[control]['left'], layout['innerLeft'] - 1)
+                        self.assertLessEqual(layout[control]['right'], layout['innerRight'] + 1)
+
+                    self.assertLessEqual(layout['contentScrollWidth'],
+                                         layout['contentClientWidth'] + 1)
+                    self.assertLessEqual(layout['modalScrollWidth'],
+                                         layout['modalClientWidth'] + 1)
+                    self.assertLessEqual(layout['pageScrollWidth'], layout['windowWidth'] + 1)
+                    if width == 536:
+                        self.assertGreater(layout['contentScrollHeight'],
+                                           layout['contentClientHeight'])
+
+                    from_box, to_box = layout['fromTrigger'], layout['toTrigger']
+                    if range_stacks:
+                        self.assertGreater(to_box['top'], from_box['top'])
+                    else:
+                        self.assertAlmostEqual(from_box['top'], to_box['top'], delta=1)
+                        self.assertGreaterEqual(to_box['left'], from_box['right'])
+
+                    page.locator('#editorContent').evaluate(
+                        'element => { element.scrollTop = element.scrollHeight; }')
+                    actions = page.locator('.editor__actions').bounding_box()
+                    save = page.locator('.editor__save').bounding_box()
+                    cancel = page.locator('.editor__cancel').bounding_box()
+                    content_viewport = page.locator('#editorContent').evaluate("""element => {
+                      const r = element.getBoundingClientRect();
+                      return {top: r.top + element.clientTop,
+                              bottom: r.top + element.clientTop + element.clientHeight};
+                    }""")
+                    assert actions is not None and save is not None and cancel is not None
+                    self.assertGreaterEqual(actions['y'], content_viewport['top'] - 1)
+                    self.assertLessEqual(actions['y'] + actions['height'],
+                                         content_viewport['bottom'] + 1)
+                    self.assertGreaterEqual(save['y'], content_viewport['top'] - 1)
+                    self.assertLessEqual(save['y'] + save['height'], content_viewport['bottom'] + 1)
+                    self.assertGreaterEqual(cancel['y'], content_viewport['top'] - 1)
+                    self.assertLessEqual(cancel['y'] + cancel['height'],
+                                         content_viewport['bottom'] + 1)
+                finally:
+                    context.close()
+
     def test_book_picker_filter_hides_nonmatching_books_and_restores_all(self):
         page = self._page()
         self._open_modal(page, 'scripture')
@@ -224,13 +339,14 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(toggle).to_be_visible()
         toggle_box = toggle.bounding_box()
         label_box = page.locator('#entry-book-label').bounding_box()
-        head_box = page.locator('.editor__field-head').bounding_box()
+        book_box = page.locator('#entry-book-trigger').bounding_box()
         assert toggle_box is not None
         assert label_box is not None
-        assert head_box is not None
-        self.assertGreaterEqual(toggle_box['x'] - label_box['x'] - label_box['width'], 8)
-        self.assertLessEqual(toggle_box['x'] + toggle_box['width'],
-                             head_box['x'] + head_box['width'])
+        assert book_box is not None
+        self.assertLessEqual(toggle_box['y'] + toggle_box['height'], label_box['y'])
+        self.assertLessEqual(label_box['y'] + label_box['height'], book_box['y'])
+        self.assertAlmostEqual(toggle_box['x'] + toggle_box['width'] / 2,
+                               book_box['x'] + book_box['width'] / 2, delta=1)
         expect(toggle).to_have_attribute('data-edition', 'sim')
         expect(toggle.locator('[data-edition-option="sim"]')).to_have_attribute(
             'aria-pressed', 'true')

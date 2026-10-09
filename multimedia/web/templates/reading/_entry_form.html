@@ -7,8 +7,7 @@
 
   {% if kind == 'scripture' %}
   <div class="editor__field{% if form.book_translation.errors %} is-invalid{% endif %}">
-    <div class="editor__field-head">
-      <label id="entry-book-label" for="entry-book-trigger">Book</label>
+    <div class="editor__translation-row">
       <div class="read__lang editor__translation-toggle" role="group"
            aria-label="Choose passage translation" data-entry-translation-toggle
            data-edition="{{ book_edition|default:'tb' }}">
@@ -21,6 +20,7 @@
                 title="Simalungun translation">SIM</button>
       </div>
     </div>
+    <label id="entry-book-label" for="entry-book-trigger">Book</label>
     <div class="editor__picker" data-entry-picker="book">
       <button type="button" class="editor__picker-trigger" id="entry-book-trigger"
               data-picker-trigger aria-label="Book" aria-haspopup="listbox" aria-expanded="false"
@@ -74,7 +74,7 @@
     </div>
     {% for error in form.book_translation.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
   </div>
-  <div class="editor__row">
+  <div class="editor__row editor__row--chapter">
     <div class="editor__field{% if form.chapter.errors %} is-invalid{% endif %}">
       <label id="entry-chapter-label" for="entry-chapter-trigger">Chapter</label>
       <div class="editor__picker" data-entry-picker="chapter">
@@ -93,6 +93,8 @@
       </div>
       {% for error in form.chapter.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
     </div>
+  </div>
+  <div class="editor__row editor__row--range">
     <div class="editor__field{% if form.verse_start.errors %} is-invalid{% endif %}">
       <label id="entry-verse_start-label" for="entry-verse_start-trigger">From verse</label>
       <div class="editor__picker" data-entry-picker="verse_start">
