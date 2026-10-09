@@ -1,6 +1,6 @@
 ---
 id: ITEM-046
-status: in_review
+status: done
 title: 'Add a TB/SIM toggle to the passage modal book picker'
 type: feat
 priority: P2
