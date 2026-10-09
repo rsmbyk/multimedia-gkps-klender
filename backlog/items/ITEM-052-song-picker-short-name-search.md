@@ -1,6 +1,6 @@
 ---
 id: ITEM-052
-status: in_review
+status: done
 title: 'Search and label songs by songbook abbreviation'
 type: fix
 priority: P2
