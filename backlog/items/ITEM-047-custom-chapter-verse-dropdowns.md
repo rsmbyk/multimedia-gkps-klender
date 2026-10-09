@@ -1,6 +1,6 @@
 ---
 id: ITEM-047
-status: in_progress
+status: in_review
 title: 'Make the passage modal''s chapter/verse dropdowns custom'
 type: refactor
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-09
 spec: specs/045-custom-chapter-verse-dropdowns/spec.md
 branch: refactor/045-custom-chapter-verse-dropdowns
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/297
 archived_at:
 archive_reason:
 bump: patch
