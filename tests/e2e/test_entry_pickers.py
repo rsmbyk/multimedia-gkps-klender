@@ -75,6 +75,16 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         self.sim_entry = tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=self.mat_sim, chapter=1, verse_start=7)
+        if self._testMethodName == 'test_non_tb_fallback_book_remains_selectable_in_tb_state':
+            language = bible.Language.objects.create(name='Alternate')
+            version = bible.Version.objects.create(
+                lang=language, name='Alternate Version', abbreviation='ALT')
+            book = bible.Book.objects.create(name='Luk', testament='new', number_of_chapters=1)
+            self.fallback_translation = bible.BookTranslation.objects.create(
+                version=version, book=book, translation='Lukas Alternatif')
+            bible.Verse.objects.create(
+                book_translation=self.fallback_translation, chapter=1, verse=1,
+                text='Ayat alternatif')
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -166,6 +176,98 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(page.locator('[name=chapter]')).to_have_value('1')
         expect(page.locator('[name=verse_start] option')).to_have_count(1)
         expect(page.locator('[name=verse_start]')).to_have_value('7')
+
+    def test_translation_toggle_switches_selected_book_without_refetching_verses(self):
+        page = self._page()
+        edit = page.locator(f'[data-entry-edit="{self.sim_entry.pk}"]')
+        edit.hover()
+        edit.click()
+
+        toggle = page.locator('[data-entry-translation-toggle]')
+        expect(toggle).to_be_visible()
+        toggle_box = toggle.bounding_box()
+        label_box = page.locator('#entry-book-label').bounding_box()
+        head_box = page.locator('.editor__field-head').bounding_box()
+        assert toggle_box is not None
+        assert label_box is not None
+        assert head_box is not None
+        self.assertGreaterEqual(toggle_box['x'] - label_box['x'] - label_box['width'], 8)
+        self.assertLessEqual(toggle_box['x'] + toggle_box['width'],
+                             head_box['x'] + head_box['width'])
+        expect(toggle).to_have_attribute('data-edition', 'sim')
+        expect(toggle.locator('[data-edition-option="sim"]')).to_have_attribute(
+            'aria-pressed', 'true')
+        option = page.locator('[data-entry-picker="book"] [data-book][aria-selected="true"]')
+        expect(option.locator('.book__n')).to_have_text('Mateus')
+        expect(option.locator('.book__s')).to_have_text('Matius')
+        before = page.evaluate("""() => ['chapter', 'verse_start', 'verse_end'].map(name => {
+          const node = document.querySelector(`[name="${name}"]`);
+          return [name, {value: node.value, disabled: node.disabled,
+            options: Array.from(node.options, option => [option.value, option.textContent])}];
+        })""")
+        chapter_requests = []
+        page.on('request', lambda request: chapter_requests.append(request.url)
+                if '/editor/entry/chapter/' in request.url else None)
+
+        toggle.locator('[data-edition-option="tb"]').click()
+
+        expect(toggle).to_have_attribute('data-edition', 'tb')
+        expect(toggle.locator('[data-edition-option="tb"]')).to_have_attribute(
+            'aria-pressed', 'true')
+        expect(page.locator('[name=book_translation]')).to_have_value(str(self.mat_tb.pk))
+        expect(page.locator('[data-picker-label]')).to_have_text('Matius')
+        expect(option.locator('.book__n')).to_have_text('Matius')
+        expect(option.locator('.book__s')).to_have_text('Mateus')
+        after = page.evaluate("""() => ['chapter', 'verse_start', 'verse_end'].map(name => {
+          const node = document.querySelector(`[name="${name}"]`);
+          return [name, {value: node.value, disabled: node.disabled,
+            options: Array.from(node.options, option => [option.value, option.textContent])}];
+        })""")
+        self.assertEqual(after, before)
+        self.assertEqual(chapter_requests, [])
+
+    def test_new_passage_toggle_selects_sim_translation_for_a_book(self):
+        page = self._page()
+        self._open_modal(page, 'scripture')
+        toggle = page.locator('[data-entry-translation-toggle]')
+        expect(toggle).to_be_visible()
+        expect(toggle).to_have_attribute('data-edition', 'tb')
+        toggle.locator('[data-edition-option="sim"]').click()
+        expect(toggle).to_have_attribute('data-edition', 'sim')
+
+        picker = page.locator('[data-entry-picker="book"]')
+        picker.locator('[data-picker-trigger]').click()
+        option = picker.locator('[data-book-name-sim="Mateus"]')
+        expect(option.locator('.book__n')).to_have_text('Mateus')
+        expect(option.locator('.book__s')).to_have_text('Matius')
+        filter_box = picker.locator('input[type="search"]')
+        filter_box.fill('Matius')
+        expect(option).to_be_visible()
+        filter_box.fill('Mateus')
+        expect(option).to_be_visible()
+        filter_box.fill('')
+        option.click()
+
+        expect(page.locator('[name=book_translation]')).to_have_value(str(self.mat_sim.pk))
+        expect(page.locator('[data-picker-label]')).to_have_text('Mateus')
+        expect(page.locator('[name=chapter]')).to_have_value('1')
+        expect(page.locator('[name=verse_start]')).to_have_value('7')
+
+    def test_non_tb_fallback_book_remains_selectable_in_tb_state(self):
+        translation = self.fallback_translation
+        page = self._page()
+        self._open_modal(page, 'scripture')
+
+        picker = page.locator('[data-entry-picker="book"]')
+        picker.locator('[data-picker-trigger]').click()
+        option = picker.locator(f'[data-book="{translation.pk}"]')
+        expect(option).to_be_enabled()
+        expect(option.locator('.book__n')).to_have_text('Lukas Alternatif')
+        option.click()
+
+        expect(page.locator('[name=book_translation]')).to_have_value(str(translation.pk))
+        expect(page.locator('[name=chapter]')).to_have_value('1')
+        expect(page.locator('[name=verse_start]')).to_have_value('1')
 
     def test_song_picker_sorts_and_labels_by_songbook_type(self):
         page = self._page()

@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-046](./items/ITEM-046-passage-translation-toggle.md) | Add a TB/SIM toggle to the passage modal book picker | Flip the picker's translation in place; names swap, the choice is stored, no new field | feat | P2 | M | [044](../specs/044-passage-translation-toggle/spec.md) | 2026-10-08 |
 | [ITEM-047](./items/ITEM-047-custom-chapter-verse-dropdowns.md) | Make the passage modal's chapter/verse dropdowns custom | Replace the native chapter/verse selects with the custom picker for consistency | refactor | P2 | M | [045](../specs/045-custom-chapter-verse-dropdowns/spec.md) | 2026-10-08 |
 | [ITEM-048](./items/ITEM-048-sidebar-text-two-lines.md) | Show the first two text lines in the service sidebar | Quote a text entry's first two lines for both text kinds; keep the grip centered | chore | P2 | S | [046](../specs/046-sidebar-text-two-lines/spec.md) | 2026-10-08 |
 
@@ -26,6 +25,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## In progress
+
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
@@ -51,6 +51,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-046](./items/ITEM-046-passage-translation-toggle.md) | Add a TB/SIM toggle to the passage modal book picker | Flip the picker's translation in place; names swap, the choice is stored, no new field | feat | P2 | M | [044](../specs/044-passage-translation-toggle/spec.md) | develop | 2026-10-09 |
 | [ITEM-044](./items/ITEM-044-song-picker-sort-and-label.md) | Sort and label the add-song picker like the hymn books | Hymns by number, others by title; hymn groups first by id; hymn options use short references | chore | P2 | S | [042](../specs/042-song-picker-sort-and-label/spec.md) | develop | 2026-10-09 |
 | [ITEM-043](./items/ITEM-043-picker-book-names.md) | Show TB/SIM book names in the passage modal's book picker | One item per book: TB name main, SIM name dimmed on the right, like the sidebar | feat | P2 | M | [041](../specs/041-picker-book-names/spec.md) | develop | 2026-10-08 |
 | [ITEM-042](./items/ITEM-042-picker-menus-past-modal.md) | Let the entry modal book/song menus extend past the modal | Cap the picker menus to the viewport, not the dialog, like the date picker | fix | P2 | M | [040](../specs/040-picker-menus-past-modal/spec.md) | develop | 2026-10-08 |

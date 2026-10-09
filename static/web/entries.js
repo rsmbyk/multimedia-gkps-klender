@@ -232,6 +232,9 @@
     var groups = [].slice.call(picker.querySelectorAll('[data-picker-group]'));
     var options = [].slice.call(picker.querySelectorAll('[data-book]'));
     var empty = picker.querySelector('[data-picker-empty]');
+    var translationToggle = scope.querySelector('[data-entry-translation-toggle]');
+    var editionButtons = translationToggle
+      ? [].slice.call(translationToggle.querySelectorAll('[data-edition-option]')) : [];
     if (!select || !chapter || !from || !to) return;
 
     var verses = [];
@@ -302,6 +305,58 @@
           syncTo();
         });
     }
+    function activeEdition() {
+      return translationToggle && translationToggle.dataset.edition === 'sim' ? 'sim' : 'tb';
+    }
+    function bookId(option, edition) {
+      var id = edition === 'sim' ? option.dataset.bookSim : option.dataset.bookTb;
+      if (!id && edition === 'tb' && !option.dataset.bookSim) id = option.dataset.book;
+      return id || '';
+    }
+    function bookName(option, edition) {
+      return (edition === 'sim' ? option.dataset.bookNameSim : option.dataset.bookNameTb) || '';
+    }
+    function renderEdition(edition, updateSelection) {
+      var otherEdition = edition === 'sim' ? 'tb' : 'sim';
+      options.forEach(function (option) {
+        var main = option.querySelector('.book__n');
+        var secondary = option.querySelector('.book__s');
+        var mainName = bookName(option, edition);
+        var otherName = bookName(option, otherEdition);
+        if (!mainName) { mainName = otherName; otherName = ''; }
+        if (main) main.textContent = mainName;
+        if (secondary) {
+          secondary.textContent = otherName;
+          secondary.hidden = !otherName;
+        }
+        option.disabled = !bookId(option, edition);
+      });
+      if (!translationToggle) return;
+      translationToggle.dataset.edition = edition;
+      editionButtons.forEach(function (button) {
+        button.setAttribute('aria-pressed', String(button.dataset.editionOption === edition));
+      });
+      var selected = options.filter(function (option) {
+        return option.getAttribute('aria-selected') === 'true';
+      })[0];
+      if (selected && updateSelection) {
+        var id = bookId(selected, edition);
+        if (id) {
+          select.value = id;
+        } else {
+          select.value = '';
+          selected.setAttribute('aria-selected', 'false');
+          selected = null;
+        }
+      }
+      if (selected) label.textContent = bookName(selected, edition) || (chosenBook().textContent || '').trim();
+      else if (updateSelection) label.textContent = 'Choose a book';
+    }
+    function setEdition(edition) {
+      if (!translationToggle || edition === activeEdition()) return;
+      renderEdition(edition, true);
+      filterBooks();
+    }
     function filterBooks() {
       var query = (filter.value || '').trim().toLowerCase();
       var visible = 0;
@@ -317,15 +372,27 @@
       if (empty) empty.hidden = visible > 0;
     }
     function pickBook(button) {
-      select.value = button.dataset.book;
+      var id = bookId(button, activeEdition());
+      if (!id) return;
+      select.value = id;
       options.forEach(function (option) {
         option.setAttribute('aria-selected', option === button ? 'true' : 'false');
       });
-      label.textContent = button.dataset.bookName || button.textContent.trim();
+      label.textContent = bookName(button, activeEdition()) || button.textContent.trim();
       filter.value = '';
       filterBooks();
       fillChapters(1);
       loadVerses(select.value, Number(chapter.value) || 1);
+    }
+
+    if (translationToggle) {
+      translationToggle.classList.add('is-enhanced');
+      renderEdition(activeEdition(), false);
+      editionButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          setEdition(button.dataset.editionOption);
+        });
+      });
     }
 
     /* First paint: what the form already held, else a blank cascade to fill in. */
