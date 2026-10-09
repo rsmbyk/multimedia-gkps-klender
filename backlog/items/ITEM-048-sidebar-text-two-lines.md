@@ -1,6 +1,6 @@
 ---
 id: ITEM-048
-status: in_review
+status: done
 title: 'Show the first two text lines for untitled service entries'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-08
 updated: 2026-10-09
 spec: specs/046-sidebar-text-two-lines/spec.md
 branch: chore/046-sidebar-text-two-lines
-pr: 298
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/298
 archived_at:
 archive_reason:
 bump: patch
