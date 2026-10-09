@@ -65,6 +65,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [045](045-custom-chapter-verse-dropdowns/spec.md) | Make the passage modal's chapter/verse dropdowns custom | Accepted |
 | [046](046-sidebar-text-two-lines/spec.md) | Show the first two text lines for untitled service entries | Accepted |
 | [047](047-stabilise-flaky-e2e/spec.md) | Stabilise the flaky E2E tests | Accepted |
+| [048](048-book-picker-filter/spec.md) | Make the passage book search hide non-matching books | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.

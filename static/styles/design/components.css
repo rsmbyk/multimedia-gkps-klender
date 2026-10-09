@@ -1710,6 +1710,7 @@ kbd {
 .editor__songoption--book {
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
 }
+.editor__songoption--book[hidden] { display: none; }     /* author display beats [hidden] */
 .editor__songoption--book .book__n { flex: 1; }
 .editor__songoption--book .book__s[hidden] { display: none; }
 .editor__picker-option:hover, .editor__picker-option:focus-visible,

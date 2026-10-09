@@ -85,6 +85,12 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
             bible.Verse.objects.create(
                 book_translation=self.fallback_translation, chapter=1, verse=1,
                 text='Ayat alternatif')
+        if self._testMethodName == 'test_book_picker_filter_hides_nonmatching_books_and_restores_all':
+            markus = bible.Book.objects.create(name='Mrk', testament='new', number_of_chapters=16)
+            bible.BookTranslation.objects.create(
+                version=version, book=markus, translation='Markus')
+            bible.BookTranslation.objects.create(
+                version=sim_version, book=markus, translation='Markus Simalungun')
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -121,6 +127,37 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
                   contentBottom: content.bottom,
                   windowWidth: window.innerWidth, windowHeight: window.innerHeight};
         }""", picker)
+
+    def test_book_picker_filter_hides_nonmatching_books_and_restores_all(self):
+        page = self._page()
+        self._open_modal(page, 'scripture')
+        picker = page.locator('[data-entry-picker="book"]')
+        picker.locator('[data-picker-trigger]').click()
+        options = picker.locator('[data-picker-options] [data-book]')
+        expect(options).to_have_count(2)
+        matius_option = picker.locator('[data-book-name-tb="Matius"]')
+        markus_option = picker.locator('[data-book-name-tb="Markus"]')
+        filter_box = picker.locator('input[type="search"]')
+
+        filter_box.fill('Matius')
+        expect(matius_option).to_be_visible()
+        expect(markus_option).to_be_hidden()
+        expect(picker.locator('[data-book]:visible')).to_have_count(1)
+
+        filter_box.fill('Mateus')
+        expect(matius_option).to_be_visible()
+        expect(markus_option).to_be_hidden()
+        expect(picker.locator('[data-book]:visible')).to_have_count(1)
+
+        filter_box.fill('missing')
+        expect(picker.locator('[data-book]:visible')).to_have_count(0)
+        expect(picker.locator('[data-picker-group]')).to_be_hidden()
+        expect(picker.locator('[data-picker-empty]')).to_be_visible()
+
+        filter_box.fill('')
+        expect(picker.locator('[data-book]:visible')).to_have_count(2)
+        expect(picker.locator('[data-picker-group]')).to_be_visible()
+        expect(picker.locator('[data-picker-empty]')).to_be_hidden()
 
     def test_book_picker_shows_tb_and_sim_once_and_keeps_primary_translation(self):
         page = self._page()
