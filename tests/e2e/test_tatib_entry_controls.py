@@ -1,8 +1,8 @@
-"""The entry controls, floated in their item (spec 033).
+"""The entry controls, floated in their item (spec 033, amended by spec 053).
 
-Preview, Edit and Delete belong to their item: they sit at its top-right, over the
-words, on a brief backing, and appear while the item is hovered or holds keyboard
-focus — and always on a device with no hover.
+Preview, Edit and Delete belong to their item: they sit in a reserved band at its
+top-right -- never on the words -- and appear while the item is hovered or holds
+keyboard focus, and always on a device with no hover.
 """
 from datetime import date
 import unittest
@@ -37,6 +37,11 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.TEXT,
             title='Penutup', text='Amin. Terima kasih untuk semuanya. ' * 12)
+        # An untitled entry: its first content is a line of text, which is where
+        # floating controls used to land (spec 053).
+        tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
+            title='', text='Kasih karunia beserta kita semua. ' * 12)
         # A second service carries a section break, so its separation can be measured
         # without writing to the database mid-test (spec 052).
         self.with_break = tatib.TataIbadah.objects.create(
@@ -67,18 +72,57 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         page.wait_for_load_state('networkidle')
         return page
 
-    def test_hovering_the_item_reveals_its_controls_over_the_text(self):
+    def test_the_controls_never_sit_on_the_words(self):
+        # Spec 053: the item owns the controls' height -- a reserved top band holds
+        # Preview/Edit/Delete, and no word of the title or text sits under them.
         page = self._page()
-        acts = page.locator('.tatib__item .entry__acts').first
-        item = page.locator('.tatib__item').first
-        self.assertEqual(acts.count(), 1)
+        page.mouse.move(1400, 850)
+        for index in range(page.locator('.tatib__item').count()):
+            item = page.locator('.tatib__item').nth(index)
+            acts = item.locator('.entry__acts')
+            self.assertEqual(acts.count(), 1)
+            item_box = item.bounding_box()
+            # the band: the controls' box ends where the item's words begin
+            first_word = item.locator('h2, p').first
+            word_box = first_word.bounding_box()
+            self.assertGreaterEqual(word_box['y'], item_box['y'] + 40,
+                                    'entry %d: words start inside the controls band' % index)
+        # and once revealed, the controls still sit in that band, never on the words
+        item = page.locator('.tatib__item').nth(2)        # the untitled entry
+        acts = item.locator('.entry__acts')
         page.mouse.move(1400, 850)
         expect(acts).to_have_css('opacity', '0')
         item.hover()
         expect(acts).to_have_css('opacity', '1')
         item_box, acts_box = item.bounding_box(), acts.bounding_box()
-        self.assertGreater(acts_box['x'], item_box['x'] + item_box['width'] / 2)
-        self.assertLess(acts_box['y'], item_box['y'] + item_box['height'] / 2)
+        text_box = item.locator('.tatib__tx').first.bounding_box()
+        self.assertGreaterEqual(acts_box['y'] + acts_box['height'], item_box['y'] + 30)
+        self.assertLessEqual(acts_box['y'] + acts_box['height'], text_box['y'] + 1)  # no overlap
+        self.assertGreater(acts_box['x'], item_box['x'] + item_box['width'] / 2)     # still top-right
+
+    def test_the_item_height_includes_the_controls(self):
+        # The band belongs to the item: its box is at least band + first line tall.
+        page = self._page()
+        page.mouse.move(1400, 850)
+        item = page.locator('.tatib__item').nth(2)        # the untitled entry
+        item_box = item.bounding_box()
+        text_box = item.locator('.tatib__tx').first.bounding_box()
+        self.assertGreaterEqual(item_box['height'],
+                                (text_box['y'] - item_box['y']) + text_box['height'])
+
+    def test_the_band_tracks_the_controls_exactly(self):
+        # The band exists only where the controls do: every item that renders
+        # .entry__acts carries the band, and the section break -- which floats its
+        # controls over the rule, not over words -- reserves none.
+        page = self._page()
+        page.mouse.move(1400, 850)
+        with_acts = page.locator('.tatib__item:has(.entry__acts)')
+        self.assertEqual(with_acts.count(), page.locator('.tatib__item--acts').count())
+        for index in range(with_acts.count()):
+            item = with_acts.nth(index)
+            self.assertEqual(item.evaluate('el => getComputedStyle(el).paddingTop'), '44px')
+        rule = self._page(self.with_break).locator('.tatib__eos').first
+        self.assertEqual(rule.evaluate('el => getComputedStyle(el).paddingTop'), '0px')
 
     def test_keyboard_focus_reveals_the_controls(self):
         page = self._page()

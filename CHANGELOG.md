@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.19] - 2026-10-10
+
+### Changed
+
+- Each Tata Ibadah entry now owns the height of its Preview / Edit / Delete controls: a quiet 44px band at the top of the entry holds them, so the title or first line of text always starts below them instead of under them. The section break is unchanged.
+
 ## [1.3.18] - 2026-10-10
 
 ### Changed

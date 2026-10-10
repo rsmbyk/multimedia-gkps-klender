@@ -1536,6 +1536,11 @@ kbd {
 
 /* ---------- the hovered row (spec 034) ------------------------------------ */
 
+/* An entry that carries controls owns their height (spec 053): a quiet top band
+   holds the floating Preview/Edit/Delete, so the title or first line always starts
+   below them. The band is part of the item, so the hover fill covers it as one row. */
+.tatib__item--acts { padding-top: 44px; }
+
 /* Hovering an entry reads as one row: the whole item takes the shared hover fill,
    bled into the gutter with a matching negative margin so no text moves. */
 .tatib__item, .tatib__eos { border-radius: 9px; transition: background var(--ease); }

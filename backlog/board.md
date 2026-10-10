@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-055](./items/ITEM-055-entry-controls-height.md) | Give each entry the height of its floating controls | Reserve a top band for Preview/Edit/Delete so they never sit on the words | chore | P2 | S | [053](../specs/053-entry-controls-height/spec.md) | 2026-10-10 |
 
 ## In review
 
