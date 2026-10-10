@@ -8,8 +8,8 @@ effort: S
 created: 2026-10-10
 updated: 2026-10-10
 spec: specs/052-collapse-hidden-add-rows/spec.md
-branch:
-pr:
+branch: fix/052-collapse-hidden-add-rows
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/304
 archived_at:
 archive_reason:
 bump: patch
