@@ -1,6 +1,6 @@
 ---
 id: ITEM-054
-status: speccing
+status: in_review
 title: 'Collapse the hidden add rows and tighten the section break'
 type: chore
 priority: P2
