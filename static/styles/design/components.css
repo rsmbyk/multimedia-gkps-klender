@@ -965,7 +965,7 @@ li:hover > .row-edit,
    field is a liturgist's private cue (often NEXT <name>) — shown small/dim
    under the rule, never as content */
 .tatib__eos {
-  margin: 34px 0 34px;
+  margin: 16px 0 16px;
   border: 0;
   border-top: 2px solid var(--divider);
   position: relative;
@@ -1466,26 +1466,49 @@ kbd {
 
 /* The add controls belong to their item: hidden until that item is hovered or
    something inside the controls takes focus, so the service reads as a service.
-   They must stay HITTABLE while hidden -- the row occupies its own space, so
-   nothing sits behind it. A control at pointer-events: none cannot be entered:
-   the pointer leaves the item, the reveal drops, and the row is unreachable
-   unless the mouse jumps the whole way in one move. The hide is delayed so
-   crossing the item's edge does not blink the controls away. */
+   At rest the row collapses to zero height (spec 052): the buttons live in an
+   inner element clipped by a 0fr grid track, so nothing is reserved between
+   entries. The row must stay REACHABLE: it is revealed by the item above it
+   (spec 037), and once revealed its box keeps its height through the delayed
+   hide, so the pointer can travel onto it. A control at pointer-events: none
+   cannot be entered: the pointer leaves the item, the reveal drops, and the row
+   is unreachable unless the mouse jumps the whole way in one move. The hide is
+   delayed so crossing the item's edge does not blink the controls away. */
 .entry__add {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  padding: 0 0 10px;
+  display: grid;
+  grid-template-rows: 0fr;
+  padding: 0;
   opacity: 0;
-  transition: opacity 140ms ease 220ms;
+  transition: grid-template-rows 140ms ease 220ms, opacity 140ms ease 220ms,
+              padding 140ms ease 220ms;
+}
+.entry__add-inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  min-height: 0; overflow: hidden;
 }
 /* The add row is not part of the item (spec 036): it starts below the item's box, so
-   hovering it never counts as hovering the item above. The last paragraph's collapsed
-   4px margin simply leaves a small gap. */
+   hovering it never counts as hovering the item above. The padding below the buttons
+   appears with the row, so nothing is reserved at rest. */
 .tatib__item:hover + .entry__add,
 .tatib__eos:hover + .entry__add,
 .entry__add:hover,
-.entry__add:focus-within { opacity: 1; transition-delay: 0s; }
+.entry__add:focus-within {
+  grid-template-rows: 1fr;
+  padding-bottom: 10px;
+  opacity: 1;
+  transition-delay: 0s;
+}
 /* The add rows on either side of a hovered (or focused) item (spec 037). */
-.entry__add.is-revealed { opacity: 1; transition-delay: 0s; }
+.entry__add.is-revealed {
+  grid-template-rows: 1fr;
+  padding-bottom: 10px;
+  opacity: 1;
+  transition-delay: 0s;
+}
+/* A touch device has no hover to reveal the rows with: show them outright. */
+@media (hover: none) and (pointer: coarse) {
+  .entry__add { grid-template-rows: 1fr; opacity: 1; }
+}
 /* The start bar has no row above it to hover: it stands on its own, before the first item. */
 .entry__start {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;

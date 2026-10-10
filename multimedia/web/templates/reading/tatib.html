@@ -105,13 +105,13 @@
 </section>
 {% endif %}
 {% if editor_enabled %}
-<div class="entry__add" data-entry-after="{{ item.after_marker|default:item.anchor }}" role="group" aria-label="Add after this item">
+<div class="entry__add" data-entry-after="{{ item.after_marker|default:item.anchor }}" role="group" aria-label="Add after this item"><span class="entry__add-inner">
   <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
   <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
   <button type="button" class="entry__add-btn" data-entry-open="single_screen_text" data-entry-tatib="{{ service_id }}">+ Single-screen</button>
   <button type="button" class="entry__add-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">+ Break</button>
-</div>
+</span></div>
 {% endif %}
 {% endfor %}
 {% if editor_enabled and not items %}

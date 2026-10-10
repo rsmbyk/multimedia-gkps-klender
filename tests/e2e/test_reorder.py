@@ -194,7 +194,10 @@ class ReorderE2ETests(StaticLiveServerTestCase):
                          self._sidebar_order(page))
         self.assertEqual(self._order_in_pane(page), self._sidebar_order(page))
         self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
-        # and the adds never left: there is no mode to take them away
+        # and the adds never left: there is no mode to take them away -- at rest they
+        # collapse (spec 052), so reach one through its item to prove it is still there
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(250)
         self.assertFalse(page.locator('.entry__add').first.is_hidden())
         self.assertEqual(page.locator('[data-reorder-save]').count(), 0)
 

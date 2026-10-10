@@ -64,8 +64,10 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         return page
 
     def _reveal_row_controls(self, page, item):
+        # A collapsed add row has no box of its own (spec 052): it is reached
+        # through the item above it, which reveals the row below.
+        page.locator(f'#readBody [data-old-item-pk="{item.pk}"]').first.hover()
         row = page.locator(f'#readBody [data-entry-after="l{item.pk}"]')
-        row.hover()
         return row
 
     def test_editing_a_legacy_row_from_home_updates_the_pane_and_old_api(self):

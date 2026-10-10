@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-054](./items/ITEM-054-collapse-hidden-add-rows.md) | Collapse the hidden add rows and tighten the section break | Hidden add rows reserve no space at rest; break margins 34px → 16px | chore | P2 | S | [052](../specs/052-collapse-hidden-add-rows/spec.md) | 2026-10-10 |
 
 ## In review
 

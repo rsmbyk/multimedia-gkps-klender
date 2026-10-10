@@ -680,7 +680,17 @@
      CSS cannot reach a preceding sibling, so the pair of add rows around the row
      under the pointer (or holding keyboard focus) is revealed here. Hovering an add
      row itself reveals only that row (spec 036): the item is not hovered then. The
-     first item's "above" row is the start bar, which is always visible already. */
+     first item's "above" row is the start bar, which is always visible already.
+     A reveal can also MOVE the item (spec 052): the row above it expands in flow
+     and pushes a short item -- the 2px section break most of all -- out from under
+     a stationary pointer. Dropping the reveal there would collapse the row, slide
+     the item back, reveal again, and oscillate forever. The pointer's coordinates
+     tell the two cases apart: a mouseout at the exact coordinates of the mouseover
+     that revealed the rows is the layout moving under a still pointer, not the
+     pointer leaving -- the rows stay open, and the pointer is on the row that just
+     opened for them. */
+  var poised = null;                    // {item, x, y} of the last hovered item
+
   function neighboursOf(item) {
     return [item.previousElementSibling, item.nextElementSibling].filter(function (node) {
       return node && node.classList && node.classList.contains('entry__add');
@@ -693,17 +703,35 @@
     });
   }
 
+  function hideAllRows() {
+    var rows = document.querySelectorAll('.entry__add.is-revealed');
+    Array.prototype.forEach.call(rows, function (row) {
+      row.classList.remove('is-revealed');
+    });
+  }
+
   function itemOf(node) {
     return node && node.closest ? node.closest('.tatib__item, .tatib__eos') : null;
   }
 
   document.addEventListener('mouseover', function (event) {
     var item = itemOf(event.target);
-    if (item) revealNeighbours(item, true);
+    if (item) {
+      poised = {item: item, x: event.clientX, y: event.clientY};
+      revealNeighbours(item, true);
+      return;
+    }
+    // Not on an item: unless the pointer is on one of the revealed rows, nothing
+    // is hovered any more -- every reveal is dropped (moving onto a bar shows
+    // only that bar, spec 036; moving off the group closes all of them).
+    var row = event.target.closest ? event.target.closest('.entry__add') : null;
+    if (!row) hideAllRows();
   });
   document.addEventListener('mouseout', function (event) {
     var item = itemOf(event.target);
     if (!item || item.contains(event.relatedTarget)) return;
+    if (poised && poised.item === item &&
+        event.clientX === poised.x && event.clientY === poised.y) return;
     revealNeighbours(item, false);
   });
   document.addEventListener('focusin', function (event) {
