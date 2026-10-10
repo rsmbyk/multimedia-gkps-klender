@@ -1,6 +1,6 @@
 ---
 id: ITEM-056
-status: in_progress
+status: in_review
 title: 'Label song entries by their short hymn reference and show the selected verses'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-10
 updated: 2026-10-10
 spec: specs/054-song-entry-label-and-verses/spec.md
 branch: fix/054-song-entry-label-and-verses
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/307
 archived_at:
 archive_reason:
 bump: patch
