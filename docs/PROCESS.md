@@ -24,12 +24,13 @@ When a future always-on process doc is added, append it to this table. See [Vend
 Every behavior, CSS, or copy change follows this loop.
 
 1. **Plan** — what / why / scope / edges (short is fine). Manual notes or any AI agent plan mode both count.
-2. **Draft** — write `specs/NNN-slug/{plan,spec,tasks}.md` with Given / When / Then **before** any implementation.
-3. **STOP** — wait for the project owner’s explicit Accept / OK **on that Draft**. Plan work **stops at Draft specs**. Approving a plan is not permission to implement. If you are unsure whether Accept / OK applies to this Draft, **ask again** — do not treat ambiguous “proceed”, plan-UI accept, or “OK” on a different artifact as implement permission.
-4. **Execute** — TDD (red → green → refactor) for domain and application rules; E2E for user-visible acceptance using whatever tool this project chose at scaffold. One branch per spec. Land via the git model chosen at kickoff.
-5. **Done** — PR links the spec; behavior changes without a matching spec update are incomplete.
+2. **Preview** — for **UI/UX changes only**: present a preview of the intended UI (mockup, HTML prototype, screenshot, or the running page) and get the owner’s OK on the look. A preview OK authorizes Drafting only — it is **not** implement permission.
+3. **Draft** — write `specs/NNN-slug/{plan,spec,tasks}.md` with Given / When / Then **before** any implementation. UI/UX specs must also state the concrete UI details — size (px), position, spacing, colors, states (hover / focus / active / disabled), and responsive behavior — so the implementation can match the approved preview without guessing.
+4. **STOP** — wait for the project owner’s explicit Accept / OK **on that Draft**. Plan work **stops at Draft specs**. Approving a plan is not permission to implement. If you are unsure whether Accept / OK applies to this Draft, **ask again** — do not treat ambiguous “proceed”, plan-UI accept, or “OK” on a different artifact as implement permission.
+5. **Execute** — TDD (red → green → refactor) for domain and application rules; E2E for user-visible acceptance using whatever tool this project chose at scaffold. One branch per spec. Land via the git model chosen at kickoff.
+6. **Done** — PR links the spec; behavior changes without a matching spec update are incomplete.
 
-“Proceed” on a **new** ask means advance the current SDD step (usually: write Drafts). It does not mean implement. “Proceed” / Accept on an **already Accepted** Draft means implement that spec only.
+“Proceed” on a **new** ask means advance the current SDD step (usually: write Drafts). It does not mean implement. “Proceed” / Accept on an **already Accepted** Draft means implement that spec only. On a UI/UX ask whose preview is not yet approved, the current step is the preview — “proceed” there means present or iterate the preview.
 
 ### Spec layout
 
