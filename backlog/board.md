@@ -49,6 +49,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-055](./items/ITEM-055-entry-controls-height.md) | Give each entry the height of its floating controls | Reserve a top band for Preview/Edit/Delete so they never sit on the words | chore | P2 | S | [053](../specs/053-entry-controls-height/spec.md) | develop | 2026-10-10 |
 | [ITEM-054](./items/ITEM-054-collapse-hidden-add-rows.md) | Collapse the hidden add rows and tighten the section break | Hidden add rows reserve no space at rest; break margins 34px → 16px | chore | P2 | S | [052](../specs/052-collapse-hidden-add-rows/spec.md) | develop | 2026-10-10 |
 | [ITEM-053](./items/ITEM-053-song-picker-reference-search.md) | Search songs by songbook reference and title | Filter by hymn-book name substring; references match book substring + number prefix, optional sub-number/title | fix | P2 | S | [051](../specs/051-song-picker-reference-search/spec.md) | develop | 2026-10-10 |
 | [ITEM-052](./items/ITEM-052-song-picker-short-name-search.md) | Search and label songs by songbook abbreviation | Match short name; keep hymn reference visible after selection | fix | P2 | S | [050](../specs/050-song-picker-short-name-search/spec.md) | develop | 2026-10-09 |
