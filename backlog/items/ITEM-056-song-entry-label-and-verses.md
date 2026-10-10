@@ -1,6 +1,6 @@
 ---
 id: ITEM-056
-status: in_review
+status: done
 title: 'Label song entries by their short hymn reference and show the selected verses'
 type: chore
 priority: P2
