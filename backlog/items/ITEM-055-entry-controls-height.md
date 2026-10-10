@@ -1,6 +1,6 @@
 ---
 id: ITEM-055
-status: in_review
+status: done
 title: 'Give each entry the height of its floating controls'
 type: chore
 priority: P2
