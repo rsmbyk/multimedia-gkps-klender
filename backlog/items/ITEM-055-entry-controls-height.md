@@ -1,6 +1,6 @@
 ---
 id: ITEM-055
-status: in_progress
+status: in_review
 title: 'Give each entry the height of its floating controls'
 type: chore
 priority: P2
@@ -8,8 +8,8 @@ effort: S
 created: 2026-10-10
 updated: 2026-10-10
 spec: specs/053-entry-controls-height/spec.md
-branch:
-pr:
+branch: fix/053-entry-controls-height
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/306
 archived_at:
 archive_reason:
 bump: patch
