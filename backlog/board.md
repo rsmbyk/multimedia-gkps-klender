@@ -49,6 +49,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-056](./items/ITEM-056-song-entry-label-and-verses.md) | Label song entries by their short hymn reference and show the selected verses | `HAL 3 — Sai puji Naibata` on the stage and in the preview modal; `Bait 1, 3` under an entry that keeps only some verses | chore | P2 | S | [054](../specs/054-song-entry-label-and-verses/spec.md) | develop | 2026-10-10 |
 | [ITEM-055](./items/ITEM-055-entry-controls-height.md) | Give each entry the height of its floating controls | Reserve a top band for Preview/Edit/Delete so they never sit on the words | chore | P2 | S | [053](../specs/053-entry-controls-height/spec.md) | develop | 2026-10-10 |
 | [ITEM-054](./items/ITEM-054-collapse-hidden-add-rows.md) | Collapse the hidden add rows and tighten the section break | Hidden add rows reserve no space at rest; break margins 34px → 16px | chore | P2 | S | [052](../specs/052-collapse-hidden-add-rows/spec.md) | develop | 2026-10-10 |
 | [ITEM-053](./items/ITEM-053-song-picker-reference-search.md) | Search songs by songbook reference and title | Filter by hymn-book name substring; references match book substring + number prefix, optional sub-number/title | fix | P2 | S | [051](../specs/051-song-picker-reference-search/spec.md) | develop | 2026-10-10 |

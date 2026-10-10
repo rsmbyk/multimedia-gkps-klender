@@ -988,6 +988,14 @@ li:hover > .row-edit,
   text-transform: uppercase;
   color: var(--head-ink);
 }
+/* The selected-verse line under a song entry's heading (spec 054): quiet, tucked
+   close under the heading it qualifies. */
+.read__sub {
+  margin: -2px 0 8px;
+  font: 560 12.5px/1.5 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .04em;
+  color: var(--head-ink);
+}
 /* liturgist/jemaat speaker initials lead each line in the real texts */
 .tatib__sp {
   font: 640 .82em/1 ui-sans-serif, system-ui, sans-serif;

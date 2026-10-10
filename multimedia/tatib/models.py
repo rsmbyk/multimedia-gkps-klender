@@ -111,6 +111,10 @@ class ServiceEntry(models.Model):
             return f'{name} {span}'.strip()
         if self.kind == ServiceEntryKind.SONG and self.song_id:
             song, book = self.song, self.song.book
+            if book.is_hymn_book and song.number is not None:
+                # A hymn song reads by its short reference and title (spec 054);
+                # no title leaves the short reference alone.
+                return f'{song.book_number} — {song.title}' if song.title else song.book_number
             if song.number is not None:
                 return f'{book.name} {song.number}{(song.sub_number or "").upper()}'
             return song.title or book.name

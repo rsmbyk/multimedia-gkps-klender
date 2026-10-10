@@ -1239,7 +1239,7 @@ class ServiceEntryViewTests(TestCase):
                                        args=[self.tatib.pk])).content.decode()
         pane = html.split('id="readBody"')[1]
         self.assertIn(reverse('web-song', args=[self.song.pk]), pane)
-        self.assertIn('Kidung Jemaat 152', pane)                 # its reference, as the jump
+        self.assertIn('KJ 152 — Ada Kuasa dalam DarahNya', pane)  # its reference, as the jump
         self.assertNotIn('bait 1', pane)                         # no lyrics: the display has those
 
     def test_a_song_entry_warns_when_its_target_has_been_soft_deleted(self):
@@ -1304,11 +1304,11 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('ayat 2', html)
         self.assertIn('ayat 3', html)
 
-    def test_a_song_preview_lists_its_book_title_and_verse_tabs(self):
+    def test_a_song_preview_lists_its_short_reference_and_verse_tabs(self):
         self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 3])
         html = self.html()
         self.assertIn('data-preview-open', html)
-        self.assertIn('Kidung Jemaat', html)
+        self.assertIn('KJ 152 — Ada Kuasa dalam DarahNya', html)
         self.assertIn('preview__tab', html)
         self.assertIn('>1<', html)
         self.assertIn('>3<', html)
@@ -1318,6 +1318,68 @@ class ServiceEntryViewTests(TestCase):
         html = self.html()
         self.assertIn('data-preview-open', html)
         self.assertNotIn('preview__tab', html)
+
+    def test_a_non_hymn_song_preview_keeps_its_book_name_and_title(self):
+        book = songs.Book.objects.create(name='Kidung Eksperimen', short_name='KE')
+        song = songs.Song.objects.create(book=book, number=3, title='Nyanyian Baru')
+        songs.Verse.objects.create(song=song, number=1, lyric='bait baru')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.assertIn('Kidung Eksperimen — Nyanyian Baru', self.html())
+
+    def test_a_title_less_hymn_song_preview_shows_the_short_reference_alone(self):
+        song = songs.Song.objects.create(book=self.songbook, number=201, title='')
+        songs.Verse.objects.create(song=song, number=1, lyric='bait')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.assertIn('KJ 201</p>', self.html())
+
+    # --- the song entry's stage label and verse line (spec 054) --------------
+
+    def test_a_hymn_song_heading_reads_its_short_reference_and_title(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        pane = self.pane()
+        self.assertIn('KJ 152 — Ada Kuasa dalam DarahNya', pane)
+        self.assertNotIn('Kidung Jemaat 152', pane)
+
+    def test_a_title_less_hymn_song_heading_shows_the_short_reference_alone(self):
+        song = songs.Song.objects.create(book=self.songbook, number=201, title='')
+        songs.Verse.objects.create(song=song, number=1, lyric='bait')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        pane = self.pane()
+        self.assertIn('KJ 201</a>', pane)
+        self.assertNotIn('KJ 201 —', pane)
+
+    def test_a_partial_verse_selection_shows_its_numbers(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 3])
+        pane = self.pane()
+        self.assertIn('class="read__sub"', pane)
+        self.assertIn('Bait 1, 3', pane)
+
+    def test_a_full_verse_selection_shows_no_verse_line(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.assertNotIn('read__sub', self.pane())
+
+    def test_a_non_hymn_song_with_a_partial_selection_shows_its_numbers(self):
+        book = songs.Book.objects.create(name='Kidung Eksperimen', short_name='KE')
+        song = songs.Song.objects.create(book=book, number=3, title='Nyanyian Baru')
+        for number in (1, 2, 3):
+            songs.Verse.objects.create(song=song, number=number, lyric=f'bait {number}')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1, 3])
+        pane = self.pane()
+        self.assertIn('Bait 1, 3', pane)
+        self.assertIn('Kidung Eksperimen 3', pane)      # the heading itself is unchanged
+
+    def test_a_deleted_included_verse_suppresses_the_verse_line(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        songs.Verse.objects.get(song=self.song, number=2).delete()
+        pane = self.pane()
+        self.assertIn('entry__deleted-warning', pane)
+        self.assertNotIn('read__sub', pane)
+
+    def test_a_verse_added_after_preparing_shows_the_line_again(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.assertNotIn('read__sub', self.pane())
+        songs.Verse.objects.create(song=self.song, number=4, lyric='bait 4')
+        self.assertIn('Bait 1, 2, 3', self.pane())
 
     # --- the sidebar's song label (spec 039) --------------------------------
 
@@ -1899,7 +1961,7 @@ class ServiceProjectorTests(TestCase):
                                        args=[self.tatib.pk])).content.decode()
         pane = html.split('id="readBody"')[1]
         self.assertIn('Matius 5:2-3', pane)
-        self.assertIn('Kidung Jemaat 152', pane)
+        self.assertIn('KJ 152 — Ada Kuasa dalam DarahNya', pane)
         self.assertNotIn('ayat 2', pane)
         self.assertNotIn('bait 1', pane)
 

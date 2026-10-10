@@ -653,8 +653,12 @@ def _entry_preview(entry, kind_key):
     if kind_key == 'scripture':
         return {'kind': 'passage', 'reference': title, 'paras': _paragraphs(body)}
     song = entry.song
+    if song.book.is_hymn_book and song.number is not None:
+        heading = entry.citation()      # the short form, shared with the stage (spec 054)
+    else:
+        heading = f'{song.book.name} — {song.title}' if song.title else song.book.name
     verses = song.verse_set.filter(number__in=entry.verses or [], is_deleted=False).order_by('number')
-    return {'kind': 'song', 'book': song.book.name, 'title': song.title,
+    return {'kind': 'song', 'heading': heading,
             'verses': [{'number': verse.number, 'lines': (verse.lyric or '').split('\n')}
                        for verse in verses]}
 
@@ -739,9 +743,18 @@ def _tatib_stage(service):
         # A passage or a song shows its reference here, not its text: the words belong on the display.
         shows_text = kind_key not in ('scripture', 'song')
         paras, clipped = _clamped_paragraphs(body) if (body and shows_text) else ([], False)
+        subtitle = ''
+        if kind_key == 'song' and row.song_id and not deleted_target:
+            # A partial verse selection is stated (spec 054): only when the entry's stored
+            # verses differ from the song's current ones is there anything to say.
+            current = set(row.song.verse_set.filter(is_deleted=False)
+                          .values_list('number', flat=True))
+            chosen = set(row.verses or [])
+            if chosen != current:
+                subtitle = 'Bait ' + ', '.join(str(number) for number in sorted(chosen))
         block = {'entry': True, 'anchor': anchor, 'pk': row.pk, 'kind': kind_key,
                  'kind_label': row.get_kind_display(), 'title': title,
-                 'deleted_target': deleted_target,
+                 'deleted_target': deleted_target, 'subtitle': subtitle,
                  'paras': paras, 'clipped': clipped,
                  'note': row.title if row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK else ''}
         if kind_key in ('scripture', 'song') and not deleted_target:

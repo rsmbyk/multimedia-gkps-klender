@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.20] - 2026-10-10
+
+### Changed
+
+- A Tata Ibadah song entry from a hymn book now reads by its short reference and title on the stage and in its preview modal (`HAL 3 — Sai puji Naibata`), like the section sidebar and the pickers; other songs keep their headings.
+- A song entry that keeps only some of its song's verses now states them under its heading (`Bait 1, 3`); a full selection shows nothing.
+
 ## [1.3.19] - 2026-10-10
 
 ### Changed
