@@ -53,6 +53,10 @@ Default implementation loop for domain and application rules:
 
 Name test files in `tasks.md`. The E2E tool is chosen per project (not named in vexbook).
 
+### Local runs are targeted
+
+Locally, run only the tests covering the change — the touched test modules and, for E2E, the one class/module. Do **not** run the full suite or full browser E2E locally; those are the push/CI step. Between iterations, keep verification targeted.
+
 ## ITEM board
 
 Every project keeps a Kanban:
