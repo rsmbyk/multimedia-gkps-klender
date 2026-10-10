@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.18] - 2026-10-10
+
+### Changed
+
+- The Tata Ibadah pane's hidden add rows no longer reserve space: at rest entries sit as close together as with the editors off, and the `+ Passage / + Song / …` row expands in place when its entry is hovered or focused (touch devices see the rows outright). The section break keeps its rule with tighter margins (34px → 16px).
+
 ## [1.3.17] - 2026-10-10
 
 ### Fixed

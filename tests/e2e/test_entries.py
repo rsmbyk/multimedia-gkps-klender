@@ -119,7 +119,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page = self._page(reverse('web-home'))
         page.locator('[data-panel="tatib"]').click()
         page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.legacy.pk])}"]').click()
-        page.wait_for_selector('#readBody > .tatib__item + .entry__add')
+        page.wait_for_selector('#readBody > .tatib__item + .entry__add', state='attached')
         item = page.locator('#readBody > .tatib__item').first
         row = page.locator('#readBody > .entry__add').first
         item_box, row_box = item.bounding_box(), row.bounding_box()

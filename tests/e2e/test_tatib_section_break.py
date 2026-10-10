@@ -78,6 +78,11 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         acts = divider.locator('.entry__acts')
         page.mouse.move(1400, 850)
         expect(acts).to_have_css('opacity', '0')
+        # With the collapsing add rows (spec 052) the first hover opens the rows
+        # around the 2px divider, which pushes it down out from under the pointer;
+        # the reader re-targets it once, and it stays put from then on.
+        divider.hover()
+        page.wait_for_timeout(400)
         divider.hover()
         expect(acts).to_have_css('opacity', '1')
         self.assertEqual(divider.locator('[data-entry-edit]').count(), 1)
