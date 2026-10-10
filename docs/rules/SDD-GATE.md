@@ -5,9 +5,10 @@ This project uses Spec-Driven Development. This overrides “just do it” insti
 ## Required loop
 
 1. **Plan** (manual notes or any AI agent plan mode) — what / why / scope
-2. **Draft** — `specs/NNN-slug/{plan,spec,tasks}.md` **before** code
-3. **STOP** — wait for the project owner’s explicit OK / Accept on that Draft
-4. **Then** implement (TDD for domain/app), branch, PR linking the spec
+2. **Preview** (**UI/UX changes only**) — present a preview of the intended UI (mockup, HTML prototype, screenshot, or the running page) and get the owner’s OK on the look. OK on a preview → write the Draft; **never** implement from it.
+3. **Draft** — `specs/NNN-slug/{plan,spec,tasks}.md` **before** code. UI/UX specs state the concrete UI details (size in px, position, spacing, colors, states, responsive behavior), not just behavior.
+4. **STOP** — wait for the project owner’s explicit OK / Accept on that Draft
+5. **Then** implement (TDD for domain/app), branch, PR linking the spec
 
 Plan **stops at Draft specs**. Do not treat plan approval as permission to implement. If you are unsure whether the owner Accepted or OKed a Draft, **ask again** — do not treat ambiguous “proceed”, plan-UI accept, or “OK” on a different artifact as implement permission.
 
@@ -31,6 +32,7 @@ Ops / docs-only / hotfix one-liners may skip a numbered spec, but still get a sh
 ## When the owner says proceed
 
 - **Accept / OK on a Draft** → implement that spec only
+- **OK on a UI/UX preview** → write that spec's Draft (with UI details); do not code
 - **Draft specs** → write Draft markdown only; do not code
 - **New change** → start at Plan/Draft, do not code yet
 - If unsure whether a change needs a spec → **ask**, do not code
