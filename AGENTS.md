@@ -48,7 +48,9 @@ It is an **adopter**, not a greenfield spawn.
   Vercel (`@vercel/python`). Frontend is server-rendered templates with vanilla JS, jQuery, RxJS,
   and Fomantic UI.
 - **Tests:** Django test runner; coverage via `coverage`. E2E is Playwright (Python) via Django
-  `LiveServerTestCase`. TDD for domain/application rules.
+  `LiveServerTestCase`. TDD for domain/application rules. Locally run **targeted tests only** —
+  the touched modules, or a single E2E class — never the full suite; full-suite and browser E2E
+  runs are the push/CI step.
 - **Vocabulary:** use the canonical terms and naming rules in
   [`docs/GLOSSARY.md`](docs/GLOSSARY.md) for all new work.
 - **Conventions:** Git Flow ([ADR 0002](docs/adr/0002-git-flow-merge-strategy.md)), Keep a
