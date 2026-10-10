@@ -64,10 +64,36 @@ class ServiceEntryTests(TestCase):
         self.assertEqual(entry.citation(), 'Matius 5:13')
         self.assertEqual(entry.resolve()[1], '13 ayat 13')
 
+    def test_a_hymn_song_cites_its_short_reference_and_title(self):
+        entry = self._entry(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1])
+        self.assertEqual(entry.citation(), 'KJ 152 — Ada Kuasa')
+
+    def test_a_title_less_hymn_song_cites_its_short_reference_alone(self):
+        song = songs.Song.objects.create(book=self.songbook, number=200, title='')
+        entry = self._entry(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.assertEqual(entry.citation(), 'KJ 200')
+
+    def test_a_sub_numbered_hymn_song_keeps_its_sub_number(self):
+        song = songs.Song.objects.create(book=self.songbook, number=90, sub_number='b',
+                                         title='Nada Baru')
+        entry = self._entry(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.assertEqual(entry.citation(), 'KJ 90B — Nada Baru')
+
+    def test_a_non_hymn_numbered_song_keeps_its_long_reference(self):
+        book = songs.Book.objects.create(name='Lagu', short_name='LAGU')
+        song = songs.Song.objects.create(book=book, number=7, title='Nyanyian')
+        entry = self._entry(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.assertEqual(entry.citation(), 'Lagu 7')
+
+    def test_an_unnumbered_hymn_song_keeps_its_title(self):
+        song = songs.Song.objects.create(book=self.songbook, number=None, title='Bukan Nomor')
+        entry = self._entry(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.assertEqual(entry.citation(), 'Bukan Nomor')
+
     def test_a_song_entry_resolves_only_the_verses_it_includes(self):
         entry = self._entry(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 3])
         title, body = entry.resolve()
-        self.assertEqual(title, 'Kidung Jemaat 152')
+        self.assertEqual(title, 'KJ 152 — Ada Kuasa')        # short reference + title (spec 054)
         self.assertEqual(body, 'bait 1\n\nbait 3')            # verse 2 is left out
 
     def test_a_verse_added_to_the_song_later_is_not_in_an_existing_entry(self):
@@ -83,13 +109,13 @@ class ServiceEntryTests(TestCase):
     def test_a_deleted_song_remains_resolvable_and_is_marked_for_warning(self):
         entry = self._entry(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
         self.song.delete()
-        self.assertEqual(entry.resolve(), ('Kidung Jemaat 152', 'bait 1\n\nbait 2'))
+        self.assertEqual(entry.resolve(), ('KJ 152 — Ada Kuasa', 'bait 1\n\nbait 2'))
         self.assertTrue(entry.target_deleted)
 
     def test_a_deleted_included_verse_is_omitted_and_warned(self):
         entry = self._entry(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
         songs.Verse.objects.get(song=self.song, number=2).delete()
-        self.assertEqual(entry.resolve(), ('Kidung Jemaat 152', 'bait 1'))
+        self.assertEqual(entry.resolve(), ('KJ 152 — Ada Kuasa', 'bait 1'))
         self.assertTrue(entry.target_deleted)
 
     def test_a_deleted_songbook_is_detected_through_its_song(self):

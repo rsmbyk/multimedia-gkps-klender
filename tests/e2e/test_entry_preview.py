@@ -40,7 +40,7 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         songbook = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ',
                                              is_hymn_book=True)
         song = songs.Song.objects.create(book=songbook, number=152, title='Ada Kuasa')
-        for number in (1, 2):
+        for number in (1, 2, 3):
             songs.Verse.objects.create(song=song, number=number, lyric=f'bait {number}')
 
         self.tatib = tatib.TataIbadah.objects.create(
@@ -96,6 +96,18 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         self.assertIn('bait 1', page.locator('#previewContent .preview__panel').first.inner_text())
         tabs.nth(1).click()
         self.assertIn('bait 2', page.locator('#previewContent .preview__panel').nth(1).inner_text())
+
+    def test_a_song_preview_header_reads_the_short_reference(self):
+        page = self._page()
+        self._open_preview(page, 1)
+        header = page.locator('#previewContent .preview__song').inner_text()
+        self.assertEqual(header, 'KJ 152 — Ada Kuasa')
+
+    def test_a_song_entry_reads_its_short_reference_and_verse_line(self):
+        page = self._page()
+        item = page.locator('.tatib__item').nth(1)           # the song entry
+        self.assertEqual(item.locator('.read__sec').inner_text(), 'KJ 152 — Ada Kuasa')
+        self.assertEqual(item.locator('.read__sub').inner_text(), 'Bait 1, 2')
 
     def test_the_overlay_closes_the_preview(self):
         page = self._page()

@@ -1,6 +1,6 @@
 ---
 id: ITEM-056
-status: speccing
+status: in_progress
 title: 'Label song entries by their short hymn reference and show the selected verses'
 type: chore
 priority: P2
@@ -8,12 +8,12 @@ effort: S
 created: 2026-10-10
 updated: 2026-10-10
 spec: specs/054-song-entry-label-and-verses/spec.md
-branch:
+branch: fix/054-song-entry-label-and-verses
 pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.3.20
 ---
 
 # ITEM-056: Label song entries by their short hymn reference and show the selected verses

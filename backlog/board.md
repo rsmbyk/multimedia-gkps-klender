@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-056](./items/ITEM-056-song-entry-label-and-verses.md) | Label song entries by their short hymn reference and show the selected verses | `HAL 3 — Sai puji Naibata` on the stage and in the preview modal; `Bait 1, 3` under an entry that keeps only some verses | chore | P2 | S | [054](../specs/054-song-entry-label-and-verses/spec.md) | 2026-10-10 |
 
 ## Ready
 
@@ -27,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-056](./items/ITEM-056-song-entry-label-and-verses.md) | Label song entries by their short hymn reference and show the selected verses | `HAL 3 — Sai puji Naibata` on the stage and in the preview modal; `Bait 1, 3` under an entry that keeps only some verses | chore | P2 | S | [054](../specs/054-song-entry-label-and-verses/spec.md) | 2026-10-10 |
 
 ## In review
 

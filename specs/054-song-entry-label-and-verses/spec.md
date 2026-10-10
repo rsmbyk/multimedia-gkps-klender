@@ -1,7 +1,7 @@
 # Spec 054: Label song entries by their short hymn reference and show the selected verses
 
 - **ID:** 054
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-056
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

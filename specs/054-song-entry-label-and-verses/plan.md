@@ -1,6 +1,6 @@
 # Plan 054: Label song entries by their short hymn reference and show the selected verses
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-056
