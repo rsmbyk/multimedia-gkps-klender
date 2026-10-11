@@ -957,6 +957,10 @@ li:hover > .row-edit,
   margin: 30px 0 6px;
   scroll-margin-top: 44px;
 }
+/* The stage's entry-title links wear the theme's link colour (spec 056) --
+   forest green in light, lifted royal blue in dark; not the browser's default
+   blue, which fails contrast on the dark canvas. The underline stays. */
+.entry__jump { color: var(--link); }
 .read[data-kind="tatib"] .tatib__tx {
   margin: 0 0 4px;
   font: 400 clamp(1.06rem, 1rem + .3vw, 1.18rem)/1.78 ui-serif, Georgia, 'Times New Roman', serif;

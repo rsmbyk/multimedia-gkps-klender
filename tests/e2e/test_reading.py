@@ -115,6 +115,16 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=4,
                 text='Keep this\n\nSkip this')
 
+        if self._testMethodName == 'test_tatib_stage_entry_links_follow_the_theme':
+            theme_song = songs.Song.objects.create(
+                book=self.book, number=99, title='Nyanyian Tema')
+            songs.Verse.objects.create(song=theme_song, number=1, lyric='Nyanyian tema')
+            self.theme_service = tatib.TataIbadah.objects.create(
+                name='Ibadah Tema', date=date(2026, 9, 6), is_active=True)
+            tatib.ServiceEntry.objects.create(
+                tatib=self.theme_service, kind=tatib.ServiceEntryKind.SONG,
+                order_number=1, song=theme_song)
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -234,6 +244,23 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
         page.reload()
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+
+    def test_tatib_stage_entry_links_follow_the_theme(self):
+        # Spec 056: the stage's entry-title links wear the theme's link colour
+        # (forest green in light, lifted royal blue in dark), underline kept,
+        # instead of the browser default blue.
+        page = self._page()
+        page.emulate_media(color_scheme='light')
+        page.goto(self.live_server_url + reverse(
+            'web-tatib-service', args=[self.theme_service.pk]))
+        link = page.locator('#readBody .entry__jump').first
+        expect(link).to_be_visible()
+        expect(link).to_have_css('color', 'rgb(28, 92, 60)')          # --link, light
+        self.assertEqual(
+            link.evaluate('el => getComputedStyle(el).textDecorationLine'), 'underline')
+        page.locator('#themeBtn').click()
+        expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+        expect(link).to_have_css('color', 'rgb(124, 156, 240)')       # --link, dark
 
     def test_sidebar_selection_tint_matches_theme_for_all_current_rows(self):
         page = self._page()
