@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-058](./items/ITEM-058-entry-link-colours.md) | Give the stage entry links a theme-aware colour | `--link`: green `#1C5C3C` light / blue `#7C9CF0` dark; AA contrast; underline kept | chore | P2 | S | [056](../specs/056-entry-link-colours/spec.md) | 2026-10-11 |
 
 ## In review
 

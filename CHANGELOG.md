@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.21] - 2026-10-11
+
+### Fixed
+
+- The Tata Ibadah stage's entry-title links wear the theme's link colour — forest green `#1C5C3C` in light, lifted royal blue `#7C9CF0` in dark — instead of the browser's default blue, which dropped to 1.98:1 contrast on the dark canvas. The underline stays, and no other link changes.
+
 ## [1.3.20] - 2026-10-10
 
 ### Changed

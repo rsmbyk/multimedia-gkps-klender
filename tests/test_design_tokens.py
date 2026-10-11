@@ -24,6 +24,7 @@ TEXT_PAIRS = [
     ('--ink', '--sidebar-selected-bg'),
     ('--tip-ink', '--tip-bg'),
     ('--danger', '--canvas'),
+    ('--link', '--canvas'),
 ]
 UI_PAIRS = [
     ('--icon', '--rail-bg'),
