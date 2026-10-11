@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-059](./items/ITEM-059-service-entry-quick-actions.md) | Fix single-screen Save, add breaks at once, drop break Edit, show song verses in the sidebar | Save guard covers single-screen text; "+ Break" adds in place; no Edit on breaks; sidebar verse line `Bait 1-3, 5` | fix | P2 | S | [057](../specs/057-service-entry-quick-actions/spec.md) | 2026-10-11 |
 
 ## In review
 
