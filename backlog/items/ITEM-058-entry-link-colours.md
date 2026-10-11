@@ -1,6 +1,6 @@
 ---
 id: ITEM-058
-status: in_progress
+status: in_review
 title: 'Give the stage entry links a theme-aware colour'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-11
 updated: 2026-10-11
 spec: specs/056-entry-link-colours/spec.md
 branch: fix/056-entry-link-colours
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/308
 archived_at:
 archive_reason:
 bump: patch
