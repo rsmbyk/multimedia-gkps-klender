@@ -94,6 +94,18 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         box, note_box = divider.bounding_box(), note.bounding_box()
         self.assertAlmostEqual(note_box['y'] - box['y'], 33, delta=2)   # 50% + 7px
 
+    def test_plus_break_adds_the_break_at_once_without_a_dialog(self):
+        page = self._page()
+        before = page.locator('.tatib__eos').count()
+        page.locator('.tatib__eos').first.hover()
+        page.wait_for_timeout(400)
+        # The add row reveals on hover; dispatching the click avoids the 2px rule moving under the pointer.
+        page.locator('.entry__add-btn[data-entry-open="section_break"]').first.dispatch_event('click')
+        page.wait_for_function(
+            "document.querySelectorAll('.tatib__eos').length > %d" % before)
+        self.assertEqual(page.locator('dialog[open]').count(), 0)   # no form opened (spec 057)
+        self.assertEqual(page.locator('.tatib__eos').count(), before + 1)
+
     def test_the_divider_carries_its_own_controls(self):
         page = self._page()
         divider = page.locator('.tatib__eos').first
@@ -107,5 +119,5 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         page.wait_for_timeout(400)
         divider.hover()
         expect(acts).to_have_css('opacity', '1')
-        self.assertEqual(divider.locator('[data-entry-edit]').count(), 1)
+        self.assertEqual(divider.locator('[data-entry-edit]').count(), 0)   # no Edit on a break (spec 057)
         self.assertEqual(divider.locator('[data-entry-delete]').count(), 1)

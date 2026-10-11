@@ -1379,7 +1379,7 @@ class ServiceEntryViewTests(TestCase):
         self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
         self.assertNotIn('read__sub', self.pane())
         songs.Verse.objects.create(song=self.song, number=4, lyric='bait 4')
-        self.assertIn('Bait 1, 2, 3', self.pane())
+        self.assertIn('Bait 1-3', self.pane())
 
     # --- the sidebar's song label (spec 039) --------------------------------
 
@@ -1424,7 +1424,8 @@ class ServiceEntryViewTests(TestCase):
         self.assertNotIn('Persembahan', pane)                  # a break carries no label (spec 038)
         self.assertIn('Doa syafaat', pane)                     # the legacy note still shows
         self.assertNotIn('tatib__item--entry', pane)           # a break is not a heading item
-        self.assertIn('data-entry-edit="', pane)               # the divider carries its controls
+        self.assertNotIn('data-entry-edit="', pane)            # a break has nothing to edit (spec 057)
+        self.assertIn('data-entry-delete="', pane)             # ...but it keeps its Delete
 
     # --- the entry controls live in the item (spec 033) ---------------------
 
@@ -1576,6 +1577,42 @@ class ServiceEntryViewTests(TestCase):
                                            kwargs={'pk': self.matius.pk, 'chapter': 5}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['count'], 5)
+
+    def test_an_instant_break_lands_after_its_add_row_and_the_neighbours_keep_order(self):
+        first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='first', order_number=1)
+        second = self.make(kind=tatib.ServiceEntryKind.TEXT, text='second', order_number=2)
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SECTION_BREAK, 'after': f'e{first.pk}'})
+        self.assertEqual(response.status_code, 200)
+        ordered = list(self.tatib.service_entries.order_by('order_number')
+                       .values_list('pk', 'kind'))
+        self.assertEqual(ordered, [
+            (first.pk, tatib.ServiceEntryKind.TEXT),
+            (response.json()['id'], tatib.ServiceEntryKind.SECTION_BREAK),
+            (second.pk, tatib.ServiceEntryKind.TEXT),
+        ])
+
+    def test_an_instant_break_without_a_position_goes_to_the_end(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, text='only', order_number=1)
+        response = self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.SECTION_BREAK})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
+                              .values_list('kind', flat=True)),
+                         [tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.SECTION_BREAK])
+
+    def test_the_sidebar_song_row_shows_its_verses_on_a_second_line(self):
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        toc = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk])).context['toc_items']
+        entry = next(item for item in toc if item.get('entry'))
+        self.assertTrue(entry['two_line_label'])
+        self.assertEqual(entry['label_lines'][1], 'Bait 1-3')
+
+    def test_a_deleted_song_target_shows_no_sidebar_verse_line(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        self.song.delete()
+        toc = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk])).context['toc_items']
+        item = next(item for item in toc if item.get('pk') == entry.pk)
+        self.assertFalse(item.get('two_line_label', False))
 
 
 class ServiceEntryReorderTests(TestCase):
@@ -2090,3 +2127,32 @@ class LegacyTatibItemEditorTests(TestCase):
         self.assertEqual(page.status_code, 200)
         response = client.post(reverse('web-old-item-delete', args=[self.first.pk]))
         self.assertEqual(response.status_code, 403)
+
+
+class FormatVersesTests(TestCase):
+    """Spec 057: a song's verse numbers as runs -- ranges for three or more in a row."""
+
+    def fmt(self, numbers):
+        from multimedia.web.reading.formatting import format_verses
+        return format_verses(numbers)
+
+    def test_mixed_runs_collapse_into_ranges(self):
+        self.assertEqual(self.fmt([1, 2, 3, 5, 6, 8, 9, 10]), '1-3, 5, 6, 8-10')
+
+    def test_one_run_of_three_or_more_is_a_range(self):
+        self.assertEqual(self.fmt([1, 2, 3]), '1-3')
+
+    def test_a_pair_stays_comma_separated(self):
+        self.assertEqual(self.fmt([5, 6]), '5, 6')
+
+    def test_a_single_number(self):
+        self.assertEqual(self.fmt([4]), '4')
+
+    def test_no_numbers_gives_an_empty_string(self):
+        self.assertEqual(self.fmt([]), '')
+
+    def test_a_gap_keeps_the_pair_separate(self):
+        self.assertEqual(self.fmt([1, 2, 4]), '1, 2, 4')
+
+    def test_unsorted_and_duplicate_input_is_normalised(self):
+        self.assertEqual(self.fmt([10, 3, 1, 2, 2, 9, 8]), '1-3, 8-10')
