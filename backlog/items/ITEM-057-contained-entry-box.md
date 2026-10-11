@@ -1,6 +1,6 @@
 ---
 id: ITEM-057
-status: in_progress
+status: in_review
 title: 'Give each entry a containing box with centred words and equal add-row gaps'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-11
 updated: 2026-10-11
 spec: specs/055-contained-entry-box/spec.md
 branch: fix/055-contained-entry-box
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/309
 archived_at:
 archive_reason:
 bump: patch
