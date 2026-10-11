@@ -1,6 +1,6 @@
 ---
 id: ITEM-058
-status: in_review
+status: done
 title: 'Give the stage entry links a theme-aware colour'
 type: chore
 priority: P2
