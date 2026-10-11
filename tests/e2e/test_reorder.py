@@ -137,6 +137,9 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         page = self._page(self._service_url())
         bar = page.locator('#readBody .entry__start')
         self.assertEqual(bar.count(), 1)
+        # The bar collapses at rest (spec 055): reveal it through the first entry.
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(450)
         bar.locator('[data-entry-open="text"]').click()
         page.wait_for_selector('dialog[open]')
         self.assertEqual(page.input_value('input[name="after"]'), 'start')

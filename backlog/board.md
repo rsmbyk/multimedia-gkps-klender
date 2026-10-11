@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-057](./items/ITEM-057-contained-entry-box.md) | Give each entry a containing box with centred words and equal add-row gaps | Contained 52px entry box, words centred, revealed add rows 8px/8px, start bar collapses | chore | P2 | M | [055](../specs/055-contained-entry-box/spec.md) | 2026-10-11 |
 
 ## In review
 

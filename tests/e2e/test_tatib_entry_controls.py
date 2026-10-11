@@ -1,8 +1,11 @@
-"""The entry controls, floated in their item (spec 033, amended by spec 053).
+"""The entry box: the controls' home (spec 033, amended by spec 055).
 
-Preview, Edit and Delete belong to their item: they sit in a reserved band at its
-top-right -- never on the words -- and appear while the item is hovered or holds
-keyboard focus, and always on a device with no hover.
+Preview, Edit and Delete float at their item's top-right inside a box that
+CONTAINS them -- 52px minimum, words centred on the box's centreline. Every
+revealed add row keeps equal 8px above and below its buttons; the start bar
+collapses at rest and reveals with the first block; the controls appear while
+the item is hovered or holds keyboard focus, and always on a device with no
+hover.
 """
 from datetime import date
 import unittest
@@ -42,6 +45,11 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
             title='', text='Kasih karunia beserta kita semua. ' * 12)
+        # A one-liner: its box is exactly the controls' height, its words on the
+        # box's centreline (spec 055).
+        tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=4, kind=tatib.ServiceEntryKind.TEXT,
+            title='', text='Amin.')
         # A second service carries a section break, so its separation can be measured
         # without writing to the database mid-test (spec 052).
         self.with_break = tatib.TataIbadah.objects.create(
@@ -72,57 +80,89 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         page.wait_for_load_state('networkidle')
         return page
 
-    def test_the_controls_never_sit_on_the_words(self):
-        # Spec 053: the item owns the controls' height -- a reserved top band holds
-        # Preview/Edit/Delete, and no word of the title or text sits under them.
+    def _revealed_gaps(self, page):
+        """Each revealed add row: the button block's distance to the box above and below.
+
+        Measured to the inner block, not one button: at test widths the five buttons
+        wrap to two lines (spec 055), and the 8px bracket belongs around the block.
+        """
+        return page.evaluate("""() => {
+          const round = n => Math.round(n * 10) / 10;
+          const out = [];
+          [].slice.call(document.querySelectorAll('#readBody > .entry__add'))
+            .forEach(function (row) {
+              if (row.getBoundingClientRect().height < 1) return;
+              const block = row.querySelector('.entry__add-inner').getBoundingClientRect();
+              const prev = row.previousElementSibling, next = row.nextElementSibling;
+              out.push({
+                above: prev ? round(block.top - prev.getBoundingClientRect().bottom) : null,
+                below: next ? round(next.getBoundingClientRect().top - block.bottom) : null,
+              });
+            });
+          return out;
+        }""")
+
+    # --- the box contains the controls (spec 055, replacing the 053 band) -----
+
+    def test_the_box_contains_the_controls(self):
         page = self._page()
         page.mouse.move(1400, 850)
-        for index in range(page.locator('.tatib__item').count()):
-            item = page.locator('.tatib__item').nth(index)
+        boxes = page.locator('.tatib__item, .tatib__eos')
+        self.assertGreater(boxes.count(), 0)
+        for index in range(boxes.count()):
+            item = boxes.nth(index)
             acts = item.locator('.entry__acts')
-            self.assertEqual(acts.count(), 1)
-            item_box = item.bounding_box()
-            # the band: the controls' box ends where the item's words begin
-            first_word = item.locator('h2, p').first
-            word_box = first_word.bounding_box()
-            self.assertGreaterEqual(word_box['y'], item_box['y'] + 40,
-                                    'entry %d: words start inside the controls band' % index)
-        # and once revealed, the controls still sit in that band, never on the words
-        item = page.locator('.tatib__item').nth(2)        # the untitled entry
-        acts = item.locator('.entry__acts')
-        page.mouse.move(1400, 850)
-        expect(acts).to_have_css('opacity', '0')
-        item.hover()
-        expect(acts).to_have_css('opacity', '1')
-        item_box, acts_box = item.bounding_box(), acts.bounding_box()
-        text_box = item.locator('.tatib__tx').first.bounding_box()
-        self.assertGreaterEqual(acts_box['y'] + acts_box['height'], item_box['y'] + 30)
-        self.assertLessEqual(acts_box['y'] + acts_box['height'], text_box['y'] + 1)  # no overlap
-        self.assertGreater(acts_box['x'], item_box['x'] + item_box['width'] / 2)     # still top-right
+            if acts.count() == 0:
+                continue
+            item_box, acts_box = item.bounding_box(), acts.bounding_box()
+            self.assertGreaterEqual(acts_box['y'], item_box['y'] - 1,
+                                    'entry %d: controls start above the box' % index)
+            self.assertLessEqual(acts_box['y'] + acts_box['height'],
+                                 item_box['y'] + item_box['height'] + 1,
+                                 'entry %d: controls end below the box' % index)
+            self.assertGreater(acts_box['x'], item_box['x'] + item_box['width'] / 2)
 
-    def test_the_item_height_includes_the_controls(self):
-        # The band belongs to the item: its box is at least band + first line tall.
+    def test_the_box_is_at_least_the_controls_height(self):
         page = self._page()
         page.mouse.move(1400, 850)
-        item = page.locator('.tatib__item').nth(2)        # the untitled entry
-        item_box = item.bounding_box()
-        text_box = item.locator('.tatib__tx').first.bounding_box()
-        self.assertGreaterEqual(item_box['height'],
-                                (text_box['y'] - item_box['y']) + text_box['height'])
+        items = page.locator('.tatib__item--acts')
+        self.assertGreater(items.count(), 0)
+        for index in range(items.count()):
+            self.assertGreaterEqual(items.nth(index).bounding_box()['height'], 51.5, index)
+        one_liner = page.locator('.tatib__item').nth(3)
+        self.assertAlmostEqual(one_liner.bounding_box()['height'], 52, delta=0.6)
 
-    def test_the_band_tracks_the_controls_exactly(self):
-        # The band exists only where the controls do: every item that renders
-        # .entry__acts carries the band, and the section break -- which floats its
-        # controls over the rule, not over words -- reserves none.
+    def test_the_words_are_centred_in_the_box(self):
+        page = self._page()
+        page.mouse.move(1400, 850)
+        one_liner = page.locator('.tatib__item').nth(3)
+        word = one_liner.locator('.tatib__tx').first.bounding_box()
+        box = one_liner.bounding_box()
+        top_gap = word['y'] - box['y']
+        bottom_gap = (box['y'] + box['height']) - (word['y'] + word['height'])
+        self.assertAlmostEqual(top_gap, bottom_gap, delta=1.5,
+                               msg='the one-line words sit off the box centre')
+
+    def test_the_box_replaces_the_band(self):
         page = self._page()
         page.mouse.move(1400, 850)
         with_acts = page.locator('.tatib__item:has(.entry__acts)')
         self.assertEqual(with_acts.count(), page.locator('.tatib__item--acts').count())
         for index in range(with_acts.count()):
             item = with_acts.nth(index)
-            self.assertEqual(item.evaluate('el => getComputedStyle(el).paddingTop'), '44px')
+            self.assertEqual(item.evaluate('el => getComputedStyle(el).paddingTop'), '0px')
+            self.assertEqual(item.evaluate('el => getComputedStyle(el).minHeight'), '52px')
         rule = self._page(self.with_break).locator('.tatib__eos').first
-        self.assertEqual(rule.evaluate('el => getComputedStyle(el).paddingTop'), '0px')
+        self.assertEqual(rule.evaluate('el => getComputedStyle(el).minHeight'), '52px')
+
+    def test_the_divider_takes_the_same_box(self):
+        page = self._page(self.with_break)
+        page.mouse.move(1400, 850)
+        divider = page.locator('.tatib__eos').first
+        self.assertEqual(divider.evaluate(
+            'el => [getComputedStyle(el).marginTop, getComputedStyle(el).marginBottom]'),
+            ['0px', '0px'])
+        self.assertAlmostEqual(divider.bounding_box()['height'], 52, delta=0.6)
 
     def test_keyboard_focus_reveals_the_controls(self):
         page = self._page()
@@ -131,6 +171,118 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         expect(acts).to_have_css('opacity', '0')
         page.locator('[data-entry-edit]').first.focus()
         expect(acts).to_have_css('opacity', '1')
+
+    # --- the gaps include the buttons (spec 055) ------------------------------
+
+    def test_a_revealed_row_keeps_equal_gaps_above_and_below(self):
+        page = self._page()
+        for index in (0, 1, 3):          # the first tall entry, the second, the one-liner
+            hovered = page.locator('.tatib__item').nth(index)
+            page.mouse.move(1400, 850)
+            page.wait_for_timeout(400)   # past the hide delay
+            hovered.hover()
+            page.wait_for_timeout(450)   # past the expand
+            hovered.hover()              # a short entry slides once; re-target it
+            page.wait_for_timeout(450)
+            gaps = self._revealed_gaps(page)
+            self.assertGreater(len(gaps), 0, index)
+            for gap in gaps:
+                if gap['above'] is not None:
+                    self.assertAlmostEqual(gap['above'], 8, delta=1, msg=(index, gaps))
+                if gap['below'] is not None:
+                    self.assertAlmostEqual(gap['below'], 8, delta=1, msg=(index, gaps))
+
+    def test_focus_keeps_the_same_gaps(self):
+        page = self._page()
+        page.mouse.move(1400, 850)
+        page.locator('.tatib__item').nth(1).locator('[data-entry-edit]').first.focus()
+        page.wait_for_timeout(450)
+        gaps = self._revealed_gaps(page)
+        self.assertGreater(len(gaps), 0)
+        for gap in gaps:
+            if gap['above'] is not None:
+                self.assertAlmostEqual(gap['above'], 8, delta=1, msg=gaps)
+            if gap['below'] is not None:
+                self.assertAlmostEqual(gap['below'], 8, delta=1, msg=gaps)
+
+    def test_the_start_bar_collapses_and_reveals_with_equal_gaps(self):
+        page = self._page()
+        bar = page.locator('#readBody > .entry__start')
+        self.assertEqual(bar.count(), 1)
+        page.mouse.move(1400, 850)
+        page.wait_for_timeout(450)
+        self.assertEqual(bar.bounding_box()['height'], 0)      # collapsed at rest
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(450)
+        self.assertGreater(bar.bounding_box()['height'], 30)   # revealed with the first entry
+        gaps = page.evaluate("""() => {
+          const round = n => Math.round(n * 10) / 10;
+          const bar = document.querySelector('#readBody > .entry__start');
+          const block = bar.querySelector('.entry__start-inner').getBoundingClientRect();
+          const head = document.querySelector('#readBody').previousElementSibling;
+          const word = bar.nextElementSibling.querySelector('h2, p');
+          return {
+            above: round(block.top - head.getBoundingClientRect().bottom),
+            below: round(word.getBoundingClientRect().top - block.bottom),
+            margin: getComputedStyle(bar).marginTop,
+          };
+        }""")
+        self.assertAlmostEqual(gaps['above'], 8, delta=1, msg=gaps)
+        self.assertAlmostEqual(gaps['below'], 8, delta=1, msg=gaps)
+        self.assertEqual(gaps['margin'], '-30px')
+
+    # --- at rest the rows and the bar reserve nothing (spec 055) --------------
+
+    def test_at_rest_the_rows_and_the_bar_reserve_nothing(self):
+        page = self._page()
+        page.mouse.move(1400, 850)
+        self.assertEqual(page.locator('#readBody > .entry__start').bounding_box()['height'], 0)
+        for row in page.locator('#readBody > .entry__add').all():
+            self.assertEqual(row.bounding_box()['height'], 0)
+        # The resting rhythm is uniform: 12px between the boxes (the rows' 6px
+        # margins), not the uneven stack the reserved space used to leave.
+        gaps = page.evaluate("""() => {
+          const round = n => Math.round(n * 10) / 10;
+          const boxes = [].slice.call(document.querySelectorAll(
+            '#readBody > .tatib__item, #readBody > .tatib__eos'));
+          return boxes.slice(1).map((box, i) => round(
+            box.getBoundingClientRect().top - boxes[i].getBoundingClientRect().bottom));
+        }""")
+        self.assertEqual(len(gaps), 3)
+        for gap in gaps:
+            self.assertAlmostEqual(gap, 12, delta=0.6)
+
+    def test_hovering_an_entry_settles_with_both_rows_open(self):
+        page = self._page()
+        second = page.locator('.tatib__item').nth(1)
+        above = page.locator('.entry__add').nth(0)
+        below = page.locator('.entry__add').nth(1)
+        page.mouse.move(1400, 850)
+        before = second.bounding_box()
+        # hover the entry at its centre, where a reader points
+        page.mouse.move(before['x'] + before['width'] / 2,
+                        before['y'] + before['height'] / 2, steps=4)
+        page.wait_for_timeout(600)                    # past expand + hide delays
+        self.assertGreater(above.bounding_box()['height'], 0)
+        self.assertGreater(below.bounding_box()['height'], 0)
+        # the reveal settles: the entry stays under the pointer (its controls show)
+        # and nothing flickers -- both rows are still open after the hide window
+        expect(second.locator('.entry__acts')).to_have_css('opacity', '1')
+        page.wait_for_timeout(400)
+        self.assertGreater(above.bounding_box()['height'], 0)
+        self.assertGreater(below.bounding_box()['height'], 0)
+        # the closed row above opens by pushing the entry down once, by at most
+        # that row's height; the shift is bounded, never unbounded churn
+        shift = second.bounding_box()['y'] - before['y']
+        self.assertLessEqual(shift, above.bounding_box()['height'] + 1)
+        # and each row's box starts below its item's box (spec 036: no overlap)
+        item_above = page.locator('.tatib__item').nth(0)
+        self.assertLessEqual(item_above.bounding_box()['y'] + item_above.bounding_box()['height'],
+                             above.bounding_box()['y'] + 1)
+        after = second.bounding_box()
+        self.assertLessEqual(after['y'] + after['height'], below.bounding_box()['y'] + 1)
+
+    # --- reveal behaviour (specs 036/037/052; geometry of spec 055) -----------
 
     def test_the_add_row_is_not_part_of_the_item(self):
         page = self._page()
@@ -193,55 +345,6 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         expect(above).to_have_css('opacity', '1')
         expect(below).to_have_css('opacity', '0')
 
-    # --- at rest the rows reserve nothing (spec 052) --------------------------
-
-    def test_at_rest_the_add_rows_reserve_no_space(self):
-        page = self._page()
-        page.mouse.move(1400, 850)
-        for row in page.locator('#readBody > .entry__add').all():
-            self.assertEqual(row.bounding_box()['height'], 0)
-        # And the spacing between entries carries nothing else: it differs from the
-        # editors-off page (where no row exists between the items) by at most one
-        # paragraph margin -- the row's own box is zero, so only the loss of margin
-        # collapsing across the interposed row can show, never reserved height.
-        on = [page.locator('.tatib__item').nth(i).bounding_box() for i in (0, 1)]
-        with override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True):
-            off_page = self._page()
-        off = [off_page.locator('.tatib__item').nth(i).bounding_box() for i in (0, 1)]
-        gap_on = round(on[1]['y'] - (on[0]['y'] + on[0]['height']), 1)
-        gap_off = round(off[1]['y'] - (off[0]['y'] + off[0]['height']), 1)
-        self.assertLessEqual(gap_on - gap_off, 4)
-
-    def test_hovering_an_entry_settles_with_both_rows_open(self):
-        page = self._page()
-        second = page.locator('.tatib__item').nth(1)
-        above = page.locator('.entry__add').nth(0)
-        below = page.locator('.entry__add').nth(1)
-        page.mouse.move(1400, 850)
-        before = second.bounding_box()
-        # hover the entry at its centre, where a reader points
-        page.mouse.move(before['x'] + before['width'] / 2,
-                        before['y'] + before['height'] / 2, steps=4)
-        page.wait_for_timeout(600)                    # past expand + hide delays
-        self.assertGreater(above.bounding_box()['height'], 0)
-        self.assertGreater(below.bounding_box()['height'], 0)
-        # the reveal settles: the entry stays under the pointer (its controls show)
-        # and nothing flickers -- both rows are still open after the hide window
-        expect(second.locator('.entry__acts')).to_have_css('opacity', '1')
-        page.wait_for_timeout(400)
-        self.assertGreater(above.bounding_box()['height'], 0)
-        self.assertGreater(below.bounding_box()['height'], 0)
-        # the closed row above opens by pushing the entry down once, by at most
-        # that row's height; the shift is bounded, never unbounded churn
-        shift = second.bounding_box()['y'] - before['y']
-        self.assertLessEqual(shift, above.bounding_box()['height'] + 1)
-        # and each row's box starts below its item's box (spec 036: no overlap)
-        item_above = page.locator('.tatib__item').nth(0)
-        self.assertLessEqual(item_above.bounding_box()['y'] + item_above.bounding_box()['height'],
-                             above.bounding_box()['y'] + 1)
-        after = second.bounding_box()
-        self.assertLessEqual(after['y'] + after['height'], below.bounding_box()['y'] + 1)
-
     def test_tabbing_into_a_collapsed_row_expands_it(self):
         page = self._page()
         page.mouse.move(1400, 850)
@@ -251,11 +354,7 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         expect(row).to_have_css('opacity', '1')
         self.assertGreater(row.bounding_box()['height'], 0)
 
-    def test_the_break_separation_is_tighter(self):
-        page = self._page(self.with_break)          # the service that carries a break
-        margins = page.locator('.tatib__eos').first.evaluate(
-            'el => [getComputedStyle(el).marginTop, getComputedStyle(el).marginBottom]')
-        self.assertEqual(margins, ['16px', '16px'])
+    # --- the no-hover device --------------------------------------------------
 
     def test_the_no_hover_rule_shows_the_add_rows(self):
         # Chromium in CI cannot emulate a touch device, so assert the rule that
@@ -294,3 +393,21 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
           return false;
         }""")
         self.assertTrue(applied, 'the no-hover rule is missing')
+
+    def test_the_no_hover_rule_shows_the_start_bar(self):
+        # Spec 055: the bar joins the rows -- a device with no hover sees it outright.
+        page = self._page()
+        applied = page.evaluate("""() => {
+          for (const sheet of document.styleSheets) {
+            let rules; try { rules = sheet.cssRules; } catch (e) { continue; }
+            for (const rule of rules) {
+              if (!rule.media || !rule.media.mediaText.includes('pointer: coarse')) continue;
+              for (const inner of rule.cssRules) {
+                if (inner.selectorText && inner.selectorText.includes('.entry__start')
+                    && inner.style.opacity === '1') return true;
+              }
+            }
+          }
+          return false;
+        }""")
+        self.assertTrue(applied, 'the no-hover rule for the start bar is missing')
