@@ -1,6 +1,6 @@
 ---
 id: ITEM-059
-status: in-progress
+status: in_review
 title: 'Fix single-screen Save, add breaks at once, drop break Edit, show song verses in the sidebar'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-11
 updated: 2026-10-11
 spec: specs/057-service-entry-quick-actions/spec.md
 branch: fix/057-service-entry-quick-actions
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/310
 archived_at:
 archive_reason:
 bump: patch
