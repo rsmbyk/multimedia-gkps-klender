@@ -1,6 +1,6 @@
 ---
 id: ITEM-057
-status: in_review
+status: done
 title: 'Give each entry a containing box with centred words and equal add-row gaps'
 type: chore
 priority: P2
