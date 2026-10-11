@@ -49,6 +49,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-057](./items/ITEM-057-contained-entry-box.md) | Give each entry a containing box with centred words and equal add-row gaps | Contained 52px entry box, words centred, revealed add rows 8px/8px, start bar collapses | chore | P2 | M | [055](../specs/055-contained-entry-box/spec.md) | develop | 2026-10-11 |
 | [ITEM-058](./items/ITEM-058-entry-link-colours.md) | Give the stage entry links a theme-aware colour | `--link`: green `#1C5C3C` light / blue `#7C9CF0` dark; AA contrast; underline kept | chore | P2 | S | [056](../specs/056-entry-link-colours/spec.md) | develop | 2026-10-11 |
 | [ITEM-056](./items/ITEM-056-song-entry-label-and-verses.md) | Label song entries by their short hymn reference and show the selected verses | `HAL 3 — Sai puji Naibata` on the stage and in the preview modal; `Bait 1, 3` under an entry that keeps only some verses | chore | P2 | S | [054](../specs/054-song-entry-label-and-verses/spec.md) | develop | 2026-10-10 |
 | [ITEM-055](./items/ITEM-055-entry-controls-height.md) | Give each entry the height of its floating controls | Reserve a top band for Preview/Edit/Delete so they never sit on the words | chore | P2 | S | [053](../specs/053-entry-controls-height/spec.md) | develop | 2026-10-10 |

@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.3.22] - 2026-10-11
+
+### Changed
+
+- Each Tata Ibadah entry is now a box that contains its floating Preview / Edit / Delete controls — at least 52px tall, its words centred on the box's centreline — replacing the 44px top band. The start bar collapses at rest and reveals with the first block like every other add row, a revealed row keeps equal 8px above and below its buttons in every state, consecutive entries sit on a uniform 12px rhythm, and the section break takes the same box with its rule centred.
+
 ## [1.3.21] - 2026-10-11
 
 ### Fixed

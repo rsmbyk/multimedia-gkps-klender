@@ -969,20 +969,29 @@ li:hover > .row-edit,
    field is a liturgist's private cue (often NEXT <name>) — shown small/dim
    under the rule, never as content */
 .tatib__eos {
-  margin: 16px 0 16px;
+  margin: 0;
   border: 0;
-  border-top: 2px solid var(--divider);
   position: relative;
   scroll-margin-top: 44px;
+  /* The divider is a box like its entries (spec 055): 52px, rule centred, the
+     note tucked under the rule. */
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 52px;
+}
+.tatib__eos::before {
+  content: "";
+  display: block;
+  border-top: 2px solid var(--divider);
 }
 .tatib__eos::after {
   content: "";
   position: absolute;
-  left: 50%; top: -3px;
+  left: 50%; top: 50%;
   width: 5px; height: 5px;
-  transform: translateX(-50%) rotate(45deg);
+  transform: translate(-50%, -50%) rotate(45deg);
   background: var(--divider);
 }
+.tatib__eos .tatib__note { position: absolute; left: 0; right: 0; top: calc(50% + 7px); margin-top: 0; }
 .tatib__note {
   display: block;
   margin-top: 10px;
@@ -1474,25 +1483,30 @@ kbd {
     color: var(--head-ink);
 }
 
-/* ---------- service entries (spec 006) ------------------------------------ */
+/* ---------- service entries (spec 006, amended by spec 055) ----------------- */
 
 /* The add controls belong to their item: hidden until that item is hovered or
    something inside the controls takes focus, so the service reads as a service.
-   At rest the row collapses to zero height (spec 052): the buttons live in an
-   inner element clipped by a 0fr grid track, so nothing is reserved between
-   entries. The row must stay REACHABLE: it is revealed by the item above it
-   (spec 037), and once revealed its box keeps its height through the delayed
-   hide, so the pointer can travel onto it. A control at pointer-events: none
-   cannot be entered: the pointer leaves the item, the reveal drops, and the row
-   is unreachable unless the mouse jumps the whole way in one move. The hide is
-   delayed so crossing the item's edge does not blink the controls away. */
+   At rest the row collapses to zero height (spec 052) and keeps a 6px margin
+   (spec 055): the buttons live in an inner element clipped by a 0fr grid
+   track, so nothing is reserved between entries beyond the uniform rhythm.
+   The row must stay REACHABLE: it is revealed by the item above it (spec 037),
+   and once revealed its box keeps its height through the delayed hide, so the
+   pointer can travel onto it. A control at pointer-events: none cannot be
+   entered: the pointer leaves the item, the reveal drops, and the row is
+   unreachable unless the mouse jumps the whole way in one move. The hide is
+   delayed so crossing the item's edge does not blink the controls away.
+   REVEALED, the row brackets its buttons with equal 8px above and below
+   (spec 055): margin-block drops to 0 and the 8px padding appears, so the
+   gap to the entry boxes on either side is the same in every state. */
 .entry__add {
   display: grid;
   grid-template-rows: 0fr;
   padding: 0;
+  margin: 6px 0;
   opacity: 0;
   transition: grid-template-rows 140ms ease 220ms, opacity 140ms ease 220ms,
-              padding 140ms ease 220ms;
+              padding 140ms ease 220ms, margin 140ms ease 220ms;
 }
 .entry__add-inner {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
@@ -1506,25 +1520,50 @@ kbd {
 .entry__add:hover,
 .entry__add:focus-within {
   grid-template-rows: 1fr;
-  padding-bottom: 10px;
+  padding: 8px 0;
+  margin-block: 0;
   opacity: 1;
   transition-delay: 0s;
 }
 /* The add rows on either side of a hovered (or focused) item (spec 037). */
 .entry__add.is-revealed {
   grid-template-rows: 1fr;
-  padding-bottom: 10px;
+  padding: 8px 0;
+  margin-block: 0;
+  opacity: 1;
+  transition-delay: 0s;
+}
+/* The start bar is a row too (spec 055): it collapses at rest and reveals
+   through `.is-revealed` (set by entries.js -- it precedes the first block, so
+   CSS alone cannot reveal it), its own hover, or keyboard focus. While open it
+   pulls up into the page head's own 30px margin, so it sits 8px under the
+   heading and 8px above the first words. */
+.entry__start {
+  display: grid;
+  grid-template-rows: 0fr;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  transition: grid-template-rows 140ms ease 220ms, opacity 140ms ease 220ms,
+              padding 140ms ease 220ms, margin-top 140ms ease 220ms;
+}
+.entry__start-inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  min-height: 0; overflow: hidden;
+}
+.entry__start.is-revealed,
+.entry__start:hover,
+.entry__start:focus-within {
+  grid-template-rows: 1fr;
+  padding: 8px 0;
+  margin-top: -30px;
   opacity: 1;
   transition-delay: 0s;
 }
 /* A touch device has no hover to reveal the rows with: show them outright. */
 @media (hover: none) and (pointer: coarse) {
-  .entry__add { grid-template-rows: 1fr; opacity: 1; }
-}
-/* The start bar has no row above it to hover: it stands on its own, before the first item. */
-.entry__start {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  padding: 0 0 10px;
+  .entry__add { grid-template-rows: 1fr; padding: 8px 0; margin-block: 0; opacity: 1; }
+  .entry__start { grid-template-rows: 1fr; padding: 8px 0; margin-top: -30px; opacity: 1; }
 }
 
 /* ---------- the entry controls (spec 032/033) ----------------------------- */
@@ -1546,12 +1585,24 @@ kbd {
 /* A touch device has no hover to reveal them with: show them outright. */
 @media (hover: none) and (pointer: coarse) { .entry__acts { opacity: 1; } }
 
-/* ---------- the hovered row (spec 034) ------------------------------------ */
+/* ---------- the hovered row (spec 034, boxed by spec 055) ------------------ */
 
-/* An entry that carries controls owns their height (spec 053): a quiet top band
-   holds the floating Preview/Edit/Delete, so the title or first line always starts
-   below them. The band is part of the item, so the hover fill covers it as one row. */
-.tatib__item--acts { padding-top: 44px; }
+/* An entry that carries controls is a BOX that contains them (spec 055, replacing
+   the 44px band of spec 053): flex column, at least 52px tall -- 8px + the
+   controls (measured 35.6px) + 8px -- with its words centred on the box's
+   centreline. The controls keep their floating top-right spot, which inside a
+   52px box is the box's centre; on a taller entry they overlay its first line(s)
+   while shown. The box is part of the item, so the hover fill covers it as one row. */
+.tatib__item--acts {
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 52px; padding-top: 0;
+}
+/* The box owns its content's edges: the first flow child's top margin and the
+   last one's bottom margin are dropped, so the words centre on the box's
+   centreline (spec 055). Scoped past the stage rules that set those margins. */
+.read[data-kind="tatib"] .tatib__item--acts > :first-child { margin-top: 0; }
+.read[data-kind="tatib"] .tatib__item--acts > :last-child,
+.read[data-kind="tatib"] .tatib__item--acts > *:has(+ .entry__acts) { margin-bottom: 0; }
 
 /* Hovering an entry reads as one row: the whole item takes the shared hover fill,
    bled into the gutter with a matching negative margin so no text moves. */

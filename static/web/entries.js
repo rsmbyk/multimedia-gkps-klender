@@ -680,7 +680,8 @@
      CSS cannot reach a preceding sibling, so the pair of add rows around the row
      under the pointer (or holding keyboard focus) is revealed here. Hovering an add
      row itself reveals only that row (spec 036): the item is not hovered then. The
-     first item's "above" row is the start bar, which is always visible already.
+     first item's "above" row is the start bar: it collapses and reveals like the
+     other rows (spec 055), through the first block's hover or focus.
      A reveal can also MOVE the item (spec 052): the row above it expands in flow
      and pushes a short item -- the 2px section break most of all -- out from under
      a stationary pointer. Dropping the reveal there would collapse the row, slide
@@ -691,10 +692,15 @@
      opened for them. */
   var poised = null;                    // {item, x, y} of the last hovered item
 
+  /* A row is an add row or the start bar (spec 055). The bar precedes the first
+     block, so CSS alone cannot reveal it; it joins the same `is-revealed` scheme. */
+  function isRow(node) {
+    return node && node.classList && (node.classList.contains('entry__add') ||
+      node.classList.contains('entry__start'));
+  }
+
   function neighboursOf(item) {
-    return [item.previousElementSibling, item.nextElementSibling].filter(function (node) {
-      return node && node.classList && node.classList.contains('entry__add');
-    });
+    return [item.previousElementSibling, item.nextElementSibling].filter(isRow);
   }
 
   function revealNeighbours(item, on) {
@@ -704,7 +710,7 @@
   }
 
   function hideAllRows() {
-    var rows = document.querySelectorAll('.entry__add.is-revealed');
+    var rows = document.querySelectorAll('.entry__add.is-revealed, .entry__start.is-revealed');
     Array.prototype.forEach.call(rows, function (row) {
       row.classList.remove('is-revealed');
     });
@@ -724,7 +730,7 @@
     // Not on an item: unless the pointer is on one of the revealed rows, nothing
     // is hovered any more -- every reveal is dropped (moving onto a bar shows
     // only that bar, spec 036; moving off the group closes all of them).
-    var row = event.target.closest ? event.target.closest('.entry__add') : null;
+    var row = event.target.closest ? event.target.closest('.entry__add, .entry__start') : null;
     if (!row) hideAllRows();
   });
   document.addEventListener('mouseout', function (event) {
