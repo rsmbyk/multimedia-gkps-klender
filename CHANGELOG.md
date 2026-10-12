@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-10-12
+
+### Changed
+
+- The public reading rail uses one theme button again. It cycles System, Dark, and Light, with the icon and tooltip showing the selected mode.
+
 ## [1.6.1] - 2026-10-12
 
 ### Changed

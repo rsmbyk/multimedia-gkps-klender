@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-066](./items/ITEM-066-single-theme-button.md) | Restore the single theme button | One rail button cycles System, Dark, and Light and shows the active mode | chore | P2 | S | [063](../specs/063-single-theme-button/spec.md) | chore/063-single-theme-button | 2026-10-12 |
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |

@@ -17,8 +17,6 @@
   var mqSongNarrow = window.matchMedia('(max-width: 1272px)');
 
   var themeBtn = document.getElementById('themeBtn');
-  var lightThemeBtn = document.getElementById('lightThemeBtn');
-  var systemThemeBtn = document.getElementById('systemThemeBtn');
   var panel = document.getElementById('panel');
   var panelCollapse = document.getElementById('panelCollapse');
   var panelExpand = document.getElementById('panelExpand');
@@ -228,16 +226,15 @@
     root.dataset.themeMode = mode;
     root.dataset.theme = mode === 'system'
       ? (systemTheme.matches ? 'dark' : 'light') : mode;
-    lightThemeBtn.setAttribute('aria-pressed', String(mode === 'light'));
-    themeBtn.setAttribute('aria-pressed', String(mode === 'dark'));
-    systemThemeBtn.setAttribute('aria-pressed', String(mode === 'system'));
+    var label = mode.charAt(0).toUpperCase() + mode.slice(1) + ' mode';
+    themeBtn.setAttribute('aria-label', label);
+    themeBtn.setAttribute('data-tip', label);
     if (persist) { try { localStorage.setItem('gkps-theme', mode); } catch (e) {} }
   }
   themeBtn.addEventListener('click', function () {
-    applyTheme('dark', true);
+    var mode = root.dataset.themeMode;
+    applyTheme(mode === 'system' ? 'dark' : mode === 'dark' ? 'light' : 'system', true);
   });
-  lightThemeBtn.addEventListener('click', function () { applyTheme('light', true); });
-  systemThemeBtn.addEventListener('click', function () { applyTheme('system', true); });
   systemTheme.addEventListener('change', function () {
     if (root.dataset.themeMode === 'system') applyTheme('system', false);
   });
