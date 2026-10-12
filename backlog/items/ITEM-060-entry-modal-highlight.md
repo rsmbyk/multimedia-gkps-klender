@@ -1,6 +1,6 @@
 ---
 id: ITEM-060
-status: in-progress
+status: in-review
 title: 'Clear stale service entry highlight after modal dismissal'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: 058
 branch: fix/058-entry-modal-highlight
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/314
 archived_at:
 archive_reason:
 bump: patch

@@ -16,8 +16,8 @@
 - [x] Update Traceability with actual validation results
 - [x] Set `bump: patch` intent on ITEM and spec
 - [x] Set `VERSION` to 1.4.1, changelog section `[1.4.1]`, and ITEM `release_version: 1.4.1` (patch from integration 1.4.0)
-- [ ] Conventional Commit and draft PR into `develop` using the repository template
-- [ ] ITEM/board → In review with PR link in that same PR
+- [x] Conventional Commit and draft PR #314 into `develop` using the repository template
+- [x] ITEM/board → In review with PR #314 in that same PR
 - [ ] Required remote CI green for the exact PR head; complete metadata before authorized squash merge
 - [ ] On merge, delete only remote feature branch and keep local branch intact
 
