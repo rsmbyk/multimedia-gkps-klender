@@ -208,7 +208,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_the_header_and_the_words_sit_in_the_middle_of_the_screen(self):
         page = self._page(self._projector_url())
-        page.keyboard.press('End')                        # a screen with both a header and a line
+        page.keyboard.press('End')                        # the built-in blank after the last entry
+        page.keyboard.press('ArrowLeft')                  # the passage, which has a header and a line
         page.wait_for_timeout(300)
         page.wait_for_function(
             "() => !!document.querySelector('.screen.is-active .screen__line')")
@@ -305,27 +306,27 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('.screen:visible').count(), 1)
 
     def test_every_kind_takes_the_shape_it_should_on_screen(self):
-        """"The running order, screen by screen: a passage one verse at a time, a text
-        two lines under its header, a song its lyrics alone, a break nothing at all."""
+        """The running order, screen by screen: content, then a built-in blank after
+        each entry and after each song verse. A stored break is still one blank."""
         page = self._page(self._projector_url())
         shape = page.eval_on_selector_all('.screen', """els => els.map(e => ({
           blank: e.classList.contains('is-blank'),
           head: (e.querySelector('.screen__head') || {}).textContent || null,
           lines: [...e.querySelectorAll('.screen__line')].map(p => p.textContent)}))""")
         self.assertEqual([s['blank'] for s in shape],
-                         [False, False, False, True, False, False, False])
+                         [False, False, True, False, True, True, False, True, False, True, False, True])
         self.assertEqual(shape[0]['head'], 'Nas')        # a legacy row takes the same shape
         self.assertEqual(shape[0]['lines'], ['Mazmur 23'])
         self.assertEqual(shape[1]['lines'], ['Tuhan adalah gembalaku, takkan kekurangan aku.'])
-        self.assertEqual(shape[2]['head'], 'Salam')      # a text keeps its own header
-        self.assertEqual(shape[2]['lines'], ['Kasih karunia Tuhan beserta kita semua'])
-        self.assertIsNone(shape[3]['head'])              # a break shows nothing: the note is the
-        self.assertEqual(shape[3]['lines'], [])          # operator's own
-        self.assertIsNone(shape[4]['head'])              # a song is its lyrics alone
-        self.assertEqual(shape[4]['lines'], ['bait 1'])
-        self.assertEqual(shape[5]['lines'], ['bait 2'])
-        self.assertEqual(shape[6]['head'], 'Matius 5:3')  # a passage names the verse it shows
-        self.assertEqual(shape[6]['lines'], ['ayat 3'])
+        self.assertEqual(shape[3]['head'], 'Salam')      # a text keeps its own header
+        self.assertEqual(shape[3]['lines'], ['Kasih karunia Tuhan beserta kita semua'])
+        self.assertIsNone(shape[5]['head'])              # the stored break, after the text's blank
+        self.assertEqual(shape[5]['lines'], [])
+        self.assertIsNone(shape[6]['head'])              # a song is its lyrics alone
+        self.assertEqual(shape[6]['lines'], ['bait 1'])
+        self.assertEqual(shape[8]['lines'], ['bait 2'])
+        self.assertEqual(shape[10]['head'], 'Matius 5:3')  # a passage names the verse it shows
+        self.assertEqual(shape[10]['lines'], ['ayat 3'])
 
     def test_a_body_too_long_for_the_screen_comes_down_to_fit(self):
         page = self._page(reverse('web-service-projector', args=[self.long_service.pk]))
@@ -465,13 +466,16 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
           const range = document.createRange();
           range.selectNodeContents(lines);
           const ink = range.getBoundingClientRect();
-          return {count: screens.length, fit: active.dataset.fit,
+          return {count: screens.length,
+                  content: [...screens].filter(s => !s.classList.contains('is-blank')).length,
+                  fit: active.dataset.fit,
                   fontSize: parseFloat(getComputedStyle(lines).fontSize),
                   inside: ink.top >= stage.top - 1 && ink.bottom <= stage.bottom + 1,
                   text: lines.innerText};
         }""")
         page.close()
-        self.assertEqual(measured['count'], 1)                 # the whole body, one screen
+        self.assertEqual(measured['content'], 1)               # the whole body, one content screen
+        self.assertEqual(measured['count'], 2)                 # then the built-in blank
         self.assertEqual(measured['fit'], 'single')
         self.assertLess(measured['fontSize'], 100)             # the font shrank to fit
         self.assertIn('Baris 1 ', measured['text'])

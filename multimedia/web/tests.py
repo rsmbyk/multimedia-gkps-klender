@@ -1876,7 +1876,8 @@ class ServiceProjectorTests(TestCase):
         self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
                   chapter=5, verse_start=2, verse_end=3)
         screens = self.screens()
-        self.assertEqual(len(screens), 2)                    # one verse at a time
+        self.assertEqual(len(screens), 3)                    # both verses, then one built-in blank
+        self.assertIn('is-blank', screens[2])
         self.assertIn('Matius 5:2', screens[0])
         self.assertIn('ayat 2', screens[0])
         self.assertNotIn('ayat 3', screens[0])
@@ -1888,8 +1889,9 @@ class ServiceProjectorTests(TestCase):
         self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
                   text='satu\ndua\ntiga\nempat\nlima')
         screens = self.screens()
-        self.assertEqual(len(screens), 3)                    # two, two, then the last alone
-        for block in screens:
+        self.assertEqual(len(screens), 4)                    # two, two, the last alone, then a blank
+        self.assertIn('is-blank', screens[3])
+        for block in screens[:3]:
             self.assertIn('Salam', block)
         self.assertIn('satu', screens[0])
         self.assertIn('dua', screens[0])
@@ -1902,7 +1904,8 @@ class ServiceProjectorTests(TestCase):
         self.make(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
                   text='baris satu\nbaris dua\n\nbaris empat')
         screens = self.screens()
-        self.assertEqual(len(screens), 1)                    # the whole body, one screen
+        self.assertEqual(len(screens), 2)                    # the whole body, then a blank
+        self.assertIn('is-blank', screens[1])
         self.assertIn('data-fit="single"', screens[0])
         self.assertIn('Doa', screens[0])
         self.assertIn('baris satu', screens[0])
@@ -1912,20 +1915,51 @@ class ServiceProjectorTests(TestCase):
     def test_a_song_shows_its_lyrics_alone_in_pairs(self):
         self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
         screens = self.screens()
-        self.assertEqual(len(screens), 2)                    # a verse to a screen
+        self.assertEqual(len(screens), 4)                    # each verse, then its own blank
         self.assertIn('bait 1', screens[0])
         self.assertNotIn('bait 2', screens[0])
-        self.assertIn('bait 2', screens[1])
+        self.assertIn('is-blank', screens[1])
+        self.assertIn('bait 2', screens[2])
+        self.assertIn('is-blank', screens[3])
         self.assertNotIn('Kidung Jemaat', screens[0])         # the words alone: no citation
         self.assertNotIn('screen__head', screens[0])
 
     def test_a_blank_line_holds_a_line_alone(self):
         self.make(1, kind=tatib.ServiceEntryKind.TEXT, text='satu\ndua\n\ntiga')
         screens = self.screens()
-        self.assertEqual(len(screens), 2)
+        self.assertEqual(len(screens), 3)
         self.assertIn('dua', screens[0])
         self.assertNotIn('tiga', screens[0])
         self.assertIn('tiga', screens[1])
+        self.assertIn('is-blank', screens[2])
+
+    def test_a_song_verse_keeps_its_line_pairs_then_one_blank(self):
+        songs.Verse.objects.filter(song=self.song, number=1).update(lyric='satu\ndua\ntiga')
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1])
+        screens = self.screens()
+        self.assertEqual(len(screens), 3)
+        self.assertIn('satu', screens[0])
+        self.assertIn('dua', screens[0])
+        self.assertIn('tiga', screens[1])
+        self.assertNotIn('is-blank', screens[1])
+        self.assertIn('is-blank', screens[2])
+
+    def test_a_text_then_a_section_break_shows_both_blanks(self):
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='satu')
+        self.make(2, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
+        screens = self.screens()
+        self.assertEqual(len(screens), 3)
+        self.assertIn('Salam', screens[0])
+        self.assertIn('is-blank', screens[1])
+        self.assertIn('is-blank', screens[2])
+        self.assertNotIn('Persembahan', screens[2])
+
+    def test_the_built_in_blank_is_not_a_row_in_the_order(self):
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='satu')
+        html = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk])).content.decode()
+        pane = html.split('id="readBody"')[1]
+        self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.tatib).count(), 1)
+        self.assertNotIn('tatib__eos', pane)
 
     def test_a_section_break_shows_nothing(self):
         self.make(1, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
@@ -1944,10 +1978,12 @@ class ServiceProjectorTests(TestCase):
             title='Nas', text='Tuhan adalah gembalaku')
         self.make(2, kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='Tuhan beserta kita')
         screens = self.screens()
-        self.assertEqual(len(screens), 2)
+        self.assertEqual(len(screens), 4)
         self.assertIn('Nas', screens[0])
         self.assertIn('Tuhan adalah gembalaku', screens[0])
-        self.assertIn('Salam', screens[1])
+        self.assertIn('is-blank', screens[1])
+        self.assertIn('Salam', screens[2])
+        self.assertIn('is-blank', screens[3])
 
     def test_projector_follows_the_shared_order_not_the_model_type(self):
         tatib.TataIbadahItem.objects.create(
@@ -1957,9 +1993,11 @@ class ServiceProjectorTests(TestCase):
 
         screens = self.screens()
 
-        self.assertEqual(len(screens), 2)
+        self.assertEqual(len(screens), 4)
         self.assertIn('Entry first', screens[0])
-        self.assertIn('Legacy second', screens[1])
+        self.assertIn('is-blank', screens[1])
+        self.assertIn('Legacy second', screens[2])
+        self.assertIn('is-blank', screens[3])
 
     def test_a_lyric_change_reaches_a_fresh_projection(self):
         """What Update fetches is resolved at request time: the lyrics are the song's
