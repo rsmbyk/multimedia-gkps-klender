@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-059](./items/ITEM-059-built-in-projection-breaks.md) | Built-in blank after each entry and each song verse | Projector blank after every content entry and every song verse, not a stored break | feat | P1 | M | [057](../specs/057-built-in-projection-breaks/spec.md) | 2026-10-12 |
 
 ## Ready
 
