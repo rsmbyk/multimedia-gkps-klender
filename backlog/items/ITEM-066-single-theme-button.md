@@ -1,6 +1,6 @@
 ---
 id: ITEM-066
-status: in-progress
+status: in-review
 title: 'Restore the single theme button'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: 063
 branch: chore/063-single-theme-button
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/317
 archived_at:
 archive_reason:
 bump: patch

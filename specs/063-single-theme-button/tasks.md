@@ -14,7 +14,7 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set ITEM release version; update `VERSION` and `CHANGELOG.md` in the same PR
 - [x] Update ITEM and `backlog/board.md` in the same PR
-- [ ] Conventional Commit and draft PR linking `./spec.md`
+- [x] Conventional Commit and draft PR [#317](https://github.com/rsmbyk/multimedia-gkps-klender/pull/317) linking `./spec.md`
 
 ## Done when
 
