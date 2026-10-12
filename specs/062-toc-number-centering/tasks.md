@@ -19,8 +19,10 @@
 - [x] Green — targeted E2E passes locally
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `VERSION` to 1.5.2, changelog section `[1.5.2]`, and ITEM `release_version: 1.5.2` (patch from integration 1.5.1)
-- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in **this PR** (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR into `develop` linking `./spec.md`
+- [x] Conventional Commit + draft PR #316 into `develop` linking `./spec.md`
+- [x] ITEM/board → In review with PR #316 in that same PR
+- [ ] Remote Fast checks, CI result, and all browser E2E modules pass
+- [ ] Merge by squash into `develop`; delete only the remote feature branch and keep the local branch intact
 
 ## Done when
 

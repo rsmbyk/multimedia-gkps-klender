@@ -1,6 +1,6 @@
 ---
 id: ITEM-064
-status: in_progress
+status: in_review
 title: 'Center entry numbers vertically in the Tata Ibadah contents list'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: 062
 branch: chore/062-toc-number-centering
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/316
 archived_at:
 archive_reason:
 bump: patch
