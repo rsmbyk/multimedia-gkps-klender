@@ -73,6 +73,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [059](059-speaker-colors/spec.md) | Color liturgy speakers as a congregation cue | Accepted |
 
 | [060](060-song-label-typography/spec.md) | Give the song reference, title, and selected verses distinct styles | Accepted |
+| [061](061-entry-modal-highlight/spec.md) | Clear stale service entry highlight after modal dismissal | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.

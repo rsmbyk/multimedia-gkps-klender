@@ -1596,7 +1596,7 @@ kbd {
 }
 .tatib__item:hover .entry__acts,
 .tatib__eos:hover .entry__acts,
-.entry__acts:focus-within { opacity: 1; }
+.entry__acts:has(:focus:not(.focus-restore-quiet)) { opacity: 1; }
 /* A touch device has no hover to reveal them with: show them outright. */
 @media (hover: none) and (pointer: coarse) { .entry__acts { opacity: 1; } }
 
@@ -1626,7 +1626,13 @@ kbd {
   margin-left: -10px; margin-right: -10px;
   padding-left: 10px; padding-right: 10px;
 }
-.tatib__item:hover, .tatib__eos:hover, .tatib__item:focus-within {
+/* Quiet modal restoration keeps DOM focus without impersonating hover (spec 058).
+   Test the focused element, not old markers elsewhere in the entry. */
+.tatib__item:hover, .tatib__eos:hover,
+.tatib__item:focus:not(.focus-restore-quiet),
+.tatib__eos:focus:not(.focus-restore-quiet),
+.tatib__item:has(:focus:not(.focus-restore-quiet)),
+.tatib__eos:has(:focus:not(.focus-restore-quiet)) {
   background: var(--icon-hover-bg);
 }
 @media (prefers-reduced-motion: reduce) {

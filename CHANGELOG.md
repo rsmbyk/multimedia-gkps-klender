@@ -12,6 +12,10 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [1.5.1] - 2026-10-12
 
+### Fixed
+
+- Service entries clear their highlight and floating controls after pointer-opened Preview, Edit, or Delete modals close with the pointer elsewhere. Real hover, visible keyboard focus, and touch controls remain available.
+
 ### Changed
 
 - Tata Ibadah song rows now distinguish the hymn reference, song title, and selected verses with separate typography. Long titles wrap above the verse line, and dark mode keeps the smaller verse label at readable contrast.
