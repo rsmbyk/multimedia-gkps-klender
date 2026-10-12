@@ -1,6 +1,6 @@
 ---
 id: ITEM-062
-status: in-review
+status: done
 title: 'Distinct song label typography'
 type: fix
 priority: P2
