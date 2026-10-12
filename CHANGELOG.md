@@ -10,11 +10,21 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
-## [1.4.1] - 2026-10-12
+## [1.5.1] - 2026-10-12
 
 ### Fixed
 
 - Service entries clear their highlight and floating controls after pointer-opened Preview, Edit, or Delete modals close with the pointer elsewhere. Real hover, visible keyboard focus, and touch controls remain available.
+
+## [1.5.0] - 2026-10-12
+
+### Added
+
+- Liturgy lines in a Tata Ibadah are colored by who speaks them, on the projector, on the reading page in both themes, and in the entry preview. The screen faces the congregation, so their own lines keep the ordinary off-white. A leader line (`L`, `P`, Liturgis, Paragenda, Pendeta, Pdt, Pelayan, Pemimpin, Parambilan) is a quieter warm cue (`#9C8463` on the screen, `#866B50` on the light page). A joined line (`P+K`, `L+J`, `P/J`, `PJ`, and the same joins) is a readable teal (`#8EC2CC`, light `#2B5A64`) that marks it as theirs to say. A line with no speaker keeps the previous voice within the same entry, even onto the next screen. Songs and scripture are unchanged.
+
+### Changed
+
+- The reading page now lifts colon speaker marks (`Paragenda:`, `Jemaat:`, `P+J:`) as well as `L.`/`P.`/`J.`, and shows each mark the way it was written.
 
 ## [1.4.0] - 2026-10-12
 

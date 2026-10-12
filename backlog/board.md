@@ -26,7 +26,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
@@ -50,6 +49,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-062](./items/ITEM-062-entry-modal-highlight.md) | Clear stale service entry highlight after modal dismissal | Quiet restored focus; preserve hover and keyboard access | fix | P2 | S | [060](../specs/060-entry-modal-highlight/spec.md) | develop | 2026-10-12 |
+| [ITEM-061](./items/ITEM-061-speaker-colors.md) | Color liturgy speakers as a congregation cue | Leader is a dim cue; congregation stays off-white; a joined line is readable and marked | feat | P2 | M | [059](../specs/059-speaker-colors/spec.md) | develop | 2026-10-12 |
 | [ITEM-060](./items/ITEM-060-built-in-projection-breaks.md) | Built-in blank after each entry and each song verse | Projector blank after every content entry and every song verse, not a stored break | feat | P1 | M | [058](../specs/058-built-in-projection-breaks/spec.md) | develop | 2026-10-12 |
 | [ITEM-059](./items/ITEM-059-service-entry-quick-actions.md) | Fix single-screen Save, add breaks at once, drop break Edit, show song verses in the sidebar | Save guard covers single-screen text; "+ Break" adds in place; no Edit on breaks; sidebar verse line `Bait 1-3, 5, 6, 8-10` | fix | P2 | S | [057](../specs/057-service-entry-quick-actions/spec.md) | develop | 2026-10-11 |
 | [ITEM-057](./items/ITEM-057-contained-entry-box.md) | Give each entry a containing box with centred words and equal add-row gaps | Contained 52px entry box, words centred, revealed add rows 8px/8px, start bar collapses | chore | P2 | M | [055](../specs/055-contained-entry-box/spec.md) | develop | 2026-10-11 |

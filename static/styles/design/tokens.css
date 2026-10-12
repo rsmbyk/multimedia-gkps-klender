@@ -32,6 +32,9 @@
   --head-ink: #646357;           /* group headers + meta on canvas */
   --danger: #B3261E;             /* destructive actions, invalid fields */
   --link: #1C5C3C;               /* stage entry links (spec 056) */
+  /* liturgy voices (spec 059): quieter than --ink, leader quietest */
+  --speaker-join: #2B5A64;
+  --speaker-leader: #866B50;
   --focus: #1C5C3C;
   --active-flash: rgba(28, 92, 60, .16);
   --shadow: 0 6px 18px -10px rgba(20,20,18,.5);
@@ -91,6 +94,8 @@
   --head-ink: #9C9A91;
   --danger: #FF9E9A;            /* lifted for dark surfaces */
   --link: #7C9CF0;              /* stage entry links (spec 056) */
+  --speaker-join: #8EC2CC;      /* liturgy voices (spec 059), also the projector's */
+  --speaker-leader: #9C8463;
   --focus: #7C9CF0;
   --shadow: 0 6px 18px -10px rgba(0,0,0,.9);
 }

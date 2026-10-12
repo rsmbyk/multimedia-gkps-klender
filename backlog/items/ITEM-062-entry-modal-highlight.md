@@ -13,7 +13,7 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/314
 archived_at:
 archive_reason:
 bump: patch
-release_version: 1.4.1
+release_version: 1.5.1
 ---
 
 # ITEM-062: Clear stale service entry highlight after modal dismissal

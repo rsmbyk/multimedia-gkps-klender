@@ -31,7 +31,7 @@ that browser's tabs over the display channel (web/projector.js, web/display.js).
       {% if screen.header %}<h1 class="screen__head">{{ screen.header }}</h1>{% endif %}
       {% if screen.lines %}
       <div class="screen__lines">
-        {% for line in screen.lines %}<p class="screen__line">{{ line }}</p>{% endfor %}
+        {% for line in screen.lines %}<p class="screen__line{% if line.voice %} is-{{ line.voice }}{% endif %}">{{ line.text }}</p>{% endfor %}
       </div>
       {% endif %}
     </section>

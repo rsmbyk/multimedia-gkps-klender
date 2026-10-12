@@ -25,6 +25,8 @@ TEXT_PAIRS = [
     ('--tip-ink', '--tip-bg'),
     ('--danger', '--canvas'),
     ('--link', '--canvas'),
+    ('--speaker-join', '--canvas'),
+    ('--speaker-leader', '--canvas'),
 ]
 UI_PAIRS = [
     ('--icon', '--rail-bg'),
@@ -92,3 +94,16 @@ class TokenContrastTests(SimpleTestCase):
 
     def test_dark_ui_pairs_meet_aa(self):
         self._assert_pairs(DARK_SELECTOR, UI_PAIRS, UI_MIN)
+
+    def test_speaker_voices_stay_quieter_than_the_ordinary_text(self):
+        # Spec 059: the screen faces the congregation. The line they read is the
+        # strongest, a joined line they also say comes next, and a leader cue is the
+        # quietest, so a palette edit cannot make the cue outshine their own words.
+        for selector in (LIGHT_SELECTOR, DARK_SELECTOR):
+            block = _block(self.css, selector)
+            ink = contrast(block['--ink'], block['--canvas'])
+            join = contrast(block['--speaker-join'], block['--canvas'])
+            leader = contrast(block['--speaker-leader'], block['--canvas'])
+            with self.subTest(selector=selector):
+                self.assertGreater(ink, join)
+                self.assertGreater(join, leader)

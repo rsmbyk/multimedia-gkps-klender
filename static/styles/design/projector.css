@@ -155,6 +155,12 @@ body.projector[data-showing="false"] .screen.is-active {
   line-height: 1.37;
 }
 
+/* Liturgy voices (spec 059). The screen faces the congregation: their own lines keep
+   the off-white, a joined line they also say is readable but marked, and a leader line
+   is only a cue, so it sits behind both. */
+.screen__line.is-join { color: var(--speaker-join); }
+.screen__line.is-leader { color: var(--speaker-leader); }
+
 .projector__empty {
   margin: 0;
   text-align: center;
