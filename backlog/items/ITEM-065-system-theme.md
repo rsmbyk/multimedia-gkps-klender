@@ -1,6 +1,6 @@
 ---
 id: ITEM-065
-status: in-review
+status: done
 title: 'System theme as the default appearance mode'
 type: feat
 priority: P2
