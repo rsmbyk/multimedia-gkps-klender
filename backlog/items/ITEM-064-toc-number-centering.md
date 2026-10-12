@@ -1,6 +1,6 @@
 ---
 id: ITEM-064
-status: in_review
+status: done
 title: 'Center entry numbers vertically in the Tata Ibadah contents list'
 type: chore
 priority: P2

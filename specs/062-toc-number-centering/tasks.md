@@ -21,11 +21,11 @@
 - [x] Set `VERSION` to 1.5.2, changelog section `[1.5.2]`, and ITEM `release_version: 1.5.2` (patch from integration 1.5.1)
 - [x] Conventional Commit + draft PR #316 into `develop` linking `./spec.md`
 - [x] ITEM/board → In review with PR #316 in that same PR
-- [ ] Remote Fast checks, CI result, and all browser E2E modules pass
+- [x] All 15 browser E2E modules passed on code head `7a046a9` in run `38238514752`; Fast checks and `CI result` passed on `de3e0f2` in run `38238519022` (2026-10-12)
 - [ ] Merge by squash into `develop`; delete only the remote feature branch and keep the local branch intact
 
 ## Done when
 
-- [ ] All acceptance scenarios in spec.md hold
-- [ ] `TocNumberCenteringE2ETests` is green
-- [ ] Board, tasks, and version are complete in this PR
+- [x] All acceptance scenarios in spec.md hold
+- [x] `TocNumberCenteringE2ETests` is green
+- [x] Board, tasks, and version are complete in this PR
