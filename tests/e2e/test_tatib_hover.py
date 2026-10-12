@@ -222,6 +222,98 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
             expect(page.locator(modal)).not_to_be_visible()
             self._expect_idle(page, item)
 
+    def _settled_state(self, page, item):
+        """Read the entry's fill and control opacity once, after the 200ms fade.
+
+        A retrying ``expect`` would pass while a dropped highlight is still fading.
+        """
+        page.wait_for_timeout(400)
+        return item.evaluate("""el => ({
+            background: getComputedStyle(el).backgroundColor,
+            controls: getComputedStyle(el.querySelector('.entry__acts')).opacity,
+        })""")
+
+    def _assert_held(self, page, item):
+        state = self._settled_state(page, item)
+        self.assertNotIn(state['background'], ('rgba(0, 0, 0, 0)', 'transparent'), state)
+        self.assertEqual(state['controls'], '1', state)
+
+    def _assert_resting(self, page, item):
+        state = self._settled_state(page, item)
+        self.assertEqual(state['background'], 'rgba(0, 0, 0, 0)', state)
+        self.assertEqual(state['controls'], '0', state)
+
+    def test_pointer_opened_modal_holds_only_the_origin_entry(self):
+        """Spec 065: the origin entry keeps its hover look until its modal closes."""
+        page = self._page()
+        item = page.locator('.tatib__item').first
+        other = page.locator('.tatib__item').nth(1)
+        for theme in ('light', 'dark'):
+            if theme == 'dark':
+                page.mouse.move(1400, 850)
+                page.locator('#themeBtn').click()
+            for opener, modal in (('[data-preview-open]', '#previewModal'),
+                                  ('[data-entry-edit]', '#editorModal'),
+                                  ('[data-entry-delete]', '#editorModal')):
+                with self.subTest(theme=theme, opener=opener):
+                    item.hover()
+                    item.locator(opener).click()
+                    dialog = page.locator(modal)
+                    expect(dialog).to_be_visible()
+                    page.mouse.move(1400, 850)
+                    self._assert_held(page, item)
+                    self._assert_resting(page, other)
+                    page.keyboard.press('Escape')
+                    expect(dialog).not_to_be_visible()
+                    self._expect_idle(page, item)
+
+    def test_keyboard_opened_modal_holds_the_origin_entry(self):
+        page = self._page()
+        item = page.locator('.tatib__item').first
+        page.mouse.move(1400, 850)
+        for opener, modal in (('[data-preview-open]', '#previewModal'),
+                              ('[data-entry-edit]', '#editorModal'),
+                              ('[data-entry-delete]', '#editorModal')):
+            with self.subTest(opener=opener):
+                control = item.locator(opener)
+                control.focus()
+                control.press('Enter')
+                expect(page.locator(modal)).to_be_visible()
+                self._assert_held(page, item)
+                page.keyboard.press('Escape')
+                expect(page.locator(modal)).not_to_be_visible()
+                expect(control).to_be_focused()
+
+    def test_legacy_row_is_held_while_its_modal_is_open(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.legacy.pk]))
+        item = page.locator('.tatib__item').first
+        for opener, modal in (('[data-preview-open]', '#previewModal'),
+                              ('[data-old-item-edit]', '#editorModal'),
+                              ('[data-old-item-delete]', '#editorModal')):
+            with self.subTest(opener=opener):
+                item.hover()
+                item.locator(opener).click()
+                expect(page.locator(modal)).to_be_visible()
+                page.mouse.move(1400, 850)
+                self._assert_held(page, item)
+                page.keyboard.press('Escape')
+                expect(page.locator(modal)).not_to_be_visible()
+                self._expect_idle(page, item)
+
+    def test_failed_edit_load_holds_nothing(self):
+        page = self._page()
+        item = page.locator('.tatib__item').first
+        page.route('**/editor/entry/*/edit/', lambda route: route.abort())
+        item.hover()
+        item.locator('[data-entry-edit]').click()
+        expect(page.locator('#editorStatus')).to_have_text('Could not open the editor.')
+        expect(page.locator('#editorModal')).not_to_be_visible()
+        page.mouse.move(1400, 850)
+        # The clicked control keeps ordinary click focus; drop it to see the entry alone.
+        page.evaluate('document.activeElement.blur()')
+        self._assert_resting(page, item)
+
     def test_keyboard_save_and_delete_preserve_visible_focus_after_refresh(self):
         page = self._page()
         item = page.locator('.tatib__item').first
