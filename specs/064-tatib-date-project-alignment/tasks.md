@@ -18,10 +18,10 @@
 - [x] Set `bump: patch` on the ITEM and spec header
 - [x] Bump `VERSION` to 1.6.4 and add its changelog section in the same PR
 - [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) (In progress while implementation is underway)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] Conventional Commit + draft PR #320 linking `./spec.md`
 
 ## Done when
 
-- [ ] All acceptance scenarios in spec.md hold
-- [ ] Targeted E2E checks are green
-- [ ] Board, tasks, and version (if any) are complete in the implementation PR
+- [x] All acceptance scenarios in spec.md hold
+- [x] Targeted E2E checks are green
+- [x] Board, tasks, and version are complete in the implementation PR

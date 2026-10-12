@@ -1,6 +1,6 @@
 ---
 id: ITEM-067
-status: in_progress
+status: in_review
 title: 'Center the Tata Ibadah date and Project button'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: 064
 branch: chore/064-tatib-date-project-alignment
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/320
 archived_at:
 archive_reason:
 bump: patch
