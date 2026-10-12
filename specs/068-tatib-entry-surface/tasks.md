@@ -14,7 +14,7 @@
 - [x] Complete Traceability in `./spec.md`
 - [x] Update ITEM-071 and `backlog/board.md` in the same PR
 - [x] Bump `VERSION`, add the changelog entry, and set `release_version` in the same PR
-- [ ] Conventional Commit and draft PR into `develop` linking this spec
+- [x] Conventional Commit and draft PR into `develop` linking this spec
 
 ## Done when
 

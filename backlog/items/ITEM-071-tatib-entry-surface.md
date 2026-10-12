@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/068-tatib-entry-surface/spec.md
 branch: chore/068-entry-surface
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/322
 archived_at:
 archive_reason:
 bump: patch
