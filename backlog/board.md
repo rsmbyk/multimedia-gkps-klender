@@ -48,6 +48,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-064](./items/ITEM-064-toc-number-centering.md) | Center entry numbers vertically in the Tata Ibadah contents list | Number sits at the row's vertical middle on multi-line rows; text, size, and songbook list unchanged | chore | P2 | S | [063](../specs/063-toc-number-centering/spec.md) | develop | 2026-10-12 |
 | [ITEM-065](./items/ITEM-065-system-theme.md) | System theme as the default appearance mode | Light, Dark, and System for public reading; System by default | feat | P2 | S | [062](../specs/062-system-theme/spec.md) | develop | 2026-10-12 |
 | [ITEM-062](./items/ITEM-062-song-label-typography.md) | Distinct song label typography | Style hymn reference, song title, and selected verses separately in Tata Ibadah rows | fix | P2 | S | [060](../specs/060-song-label-typography/spec.md) | develop | 2026-10-12 |
 | [ITEM-063](./items/ITEM-063-entry-modal-highlight.md) | Clear stale service entry highlight after modal dismissal | Quiet restored focus; preserve hover and keyboard access | fix | P2 | S | [061](../specs/061-entry-modal-highlight/spec.md) | develop | 2026-10-12 |

@@ -1,0 +1,58 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contents entry numbers — proposed alignment</title><style>
+*{box-sizing:border-box}
+body{margin:0;padding:40px;background:#EDEBE5;color:#1F1F1D;font:16px Arial,sans-serif}
+main{max-width:900px;margin:auto}
+h1{font:32px Georgia,serif;margin:0 0 8px}
+h2{font-size:16px;color:#646357;margin:0 0 12px}
+p{line-height:1.6;color:#646357}.note{font-size:13px}
+.pair{display:flex;gap:24px;flex-wrap:wrap;margin:28px 0}
+.panel{--canvas:#F7F5F1;--ink:#1F1F1D;--head-ink:#646357;--hover:rgba(31,31,29,.08);--selected:#B9D7C9;
+  width:404px;padding:10px;border-radius:12px;background:var(--canvas);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.panel.dark{--canvas:#14130F;--ink:#F5F3EE;--head-ink:#9C9A91;--hover:rgba(255,255,255,.09);--selected:#393F4F}
+.label{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--head-ink);margin:2px 10px 8px}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+/* row CSS copied from static/styles/design/components.css */
+.songrow{display:flex;align-items:baseline;gap:10px;min-height:38px;padding:7px 10px;border-radius:9px;color:var(--ink);font-size:14.5px;text-decoration:none}
+.songrow:hover{background:var(--hover)}
+.songrow[aria-current="true"]{background:var(--selected)}
+.songrow__c{flex:none;font:560 13px/1.4 ui-sans-serif,system-ui,sans-serif;font-variant-numeric:tabular-nums;min-width:3.4rem}
+.songrow__t{min-width:0;padding-right:30px}
+.songrow--cont .songrow__t{color:var(--head-ink);font-style:italic}
+.songrow__t--lines{display:flex;flex-direction:column;line-height:1.35}
+.songrow__t--song{flex:1;font-style:normal;line-height:20px;overflow-wrap:anywhere}
+.songrow__heading{display:block;color:var(--ink)}
+.songrow__reference{font-size:12px;font-weight:600;margin-right:8px}
+.songrow__title{font-size:14px;font-weight:400}
+.songrow__verses{display:block;font-size:12px;line-height:17px;color:var(--head-ink)}
+.dark .songrow__verses,.songrow[aria-current="true"] .songrow__verses{color:var(--ink)}
+/* proposed: the number centers on the whole row; text keeps its own alignment */
+.proposed .songrow__c{align-self:center}
+</style><main>
+<h1>Contents entry numbers</h1>
+<p>Tata Ibadah contents list. Left: today. Right: the entry number centered vertically on the whole row. Only the number moves — the text, row height, padding, and drag-handle space stay the same.</p>
+
+<template id="rows"><ul>
+  <li><a class="songrow songrow--cont"><span class="songrow__c">1</span><span class="songrow__t">L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa,</span></a></li>
+  <li><a class="songrow"><span class="songrow__c">2</span><span class="songrow__t songrow__t--song"><span class="songrow__heading"><span class="songrow__title">Anggo Marhorja Tonduy In</span></span><span class="songrow__verses">Bait 1-3</span></span></a></li>
+  <li><a class="songrow" aria-current="true"><span class="songrow__c">3</span><span class="songrow__t songrow__t--song"><span class="songrow__heading"><span class="songrow__reference">HAL 1</span><span class="songrow__title">Jahowa Sihol Pujionku</span></span><span class="songrow__verses">Bait 1-7</span></span></a></li>
+  <li><a class="songrow"><span class="songrow__c">4</span><span class="songrow__t">Votum</span></a></li>
+  <li><a class="songrow"><span class="songrow__c">5</span><span class="songrow__t songrow__t--lines"><span>Pembacaan Alkitab</span><span>Mazmur 23:1-6</span></span></a></li>
+</ul></template>
+
+<h2>Light theme</h2>
+<div class="pair">
+  <div class="panel" data-rows><div class="label">Current</div></div>
+  <div class="panel proposed" data-rows><div class="label">Proposed</div></div>
+</div>
+<h2>Dark theme</h2>
+<div class="pair">
+  <div class="panel dark" data-rows><div class="label">Current</div></div>
+  <div class="panel dark proposed" data-rows><div class="label">Proposed</div></div>
+</div>
+<p class="note">Static preview only. Row 3 shows the selected state. The songbook song list (same row style) is not changed.</p>
+<script>
+document.querySelectorAll('[data-rows]').forEach(function (p) {
+  p.appendChild(document.getElementById('rows').content.cloneNode(true));
+});
+</script>
+</main></html>
