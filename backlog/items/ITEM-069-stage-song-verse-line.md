@@ -1,6 +1,6 @@
 ---
 id: ITEM-069
-status: in_progress
+status: in_review
 title: 'Always show a song entry''s verses on the Tata Ibadah stage'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: 066
 branch: fix/066-stage-song-verse-line
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/319
 archived_at:
 archive_reason:
 bump: patch

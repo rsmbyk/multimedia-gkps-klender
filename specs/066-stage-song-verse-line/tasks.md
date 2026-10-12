@@ -15,12 +15,12 @@
 - [x] Verify with targeted `multimedia.web.tests` and `tests.e2e.test_entry_preview`
 - [x] Update Traceability with actual validation results
 - [x] Set `VERSION` to 1.6.4, changelog section `[1.6.4]`, and ITEM `release_version: 1.6.4` (patch from integration 1.6.3)
-- [ ] Conventional Commit and draft PR into `develop` using the repository template
-- [ ] ITEM/board → In review with the PR link in that same PR
+- [x] Conventional Commit and draft PR #319 into `develop` using the repository template
+- [x] ITEM/board → In review with the PR link in that same PR
 - [ ] Merge by squash into `develop`; delete only the remote feature branch and keep the local branch intact
 
 ## Done when
 
 - [x] All acceptance scenarios hold and targeted tests pass
 - [ ] Fast checks and Browser E2E push/CI jobs pass
-- [ ] Board, ITEM, tasks, and version metadata are complete in the same PR
+- [x] Board, ITEM, tasks, and version metadata are complete in the same PR
