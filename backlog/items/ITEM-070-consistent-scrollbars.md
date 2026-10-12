@@ -1,6 +1,6 @@
 ---
 id: ITEM-070
-status: in_progress
+status: in_review
 title: Consistent scrollbars across app views
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: ../../specs/067-consistent-scrollbars/spec.md
 branch: feat/067-consistent-scrollbars
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/321
 archived_at:
 archive_reason:
 bump: patch

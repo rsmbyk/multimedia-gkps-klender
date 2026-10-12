@@ -16,7 +16,7 @@
 - [x] Verify pointer, keyboard, and touch scrolling behavior in local Chromium
 - [x] Fill Traceability in `./spec.md`
 - [x] Update ITEM, board, `VERSION`, and changelog in the same PR
-- [ ] Conventional Commit + draft PR linking `./spec.md`
+- [x] Conventional Commit + [draft PR #321](https://github.com/rsmbyk/multimedia-gkps-klender/pull/321) linking `./spec.md`
 
 ## Done when
 
