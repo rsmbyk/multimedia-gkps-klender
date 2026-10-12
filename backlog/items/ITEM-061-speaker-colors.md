@@ -1,6 +1,6 @@
 ---
 id: ITEM-061
-status: in-progress
+status: in-review
 title: 'Color liturgy speakers as a congregation cue'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: specs/059-speaker-colors/spec.md
 branch: feat/059-speaker-colors
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/312
 archived_at:
 archive_reason:
 bump: minor
