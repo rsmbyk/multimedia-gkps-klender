@@ -17,6 +17,27 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Shared scrollbars for the public reading UI, including dialogs, pickers,
+   textareas, and document scrolling. Collapsed rails override this below. */
+:root, :root * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+:root::-webkit-scrollbar, :root *::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+:root::-webkit-scrollbar-track, :root *::-webkit-scrollbar-track {
+  background: transparent;
+}
+:root::-webkit-scrollbar-thumb, :root *::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 999px;
+}
+:root::-webkit-scrollbar-thumb:hover, :root *::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+}
+
 :root[data-nav="open"] { --books-w: var(--panel-w); }
 :root[data-nav="mini"] { --books-w: var(--mini-w); }
 /* Tata Ibadah's service list matches the max-width of its item/contents pane.
@@ -678,7 +699,6 @@ li:hover > .row-edit,
   overflow-anchor: none;
   padding: 0 10px 20px;
   scrollbar-width: thin;          /* visible in the expanded list */
-  scrollbar-color: var(--divider) transparent;
 }
 .group__head {
   position: sticky;

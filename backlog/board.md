@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-070](./items/ITEM-070-consistent-scrollbars.md) | Consistent scrollbars in the new UI | Match the Tata Ibadah sidebar scrollbar across new UI components | feat | P2 | S | [067](../specs/067-consistent-scrollbars/spec.md) | 2026-10-12 |
 
 ## Ready
 
