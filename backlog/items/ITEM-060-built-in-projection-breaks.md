@@ -1,5 +1,5 @@
 ---
-id: ITEM-059
+id: ITEM-060
 status: done
 title: Built-in blank after each entry and each song verse
 type: feat
@@ -7,7 +7,7 @@ priority: P1
 effort: M
 created: 2026-10-12
 updated: 2026-10-12
-spec: ../specs/057-built-in-projection-breaks/spec.md
+spec: ../specs/058-built-in-projection-breaks/spec.md
 branch: feat/057-built-in-projection-breaks
 pr: 311
 archived_at:
@@ -16,7 +16,7 @@ bump: minor
 release_version: 1.4.0
 ---
 
-# ITEM-059: Built-in blank after each entry and each song verse
+# ITEM-060: Built-in blank after each entry and each song verse
 
 ## Summary
 
@@ -37,5 +37,5 @@ operator-placed blank. A content entry followed by one shows two blanks.
 
 ## Links
 
-- Spec: [057](../specs/057-built-in-projection-breaks/spec.md)
+- Spec: [058](../specs/058-built-in-projection-breaks/spec.md)
 - Related items: ITEM-031 (single-screen text), service-entry projector (spec 006)

@@ -16,6 +16,18 @@ Pre-adoption history in the legacy per-version format is archived in
 
 - The service projector rests on a blank screen after every content entry, and after every verse of a song. That blank is not a section break, so it is not a row in the order.
 
+## [1.3.23] - 2026-10-11
+
+### Fixed
+
+- The single-screen text editor's Save button now follows its Text field: the client guard attached to the text form alone, so a filled single-screen field kept the button disabled until the next page load. Both text kinds share the guard now, and an empty or whitespace-only field still disables it.
+- A section break no longer offers an Edit control, on the stage or in the sidebar — a break has nothing to fill in. Its Delete stays, and every other kind keeps its Edit.
+
+### Changed
+
+- "+ Break" adds the break at once, at its add row's position (or the end of the service from the empty-state button), instead of opening a form with no fields.
+- Song entries in the Tata Ibadah sidebar now state the verses they keep on a second line (`Bait 1-3, 5, 6, 8-10`). The stage's `Bait` line uses the same run-collapsing format: three or more consecutive numbers become a range, pairs and singles stay comma-separated.
+
 ## [1.3.22] - 2026-10-11
 
 ### Changed

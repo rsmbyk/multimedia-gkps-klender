@@ -314,6 +314,16 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.fill('[name=text]', 'Pembukaan')
         expect(page.locator('.editor__save')).to_be_enabled()
 
+    def test_single_screen_save_follows_the_text_content(self):
+        """Spec 057: the single-screen form's Save tracks its Text field, like the text form."""
+        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('.entry__empty-btn', has_text='Add Single-Screen').click()
+        expect(page.locator('.editor__save')).to_be_disabled()
+        page.fill('[name=text]', 'Doa pembuka')
+        expect(page.locator('.editor__save')).to_be_enabled()
+        page.fill('[name=text]', '')
+        expect(page.locator('.editor__save')).to_be_disabled()
+
     # --- editing and deleting -------------------------------------------------
 
     def test_entry_cancel_restores_service_item_without_outline_or_revealed_actions(self):

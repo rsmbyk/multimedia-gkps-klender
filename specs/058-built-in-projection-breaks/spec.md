@@ -1,8 +1,8 @@
-# Spec 057: Built-in blank after each entry and each song verse
+# Spec 058: Built-in blank after each entry and each song verse
 
-- **ID:** 057
+- **ID:** 058
 - **Status:** Accepted
-- **Item:** ITEM-059
+- **Item:** ITEM-060
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** minor

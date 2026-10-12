@@ -1,9 +1,9 @@
-# Plan 057: Built-in blank after each entry and each song verse
+# Plan 058: Built-in blank after each entry and each song verse
 
 - **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
-- **Item:** ITEM-059
+- **Item:** ITEM-060
 - **Bump:** minor
 
 ## Why

@@ -34,6 +34,7 @@ from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
 from multimedia.web.reading import editors
 from multimedia.web.reading import entries as entry_forms
+from multimedia.web.reading.formatting import format_verses
 from multimedia.web.reading import legacy_items
 from multimedia.web.reading import search as search_lib
 
@@ -751,7 +752,7 @@ def _tatib_stage(service):
                           .values_list('number', flat=True))
             chosen = set(row.verses or [])
             if chosen != current:
-                subtitle = 'Bait ' + ', '.join(str(number) for number in sorted(chosen))
+                subtitle = 'Bait ' + format_verses(chosen)
         block = {'entry': True, 'anchor': anchor, 'pk': row.pk, 'kind': kind_key,
                  'kind_label': row.get_kind_display(), 'title': title,
                  'deleted_target': deleted_target, 'subtitle': subtitle,
@@ -777,9 +778,16 @@ def _tatib_stage(service):
             # A hymn song reads by its short reference and title (spec 039).
             song = row.song
             label = f'{song.book_number} {song.title}'.strip() if song.title else song.book_number
-        filter_text = f'{label} {title} {body}'
+        verse_line = ''
+        if kind_key == 'song' and row.song_id and not deleted_target and row.verses:
+            # Spec 057: the sidebar row states which verses the entry keeps, on its second line.
+            verse_line = 'Bait ' + format_verses(row.verses)
+        filter_text = f'{label} {title} {body} {verse_line}'
         label = label[:60]
         label_lines = label.split('\n') if two_line_label else None
+        if verse_line:
+            two_line_label = True
+            label_lines = [label, verse_line]
         toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
                     'label': label, 'label_lines': label_lines, 'titled': bool(title),
                     'two_line_label': two_line_label, 'pk': row.pk, 'entry': True,
@@ -848,7 +856,7 @@ def _song_screens(entry):
 
 
 def _projector_screens(service):
-    """What the display shows, screen by screen (spec 006, slice 4; spec 057).
+    """What the display shows, screen by screen (spec 006, slice 4; spec 058).
 
     A passage is one verse at a time, headed by its reference and title; a text is
     two lines at a time under its own header; a song is its lyrics alone, two lines

@@ -1,4 +1,4 @@
-# Tasks 057: Built-in blank after each entry and each song verse
+# Tasks 058: Built-in blank after each entry and each song verse
 
 - **Status:** Accepted
 - **Plan:** [./plan.md](./plan.md)

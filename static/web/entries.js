@@ -577,14 +577,16 @@
   /* ---------- the text form's Save guard ------------------------------------ */
 
   function wireTextSave(scope) {
-    var form = scope.querySelector('[data-entry-form="text"]');
-    if (!form) return;
-    var area = form.querySelector('textarea[name=text]');
-    var save = form.querySelector('.editor__save');
-    if (!area || !save) return;
-    function sync() { save.disabled = area.value.trim() === ''; }
-    area.addEventListener('input', sync);
-    sync();
+    /* Both text kinds share the guard (spec 057): single-screen text was left out. */
+    var forms = scope.querySelectorAll('[data-entry-form="text"], [data-entry-form="single_screen_text"]');
+    Array.prototype.forEach.call(forms, function (form) {
+      var area = form.querySelector('textarea[name=text]');
+      var save = form.querySelector('.editor__save');
+      if (!area || !save) return;
+      function sync() { save.disabled = area.value.trim() === ''; }
+      area.addEventListener('input', sync);
+      sync();
+    });
   }
 
   function wire(scope) {
@@ -673,8 +675,38 @@
     var row = opener.closest('[data-entry-after]');
     var after = row ? row.dataset.entryAfter
                     : (opener.closest('[data-entry-start]') ? 'start' : '');
+    if (opener.dataset.entryOpen === 'section_break') {
+      addBreak(opener.dataset.entryTatib, after);
+      return;
+    }
     load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after));
   });
+
+  /* A break has no fields (spec 057): '+ Break' creates it at once, at the add row's
+     position (the empty-state button passes none, so it lands at the end). */
+  function addBreak(tatib, after) {
+    var url = (modal.dataset.entrySaveNewUrl || '/editor/entry/new/save/')
+      + '?tatib=' + encodeURIComponent(tatib);
+    var body = new URLSearchParams({ kind: '3' });   /* ServiceEntryKind.SECTION_BREAK */
+    if (after) body.set('after', after);
+    announce('Adding...');
+    fetch(url, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf() },
+      body: body
+    }).then(function (response) {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.json();
+    }).then(function (saved) {
+      announce('Break added');
+      trigger = null;
+      document.dispatchEvent(new CustomEvent('editor:saved', {
+        detail: { id: saved.id, kind: 'entry', focusKind: 'entry', focusId: saved.id }
+      }));
+    }).catch(function () {
+      announce('Could not add the break. Try again.');
+    });
+  }
 
   /* ---------- a hovered item reveals its neighbouring add rows (spec 037) ----
      CSS cannot reach a preceding sibling, so the pair of add rows around the row
