@@ -17,10 +17,10 @@
 - [x] Set patch bump on ITEM and spec
 - [x] Update VERSION to 1.3.24, CHANGELOG, and ITEM release_version in this PR
 - [x] Update ITEM and board in the same PR
-- [ ] Conventional Commit with Codex attribution and draft PR to develop using the repository template
+- [x] Conventional Commits include Codex attribution; draft PR #313 uses the repository Summary / Spec / Test plan template
 
 ## Done when
 
-- [ ] All acceptance scenarios hold
-- [ ] Named tests pass and visual inspection confirms the hierarchy
-- [ ] Board, tasks, and version metadata are complete in the implementation PR
+- [x] All acceptance scenarios hold
+- [x] Named tests pass and visual inspection confirms the hierarchy
+- [x] Board, tasks, and version metadata are complete in the implementation PR
