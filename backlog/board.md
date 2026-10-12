@@ -49,6 +49,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-070](./items/ITEM-070-consistent-scrollbars.md) | Consistent scrollbars in the new UI | Match the Tata Ibadah sidebar scrollbar across new UI components | feat | P2 | S | [067](../specs/067-consistent-scrollbars/spec.md) | develop | 2026-10-12 |
 | [ITEM-069](./items/ITEM-069-stage-song-verse-line.md) | Always show a song entry's verses on the Tata Ibadah stage | Stage shows `Bait 1-3` under every song entry with verses, matching the sidebar; deleted targets stay silent | fix | P2 | S | [066](../specs/066-stage-song-verse-line/spec.md) | develop | 2026-10-12 |
 | [ITEM-068](./items/ITEM-068-entry-modal-origin-highlight.md) | Hold the service entry highlight while its modal is open | Origin entry keeps its fill and controls until Preview, Edit, or Delete closes | fix | P2 | S | [065](../specs/065-entry-modal-origin-highlight/spec.md) | develop | 2026-10-12 |
 | [ITEM-066](./items/ITEM-066-single-theme-button.md) | Restore the single theme button | One rail button cycles System, Dark, and Light and shows the active mode | chore | P2 | S | [063](../specs/063-single-theme-button/spec.md) | develop | 2026-10-12 |

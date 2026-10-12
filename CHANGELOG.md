@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.6.6] - 2026-10-12
+
+### Changed
+
+- Scrollbars in the public reading UI now use a slim, rounded, theme-aware style across pages, sidebars, dialogs, dropdowns, and text fields.
+
 ## [1.6.5] - 2026-10-12
 
 ### Fixed
