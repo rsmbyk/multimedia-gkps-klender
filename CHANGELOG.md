@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-12
+
+### Added
+
+- The service projector rests on a blank screen after every content entry, and after every verse of a song. That blank is not a section break, so it is not a row in the order.
+
 ## [1.3.22] - 2026-10-11
 
 ### Changed

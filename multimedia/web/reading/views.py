@@ -825,41 +825,67 @@ def _scripture_screens(entry):
     return screens
 
 
+def _blank_screen():
+    """A built-in rest. It is not a section break and is never stored."""
+    return {'blank': True, 'header': '', 'lines': []}
+
+
+def _song_screens(entry):
+    """Each selected verse in stored order, two lines at a time, then one blank.
+
+    The blank after the last verse is the entry's only trailing rest.
+    """
+    if not entry.song_id:
+        return []
+    verses = (entry.song.verse_set.filter(number__in=entry.verses or [], is_deleted=False)
+              .order_by('number'))
+    screens = []
+    for verse in verses:
+        for lines in _line_pairs(verse.lyric):
+            screens.append({'blank': False, 'header': '', 'lines': lines})
+        screens.append(_blank_screen())
+    return screens
+
+
 def _projector_screens(service):
-    """What the display shows, screen by screen (spec 006, slice 4).
+    """What the display shows, screen by screen (spec 006, slice 4; spec 057).
 
     A passage is one verse at a time, headed by its reference and title; a text is
     two lines at a time under its own header; a song is its lyrics alone, two lines
-    at a time; a section break shows nothing -- it is the operator's own note. Old
-    rows and entries follow the same shared order as the reading pane.
+    at a time, with a blank after each verse; a section break shows nothing -- it is
+    the operator's own note. Every other content row ends on one built-in blank.
+    Old rows and entries follow the same shared order as the reading pane.
     """
     screens = []
     for kind, row in _ordered_service_rows(service):
         if kind == 'legacy':
             if row.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
-                screens.append({'blank': True, 'header': '', 'lines': []})
+                screens.append(_blank_screen())
                 continue
             for lines in _line_pairs(row.text):
                 screens.append({'blank': False, 'header': row.title, 'lines': lines})
+            screens.append(_blank_screen())
             continue
         entry = row
         if entry.kind == tatib_models.ServiceEntryKind.SECTION_BREAK:
-            screens.append({'blank': True, 'header': '', 'lines': []})
+            screens.append(_blank_screen())
         elif entry.kind == tatib_models.ServiceEntryKind.SCRIPTURE:
             screens.extend(_scripture_screens(entry))
+            screens.append(_blank_screen())
         elif entry.kind == tatib_models.ServiceEntryKind.SONG:
-            for lines in _line_pairs(entry.resolve()[1]):
-                screens.append({'blank': False, 'header': '', 'lines': lines})
+            screens.extend(_song_screens(entry))
         elif entry.kind == tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT:
             # The whole body on one screen; blank lines are paragraph breaks, not new
             # screens, and the fit loop shrinks (then, if need be, truncates) it.
             header, body = entry.resolve()
             screens.append({'blank': False, 'header': header,
                             'lines': (body or '').split('\n'), 'single': True})
+            screens.append(_blank_screen())
         else:                                            # a text entry
             header, body = entry.resolve()
             for lines in _line_pairs(body):
                 screens.append({'blank': False, 'header': header, 'lines': lines})
+            screens.append(_blank_screen())
     return screens
 
 

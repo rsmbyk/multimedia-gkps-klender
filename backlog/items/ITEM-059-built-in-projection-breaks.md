@@ -1,6 +1,6 @@
 ---
 id: ITEM-059
-status: speccing
+status: in_progress
 title: Built-in blank after each entry and each song verse
 type: feat
 priority: P1
@@ -13,7 +13,7 @@ pr:
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.4.0
 ---
 
 # ITEM-059: Built-in blank after each entry and each song verse

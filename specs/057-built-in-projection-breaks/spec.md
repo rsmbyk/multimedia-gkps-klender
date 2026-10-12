@@ -1,7 +1,7 @@
 # Spec 057: Built-in blank after each entry and each song verse
 
 - **ID:** 057
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-059
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -85,6 +85,6 @@ moved or deleted.
 
 ## Traceability
 
-- Domain/app tests:
-- E2E:
-- Implementation:
+- Domain/app tests: `multimedia/web/tests.py` (`ServiceProjectorTests`).
+- E2E: `tests/e2e/test_projector.py`.
+- Implementation: `multimedia/web/reading/views.py` (`_projector_screens`, `_song_screens`).
