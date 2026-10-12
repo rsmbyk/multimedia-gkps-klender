@@ -960,6 +960,9 @@ li:hover > .row-edit,
   margin: 30px 0 6px;
   scroll-margin-top: 44px;
 }
+/* The date and Project action share the first Tata Ibadah header row. Remove
+   the eyebrow's general second-row spacing so its box centers with the button. */
+.read[data-kind="tatib"] .read__head-top .read__eyebrow { margin-bottom: 0; }
 /* The stage's entry-title links wear the theme's link colour (spec 056) --
    forest green in light, lifted royal blue in dark; not the browser's default
    blue, which fails contrast on the dark canvas. The underline stays. */

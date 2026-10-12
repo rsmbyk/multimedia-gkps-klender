@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
@@ -51,6 +52,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | [ITEM-069](./items/ITEM-069-stage-song-verse-line.md) | Always show a song entry's verses on the Tata Ibadah stage | Stage shows `Bait 1-3` under every song entry with verses, matching the sidebar; deleted targets stay silent | fix | P2 | S | [066](../specs/066-stage-song-verse-line/spec.md) | develop | 2026-10-12 |
 | [ITEM-068](./items/ITEM-068-entry-modal-origin-highlight.md) | Hold the service entry highlight while its modal is open | Origin entry keeps its fill and controls until Preview, Edit, or Delete closes | fix | P2 | S | [065](../specs/065-entry-modal-origin-highlight/spec.md) | develop | 2026-10-12 |
 | [ITEM-066](./items/ITEM-066-single-theme-button.md) | Restore the single theme button | One rail button cycles System, Dark, and Light and shows the active mode | chore | P2 | S | [063](../specs/063-single-theme-button/spec.md) | develop | 2026-10-12 |
+| [ITEM-067](./items/ITEM-067-tatib-date-project-alignment.md) | Center the Tata Ibadah date and Project button | Vertically align the date label and Project button in their existing header row | chore | P2 | S | [064](../specs/064-tatib-date-project-alignment/spec.md) | develop | 2026-10-12 |
 | [ITEM-064](./items/ITEM-064-toc-number-centering.md) | Center entry numbers vertically in the Tata Ibadah contents list | Number sits at the row's vertical middle on multi-line rows; text, size, and songbook list unchanged | chore | P2 | S | [063](../specs/063-toc-number-centering/spec.md) | develop | 2026-10-12 |
 | [ITEM-065](./items/ITEM-065-system-theme.md) | System theme as the default appearance mode | Light, Dark, and System for public reading; System by default | feat | P2 | S | [062](../specs/062-system-theme/spec.md) | develop | 2026-10-12 |
 | [ITEM-062](./items/ITEM-062-song-label-typography.md) | Distinct song label typography | Style hymn reference, song title, and selected verses separately in Tata Ibadah rows | fix | P2 | S | [060](../specs/060-song-label-typography/spec.md) | develop | 2026-10-12 |

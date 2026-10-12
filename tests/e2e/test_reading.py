@@ -620,6 +620,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('.result-group[data-kind="songs"] .result-row').first.click()
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
         expect(page.locator('#readEyebrow')).to_be_visible()
+        self.assertEqual(page.locator('#readEyebrow').evaluate(
+            "el => getComputedStyle(el).marginBottom"), '10px')
         self.assertGreaterEqual(page.locator('.read__head-top').bounding_box()['height'], 34)
 
         page.locator('.rail [data-panel="tatib"]').click()
@@ -627,6 +629,37 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
         expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
         self.assertGreaterEqual(page.locator('.read__head-top').bounding_box()['height'], 34)
+
+    def test_tatib_date_and_project_button_are_vertically_centered(self):
+        for width in (1440, 390):
+            with self.subTest(width=width):
+                page = self._page(width=width)
+                page.goto(self.live_server_url + reverse('web-home'))
+                page.locator('.rail [data-panel="tatib"]').click()
+                page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
+                expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
+                expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
+                self.assertEqual(page.locator('#readEyebrow').evaluate(
+                    "el => getComputedStyle(el).marginBottom"), '0px')
+
+                geometry = page.evaluate('''() => {
+                  const box = selector => document.querySelector(selector).getBoundingClientRect();
+                  const date = box('#readEyebrow');
+                  const button = box('.read__project-btn[data-project-open]');
+                  const row = box('.read__head-top');
+                  const title = box('.read__title');
+                  return {
+                    centerDelta: (date.top + date.height / 2) - (button.top + button.height / 2),
+                    dateRight: date.right,
+                    buttonLeft: button.left,
+                    rowBottom: row.bottom,
+                    titleTop: title.top
+                  };
+                }''')
+                self.assertLessEqual(abs(geometry['centerDelta']), 1, geometry)
+                self.assertLessEqual(geometry['dateRight'], geometry['buttonLeft'], geometry)
+                self.assertGreaterEqual(geometry['titleTop'], geometry['rowBottom'], geometry)
+                page.close()
 
     def test_service_text_sidebar_shows_two_lines_and_centers_grip(self):
         page = self._page()

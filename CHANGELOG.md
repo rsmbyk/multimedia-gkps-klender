@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.6.5] - 2026-10-12
+
+### Fixed
+
+- The Tata Ibadah date label now aligns vertically with the Project button without changing other reading headers.
+
 ## [1.6.4] - 2026-10-12
 
 ### Fixed
