@@ -1,6 +1,6 @@
 ---
 id: ITEM-065
-status: in-progress
+status: in-review
 title: 'System theme as the default appearance mode'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: 062
 branch: feat/062-system-theme
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/315
 archived_at:
 archive_reason:
 bump: minor
