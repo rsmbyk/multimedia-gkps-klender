@@ -1,6 +1,6 @@
 ---
 id: ITEM-061
-status: in-review
+status: done
 title: 'Color liturgy speakers as a congregation cue'
 type: feat
 priority: P2
