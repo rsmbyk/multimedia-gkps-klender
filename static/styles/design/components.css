@@ -144,7 +144,7 @@ body {
   color: var(--active-ink);
 }
 
-/* ---------- bottom: dark-mode toggle ---------- */
+/* ---------- bottom: appearance choices ---------- */
 .rail__foot {
   flex: none;
   margin-top: auto;
@@ -155,13 +155,11 @@ body {
 .rail__theme { position: relative; }
 .rail__theme svg {
   grid-area: 1 / 1;
-  transition: opacity var(--ease), transform var(--ease);
 }
-/* the icon shows the mode you will GET, so icon, tooltip and aria-label agree */
-.rail__theme .moon { opacity: 1; transform: none; }
-.rail__theme .sun  { opacity: 0; transform: rotate(40deg) scale(.65); }
-:root[data-theme="dark"] .rail__theme .moon { opacity: 0; transform: rotate(-40deg) scale(.65); }
-:root[data-theme="dark"] .rail__theme .sun  { opacity: 1; transform: none; }
+.rail__theme[aria-pressed="true"] {
+  background: var(--active-bg);
+  color: var(--active-ink);
+}
 
 /* ============================================================
    Tooltip — appears after a hover DELAY, instantly after
@@ -1918,4 +1916,3 @@ kbd {
 @media (prefers-reduced-motion: no-preference) {
    #chList.is-dragging li:not(.is-dragging) { transition: transform 60ms var(--ease-timing); }
 }
-

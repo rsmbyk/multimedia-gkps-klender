@@ -245,6 +245,50 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.reload()
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
 
+    def test_system_theme_is_default_and_follows_os_changes(self):
+        page = self._page()
+        page.emulate_media(color_scheme='dark')
+        page.goto(self.live_server_url + reverse('web-home'))
+        expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
+        expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+        expect(page.locator('#systemThemeBtn')).to_have_attribute('aria-pressed', 'true')
+        page.emulate_media(color_scheme='light')
+        expect(page.locator('html')).to_have_attribute('data-theme', 'light')
+
+    def test_system_mode_can_be_restored_after_manual_override(self):
+        page = self._page()
+        page.emulate_media(color_scheme='light')
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('#themeBtn').click()
+        expect(page.locator('html')).to_have_attribute('data-theme-mode', 'dark')
+        page.emulate_media(color_scheme='dark')
+        page.emulate_media(color_scheme='light')
+        expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+        page.locator('#systemThemeBtn').click()
+        expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
+        expect(page.locator('html')).to_have_attribute('data-theme', 'light')
+        page.reload()
+        expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
+        page.emulate_media(color_scheme='dark')
+        expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+
+    def test_invalid_theme_storage_defaults_to_system(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.evaluate("localStorage.setItem('gkps-theme', 'unknown')")
+        page.reload()
+        expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
+
+    def test_unavailable_theme_storage_defaults_to_system(self):
+        page = self._page()
+        page.emulate_media(color_scheme='dark')
+        page.add_init_script("Object.defineProperty(window, 'localStorage', {get: () => {throw new Error('blocked')}})")
+        page.goto(self.live_server_url + reverse('web-home'))
+        expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
+        expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+        page.locator('#lightThemeBtn').click()
+        expect(page.locator('html')).to_have_attribute('data-theme', 'light')
+
     def test_tatib_stage_entry_links_follow_the_theme(self):
         # Spec 056: the stage's entry-title links wear the theme's link colour
         # (forest green in light, lifted royal blue in dark), underline kept,

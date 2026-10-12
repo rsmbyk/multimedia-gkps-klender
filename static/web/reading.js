@@ -17,6 +17,8 @@
   var mqSongNarrow = window.matchMedia('(max-width: 1272px)');
 
   var themeBtn = document.getElementById('themeBtn');
+  var lightThemeBtn = document.getElementById('lightThemeBtn');
+  var systemThemeBtn = document.getElementById('systemThemeBtn');
   var panel = document.getElementById('panel');
   var panelCollapse = document.getElementById('panelCollapse');
   var panelExpand = document.getElementById('panelExpand');
@@ -221,17 +223,23 @@
   bindFloatTip(panelExpand);
 
   /* ---------- theme ---------- */
-  function applyTheme(theme, persist) {
-    root.dataset.theme = theme;
-    var dark = theme === 'dark';
-    themeBtn.setAttribute('aria-pressed', String(dark));
-    var label = dark ? 'Switch to light mode' : 'Switch to dark mode';
-    themeBtn.setAttribute('aria-label', label);
-    themeBtn.setAttribute('data-tip', label);
-    if (persist) { try { localStorage.setItem('gkps-theme', theme); } catch (e) {} }
+  var systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+  function applyTheme(mode, persist) {
+    root.dataset.themeMode = mode;
+    root.dataset.theme = mode === 'system'
+      ? (systemTheme.matches ? 'dark' : 'light') : mode;
+    lightThemeBtn.setAttribute('aria-pressed', String(mode === 'light'));
+    themeBtn.setAttribute('aria-pressed', String(mode === 'dark'));
+    systemThemeBtn.setAttribute('aria-pressed', String(mode === 'system'));
+    if (persist) { try { localStorage.setItem('gkps-theme', mode); } catch (e) {} }
   }
   themeBtn.addEventListener('click', function () {
-    applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark', true);
+    applyTheme('dark', true);
+  });
+  lightThemeBtn.addEventListener('click', function () { applyTheme('light', true); });
+  systemThemeBtn.addEventListener('click', function () { applyTheme('system', true); });
+  systemTheme.addEventListener('change', function () {
+    if (root.dataset.themeMode === 'system') applyTheme('system', false);
   });
 
   /* ---------- reading edition (TB / SIM) ---------- */
@@ -1330,8 +1338,7 @@
   }
 
   /* ---------- init ---------- */
-  applyTheme(root.dataset.theme
-    || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'), false);
+  applyTheme(root.dataset.themeMode || 'system', false);
   syncState();
   decorateChapters();
   markRailTile();

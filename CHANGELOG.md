@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-12
+
+### Added
+
+- The public reading theme control now offers Light, Dark, and System. System is the default for readers without a saved preference and follows changes to the device theme while the page is open.
+
 ## [1.5.1] - 2026-10-12
 
 ### Fixed
