@@ -1,6 +1,6 @@
 ---
 id: ITEM-072
-status: in_progress
+status: in_review
 title: Manual screen breaks for multiline Text entries
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/069-manual-text-screen-breaks/spec.md
 branch: feat/069-manual-text-screen-breaks
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/323
 archived_at:
 archive_reason:
 bump: minor

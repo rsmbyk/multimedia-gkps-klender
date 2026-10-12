@@ -15,10 +15,10 @@
 - [x] Verify song, Scripture, single-screen Text, and legacy row behavior remains intact
 - [x] Fill traceability in `spec.md` with exact test and implementation paths
 - [x] Update ITEM, board, VERSION, changelog, and release version in the same implementation PR
-- [ ] Conventional commit and draft PR into `develop` with the repository PR template
+- [x] Conventional commit and draft PR into `develop` with the repository PR template
 
 ## Done when
 
-- [ ] All acceptance scenarios hold
-- [ ] Targeted domain/app tests and E2E pass
-- [ ] PR traceability and release records are complete
+- [x] All acceptance scenarios hold locally
+- [x] Targeted domain/app tests and E2E pass
+- [x] PR traceability and release records are complete for the draft PR
