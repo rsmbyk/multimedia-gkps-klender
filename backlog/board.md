@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-068](./items/ITEM-068-entry-modal-origin-highlight.md) | Hold the service entry highlight while its modal is open | Origin entry keeps its fill and controls until Preview, Edit, or Delete closes | fix | P2 | S | [065](../specs/065-entry-modal-origin-highlight/spec.md) | `fix/065-entry-modal-origin-highlight` | 2026-10-12 |
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
