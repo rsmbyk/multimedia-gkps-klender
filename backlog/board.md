@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-072](./items/ITEM-072-manual-text-screen-breaks.md) | Manual screen breaks for multiline Text entries | Choose which Text entry lines appear together on each projector screen | feat | P2 | M | [069](../specs/069-manual-text-screen-breaks/spec.md) | feat/069-manual-text-screen-breaks | 2026-10-13 |
 
 ## In review
 

@@ -203,6 +203,6 @@ class RenderedVoicesTests(TestCase):
         self.entry(1, kind=tatib.ServiceEntryKind.TEXT, title='Doa',
                    text='P: satu\ndua\ntiga\nJ: empat')
         html = self.stage()
-        self.assertIn('<p class="preview__line is-assembly"><span class="tatib__sp">J:</span>'
+        self.assertIn('<p class="preview__line preview__row is-assembly"><span class="tatib__sp">J:</span>'
                       ' empat</p>', html)
-        self.assertIn('<p class="preview__line is-leader">dua</p>', html)
+        self.assertIn('<p class="preview__line preview__row is-leader">dua</p>', html)

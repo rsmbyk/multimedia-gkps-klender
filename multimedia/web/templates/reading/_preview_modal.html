@@ -1,8 +1,9 @@
-{% comment %}The read-only entry preview (spec 032): no header, a scrolling body, and a sticky
-close. A closed <dialog> renders nothing; Esc and the overlay dismiss it.{% endcomment %}
+{% comment %}Entry preview (spec 032): ordinary Text entries also edit screen breaks (spec 069).
+The body scrolls; the footer stays visible. Esc and the overlay dismiss it.{% endcomment %}
 <dialog class="preview" id="previewModal" aria-label="Preview">
   <div class="preview__body" id="previewContent"></div>
   <div class="preview__foot">
+    <button type="button" class="preview__close" data-break-reset hidden>Reset breaks</button>
     <button type="button" class="preview__close" data-preview-close>Close</button>
   </div>
 </dialog>

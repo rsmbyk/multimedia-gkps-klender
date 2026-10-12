@@ -31,6 +31,8 @@ urlpatterns = [
     path('editor/entry/new/save/', reading_views.entry_save, name='web-entry-save-new'),
     path('editor/entry/<int:pk>/edit/', reading_views.entry_form, name='web-entry-edit'),
     path('editor/entry/<int:pk>/save/', reading_views.entry_save, name='web-entry-save'),
+    path('editor/entry/<int:pk>/screen-breaks/', reading_views.entry_screen_breaks,
+         name='web-entry-screen-breaks'),
     path('editor/entry/<int:pk>/delete/', reading_views.entry_delete, name='web-entry-delete'),
     path('editor/entry/reorder/', reading_views.entry_reorder, name='web-entry-reorder'),
     path('editor/entry/songs/', reading_views.entry_song_options,

@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-13
+
+### Added
+
+- Tata Ibadah Text entry previews let editors place and remove projector screen breaks, with automatic two-line grouping until customized.
+
 ## [1.6.7] - 2026-10-13
 
 ### Changed

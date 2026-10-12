@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Draft preview — Text entry screen breaks</title>
+<style>
+:root{font:14px/1.45 system-ui,sans-serif;color:#202624;background:#ebece9}*{box-sizing:border-box}
+body{margin:0;min-height:100vh}.page{max-width:900px;margin:55px auto;padding:0 20px}
+.page h1{font-size:23px;margin:0 0 8px}.page p{color:#5a6560}
+.entry{border:1px solid #d1d6d0;background:#f9faf8;border-radius:9px;padding:15px;max-width:570px}
+.entry strong{display:block;margin-bottom:7px}.entry button{margin-top:11px}
+button{font:inherit;cursor:pointer}.secondary{border:1px solid #c7cec8;border-radius:7px;background:#f9faf8;color:#24372e;padding:7px 15px}
+dialog{width:min(600px,calc(100vw - 26px));max-height:calc(100vh - 34px);padding:0;border:0;border-radius:13px;background:#fcfdfb;box-shadow:0 22px 65px #0004;color:#202624}
+dialog::backdrop{background:#262b28a8}.body{padding:22px 25px 15px;overflow:auto;max-height:calc(100vh - 115px)}
+.eyebrow{color:#63736a;font-size:12px;margin:0 0 5px}h2{font-size:19px;margin:0 0 4px}.sub{color:#63736a;margin:0 0 18px}
+.mode{display:flex;align-items:center;gap:8px;margin:8px 0 14px;color:#536159}
+.badge{font-size:12px;font-weight:650;border:1px solid #9db7a8;background:#edf5ee;border-radius:99px;padding:3px 9px;color:#275f47}
+h3{font-size:13px;margin:0 0 9px}
+.rows{border:1px solid #d6dcd5;border-radius:8px;padding:8px 11px}.row{padding:7px 5px;white-space:pre-wrap}
+.gap{position:relative;width:100%;height:18px;padding:0;border:0;background:transparent;color:#348668}
+.gap::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid transparent}
+.gap span{position:relative;opacity:0;font-size:11px;padding:0 6px;white-space:nowrap;background:transparent}
+.gap:hover::before,.gap:focus-visible::before{border-color:#71b297;border-style:dashed}
+.gap:hover span,.gap:focus-visible span{opacity:1;background:#fcfdfb}
+.gap.set::before{border-color:#d6ddd8;border-style:solid}
+.rows.is-custom .gap.set::before{border-color:#43836b}
+.gap.set:hover::before,.gap.set:focus-visible::before{border-color:#be735a;border-style:solid}
+.gap.set:hover span,.gap.set:focus-visible span{color:#a24f34}
+.foot{display:flex;gap:9px;justify-content:space-between;align-items:center;border-top:1px solid #dde2db;padding:12px 22px;background:#fcfdfb}
+.hint{color:#69766d;font-size:12px;margin:8px 0 0}
+</style>
+</head>
+<body>
+<main class="page"><p class="eyebrow">Draft concept · no product code</p><h1>Tata Ibadah Text entry</h1><p>The Create/Edit form still edits the words. Open Preview to set where the projector changes screen.</p><div class="entry"><strong>Doa Syafaat</strong><div>Tuhan, dengarlah doa kami<br>Kami datang membawa syukur<br>Sertai setiap keluarga<br>Dan kuatkan yang lemah<br>Bimbing kami hari ini<br>Dalam kasih-Mu selalu</div><button class="secondary" id="open">Preview</button></div></main>
+<dialog id="modal" aria-label="Preview Text entry"><div class="body"><p class="eyebrow">TEXT ENTRY PREVIEW</p><h2>Doa Syafaat</h2><p class="sub">Hover between text lines to add a screen break, or hover a divider to remove it.</p><div class="mode">Screen breaks <span class="badge" id="mode">Default · 2 lines</span></div><div class="rows" id="rows"></div><p class="hint">Blank lines always separate screens.</p></div><div class="foot"><button class="secondary" id="reset">Reset breaks</button><button class="secondary" id="close">Close</button></div></dialog>
+<script>
+const text=['Tuhan, dengarlah doa kami','Kami datang membawa syukur','Sertai setiap keluarga','Dan kuatkan yang lemah','Bimbing kami hari ini','Dalam kasih-Mu selalu'];
+const modal=document.getElementById('modal'),rows=document.getElementById('rows');
+let custom=false,breaks=new Set([2,4]); // 1-based boundary positions
+function firstCustomBreak(boundary){
+  breaks=new Set([boundary]);
+  for(let n=boundary+2;n<text.length;n+=2)breaks.add(n);
+  for(let n=boundary-2;n>0;n-=2)breaks.add(n);
+  custom=true;
+}
+function toggle(boundary){
+  if(!custom&&!breaks.has(boundary))firstCustomBreak(boundary);
+  else{custom=true;if(breaks.has(boundary))breaks.delete(boundary);else breaks.add(boundary);}
+  render();
+}
+function render(){
+  document.getElementById('mode').textContent=custom?'Custom':'Default · 2 lines';
+  rows.classList.toggle('is-custom',custom);
+  rows.replaceChildren();
+  text.forEach((line,i)=>{
+    const row=document.createElement('div');row.className='row';row.textContent=line;rows.append(row);
+    if(i<text.length-1){
+      const boundary=i+1,gap=document.createElement('button');gap.type='button';
+      gap.className='gap'+(breaks.has(boundary)?' set':'');
+      gap.setAttribute('aria-label',(breaks.has(boundary)?'Remove':'Add')+' screen break after line '+boundary);
+      gap.setAttribute('aria-pressed',String(breaks.has(boundary)));
+      const label=document.createElement('span');label.textContent=breaks.has(boundary)?'Remove break':'+ Add break';
+      gap.append(label);gap.onclick=()=>toggle(boundary);rows.append(gap);
+    }
+  });
+}
+document.getElementById('open').onclick=()=>modal.showModal();
+document.getElementById('close').onclick=()=>modal.close();
+document.getElementById('reset').onclick=()=>{custom=false;breaks=new Set([2,4]);render();};
+render();modal.showModal();
+</script>
+</body>
+</html>
