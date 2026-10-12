@@ -999,8 +999,8 @@ li:hover > .row-edit,
   border: 0;
   position: relative;
   scroll-margin-top: 44px;
-  /* The divider is a box like its entries (spec 055): 52px, rule centred, the
-     note tucked under the rule. */
+  /* The divider is a box like its entries (spec 055), with the rule centred
+     and the note tucked under it. Spec 068 sets the final 56px height below. */
   display: flex; flex-direction: column; justify-content: center;
   min-height: 52px;
 }
@@ -1631,11 +1631,9 @@ kbd {
 /* ---------- the hovered row (spec 034, boxed by spec 055) ------------------ */
 
 /* An entry that carries controls is a BOX that contains them (spec 055, replacing
-   the 44px band of spec 053): flex column, at least 52px tall -- 8px + the
-   controls (measured 35.6px) + 8px -- with its words centred on the box's
-   centreline. The controls keep their floating top-right spot, which inside a
-   52px box is the box's centre; on a taller entry they overlay its first line(s)
-   while shown. The box is part of the item, so the hover fill covers it as one row. */
+   the 44px band of spec 053). Its words centre on the box's centreline; the
+   controls float at the top-right and can overlap the first lines of a tall
+   entry. Spec 068 adds the restrained resting surface and padding below. */
 .tatib__item--acts {
   display: flex; flex-direction: column; justify-content: center;
   min-height: 52px; padding-top: 0;
@@ -1653,6 +1651,15 @@ kbd {
 .tatib__item {
   margin-left: -10px; margin-right: -10px;
   padding-left: 10px; padding-right: 10px;
+}
+/* The approved entry surface (spec 068) uses an inset outline so the box's
+   dimensions and the neighbouring add-row gaps do not shift. Keep this base
+   selector weaker than the hover/focus selectors below. */
+.tatib__item--acts, .tatib__eos {
+  min-height: 56px;
+  padding: 8px 8px 8px 12px;
+  background: var(--tatib-entry-fill);
+  box-shadow: inset 0 0 0 1px var(--tatib-entry-outline);
 }
 /* Quiet modal restoration keeps DOM focus without impersonating hover (spec 058).
    Test the focused element, not old markers elsewhere in the entry. The entry

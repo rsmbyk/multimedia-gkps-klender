@@ -23,6 +23,8 @@
   --ink: #1F1F1D;
   --icon: #222220;
   --icon-hover-bg: rgba(31, 31, 29, .08);
+  --tatib-entry-fill: rgba(31, 31, 29, 0.012);
+  --tatib-entry-outline: rgba(31, 31, 29, 0.08);
   --active-bg: #1C5C3C;        /* GKPS forest green in place of the reference red */
   --active-ink: #FFFFFF;
   --sidebar-selected-bg: #B9D7C9; /* selected rows only; keep action accents */
@@ -86,6 +88,8 @@
   --ink: #F5F3EE;
   --icon: #E8E6E0;
   --icon-hover-bg: rgba(255, 255, 255, .09);
+  --tatib-entry-fill: rgba(255, 255, 255, 0.012);
+  --tatib-entry-outline: rgba(255, 255, 255, 0.09);
   --active-bg: #7C9CF0;         /* GKPS royal blue (#143792), lifted for dark surfaces */
   --active-ink: #0D1838;
   --sidebar-selected-bg: #393F4F;

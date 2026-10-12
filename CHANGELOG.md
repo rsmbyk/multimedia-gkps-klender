@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.6.7] - 2026-10-13
+
+### Changed
+
+- Tata Ibadah service entries and section breaks use the approved quiet fill, inset outline, and 8px/8px/8px/12px padding in light and dark themes.
+
 ## [1.6.6] - 2026-10-12
 
 ### Changed

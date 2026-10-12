@@ -60,18 +60,30 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         page.wait_for_load_state('networkidle')
         return page
 
+    def _resting_background(self, page):
+        # Resolve the theme token through Chromium, including its alpha rounding.
+        return page.evaluate("""() => {
+            const probe = document.createElement('span');
+            probe.style.background = getComputedStyle(document.documentElement)
+                .getPropertyValue('--tatib-entry-fill');
+            document.body.appendChild(probe);
+            const color = getComputedStyle(probe).backgroundColor;
+            probe.remove();
+            return color;
+        }""")
+
     def test_hovering_the_first_entry_moves_it_once_then_settles(self):
         page = self._page()
         item = page.locator('.tatib__item').first
         text = page.locator('.tatib__tx').first
         page.mouse.move(1400, 850)
-        expect(item).to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+        expect(item).to_have_css('background-color', self._resting_background(page))
         before = text.bounding_box()
         item.hover()
         page.wait_for_timeout(600)                   # past the start bar's expand
         after = text.bounding_box()
         background = item.evaluate('el => getComputedStyle(el).backgroundColor')
-        self.assertNotIn(background, ('rgba(0, 0, 0, 0)', 'transparent'), background)
+        self.assertNotEqual(background, self._resting_background(page), background)
         # The start bar revealing (spec 055) moves the first entry ONCE, by the
         # bar's revealed height minus the page head's 30px margin (13.6px on one
         # line; ~47px when the five buttons wrap at this width). The text itself
@@ -88,11 +100,11 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         page = self._page()
         item = page.locator('.tatib__item').first
         page.mouse.move(1400, 850)
-        expect(item).to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+        expect(item).to_have_css('background-color', self._resting_background(page))
         page.locator('[data-entry-edit]').first.focus()
         page.wait_for_timeout(250)
         background = item.evaluate('el => getComputedStyle(el).backgroundColor')
-        self.assertNotIn(background, ('rgba(0, 0, 0, 0)', 'transparent'), background)
+        self.assertNotEqual(background, self._resting_background(page), background)
 
     def test_the_highlight_is_legible_in_both_themes(self):
         page = self._page()
@@ -105,11 +117,11 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
             item.hover()
             page.wait_for_timeout(250)
             background = item.evaluate('el => getComputedStyle(el).backgroundColor')
-            self.assertNotIn(background, ('rgba(0, 0, 0, 0)', 'transparent'), (theme, background))
+            self.assertNotEqual(background, self._resting_background(page), (theme, background))
 
     def _expect_idle(self, page, item):
         page.mouse.move(1400, 850)
-        expect(item).to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+        expect(item).to_have_css('background-color', self._resting_background(page))
         expect(item.locator('.entry__acts')).to_have_css('opacity', '0')
         self.assertTrue(page.evaluate('document.activeElement !== document.body'))
 
@@ -138,7 +150,7 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
                         expect(dialog).not_to_be_visible()
                         self._expect_idle(page, item)
                         item.hover()
-                        expect(item).not_to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+                        expect(item).not_to_have_css('background-color', self._resting_background(page))
                         expect(item.locator('.entry__acts')).to_have_css('opacity', '1')
                         self._expect_idle(page, item)
 
@@ -156,7 +168,7 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
             page.keyboard.press('Escape')
             expect(page.locator(modal)).not_to_be_visible()
             expect(control).to_be_focused()
-            expect(item).not_to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+            expect(item).not_to_have_css('background-color', self._resting_background(page))
             expect(item.locator('.entry__acts')).to_have_css('opacity', '1')
             self.assertFalse(control.evaluate("el => el.classList.contains('focus-restore-quiet')"))
 
@@ -170,7 +182,7 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         self._expect_idle(page, item)
         page.keyboard.press('Tab')
         expect(item.locator('.entry__acts')).to_have_css('opacity', '1')
-        expect(item).not_to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+        expect(item).not_to_have_css('background-color', self._resting_background(page))
         page.keyboard.press('Shift+Tab')
         page.keyboard.press('Tab')
         expect(item.locator('.entry__acts')).to_have_css('opacity', '1')
@@ -235,12 +247,12 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
 
     def _assert_held(self, page, item):
         state = self._settled_state(page, item)
-        self.assertNotIn(state['background'], ('rgba(0, 0, 0, 0)', 'transparent'), state)
+        self.assertNotEqual(state['background'], self._resting_background(page), state)
         self.assertEqual(state['controls'], '1', state)
 
     def _assert_resting(self, page, item):
         state = self._settled_state(page, item)
-        self.assertEqual(state['background'], 'rgba(0, 0, 0, 0)', state)
+        self.assertEqual(state['background'], self._resting_background(page), state)
         self.assertEqual(state['controls'], '0', state)
 
     def test_pointer_opened_modal_holds_only_the_origin_entry(self):
@@ -326,7 +338,7 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#editorModal')).not_to_be_visible()
         expect(item).to_contain_text('Keyboard update')
         expect(item.locator('.entry__acts')).to_have_css('opacity', '1')
-        expect(item).not_to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+        expect(item).not_to_have_css('background-color', self._resting_background(page))
         delete = item.locator('[data-entry-delete]')
         delete.focus()
         delete.press('Enter')
