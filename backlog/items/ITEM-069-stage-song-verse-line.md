@@ -1,6 +1,6 @@
 ---
 id: ITEM-069
-status: in_review
+status: done
 title: 'Always show a song entry''s verses on the Tata Ibadah stage'
 type: fix
 priority: P2

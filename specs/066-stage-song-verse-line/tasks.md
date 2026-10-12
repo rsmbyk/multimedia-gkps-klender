@@ -17,6 +17,7 @@
 - [x] Set `VERSION` to 1.6.4, changelog section `[1.6.4]`, and ITEM `release_version: 1.6.4` (patch from integration 1.6.3)
 - [x] Conventional Commit and draft PR #319 into `develop` using the repository template
 - [x] ITEM/board → In review with the PR link in that same PR
+- [x] ITEM/board → Done with PR #319 in that same PR (owner asked to merge after CI green)
 - [ ] Merge by squash into `develop`; delete only the remote feature branch and keep the local branch intact
 
 ## Done when
