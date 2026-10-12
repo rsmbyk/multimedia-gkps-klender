@@ -1,4 +1,4 @@
-"""Entry numbers sit at the vertical middle of their Tata Ibadah contents rows (spec 062)."""
+"""Entry numbers sit at the vertical middle of their Tata Ibadah contents rows (spec 063)."""
 from datetime import date
 import unittest
 

@@ -7,13 +7,13 @@ priority: P2
 effort: S
 created: 2026-10-12
 updated: 2026-10-12
-spec: 062
+spec: 063
 branch: chore/062-toc-number-centering
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/316
 archived_at:
 archive_reason:
 bump: patch
-release_version: 1.5.2
+release_version: 1.6.1
 ---
 
 # ITEM-064: Center entry numbers vertically in the Tata Ibadah contents list
@@ -27,7 +27,7 @@ reads evenly; the text keeps its current alignment.
 
 ## Notes
 
-- Owner approved the alignment preview on 2026-10-12; spec 062 accepted on 2026-10-12.
+- Owner approved the alignment preview on 2026-10-12; spec accepted on 2026-10-12 (drafted as 062, renumbered to 063 after #315 took 062).
 - Rows share `.songrow` with the songbook song list; that list is not changed.
 - The drag copy (`.reorder__ghost`) is built outside `#chList` and must match.
 
@@ -39,6 +39,6 @@ reads evenly; the text keeps its current alignment.
 
 ## Links
 
-- Spec: [062](../../specs/062-toc-number-centering/spec.md)
-- Preview: [alignment preview](../../specs/062-toc-number-centering/preview.html)
+- Spec: [063](../../specs/063-toc-number-centering/spec.md)
+- Preview: [alignment preview](../../specs/063-toc-number-centering/preview.html)
 - Related items: ITEM-048, ITEM-062

@@ -1,4 +1,4 @@
-# Plan 062: Center entry numbers vertically in the Tata Ibadah contents list
+# Plan 063: Center entry numbers vertically in the Tata Ibadah contents list
 
 - **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)

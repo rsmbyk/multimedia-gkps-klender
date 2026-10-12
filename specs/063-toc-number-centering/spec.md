@@ -1,6 +1,6 @@
 # Spec: Center entry numbers vertically in the Tata Ibadah contents list
 
-- **ID:** 062
+- **ID:** 063
 - **Status:** Accepted
 - **Item:** ITEM-064
 - **Plan:** [./plan.md](./plan.md)
