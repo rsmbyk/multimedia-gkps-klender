@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-067](./items/ITEM-067-tatib-date-project-alignment.md) | Center the Tata Ibadah date and Project button | Vertically align the date label and Project button in their existing header row | chore | P2 | S | [064](../specs/064-tatib-date-project-alignment/spec.md) | `chore/064-tatib-date-project-alignment` | 2026-10-12 |
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
