@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-10-12
+
+### Fixed
+
+- Service entries clear their highlight and floating controls after pointer-opened Preview, Edit, or Delete modals close with the pointer elsewhere. Real hover, visible keyboard focus, and touch controls remain available.
+
 ## [1.4.0] - 2026-10-12
 
 ### Added

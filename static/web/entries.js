@@ -19,6 +19,7 @@
   var status = document.getElementById('editorStatus');
 
   var trigger = null;
+  var keyboardOpened = false;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
       if (!target) return;
@@ -66,10 +67,27 @@
   function close() { if (modal.open) modal.close(); }
 
   modal.addEventListener('close', function () {
-    var target = focusTargetFor(trigger);
-    if (target && document.contains(target)) focusTools.restoreQuietly(target);
+    var target = keyboardOpened ? trigger : focusTargetFor(trigger);
+    if (target && document.contains(target)) {
+      if (keyboardOpened) {
+        target.classList.remove('focus-restore-quiet');
+        target.focus({ preventScroll: true });
+      } else {
+        focusTools.restoreQuietly(target);
+      }
+    }
+    keyboardOpened = false;
     trigger = null;
   });
+
+  /* Capture before the shell handles the save: close fires asynchronously, and
+     the refresh replaces the opener. Carry only entry keyboard intent (spec 058). */
+  document.addEventListener('editor:saved', function (event) {
+    if (keyboardOpened && trigger && event.detail
+        && (event.detail.kind === 'entry' || event.detail.kind === 'old-item')) {
+      event.detail.entryKeyboardFocus = true;
+    }
+  }, true);
 
   function get(url) {
     return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
@@ -644,6 +662,7 @@
     if (oldDel) {
       event.preventDefault();
       trigger = oldDel;
+      keyboardOpened = event.detail === 0;
       confirmDelete(oldDel.dataset.oldItemDelete, true);
       return;
     }
@@ -651,6 +670,7 @@
     if (oldEdit) {
       event.preventDefault();
       trigger = oldEdit;
+      keyboardOpened = event.detail === 0;
       load(oldItemEditUrl(oldEdit.dataset.oldItemEdit));
       return;
     }
@@ -658,6 +678,7 @@
     if (del) {
       event.preventDefault();
       trigger = del;
+      keyboardOpened = event.detail === 0;
       confirmDelete(del.dataset.entryDelete);
       return;
     }
@@ -665,6 +686,7 @@
     if (edit) {
       event.preventDefault();
       trigger = edit;
+      keyboardOpened = event.detail === 0;
       load(editUrl(edit.dataset.entryEdit));
       return;
     }
@@ -672,6 +694,7 @@
     if (!opener || opener.disabled) return;
     event.preventDefault();
     trigger = opener;
+    keyboardOpened = false;
     var row = opener.closest('[data-entry-after]');
     var after = row ? row.dataset.entryAfter
                     : (opener.closest('[data-entry-start]') ? 'start' : '');

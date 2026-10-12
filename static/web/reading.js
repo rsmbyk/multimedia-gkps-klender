@@ -1154,7 +1154,12 @@
         if (focusTarget.tabIndex < 0 && !focusTarget.hasAttribute('tabindex')) {
           focusTarget.setAttribute('tabindex', '-1');
         }
-        if (window.gkpsFocus) window.gkpsFocus.restoreQuietly(focusTarget);
+        if (opts.entryKeyboardFocus
+            && (opts.focusKind === 'entry' || opts.focusKind === 'old-item')) {
+          focusTarget = focusTarget.querySelector('.entry__ctrl:not([disabled])') || focusTarget;
+          focusTarget.classList.remove('focus-restore-quiet');
+          focusTarget.focus({ preventScroll: true });
+        } else if (window.gkpsFocus) window.gkpsFocus.restoreQuietly(focusTarget);
         else focusTarget.focus({ preventScroll: true });
       }
     }
@@ -1307,7 +1312,8 @@
     navigate(url, {
       kind: stageMatchesSection ? 'refresh' : 'lists',
       what: event.detail && (event.detail.focusId || event.detail.id),
-      focusKind: event.detail && (event.detail.focusKind || event.detail.kind)
+      focusKind: event.detail && (event.detail.focusKind || event.detail.kind),
+      entryKeyboardFocus: !!(event.detail && event.detail.entryKeyboardFocus)
     });
   });
 

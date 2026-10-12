@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-060](./items/ITEM-060-entry-modal-highlight.md) | Clear stale service entry highlight after modal dismissal | Quiet restored focus; preserve hover and keyboard access | fix | P2 | S | [058](../specs/058-entry-modal-highlight/spec.md) | `fix/058-entry-modal-highlight` | 2026-10-12 |
 
 ## In review
 

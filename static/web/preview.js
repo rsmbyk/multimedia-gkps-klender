@@ -13,6 +13,7 @@
   if (!modal || typeof modal.showModal !== 'function') return;
 
   var trigger = null;
+  var keyboardOpened = false;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
       if (target) target.focus({ preventScroll: true });
@@ -39,6 +40,7 @@
     if (opener) {
       event.preventDefault();
       trigger = opener;
+      keyboardOpened = event.detail === 0;
       var anchor = opener.dataset.previewFor;
       var data = anchor && document.querySelector(
         '.entry__preview-src[data-preview-for="' + anchor + '"]');
@@ -57,7 +59,15 @@
 
   modal.addEventListener('close', function () {
     content.innerHTML = '';
-    if (trigger && document.contains(trigger)) focusTools.restoreQuietly(trigger);
+    if (trigger && document.contains(trigger)) {
+      if (keyboardOpened) {
+        trigger.classList.remove('focus-restore-quiet');
+        trigger.focus({ preventScroll: true });
+      } else {
+        focusTools.restoreQuietly(trigger);
+      }
+    }
+    keyboardOpened = false;
     trigger = null;
   });
 })();
