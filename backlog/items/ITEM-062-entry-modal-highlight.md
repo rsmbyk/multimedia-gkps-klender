@@ -1,13 +1,13 @@
 ---
-id: ITEM-060
-status: in-review
+id: ITEM-062
+status: done
 title: 'Clear stale service entry highlight after modal dismissal'
 type: fix
 priority: P2
 effort: S
 created: 2026-10-12
 updated: 2026-10-12
-spec: 058
+spec: 060
 branch: fix/058-entry-modal-highlight
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/314
 archived_at:
@@ -16,7 +16,7 @@ bump: patch
 release_version: 1.4.1
 ---
 
-# ITEM-060: Clear stale service entry highlight after modal dismissal
+# ITEM-062: Clear stale service entry highlight after modal dismissal
 
 ## Summary
 
@@ -26,7 +26,7 @@ hover, deliberate keyboard navigation, and touch controls.
 
 ## Notes
 
-- Owner approved the state preview on 2026-10-12; spec 058 accepted on 2026-10-12.
+- Owner approved the state preview on 2026-10-12; spec 060 accepted on 2026-10-12.
 - Existing focus restoration supplies a quiet marker, but entry background and
   control-visibility selectors do not account for it.
 
@@ -39,6 +39,6 @@ hover, deliberate keyboard navigation, and touch controls.
 
 ## Links
 
-- Spec: [058](../../specs/058-entry-modal-highlight/spec.md)
-- Preview: [state preview](../../specs/058-entry-modal-highlight/preview.html)
+- Spec: [060](../../specs/060-entry-modal-highlight/spec.md)
+- Preview: [state preview](../../specs/060-entry-modal-highlight/preview.html)
 - Related items: ITEM-027, ITEM-035, ITEM-036

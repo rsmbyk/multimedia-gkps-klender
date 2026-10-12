@@ -1,8 +1,8 @@
-# Spec 058: Clear stale service entry highlight after modal dismissal
+# Spec 060: Clear stale service entry highlight after modal dismissal
 
-- **ID:** 058
+- **ID:** 060
 - **Status:** Accepted
-- **Item:** ITEM-060
+- **Item:** ITEM-062
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch
