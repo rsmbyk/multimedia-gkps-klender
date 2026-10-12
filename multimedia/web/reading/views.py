@@ -37,6 +37,7 @@ from multimedia.web.reading import entries as entry_forms
 from multimedia.web.reading.formatting import format_verses
 from multimedia.web.reading import legacy_items
 from multimedia.web.reading import search as search_lib
+from multimedia.web.reading import voices
 
 TESTAMENTS = (('old', 'Perjanjian Lama'), ('new', 'Perjanjian Baru'))
 
@@ -620,15 +621,15 @@ def _first_line(text):
 
 
 def _paragraphs(text):
-    """A block's lines, with a speaker lifted out of "SPEAKER. text" when present."""
-    paras = []
-    for line in (text or '').split('\n'):
-        match = SPEAKER_RE.match(line)
-        if match:
-            paras.append({'speaker': match.group(1), 'text': match.group(2)})
-        else:
-            paras.append({'speaker': '', 'text': line})
-    return paras
+    """A liturgy text's lines, each with its voice and its speaker mark lifted out as
+    written ("P.", "Paragenda:", "P+J:") when it has one (spec 059)."""
+    return [{'mark': line.mark, 'voice': line.voice, 'text': line.text}
+            for line in voices.voice_lines((text or '').split('\n'))]
+
+
+def _plain_paragraphs(text):
+    """Lines that are not liturgy (a passage): no speaker, no voice."""
+    return [{'mark': '', 'voice': '', 'text': line} for line in (text or '').split('\n')]
 
 
 PANE_TEXT_LINES = 3
@@ -652,7 +653,7 @@ def _entry_preview(entry, kind_key):
     """The whole content of an entry, for the read-only preview (spec 032)."""
     title, body = entry.resolve()
     if kind_key == 'scripture':
-        return {'kind': 'passage', 'reference': title, 'paras': _paragraphs(body)}
+        return {'kind': 'passage', 'reference': title, 'paras': _plain_paragraphs(body)}
     song = entry.song
     if song.book.is_hymn_book and song.number is not None:
         heading = entry.citation()      # the short form, shared with the stage (spec 054)
@@ -795,14 +796,24 @@ def _tatib_stage(service):
     return items, toc
 
 
-def _line_pairs(text):
+def _screen_lines(text, voiced=False):
+    """A body's lines as the display shows them: the line as written, and its speaker
+    voice when the body is a liturgy text (spec 059). Songs and passages pass no voice."""
+    raw_lines = (text or '').split('\n')
+    if not voiced:
+        return [{'text': raw, 'voice': ''} for raw in raw_lines]
+    return [{'text': line.line, 'voice': line.voice} for line in voices.voice_lines(raw_lines)]
+
+
+def _line_pairs(text, voiced=False):
     """A body's lines in pairs -- the operator's two-line shape -- with a blank line
     ending a screen, so the text after it starts a fresh one and a single line can
-    hold the screen alone."""
+    hold the screen alone. Voices are read over the whole body first, so a speaker
+    carries onto the next screen of the same item."""
     screens, pair = [], []
-    for raw in (text or '').split('\n'):
-        line = raw.strip()
-        if not line:
+    for raw in _screen_lines(text, voiced):
+        line = {'text': raw['text'].strip(), 'voice': raw['voice']}
+        if not line['text']:
             if pair:
                 screens.append(pair)
                 pair = []
@@ -829,7 +840,8 @@ def _scripture_screens(entry):
     for verse in verses:
         reference = f'{book} {entry.chapter}:{verse.verse}'.strip()
         heading = f'{reference}\n{verse.title}' if verse.title else reference
-        screens.append({'blank': False, 'header': heading, 'lines': [verse.text.strip()]})
+        screens.append({'blank': False, 'header': heading,
+                        'lines': [{'text': verse.text.strip(), 'voice': ''}]})
     return screens
 
 
@@ -870,7 +882,7 @@ def _projector_screens(service):
             if row.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
                 screens.append(_blank_screen())
                 continue
-            for lines in _line_pairs(row.text):
+            for lines in _line_pairs(row.text, voiced=True):
                 screens.append({'blank': False, 'header': row.title, 'lines': lines})
             screens.append(_blank_screen())
             continue
@@ -887,11 +899,11 @@ def _projector_screens(service):
             # screens, and the fit loop shrinks (then, if need be, truncates) it.
             header, body = entry.resolve()
             screens.append({'blank': False, 'header': header,
-                            'lines': (body or '').split('\n'), 'single': True})
+                            'lines': _screen_lines(body, voiced=True), 'single': True})
             screens.append(_blank_screen())
         else:                                            # a text entry
             header, body = entry.resolve()
-            for lines in _line_pairs(body):
+            for lines in _line_pairs(body, voiced=True):
                 screens.append({'blank': False, 'header': header, 'lines': lines})
             screens.append(_blank_screen())
     return screens

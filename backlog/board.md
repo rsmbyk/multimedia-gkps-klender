@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-061](./items/ITEM-061-speaker-colors.md) | Color liturgy speakers as a congregation cue | Leader is a dim cue; congregation stays off-white; a joined line is readable and marked | feat | P2 | M | [059](../specs/059-speaker-colors/spec.md) | `feat/059-speaker-colors` | 2026-10-12 |
 
 ## In review
 

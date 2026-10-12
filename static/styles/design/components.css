@@ -1016,6 +1016,11 @@ li:hover > .row-edit,
   color: var(--head-ink);
   margin-right: .15em;
 }
+/* Liturgy voices (spec 059), the same mapping as the projector. On a voiced line
+   the mark takes the line's colour, so a speaker's initials match their words. */
+.tatib__tx.is-join, .preview__line.is-join { color: var(--speaker-join); }
+.tatib__tx.is-leader, .preview__line.is-leader { color: var(--speaker-leader); }
+.is-join > .tatib__sp, .is-leader > .tatib__sp, .is-assembly > .tatib__sp { color: inherit; }
 .tatib__item { scroll-margin-top: 44px; }
 .entry__deleted-warning {
   margin: 6px 0 12px;

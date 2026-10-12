@@ -23,7 +23,7 @@
   </button>
 </div>
 {% endif %}
-{% for item in items %}{% if item.preview %}<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">{% if item.preview.kind == 'song' %}<p class="preview__song">{{ item.preview.heading }}</p>{% if item.preview.verses|length > 1 %}<div class="preview__tabs" role="tablist">{% for verse in item.preview.verses %}<button type="button" role="tab" class="preview__tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% if not forloop.first %} tabindex="-1"{% endif %}>{{ verse.number }}</button>{% endfor %}</div>{% endif %}<div class="preview__panels">{% for verse in item.preview.verses %}<div class="preview__panel" role="tabpanel"{% if not forloop.first %} hidden{% endif %}>{% for line in verse.lines %}<p class="preview__line">{{ line }}</p>{% endfor %}</div>{% endfor %}</div>{% else %}{% if item.preview.reference %}<p class="preview__ref">{{ item.preview.reference }}</p>{% endif %}{% for para in item.preview.paras %}<p class="preview__line">{% if para.speaker %}<span class="tatib__sp">{{ para.speaker }}.</span> {% endif %}{{ para.text }}</p>{% endfor %}{% endif %}</script>{% endif %}{% endfor %}
+{% for item in items %}{% if item.preview %}<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">{% if item.preview.kind == 'song' %}<p class="preview__song">{{ item.preview.heading }}</p>{% if item.preview.verses|length > 1 %}<div class="preview__tabs" role="tablist">{% for verse in item.preview.verses %}<button type="button" role="tab" class="preview__tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% if not forloop.first %} tabindex="-1"{% endif %}>{{ verse.number }}</button>{% endfor %}</div>{% endif %}<div class="preview__panels">{% for verse in item.preview.verses %}<div class="preview__panel" role="tabpanel"{% if not forloop.first %} hidden{% endif %}>{% for line in verse.lines %}<p class="preview__line">{{ line }}</p>{% endfor %}</div>{% endfor %}</div>{% else %}{% if item.preview.reference %}<p class="preview__ref">{{ item.preview.reference }}</p>{% endif %}{% for para in item.preview.paras %}<p class="preview__line{% if para.voice %} is-{{ para.voice }}{% endif %}">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>{% endfor %}{% endif %}</script>{% endif %}{% endfor %}
 {% endblock %}
 
 {% block read_body %}
@@ -63,7 +63,7 @@
 {% if item.title %}<h2 class="read__sec">{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
 {% if item.deleted_target %}<p class="entry__deleted-warning" role="status">This song, songbook, or an included verse was deleted.</p>{% endif %}
 {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
-{% for para in item.paras %}<p class="tatib__tx">{% if para.speaker %}<span class="tatib__sp">{{ para.speaker }}.</span> {% endif %}{{ para.text }}</p>
+{% for para in item.paras %}<p class="tatib__tx{% if para.voice %} is-{{ para.voice }}{% endif %}">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>
 {% endfor %}
 {% if item.entry %}{% if item.note and item.eos %}<span class="tatib__note">{{ item.note }}</span>{% endif %}{% endif %}
 {% if item.preview or item.entry or item.old_item %}
