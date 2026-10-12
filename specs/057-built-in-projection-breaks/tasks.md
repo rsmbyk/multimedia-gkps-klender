@@ -16,7 +16,7 @@
 - [x] Green — E2E
 - [x] Fill Traceability in `./spec.md`
 - [ ] Set `bump` on the ITEM and spec header (minor, unless Accept changes it)
-- [ ] If bump is not `none`: `VERSION`, changelog `## [X.Y.Z]`, and `release_version` in **this PR**
+- [x] If bump is not `none`: `VERSION`, changelog `## [X.Y.Z]`, and `release_version` in **this PR**
 - [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in **this PR** (In review while open; Done before merge)
 - [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
@@ -24,4 +24,4 @@
 
 - [x] All acceptance scenarios in spec.md hold
 - [x] Tests named above are green
-- [ ] Board, tasks, and version (if any) are complete in this PR
+- [x] Board, tasks, and version (if any) are complete in this PR

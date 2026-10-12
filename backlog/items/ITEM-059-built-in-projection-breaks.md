@@ -1,6 +1,6 @@
 ---
 id: ITEM-059
-status: in_review
+status: done
 title: Built-in blank after each entry and each song verse
 type: feat
 priority: P1
