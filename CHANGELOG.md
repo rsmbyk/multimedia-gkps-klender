@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-10-12
+
+### Changed
+
+- Entry numbers in the Tata Ibadah contents list sit at the vertical middle of their row, so multi-line entries (a quoted text, or a song with its verse line) read with an even numbering column. Text position, row size, and the songbook song list are unchanged.
+
 ## [1.5.1] - 2026-10-12
 
 ### Fixed

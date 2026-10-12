@@ -1881,6 +1881,10 @@ kbd {
 .toc__grip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 /* the grip sits over the row's right end: give the label room so nothing hides */
 :root[data-section="tatib"] #chList .songrow__t { padding-right: 30px; }
+/* The entry number reads as the row's index, so it centers on the whole row while the
+   text keeps its baseline. The drag copy lives outside #chList and must match. */
+:root[data-section="tatib"] #chList .songrow__c,
+.reorder__ghost .songrow__c { align-self: center; }
 /* The real row is the sole destination slot. Hide its contents, not its box;
    its tint marks the space without a ring. */
 #chList li.is-dragging {

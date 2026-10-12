@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-064](./items/ITEM-064-toc-number-centering.md) | Center entry numbers vertically in the Tata Ibadah contents list | Number sits at the row's vertical middle on multi-line rows; text, size, and songbook list unchanged | chore | P2 | S | [062](../specs/062-toc-number-centering/spec.md) | `chore/062-toc-number-centering` | 2026-10-12 |
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
