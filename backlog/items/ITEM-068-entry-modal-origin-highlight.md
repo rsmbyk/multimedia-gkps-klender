@@ -1,6 +1,6 @@
 ---
 id: ITEM-068
-status: in_progress
+status: done
 title: 'Hold the service entry highlight while its modal is open'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: 065
 branch: fix/065-entry-modal-origin-highlight
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/318
 archived_at:
 archive_reason:
 bump: patch
