@@ -1,6 +1,6 @@
 ---
 id: ITEM-061
-status: in-progress
+status: in-review
 title: 'Distinct song label typography'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: '059'
 branch: fix/059-song-label-typography
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/313
 archived_at:
 archive_reason:
 bump: patch
