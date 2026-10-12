@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-069](./items/ITEM-069-stage-song-verse-line.md) | Always show a song entry's verses on the Tata Ibadah stage | Stage shows `Bait 1-3` under every song entry with verses, matching the sidebar; deleted targets stay silent | fix | P2 | S | [066](../specs/066-stage-song-verse-line/spec.md) | 2026-10-12 |
 
 ## Ready
 
