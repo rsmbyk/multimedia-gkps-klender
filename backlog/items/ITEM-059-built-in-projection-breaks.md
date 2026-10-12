@@ -1,6 +1,6 @@
 ---
 id: ITEM-059
-status: in_progress
+status: in_review
 title: Built-in blank after each entry and each song verse
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-12
 updated: 2026-10-12
 spec: ../specs/057-built-in-projection-breaks/spec.md
 branch: feat/057-built-in-projection-breaks
-pr:
+pr: 311
 archived_at:
 archive_reason:
 bump: minor
