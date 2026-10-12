@@ -1,6 +1,6 @@
 ---
 id: ITEM-066
-status: in-review
+status: done
 title: 'Restore the single theme button'
 type: chore
 priority: P2
