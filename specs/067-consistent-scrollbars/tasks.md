@@ -20,6 +20,6 @@
 
 ## Done when
 
-- [ ] All acceptance scenarios in spec.md hold
+- [x] All acceptance scenarios in spec.md hold
 - [x] Visual/browser verification is recorded
-- [ ] Board, tasks, and version are complete in this PR
+- [x] Board, tasks, and version are complete in this PR

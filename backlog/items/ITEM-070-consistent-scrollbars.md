@@ -1,6 +1,6 @@
 ---
 id: ITEM-070
-status: in_review
+status: done
 title: Consistent scrollbars across app views
 type: feat
 priority: P2
