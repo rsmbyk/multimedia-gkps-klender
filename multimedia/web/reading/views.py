@@ -745,18 +745,13 @@ def _tatib_stage(service):
         # A passage or a song shows its reference here, not its text: the words belong on the display.
         shows_text = kind_key not in ('scripture', 'song')
         paras, clipped = _clamped_paragraphs(body) if (body and shows_text) else ([], False)
-        subtitle = ''
-        if kind_key == 'song' and row.song_id and not deleted_target:
-            # A partial verse selection is stated (spec 054): only when the entry's stored
-            # verses differ from the song's current ones is there anything to say.
-            current = set(row.song.verse_set.filter(is_deleted=False)
-                          .values_list('number', flat=True))
-            chosen = set(row.verses or [])
-            if chosen != current:
-                subtitle = 'Bait ' + format_verses(chosen)
+        verse_line = ''
+        if kind_key == 'song' and row.song_id and not deleted_target and row.verses:
+            # Spec 066: the stage and the sidebar state the entry's own verses, full or partial.
+            verse_line = 'Bait ' + format_verses(row.verses)
         block = {'entry': True, 'anchor': anchor, 'pk': row.pk, 'kind': kind_key,
                  'kind_label': row.get_kind_display(), 'title': title,
-                 'deleted_target': deleted_target, 'subtitle': subtitle,
+                 'deleted_target': deleted_target, 'subtitle': verse_line,
                  'paras': paras, 'clipped': clipped,
                  'note': row.title if row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK else ''}
         if kind_key in ('scripture', 'song') and not deleted_target:
@@ -779,10 +774,6 @@ def _tatib_stage(service):
             # A hymn song reads by its short reference and title (spec 039).
             song = row.song
             label = f'{song.book_number} {song.title}'.strip() if song.title else song.book_number
-        verse_line = ''
-        if kind_key == 'song' and row.song_id and not deleted_target and row.verses:
-            # Spec 057: the sidebar row states which verses the entry keeps, on its second line.
-            verse_line = 'Bait ' + format_verses(row.verses)
         # Keep song parts structured so the sidebar can style them independently.
         song_label = kind_key == 'song' and bool(row.song_id) and not deleted_target
         song_reference, song_title = '', ''

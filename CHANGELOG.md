@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-10-12
+
+### Fixed
+
+- Every song entry on the Tata Ibadah stage states the verses it keeps under its heading (`Bait 1-3`), not only when some verses are left out. The stage line now always matches the sidebar's second line, and a deleted song or verse still shows only its warning.
+
 ## [1.6.3] - 2026-10-12
 
 ### Fixed

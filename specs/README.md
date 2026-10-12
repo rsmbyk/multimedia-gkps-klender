@@ -76,6 +76,7 @@ Living behavior contracts. Layout and gates: [`docs/PROCESS.md`](../docs/PROCESS
 | [061](061-entry-modal-highlight/spec.md) | Clear stale service entry highlight after modal dismissal | Accepted |
 | [063](063-toc-number-centering/spec.md) | Center entry numbers vertically in the Tata Ibadah contents list | Accepted |
 | [065](065-entry-modal-origin-highlight/spec.md) | Hold the service entry highlight while its modal is open | Accepted |
+| [066](066-stage-song-verse-line/spec.md) | Always show a song entry's verses on the Tata Ibadah stage | Accepted |
 
 `000` is reserved for the project scaffold baseline. As an adopter, this repo has no scaffold
 spec yet — the as-built baseline backfill is a separate, owner-accepted slice.
