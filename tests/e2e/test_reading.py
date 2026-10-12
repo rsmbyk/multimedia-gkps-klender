@@ -251,9 +251,34 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
-        expect(page.locator('#systemThemeBtn')).to_have_attribute('aria-pressed', 'true')
+        expect(page.locator('.rail__foot button')).to_have_count(1)
+        expect(page.locator('#themeBtn')).to_have_attribute('aria-label', 'System mode')
+        expect(page.locator('#themeBtn')).to_have_attribute('data-tip', 'System mode')
+        expect(page.locator('#themeBtn .system')).to_have_css('opacity', '1')
         page.emulate_media(color_scheme='light')
         expect(page.locator('html')).to_have_attribute('data-theme', 'light')
+        expect(page.locator('#themeBtn')).to_have_attribute('aria-label', 'System mode')
+
+    def test_theme_button_cycles_modes_and_current_labels(self):
+        page = self._page()
+        page.emulate_media(color_scheme='light')
+        page.goto(self.live_server_url + reverse('web-home'))
+        for mode, icon in [('dark', 'moon'), ('light', 'sun'), ('system', 'system')]:
+            page.locator('#themeBtn').click()
+            expect(page.locator('html')).to_have_attribute('data-theme-mode', mode)
+            expect(page.locator('#themeBtn')).to_have_attribute('aria-label', f'{mode.title()} mode')
+            expect(page.locator('#themeBtn')).to_have_attribute('data-tip', f'{mode.title()} mode')
+            expect(page.locator(f'#themeBtn .{icon}')).to_have_css('opacity', '1')
+
+    def test_theme_button_keeps_original_rail_style(self):
+        for width, expected_size in [(1280, 44), (500, 40)]:
+            page = self._page(width=width)
+            page.goto(self.live_server_url + reverse('web-home'))
+            button = page.locator('#themeBtn')
+            self.assertEqual(button.bounding_box()['width'], expected_size)
+            self.assertEqual(button.bounding_box()['height'], expected_size)
+            expect(button).to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+            page.close()
 
     def test_system_mode_can_be_restored_after_manual_override(self):
         page = self._page()
@@ -264,7 +289,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.emulate_media(color_scheme='dark')
         page.emulate_media(color_scheme='light')
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
-        page.locator('#systemThemeBtn').click()
+        page.locator('#themeBtn').click()
+        expect(page.locator('html')).to_have_attribute('data-theme-mode', 'light')
+        page.locator('#themeBtn').click()
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
         expect(page.locator('html')).to_have_attribute('data-theme', 'light')
         page.reload()
@@ -286,7 +313,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
-        page.locator('#lightThemeBtn').click()
+        page.locator('#themeBtn').click()
+        page.locator('#themeBtn').click()
         expect(page.locator('html')).to_have_attribute('data-theme', 'light')
 
     def test_tatib_stage_entry_links_follow_the_theme(self):
