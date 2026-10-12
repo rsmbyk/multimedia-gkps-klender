@@ -1320,6 +1320,16 @@ li:hover > .row-edit,
 .songrow__t { min-width: 0; }
 .songrow__t--lines { display: flex; flex-direction: column; line-height: 1.35; }
 .songrow__line--blank { min-height: 1.35em; }
+/* Service-order songs: reference + title, with verse selection beneath (spec 059). */
+.songrow__t--song { flex: 1; font-style: normal; line-height: 20px; overflow-wrap: anywhere; }
+.songrow__heading { display: block; color: var(--ink); }
+.songrow__reference { font-size: 12px; font-weight: 600; margin-right: 8px; }
+.songrow__title { font-size: 14px; font-weight: 400; }
+.songrow__verses { display: block; font-size: 12px; font-weight: 400; line-height: 17px; color: var(--head-ink); }
+/* Keep the smaller metadata legible against the selected row tint. */
+.songrow[aria-current="true"] .songrow__verses,
+:root[data-theme="dark"] .songrow__verses { color: var(--ink); }
+
 .ch-num {
   width: var(--btn); height: var(--btn);
   display: grid; place-items: center;

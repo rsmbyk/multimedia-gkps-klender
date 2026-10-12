@@ -1,9 +1,9 @@
-# Plan 060: Clear stale service entry highlight after modal dismissal
+# Plan 061: Clear stale service entry highlight after modal dismissal
 
 - **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
-- **Item:** ITEM-062
+- **Item:** ITEM-063
 - **Bump:** patch
 
 ## Why
@@ -50,6 +50,6 @@ and global changes to focus restoration for other editors.
 - Quiet focus can be on the entry itself or a descendant button; cover both.
 - Post-save DOM replacement can restore focus again; assert the settled state.
 - Hover must override quiet restoration when the pointer actually returns.
-- Existing spec 025 makes all automatic restoration quiet. Spec 060 explicitly
+- Existing spec 025 makes all automatic restoration quiet. Spec 061 explicitly
   refines that rule only for keyboard-opened service entry modals, as shown in
   the approved preview; other editor behavior remains governed by spec 025.

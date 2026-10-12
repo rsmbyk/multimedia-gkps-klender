@@ -783,6 +783,12 @@ def _tatib_stage(service):
         if kind_key == 'song' and row.song_id and not deleted_target and row.verses:
             # Spec 057: the sidebar row states which verses the entry keeps, on its second line.
             verse_line = 'Bait ' + format_verses(row.verses)
+        # Keep song parts structured so the sidebar can style them independently.
+        song_label = kind_key == 'song' and bool(row.song_id) and not deleted_target
+        song_reference, song_title = '', ''
+        if song_label:
+            song_reference = row.song.book_number if row.song.book.is_hymn_book else ''
+            song_title = row.song.title or ('' if song_reference else label)
         filter_text = f'{label} {title} {body} {verse_line}'
         label = label[:60]
         label_lines = label.split('\n') if two_line_label else None
@@ -792,6 +798,8 @@ def _tatib_stage(service):
         toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
                     'label': label, 'label_lines': label_lines, 'titled': bool(title),
                     'two_line_label': two_line_label, 'pk': row.pk, 'entry': True,
+                    'song_label': song_label, 'song_reference': song_reference,
+                    'song_title': song_title, 'verse_line': verse_line,
                     'txt': filter_text})
     return items, toc
 
