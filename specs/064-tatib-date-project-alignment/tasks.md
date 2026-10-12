@@ -16,9 +16,9 @@
 - [x] Green — targeted E2E: new date/button alignment test passes at 1440 px and 390 px widths
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` on the ITEM and spec header
-- [x] Bump `VERSION` to 1.6.4 and add its changelog section in the same PR
-- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) (In progress while implementation is underway)
-- [x] Conventional Commit + draft PR #320 linking `./spec.md`
+- [x] Bump `VERSION` to 1.6.5 and add its changelog section in the same PR
+- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) (In review while open; Done before merge)
+- [x] Conventional Commit + PR #320 linking `./spec.md`
 
 ## Done when
 

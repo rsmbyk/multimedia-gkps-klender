@@ -1,6 +1,6 @@
 ---
 id: ITEM-067
-status: in_review
+status: done
 title: 'Center the Tata Ibadah date and Project button'
 type: chore
 priority: P2
@@ -13,7 +13,7 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/320
 archived_at:
 archive_reason:
 bump: patch
-release_version: 1.6.4
+release_version: 1.6.5
 ---
 
 # ITEM-067: Center the Tata Ibadah date and Project button
