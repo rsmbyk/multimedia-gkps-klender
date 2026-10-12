@@ -1,6 +1,6 @@
 ---
 id: ITEM-069
-status: speccing
+status: in_progress
 title: 'Always show a song entry''s verses on the Tata Ibadah stage'
 type: fix
 priority: P2
@@ -13,7 +13,7 @@ pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.6.4
 ---
 
 # ITEM-069: Always show a song entry's verses on the Tata Ibadah stage
@@ -30,6 +30,7 @@ entry with verses, in the same format as the sidebar.
 - Owner reported the line "gone" on 2026-10-12; it was never removed — spec 054's
   partial-only rule hides it on full selections.
 - Owner OKed always showing it on 2026-10-12. Deleted targets keep showing no line.
+- Spec 066 accepted on 2026-10-12.
 
 ## Acceptance sketch
 

@@ -1,6 +1,6 @@
 # Plan 066: Always show a song entry's verses on the Tata Ibadah stage
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-069

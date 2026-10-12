@@ -1,7 +1,7 @@
 # Spec 066: Always show a song entry's verses on the Tata Ibadah stage
 
 - **ID:** 066
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-069
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -95,9 +95,18 @@ other.
 
 ## Traceability
 
-- Domain/app tests: `multimedia/web/tests.py` — the spec 054 stage verse-line tests
-  (full selection now shows `Bait 1-3`; verse added after preparing; stage/sidebar agreement).
-- E2E: `tests/e2e/test_entry_preview.py` (existing `.read__sub` assertion stays green).
-- Implementation: `multimedia/web/reading/views.py` (`_tatib_stage`).
+- Domain/app tests: `multimedia/web/tests.py`, `ServiceEntryViewTests` —
+  `test_a_full_verse_selection_shows_its_numbers`,
+  `test_a_reference_free_single_verse_song_shows_its_verse`,
+  `test_the_stage_and_sidebar_verse_lines_agree`,
+  `test_a_verse_added_after_preparing_keeps_the_entrys_own_line`; the partial, non-hymn, and
+  deleted-verse tests kept. Red on 2026-10-12 (3 failures against the spec 054 rule), then green:
+  `DJANGO_DEVELOPMENT_MODE=True python manage.py test multimedia.web.tests.ServiceEntryViewTests`
+  — 101 tests, all verse-line tests pass; the 2 out-of-range-pk errors are pre-existing on
+  `develop` under SQLite (PostgreSQL-only pk validator) and unrelated.
+- E2E: `python manage.py test tests.e2e.test_entry_preview` — 5 tests passed locally on
+  2026-10-12.
+- Implementation: `multimedia/web/reading/views.py` (`_tatib_stage`) builds one `verse_line`
+  for the stage `subtitle` and the sidebar row, and drops the current-verse comparison query.
 - Amends: spec 054 (partial-only verse line). Pairs with: spec 057 (sidebar verse line),
   spec 060 (song label typography).

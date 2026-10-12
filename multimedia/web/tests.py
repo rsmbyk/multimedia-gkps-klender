@@ -1354,9 +1354,30 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('class="read__sub"', pane)
         self.assertIn('Bait 1, 3', pane)
 
-    def test_a_full_verse_selection_shows_no_verse_line(self):
+    def test_a_full_verse_selection_shows_its_numbers(self):
+        # Spec 066 amends spec 054: a full selection is stated too.
         self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
-        self.assertNotIn('read__sub', self.pane())
+        pane = self.pane()
+        self.assertIn('class="read__sub"', pane)
+        self.assertIn('Bait 1-3', pane)
+
+    def test_a_reference_free_single_verse_song_shows_its_verse(self):
+        book = songs.Book.objects.create(name='Lagu lain', is_hymn_book=False)
+        song = songs.Song.objects.create(book=book, title='Mars Sekolah GKPS')
+        songs.Verse.objects.create(song=song, number=1, lyric='bait')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.assertIn('<p class="read__sub">Bait 1</p>', self.pane())
+
+    def test_the_stage_and_sidebar_verse_lines_agree(self):
+        song = songs.Song.objects.create(book=self.songbook, number=153, title='Panjang')
+        for number in range(1, 11):
+            songs.Verse.objects.create(song=song, number=number, lyric=f'bait {number}')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1, 2, 3, 5, 6, 8, 9, 10])
+        response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
+        item = next(item for item in response.context['toc_items'] if item.get('entry'))
+        self.assertEqual(item['verse_line'], 'Bait 1-3, 5, 6, 8-10')
+        pane = response.content.decode().split('id="readBody"')[1]
+        self.assertIn('<p class="read__sub">Bait 1-3, 5, 6, 8-10</p>', pane)
 
     def test_a_non_hymn_song_with_a_partial_selection_shows_its_numbers(self):
         book = songs.Book.objects.create(name='Kidung Eksperimen', short_name='KE')
@@ -1375,11 +1396,11 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('entry__deleted-warning', pane)
         self.assertNotIn('read__sub', pane)
 
-    def test_a_verse_added_after_preparing_shows_the_line_again(self):
+    def test_a_verse_added_after_preparing_keeps_the_entrys_own_line(self):
         self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
-        self.assertNotIn('read__sub', self.pane())
+        self.assertIn('<p class="read__sub">Bait 1-3</p>', self.pane())
         songs.Verse.objects.create(song=self.song, number=4, lyric='bait 4')
-        self.assertIn('Bait 1-3', self.pane())
+        self.assertIn('<p class="read__sub">Bait 1-3</p>', self.pane())
 
     # --- the sidebar's song label (spec 039) --------------------------------
 
