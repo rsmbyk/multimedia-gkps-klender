@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speaker colors — proposed look</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 24px 64px;
+    background: #F7F5F1;
+    color: #1F1F1D;
+    font: 16px/1.5 ui-sans-serif, system-ui, sans-serif;
+  }
+  main { max-width: 980px; margin: 0 auto; }
+  h1 { margin: 0 0 8px; font: 32px/1.2 Georgia, serif; }
+  .lede { margin: 0 0 28px; max-width: 68ch; color: #646357; }
+  h2 { margin: 36px 0 8px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #646357; }
+  .note { margin: 8px 0 0; color: #646357; font-size: 13px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 0 0 8px; }
+  .swatch { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .swatch i { width: 14px; height: 14px; border-radius: 3px; display: block; }
+  .leader { color: #9C8463; }          /* a quiet cue: present, dimmer than the off-white they read */
+  .assembly, .plain { color: #F5F3EE; }
+  .join { color: #8EC2CC; }            /* readable, and clearly not the plain line: this one they say */
+
+  /* Projector. The real screen is full-bleed and fits the type as large as it
+     can. These frames are shrunk so the colors can be compared on one page. */
+  .frames { display: grid; gap: 16px; }
+  .frame {
+    background: #14130F;
+    border-radius: 12px;
+    min-height: 220px;
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+  }
+  .frame h3 {
+    margin: 0;
+    color: #FFD166;
+    font: 700 18px/1.37 "Source Sans Pro", ui-sans-serif, system-ui, sans-serif;
+  }
+  .frame p {
+    margin: 0;
+    max-width: 34ch;
+    font: 700 26px/1.37 "Source Sans Pro", ui-sans-serif, system-ui, sans-serif;
+  }
+  .frame p + p { margin-top: 10px; }
+  .caption { margin: 6px 0 0; font-size: 13px; color: #646357; }
+
+  /* Stage, both themes. Serif body, the way the Tata Ibadah page sets a text. */
+  .stages { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .stages { grid-template-columns: 1fr; } }
+  .stage { border-radius: 12px; padding: 22px 22px 26px; }
+  .stage h3 { margin: 0 0 14px; font: 640 15px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .03em; }
+  .stage p { margin: 0 0 4px; font: 400 1.12rem/1.78 Georgia, "Times New Roman", serif; }
+  .stage .mark { font: 640 .82em/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .02em; margin-right: .15em; }
+  .light { background: #F7F5F1; color: #1F1F1D; border: 1px solid #D9D6CD; }
+  .light h3 { color: #1F1F1D; }
+  .light .leader { color: #866B50; }   /* quieter than the page ink */
+  .light .assembly, .light .plain { color: #1F1F1D; }
+  .light .join { color: #2B5A64; }     /* readable, marked as the line they say */
+  .dark { background: #14130F; color: #F5F3EE; }
+  .dark h3 { color: #F5F3EE; }
+</style>
+<main>
+  <h1>Speaker colors</h1>
+  <p class="lede">The screen faces the congregation. Their own lines stay the ordinary off-white, the text they read. A leader line is only a cue that the leader is speaking, so it is dimmer than that off-white and is not the line the eye settles on. A joined line is different: they do read it, and the color tells them it is theirs to say. It stays readable, and it stays quieter than the off-white. The gold line is the section header, unchanged.</p>
+
+  <div class="legend">
+    <span class="swatch"><i style="background:#F5F3EE; border:1px solid #D9D6CD"></i> Congregation, the line they read</span>
+    <span class="swatch"><i style="background:#8EC2CC"></i> Both voices, read this and say it</span>
+    <span class="swatch"><i style="background:#9C8463"></i> Leader, a quiet cue</span>
+    <span class="swatch"><i style="background:#FFD166"></i> Section header</span>
+  </div>
+
+  <h2>What the congregation sees</h2>
+  <div class="frames">
+    <div>
+      <div class="frame">
+        <h3>Votum</h3>
+        <p class="leader">P: Marilah kita bangkit berdiri</p>
+        <p class="assembly">J: Amin.</p>
+      </div>
+      <p class="caption">The usual screen. The quieter warm line is the leader. P, L, Liturgis, Paragenda, Pendeta, Pandita, Pdt, Pelayan, Pemimpin, and Parambilan share it. The off-white line is the one the congregation reads.</p>
+    </div>
+    <div>
+      <div class="frame">
+        <h3>Introitus</h3>
+        <p class="leader">Paragenda: Ibagas Goran ni Naibata Bapa pakon Tuhan Jesus Kristus</p>
+        <p class="assembly">K: Haleluya, Haleluya, Haleluya.</p>
+      </div>
+      <p class="caption">K, Kuria, J, Jemaat, Bapa, Inang, and Namaposo stay the ordinary off-white.</p>
+    </div>
+    <div>
+      <div class="frame">
+        <p class="join">P+J: Marilah kita memuji TUHAN dan bersyukur bagi-Nya. Amin.</p>
+      </div>
+      <p class="caption">P+K, P+J, P/J, and the same joins. Bright enough to read, colored so the congregation knows this line is theirs to say, and still quieter than the off-white.</p>
+    </div>
+    <div>
+      <div class="frame">
+        <h3>Nyanyian</h3>
+        <p class="plain">Haleluya, Haleluya, Haleluya.</p>
+      </div>
+      <p class="caption">No speaker at the start of the line. The header stays gold.</p>
+    </div>
+  </div>
+
+  <h2>The Tata Ibadah page</h2>
+  <div class="stages">
+    <div class="stage light">
+      <h3>Votum</h3>
+      <p class="leader"><span class="mark">P.</span>Marilah kita bangkit berdiri</p>
+      <p class="assembly"><span class="mark">J.</span>Amin.</p>
+      <p class="join"><span class="mark">P+J.</span>Marilah kita memuji TUHAN dan bersyukur bagi-Nya. Amin.</p>
+      <p class="plain">Haleluya, Haleluya, Haleluya.</p>
+    </div>
+    <div class="stage dark">
+      <h3>Votum</h3>
+      <p class="leader"><span class="mark">P.</span>Marilah kita bangkit berdiri</p>
+      <p class="assembly"><span class="mark">J.</span>Amin.</p>
+      <p class="join"><span class="mark">P+J.</span>Marilah kita memuji TUHAN dan bersyukur bagi-Nya. Amin.</p>
+      <p class="plain">Haleluya, Haleluya, Haleluya.</p>
+    </div>
+  </div>
+  <p class="note">Light page on the left, dark page on the right. The same order: ordinary ink is strongest, the joined line is a readable marked color, and the leader is the quietest. On the screen that is off-white, #8EC2CC, and #9C8463. On the page it is the ink, #2B5A64, and #866B50.</p>
+</main>
+</html>
