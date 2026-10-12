@@ -1,6 +1,6 @@
 ---
 id: ITEM-059
-status: in_review
+status: done
 title: 'Fix single-screen Save, add breaks at once, drop break Edit, show song verses in the sidebar'
 type: fix
 priority: P2
