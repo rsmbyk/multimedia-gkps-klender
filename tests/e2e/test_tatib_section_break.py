@@ -73,7 +73,8 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         self.assertIn('doa syafaat', legacy_break.inner_text().lower())     # the legacy note stays
 
     def test_the_divider_takes_the_same_box_as_the_entries(self):
-        # Spec 055: the divider shares the entry box -- 52px, no margins -- with
+        # Spec 055, amended by 068: the divider shares the entry box -- 56px,
+        # no margins -- with
         # its rule at the centre, instead of the old 16px-margined hairline.
         page = self._page()
         page.mouse.move(1400, 850)
@@ -82,8 +83,8 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
             self.assertEqual(divider.evaluate(
                 'el => [getComputedStyle(el).marginTop, getComputedStyle(el).marginBottom]'),
                 ['0px', '0px'], index)
-            self.assertEqual(divider.evaluate('el => getComputedStyle(el).minHeight'), '52px', index)
-            self.assertAlmostEqual(divider.bounding_box()['height'], 52, delta=0.6, msg=index)
+            self.assertEqual(divider.evaluate('el => getComputedStyle(el).minHeight'), '56px', index)
+            self.assertAlmostEqual(divider.bounding_box()['height'], 56, delta=0.6, msg=index)
 
     def test_the_legacy_note_sits_under_the_centred_rule(self):
         page = self._page()
@@ -92,7 +93,7 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         note = divider.locator('.tatib__note')
         self.assertEqual(note.count(), 1)
         box, note_box = divider.bounding_box(), note.bounding_box()
-        self.assertAlmostEqual(note_box['y'] - box['y'], 33, delta=2)   # 50% + 7px
+        self.assertAlmostEqual(note_box['y'] - box['y'], 35, delta=2)   # 50% + 7px
 
     def test_plus_break_adds_the_break_at_once_without_a_dialog(self):
         page = self._page()

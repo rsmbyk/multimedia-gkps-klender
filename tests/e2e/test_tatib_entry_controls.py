@@ -1,7 +1,7 @@
 """The entry box: the controls' home (spec 033, amended by spec 055).
 
 Preview, Edit and Delete float at their item's top-right inside a box that
-CONTAINS them -- 52px minimum, words centred on the box's centreline. Every
+CONTAINS them -- 56px minimum, words centred on the box's centreline. Every
 revealed add row keeps equal 8px above and below its buttons; the start bar
 collapses at rest and reveals with the first block; the controls appear while
 the item is hovered or holds keyboard focus, and always on a device with no
@@ -45,7 +45,7 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
             title='', text='Kasih karunia beserta kita semua. ' * 12)
-        # A one-liner: its box is exactly the controls' height, its words on the
+        # A one-liner: its box has room for the controls, its words on the
         # box's centreline (spec 055).
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=4, kind=tatib.ServiceEntryKind.TEXT,
@@ -128,9 +128,9 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         items = page.locator('.tatib__item--acts')
         self.assertGreater(items.count(), 0)
         for index in range(items.count()):
-            self.assertGreaterEqual(items.nth(index).bounding_box()['height'], 51.5, index)
+            self.assertGreaterEqual(items.nth(index).bounding_box()['height'], 55.5, index)
         one_liner = page.locator('.tatib__item').nth(3)
-        self.assertAlmostEqual(one_liner.bounding_box()['height'], 52, delta=0.6)
+        self.assertAlmostEqual(one_liner.bounding_box()['height'], 56, delta=0.6)
 
     def test_the_words_are_centred_in_the_box(self):
         page = self._page()
@@ -150,10 +150,10 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         self.assertEqual(with_acts.count(), page.locator('.tatib__item--acts').count())
         for index in range(with_acts.count()):
             item = with_acts.nth(index)
-            self.assertEqual(item.evaluate('el => getComputedStyle(el).paddingTop'), '0px')
-            self.assertEqual(item.evaluate('el => getComputedStyle(el).minHeight'), '52px')
+            self.assertEqual(item.evaluate('el => getComputedStyle(el).paddingTop'), '8px')
+            self.assertEqual(item.evaluate('el => getComputedStyle(el).minHeight'), '56px')
         rule = self._page(self.with_break).locator('.tatib__eos').first
-        self.assertEqual(rule.evaluate('el => getComputedStyle(el).minHeight'), '52px')
+        self.assertEqual(rule.evaluate('el => getComputedStyle(el).minHeight'), '56px')
 
     def test_the_divider_takes_the_same_box(self):
         page = self._page(self.with_break)
@@ -162,7 +162,41 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         self.assertEqual(divider.evaluate(
             'el => [getComputedStyle(el).marginTop, getComputedStyle(el).marginBottom]'),
             ['0px', '0px'])
-        self.assertAlmostEqual(divider.bounding_box()['height'], 52, delta=0.6)
+        self.assertAlmostEqual(divider.bounding_box()['height'], 56, delta=0.6)
+
+    def test_the_resting_surface_matches_spec_068_in_both_themes(self):
+        page = self._page(self.with_break)
+        page.mouse.move(1400, 850)
+        for theme, fill, outline in (
+            ('light', 'rgba(31, 31, 29, 0.012)', 'rgba(31, 31, 29, 0.08)'),
+            ('dark', 'rgba(255, 255, 255, 0.012)', 'rgba(255, 255, 255, 0.09)'),
+        ):
+            page.evaluate('(value) => document.documentElement.dataset.theme = value', theme)
+            root = page.locator('html')
+            self.assertEqual(root.evaluate(
+                "el => getComputedStyle(el).getPropertyValue('--tatib-entry-fill').trim()"), fill)
+            self.assertEqual(root.evaluate(
+                "el => getComputedStyle(el).getPropertyValue('--tatib-entry-outline').trim()"), outline)
+            for box in (page.locator('.tatib__item--acts').first,
+                        page.locator('.tatib__eos').first):
+                self.assertEqual(box.evaluate('el => getComputedStyle(el).padding'),
+                                 '8px 8px 8px 12px')
+                self.assertEqual(box.evaluate('el => getComputedStyle(el).minHeight'), '56px')
+                self.assertIn('1px inset', box.evaluate('el => getComputedStyle(el).boxShadow'))
+            acts = page.locator('.entry__acts').first
+            self.assertEqual(acts.evaluate(
+                'el => [getComputedStyle(el).top, getComputedStyle(el).right]'), ['8px', '8px'])
+
+    def test_the_padded_boxes_do_not_overflow_at_narrow_width(self):
+        page = self._page()
+        page.set_viewport_size({'width': 390, 'height': 844})
+        page.wait_for_timeout(250)
+        for box in page.locator('.tatib__item--acts').all():
+            self.assertTrue(box.evaluate('el => el.scrollWidth <= el.clientWidth + 1'))
+        break_page = self._page(self.with_break)
+        break_page.set_viewport_size({'width': 390, 'height': 844})
+        self.assertTrue(break_page.locator('.tatib__eos').first.evaluate(
+            'el => el.scrollWidth <= el.clientWidth + 1'))
 
     def test_keyboard_focus_reveals_the_controls(self):
         page = self._page()
@@ -220,15 +254,18 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
           const bar = document.querySelector('#readBody > .entry__start');
           const block = bar.querySelector('.entry__start-inner').getBoundingClientRect();
           const head = document.querySelector('#readBody').previousElementSibling;
-          const word = bar.nextElementSibling.querySelector('h2, p');
+          const entry = bar.nextElementSibling;
+          const word = entry.querySelector('h2, p');
           return {
             above: round(block.top - head.getBoundingClientRect().bottom),
-            below: round(word.getBoundingClientRect().top - block.bottom),
+            below: round(entry.getBoundingClientRect().top - block.bottom),
+            wordBelow: round(word.getBoundingClientRect().top - block.bottom),
             margin: getComputedStyle(bar).marginTop,
           };
         }""")
         self.assertAlmostEqual(gaps['above'], 8, delta=1, msg=gaps)
         self.assertAlmostEqual(gaps['below'], 8, delta=1, msg=gaps)
+        self.assertAlmostEqual(gaps['wordBelow'], 16, delta=1, msg=gaps)
         self.assertEqual(gaps['margin'], '-30px')
 
     # --- at rest the rows and the bar reserve nothing (spec 055) --------------
@@ -298,7 +335,7 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         bar.hover()
         expect(bar).to_have_css('opacity', '1')               # the bar's own hover keeps it
         expect(acts).to_have_css('opacity', '0')              # the item above is not revealed
-        expect(item).to_have_css('background-color', 'rgba(0, 0, 0, 0)')
+        expect(item).to_have_css('background-color', 'rgba(31, 31, 29, 0.01)')
         item_box, bar_box = item.bounding_box(), bar.bounding_box()
         self.assertLessEqual(item_box['y'] + item_box['height'], bar_box['y'] + 1)   # no overlap
 
