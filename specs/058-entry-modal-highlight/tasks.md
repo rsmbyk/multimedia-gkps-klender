@@ -24,7 +24,8 @@
 ## Done when
 
 - [x] All acceptance scenarios hold and targeted tests pass
-- [ ] Required push/CI checks pass
+- [x] Fast checks pass on the current PR head
+- [ ] Browser E2E push/CI job passes before merge
 - [ ] Board, ITEM, tasks, and version metadata are complete in the same PR
 
-The targeted E2E class is green locally. Push/CI and PR metadata remain. Production release/tag follows the repository's owner-triggered Git Flow release process.
+The targeted E2E class is green locally. Remote Fast checks and CI result pass for PR head 6fffa0b9; the Browser E2E job is skipped while this PR is Draft and must pass before merge. Production release/tag follows the repository's owner-triggered Git Flow release process.
