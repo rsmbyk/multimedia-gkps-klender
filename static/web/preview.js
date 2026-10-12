@@ -3,7 +3,8 @@
  * A read-only modal: the pane's Preview button copies the entry's inline payload into
  * the dialog, which owns no header, scrolls its body, and keeps its Close at the foot.
  * Esc closes it (native <dialog>), as does a click on the overlay. Focus returns to the
- * trigger without leaving a row outline (spec 025).
+ * trigger without leaving a row outline (spec 025). While open, the entry that owns
+ * the trigger keeps its hover look behind the backdrop (spec 065).
  */
 (function () {
   'use strict';
@@ -14,6 +15,7 @@
 
   var trigger = null;
   var keyboardOpened = false;
+  var origin = null;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
       if (target) target.focus({ preventScroll: true });
@@ -46,7 +48,11 @@
         '.entry__preview-src[data-preview-for="' + anchor + '"]');
       content.innerHTML = data ? data.textContent : '';
       wireTabs(content);
-      if (!modal.open) modal.showModal();
+      if (!modal.open) {
+        modal.showModal();
+        origin = opener.closest('.tatib__item, .tatib__eos');
+        if (origin) origin.classList.add('is-modal-origin');
+      }
       return;
     }
     var closer = event.target.closest('[data-preview-close]');
@@ -59,6 +65,8 @@
 
   modal.addEventListener('close', function () {
     content.innerHTML = '';
+    if (origin) origin.classList.remove('is-modal-origin');
+    origin = null;
     if (trigger && document.contains(trigger)) {
       if (keyboardOpened) {
         trigger.classList.remove('focus-restore-quiet');

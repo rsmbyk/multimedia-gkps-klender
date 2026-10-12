@@ -66,7 +66,22 @@
   }
   function close() { if (modal.open) modal.close(); }
 
+  /* The entry that owns the opening control keeps its hover look while the modal is
+     open (spec 065): the backdrop takes the hover and the dialog the focus. Marked
+     only once the modal shows, so a failed load leaves nothing held. */
+  var origin = null;
+  function markOrigin() {
+    releaseOrigin();
+    origin = trigger && trigger.closest('.tatib__item, .tatib__eos');
+    if (origin) origin.classList.add('is-modal-origin');
+  }
+  function releaseOrigin() {
+    if (origin) origin.classList.remove('is-modal-origin');
+    origin = null;
+  }
+
   modal.addEventListener('close', function () {
+    releaseOrigin();
     var target = keyboardOpened ? trigger : focusTargetFor(trigger);
     if (target && document.contains(target)) {
       if (keyboardOpened) {
@@ -109,6 +124,7 @@
     get(url).then(function (html) {
       content.innerHTML = html;
       if (!modal.open) modal.showModal();
+      markOrigin();
       wire(content);
       focusFirst(content);
     }).catch(function () { announce('Could not open the editor.'); });
@@ -630,6 +646,7 @@
       + '<button type="button" class="editor__danger" data-confirm-delete>Delete</button>'
       + '</div></div>';
     if (!modal.open) modal.showModal();
+    markOrigin();
     content.querySelector('[data-confirm-delete]').addEventListener('click', function () {
       var pattern = oldItem
         ? (modal.dataset.oldItemDeleteUrl || '/editor/item/0/delete/')

@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-10-12
+
+### Fixed
+
+- A Tata Ibadah entry keeps its highlight and its Preview, Edit, and Delete controls while a modal opened from it is showing, so it stays clear which entry the modal is about. The highlight clears only after the modal closes.
+
 ## [1.6.2] - 2026-10-12
 
 ### Changed

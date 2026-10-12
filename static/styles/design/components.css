@@ -1588,7 +1588,8 @@ kbd {
 
 /* The controls belong to their item: preview, Edit and Delete float at its
    top-right, over the words, on a brief backing. They show while the item is
-   hovered or holds keyboard focus, and always where there is no hover. */
+   hovered, holds keyboard focus, or owns the open modal (spec 065), and always
+   where there is no hover. */
 .tatib__item, .tatib__eos { position: relative; }
 .entry__acts {
   position: absolute; right: 8px; top: 8px;
@@ -1599,6 +1600,7 @@ kbd {
 }
 .tatib__item:hover .entry__acts,
 .tatib__eos:hover .entry__acts,
+.is-modal-origin .entry__acts,
 .entry__acts:has(:focus:not(.focus-restore-quiet)) { opacity: 1; }
 /* A touch device has no hover to reveal them with: show them outright. */
 @media (hover: none) and (pointer: coarse) { .entry__acts { opacity: 1; } }
@@ -1630,8 +1632,10 @@ kbd {
   padding-left: 10px; padding-right: 10px;
 }
 /* Quiet modal restoration keeps DOM focus without impersonating hover (spec 058).
-   Test the focused element, not old markers elsewhere in the entry. */
+   Test the focused element, not old markers elsewhere in the entry. The entry
+   whose modal is open keeps its hover look behind the backdrop (spec 065). */
 .tatib__item:hover, .tatib__eos:hover,
+.tatib__item.is-modal-origin, .tatib__eos.is-modal-origin,
 .tatib__item:focus:not(.focus-restore-quiet),
 .tatib__eos:focus:not(.focus-restore-quiet),
 .tatib__item:has(:focus:not(.focus-restore-quiet)),
