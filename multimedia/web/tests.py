@@ -1388,6 +1388,29 @@ class ServiceEntryViewTests(TestCase):
         toc = self.html().split('id="chList"')[1]
         self.assertIn('KJ 152 Ada Kuasa dalam DarahNya', toc)
 
+    def test_sidebar_song_parts_keep_the_full_title_and_escape_markup(self):
+        self.song.title = ('Pujian <em>bersama</em> ' + 'panjang ' * 6)[:64]
+        self.song.save()
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 3])
+        response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
+        item = next(item for item in response.context['toc_items'] if item.get('entry'))
+        self.assertEqual(item['song_reference'], 'KJ 152')
+        self.assertEqual(item['song_title'], self.song.title)
+        self.assertEqual(item['verse_line'], 'Bait 1, 3')
+        self.assertContains(response, 'Pujian &lt;em&gt;bersama&lt;/em&gt;')
+        self.assertNotContains(response, '<em>bersama</em>')
+
+    def test_reference_free_sidebar_song_uses_its_title_without_a_reference(self):
+        book = songs.Book.objects.create(name='Lagu lain', is_hymn_book=False)
+        song = songs.Song.objects.create(book=book, title='Mars Sekolah GKPS')
+        songs.Verse.objects.create(song=song, number=1, lyric='bait')
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
+        item = next(item for item in response.context['toc_items'] if item.get('entry'))
+        self.assertEqual(item['song_reference'], '')
+        self.assertEqual(item['song_title'], 'Mars Sekolah GKPS')
+        self.assertEqual(item['verse_line'], 'Bait 1')
+
     def test_a_non_hymn_song_keeps_its_sidebar_label(self):
         book = songs.Book.objects.create(name='Kidung Eksperimen', short_name='KE')
         song = songs.Song.objects.create(book=book, number=3, title='Nyanyian Baru')
