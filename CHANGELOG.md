@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-10-12
+
+### Changed
+
+- Tata Ibadah song rows now distinguish the hymn reference, song title, and selected verses with separate typography. Long titles wrap above the verse line, and dark mode keeps the smaller verse label at readable contrast.
+
 ## [1.5.0] - 2026-10-12
 
 ### Added

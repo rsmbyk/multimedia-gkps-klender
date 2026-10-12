@@ -1,9 +1,9 @@
-# Plan 059: Distinct song label typography
+# Plan 060: Distinct song label typography
 
 - **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
-- **Item:** ITEM-061
+- **Item:** ITEM-062
 - **Bump:** patch
 
 ## Why

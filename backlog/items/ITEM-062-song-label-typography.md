@@ -1,5 +1,5 @@
 ---
-id: ITEM-061
+id: ITEM-062
 status: in-review
 title: 'Distinct song label typography'
 type: fix
@@ -7,16 +7,16 @@ priority: P2
 effort: S
 created: 2026-10-12
 updated: 2026-10-12
-spec: '059'
+spec: '060'
 branch: fix/059-song-label-typography
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/313
 archived_at:
 archive_reason:
 bump: patch
-release_version: 1.3.24
+release_version: 1.5.1
 ---
 
-# ITEM-061: Distinct song label typography
+# ITEM-062: Distinct song label typography
 
 ## Summary
 
@@ -34,4 +34,4 @@ Hierarchy: 12px semibold hymn reference, 14px regular title, and 12px verse sele
 
 ## Links
 
-- Spec: [059](../../specs/059-song-label-typography/spec.md)
+- Spec: [060](../../specs/060-song-label-typography/spec.md)

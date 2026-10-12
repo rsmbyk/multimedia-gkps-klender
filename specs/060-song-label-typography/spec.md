@@ -1,8 +1,8 @@
 # Spec: Distinct song label typography
 
-- **ID:** 059
+- **ID:** 060
 - **Status:** Accepted
-- **Item:** ITEM-061
+- **Item:** ITEM-062
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch
