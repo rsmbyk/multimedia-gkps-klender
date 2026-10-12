@@ -68,4 +68,5 @@ The public reading site offers Light, Dark, and System appearance choices. Syste
 
 - Four new theme scenarios and the existing dark-mode persistence test passed locally.
 - Fifteen related browser tests passed, including existing dark-theme styling checks.
+- The editor date-picker browser test passed at its 360 px tall viewport after compacting the rail controls for short screens.
 - The full reading E2E module ran 38 tests; 37 passed. `test_bible_language_highlight_slides_without_reflow` fails on an exact header geometry comparison. The same failure was reproduced on untouched `develop` at `89ce7c5`, so it is pre-existing.

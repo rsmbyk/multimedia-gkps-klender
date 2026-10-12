@@ -161,6 +161,13 @@ body {
   color: var(--active-ink);
 }
 
+@media (max-height: 420px) {
+  .rail { padding: 8px 0; }
+  .rail__logo { width: 28px; height: 28px; }
+  .rail__menu { gap: 2px; margin: 4px 0; }
+  .rail .rail__btn { width: 32px; height: 32px; }
+}
+
 /* ============================================================
    Tooltip — appears after a hover DELAY, instantly after
    focus. Pure CSS is used only for the transition; the delay
