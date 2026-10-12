@@ -18,14 +18,13 @@
 - [x] Set `VERSION` to 1.5.1, changelog section `[1.5.1]`, and ITEM `release_version: 1.5.1` (patch from integration 1.5.0)
 - [x] Conventional Commit and draft PR #314 into `develop` using the repository template
 - [x] ITEM/board → In review with PR #314 in that same PR
-- [ ] Remote Fast checks, CI result, and all browser E2E modules pass on the final synchronized PR head
+- [x] Remote Fast checks, CI result, and all browser E2E modules passed on synchronized PR code head `d200907` in run `38231116716` (2026-10-12)
 - [ ] Merge by squash into `develop`; delete only the remote feature branch and keep the local branch intact
 
 ## Done when
 
 - [x] All acceptance scenarios hold and targeted tests pass
-- [ ] Fast checks pass on the current PR head
-- [ ] Browser E2E push/CI job passes on the current PR head
+- [x] Fast checks and Browser E2E push/CI jobs pass on synchronized PR code head `d200907`
 - [x] Board, ITEM, tasks, and version metadata are complete in the same PR
 
-The targeted E2E class passes locally, and full Fast checks plus all browser E2E modules passed on PR head `15049d7` (run `38230029771`). The feature branch is being synchronized with the latest `develop` changes; final CI must pass on that updated head before merge. Production release/tag follows the repository's owner-triggered Git Flow release process.
+Full Fast checks and every browser E2E module passed on synchronized PR code head `d200907` in run `38231116716`, including the modal-highlight and entry-control suites. Production release/tag follows the repository's owner-triggered Git Flow release process.
