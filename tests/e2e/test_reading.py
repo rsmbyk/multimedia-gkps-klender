@@ -620,6 +620,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('.result-group[data-kind="songs"] .result-row').first.click()
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
         expect(page.locator('#readEyebrow')).to_be_visible()
+        self.assertEqual(page.locator('#readEyebrow').evaluate(
+            "el => getComputedStyle(el).marginBottom"), '10px')
         self.assertGreaterEqual(page.locator('.read__head-top').bounding_box()['height'], 34)
 
         page.locator('.rail [data-panel="tatib"]').click()
@@ -637,6 +639,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                 expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
                 expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
+                self.assertEqual(page.locator('#readEyebrow').evaluate(
+                    "el => getComputedStyle(el).marginBottom"), '0px')
 
                 geometry = page.evaluate('''() => {
                   const box = selector => document.querySelector(selector).getBoundingClientRect();
