@@ -637,14 +637,9 @@ def _tatib_groups(mode, selected_service=None):
                 'date_display': search_lib.format_date_short(service.date),
                 'current': service.pk == selected_id,
             })
-    if selected_service and not any(
-            row['id'] == selected_id for group in groups for row in group['services']):
-        detail = (search_lib.format_date_short(selected_service.date)
-                  if selected_service.date else 'Template')
-        groups.append({'label': '', 'key': '', 'services': [{
-            'id': selected_id, 'name': selected_service.name,
-            'date_display': detail, 'current': True, 'contextual': True,
-        }]})
+    # A service the shown mode does not hold is not listed at all -- no synthetic row and no
+    # "currently open" card under the last one (spec 082). The open service is highlighted
+    # only where its own row is.
     return groups
 
 
