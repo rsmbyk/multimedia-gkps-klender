@@ -1,6 +1,6 @@
 ---
 id: ITEM-084
-status: in-review
+status: done
 title: Renumber the dragged row while it is being reordered
 type: fix
 priority: P2
