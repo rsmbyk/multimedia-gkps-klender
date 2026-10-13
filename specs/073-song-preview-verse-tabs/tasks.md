@@ -12,7 +12,7 @@
 - [x] Green — set fixed song tab geometry in `static/styles/design/components.css`
 - [x] Verify verse selection and tab geometry at desktop and narrow viewport sizes
 - [x] Fill Traceability in `./spec.md`
-- [ ] Update ITEM-076 and `backlog/board.md` in the same PR
+- [x] Update ITEM-076 and `backlog/board.md` in the same PR
 - [x] Set `VERSION`, changelog entry, and `release_version` in the same PR
 - [x] Conventional Commit with Codex co-author trailer; draft PR into `develop` linking this spec
 
@@ -20,4 +20,4 @@
 
 - [x] All acceptance scenarios in `spec.md` hold
 - [x] Targeted Preview E2E checks are green
-- [ ] Board, ITEM, tasks, version, and changelog are complete in the same PR
+- [x] Board, ITEM, tasks, version, and changelog are complete in the same PR

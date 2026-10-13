@@ -1,6 +1,6 @@
 ---
 id: ITEM-076
-status: in_review
+status: done
 title: Give song Preview verse tabs equal shapes
 type: fix
 priority: P2
