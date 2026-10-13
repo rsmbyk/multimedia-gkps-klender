@@ -1,6 +1,6 @@
 ---
 id: ITEM-088
-status: in-review
+status: done
 title: Show the entry's identity in the Preview header
 type: feat
 priority: P2
