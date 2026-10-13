@@ -1,6 +1,6 @@
 ---
 id: ITEM-075
-status: in_progress
+status: in_review
 title: Collapse an idle matching sidebar
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/072-sidebar-idle-collapse/spec.md
 branch: feat/072-sidebar-idle-collapse
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/325
 archived_at:
 archive_reason:
 bump: minor
