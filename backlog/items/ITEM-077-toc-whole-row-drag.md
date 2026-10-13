@@ -1,6 +1,6 @@
 ---
 id: ITEM-077
-status: in_review
+status: done
 title: Drag service entries from the whole sidebar row
 type: feat
 priority: P2

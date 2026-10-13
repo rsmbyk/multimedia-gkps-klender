@@ -20,4 +20,4 @@
 
 - [x] All acceptance scenarios in `spec.md` hold
 - [x] Targeted reorder E2E checks are green
-- [ ] Board, ITEM, tasks, version, and changelog are complete in the same PR
+- [x] Board, ITEM, tasks, version, and changelog are complete in the same PR
