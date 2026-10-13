@@ -48,9 +48,14 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=1, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=matius, chapter=5, verse_start=2, verse_end=3)
-        tatib.ServiceEntry.objects.create(
+        song_entry = tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.SONG,
             song=song, verses=[1, 2])
+        if self._testMethodName == 'test_a_song_preview_verse_tabs_keep_equal_circles_and_scroll':
+            for number in range(4, 13):
+                songs.Verse.objects.create(song=song, number=number, lyric=f'bait {number}')
+            song_entry.verses = list(range(1, 13))
+            song_entry.save(update_fields=['verses'])
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
             title='Long prayer', text='\n'.join(f'Line {number}' for number in range(1, 70)))
@@ -117,6 +122,34 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         self.assertIn('bait 2', page.locator('#previewContent .preview__panel').nth(1).inner_text())
         self.assertTrue(page.evaluate(
             'document.activeElement === document.querySelectorAll("#previewContent .preview__tab")[1]'))
+
+    def test_a_song_preview_verse_tabs_keep_equal_circles_and_scroll(self):
+        page = self._page()
+        self._open_preview(page, 1)
+        page.set_viewport_size({'width': 390, 'height': 844})
+        tabs = page.locator('#previewContent .preview__tab')
+        self.assertEqual(tabs.count(), 12)
+        self.assertEqual(tabs.evaluate_all('''els => els.map(el => {
+          const box = el.getBoundingClientRect();
+          return [box.width, box.height, getComputedStyle(el).borderRadius];
+        })'''), [[30, 30, '50%']] * 12)
+        tablist = page.locator('#previewContent .preview__tabs')
+        self.assertGreater(tablist.evaluate('el => el.scrollWidth'),
+                           tablist.evaluate('el => el.clientWidth'))
+        self.assertTrue(tabs.first.evaluate('''el => {
+          const box = el.getBoundingClientRect();
+          const viewport = el.closest('.preview__tabs').getBoundingClientRect();
+          return box.left >= viewport.left && box.right <= viewport.right;
+        }'''))
+        tabs.nth(11).click()
+        self.assertIn('bait 12', page.locator('#previewContent .preview__panel').nth(11).inner_text())
+        self.assertEqual(tabs.nth(11).evaluate('el => el.getBoundingClientRect().width'), 30)
+        tablist.evaluate('el => { el.scrollLeft = el.scrollWidth; }')
+        self.assertTrue(tabs.nth(11).evaluate('''el => {
+          const box = el.getBoundingClientRect();
+          const viewport = el.closest('.preview__tabs').getBoundingClientRect();
+          return box.left >= viewport.left && box.right <= viewport.right;
+        }'''))
 
     def test_clicking_long_preview_text_allows_arrow_key_scrolling(self):
         page = self._page()

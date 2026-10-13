@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-10-13
+
+### Fixed
+
+- Song verse tabs in the Tata Ibadah Preview modal now keep equal 30 × 30px circular shapes for single- and double-digit numbers, with horizontal scrolling on narrow screens.
+
 ## [1.8.0] - 2026-10-13
 
 ### Added
