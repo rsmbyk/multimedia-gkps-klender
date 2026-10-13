@@ -11,6 +11,9 @@
 
   var modal = document.getElementById('previewModal');
   var content = document.getElementById('previewContent');
+  var head = modal && modal.querySelector('[data-preview-head]');
+  var headTitle = modal && modal.querySelector('#previewTitle');
+  var tabsHost = modal && modal.querySelector('[data-preview-tabs-host]');
   var footer = modal && modal.querySelector('[data-screen-mode-footer]');
   var modeControl = modal && modal.querySelector('[data-preview-screen-mode]');
   var readonlyMode = modal && modal.querySelector('[data-mode-readonly]');
@@ -48,6 +51,28 @@
         panels.forEach(function (panel, i) { panel.hidden = i !== index; });
       });
     });
+  }
+
+  /* The entry's identity leaves the scroller for the dialog's header (spec 085): whatever the
+     payload renders as its reference or heading, and a song's verse tabs with it. An entry with
+     nothing to name -- an untitled Text -- keeps the headerless dialog it has always had. */
+  function liftIdentity() {
+    var identity = content.querySelector('.preview__ref, .preview__song');
+    var tabs = content.querySelector('.preview__tabs');
+    head.hidden = !identity && !tabs;
+    headTitle.textContent = identity ? identity.textContent : '';
+    headTitle.hidden = !identity;
+    if (identity) identity.remove();
+    tabsHost.innerHTML = '';
+    tabsHost.hidden = !tabs;
+    if (tabs) tabsHost.appendChild(tabs);
+    if (identity) {
+      modal.setAttribute('aria-labelledby', 'previewTitle');
+      modal.removeAttribute('aria-label');
+    } else {
+      modal.removeAttribute('aria-labelledby');
+      modal.setAttribute('aria-label', 'Preview');
+    }
   }
 
   function csrf() {
@@ -193,7 +218,9 @@
       var data = anchor && document.querySelector(
         '.entry__preview-src[data-preview-for="' + anchor + '"]');
       content.innerHTML = data ? data.textContent : '';
-      wireTabs(content);
+      liftIdentity();
+      /* the scope is the whole dialog: a song's tabs live in the header, its panels in the body */
+      wireTabs(modal);
       wireSplit();
       if (!modal.open) {
         modal.showModal();
@@ -278,6 +305,12 @@
 
   modal.addEventListener('close', function () {
     content.innerHTML = '';
+    head.hidden = true;
+    headTitle.textContent = '';
+    tabsHost.innerHTML = '';
+    tabsHost.hidden = true;
+    modal.removeAttribute('aria-labelledby');
+    modal.setAttribute('aria-label', 'Preview');
     split = null;
     breaks = null;
     confirmLayer.hidden = true;

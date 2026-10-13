@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.6] - 2026-10-13
+
+### Added
+
+- The entry Preview dialog names what it is showing: a Text entry's title, a passage's reference, or a song's heading, in a header that stays put while the body scrolls. A song's verse tabs move up beside the heading. An entry with no name still opens the headerless dialog it had before.
+
 ## [1.10.5] - 2026-10-13
 
 ### Changed
