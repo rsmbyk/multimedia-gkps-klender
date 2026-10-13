@@ -1,6 +1,6 @@
 ---
 id: ITEM-078
-status: in_progress
+status: in_review
 title: Repeat a service-entry flash after it finishes
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/075-toc-repeat-flash/spec.md
 branch: fix/075-toc-repeat-flash
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/329
 archived_at:
 archive_reason:
 bump: patch
