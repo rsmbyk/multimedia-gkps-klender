@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/083-language-switch-hover/spec.md
 branch: fix/083-language-switch-hover
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/337
 archived_at:
 archive_reason:
 bump: patch
