@@ -1,6 +1,6 @@
 ---
 id: ITEM-073
-status: in_review
+status: done
 title: Manual breaks for Single-screen Text entries
 type: feat
 priority: P2

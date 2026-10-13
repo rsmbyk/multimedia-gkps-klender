@@ -1,6 +1,6 @@
 ---
 id: ITEM-072
-status: in_review
+status: done
 title: Manual screen breaks for multiline Text entries
 type: feat
 priority: P2
