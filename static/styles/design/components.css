@@ -1737,8 +1737,10 @@ kbd {
 }
 .preview__gap.is-set::before { border-color: var(--divider); }
 .preview__split.is-custom .preview__gap.is-set::before { border-color: var(--focus); }
-.preview__gap:hover::before, .preview__gap:focus-visible::before {
-  border-color: var(--focus); border-style: dotted;
+.preview__gap:not(.is-set):hover::before,
+.preview__gap:not(.is-set):focus-visible::before {
+  border-top: 0; height: 1px;
+  background: repeating-linear-gradient(to right, var(--focus) 0 4px, transparent 4px 8px);
 }
 .preview__gap.is-set:hover::before, .preview__gap.is-set:focus-visible::before {
   border-color: var(--active-bg); border-style: solid;
