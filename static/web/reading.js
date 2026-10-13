@@ -102,10 +102,12 @@
   }
   function scheduleIdleCollapse(delay, resumeAfterDeferred) {
     cancelIdleCollapse();
-    if (root.dataset.nav !== 'open' || activeSection !== stageSection()) return;
+    if (mqNarrow.matches || root.dataset.nav !== 'open'
+        || activeSection !== stageSection()) return;
     idleCollapseTimer = window.setTimeout(function () {
       idleCollapseTimer = null;
-      if (root.dataset.nav !== 'open' || activeSection !== stageSection()) return;
+      if (mqNarrow.matches || root.dataset.nav !== 'open'
+          || activeSection !== stageSection()) return;
       if (document.visibilityState === 'hidden') return;
       if (idleCollapseIsDeferred()) {
         /* A modal or an active drag can outlive the idle interval. Check again
@@ -132,6 +134,12 @@
     if (document.visibilityState === 'hidden') cancelIdleCollapse();
     else scheduleIdleCollapse();
   });
+  function onIdleCollapseViewportChange() {
+    if (mqNarrow.matches) cancelIdleCollapse();
+    else scheduleIdleCollapse();
+  }
+  if (mqNarrow.addEventListener) mqNarrow.addEventListener('change', onIdleCollapseViewportChange);
+  else mqNarrow.addListener(onIdleCollapseViewportChange);
 
   /* After a stage swap the element references below point at detached nodes;
      re-grab them from the fresh markup. */
