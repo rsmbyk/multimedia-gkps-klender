@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-10-13
+
+### Added
+
+- The first reading sidebar now collapses after 60 seconds without interaction when it matches the open reading page; Bible uses its mini sidebar state.
+
 ## [1.7.0] - 2026-10-13
 
 ### Added
