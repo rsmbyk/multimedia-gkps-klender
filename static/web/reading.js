@@ -1094,8 +1094,11 @@
       root.dataset.home = fresh.home;
       if (!stageOnly) {
         root.dataset.nav = fresh.nav;
-        root.dataset.ch = fresh.ch;
       }
+      /* The second-level pane still follows the arriving page: a service opened from the
+         first-level panel has to bring its contents with it, and for a chapter or song
+         opened from the list the arriving value already matches the live one (spec 088). */
+      root.dataset.ch = fresh.ch;
       releaseTatibFlash();
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
