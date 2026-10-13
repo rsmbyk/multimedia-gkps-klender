@@ -1,6 +1,6 @@
 ---
 id: ITEM-089
-status: in-review
+status: done
 title: Separate the modals from the page behind them
 type: chore
 priority: P2

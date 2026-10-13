@@ -1029,6 +1029,12 @@
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results'
       || kind === 'refresh';
+    /* A page opened from a second-level list -- and the in-place refresh that follows a save --
+       swaps only the reading stage. Every reading page is rendered with nav="open", so copying
+       that value over the live one is what sprang a collapsed or mini first panel open: the
+       operator's own sidebar states survive a stage-only swap (spec 080). */
+    var stageOnly = kind === 'chapter' || kind === 'song' || kind === 'service'
+      || kind === 'refresh';
 
     /* shared first column: books / songbooks / services */
     panelTitleEl.textContent = txt(doc, '#panelTitle');
@@ -1086,8 +1092,10 @@
     if (swapsStage) {
       root.dataset.read = fresh.read;
       root.dataset.home = fresh.home;
-      root.dataset.nav = fresh.nav;
-      root.dataset.ch = fresh.ch;
+      if (!stageOnly) {
+        root.dataset.nav = fresh.nav;
+        root.dataset.ch = fresh.ch;
+      }
       releaseTatibFlash();
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();

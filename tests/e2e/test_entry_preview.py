@@ -1,7 +1,7 @@
-"""The entry preview (spec 032).
+"""The entry preview (spec 032; the entry names itself in the header, spec 085).
 
-A read-only modal: no header, a scrolling body, and a sticky Close. Esc and the
-overlay dismiss it, and focus returns to the trigger.
+A read-only modal: the entry's identity in a pinned header, a scrolling body, and a
+sticky Close. Esc and the overlay dismiss it, and focus returns to the trigger.
 """
 from datetime import date
 import unittest
@@ -15,7 +15,7 @@ from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 
 try:
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import expect, sync_playwright
 
     HAS_PLAYWRIGHT = True
 except ImportError:  # pragma: no cover - depends on environment
@@ -60,6 +60,10 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
             tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
             title='Long prayer', text='\n'.join(f'Line {number}' for number in range(1, 70)))
 
+        tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=4, kind=tatib.ServiceEntryKind.TEXT,
+            text='L : Marilah kita bangun berdiri.')
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -89,8 +93,10 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
     def test_a_passage_preview_shows_its_reference_and_full_text(self):
         page = self._page()
         self._open_preview(page, 0)
+        expect(page.locator('.preview__head')).to_be_visible()
+        self.assertEqual(page.locator('#previewTitle').inner_text(), 'Matius 5:2-3')
         body = page.locator('#previewContent').inner_text()
-        self.assertIn('Matius 5:2-3', body)
+        self.assertNotIn('Matius 5:2-3', body)          # named once, up in the header
         self.assertIn('ayat 2', body)
         self.assertIn('ayat 3', body)
         page.keyboard.press('Escape')
@@ -116,6 +122,33 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         page.add_style_tag(content='.preview::backdrop { background: transparent !important; }')
         self.assertNotEqual(
             painted, page.screenshot(clip={'x': 6, 'y': 6, 'width': 2, 'height': 2}))
+    def test_a_titled_text_preview_names_it_in_the_header(self):
+        page = self._page()
+        self._open_preview(page, 2)                     # the titled, long text
+        expect(page.locator('.preview__head')).to_be_visible()
+        self.assertEqual(page.locator('#previewTitle').inner_text(), 'Long prayer')
+        self.assertNotIn('Long prayer', page.locator('#previewContent').inner_text())
+        self.assertEqual(page.locator('#previewModal').get_attribute('aria-labelledby'),
+                         'previewTitle')
+
+    def test_an_untitled_text_preview_has_no_header(self):
+        page = self._page()
+        self._open_preview(page, 3)                     # a text with no title
+        expect(page.locator('.preview__head')).to_be_hidden()
+        expect(page.locator('#previewContent')).to_contain_text('Marilah kita bangun berdiri')
+        self.assertEqual(page.locator('#previewModal').get_attribute('aria-label'), 'Preview')
+        self.assertIsNone(page.locator('#previewModal').get_attribute('aria-labelledby'))
+
+    def test_the_preview_header_stays_put_while_the_body_scrolls(self):
+        page = self._page()
+        page.set_viewport_size({'width': 900, 'height': 380})
+        self._open_preview(page, 2)
+        head = page.locator('.preview__head')
+        head_top = head.bounding_box()['y']
+        page.locator('#previewContent').evaluate('el => { el.scrollTop = 120; }')
+        page.wait_for_function("document.querySelector('#previewContent').scrollTop > 100")
+        self.assertEqual(head.bounding_box()['y'], head_top)
+        self.assertGreater(page.locator('#previewContent').evaluate('el => el.scrollTop'), 100)
 
     def test_short_preview_arrow_keys_do_not_scroll_the_page(self):
         page = self._page()
@@ -136,25 +169,25 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
     def test_a_song_preview_tabs_between_its_verses(self):
         page = self._page()
         self._open_preview(page, 1)
-        tabs = page.locator('#previewContent .preview__tab')
+        tabs = page.locator('.preview__head .preview__tab')      # the header carries them (spec 085)
         self.assertEqual(tabs.count(), 2)
         self.assertIn('bait 1', page.locator('#previewContent .preview__panel').first.inner_text())
         tabs.nth(1).click()
         self.assertIn('bait 2', page.locator('#previewContent .preview__panel').nth(1).inner_text())
         self.assertTrue(page.evaluate(
-            'document.activeElement === document.querySelectorAll("#previewContent .preview__tab")[1]'))
+            'document.activeElement === document.querySelectorAll(".preview__head .preview__tab")[1]'))
 
     def test_a_song_preview_verse_tabs_keep_equal_circles_and_scroll(self):
         page = self._page()
         self._open_preview(page, 1)
         page.set_viewport_size({'width': 390, 'height': 844})
-        tabs = page.locator('#previewContent .preview__tab')
+        tabs = page.locator('.preview__head .preview__tab')
         self.assertEqual(tabs.count(), 12)
         self.assertEqual(tabs.evaluate_all('''els => els.map(el => {
           const box = el.getBoundingClientRect();
           return [box.width, box.height, getComputedStyle(el).borderRadius];
         })'''), [[30, 30, '50%']] * 12)
-        tablist = page.locator('#previewContent .preview__tabs')
+        tablist = page.locator('.preview__head .preview__tabs')
         self.assertGreater(tablist.evaluate('el => el.scrollWidth'),
                            tablist.evaluate('el => el.clientWidth'))
         self.assertTrue(tabs.first.evaluate('''el => {
@@ -198,8 +231,8 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
     def test_a_song_preview_header_reads_the_short_reference(self):
         page = self._page()
         self._open_preview(page, 1)
-        header = page.locator('#previewContent .preview__song').inner_text()
-        self.assertEqual(header, 'KJ 152 — Ada Kuasa')
+        self.assertEqual(page.locator('#previewTitle').inner_text(), 'KJ 152 — Ada Kuasa')
+        self.assertFalse(page.locator('#previewContent').inner_text().startswith('KJ 152'))
 
     def test_a_song_entry_reads_its_short_reference_and_verse_line(self):
         page = self._page()
