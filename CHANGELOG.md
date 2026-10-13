@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.4] - 2026-10-13
+
+### Changed
+
+- The Bible translation switch (TB/SIM), in the reading header and in the passage picker, now fills the hovered option the way the Text screen-mode switch does, instead of only darkening its label.
+
 ## [1.10.0] - 2026-10-13
 
 ### Added

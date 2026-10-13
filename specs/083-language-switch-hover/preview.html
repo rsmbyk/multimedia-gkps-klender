@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spec 083 · translation switch hover</title>
+<style>
+html{--canvas:#F7F5F1;--rail-bg:#EDEAE3;--ink:#1F1F1D;--icon-hover-bg:rgba(31,31,29,.08);--active-bg:#1C5C3C;--active-ink:#FFF;--divider:#D9D6CD;--head-ink:#646357;--focus:#1C5C3C;--ease:200ms cubic-bezier(.32,.72,.28,1)}
+html[data-theme="dark"]{--canvas:#1B1B19;--rail-bg:#242421;--ink:#F2F0EA;--icon-hover-bg:rgba(255,255,255,.09);--active-bg:#7C9CF0;--active-ink:#10100F;--divider:#3A3A35;--head-ink:#A9A79B;--focus:#7C9CF0}
+body{margin:0;font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--canvas);color:var(--ink);padding:0 0 40px}
+.preview-head{height:58px;background:var(--canvas);border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:14px;padding:0 18px}
+.brand{font-weight:700}.badge{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--head-ink);border:1px solid var(--divider);border-radius:99px;padding:4px 9px}
+.switch{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--head-ink)}
+.switch button{border:1px solid var(--divider);border-radius:8px;background:transparent;color:var(--ink);font:inherit;padding:8px 12px;cursor:pointer}
+.switch button[aria-pressed="true"]{background:#B3261E;color:#fff;border-color:#B3261E}
+.wrap{padding:26px 22px;display:grid;gap:26px;max-width:900px}
+.card{border:1px solid var(--divider);border-radius:12px;background:color-mix(in srgb,var(--canvas) 92%,var(--rail-bg));padding:18px 18px 22px}
+.card h2{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 16px;font-size:12.5px;color:var(--head-ink)}
+.row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:12px}
+.row h3{margin:0;font-size:12.5px;font-weight:600;color:var(--head-ink);min-width:190px}
+.marker{font-size:11px;color:var(--head-ink);border:1px dashed var(--divider);border-radius:99px;padding:2px 8px}
+/* screen-mode switch (reference, unchanged) */
+.screen-mode{box-sizing:border-box;position:relative;display:grid;align-items:stretch;height:42px;padding:3px;border:1px solid var(--divider);border-radius:9px;background:var(--rail-bg);font:560 13px/1.2 ui-sans-serif,system-ui;grid-template-columns:1fr 1fr;width:min(308px,100%)}
+.screen-mode__thumb{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/2);border-radius:6px;background:var(--active-bg);transition:left var(--ease),width var(--ease)}
+.screen-mode button{position:relative;z-index:1;min-width:0;border:0;border-radius:6px;background:transparent;color:var(--head-ink);display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;font:inherit;transition:background var(--ease),color var(--ease);cursor:pointer}
+.screen-mode button:hover:not([aria-pressed="true"]){color:var(--ink);background:var(--icon-hover-bg)}
+.screen-mode button[aria-pressed="true"]{color:var(--active-ink)}
+.screen-mode svg{width:16px;height:16px;flex:none}
+/* translation switch */
+.read__lang{display:inline-flex;flex:none;position:relative;margin:0;padding:3px;background:var(--rail-bg);border:1px solid var(--divider);border-radius:9px}
+.read__lang-thumb{display:block;position:absolute;top:3px;left:3px;width:calc((100% - 8px)/2);height:30px;border-radius:6px;background:var(--active-bg);pointer-events:none;transition:transform var(--ease)}
+.read__lang[data-edition="sim"] .read__lang-thumb{transform:translateX(100%)}
+.read__lang button,.read__lang a{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:30px;padding:0 12px;font:560 12.5px/1 ui-sans-serif,system-ui;letter-spacing:.03em;color:var(--head-ink);background:none;border:0;border-radius:6px;cursor:pointer;text-decoration:none;transition:color var(--ease)}
+.read__lang button[aria-pressed="true"],.read__lang a[aria-pressed="true"]{background:transparent;color:var(--active-ink);font-weight:640}
+/* the proposed hover — toggled by the Current build button */
+html[data-fixed="1"] .read__lang button:hover:not([aria-pressed="true"]),
+html[data-fixed="1"] .read__lang a:hover:not([aria-pressed="true"]){color:var(--ink);background:var(--icon-hover-bg)}
+html[data-fixed="1"] .read__lang button,html[data-fixed="1"] .read__lang a{transition:background var(--ease),color var(--ease)}
+html[data-fixed="0"] .read__lang button:hover,html[data-fixed="0"] .read__lang a:hover{color:var(--ink)}
+.legend{font-size:12.5px;color:var(--head-ink);border-top:1px solid var(--divider);padding-top:14px}
+.legend b{color:var(--ink)}
+/* spec 087 preview: the proposed shared bar, so this page's own scrollbars are not
+   the browser default (which can carry up/down stepper buttons) */
+@supports not selector(::-webkit-scrollbar) {
+  html, html * { scrollbar-width: thin; scrollbar-color: #B4B0A6 transparent; }
+}
+html::-webkit-scrollbar, html *::-webkit-scrollbar { width: 5px; height: 5px; }
+html::-webkit-scrollbar-track, html *::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb, html *::-webkit-scrollbar-thumb { background: color-mix(in srgb, currentColor 26%, transparent); border-radius: 999px; }
+html::-webkit-scrollbar-thumb:hover, html *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, currentColor 42%, transparent); }
+html::-webkit-scrollbar-button, html *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+html::-webkit-scrollbar-corner, html *::-webkit-scrollbar-corner { background: transparent; }
+</style>
+</head>
+<body>
+<header class="preview-head">
+  <span class="brand">GKPS Klender</span><span class="badge">Spec 083 preview</span>
+  <span class="switch">
+    <button id="theme" type="button">dark</button>
+    <button id="bug" type="button" aria-pressed="false">bug off</button>
+  </span>
+</header>
+<div class="wrap">
+  <div class="card">
+    <h2>Hover, side by side</h2>
+    <p>Move the pointer across both controls. In the fixed build the translation switch fills exactly
+      like the screen-mode switch does.</p>
+    <div class="row">
+      <h3>Text screen mode (reference)</h3>
+      <div class="screen-mode" role="group" aria-label="Default screen mode">
+        <span class="screen-mode__thumb" aria-hidden="true"></span>
+        <button type="button" aria-pressed="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Multi-line</button>
+        <button type="button" aria-pressed="false">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M5.5 8h9M5.5 11h9"/></svg>Single-screen</button>
+      </div>
+      <span class="marker">unchanged</span>
+    </div>
+    <div class="row">
+      <h3>Reading header translation</h3>
+      <div class="read__lang" role="group" aria-label="Choose reading translation" data-edition="tb">
+        <span class="read__lang-thumb" aria-hidden="true"></span>
+        <a href="#" aria-pressed="true" title="New Translation (Indonesian)">TB</a>
+        <a href="#" aria-pressed="false" title="Simalungun translation">SIM</a>
+      </div>
+      <span class="marker">anchors</span>
+    </div>
+    <div class="row">
+      <h3>Passage picker translation</h3>
+      <div class="read__lang" role="group" aria-label="Choose passage translation" data-edition="sim">
+        <span class="read__lang-thumb" aria-hidden="true"></span>
+        <button type="button" aria-pressed="false" title="New Translation (Indonesian)">TB</button>
+        <button type="button" aria-pressed="true" title="Simalungun translation">SIM</button>
+      </div>
+      <span class="marker">buttons</span>
+    </div>
+    <p class="legend">The selected option never takes the hover fill — the decorative thumb stays
+      visible. Fill: <b>--icon-hover-bg</b> = <span id="bgValue"></span>; text: <b>--ink</b>;
+      fade: <b>200ms cubic-bezier(.32, .72, .28, 1)</b>.</p>
+  </div>
+</div>
+<script>
+var fixed = true;
+document.documentElement.dataset.fixed = '1';
+function syncBg() {
+  document.getElementById('bgValue').textContent =
+    fixed ? getComputedStyle(document.documentElement).getPropertyValue('--icon-hover-bg').trim()
+          : 'no fill (text colour only)';
+}
+document.getElementById('bug').addEventListener('click', function () {
+  fixed = !fixed;
+  document.documentElement.dataset.fixed = fixed ? '1' : '0';
+  this.setAttribute('aria-pressed', String(!fixed));
+  this.textContent = fixed ? 'bug off' : 'bug ON — text only';
+  syncBg();
+});
+document.getElementById('theme').addEventListener('click', function () {
+  var dark = document.documentElement.dataset.theme !== 'dark';
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  this.textContent = dark ? 'light' : 'dark';
+  syncBg();
+});
+syncBg();
+</script>
+</body>
+</html>

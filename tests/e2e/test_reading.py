@@ -117,6 +117,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             'test_bible_language_highlight_static_and_reduced_motion',
             'test_bible_language_highlight_starts_in_place_without_travel',
             'test_bible_language_links_keep_keyboard_and_no_js_navigation',
+            'test_the_translation_switch_fills_the_hovered_option',
         ):
             sim_lang = bible.Language.objects.create(name='Simalungun')
             sim_version = bible.Version.objects.create(lang=sim_lang, name='Simalungun', abbreviation='SIM')
@@ -699,6 +700,29 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertEqual(switch.locator('.read__lang-thumb')
                          .evaluate('el => getComputedStyle(el).transitionDuration'), '0s')
         page.close()
+
+    def test_the_translation_switch_fills_the_hovered_option(self):
+        """The reading header's TB/SIM switch answers the pointer like the screen-mode one
+        (spec 083)."""
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        switch = page.locator('.read__lang')
+        expect(switch.locator('.read__lang-thumb')).to_have_count(1)
+        unselected = switch.locator('a[aria-pressed="false"]')
+        selected = switch.locator('a[aria-pressed="true"]')
+
+        resting = unselected.evaluate('el => getComputedStyle(el).backgroundColor')
+        unselected.hover()
+        page.wait_for_timeout(260)             # the fill fades in over --ease
+        hovered = unselected.evaluate('el => getComputedStyle(el).backgroundColor')
+
+        self.assertNotEqual(hovered, resting, 'the unselected option took no fill on hover')
+        self.assertEqual(hovered, 'rgba(31, 31, 29, 0.08)')     # --icon-hover-bg, light theme
+
+        selected.hover()
+        page.wait_for_timeout(260)
+        self.assertEqual(selected.evaluate('el => getComputedStyle(el).backgroundColor'),
+                         'rgba(0, 0, 0, 0)', 'the selected option filled over its thumb')
 
     def test_bible_language_highlight_starts_in_place_without_travel(self):
         page = self._page()
