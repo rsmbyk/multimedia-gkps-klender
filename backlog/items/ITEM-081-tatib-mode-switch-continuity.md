@@ -1,6 +1,6 @@
 ---
 id: ITEM-081
-status: in_progress
+status: in_review
 title: Keep the open Tata Ibadah in view across list modes
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/078-tatib-mode-switch-continuity/spec.md
 branch: fix/078-tatib-mode-switch-continuity
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/332
 archived_at:
 archive_reason:
 bump: patch
@@ -36,3 +36,4 @@ Switch between dated orders and templates while retaining the open page and serv
 ## Links
 
 - Spec: [Spec 078](../../specs/078-tatib-mode-switch-continuity/spec.md)
+- PR: [#332](https://github.com/rsmbyk/multimedia-gkps-klender/pull/332)
