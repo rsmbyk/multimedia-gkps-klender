@@ -204,6 +204,148 @@ class ReorderE2ETests(StaticLiveServerTestCase):
         self.assertFalse(page.locator('.entry__add').first.is_hidden())
         self.assertEqual(page.locator('[data-reorder-save]').count(), 0)
 
+    def test_dragging_from_a_row_number_reorders_without_following_its_quicklink(self):
+        page = self._page(self._service_url())
+        original_url = page.url
+        start = page.locator('#chList .songrow__c').first.bounding_box()
+        target = self._row(page, self.third.pk).bounding_box()
+        self.assertIsNotNone(start)
+        self.assertIsNotNone(target)
+        x, y = start['x'] + start['width'] / 2, start['y'] + start['height'] / 2
+
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x, target['y'] + target['height'] - 4, steps=10)
+        page.mouse.up()
+
+        expected = [self.second.pk, self.third.pk, self.first.pk, self.break_.pk]
+        self.assertEqual(self._row_order(page), expected)
+        page.wait_for_timeout(350)
+        self.assertEqual(page.url, original_url)
+        self.assertEqual(page.locator('#readBody .tatib__flash').count(), 0)
+        self.assertEqual(self._order_in_pane(page), expected[:-1])
+
+    def test_dragging_from_a_row_title_reorders_the_entry(self):
+        page = self._page(self._service_url())
+        start = page.locator('#chList .songrow__t').first.bounding_box()
+        target = self._row(page, self.third.pk).bounding_box()
+        self.assertIsNotNone(start)
+        self.assertIsNotNone(target)
+        x, y = start['x'] + start['width'] / 2, start['y'] + start['height'] / 2
+
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x, target['y'] + target['height'] - 4, steps=10)
+        page.mouse.up()
+
+        self.assertEqual(self._row_order(page),
+                         [self.second.pk, self.third.pk, self.first.pk, self.break_.pk])
+
+    def test_dragging_from_blank_row_space_reorders_the_entry(self):
+        page = self._page(self._service_url())
+        row = self._row(page, self.first.pk).bounding_box()
+        target = self._row(page, self.third.pk).bounding_box()
+        self.assertIsNotNone(row)
+        self.assertIsNotNone(target)
+        x, y = row['x'] + row['width'] - 44, row['y'] + row['height'] / 2
+        self.assertEqual(page.evaluate(
+            '([x, y]) => document.elementFromPoint(x, y).closest("a.songrow") !== null', [x, y]),
+            True)
+
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x, target['y'] + target['height'] - 4, steps=10)
+        page.mouse.up()
+
+        self.assertEqual(self._row_order(page),
+                         [self.second.pk, self.third.pk, self.first.pk, self.break_.pk])
+
+    def test_dragging_a_section_break_from_its_divider_reorders_the_row(self):
+        page = self._page(self._service_url())
+        line = self._row(page, self.break_.pk).locator('.toc__eosline').bounding_box()
+        target = self._row(page, self.first.pk).bounding_box()
+        self.assertIsNotNone(line)
+        self.assertIsNotNone(target)
+        x, y = line['x'] + line['width'] / 2, line['y'] + line['height'] / 2
+
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x, target['y'] + 2, steps=8)
+        page.mouse.up()
+
+        self.assertEqual(self._row_order(page),
+                         [self.break_.pk, self.first.pk, self.second.pk, self.third.pk])
+
+    def test_a_short_click_on_a_service_row_still_jumps_to_its_stage_entry(self):
+        page = self._page(self._service_url())
+        row = page.locator('#chList .songrow[data-i="e%d"]' % self.second.pk)
+        page.evaluate("""pk => {
+          window.__rowClicks = 0;
+          document.addEventListener('click', event => {
+            if (event.target.closest('a.songrow[data-i="e' + pk + '"]')) window.__rowClicks += 1;
+          }, true);
+        }""", self.second.pk)
+        row.click()
+        target = page.locator('#ti-e%d' % self.second.pk)
+        page.wait_for_function(
+            "document.getElementById('ti-e%d').classList.contains('tatib__flash')" % self.second.pk)
+        self.assertEqual(target.evaluate("el => el.classList.contains('tatib__flash')"), True)
+        self.assertEqual(page.evaluate('window.__rowClicks'), 1)
+        self.assertEqual(self._row_order(page),
+                         [self.first.pk, self.second.pk, self.third.pk, self.break_.pk])
+
+    def test_canceling_a_row_drag_restores_its_original_order(self):
+        page = self._page(self._service_url())
+        before = self._row_order(page)
+        start = page.locator('#chList .songrow__t').first.bounding_box()
+        target = self._row(page, self.third.pk).bounding_box()
+        self.assertIsNotNone(start)
+        self.assertIsNotNone(target)
+        x, y = start['x'] + start['width'] / 2, start['y'] + start['height'] / 2
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x, target['y'] + target['height'] - 4, steps=8)
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 1)
+        page.locator('#chList .songrow__t').first.dispatch_event('pointercancel', {'pointerId': 1})
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
+        self.assertEqual(self._row_order(page), before)
+        self.assertFalse(page.locator('#chList').evaluate(
+            "el => el.classList.contains('is-grabbing')"))
+        page.mouse.up()
+
+    def test_touch_on_row_text_is_not_intercepted_as_a_reorder_drag(self):
+        self._close_browser()
+        for order in range(5, 13):
+            self._entry(order, 'More %d' % order, 'Additional entry')
+        self.setUp_browser()
+        context = self.browser.new_context(
+            viewport={'width': 390, 'height': 360}, has_touch=True)
+        page = self._page(self._service_url(), context=context)
+        body = page.locator('#chBody')
+        self.assertGreater(body.evaluate('el => el.scrollHeight'),
+                           body.evaluate('el => el.clientHeight'))
+        self.assertEqual(body.evaluate('el => getComputedStyle(el).overflowY'), 'auto')
+        target = page.locator('#chList .songrow__t').nth(4).bounding_box()
+        self.assertIsNotNone(target)
+        x, y = target['x'] + target['width'] / 2, target['y'] + target['height'] / 2
+        cdp = context.new_cdp_session(page)
+        page.evaluate("""() => {
+          window.__touchPointerDown = null;
+          document.addEventListener('pointerdown', event => {
+            if (event.pointerType === 'touch') {
+              window.__touchPointerDown = {defaultPrevented: event.defaultPrevented};
+            }
+          }, true);
+        }""")
+        point = {'id': 1, 'x': x, 'y': y, 'radiusX': 1, 'radiusY': 1, 'force': 1}
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [point]})
+        cdp.send('Input.dispatchTouchEvent', {
+            'type': 'touchMove', 'touchPoints': [{**point, 'y': y - 60}],
+        })
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
+        self.assertEqual(page.evaluate('window.__touchPointerDown'), {'defaultPrevented': False})
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
+
     def test_a_drop_is_written_at_once(self):
         page = self._page(self._service_url())
         row = self._row(page, self.first.pk)

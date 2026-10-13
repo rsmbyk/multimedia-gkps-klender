@@ -22,6 +22,7 @@
   var settled = [];               /* the last order the server confirmed */
   var drag = null;
   var swallow = false;            /* the click that follows a drag, to be swallowed */
+  var swallowTimer = null;
   var inFlight = false;           /* one write at a time */
   var queued = false;             /* a newer order arrived while a write was in flight */
   var keyboardTimer = null;
@@ -306,6 +307,8 @@
     readNodes();
     var item = rowFor(pk);
     if (!item) return;
+    /* Capture the gesture before the browser starts text selection or link dragging. A
+       short pointer press is replayed as a click when it ends, so links remain usable. */
     event.preventDefault();
     /* The row ITSELF travels through the list -- no gap is inserted beside it. A gap would
        stand in addition to the row that is still occupying its own space, so the list would
@@ -318,8 +321,10 @@
       mids.push({pk: pkOfRow(each), middle: rect.top + rect.height / 2});
     });
     drag = {pk: pk, row: item, mids: mids, start: event.clientY, x: event.clientX,
-            y: event.clientY, order: order(), moved: false};
-    list().classList.add('is-dragging');    /* the list shortens the morph while a drag runs */
+            y: event.clientY, pointerId: event.pointerId,
+            link: event.target.closest && event.target.closest('a.songrow'),
+            order: order(), moved: false};
+    list().classList.add('is-dragging');
     if (item.setPointerCapture && event.pointerId != null) {
       try { item.setPointerCapture(event.pointerId); } catch (e) { /* no capture */ }
     }
@@ -363,9 +368,10 @@
 
   function endDrag(event) {
     if (!drag) return;
+    var current = drag;
     var moved = drag.moved;
     var before = snapshot();
-    clearGhost(drag);
+    clearGhost(current);
     if (moved) {
       if (event && typeof event.clientY === 'number') {
         before = snapshot();
@@ -374,12 +380,15 @@
       /* A drag that ended on a row would otherwise fire its link: the row jumps to the entry,
          and a reorder that jumps the page is not what anyone asked for. */
       swallow = true;
+      window.clearTimeout(swallowTimer);
+      swallowTimer = window.setTimeout(function () { swallow = false; }, 0);
       renumber();
       morph(before);
       applyPaneOrder(order());
     }
     drag = null;
     if (moved) persist();                   /* the drop is the write (spec 026) */
+    else if (current.link) current.link.click(); /* restore the quicklink after a short press */
   }
 
   /* ---------- what the person does ----------------------------------------- */
@@ -389,10 +398,21 @@
      every one of them -- which is why a row kept landing a step short of where it was released. */
   document.addEventListener('pointerdown', function (event) {
     if (event.button !== 0) return;
-    /* Only the grip starts a drag: it is the one control the sidebar draws, and a row's body
-       belongs to the link that opens the entry. */
     var grip = event.target.closest('[data-move-grip]');
-    if (grip) startDrag(event, Number(grip.dataset.moveGrip));
+    var row = event.target.closest('#chList li[data-move-row]');
+    /* Touch keeps the grip-only gesture so a swipe on the row text scrolls the sidebar. */
+    if (event.pointerType === 'touch' && !grip) return;
+    if (grip) row = grip.closest('#chList li[data-move-row]');
+    if (!row) return;
+    var handle = row.querySelector('[data-move-grip]');
+    if (handle) startDrag(event, Number(handle.dataset.moveGrip));
+  }, true);
+  /* Links are draggable by default. Suppress their native link drag so pointer moves from
+     the row can reach this reorder handler instead. The link's short click still works. */
+  document.addEventListener('dragstart', function (event) {
+    if (event.target.closest && event.target.closest('#chList li[data-move-row]')) {
+      event.preventDefault();
+    }
   }, true);
   document.addEventListener('pointermove', moveDrag, true);
   document.addEventListener('pointerup', endDrag, true);
@@ -403,6 +423,7 @@
   document.addEventListener('click', function (event) {
     if (!swallow) return;
     swallow = false;
+    window.clearTimeout(swallowTimer);
     event.preventDefault();
     event.stopPropagation();
   }, true);

@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-077](./items/ITEM-077-toc-whole-row-drag.md) | Drag service entries from the whole sidebar row | Start mouse/pen drags from any movable row area while preserving the click, touch, and keyboard behavior. | feat | P2 | M | [074](../specs/074-toc-whole-row-drag/spec.md) | `feat/074-toc-whole-row-drag` | 2026-10-13 |
 
 ## In review
 
