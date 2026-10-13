@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.9] - 2026-10-13
+
+### Fixed
+
+- Opening a Tata Ibadah service from the first-level panel brings its contents pane with it again. The sidebar state preserved on a stage-only swap is the first-level panel's (`data-nav`), not the contents pane's (`data-ch`) — a regression from 1.10.1.
+
 ## [1.10.8] - 2026-10-13
 
 ### Fixed
