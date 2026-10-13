@@ -1964,6 +1964,12 @@ kbd {
 .toc__grip:focus-visible { opacity: 1; }
 .toc__grip:hover { color: var(--ink); }
 .toc__grip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+/* Every movable entry row is a mouse/pen drag target; the grip stays visible as the cue and
+   remains the only touch handle and keyboard control. */
+#chList li[data-move-row],
+#chList li[data-move-row] > .songrow { cursor: grab; }
+#chList.is-grabbing li[data-move-row],
+#chList.is-grabbing li[data-move-row] > .songrow { cursor: grabbing; }
 /* the grip sits over the row's right end: give the label room so nothing hides */
 :root[data-section="tatib"] #chList .songrow__t { padding-right: 30px; }
 /* The entry number reads as the row's index, so it centers on the whole row while the
@@ -1976,6 +1982,7 @@ kbd {
   visibility: visible;
   background: color-mix(in srgb, var(--active-bg) 18%, var(--canvas));
   border-radius: 9px;
+  user-select: none;
 }
 #chList li.is-dragging > * { visibility: hidden; }
 /* Pointer capture can leave a row hovered during a grab. Suppress only that tint,

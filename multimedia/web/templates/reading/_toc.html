@@ -3,7 +3,7 @@
 {% comment %}A section break: the thin line, and -- when it is an entry -- its own grip, so a
 break can be moved like any other entry. It is not aria-hidden then: a focusable control
 inside a hidden row is a row nobody can reach.{% endcomment %}
-<li class="toc__eos" data-i="{{ item.anchor }}"{% if not item.entry %} aria-hidden="true"{% endif %}>
+<li class="toc__eos" data-i="{{ item.anchor }}"{% if item.entry %} data-move-row{% endif %}{% if not item.entry %} aria-hidden="true"{% endif %}>
   <span class="toc__eosline"></span>
   {% if item.entry %}
   <button type="button" class="toc__grip" data-move-grip="{{ item.pk }}"
@@ -17,7 +17,7 @@ inside a hidden row is a row nobody can reach.{% endcomment %}
   {% endif %}
 </li>
 {% else %}
-<li><a class="songrow{% if not item.titled %} songrow--cont{% endif %}" href="#ti-{{ item.anchor }}"
+<li{% if item.entry %} data-move-row{% endif %}><a class="songrow{% if not item.titled %} songrow--cont{% endif %}" href="#ti-{{ item.anchor }}"{% if item.entry %} draggable="false"{% endif %}
        data-i="{{ item.anchor }}" data-num="{{ item.n }}" data-txt="{{ item.txt|lower }}">
   <span class="songrow__c">{{ item.n }}</span>
   {% if item.song_label %}<span class="songrow__t songrow__t--song">

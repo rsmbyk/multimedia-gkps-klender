@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-10-13
+
+### Changed
+
+- Mouse and pen reordering of Tata Ibadah service entries now starts from the entire sidebar row while preserving quicklink clicks, touch scrolling, and keyboard grip controls.
+
 ## [1.8.1] - 2026-10-13
 
 ### Fixed
