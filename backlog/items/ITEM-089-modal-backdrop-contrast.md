@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/086-modal-backdrop-contrast/spec.md
 branch: chore/086-modal-backdrop-contrast
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/340
 archived_at:
 archive_reason:
 bump: patch
