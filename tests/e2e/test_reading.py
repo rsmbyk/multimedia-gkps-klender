@@ -961,6 +961,52 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 [26, 26])
             page.set_viewport_size({'width': 1280, 'height': 900})
 
+    def test_sidebar_filters_reset_only_on_main_menu_switch(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-book', args=[self.harian.id]))
+        page.fill('#bookFilter', 'not a songbook')
+        page.fill('#songFilter', 'Lagu 1')
+        expect(page.locator('.panel__filter .field-clear')).to_be_visible()
+        expect(page.locator('.ch__search .field-clear')).to_be_visible()
+
+        # Closing and reopening the active menu keeps both filters.
+        page.locator('.rail [data-panel="kidung"]').click()
+        page.locator('.rail [data-panel="kidung"]').click()
+        expect(page.locator('#bookFilter')).to_have_value('not a songbook')
+        expect(page.locator('#songFilter')).to_have_value('Lagu 1')
+
+        page.locator('.rail [data-panel="tatib"]').click()
+        expect(page.locator('html')).to_have_attribute('data-section', 'tatib')
+        expect(page.locator('#bookFilter')).to_have_value('')
+        expect(page.locator('#songFilter')).to_have_value('')
+        expect(page.locator('.panel__filter .field-clear')).to_be_hidden()
+        expect(page.locator('.ch__search .field-clear')).to_be_hidden()
+        self.assertGreater(page.locator('#panelBody .book:not(.is-hidden)').count(), 0)
+
+        page.locator('.rail [data-panel="kidung"]').click()
+        expect(page.locator('html')).to_have_attribute('data-section', 'kidung')
+        self.assertGreater(page.locator('#panelBody .book:not(.is-hidden)').count(), 0)
+        expect(page.locator('#bookFilter')).to_have_value('')
+
+        page.set_viewport_size({'width': 390, 'height': 844})
+        page.fill('#bookFilter', 'songbook')
+        page.locator('.rail [data-panel="alkitab"]').click()
+        expect(page.locator('html')).to_have_attribute('data-section', 'alkitab')
+        expect(page.locator('#bookFilter')).to_have_value('')
+
+    def test_search_menu_resets_sidebar_filters_without_erasing_query(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        self._search(page, 'kasih')
+        page.wait_for_selector('#searchStatus')
+        page.locator('.rail [data-panel="tatib"]').click()
+        page.fill('#bookFilter', 'Ibadah')
+        page.locator('#railSearch').click()
+        expect(page.get_by_text('Results for').first).to_be_visible()
+        expect(page.locator('#bookFilter')).to_have_value('')
+        expect(page.locator('.panel__filter .field-clear')).to_be_hidden()
+        expect(page.locator('#searchQuery')).to_have_value('kasih')
+
     def test_hymn_song_order_is_visible_after_browsing_from_home(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))

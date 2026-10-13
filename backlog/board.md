@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-080](./items/ITEM-080-sidebar-filter-reset.md) | Clear sidebar filters on main-menu switches | Reset both sidebar filters after a successful menu switch and restore full lists | fix | P2 | S | [077](../specs/077-sidebar-filter-reset/spec.md) | `fix/077-sidebar-filter-reset` | 2026-10-13 |
 
 ## In review
 
