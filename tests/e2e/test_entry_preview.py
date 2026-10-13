@@ -51,6 +51,9 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.SONG,
             song=song, verses=[1, 2])
+        tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
+            title='Long prayer', text='\n'.join(f'Line {number}' for number in range(1, 70)))
 
         self._playwright = sync_playwright().start()
         try:
@@ -88,6 +91,22 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('Escape')
         page.wait_for_function("!document.querySelector('#previewModal[open]')")
 
+    def test_short_preview_arrow_keys_do_not_scroll_the_page(self):
+        page = self._page()
+        page.set_viewport_size({'width': 900, 'height': 380})
+        self._open_preview(page, 0)
+        body = page.locator('#previewContent')
+        self.assertLessEqual(body.evaluate('el => el.scrollHeight'),
+                             body.evaluate('el => el.clientHeight'))
+        body.locator('.preview__line').first.click()
+        page.wait_for_timeout(400)  # let the pane's opener scroll settle
+        page_scroll = page.evaluate('window.scrollY')
+        page.keyboard.press('ArrowDown')
+        page.keyboard.press('ArrowUp')
+        page.wait_for_timeout(150)
+        self.assertEqual(body.evaluate('el => el.scrollTop'), 0)
+        self.assertEqual(page.evaluate('window.scrollY'), page_scroll)
+
     def test_a_song_preview_tabs_between_its_verses(self):
         page = self._page()
         self._open_preview(page, 1)
@@ -96,6 +115,31 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         self.assertIn('bait 1', page.locator('#previewContent .preview__panel').first.inner_text())
         tabs.nth(1).click()
         self.assertIn('bait 2', page.locator('#previewContent .preview__panel').nth(1).inner_text())
+        self.assertTrue(page.evaluate(
+            'document.activeElement === document.querySelectorAll("#previewContent .preview__tab")[1]'))
+
+    def test_clicking_long_preview_text_allows_arrow_key_scrolling(self):
+        page = self._page()
+        page.set_viewport_size({'width': 900, 'height': 380})
+        self._open_preview(page, 2)
+        body = page.locator('#previewContent')
+        self.assertGreater(body.evaluate('el => el.scrollHeight'),
+                           body.evaluate('el => el.clientHeight'))
+        body.locator('.preview__line').first.click()
+        self.assertEqual(page.evaluate('document.activeElement.id'), 'previewContent')
+        page.wait_for_timeout(400)  # let the pane's opener scroll settle before measuring it
+        page_scroll = page.evaluate('window.scrollY')
+        page.keyboard.press('ArrowDown')
+        page.wait_for_function("document.querySelector('#previewContent').scrollTop >= 30")
+        moved = body.evaluate('el => el.scrollTop')
+        page.keyboard.press('ArrowUp')
+        page.wait_for_function("document.querySelector('#previewContent').scrollTop < %d" % moved)
+        page.wait_for_function("document.querySelector('#previewContent').scrollTop === 0")
+        page.keyboard.press('ArrowUp')
+        page.wait_for_timeout(150)
+        self.assertEqual(page.evaluate('window.scrollY'), page_scroll)
+        page.keyboard.press('Escape')
+        page.wait_for_function("!document.querySelector('#previewModal[open]')")
 
     def test_a_song_preview_header_reads_the_short_reference(self):
         page = self._page()

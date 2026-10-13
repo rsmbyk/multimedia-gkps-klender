@@ -37,6 +37,22 @@
     });
   }
 
+  content.addEventListener('click', function (event) {
+    var control = event.target.closest('button, a, input, select, textarea, [tabindex], '
+      + '[contenteditable="true"]');
+    if (!control || control === content) content.focus({ preventScroll: true });
+  });
+
+  content.addEventListener('keydown', function (event) {
+    if (event.target !== content) return;
+    var atTop = content.scrollTop <= 0;
+    var atBottom = content.scrollTop >= content.scrollHeight - content.clientHeight - 1;
+    if (((event.key === 'ArrowUp' || event.key === 'PageUp') && atTop)
+        || ((event.key === 'ArrowDown' || event.key === 'PageDown') && atBottom)) {
+      event.preventDefault();
+    }
+  });
+
   document.addEventListener('click', function (event) {
     var opener = event.target.closest('[data-preview-open]');
     if (opener) {
