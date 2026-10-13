@@ -1016,6 +1016,8 @@
   function applyPage(doc, url, opts) {
     var fresh = doc.documentElement.dataset;
     var kind = opts.kind || 'lists';
+    var changingMainMenu = (kind === 'rail' && opts.section !== activeSection)
+      || (kind === 'results' && (root.dataset.read === 'on' || root.dataset.nav !== 'closed'));
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results'
       || kind === 'refresh';
@@ -1063,6 +1065,15 @@
     activeSection = fresh.section || activeSection;
     root.dataset.section = activeSection;
     if (fresh.chMode) root.dataset.chMode = fresh.chMode;
+
+    if (changingMainMenu) {
+      /* Clear only after the destination loaded and its lists were swapped in.
+         The input events reapply each filter and hide its clear control. */
+      [filter, songFilterEl].forEach(function (input) {
+        input.value = '';
+        input.dispatchEvent(new window.Event('input', { bubbles: true }));
+      });
+    }
 
     if (swapsStage) {
       root.dataset.read = fresh.read;

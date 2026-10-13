@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.9.3] - 2026-10-13
+
+### Fixed
+
+- Switching reading menus now clears both sidebar filters and restores full lists while keeping the home search query.
+
 ## [1.9.2] - 2026-10-13
 
 ### Fixed
