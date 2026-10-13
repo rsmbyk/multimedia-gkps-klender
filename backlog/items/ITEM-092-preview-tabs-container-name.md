@@ -1,6 +1,6 @@
 ---
 id: ITEM-092
-status: in-review
+status: done
 title: Name the preview tabs container so it cannot be mistaken for a tab
 type: fix
 priority: P2
