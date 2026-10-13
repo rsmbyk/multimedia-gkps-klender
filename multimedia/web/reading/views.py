@@ -33,7 +33,7 @@ from django.views.generic import TemplateView
 from multimedia.bible import models as bible_models
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
-from multimedia.tatib.screen_breaks import eligible_boundaries, valid_breaks
+from multimedia.tatib.screen_breaks import eligible_boundaries, single_screen_boundaries, valid_breaks
 from multimedia.web.reading import editors
 from multimedia.web.reading import entries as entry_forms
 from multimedia.web.reading.formatting import format_verses
@@ -359,13 +359,14 @@ def entry_save(request, pk=None):
 
 
 def entry_screen_breaks(request, pk):
-    """Save the arrangement from an ordinary Text entry's preview modal."""
+    """Save the arrangement from a Text entry's preview modal."""
     if not editors.editors_allowed(request):
         return HttpResponseForbidden('Editing is restricted.')
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
     entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk,
-                              kind=tatib_models.ServiceEntryKind.TEXT)
+                              kind__in=(tatib_models.ServiceEntryKind.TEXT,
+                                        tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT))
     try:
         payload = json.loads(request.body)
     except (ValueError, UnicodeDecodeError):
@@ -376,7 +377,9 @@ def entry_screen_breaks(request, pk):
         return JsonResponse({'error': 'The text changed. Reopen Preview to set its breaks.'},
                             status=409)
     breaks = payload.get('breaks')
-    if breaks is not None and not valid_breaks(entry.text, breaks):
+    if breaks is not None and not valid_breaks(
+            entry.text, breaks,
+            single_screen=entry.kind == tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT):
         return JsonResponse({'error': 'Breaks must fall between written lines.'}, status=400)
     entry.screen_breaks = breaks
     entry.screen_breaks_reset = False
@@ -667,13 +670,15 @@ def _text_signature(text):
 
 def _text_preview(entry):
     raw = (entry.text or '').split('\n')
-    possible = eligible_boundaries(entry.text)
+    single = entry.kind == tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT
+    possible = single_screen_boundaries(entry.text) if single else eligible_boundaries(entry.text)
     paragraphs = _paragraphs(entry.text)
     return {'kind': 'editable_text', 'title': entry.title,
             'lines': [dict(para, index=index, present=bool(raw[index - 1].strip()),
                            can_break_after=index in possible)
                       for index, para in enumerate(paragraphs, 1)],
             'breaks_json': json.dumps(entry.screen_breaks),
+            'single_screen': single,
             'signature': _text_signature(entry.text),
             'save_url': reverse('web-entry-screen-breaks', args=[entry.pk]),
             'reset_notice': entry.screen_breaks_reset}
@@ -807,7 +812,7 @@ def _tatib_stage(service):
         if not deleted_target:
             if kind_key in ('scripture', 'song'):
                 preview = _entry_preview(row, kind_key)
-            elif kind_key == 'text':
+            elif kind_key in ('text', 'single_screen_text'):
                 preview = _text_preview(row)
             elif clipped:
                 preview = {'kind': 'text', 'title': title, 'paras': _paragraphs(body)}
@@ -874,6 +879,25 @@ def _line_pairs(text, voiced=False, breaks=None):
     if pair:
         screens.append(pair)
     return screens
+
+
+def _single_screen_groups(text, breaks):
+    """Group voiced lines at saved content boundaries without edge paragraph blanks."""
+    groups, group = [], []
+    skip_boundary_blanks = False
+    for index, line in enumerate(_screen_lines(text, voiced=True), 1):
+        if not line['text'].strip() and skip_boundary_blanks:
+            continue
+        if line['text'].strip():
+            skip_boundary_blanks = False
+        group.append(line)
+        if index in breaks:
+            groups.append(group)
+            group = []
+            skip_boundary_blanks = True
+    if group:
+        groups.append(group)
+    return groups
 
 
 def _scripture_screens(entry):
@@ -947,8 +971,11 @@ def _projector_screens(service):
             # The whole body on one screen; blank lines are paragraph breaks, not new
             # screens, and the fit loop shrinks (then, if need be, truncates) it.
             header, body = entry.resolve()
-            screens.append({'blank': False, 'header': header,
-                            'lines': _screen_lines(body, voiced=True), 'single': True})
+            groups = ([_screen_lines(body, voiced=True)] if entry.screen_breaks is None
+                      else _single_screen_groups(body, entry.screen_breaks))
+            for lines in groups:
+                screens.append({'blank': False, 'header': header,
+                                'lines': lines, 'single': True})
             screens.append(_blank_screen())
         else:                                            # a text entry
             header, body = entry.resolve()

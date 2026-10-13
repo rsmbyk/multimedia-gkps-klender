@@ -66,7 +66,8 @@ class TextEntryForm(ServiceEntryForm):
 
     def save(self, commit=True):
         entry = super().save(commit=False)
-        if (entry.kind == tatib_models.ServiceEntryKind.TEXT
+        if (entry.kind in (tatib_models.ServiceEntryKind.TEXT,
+                           tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT)
                 and entry.screen_breaks is not None
                 and self.original_line_shape != line_shape(entry.text)):
             entry.screen_breaks = None

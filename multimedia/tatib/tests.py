@@ -13,7 +13,7 @@ from rest_framework.test import APITestCase
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
-from multimedia.tatib.screen_breaks import default_breaks, valid_breaks
+from multimedia.tatib.screen_breaks import default_breaks, single_screen_boundaries, valid_breaks
 
 
 class ServiceEntryTests(TestCase):
@@ -56,6 +56,19 @@ class ServiceEntryTests(TestCase):
                 self.assertFalse(valid_breaks(text, breaks))
         with self.assertRaises(ValidationError):
             self._entry(kind=tatib.ServiceEntryKind.TEXT, text=text, screen_breaks=[3])
+
+    def test_single_screen_boundaries_can_cross_paragraph_spacing(self):
+        text = 'one\ntwo\n\nthree\nfour'
+        self.assertEqual(single_screen_boundaries(text), {1, 2, 4})
+        self.assertTrue(valid_breaks(text, [2, 4], single_screen=True))
+        self._entry(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                    text=text, screen_breaks=[2, 4])
+        for breaks in ([3], [5], [2, 2], [4, 2], [True]):
+            with self.subTest(breaks=breaks):
+                self.assertFalse(valid_breaks(text, breaks, single_screen=True))
+                with self.assertRaises(ValidationError):
+                    self._entry(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                                text=text, screen_breaks=breaks)
 
     def test_a_section_break_resolves_to_nothing(self):
         # A break is a divider, not a titled entry (spec 038): any stored title is unused.

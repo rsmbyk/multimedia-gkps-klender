@@ -1,4 +1,4 @@
-"""Screen boundaries for ordinary Tata Ibadah Text entries."""
+"""Screen boundaries for Tata Ibadah Text entries."""
 
 
 def line_shape(text):
@@ -9,6 +9,12 @@ def eligible_boundaries(text):
     shape = line_shape(text)
     return {index for index in range(1, len(shape))
             if shape[index - 1] and shape[index]}
+
+
+def single_screen_boundaries(text):
+    """Place a boundary after each content line except the last, across blank rows too."""
+    positions = [index for index, present in enumerate(line_shape(text), 1) if present]
+    return set(positions[:-1])
 
 
 def default_breaks(text):
@@ -28,8 +34,8 @@ def default_breaks(text):
     return sorted(boundaries)
 
 
-def valid_breaks(text, breaks):
-    allowed = eligible_boundaries(text)
+def valid_breaks(text, breaks, single_screen=False):
+    allowed = single_screen_boundaries(text) if single_screen else eligible_boundaries(text)
     return (isinstance(breaks, list)
             and all(type(value) is int and value in allowed for value in breaks)
             and breaks == sorted(set(breaks)))

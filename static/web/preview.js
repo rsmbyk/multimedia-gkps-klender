@@ -61,6 +61,7 @@
   }
 
   function defaultBreaks() {
+    if (split.dataset.singleScreen === 'true') return [];
     var result = [];
     var gaps = [].slice.call(split.querySelectorAll('[data-break-after]'));
     gaps.forEach(function (gap, index) {
@@ -77,7 +78,9 @@
   function drawBreaks() {
     if (!split) return;
     split.classList.toggle('is-custom', breaks !== null);
-    mode.textContent = breaks === null ? 'Default · 2 lines' : 'Custom';
+    mode.textContent = breaks === null
+      ? (split.dataset.singleScreen === 'true' ? 'Default · 1 screen' : 'Default · 2 lines')
+      : 'Custom';
     var shown = breaks === null ? defaultBreaks() : breaks;
     split.querySelectorAll('[data-break-after]').forEach(function (gap) {
       var position = Number(gap.dataset.breakAfter);
@@ -169,11 +172,19 @@
       var index = current.indexOf(position);
       if (index !== -1) current.splice(index, 1);
       else if (breaks === null) {
-        var block = blockGaps(gap);
-        current = current.filter(function (value) { return block.indexOf(value) === -1; });
-        block.forEach(function (value) {
-          if (Math.abs(value - position) % 2 === 0) current.push(value);
-        });
+        if (split.dataset.singleScreen === 'true') {
+          var allGaps = [].slice.call(split.querySelectorAll('[data-break-after]'));
+          var chosen = allGaps.indexOf(gap);
+          current = allGaps.filter(function (_each, at) {
+            return Math.abs(at - chosen) % 2 === 0;
+          }).map(function (each) { return Number(each.dataset.breakAfter); });
+        } else {
+          var block = blockGaps(gap);
+          current = current.filter(function (value) { return block.indexOf(value) === -1; });
+          block.forEach(function (value) {
+            if (Math.abs(value - position) % 2 === 0) current.push(value);
+          });
+        }
         current.sort(function (a, b) { return a - b; });
       } else current.push(position);
       current.sort(function (a, b) { return a - b; });

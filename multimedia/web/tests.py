@@ -619,6 +619,62 @@ class ServiceEntryViewTests(TestCase):
         entry.refresh_from_db()
         self.assertIsNone(entry.screen_breaks)
 
+    def test_single_screen_preview_breaks_cross_paragraphs_and_reset(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                          title='Prayer', text='one\ntwo\n\nthree\nfour')
+        html = self.html()
+        self.assertIn('data-single-screen="true"', html)
+        self.assertIn('data-break-after="2"', html)
+        self.assertNotIn('data-break-after="3"', html)
+        url = reverse('web-entry-screen-breaks', args=[entry.pk])
+        signature = reading_views._text_signature(entry.text)
+        for breaks in ([3], [2, 2]):
+            response = self.client.post(url, data=json.dumps({
+                'breaks': breaks, 'text_signature': signature}),
+                content_type='application/json')
+            self.assertEqual(response.status_code, 400)
+        response = self.client.post(url, data=json.dumps({
+            'breaks': [2], 'text_signature': signature}), content_type='application/json')
+        self.assertEqual(response.status_code, 200, response.content)
+        entry.refresh_from_db()
+        self.assertEqual(entry.screen_breaks, [2])
+        response = self.client.post(url, data=json.dumps({
+            'breaks': None, 'text_signature': signature}), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        entry.refresh_from_db()
+        self.assertIsNone(entry.screen_breaks)
+
+    def test_single_screen_breaks_reject_stale_text_and_viewer_changes(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                          text='one\n\ntwo')
+        url = reverse('web-entry-screen-breaks', args=[entry.pk])
+        response = self.client.post(url, data=json.dumps({
+            'breaks': [1], 'text_signature': 'outdated'}),
+            content_type='application/json')
+        self.assertEqual(response.status_code, 409)
+        with override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True):
+            self.assertIn('data-can-edit="false"', self.html())
+            response = self.client.post(url, data=json.dumps({
+                'breaks': [1], 'text_signature': reading_views._text_signature(entry.text)}),
+                content_type='application/json')
+            self.assertEqual(response.status_code, 403)
+
+    def test_single_screen_edit_shape_reset_and_wording_preservation(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                          text='one\ntwo\nthree', screen_breaks=[1])
+        url = reverse('web-entry-save', args=[entry.pk])
+        response = self.client.post(url, {'kind': entry.kind, 'title': 'Prayer',
+                                          'text': 'first\nsecond\nthird'})
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        entry.refresh_from_db()
+        self.assertEqual(entry.screen_breaks, [1])
+        response = self.client.post(url, {'kind': entry.kind, 'title': 'Prayer',
+                                          'text': 'first\n\nsecond\nthird'})
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        entry.refresh_from_db()
+        self.assertIsNone(entry.screen_breaks)
+        self.assertTrue(entry.screen_breaks_reset)
+
     def test_preview_breaks_reject_invalid_and_stale_positions(self):
         entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='one\ntwo\n\nthree')
         url = reverse('web-entry-screen-breaks', args=[entry.pk])
@@ -2043,6 +2099,30 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('baris satu', screens[0])
         self.assertIn('baris dua', screens[0])
         self.assertIn('baris empat', screens[0])
+
+    def test_single_screen_custom_breaks_keep_title_and_paragraph_spacing(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
+                  text='one\ntwo\n\nthree\nfour\n\nfive', screen_breaks=[2, 5])
+        screens = self.screens()
+        self.assertEqual(len(screens), 4)
+        self.assertTrue(all('Doa' in screen and 'data-fit="single"' in screen
+                            for screen in screens[:3]))
+        self.assertIn('one', screens[0])
+        self.assertIn('two', screens[0])
+        self.assertNotIn('three', screens[0])
+        self.assertIn('three', screens[1])
+        self.assertIn('four', screens[1])
+        self.assertNotIn('five', screens[1])
+        self.assertIn('five', screens[2])
+        self.assertIn('is-blank', screens[3])
+
+    def test_single_screen_blank_paragraph_does_not_break_by_itself(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                  text='one\n\ntwo\nthree', screen_breaks=[])
+        screens = self.screens()
+        self.assertEqual(len(screens), 2)
+        self.assertIn('one', screens[0])
+        self.assertIn('two', screens[0])
 
     def test_a_song_shows_its_lyrics_alone_in_pairs(self):
         self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
