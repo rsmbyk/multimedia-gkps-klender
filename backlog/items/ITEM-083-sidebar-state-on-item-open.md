@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/080-sidebar-state-on-item-open/spec.md
 branch: fix/080-sidebar-state-on-item-open
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/334
 archived_at:
 archive_reason:
 bump: patch
