@@ -1,6 +1,6 @@
 ---
 id: ITEM-082
-status: in_progress
+status: in_review
 title: Use one Text entry with a selectable screen mode
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/079-unified-text-screen-mode/spec.md
 branch: feat/079-unified-text-screen-mode
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/333
 archived_at:
 archive_reason:
 bump: minor

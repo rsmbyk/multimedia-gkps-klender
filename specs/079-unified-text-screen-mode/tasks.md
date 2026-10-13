@@ -17,9 +17,10 @@
 - [x] Refactor — remove active use of the old Single-screen entry kind and duplicate Add action without changing song, Scripture, legacy, or old OBS behavior
 - [ ] Verify targeted domain, web, and browser tests; let CI run the full required checks on the ready PR
 - [ ] Fill final implementation traceability in spec.md
-- [ ] Set ITEM-082 to In review with a draft PR, then Done with this spec and tasks in the same PR
-- [ ] Bump VERSION from the current integration version, add the matching CHANGELOG section, and set ITEM-082 release_version in this PR
-- [ ] Conventional Commit with the repository’s actual Codex coauthor trailer and a draft PR linking Spec 079
+- [x] Set ITEM-082 to In review with a draft PR linking Spec 079
+- [ ] Set ITEM-082 to Done with this spec and tasks in the same PR before merge
+- [x] Bump VERSION from the current integration version, add the matching CHANGELOG section, and set ITEM-082 release_version in this PR
+- [x] Conventional Commit with the repository’s actual Codex coauthor trailer and a draft PR linking Spec 079
 
 ## Done when
 
