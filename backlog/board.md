@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-081](./items/ITEM-081-tatib-mode-switch-continuity.md) | Keep the open Tata Ibadah in view across list modes | Preserve the stage and entry pane while reselecting the exact service in dated or template lists | fix | P1 | M | [078](../specs/078-tatib-mode-switch-continuity/spec.md) | `fix/078-tatib-mode-switch-continuity` | 2026-10-13 |
 
 ## In review
 

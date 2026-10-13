@@ -588,7 +588,7 @@
         event.preventDefault();
         var target = mode.href;
         if (stageSection() === 'tatib' && stageInfo.tile) {
-          target = '/tatib/' + encodeURIComponent(stageInfo.tile) + '/'
+          target = new window.URL(stageInfo.url, window.location.href).pathname
             + new window.URL(mode.href, window.location.href).search;
         }
         navigate(target, { kind: 'mode' });

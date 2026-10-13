@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.9.4] - 2026-10-13
+
+### Fixed
+
+- Switching Tata Ibadah between dated orders and templates now keeps the open service and entry sidebar, with its exact service selected and visible in either list.
+
 ## [1.9.3] - 2026-10-13
 
 ### Fixed

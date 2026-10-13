@@ -967,7 +967,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         template = self.mode_template
         page = self._page()
         page.goto(self.live_server_url + reverse('web-tatib-service', args=[template.pk]))
-        page.locator('#tatibMode').click()
+        page.set_viewport_size({'width': 390, 'height': 844})
+        page.emulate_media(reduced_motion='reduce')
+        # The first pane sits behind the open second pane at this width; its
+        # state must still survive the mode action when that level is surfaced.
+        page.locator('#tatibMode').evaluate('el => el.click()')
         selected = page.locator('#panelBody .book[aria-current="true"]')
         expect(selected).to_have_attribute('data-name', str(template.pk))
         expect(selected).to_contain_text('Template · Currently open')
