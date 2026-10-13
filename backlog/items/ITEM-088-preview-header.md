@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/085-preview-header/spec.md
 branch: fix/085-preview-header
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/339
 archived_at:
 archive_reason:
 bump: patch
