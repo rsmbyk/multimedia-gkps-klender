@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/084-home-search-hint/spec.md
 branch: chore/084-home-search-hint
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/338
 archived_at:
 archive_reason:
 bump: patch
