@@ -1,6 +1,6 @@
 ---
 id: ITEM-076
-status: in_progress
+status: in_review
 title: Give song Preview verse tabs equal shapes
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/073-song-preview-verse-tabs/spec.md
 branch: fix/073-song-preview-verse-tabs
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/327
 archived_at:
 archive_reason:
 bump: patch
