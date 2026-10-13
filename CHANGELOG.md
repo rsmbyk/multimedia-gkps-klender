@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-10-13
+
+### Fixed
+
+- Home search and both reading sidebar filters now use matching, centered clear controls with enough input space for typed text.
+
 ## [1.9.1] - 2026-10-13
 
 ### Fixed
