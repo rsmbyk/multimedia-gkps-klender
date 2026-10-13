@@ -31,7 +31,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-074](./items/ITEM-074-preview-keyboard-scroll.md) | Scroll Preview text with arrow keys | Focus long Preview content for native arrow-key scrolling | fix | P2 | S | [071](../specs/071-preview-keyboard-scroll/spec.md) | [#324](https://github.com/rsmbyk/multimedia-gkps-klender/pull/324) | 2026-10-13 |
 | [ITEM-071](./items/ITEM-071-tatib-entry-surface.md) | Subtle surface for Tata Ibadah entries | Quiet fill, outline, and padding for service entry boxes | chore | P2 | S | [068](../specs/068-tatib-entry-surface/spec.md) | [#322](https://github.com/rsmbyk/multimedia-gkps-klender/pull/322) | 2026-10-13 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -51,6 +50,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-074](./items/ITEM-074-preview-keyboard-scroll.md) | Scroll Preview text with arrow keys | Focus long Preview content for native arrow-key scrolling | fix | P2 | S | [071](../specs/071-preview-keyboard-scroll/spec.md) | develop | 2026-10-13 |
 | [ITEM-070](./items/ITEM-070-consistent-scrollbars.md) | Consistent scrollbars in the new UI | Match the Tata Ibadah sidebar scrollbar across new UI components | feat | P2 | S | [067](../specs/067-consistent-scrollbars/spec.md) | develop | 2026-10-12 |
 | [ITEM-069](./items/ITEM-069-stage-song-verse-line.md) | Always show a song entry's verses on the Tata Ibadah stage | Stage shows `Bait 1-3` under every song entry with verses, matching the sidebar; deleted targets stay silent | fix | P2 | S | [066](../specs/066-stage-song-verse-line/spec.md) | develop | 2026-10-12 |
 | [ITEM-068](./items/ITEM-068-entry-modal-origin-highlight.md) | Hold the service entry highlight while its modal is open | Origin entry keeps its fill and controls until Preview, Edit, or Delete closes | fix | P2 | S | [065](../specs/065-entry-modal-origin-highlight/spec.md) | develop | 2026-10-12 |

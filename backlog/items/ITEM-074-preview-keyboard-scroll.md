@@ -1,6 +1,6 @@
 ---
 id: ITEM-074
-status: in_review
+status: done
 title: Scroll Preview text with arrow keys
 type: fix
 priority: P2

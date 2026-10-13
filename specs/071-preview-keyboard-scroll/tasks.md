@@ -20,5 +20,5 @@
 ## Done when
 
 - [x] All acceptance scenarios hold
-- [ ] Targeted browser test passes locally and required remote checks pass
+- [x] Targeted browser test passes locally and required remote checks pass
 - [x] Board, tasks, version, and PR traceability are complete
