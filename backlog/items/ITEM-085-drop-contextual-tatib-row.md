@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/082-drop-contextual-tatib-row/spec.md
 branch: fix/082-drop-contextual-tatib-row
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/336
 archived_at:
 archive_reason:
 bump: patch
