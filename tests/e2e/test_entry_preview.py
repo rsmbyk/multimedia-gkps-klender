@@ -96,6 +96,27 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('Escape')
         page.wait_for_function("!document.querySelector('#previewModal[open]')")
 
+    def test_the_preview_dialog_sits_on_the_shared_scrim(self):
+        """The preview shares the editor's scrim and lift (spec 086)."""
+        page = self._page()
+        self._open_preview(page, 0)
+        scrim = page.evaluate("""() => getComputedStyle(
+          document.querySelector('#previewModal'), '::backdrop').backgroundColor""")
+        dialog = page.evaluate(
+            "() => getComputedStyle(document.querySelector('#previewModal')).backgroundColor")
+        self.assertEqual(scrim, 'rgba(20, 20, 18, 0.52)')
+        self.assertNotEqual(scrim, dialog)
+
+        shadow = page.evaluate(
+            "() => getComputedStyle(document.querySelector('#previewModal')).boxShadow")
+        self.assertIn('0px 0px 0px 1px', shadow)
+        self.assertIn('48px', shadow)
+
+        painted = page.screenshot(clip={'x': 6, 'y': 6, 'width': 2, 'height': 2})
+        page.add_style_tag(content='.preview::backdrop { background: transparent !important; }')
+        self.assertNotEqual(
+            painted, page.screenshot(clip={'x': 6, 'y': 6, 'width': 2, 'height': 2}))
+
     def test_short_preview_arrow_keys_do_not_scroll_the_page(self):
         page = self._page()
         page.set_viewport_size({'width': 900, 'height': 380})
