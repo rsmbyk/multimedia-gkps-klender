@@ -17,7 +17,6 @@ from multimedia.tatib.screen_breaks import line_shape
 
 KINDS = {
     'text': tatib_models.ServiceEntryKind.TEXT,
-    'single_screen_text': tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT,
     'scripture': tatib_models.ServiceEntryKind.SCRIPTURE,
     'song': tatib_models.ServiceEntryKind.SONG,
     'section_break': tatib_models.ServiceEntryKind.SECTION_BREAK,
@@ -56,18 +55,27 @@ class ServiceEntryForm(forms.ModelForm):
 
 
 class TextEntryForm(ServiceEntryForm):
+    default_screen_mode = forms.ChoiceField(choices=tatib_models.TextScreenMode.choices,
+                                            required=False, widget=forms.HiddenInput)
+
     class Meta(ServiceEntryForm.Meta):
-        fields = ['kind', 'title', 'text']
+        fields = ['kind', 'title', 'text', 'default_screen_mode']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.original_line_shape = (line_shape(self.instance.text)
                                     if self.instance.pk else None)
+        if self.instance.pk:
+            self.fields['default_screen_mode'].disabled = True
+
+    def clean_default_screen_mode(self):
+        if self.instance.pk:
+            return self.instance.default_screen_mode
+        return self.cleaned_data['default_screen_mode'] or tatib_models.TextScreenMode.MULTI_LINE
 
     def save(self, commit=True):
         entry = super().save(commit=False)
-        if (entry.kind in (tatib_models.ServiceEntryKind.TEXT,
-                           tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT)
+        if (entry.kind == tatib_models.ServiceEntryKind.TEXT
                 and entry.screen_breaks is not None
                 and self.original_line_shape != line_shape(entry.text)):
             entry.screen_breaks = None
@@ -152,7 +160,6 @@ class SongEntryForm(ServiceEntryForm):
 
 FORMS = {
     'text': TextEntryForm,
-    'single_screen_text': TextEntryForm,
     'section_break': SectionBreakEntryForm,
     'scripture': ScriptureEntryForm,
     'song': SongEntryForm,
@@ -160,7 +167,7 @@ FORMS = {
 
 
 TITLES = {
-    'text': 'text', 'single_screen_text': 'single-screen text', 'scripture': 'passage',
+    'text': 'text', 'scripture': 'passage',
     'song': 'song', 'section_break': 'break',
 }
 

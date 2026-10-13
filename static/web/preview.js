@@ -11,9 +11,13 @@
 
   var modal = document.getElementById('previewModal');
   var content = document.getElementById('previewContent');
-  var reset = modal && modal.querySelector('[data-break-reset]');
-  var mode = modal && modal.querySelector('[data-break-mode]');
-  var modeLabel = modal && modal.querySelector('[data-break-mode-label]');
+  var footer = modal && modal.querySelector('[data-screen-mode-footer]');
+  var modeControl = modal && modal.querySelector('[data-preview-screen-mode]');
+  var readonlyMode = modal && modal.querySelector('[data-mode-readonly]');
+  var confirmLayer = modal && modal.querySelector('[data-mode-confirm]');
+  var confirmTitle = modal && modal.querySelector('[data-confirm-title]');
+  var confirmCancel = modal && modal.querySelector('[data-confirm-cancel]');
+  var confirmAccept = modal && modal.querySelector('[data-confirm-accept]');
   if (!modal || typeof modal.showModal !== 'function') return;
 
   var trigger = null;
@@ -21,6 +25,9 @@
   var origin = null;
   var split = null;
   var breaks = null;
+  var defaultMode = 'multi_line';
+  var pendingMode = null;
+  var pendingButton = null;
   var saving = false;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
@@ -49,7 +56,7 @@
   }
 
   function blockGaps(target) {
-    var gaps = [].slice.call(split.querySelectorAll('[data-break-after]'));
+    var gaps = [].slice.call(split.querySelectorAll('[data-break-after]:not([hidden])'));
     var at = gaps.indexOf(target), start = at, end = at;
     while (start > 0 && Number(gaps[start - 1].dataset.breakAfter) + 1
            === Number(gaps[start].dataset.breakAfter)) start--;
@@ -61,9 +68,9 @@
   }
 
   function defaultBreaks() {
-    if (split.dataset.singleScreen === 'true') return [];
+    if (defaultMode === 'single_screen') return [];
     var result = [];
-    var gaps = [].slice.call(split.querySelectorAll('[data-break-after]'));
+    var gaps = [].slice.call(split.querySelectorAll('[data-break-after]:not([hidden])'));
     gaps.forEach(function (gap, index) {
       var current = Number(gap.dataset.breakAfter);
       var previous = index && Number(gaps[index - 1].dataset.breakAfter);
@@ -77,12 +84,19 @@
 
   function drawBreaks() {
     if (!split) return;
-    split.classList.toggle('is-custom', breaks !== null);
-    mode.textContent = breaks === null
-      ? (split.dataset.singleScreen === 'true' ? 'Default · 1 screen' : 'Default · 2 lines')
-      : 'Custom';
-    var shown = breaks === null ? defaultBreaks() : breaks;
     split.querySelectorAll('[data-break-after]').forEach(function (gap) {
+      gap.hidden = defaultMode === 'multi_line' && gap.dataset.multiBoundary !== 'true';
+    });
+    split.classList.toggle('is-custom', breaks !== null);
+    var selected = breaks === null ? defaultMode : 'custom';
+    modeControl.dataset.selected = selected;
+    modeControl.querySelectorAll('[data-preview-mode]').forEach(function (button) {
+      button.setAttribute('aria-pressed', button.dataset.previewMode === selected ? 'true' : 'false');
+    });
+    readonlyMode.textContent = selected === 'custom' ? 'Custom breaks'
+      : selected === 'single_screen' ? 'Single-screen' : 'Multi-line';
+    var shown = breaks === null ? defaultBreaks() : breaks;
+    split.querySelectorAll('[data-break-after]:not([hidden])').forEach(function (gap) {
       var position = Number(gap.dataset.breakAfter);
       var set = shown.indexOf(position) !== -1;
       gap.classList.toggle('is-set', set);
@@ -93,26 +107,30 @@
     });
   }
 
-  function saveBreaks(next) {
+  function saveBreaks(next, nextMode) {
     if (saving) return;
     saving = true;
     var activeSplit = split;
     var error = activeSplit.querySelector('[data-break-error]');
     error.hidden = true;
     activeSplit.querySelectorAll('[data-break-after]').forEach(function (gap) { gap.disabled = true; });
-    reset.disabled = true;
+    modeControl.querySelectorAll('button').forEach(function (button) { button.disabled = true; });
     fetch(activeSplit.dataset.saveUrl, {
       method: 'POST', credentials: 'same-origin',
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf()},
-      body: JSON.stringify({breaks: next, text_signature: activeSplit.dataset.textSignature})
+      body: JSON.stringify({breaks: next, default_screen_mode: nextMode || defaultMode,
+        text_signature: activeSplit.dataset.textSignature,
+        screen_state_signature: activeSplit.dataset.screenStateSignature})
     }).then(function (response) {
       return response.json().then(function (data) {
         if (!response.ok) throw new Error(data.error || 'Could not save screen breaks.');
         return data;
       });
-    }).then(function () {
+    }).then(function (data) {
       if (split === activeSplit) {
         breaks = next;
+        defaultMode = data.default_screen_mode;
+        activeSplit.dataset.screenStateSignature = data.screen_state_signature;
         var notice = activeSplit.querySelector('.preview__notice');
         if (notice) notice.remove();
         drawBreaks();
@@ -130,17 +148,20 @@
           gap.disabled = false;
         });
       }
-      reset.disabled = false;
+      modeControl.querySelectorAll('button').forEach(function (button) { button.disabled = false; });
     });
   }
 
   function wireSplit() {
     split = content.querySelector('.preview__split');
-    reset.hidden = !split || split.dataset.canEdit !== 'true';
-    modeLabel.hidden = !split;
+    footer.hidden = !split;
     if (!split) return;
     breaks = JSON.parse(split.dataset.screenBreaks);
-    if (split.dataset.canEdit !== 'true') {
+    defaultMode = split.dataset.defaultScreenMode;
+    var canEdit = split.dataset.canEdit === 'true';
+    modeControl.hidden = !canEdit;
+    readonlyMode.hidden = canEdit;
+    if (!canEdit) {
       split.querySelectorAll('[data-break-after]').forEach(function (gap) { gap.disabled = true; });
     }
     drawBreaks();
@@ -188,7 +209,7 @@
       var index = current.indexOf(position);
       if (index !== -1) current.splice(index, 1);
       else if (breaks === null) {
-        if (split.dataset.singleScreen === 'true') {
+        if (defaultMode === 'single_screen') {
           current = [position];
         } else {
           var block = blockGaps(gap);
@@ -204,16 +225,64 @@
     }
   });
 
-  reset.addEventListener('click', function () { if (split && !saving) saveBreaks(null); });
+  modeControl.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-preview-mode]');
+    if (!button || !split || saving || split.dataset.canEdit !== 'true') return;
+    var targetMode = button.dataset.previewMode;
+    if (breaks === null) {
+      if (targetMode !== defaultMode) saveBreaks(null, targetMode);
+      return;
+    }
+    pendingMode = targetMode;
+    pendingButton = button;
+    confirmTitle.textContent = 'Switch to '
+      + (targetMode === 'single_screen' ? 'Single-screen' : 'Multi-line') + '?';
+    confirmLayer.hidden = false;
+    confirmCancel.focus();
+  });
+
+  function cancelConfirmation() {
+    confirmLayer.hidden = true;
+    pendingMode = null;
+    if (pendingButton) pendingButton.focus();
+    pendingButton = null;
+  }
+
+  confirmCancel.addEventListener('click', cancelConfirmation);
+  confirmAccept.addEventListener('click', function () {
+    var nextMode = pendingMode;
+    cancelConfirmation();
+    if (nextMode) saveBreaks(null, nextMode);
+  });
+  modal.addEventListener('keydown', function (event) {
+    if (confirmLayer.hidden) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      cancelConfirmation();
+    } else if (event.key === 'Tab') {
+      if (event.shiftKey && document.activeElement === confirmCancel) {
+        event.preventDefault(); confirmAccept.focus();
+      } else if (!event.shiftKey && document.activeElement === confirmAccept) {
+        event.preventDefault(); confirmCancel.focus();
+      }
+    }
+  });
+  modal.addEventListener('cancel', function (event) {
+    if (!confirmLayer.hidden) { event.preventDefault(); cancelConfirmation(); }
+  });
 
   modal.addEventListener('click', function (event) {
-    if (event.target === modal) modal.close();          /* the backdrop */
+    if (event.target === modal && confirmLayer.hidden) modal.close();
   });
 
   modal.addEventListener('close', function () {
     content.innerHTML = '';
     split = null;
     breaks = null;
+    confirmLayer.hidden = true;
+    pendingMode = null;
+    pendingButton = null;
     if (origin) origin.classList.remove('is-modal-origin');
     origin = null;
     if (trigger && document.contains(trigger)) {

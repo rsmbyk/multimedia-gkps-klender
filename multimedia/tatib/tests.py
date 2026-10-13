@@ -47,6 +47,16 @@ class ServiceEntryTests(TestCase):
         entry = self._entry(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='Kasih karunia')
         self.assertEqual(entry.resolve(), ('Salam', 'Kasih karunia'))
 
+    def test_one_text_kind_stores_either_default_screen_mode(self):
+        multi = self._entry(kind=tatib.ServiceEntryKind.TEXT, text='one\ntwo')
+        single = self._entry(kind=tatib.ServiceEntryKind.TEXT, text='one\ntwo',
+                             default_screen_mode='single_screen', screen_breaks=[1])
+        self.assertEqual(multi.default_screen_mode, 'multi_line')
+        self.assertEqual(single.default_screen_mode, 'single_screen')
+        with self.assertRaises(ValidationError):
+            self._entry(kind=tatib.ServiceEntryKind.TEXT, text='one\ntwo',
+                        default_screen_mode='custom')
+
     def test_screen_breaks_are_validated_against_written_lines_and_blank_boundaries(self):
         text = 'one\ntwo\nthree\n\nfour\nfive'
         self.assertEqual(default_breaks(text), [2])
@@ -61,13 +71,13 @@ class ServiceEntryTests(TestCase):
         text = 'one\ntwo\n\nthree\nfour'
         self.assertEqual(single_screen_boundaries(text), {1, 2, 4})
         self.assertTrue(valid_breaks(text, [2, 4], single_screen=True))
-        self._entry(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+        self._entry(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
                     text=text, screen_breaks=[2, 4])
         for breaks in ([3], [5], [2, 2], [4, 2], [True]):
             with self.subTest(breaks=breaks):
                 self.assertFalse(valid_breaks(text, breaks, single_screen=True))
                 with self.assertRaises(ValidationError):
-                    self._entry(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                    self._entry(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
                                 text=text, screen_breaks=breaks)
 
     def test_a_section_break_resolves_to_nothing(self):
@@ -296,3 +306,50 @@ class UnifiedServiceOrderMigrationTests(TransactionTestCase):
                  .order_by('order_number').values_list('pk', 'order_number')),
             [(self.entry_ids[0], 3), (self.entry_ids[1], 4)],
         )
+
+
+class UnifiedTextScreenModeMigrationTests(TransactionTestCase):
+    migrate_from = [('tatib', '0008_serviceentry_screen_breaks')]
+    migrate_to = [('tatib', '0009_unify_text_screen_modes')]
+
+    def migrate(self, targets):
+        executor = MigrationExecutor(connection)
+        executor.migrate(targets)
+        return executor.loader.project_state(targets).apps
+
+    def setUp(self):
+        super().setUp()
+        old_apps = self.migrate(self.migrate_from)
+        service = old_apps.get_model('tatib', 'TataIbadah').objects.create(name='Service')
+        Entry = old_apps.get_model('tatib', 'ServiceEntry')
+        self.service_id = service.pk
+        self.rows = [
+            Entry.objects.create(tatib=service, kind=0, order_number=1,
+                                 title='Paired', text='one\ntwo\nthree', screen_breaks=[1]),
+            Entry.objects.create(tatib=service, kind=4, order_number=2,
+                                 title='Fitted', text='alpha\nbeta\n\ngamma', screen_breaks=[2]),
+            Entry.objects.create(tatib=service, kind=4, order_number=3,
+                                 title='Default fitted', text='first\nsecond', screen_breaks=None),
+        ]
+        self.ids = [row.pk for row in self.rows]
+        self.apps = self.migrate(self.migrate_to)
+
+    def tearDown(self):
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())
+        super().tearDown()
+
+    def test_rows_keep_content_order_breaks_and_projector_grouping(self):
+        from multimedia.web.reading.views import _projector_screens
+        rows = list(self.apps.get_model('tatib', 'ServiceEntry').objects
+                    .filter(tatib_id=self.service_id).order_by('order_number'))
+        self.assertEqual([row.pk for row in rows], self.ids)
+        self.assertEqual([(row.kind, row.default_screen_mode, row.screen_breaks)
+                          for row in rows],
+                         [(0, 'multi_line', [1]), (0, 'single_screen', [2]),
+                          (0, 'single_screen', None)])
+        self.assertEqual([row.title for row in rows], ['Paired', 'Fitted', 'Default fitted'])
+        service = tatib.TataIbadah.objects.get(pk=self.service_id)
+        screens = _projector_screens(service)
+        self.assertEqual([screen.get('single', False) for screen in screens if not screen['blank']],
+                         [False, False, True, True, True])

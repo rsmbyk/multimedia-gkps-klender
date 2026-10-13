@@ -240,7 +240,18 @@
     closeMenus(content);
   });
   /* the modal scrolls under an open menu: re-fit it rather than let it clip */
-  content.addEventListener('scroll', function () { placeOpenMenus(content); }, { passive: true });
+  var pickerScrollGeneration = 0;
+  content.addEventListener('scroll', function () {
+    var generation = ++pickerScrollGeneration;
+    var started = performance.now();
+    function follow() {
+      if (generation !== pickerScrollGeneration || !modal.open) return;
+      placeOpenMenus(content);
+      /* Keep it attached while the centered dialog settles around scrolling content. */
+      if (performance.now() - started < 350) requestAnimationFrame(follow);
+    }
+    follow();
+  }, { passive: true });
   window.addEventListener('resize', function () { placeOpenMenus(content); });
   modal.addEventListener('cancel', function (event) {
     if (!content.querySelector('.editor__picker-menu:not([hidden])')) return;
@@ -611,8 +622,7 @@
   /* ---------- the text form's Save guard ------------------------------------ */
 
   function wireTextSave(scope) {
-    /* Both text kinds share the guard (spec 057): single-screen text was left out. */
-    var forms = scope.querySelectorAll('[data-entry-form="text"], [data-entry-form="single_screen_text"]');
+    var forms = scope.querySelectorAll('[data-entry-form="text"]');
     Array.prototype.forEach.call(forms, function (form) {
       var area = form.querySelector('textarea[name=text]');
       var save = form.querySelector('.editor__save');
@@ -623,11 +633,30 @@
     });
   }
 
+  function wireScreenMode(scope) {
+    var switcher = scope.querySelector('[data-create-screen-mode]');
+    if (!switcher) return;
+    var field = scope.querySelector('[name="default_screen_mode"]');
+    var help = scope.querySelector('[data-create-mode-help]');
+    switcher.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-create-mode]');
+      if (!button || !switcher.contains(button)) return;
+      field.value = button.dataset.createMode;
+      switcher.dataset.selected = field.value;
+      switcher.querySelectorAll('[data-create-mode]').forEach(function (option) {
+        option.setAttribute('aria-pressed', option === button ? 'true' : 'false');
+      });
+      help.textContent = field.value === 'single_screen'
+        ? 'One fitted screen by default' : 'Two lines per screen by default';
+    });
+  }
+
   function wire(scope) {
     wirePickerMenus(scope);
     wireScripture(scope);
     wireSongPicker(scope);
     wireTextSave(scope);
+    wireScreenMode(scope);
   }
 
   /* editors.js swaps the form back in after a 400; that copy needs wiring too. */

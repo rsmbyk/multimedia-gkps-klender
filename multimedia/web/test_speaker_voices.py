@@ -170,7 +170,7 @@ class RenderedVoicesTests(TestCase):
         self.assertIn('<p class="screen__line">Damai sejahtera</p>', html)
 
     def test_single_screen_text_and_legacy_rows_are_voiced(self):
-        self.entry(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
+        self.entry(1, kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', title='Doa',
                    text='L: Marilah\nberdoa')
         tatib.TataIbadahItem.objects.create(tatib=self.service, order_number=2,
                                             item_type=tatib.TataIbadahItemType.TEXT,
@@ -180,7 +180,7 @@ class RenderedVoicesTests(TestCase):
         self.assertIn('<p class="screen__line is-leader">Paragenda: Ibagas Goran</p>', html)
 
     def test_single_screen_custom_break_keeps_a_voice_on_later_screens(self):
-        self.entry(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
+        self.entry(1, kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', title='Doa',
                    text='P: Marilah\n\nberdoa\nbersama', screen_breaks=[1, 3])
         html = self.projector()
         self.assertIn('<p class="screen__line is-leader">berdoa</p>', html)

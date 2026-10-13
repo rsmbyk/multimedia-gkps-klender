@@ -605,7 +605,7 @@ class ServiceEntryViewTests(TestCase):
         url = reverse('web-entry-screen-breaks', args=[entry.pk])
         signature = reading_views._text_signature(entry.text)
         response = self.client.post(
-            url, data=json.dumps({'breaks': [1, 3], 'text_signature': signature}),
+            url, data=json.dumps({'breaks': [1, 3], 'text_signature': signature, 'screen_state_signature': reading_views._screen_state_signature(entry)}),
             content_type='application/json')
         self.assertEqual(response.status_code, 200, response.content)
         entry.refresh_from_db()
@@ -613,54 +613,54 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(entry.text, 'one\ntwo\nthree\nfour')
         self.assertIn('data-screen-breaks="[1, 3]"', self.html())
         response = self.client.post(
-            url, data=json.dumps({'breaks': None, 'text_signature': signature}),
+            url, data=json.dumps({'breaks': None, 'text_signature': signature, 'screen_state_signature': reading_views._screen_state_signature(entry)}),
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         entry.refresh_from_db()
         self.assertIsNone(entry.screen_breaks)
 
     def test_single_screen_preview_breaks_cross_paragraphs_and_reset(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
                           title='Prayer', text='one\ntwo\n\nthree\nfour')
         html = self.html()
-        self.assertIn('data-single-screen="true"', html)
+        self.assertIn('data-default-screen-mode="single_screen"', html)
         self.assertIn('data-break-after="2"', html)
         self.assertNotIn('data-break-after="3"', html)
         url = reverse('web-entry-screen-breaks', args=[entry.pk])
         signature = reading_views._text_signature(entry.text)
         for breaks in ([3], [2, 2]):
             response = self.client.post(url, data=json.dumps({
-                'breaks': breaks, 'text_signature': signature}),
+                'breaks': breaks, 'text_signature': signature, 'screen_state_signature': reading_views._screen_state_signature(entry)}),
                 content_type='application/json')
             self.assertEqual(response.status_code, 400)
         response = self.client.post(url, data=json.dumps({
-            'breaks': [2], 'text_signature': signature}), content_type='application/json')
+            'breaks': [2], 'text_signature': signature, 'screen_state_signature': reading_views._screen_state_signature(entry)}), content_type='application/json')
         self.assertEqual(response.status_code, 200, response.content)
         entry.refresh_from_db()
         self.assertEqual(entry.screen_breaks, [2])
         response = self.client.post(url, data=json.dumps({
-            'breaks': None, 'text_signature': signature}), content_type='application/json')
+            'breaks': None, 'text_signature': signature, 'screen_state_signature': reading_views._screen_state_signature(entry)}), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         entry.refresh_from_db()
         self.assertIsNone(entry.screen_breaks)
 
     def test_single_screen_breaks_reject_stale_text_and_viewer_changes(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
                           text='one\n\ntwo')
         url = reverse('web-entry-screen-breaks', args=[entry.pk])
         response = self.client.post(url, data=json.dumps({
-            'breaks': [1], 'text_signature': 'outdated'}),
+            'breaks': [1], 'text_signature': 'outdated', 'screen_state_signature': reading_views._screen_state_signature(entry)}),
             content_type='application/json')
         self.assertEqual(response.status_code, 409)
         with override_settings(SIDEBAR_EDITORS_REQUIRE_LOGIN=True):
             self.assertIn('data-can-edit="false"', self.html())
             response = self.client.post(url, data=json.dumps({
-                'breaks': [1], 'text_signature': reading_views._text_signature(entry.text)}),
+                'breaks': [1], 'text_signature': reading_views._text_signature(entry.text), 'screen_state_signature': reading_views._screen_state_signature(entry)}),
                 content_type='application/json')
             self.assertEqual(response.status_code, 403)
 
     def test_single_screen_edit_shape_reset_and_wording_preservation(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
                           text='one\ntwo\nthree', screen_breaks=[1])
         url = reverse('web-entry-save', args=[entry.pk])
         response = self.client.post(url, {'kind': entry.kind, 'title': 'Prayer',
@@ -682,11 +682,11 @@ class ServiceEntryViewTests(TestCase):
         for breaks in ([2], [3], [1, 1], ['1'], [True]):
             with self.subTest(breaks=breaks):
                 response = self.client.post(
-                    url, data=json.dumps({'breaks': breaks, 'text_signature': signature}),
+                    url, data=json.dumps({'breaks': breaks, 'text_signature': signature, 'screen_state_signature': reading_views._screen_state_signature(entry)}),
                     content_type='application/json')
                 self.assertEqual(response.status_code, 400)
         response = self.client.post(
-            url, data=json.dumps({'breaks': [1], 'text_signature': 'stale'}),
+            url, data=json.dumps({'breaks': [1], 'text_signature': 'stale', 'screen_state_signature': reading_views._screen_state_signature(entry)}),
             content_type='application/json')
         self.assertEqual(response.status_code, 409)
 
@@ -699,7 +699,7 @@ class ServiceEntryViewTests(TestCase):
         response = self.client.post(
             reverse('web-entry-screen-breaks', args=[entry.pk]),
             data=json.dumps({'breaks': [1],
-                             'text_signature': reading_views._text_signature(entry.text)}),
+                             'text_signature': reading_views._text_signature(entry.text), 'screen_state_signature': reading_views._screen_state_signature(entry)}),
             content_type='application/json')
         self.assertEqual(response.status_code, 403)
 
@@ -733,7 +733,6 @@ class ServiceEntryViewTests(TestCase):
     def test_the_new_fragment_offers_the_fields_its_kind_needs(self):
         cases = {
             'text': ['name="title"', 'name="text"'],
-            'single_screen_text': ['name="title"', 'name="text"'],
             'scripture': ['name="book_translation"', 'name="chapter"', 'name="verse_start"',
                           'name="verse_end"'],
             'song': ['name="song"', 'id="entry-verses"'],
@@ -923,10 +922,11 @@ class ServiceEntryViewTests(TestCase):
         self.assertNotIn('Label', break_form)
 
     def test_empty_text_is_rejected_and_field_marked(self):
-        for kind in (tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT):
-            with self.subTest(kind=kind):
+        for mode in ('multi_line', 'single_screen'):
+            with self.subTest(mode=mode):
                 response = self.client.post(self.save_new_url(), {
-                    'kind': kind, 'title': 'Heading', 'text': '   ',
+                    'kind': tatib.ServiceEntryKind.TEXT, 'default_screen_mode': mode,
+                    'title': 'Heading', 'text': '   ',
                 })
                 self.assertEqual(response.status_code, 400)
                 self.assertContains(response, 'is-invalid', status_code=400)
@@ -947,6 +947,72 @@ class ServiceEntryViewTests(TestCase):
         entry = self.tatib.service_entries.get()
         self.assertEqual(response.json()['id'], entry.pk)
         self.assertEqual(entry.order_number, 1)
+
+    def test_one_text_form_creates_both_default_modes_and_edit_cannot_change_mode(self):
+        create = self.client.get(self.new_url('text')).content.decode()
+        self.assertIn('data-create-screen-mode', create)
+        self.assertNotIn('data-entry-open="single_screen_text"', self.html())
+        self.assertEqual(self.client.get(self.new_url('single_screen_text')).status_code, 404)
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.TEXT, 'text': 'one\ntwo\nthree',
+            'default_screen_mode': 'single_screen',
+        })
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        entry = self.tatib.service_entries.get()
+        self.assertEqual(entry.kind, tatib.ServiceEntryKind.TEXT)
+        self.assertEqual(entry.default_screen_mode, 'single_screen')
+        edit = self.client.get(reverse('web-entry-edit', args=[entry.pk])).content.decode()
+        self.assertNotIn('data-create-screen-mode', edit)
+        response = self.client.post(reverse('web-entry-save', args=[entry.pk]), {
+            'kind': tatib.ServiceEntryKind.TEXT, 'text': 'first\nsecond\nthird',
+            'default_screen_mode': 'multi_line',
+        })
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        entry.refresh_from_db()
+        self.assertEqual(entry.default_screen_mode, 'single_screen')
+
+    def test_preview_switches_defaults_and_rejects_stale_screen_state(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='one\ntwo\nthree')
+        url = reverse('web-entry-screen-breaks', args=[entry.pk])
+        signature = reading_views._text_signature(entry.text)
+        initial_state = reading_views._screen_state_signature(entry)
+        response = self.client.post(url, data=json.dumps({
+            'breaks': None, 'default_screen_mode': 'single_screen',
+            'text_signature': signature, 'screen_state_signature': initial_state,
+        }), content_type='application/json')
+        self.assertEqual(response.status_code, 200, response.content)
+        entry.refresh_from_db()
+        self.assertEqual(entry.default_screen_mode, 'single_screen')
+        self.assertIsNone(entry.screen_breaks)
+        stale = self.client.post(url, data=json.dumps({
+            'breaks': [1], 'default_screen_mode': 'multi_line',
+            'text_signature': signature, 'screen_state_signature': initial_state,
+        }), content_type='application/json')
+        self.assertEqual(stale.status_code, 409)
+        self.assertIsNone(tatib.ServiceEntry.objects.get(pk=entry.pk).screen_breaks)
+        current_state = reading_views._screen_state_signature(entry)
+        custom = self.client.post(url, data=json.dumps({
+            'breaks': [1], 'default_screen_mode': 'single_screen',
+            'text_signature': signature, 'screen_state_signature': current_state,
+        }), content_type='application/json')
+        self.assertEqual(custom.status_code, 200, custom.content)
+        entry.refresh_from_db()
+        self.assertEqual(entry.screen_breaks, [1])
+        self.assertEqual(entry.default_screen_mode, 'single_screen')
+        stale_break = self.client.post(url, data=json.dumps({
+            'breaks': [2], 'default_screen_mode': 'single_screen',
+            'text_signature': signature, 'screen_state_signature': current_state,
+        }), content_type='application/json')
+        self.assertEqual(stale_break.status_code, 409)
+        self.assertEqual(tatib.ServiceEntry.objects.get(pk=entry.pk).screen_breaks, [1])
+        clear = self.client.post(url, data=json.dumps({
+            'breaks': None, 'default_screen_mode': 'multi_line',
+            'text_signature': signature,
+            'screen_state_signature': reading_views._screen_state_signature(entry),
+        }), content_type='application/json')
+        self.assertEqual(clear.status_code, 200, clear.content)
+        entry.refresh_from_db()
+        self.assertEqual((entry.default_screen_mode, entry.screen_breaks), ('multi_line', None))
 
     def test_creating_a_scripture_entry(self):
         response = self.client.post(self.save_new_url(), {
@@ -1292,7 +1358,7 @@ class ServiceEntryViewTests(TestCase):
     def test_service_text_sidebar_labels_use_two_literal_lines_and_respect_scope(self):
         untitled = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=1,
                              text='First line\nSecond line\nThird line')
-        single_screen = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, order_number=2,
+        single_screen = self.make(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', order_number=2,
                                   text='Screen one\nScreen two\nScreen three')
         blank_second = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=3,
                                  text='Keep this\n\nSkip this')
@@ -1300,7 +1366,7 @@ class ServiceEntryViewTests(TestCase):
                            text='Body line one\nBody line two')
         long_body = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=5,
                               text=f'{"A" * 50}\n{"B" * 20}\nThird line')
-        long_title = self.make(kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, order_number=6,
+        long_title = self.make(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', order_number=6,
                                title='T' * 64, text='Short body')
         empty_body = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=7, text='')
         passage = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, order_number=8,
@@ -2112,7 +2178,7 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('is-blank', screens[3])
 
     def test_a_single_screen_text_shows_the_whole_body_on_one_screen(self):
-        self.make(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', title='Doa',
                   text='baris satu\nbaris dua\n\nbaris empat')
         screens = self.screens()
         self.assertEqual(len(screens), 2)                    # the whole body, then a blank
@@ -2124,7 +2190,7 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('baris empat', screens[0])
 
     def test_single_screen_custom_breaks_keep_title_and_paragraph_spacing(self):
-        self.make(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', title='Doa',
                   text='one\ntwo\n\nthree\nfour\n\nfive', screen_breaks=[2, 5])
         screens = self.screens()
         self.assertEqual(len(screens), 4)
@@ -2140,7 +2206,7 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('is-blank', screens[3])
 
     def test_single_screen_blank_paragraph_does_not_break_by_itself(self):
-        self.make(1, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
                   text='one\n\ntwo\nthree', screen_breaks=[])
         screens = self.screens()
         self.assertEqual(len(screens), 2)

@@ -315,9 +315,10 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.editor__save')).to_be_enabled()
 
     def test_single_screen_save_follows_the_text_content(self):
-        """Spec 057: the single-screen form's Save tracks its Text field, like the text form."""
+        """The Text Save guard works when Single-screen is chosen on Create."""
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
-        page.locator('.entry__empty-btn', has_text='Add Single-Screen').click()
+        page.locator('.entry__empty-btn', has_text='Add Text').click()
+        page.locator('[data-create-mode="single_screen"]').click()
         expect(page.locator('.editor__save')).to_be_disabled()
         page.fill('[name=text]', 'Doa pembuka')
         expect(page.locator('.editor__save')).to_be_enabled()

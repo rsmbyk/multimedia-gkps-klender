@@ -5,6 +5,21 @@
   {% if not entry and after %}<input type="hidden" name="after" value="{{ after }}">{% endif %}
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}
 
+  {% if kind == 'text' and not entry %}
+  <div class="editor__screen-mode-wrap">
+    <div class="screen-mode editor__screen-mode" role="group" aria-label="Default screen mode" data-create-screen-mode data-selected="{% if form.default_screen_mode.value == 'single_screen' %}single_screen{% else %}multi_line{% endif %}">
+      <span class="screen-mode__thumb" aria-hidden="true"></span>
+      <button type="button" data-create-mode="multi_line" aria-pressed="{% if form.default_screen_mode.value != 'single_screen' %}true{% else %}false{% endif %}">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Multi-line
+      </button>
+      <button type="button" data-create-mode="single_screen" aria-pressed="{% if form.default_screen_mode.value == 'single_screen' %}true{% else %}false{% endif %}">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M5.5 8h9M5.5 11h9"/></svg>Single-screen
+      </button>
+    </div>
+    <p class="editor__screen-mode-help" data-create-mode-help>{% if form.default_screen_mode.value == 'single_screen' %}One fitted screen by default{% else %}Two lines per screen by default{% endif %}</p>
+  </div>
+  {% endif %}
+
   {% if kind == 'scripture' %}
   <div class="editor__field{% if form.book_translation.errors %} is-invalid{% endif %}">
     <div class="editor__translation-row">
@@ -178,7 +193,7 @@
     {% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
   </div>
   {% endif %}
-  {% if kind == 'text' or kind == 'single_screen_text' %}
+  {% if kind == 'text' %}
   <div class="editor__field{% if form.text.errors %} is-invalid{% endif %}">
     <label for="id_text">Text</label>
     <textarea name="text" id="id_text" rows="6"{% if form.text.errors %} aria-invalid="true"{% endif %}>{{ form.text.value|default:'' }}</textarea>
@@ -190,7 +205,7 @@
   {% for error in form.non_field_errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
 
   <div class="editor__actions">
-    <button class="editor__save" type="submit"{% if kind == 'text' or kind == 'single_screen_text' %}{% if not form.text.value %} disabled{% endif %}{% endif %}>Save</button>
+    <button class="editor__save" type="submit"{% if kind == 'text' %}{% if not form.text.value %} disabled{% endif %}{% endif %}>Save</button>
     <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
   </div>
 </form>

@@ -135,7 +135,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=2,
                 text='First line\nSecond line\nThird line')
             self.titled_text_entry = tatib.ServiceEntry.objects.create(
-                tatib=self.service, kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
                 order_number=3, title='Kept sidebar title', text='Body should not replace title')
             self.blank_text_entry = tatib.ServiceEntry.objects.create(
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=4,

@@ -89,7 +89,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             name='Ibadah Satu Layar', date=date(2026, 9, 13), is_active=True)
         tatib.ServiceEntry.objects.create(
             tatib=self.single_service, order_number=1,
-            kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT, title='Doa',
+            kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', title='Doa',
             text='\n'.join(f'Baris {n} dari doa yang panjang ini.' for n in range(1, 30)))
 
         self._playwright = sync_playwright().start()
