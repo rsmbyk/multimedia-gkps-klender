@@ -1,6 +1,6 @@
 ---
 id: ITEM-087
-status: in-review
+status: done
 title: Refresh the home search helper line
 type: chore
 priority: P3
