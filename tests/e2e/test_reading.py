@@ -180,7 +180,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         expect(page.locator('#homeLogo')).to_be_visible()
         expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_be_visible()
-        expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
+        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
         expect(page.locator('#railSearch[aria-current="page"]')).to_have_count(1)
 
     def test_search_finds_a_song(self):
@@ -1351,12 +1351,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('#railSearch').click()
         page.wait_for_function("document.documentElement.dataset.home === 'landing'")
         expect(page.locator('html')).to_have_attribute('data-section', 'alkitab')
-        expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
+        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
         self.assertIsNone(page.evaluate("localStorage.getItem('gkps-search')"))
         # the logo takes the same route, not a restart
         page.locator('.rail__logo').click()
         page.wait_for_function("document.documentElement.dataset.home === 'landing'")
-        expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
+        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
 
     def test_fresh_home_resets_remembered_search_but_clear_does_not(self):
         page = self._page()
@@ -1386,7 +1386,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#railSearch')).to_have_attribute('href', reverse('web-home'))
         page.locator('#railSearch').click()
         expect(page.locator('html')).to_have_attribute('data-home', 'landing')
-        expect(page.get_by_text('Try Matius 5:13, KJ 152, or pengampunan dosa')).to_be_visible()
+        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
 
     def test_search_state_survives_sidebar_browsing(self):
         page = self._page()
