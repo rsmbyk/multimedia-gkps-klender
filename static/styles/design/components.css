@@ -1724,7 +1724,7 @@ kbd {
 .preview__blank-line { height: 12px; }
 .preview__gap {
   position: relative; display: block; width: 100%; height: 18px; padding: 0;
-  border: 0; background: transparent; color: var(--focus); cursor: pointer;
+  border: 0; background: transparent; color: var(--active-bg); cursor: pointer;
   text-align: center;
 }
 .preview__gap::before {
@@ -1740,7 +1740,7 @@ kbd {
 .preview__gap:not(.is-set):hover::before,
 .preview__gap:not(.is-set):focus-visible::before {
   border-top: 0; height: 2px;
-  background: radial-gradient(circle, var(--focus) 1px, transparent 1.2px) left center / 6px 2px repeat-x;
+  background: radial-gradient(circle, var(--active-bg) 1px, transparent 1.2px) left center / 6px 2px repeat-x;
 }
 .preview__split .preview__gap.is-set:hover::before,
 .preview__split .preview__gap.is-set:focus-visible::before {
