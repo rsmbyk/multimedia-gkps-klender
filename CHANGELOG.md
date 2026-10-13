@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-10-13
+
+### Fixed
+
+- Tata Ibadah service-entry quicklinks can replay the stage flash after it finishes; activations during a flash no longer restart or queue another one.
+
 ## [1.9.0] - 2026-10-13
 
 ### Changed

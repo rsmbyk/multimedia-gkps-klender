@@ -72,6 +72,19 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         tatib.TataIbadahItem.objects.create(
             tatib=self.service, item_type=tatib.TataIbadahItemType.TEXT,
             title='Nyanyian Pembukaan', text='KJ 120', order_number=1)
+        if self._testMethodName in (
+            'test_tatib_quicklink_flash_repeats_after_animation_ends',
+            'test_tatib_quicklink_during_flash_is_ignored_not_queued',
+            'test_tatib_quicklink_flash_releases_when_stage_is_replaced',
+            'test_tatib_quicklink_keyboard_activation_starts_flash',
+            'test_tatib_quicklink_respects_reduced_motion_without_locking',
+        ):
+            self.flash_first = tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=2,
+                title='First flash target', text='First flash body')
+            self.flash_second = tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=3,
+                title='Second flash target', text='Second flash body')
         for n in range(1, 21):
             extra = tatib.TataIbadah.objects.create(
                 name='Ibadah %02d' % n, date=date(2026, 1, 1) + timedelta(days=n), is_active=True)
@@ -1018,6 +1031,88 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             self.assertLessEqual(abs(state['delta']), 30, f'contents row not centred: {state}')
         service = self._row_state(page, '#panelBody', '#panelBody .book')
         self.assertTrue(service['visible'], 'the service row was not revealed')
+
+    def _wait_for_stage_flash(self, page, anchor, active=True):
+        page.wait_for_function(
+            "([anchor, active]) => {"
+            "const row = document.getElementById('ti-' + anchor);"
+            "return !!row && row.classList.contains('tatib__flash') === active;"
+            "}", arg=[anchor, active], timeout=3500)
+
+    def test_tatib_quicklink_flash_repeats_after_animation_ends(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        anchor = 'e%d' % self.flash_first.pk
+        row = page.locator('#chList .songrow[data-i="%s"]' % anchor)
+
+        row.click()
+        self._wait_for_stage_flash(page, anchor)
+        self._wait_for_stage_flash(page, anchor, active=False)
+
+        row.click()
+        self._wait_for_stage_flash(page, anchor)
+
+    def test_tatib_quicklink_during_flash_is_ignored_not_queued(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        first_anchor = 'e%d' % self.flash_first.pk
+        second_anchor = 'e%d' % self.flash_second.pk
+        first = page.locator('#chList .songrow[data-i="%s"]' % first_anchor)
+        second = page.locator('#chList .songrow[data-i="%s"]' % second_anchor)
+
+        first.click()
+        self._wait_for_stage_flash(page, first_anchor)
+        page.wait_for_timeout(150)
+        first.click()
+        second.click()
+        self.assertTrue(page.locator('#ti-' + first_anchor).evaluate(
+            "el => el.classList.contains('tatib__flash')"))
+        self.assertFalse(page.locator('#ti-' + second_anchor).evaluate(
+            "el => el.classList.contains('tatib__flash')"))
+
+        self._wait_for_stage_flash(page, first_anchor, active=False)
+        self.assertFalse(page.locator('#ti-' + second_anchor).evaluate(
+            "el => el.classList.contains('tatib__flash')"))
+        second.click()
+        self._wait_for_stage_flash(page, second_anchor)
+
+    def test_tatib_quicklink_flash_releases_when_stage_is_replaced(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        first_anchor = 'e%d' % self.flash_first.pk
+        page.locator('#chList .songrow[data-i="%s"]' % first_anchor).click()
+        self._wait_for_stage_flash(page, first_anchor)
+
+        page.locator('#panelBody').get_by_text('Ibadah 01').click()
+        expect(page.get_by_text('Isi ibadah 01')).to_be_visible()
+        row = page.locator('#chList a.songrow[href^="#ti-"]').first
+        anchor = row.get_attribute('href').split('#ti-')[-1]
+        row.click()
+        self._wait_for_stage_flash(page, anchor)
+
+    def test_tatib_quicklink_keyboard_activation_starts_flash(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        anchor = 'e%d' % self.flash_first.pk
+        row = page.locator('#chList .songrow[data-i="%s"]' % anchor)
+
+        row.focus()
+        page.keyboard.press('Enter')
+        self._wait_for_stage_flash(page, anchor)
+
+    def test_tatib_quicklink_respects_reduced_motion_without_locking(self):
+        page = self._page()
+        page.emulate_media(reduced_motion='reduce')
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        anchor = 'e%d' % self.flash_first.pk
+        row = page.locator('#chList .songrow[data-i="%s"]' % anchor)
+
+        row.click()
+        self.assertFalse(page.locator('#ti-' + anchor).evaluate(
+            "el => el.classList.contains('tatib__flash')"))
+        page.emulate_media(reduced_motion='no-preference')
+        row.click()
+        self._wait_for_stage_flash(page, anchor)
 
     def test_sidebar_open_centres_the_row_shown_on_stage(self):
         page = self._page()
