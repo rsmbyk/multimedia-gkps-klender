@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.8] - 2026-10-13
+
+### Fixed
+
+- The scrollbars no longer carry the platform's up/down buttons, and they are slimmer and softer: 5px instead of 6px, with a lighter thumb (and a still-clearly-stronger hover) in both themes. The root cause was the standard properties and the custom pseudo-elements both being set — in Blink the standard ones win, which reinstates the platform's 10px bar with its stepper buttons and ignores every `::-webkit-scrollbar` rule; they are now gated behind `@supports not selector(::-webkit-scrollbar)`.
+
 ## [1.10.7] - 2026-10-13
 
 ### Changed

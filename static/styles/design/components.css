@@ -18,16 +18,34 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 /* Shared scrollbars for the public reading UI, including dialogs, pickers,
-   textareas, and document scrolling. Collapsed rails override this below. */
-:root, :root * {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scroll-thumb) transparent;
+   textareas, and document scrolling. Collapsed rails override this below.
+
+   The two mechanisms must never be in play at once. In Blink and WebKit, where
+   the ::-webkit-scrollbar rules below apply, ALSO setting `scrollbar-width` /
+   `scrollbar-color` makes the standard properties win: the platform's thin bar
+   is painted (stepper buttons and all) and every ::-webkit-scrollbar rule here
+   is ignored, the button suppression included. Measured on Chromium 145, that
+   native bar is 10px wide with a stepper glyph; the custom one is 5px and bare.
+   So the standard properties are gated to the engines that have no
+   ::-webkit-scrollbar at all (spec 087). */
+@supports not selector(::-webkit-scrollbar) {
+  :root, :root * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) transparent;
+  }
 }
 :root::-webkit-scrollbar, :root *::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
-:root::-webkit-scrollbar-track, :root *::-webkit-scrollbar-track {
+/* no stepper buttons, and a track that never paints */
+:root::-webkit-scrollbar-button, :root *::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+:root::-webkit-scrollbar-track, :root *::-webkit-scrollbar-track,
+:root::-webkit-scrollbar-corner, :root *::-webkit-scrollbar-corner {
   background: transparent;
 }
 :root::-webkit-scrollbar-thumb, :root *::-webkit-scrollbar-thumb {
@@ -699,7 +717,9 @@ li:hover > .row-edit,
      sticky headers appear/disappear above the anchor; we manage anchoring */
   overflow-anchor: none;
   padding: 0 10px 20px;
-  scrollbar-width: thin;          /* visible in the expanded list */
+  /* no `scrollbar-width` here: the standard property would force Blink onto the
+     native bar (steppers included) for this list alone -- the shared block above
+     already covers engines that have no ::-webkit-scrollbar (spec 087) */
 }
 .group__head {
   position: sticky;

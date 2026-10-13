@@ -29,8 +29,8 @@
   --active-ink: #FFFFFF;
   --sidebar-selected-bg: #B9D7C9; /* selected rows only; keep action accents */
   --divider: #D9D6CD;
-  --scroll-thumb: #AAA59B;
-  --scroll-thumb-hover: #827D73;
+  --scroll-thumb: #B4B0A6;
+  --scroll-thumb-hover: #948F85;
   --tip-bg: #1F1F1D;
   --tip-ink: #FFFFFF;
   --head-ink: #646357;           /* group headers + meta on canvas */
@@ -99,8 +99,8 @@
   --sidebar-selected-bg: #393F4F;
   --active-flash: rgba(124, 156, 240, .22);
   --divider: #3A362F;
-  --scroll-thumb: #514D45;
-  --scroll-thumb-hover: #777268;
+  --scroll-thumb: #45413A;
+  --scroll-thumb-hover: #65615A;
   --tip-bg: #EDEBE5;
   --tip-ink: #16150F;
   --head-ink: #9C9A91;
