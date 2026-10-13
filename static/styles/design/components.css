@@ -1742,7 +1742,8 @@ kbd {
   border-top: 0; height: 2px;
   background: radial-gradient(circle, var(--focus) 1px, transparent 1.2px) left center / 6px 2px repeat-x;
 }
-.preview__gap.is-set:hover::before, .preview__gap.is-set:focus-visible::before {
+.preview__split .preview__gap.is-set:hover::before,
+.preview__split .preview__gap.is-set:focus-visible::before {
   border-color: var(--danger); border-style: solid;
 }
 .preview__gap.is-set:hover, .preview__gap.is-set:focus-visible { color: var(--danger); }
