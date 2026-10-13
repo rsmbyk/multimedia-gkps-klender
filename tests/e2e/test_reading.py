@@ -11,7 +11,7 @@ One-time setup::
 """
 
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
@@ -85,6 +85,13 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             tatib.TataIbadahItem.objects.create(
                 tatib=self.big, item_type=tatib.TataIbadahItemType.TEXT,
                 title='Bagian %02d' % n, text='Isi bagian %02d' % n, order_number=n)
+
+        if self._testMethodName in (
+            'test_drag_defers_sidebar_idle_collapse_then_restarts',
+        ):
+            self.idle_drag_entry = tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT,
+                order_number=2, text='Drag while the sidebar waits')
 
         if self._testMethodName in (
             'test_bible_language_highlight_slides_without_reflow',
@@ -223,6 +230,126 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.get_by_role('link', name='NKB 12').first.click()
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
         self.assertEqual(page.url, self.live_server_url + reverse('web-books'))
+
+    def test_matching_idle_bible_sidebar_collapses_to_mini(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(59000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(1000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+
+    def test_idle_collapsed_bible_sidebar_reopens_without_navigating(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        current_url = page.url
+        page.clock.run_for(60000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+        page.locator('.rail [data-panel="alkitab"]').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        self.assertEqual(page.url, current_url)
+
+    def test_rail_activity_restarts_sidebar_idle_timeout(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+
+        page.clock.run_for(30000)
+        page.mouse.move(16, 16)
+        page.clock.run_for(30000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(30000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+    def test_sidebar_timeout_waits_while_filter_has_focus(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+
+        page.locator('#bookFilter').focus()
+        page.clock.run_for(60000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.evaluate('document.activeElement.blur()')
+        page.clock.run_for(59000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(1000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+    def test_sidebar_for_other_section_stays_open_when_stage_is_bible(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        page.locator('.rail [data-panel="kidung"]').click()
+        expect(page.locator('html')).to_have_attribute('data-section', 'kidung')
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+
+        page.clock.run_for(60000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+
+    def test_narrow_layout_keeps_matching_sidebar_open(self):
+        page = self._page(width=390, height=844)
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+
+        page.clock.run_for(60000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+
+    def test_matching_idle_tatib_sidebar_closes_without_navigating(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        current_url = page.url
+
+        page.clock.run_for(60000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        self.assertEqual(page.url, current_url)
+        expect(page.locator('#read[data-kind="tatib"]')).to_be_visible()
+
+    def test_dialog_defers_sidebar_idle_collapse_then_restarts(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        page.click('#panelAdd')
+        page.wait_for_selector('dialog[open]')
+
+        page.clock.run_for(60000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.keyboard.press('Escape')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+        page.evaluate('document.activeElement.blur()')
+        page.clock.run_for(1000)
+        page.clock.run_for(58000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(2000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+
+    def test_drag_defers_sidebar_idle_collapse_then_restarts(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        grip = page.locator(f'[data-move-grip="{self.idle_drag_entry.pk}"]')
+        box = grip.bounding_box()
+        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+        page.mouse.down()
+        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2 + 12)
+        expect(page.locator('#chList.is-dragging')).to_have_count(1)
+
+        page.clock.run_for(60000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.mouse.up()
+        page.clock.run_for(1000)
+        page.clock.run_for(59000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(1000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
 
     def test_sidebar_restore_from_stage_content(self):
         page = self._page()

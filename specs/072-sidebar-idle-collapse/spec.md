@@ -70,5 +70,5 @@ Recover reading space after the operator leaves the sidebar idle, while preservi
 ## Traceability
 
 - Domain/app tests: N/A.
-- E2E: planned `tests/e2e/test_reading.py` idle-sidebar scenarios using a fake clock.
+- E2E: `tests/e2e/test_reading.py` uses Playwright's fake clock to cover Bible mini mode, Tata Ibadah close mode, rail activity reset, focused-filter/modal/drag deferral, mismatched section, and narrow layout.
 - Implementation: planned `static/web/reading.js`; existing panel styles in `static/styles/design/components.css`.
