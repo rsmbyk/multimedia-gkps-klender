@@ -1,6 +1,6 @@
 ---
 id: ITEM-082
-status: in_review
+status: done
 title: Use one Text entry with a selectable screen mode
 type: feat
 priority: P2
