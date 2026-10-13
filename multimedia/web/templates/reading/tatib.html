@@ -26,7 +26,6 @@
 {% for item in items %}{% if item.preview %}<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">{% if item.preview.kind == 'editable_text' %}
 <div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">
   {% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
-  <p class="preview__mode">Screen breaks <span data-break-mode>Default · 2 lines</span></p>
   {% if item.preview.reset_notice %}<p class="preview__notice" role="status">Text lines changed, so the custom breaks were reset.</p>{% endif %}
   <div class="preview__rows">
   {% for line in item.preview.lines %}

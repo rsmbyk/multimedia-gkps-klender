@@ -12,6 +12,8 @@
   var modal = document.getElementById('previewModal');
   var content = document.getElementById('previewContent');
   var reset = modal && modal.querySelector('[data-break-reset]');
+  var mode = modal && modal.querySelector('[data-break-mode]');
+  var modeLabel = modal && modal.querySelector('[data-break-mode-label]');
   if (!modal || typeof modal.showModal !== 'function') return;
 
   var trigger = null;
@@ -75,8 +77,7 @@
   function drawBreaks() {
     if (!split) return;
     split.classList.toggle('is-custom', breaks !== null);
-    split.querySelector('[data-break-mode]').textContent =
-      breaks === null ? 'Default · 2 lines' : 'Custom';
+    mode.textContent = breaks === null ? 'Default · 2 lines' : 'Custom';
     var shown = breaks === null ? defaultBreaks() : breaks;
     split.querySelectorAll('[data-break-after]').forEach(function (gap) {
       var position = Number(gap.dataset.breakAfter);
@@ -133,6 +134,7 @@
   function wireSplit() {
     split = content.querySelector('.preview__split');
     reset.hidden = !split || split.dataset.canEdit !== 'true';
+    modeLabel.hidden = !split;
     if (!split) return;
     breaks = JSON.parse(split.dataset.screenBreaks);
     if (split.dataset.canEdit !== 'true') {

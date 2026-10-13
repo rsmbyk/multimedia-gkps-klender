@@ -15,7 +15,7 @@ Let the editor of an ordinary Tata Ibadah Text entry choose projector-screen bre
 
 ### In scope
 
-- One row per written line in the existing preview modal, with hoverable gaps, clickable break dividers, and a mode indicator.
+- One row per written line in the existing preview modal, with hoverable gaps, clickable break dividers, and a mode indicator in the footer immediately to the right of Reset breaks.
 - Preview access for ordinary Text entries even when the reading pane does not clamp their text.
 - A saved custom arrangement for one Text entry, shared by the projector page and live display refresh.
 - A Reset breaks action in the modal footer that returns to automatic two-line grouping.

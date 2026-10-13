@@ -13,7 +13,7 @@ button{font:inherit;cursor:pointer}.secondary{border:1px solid #c7cec8;border-ra
 dialog{width:min(600px,calc(100vw - 26px));max-height:calc(100vh - 34px);padding:0;border:0;border-radius:13px;background:#fcfdfb;box-shadow:0 22px 65px #0004;color:#202624}
 dialog::backdrop{background:#262b28a8}.body{padding:22px 25px 15px;overflow:auto;max-height:calc(100vh - 115px)}
 .eyebrow{color:#63736a;font-size:12px;margin:0 0 5px}h2{font-size:19px;margin:0 0 4px}.sub{color:#63736a;margin:0 0 18px}
-.mode{display:flex;align-items:center;gap:8px;margin:8px 0 14px;color:#536159}
+.mode{display:inline-flex;align-items:center;gap:4px;margin:0;color:#536159;font-size:12px}
 .badge{font-size:12px;font-weight:650;border:1px solid #9db7a8;background:#edf5ee;border-radius:99px;padding:3px 9px;color:#275f47}
 h3{font-size:13px;margin:0 0 9px}
 .rows{border:1px solid #d6dcd5;border-radius:8px;padding:8px 11px}.row{padding:7px 5px;white-space:pre-wrap}
@@ -26,13 +26,13 @@ h3{font-size:13px;margin:0 0 9px}
 .rows.is-custom .gap.set::before{border-color:#646357}
 .rows .gap.set:hover::before,.rows .gap.set:focus-visible::before{border-color:#b3261e;border-style:solid}
 .gap.set:hover,.gap.set:focus-visible{color:#b3261e}
-.foot{display:flex;gap:9px;justify-content:space-between;align-items:center;border-top:1px solid #dde2db;padding:12px 22px;background:#fcfdfb}
+.foot{display:flex;gap:12px;align-items:center;border-top:1px solid #dde2db;padding:12px 22px;background:#fcfdfb}.foot #close{margin-left:auto}
 .hint{color:#69766d;font-size:12px;margin:8px 0 0}
 </style>
 </head>
 <body>
 <main class="page"><p class="eyebrow">Draft concept · no product code</p><h1>Tata Ibadah Text entry</h1><p>The Create/Edit form still edits the words. Open Preview to set where the projector changes screen.</p><div class="entry"><strong>Doa Syafaat</strong><div>Tuhan, dengarlah doa kami<br>Kami datang membawa syukur<br>Sertai setiap keluarga<br>Dan kuatkan yang lemah<br>Bimbing kami hari ini<br>Dalam kasih-Mu selalu</div><button class="secondary" id="open">Preview</button></div></main>
-<dialog id="modal" aria-label="Preview Text entry"><div class="body"><p class="eyebrow">TEXT ENTRY PREVIEW</p><h2>Doa Syafaat</h2><p class="sub">Hover between text lines to add a screen break, or hover a divider to remove it.</p><div class="mode">Screen breaks <span class="badge" id="mode">Default · 2 lines</span></div><div class="rows" id="rows"></div><p class="hint">Blank lines always separate screens.</p></div><div class="foot"><button class="secondary" id="reset">Reset breaks</button><button class="secondary" id="close">Close</button></div></dialog>
+<dialog id="modal" aria-label="Preview Text entry"><div class="body"><p class="eyebrow">TEXT ENTRY PREVIEW</p><h2>Doa Syafaat</h2><p class="sub">Hover between text lines to add a screen break, or hover a divider to remove it.</p><div class="rows" id="rows"></div><p class="hint">Blank lines always separate screens.</p></div><div class="foot"><button class="secondary" id="reset">Reset breaks</button><p class="mode">Screen breaks <span class="badge" id="mode">Default · 2 lines</span></p><button class="secondary" id="close">Close</button></div></dialog>
 <script>
 const text=['Tuhan, dengarlah doa kami','Kami datang membawa syukur','Sertai setiap keluarga','Dan kuatkan yang lemah','Bimbing kami hari ini','Dalam kasih-Mu selalu'];
 const modal=document.getElementById('modal'),rows=document.getElementById('rows');
