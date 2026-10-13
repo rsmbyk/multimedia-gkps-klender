@@ -1,6 +1,6 @@
 ---
 id: ITEM-085
-status: in-review
+status: done
 title: Stop inventing a Tata Ibadah row for the open service
 type: fix
 priority: P1
