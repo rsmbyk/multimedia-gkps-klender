@@ -1736,15 +1736,16 @@ kbd {
   font-size: 11px; opacity: 0;
 }
 .preview__gap.is-set::before { border-color: var(--divider); }
-.preview__split.is-custom .preview__gap.is-set::before { border-color: var(--focus); }
+.preview__split.is-custom .preview__gap.is-set::before { border-color: var(--head-ink); }
 .preview__gap:not(.is-set):hover::before,
 .preview__gap:not(.is-set):focus-visible::before {
   border-top: 0; height: 2px;
   background: radial-gradient(circle, var(--focus) 1px, transparent 1.2px) left center / 6px 2px repeat-x;
 }
 .preview__gap.is-set:hover::before, .preview__gap.is-set:focus-visible::before {
-  border-color: var(--active-bg); border-style: solid;
+  border-color: var(--danger); border-style: solid;
 }
+.preview__gap.is-set:hover, .preview__gap.is-set:focus-visible { color: var(--danger); }
 .preview__gap:hover span, .preview__gap:focus-visible span {
   opacity: 1; background: var(--canvas);
 }
