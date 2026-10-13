@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/087-scrollbar-refinement/spec.md
 branch: chore/087-scrollbar-refinement
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/341
 archived_at:
 archive_reason:
 bump: patch
