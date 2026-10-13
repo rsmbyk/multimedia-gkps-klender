@@ -376,6 +376,32 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(page.locator('[name=verse_start] option')).to_have_count(1)
         expect(page.locator('[name=verse_start]')).to_have_value('7')
 
+    def test_translation_toggle_fills_the_hovered_option(self):
+        """The passage picker's TB/SIM switch answers the pointer like the screen-mode one
+        (spec 083)."""
+        page = self._page()
+        edit = page.locator(f'[data-entry-edit="{self.sim_entry.pk}"]')
+        edit.hover()
+        edit.click()
+
+        toggle = page.locator('[data-entry-translation-toggle]')
+        expect(toggle).to_be_visible()
+        unselected = toggle.locator('[data-edition-option="tb"]')      # SIM is selected here
+        selected = toggle.locator('[data-edition-option="sim"]')
+
+        resting = unselected.evaluate('el => getComputedStyle(el).backgroundColor')
+        unselected.hover()
+        page.wait_for_timeout(260)             # the fill fades in over --ease
+        hovered = unselected.evaluate('el => getComputedStyle(el).backgroundColor')
+
+        self.assertNotEqual(hovered, resting, 'the unselected option took no fill on hover')
+        self.assertEqual(hovered, 'rgba(31, 31, 29, 0.08)')     # --icon-hover-bg, light theme
+
+        selected.hover()
+        page.wait_for_timeout(260)
+        self.assertEqual(selected.evaluate('el => getComputedStyle(el).backgroundColor'),
+                         'rgba(0, 0, 0, 0)', 'the selected option filled over its thumb')
+
     def test_translation_toggle_switches_selected_book_without_refetching_verses(self):
         page = self._page()
         edit = page.locator(f'[data-entry-edit="{self.sim_entry.pk}"]')
