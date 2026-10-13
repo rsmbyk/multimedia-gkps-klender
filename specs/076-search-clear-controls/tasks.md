@@ -14,7 +14,7 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Update ITEM-079 and `backlog/board.md` in the same PR
 - [x] Set `VERSION`, changelog entry, and `release_version` in the same PR
-- [ ] Conventional Commit with Codex co-author trailer; draft PR into `develop` linking this spec
+- [x] Conventional Commit with Codex co-author trailer; draft PR into `develop` linking this spec
 
 ## Done when
 
