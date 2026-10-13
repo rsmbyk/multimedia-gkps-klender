@@ -240,7 +240,18 @@
     closeMenus(content);
   });
   /* the modal scrolls under an open menu: re-fit it rather than let it clip */
-  content.addEventListener('scroll', function () { placeOpenMenus(content); }, { passive: true });
+  var pickerScrollGeneration = 0;
+  content.addEventListener('scroll', function () {
+    var generation = ++pickerScrollGeneration;
+    var started = performance.now();
+    function follow() {
+      if (generation !== pickerScrollGeneration || !modal.open) return;
+      placeOpenMenus(content);
+      /* Keep it attached while the centered dialog settles around scrolling content. */
+      if (performance.now() - started < 350) requestAnimationFrame(follow);
+    }
+    follow();
+  }, { passive: true });
   window.addEventListener('resize', function () { placeOpenMenus(content); });
   modal.addEventListener('cancel', function (event) {
     if (!content.querySelector('.editor__picker-menu:not([hidden])')) return;

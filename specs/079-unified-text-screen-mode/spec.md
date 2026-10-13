@@ -21,7 +21,7 @@ Use one Tata Ibadah Text entry for both Multi-line and Single-screen projection.
 
 ### Out of scope
 
-- Songs, Scripture, section breaks, legacy service items, and old OBS docks or web sources.
+- Song, Scripture, and section-break data and workflows, legacy service items, and old OBS docks or web sources. Shared editor picker positioning may be adjusted to preserve existing modal behavior.
 - A projector-screen preview inside the entry Preview dialog.
 
 ## Domain rules
@@ -100,3 +100,4 @@ Use one Tata Ibadah Text entry for both Multi-line and Single-screen projection.
 - Application and projector tests: `multimedia/web/tests.py`.
 - Browser acceptance: `tests/e2e/test_unified_text_screen_mode.py`, with the existing Text break browser suites updated for the new footer.
 - Implementation: `multimedia/tatib/models.py`, `multimedia/tatib/migrations/0009_unify_text_screen_modes.py`, `multimedia/web/reading/entries.py`, `multimedia/web/reading/views.py`, the reading templates, `static/web/preview.js`, `static/web/entries.js`, and `static/styles/design/components.css`.
+- Shared editor picker anchoring: `static/web/entries.js` follows the dialog during its post-scroll centering; `tests/e2e/test_entry_pickers.py` verifies the existing anchored-menu behavior.
