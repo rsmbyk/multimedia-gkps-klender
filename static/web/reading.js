@@ -435,12 +435,13 @@
   }
   /* Minimal nudge: move a list only as far as needed to show the row fully.
      Clicking an already visible item must never move the list. */
-  function ensureVisible(row, body) {
+  function ensureVisible(row, body, inset) {
     if (!row) return;
     var r = row.getBoundingClientRect();
     var b = body.getBoundingClientRect();
-    if (r.top < b.top) body.scrollTop -= (b.top - r.top);
-    else if (r.bottom > b.bottom) body.scrollTop += (r.bottom - b.bottom);
+    inset = inset || 0;
+    if (r.top < b.top + inset) body.scrollTop -= (b.top + inset - r.top);
+    else if (r.bottom > b.bottom - inset) body.scrollTop += (r.bottom - b.bottom + inset);
   }
   function markBookTile(name) {
     var key = name == null ? null : String(name);
@@ -585,7 +586,12 @@
     if (mode) {
       mode.addEventListener('click', function (event) {
         event.preventDefault();
-        navigate(mode.href, { kind: 'mode' });
+        var target = mode.href;
+        if (stageSection() === 'tatib' && stageInfo.tile) {
+          target = new window.URL(stageInfo.url, window.location.href).pathname
+            + new window.URL(mode.href, window.location.href).search;
+        }
+        navigate(target, { kind: 'mode' });
       });
     }
   }
@@ -1018,6 +1024,8 @@
     var kind = opts.kind || 'lists';
     var changingMainMenu = (kind === 'rail' && opts.section !== activeSection)
       || (kind === 'results' && (root.dataset.read === 'on' || root.dataset.nav !== 'closed'));
+    var previousChState = root.dataset.ch;
+    var previousChScroll = chBody.scrollTop;
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results'
       || kind === 'refresh';
@@ -1095,6 +1103,19 @@
       chList.innerHTML = '';
       root.dataset.ch = 'closed';
       root.dataset.nav = fresh.nav || 'open';
+    } else if (kind === 'mode') {
+      /* Only the first list changes modes. Keep the entry pane as it was,
+         including a deliberately closed pane, its filter, and its scroll. */
+      root.dataset.nav = fresh.nav || root.dataset.nav;
+      root.dataset.ch = previousChState;
+      applySongFilter(songFilterEl.value);
+      chBody.scrollTop = previousChScroll;
+      applyFilter(filter.value);
+      var currentService = panelBody.querySelector('.book[aria-current="true"]');
+      if (currentService && currentService.closest('.is-hidden')) {
+        filter.value = '';
+        filter.dispatchEvent(new window.Event('input', { bubbles: true }));
+      }
     } else if (kind === 'sync') {
       root.dataset.nav = fresh.nav || 'open';
       root.dataset.ch = fresh.ch || root.dataset.ch;
@@ -1198,6 +1219,12 @@
     /* per-kind endings */
     if (kind === 'rail') {
       restoreCurrentPath(opts.section);
+    }
+    if (kind === 'mode') {
+      var modeCurrent = panelBody.querySelector('.book[aria-current="true"]');
+      if (modeCurrent) window.requestAnimationFrame(function () {
+        if (document.contains(modeCurrent)) ensureVisible(modeCurrent, panelBody, 8);
+      });
     }
     if (kind === 'sync') {
       revealCurrent(stageAnchor());

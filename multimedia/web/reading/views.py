@@ -600,11 +600,12 @@ def _song_rows(book, current_id=None):
     return rows
 
 
-def _tatib_groups(mode, selected_id=None):
+def _tatib_groups(mode, selected_service=None):
     # Every active service is listed, empty ones included: an empty service has to be
     # reachable to be filled, and its page says it is empty (spec 006 review). The old
     # rule kept only services that already had a legacy text item.
     services = tatib_models.TataIbadah.objects.filter(is_active=True)
+    selected_id = selected_service.pk if selected_service else None
     if mode == 'template':
         # Mirrors the mockup's Indonesian locale collation for these names:
         # case- and diacritic-folded, with the '|' separator ignored.
@@ -613,20 +614,29 @@ def _tatib_groups(mode, selected_id=None):
         rows = [{'id': service.pk, 'name': service.name, 'date_display': '',
                  'current': service.pk == selected_id}
                 for service in templates]
-        return [{'label': 'Templates', 'key': '', 'services': rows}]
-    groups = []
-    current = None
-    for service in services.filter(date__isnull=False).order_by('-date', '-created_at'):
-        key = f'{service.date.year}-{service.date.month:02d}'
-        if current is None or current['key'] != key:
-            current = {'label': search_lib.format_month_long(service.date),
-                       'key': key, 'services': []}
-            groups.append(current)
-        current['services'].append({
-            'id': service.pk, 'name': service.name,
-            'date_display': search_lib.format_date_short(service.date),
-            'current': service.pk == selected_id,
-        })
+        groups = [{'label': 'Templates', 'key': '', 'services': rows}]
+    else:
+        groups = []
+        current = None
+        for service in services.filter(date__isnull=False).order_by('-date', '-created_at'):
+            key = f'{service.date.year}-{service.date.month:02d}'
+            if current is None or current['key'] != key:
+                current = {'label': search_lib.format_month_long(service.date),
+                           'key': key, 'services': []}
+                groups.append(current)
+            current['services'].append({
+                'id': service.pk, 'name': service.name,
+                'date_display': search_lib.format_date_short(service.date),
+                'current': service.pk == selected_id,
+            })
+    if selected_service and not any(
+            row['id'] == selected_id for group in groups for row in group['services']):
+        detail = (search_lib.format_date_short(selected_service.date)
+                  if selected_service.date else 'Template')
+        groups.append({'label': '', 'key': '', 'services': [{
+            'id': selected_id, 'name': selected_service.name,
+            'date_display': detail, 'current': True, 'contextual': True,
+        }]})
     return groups
 
 
@@ -1311,12 +1321,13 @@ class TatibView(TemplateView):
                               ch_mode='song'))
         context.update({
             'page_title': f'{service.name} — GKPS Klender' if service else 'Tata Ibadah — GKPS Klender',
-            'tatib_groups': _tatib_groups(mode, service.pk if service else None),
+            'tatib_groups': _tatib_groups(mode, service),
             'show_tatib_mode': True,
             # Absolute on purpose: the search-first home swaps this button into the live
             # page, where a relative "?mode=..." resolves against /home/ and lands on the
             # search home -- which closes the panel and shows Alkitab (review report).
-            'tatib_mode_url': reverse('web-tatib') + f'?mode={other_mode}',
+            'tatib_mode_url': (reverse('web-tatib-service', args=[service.pk])
+                               if service else reverse('web-tatib')) + f'?mode={other_mode}',
             'tatib_mode_pressed': 'true' if mode == 'template' else 'false',
             'tatib_mode_label': ('Show dated Tata Ibadah' if mode == 'template'
                                  else 'Show Tata Ibadah templates'),

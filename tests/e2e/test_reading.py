@@ -98,6 +98,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             tatib.TataIbadahItem.objects.create(
                 tatib=self.big, item_type=tatib.TataIbadahItemType.TEXT,
                 title='Bagian %02d' % n, text='Isi bagian %02d' % n, order_number=n)
+        if self._testMethodName == 'test_tatib_mode_switch_keeps_open_service_and_reveals_its_row':
+            for n in range(20):
+                tatib.TataIbadah.objects.create(name='Template %02d' % n, is_active=True)
+        if self._testMethodName == 'test_tatib_mode_switch_keeps_template_and_no_page_state':
+            self.mode_template = tatib.TataIbadah.objects.create(
+                name='A Template', is_active=True)
 
         if self._testMethodName in (
             'test_drag_defers_sidebar_idle_collapse_then_restarts',
@@ -913,6 +919,68 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#searchQuery')).to_have_value('')
         expect(search_clear).to_be_hidden()
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()   # results stay
+
+    def test_tatib_mode_switch_keeps_open_service_and_reveals_its_row(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.big.pk]))
+        original_stage = page.locator('#read').inner_text()
+        page.fill('#songFilter', 'Bagian')
+        page.evaluate("document.getElementById('chBody').scrollTop = 120")
+        second_scroll = page.evaluate("document.getElementById('chBody').scrollTop")
+        self.assertGreater(second_scroll, 0)
+        page.fill('#bookFilter', 'no matching service')
+
+        page.locator('#tatibMode').click()
+        expect(page.locator('#tatibMode')).to_have_attribute('aria-pressed', 'true')
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        expect(page.locator('#bookFilter')).to_have_value('')
+        expect(page.locator('#songFilter')).to_have_value('Bagian')
+        self.assertEqual(page.locator('#read').inner_text(), original_stage)
+        self.assertAlmostEqual(page.evaluate("document.getElementById('chBody').scrollTop"),
+                               second_scroll, delta=2)
+        selected = page.locator('#panelBody .book[aria-current="true"]')
+        expect(selected).to_have_count(1)
+        expect(selected).to_have_attribute('data-name', str(self.big.pk))
+        expect(selected).to_contain_text('Currently open')
+        page.wait_for_function("document.documentElement.dataset.scrollAnim !== 'on'")
+        visible = selected.evaluate("""row => {
+            const r = row.getBoundingClientRect();
+            const b = document.getElementById('panelBody').getBoundingClientRect();
+            return r.top >= b.top + 7 && r.bottom <= b.bottom - 7;
+        }""")
+        self.assertTrue(visible, 'the contextual current row was not revealed')
+
+        page.locator('#tatibMode').click()
+        expect(page.locator('#tatibMode')).to_have_attribute('aria-pressed', 'false')
+        expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_attribute(
+            'data-name', str(self.big.pk))
+        expect(page.locator('#panelBody')).not_to_contain_text('Currently open')
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        expect(page.locator('#songFilter')).to_have_value('Bagian')
+
+        page.locator('#chCollapse').click()
+        expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
+        page.locator('#tatibMode').click()
+        expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
+
+    def test_tatib_mode_switch_keeps_template_and_no_page_state(self):
+        template = self.mode_template
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[template.pk]))
+        page.set_viewport_size({'width': 390, 'height': 844})
+        page.emulate_media(reduced_motion='reduce')
+        # The first pane sits behind the open second pane at this width; its
+        # state must still survive the mode action when that level is surfaced.
+        page.locator('#tatibMode').evaluate('el => el.click()')
+        selected = page.locator('#panelBody .book[aria-current="true"]')
+        expect(selected).to_have_attribute('data-name', str(template.pk))
+        expect(selected).to_contain_text('Template · Currently open')
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+
+        page.goto(self.live_server_url + reverse('web-tatib'))
+        page.locator('#tatibMode').click()
+        expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_count(0)
+        expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
 
     def test_clear_controls_have_matching_hit_areas_and_centered_icons(self):
         page = self._page()

@@ -1687,6 +1687,29 @@ class ServiceEntryViewTests(TestCase):
         response = self.client.get(reverse('web-tatib') + '?mode=template')
         self.assertContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
 
+    def test_open_service_has_one_contextual_row_in_opposite_mode(self):
+        dated = tatib.TataIbadah.objects.create(
+            name='Dated Order', date=date(2026, 8, 23), is_active=True)
+        dated_response = self.client.get(
+            reverse('web-tatib-service', args=[dated.pk]) + '?mode=template')
+        self.assertContains(dated_response, 'Currently open')
+        self.assertContains(dated_response, f'data-name="{dated.pk}"')
+        self.assertEqual(dated_response.content.decode().count(f'data-name="{dated.pk}"'), 1)
+
+        template = self.tatib
+        template_response = self.client.get(
+            reverse('web-tatib-service', args=[template.pk]) + '?mode=dated')
+        self.assertContains(template_response, 'Currently open')
+        self.assertContains(template_response, template.name)
+        self.assertContains(template_response, f'data-name="{template.pk}"')
+        self.assertEqual(template_response.content.decode().count(
+            f'data-name="{template.pk}"'), 1)
+
+        matching_response = self.client.get(
+            reverse('web-tatib-service', args=[dated.pk]) + '?mode=dated')
+        self.assertNotContains(matching_response, 'Currently open')
+        self.assertEqual(matching_response.content.decode().count(f'data-name="{dated.pk}"'), 1)
+
     def test_every_entry_carries_its_own_edit_and_delete(self):
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
         second = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Doa', text='b',
