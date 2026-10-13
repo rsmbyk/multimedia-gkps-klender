@@ -1739,8 +1739,8 @@ kbd {
 .preview__split.is-custom .preview__gap.is-set::before { border-color: var(--focus); }
 .preview__gap:not(.is-set):hover::before,
 .preview__gap:not(.is-set):focus-visible::before {
-  border-top: 0; height: 1px;
-  background: repeating-linear-gradient(to right, var(--focus) 0 4px, transparent 4px 8px);
+  border-top: 0; height: 2px;
+  background: radial-gradient(circle, var(--focus) 1px, transparent 1.2px) left center / 6px 2px repeat-x;
 }
 .preview__gap.is-set:hover::before, .preview__gap.is-set:focus-visible::before {
   border-color: var(--active-bg); border-style: solid;
