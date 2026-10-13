@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.7] - 2026-10-13
+
+### Changed
+
+- Modals (the entry form and the entry Preview) now separate from the page properly: a deeper scrim behind them, a lift of their own, and a hairline edge, so a dialog reads as a sheet above the page instead of a barely-different panel in it. The confirm layer inside the Preview follows the same scrim.
+
 ## [1.10.6] - 2026-10-13
 
 ### Added

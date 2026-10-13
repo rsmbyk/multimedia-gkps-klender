@@ -134,6 +134,37 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(self.book.short_name, 'KH')
         self.assertFalse(self.book.is_hymn_book)
 
+    def test_the_editor_dialog_sits_on_the_shared_scrim(self):
+        """A modal has to read as a sheet above the page, not a panel in it (spec 086)."""
+        page = self._page(reverse('web-home'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
+        row.hover()
+        row.locator('.row-edit').click()
+        page.wait_for_selector('dialog[open]')
+
+        scrim = page.evaluate("""() => getComputedStyle(
+          document.querySelector('.editor'), '::backdrop').backgroundColor""")
+        dialog = page.evaluate(
+            "() => getComputedStyle(document.querySelector('.editor')).backgroundColor")
+        self.assertEqual(scrim, 'rgba(20, 20, 18, 0.52)')
+        self.assertNotEqual(scrim, dialog)              # the scrim is a paint of its own
+
+        # the lift and the hairline resolve through --shadow-dialog, not the page-level --shadow
+        shadow = page.evaluate(
+            "() => getComputedStyle(document.querySelector('.editor')).boxShadow")
+        self.assertIn('0px 0px 0px 1px', shadow)
+        self.assertIn('48px', shadow)
+
+        # and the scrim really paints: a pixel of the page changes under it
+        painted = self._corner(page)
+        page.add_style_tag(content='.editor::backdrop { background: transparent !important; }')
+        self.assertNotEqual(painted, self._corner(page))
+
+    def _corner(self, page):
+        """A few pixels of the page, well clear of the centred dialog."""
+        return page.screenshot(clip={'x': 6, 'y': 6, 'width': 2, 'height': 2})
+
     def test_add_song_to_the_open_songbook(self):
         page = self._page(reverse('web-book', args=[self.book.pk]))
         expect(page.locator('#songAdd')).to_be_enabled()

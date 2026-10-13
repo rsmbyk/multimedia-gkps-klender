@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spec 086 · modal backdrop contrast</title>
+<style>
+html{--canvas:#F7F5F1;--rail-bg:#EDEAE3;--ink:#1F1F1D;--divider:#D9D6CD;--head-ink:#646357;--active-bg:#1C5C3C;--active-ink:#FFF;--icon-hover-bg:rgba(31,31,29,.08);--sidebar-selected-bg:#B9D7C9;--shadow-dialog:0 20px 55px -24px rgba(20,20,18,.55);--page:#E9E7E1}
+html[data-theme="dark"]{--canvas:#14130F;--rail-bg:#232019;--ink:#F5F3EE;--divider:#3A362F;--head-ink:#9C9A91;--active-bg:#7C9CF0;--active-ink:#0D1838;--icon-hover-bg:rgba(255,255,255,.09);--sidebar-selected-bg:#393F4F;--shadow-dialog:0 26px 64px -26px rgba(0,0,0,.9);--page:#0B0B09}
+body{margin:0;font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--page);color:var(--ink);padding:0 0 34px}
+.preview-head{min-height:58px;display:flex;align-items:center;gap:12px;padding:8px 18px;flex-wrap:wrap;border-bottom:1px solid var(--divider);background:var(--canvas)}
+.brand{font-weight:700}.badge{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--head-ink);border:1px solid var(--divider);border-radius:99px;padding:4px 9px}
+.controls{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:12px;color:var(--head-ink);flex-wrap:wrap}
+.controls button{border:1px solid var(--divider);border-radius:8px;background:transparent;color:var(--ink);font:inherit;padding:7px 11px;cursor:pointer}
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px}
+.pair h2{margin:0 0 3px;font-size:13.5px}
+.pair p{margin:0 0 10px;font-size:12px;color:var(--head-ink)}
+.pair.old h2{color:var(--head-ink)}
+.screen{position:relative;height:330px;border:1px solid var(--divider);border-radius:12px;overflow:hidden;background:var(--canvas)}
+.mock{position:absolute;inset:0;display:flex}
+.mock .rail{width:46px;flex:none;background:var(--rail-bg);border-right:1px solid var(--divider)}
+.mock .pane{width:150px;flex:none;border-right:1px solid var(--divider);padding:10px}
+.mock .stage{flex:1;padding:16px}
+.mock h3{margin:0 0 8px;font-size:12px;color:var(--head-ink);letter-spacing:.1em;text-transform:uppercase}
+.mock .entry{border:1px solid var(--divider);border-radius:9px;background:color-mix(in srgb,var(--canvas) 94%,var(--rail-bg));padding:9px 10px;margin:0 0 7px;font-size:11.5px;color:var(--ink)}
+.mock .entry.origin{background:var(--sidebar-selected-bg);color:#163F2B}
+html[data-theme="dark"] .mock .entry.origin{color:var(--ink)}
+.mock .row{height:9px;border-radius:4px;background:var(--icon-hover-bg);margin:0 0 7px}
+.scrim{position:absolute;inset:0}
+.dialog{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(320px,86%);border-radius:12px;background:var(--canvas);color:var(--ink);border:1px solid var(--divider);box-shadow:var(--shadow-dialog);overflow:hidden}
+/* the current build: no border, --shadow */
+.pair.old .dialog{border-color:transparent;box-shadow:0 6px 18px -10px rgba(20,20,18,.5)}
+html[data-theme="dark"] .pair.old .dialog{box-shadow:0 6px 18px -10px rgba(0,0,0,.9)}
+html[data-fixed="0"] .pair.new .dialog{border-color:transparent;box-shadow:0 6px 18px -10px rgba(20,20,18,.5)}
+html[data-theme="dark"][data-fixed="0"] .pair.new .dialog{box-shadow:0 6px 18px -10px rgba(0,0,0,.9)}
+.dialog .head{padding:11px 14px;border-bottom:1px solid var(--divider);font:640 13px/1.3 ui-sans-serif,system-ui}
+.dialog .body{padding:13px 14px;font:400 13px/1.6 ui-serif,Georgia,serif;max-height:120px;overflow:auto}
+.dialog .foot{padding:9px 14px;border-top:1px solid var(--divider);font-size:11px;color:var(--head-ink)}
+.readout{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--head-ink);margin-top:8px}
+.slider{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--head-ink);padding:0 20px}
+.slider input{width:220px}
+.swatch{width:22px;height:22px;border-radius:6px;border:1px solid var(--divider)}
+.note{padding:0 20px;font-size:12.5px;color:var(--head-ink);max-width:1000px}
+.note b{color:var(--ink)}
+@media (max-width:860px){.pairs{grid-template-columns:1fr}}
+/* spec 087 preview: the proposed shared bar, so this page's own scrollbars are not
+   the browser default (which can carry up/down stepper buttons) */
+@supports not selector(::-webkit-scrollbar) {
+  html, html * { scrollbar-width: thin; scrollbar-color: #B4B0A6 transparent; }
+}
+html::-webkit-scrollbar, html *::-webkit-scrollbar { width: 5px; height: 5px; }
+html::-webkit-scrollbar-track, html *::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb, html *::-webkit-scrollbar-thumb { background: color-mix(in srgb, currentColor 26%, transparent); border-radius: 999px; }
+html::-webkit-scrollbar-thumb:hover, html *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, currentColor 42%, transparent); }
+html::-webkit-scrollbar-button, html *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+html::-webkit-scrollbar-corner, html *::-webkit-scrollbar-corner { background: transparent; }
+</style>
+</head>
+<body>
+<header class="preview-head">
+  <span class="brand">GKPS Klender</span><span class="badge">Spec 086 preview</span>
+  <div class="controls">
+    <span>proposed scrim</span>
+    <label class="slider" style="padding:0"><input id="alpha" type="range" min="38" max="80" value="68" step="1"><b id="alphaValue" style="color:var(--ink)">68%</b></label>
+    <button id="theme">light</button>
+    <button id="fix" aria-pressed="false">proposed off</button>
+  </div>
+</header>
+
+<div class="slider" style="padding:14px 20px 0">Scrim over the page — current
+  <span class="swatch" id="swatchOld"></span> proposed <span class="swatch" id="swatchNew"></span>
+  <span class="readout" id="readout"></span>
+</div>
+
+<div class="pairs">
+  <div class="pair old">
+    <h2>Current build</h2>
+    <p>One literal for both themes: <code>rgba(31, 31, 29, .38)</code> · <code>--shadow</code> ·
+      no border.</p>
+    <div class="screen">
+      <div class="mock">
+        <div class="rail"></div>
+        <div class="pane"><h3>Tata Ibadah</h3><div class="row"></div><div class="row"></div><div class="row"></div></div>
+        <div class="stage"><h3>Ibadah Minggu</h3>
+          <div class="entry" style="background:#B9D7C9;color:#163F2B">1 &nbsp; L : Marilah kita bangkit berdiri!</div>
+          <div class="entry">2 &nbsp; Votum</div><div class="entry">3 &nbsp; HAL 3 — Sai puji Naibata</div>
+          <div class="entry">4 &nbsp; Imamat 2:1-16</div></div>
+      </div>
+      <div class="scrim" id="scrimOld" style="background:rgba(31,31,29,.38)"></div>
+      <div class="dialog"><div class="head">Preview</div>
+        <div class="body">L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi.<br>J : Amin.</div>
+        <div class="foot">Custom breaks</div></div>
+    </div>
+  </div>
+
+  <div class="pair new">
+    <h2>Proposed</h2>
+    <p>Theme token <code>--backdrop</code> · <code>--shadow-dialog</code> · 1px
+      <code>--divider</code> edge.</p>
+    <div class="screen">
+      <div class="mock">
+        <div class="rail"></div>
+        <div class="pane"><h3>Tata Ibadah</h3><div class="row"></div><div class="row"></div><div class="row"></div></div>
+        <div class="stage"><h3>Ibadah Minggu</h3>
+          <div class="entry" style="background:#B9D7C9;color:#163F2B">1 &nbsp; L : Marilah kita bangkit berdiri!</div>
+          <div class="entry">2 &nbsp; Votum</div><div class="entry">3 &nbsp; HAL 3 — Sai puji Naibata</div>
+          <div class="entry">4 &nbsp; Imamat 2:1-16</div></div>
+      </div>
+      <div class="scrim" id="scrimNew"></div>
+      <div class="dialog"><div class="head">Preview</div>
+        <div class="body">L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi.<br>J : Amin.</div>
+        <div class="foot">Custom breaks</div></div>
+    </div>
+    <p class="readout" id="newReadout"></p>
+  </div>
+</div>
+
+<p class="note">The scrim stays translucent on purpose: <b>spec 065 keeps the origin entry's highlight
+  visible behind the backdrop</b>, which is why this darkens rather than blurs. The layers this touches:
+  <code>.preview::backdrop</code>, <code>.editor::backdrop</code>, and
+  <code>.preview__confirm-layer</code>. Proposed tokens: <b>--backdrop</b> light
+  <code>rgba(20, 20, 18, .52)</code> / dark <code>rgba(0, 0, 0, .68)</code>; <b>--shadow-dialog</b> light
+  <code>0 20px 55px -24px rgba(20, 20, 18, .55)</code> / dark
+  <code>0 26px 64px -26px rgba(0, 0, 0, .9)</code>. Drag the slider if a different strength reads
+  better — say the number and the Draft takes it.</p>
+
+<script>
+var alpha = 68, fixed = false;
+function isDark() { return document.documentElement.dataset.theme === 'dark'; }
+function render() {
+  var dark = isDark();
+  var current = dark ? 0.68 : 0.52;
+  var a = fixed ? current : (alpha / 100);
+  document.getElementById('scrimNew').style.background = 'rgba(' + (dark ? '0, 0, 0' : '20, 20, 18') + ', ' + a.toFixed(2) + ')';
+  document.getElementById('swatchOld').style.background = 'rgba(31, 31, 29, .38)';
+  document.getElementById('swatchNew').style.background = 'rgba(' + (dark ? '0, 0, 0' : '20, 20, 18') + ', ' + (fixed ? current : alpha / 100).toFixed(2) + ')';
+  document.getElementById('alphaValue').textContent = Math.round(a * 100) + '%';
+  document.getElementById('alpha').value = Math.round(a * 100);
+  document.getElementById('readout').textContent = '--backdrop: rgba(' + (dark ? '0, 0, 0' : '20, 20, 18')
+    + ', ' + a.toFixed(2) + ')  ·  theme: ' + (dark ? 'dark' : 'light');
+  document.getElementById('newReadout').textContent = 'scrim alpha ' + Math.round(a * 100) + '% over canvas '
+    + (dark ? '#14130F' : '#F7F5F1') + ' · 1px ' + (dark ? '#3A362F' : '#D9D6CD') + ' edge';
+}
+document.getElementById('alpha').addEventListener('input', function () {
+  alpha = Number(this.value); fixed = false;
+  document.getElementById('fix').setAttribute('aria-pressed', 'false');
+  document.getElementById('fix').textContent = 'proposed off';
+  document.documentElement.dataset.fixed = '0';
+  render();
+});
+document.getElementById('fix').addEventListener('click', function () {
+  fixed = !fixed;
+  this.setAttribute('aria-pressed', String(!fixed));
+  this.textContent = fixed ? 'proposed on' : 'proposed off';
+  document.documentElement.dataset.fixed = fixed ? '1' : '0';
+  if (fixed) render();
+});
+document.getElementById('theme').addEventListener('click', function () {
+  var dark = !isDark();
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  this.textContent = dark ? 'light' : 'dark';
+  alpha = Math.round((dark ? 0.68 : 0.52) * 100);
+  render();
+});
+document.documentElement.dataset.fixed = '1';
+render();
+</script>
+</body>
+</html>

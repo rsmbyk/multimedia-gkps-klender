@@ -475,7 +475,10 @@ li:hover > .row-edit,
 .editor {
   position: relative; width: min(30rem, calc(100vw - 32px));
   padding: 0; border: 0; border-radius: 14px;
-  background: var(--canvas); color: var(--ink); box-shadow: var(--shadow);
+  background: var(--canvas); color: var(--ink);
+  /* the hairline is drawn with a shadow, not a border: a border would take two pixels
+     off the dialog's own width and shift every measurement inside it */
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
   display: flex; flex-direction: column;
   max-height: min(86vh, 46rem);
 }
@@ -483,7 +486,7 @@ li:hover > .row-edit,
    has to say it again for itself -- otherwise it lays out inside the page and
    steals width from the reading column. */
 .editor:not([open]) { display: none; }
-.editor::backdrop { background: rgba(31, 31, 29, .38); }
+.editor::backdrop { background: var(--backdrop); }
 /* The scroll belongs in here, not on the page behind: a dialog taller than the
    viewport scrolls the document it sits over, which is the scrollbar everybody
    notices and nobody wants. */
@@ -1683,12 +1686,14 @@ kbd {
 .preview {
   width: min(44rem, calc(100vw - 32px)); max-height: calc(100vh - 48px);
   padding: 0; border: 0; border-radius: 14px;
-  background: var(--canvas); color: var(--ink); box-shadow: var(--shadow);
+  background: var(--canvas); color: var(--ink);
+  /* see .editor: the hairline edge rides in the shadow so no layout moves */
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
   display: flex; flex-direction: column;
 }
 /* An author display rule beats the UA's rule for a CLOSED dialog: keep it hidden. */
 .preview:not([open]) { display: none; }
-.preview::backdrop { background: rgba(31, 31, 29, .38); }
+.preview::backdrop { background: var(--backdrop); }
 /* The entry's identity, pinned above the scroller (spec 085): the header does not travel with
    the body, and an entry with nothing to name renders no header at all. */
 .preview__head {
@@ -1759,7 +1764,7 @@ kbd {
 .preview__mode-readonly { margin: 0; color: var(--head-ink); font-size: 13px; }
 .preview__confirm-layer {
   position: absolute; inset: 0; z-index: 2; display: grid; place-items: center;
-  background: rgba(31, 31, 29, .38); padding: 16px;
+  background: var(--backdrop); padding: 16px;
 }
 .preview__confirm {
   box-sizing: border-box; width: min(468px, 100%); padding: 22px;
