@@ -42,6 +42,10 @@
   --focus: #1C5C3C;
   --active-flash: rgba(28, 92, 60, .16);
   --shadow: 0 6px 18px -10px rgba(20,20,18,.5);
+  /* A modal has to read as a sheet lifted off the page, not as a slightly-grey
+     panel sitting in it (spec 086): a deep scrim behind, its own lift, a hairline edge. */
+  --backdrop: rgba(20, 20, 18, .52);
+  --shadow-dialog: 0 18px 48px -20px rgba(20, 20, 18, .55), 0 2px 8px -4px rgba(20, 20, 18, .3);
 
   --ease: 200ms cubic-bezier(.32, .72, .28, 1);
   /* The same curve WITHOUT the duration. `--ease` is a whole shorthand value on purpose --
@@ -106,6 +110,10 @@
   --speaker-leader: #9C8463;
   --focus: #7C9CF0;
   --shadow: 0 6px 18px -10px rgba(0,0,0,.9);
+  /* A modal has to read as a sheet lifted off the page, not as a slightly-grey
+     panel sitting in it (spec 086): a deep scrim behind, its own lift, a hairline edge. */
+  --backdrop: rgba(0, 0, 0, .68);
+  --shadow-dialog: 0 20px 52px -22px rgba(0, 0, 0, .9), 0 2px 8px -4px rgba(0, 0, 0, .7);
 }
 
 @media (max-width: 560px) {

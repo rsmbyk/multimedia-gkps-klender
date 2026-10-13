@@ -16,6 +16,48 @@ Pre-adoption history in the legacy per-version format is archived in
 
 - The scrollbars no longer carry the platform's up/down buttons, and they are slimmer and softer: 5px instead of 6px, with a lighter thumb (and a still-clearly-stronger hover) in both themes. The root cause was the standard properties and the custom pseudo-elements both being set — in Blink the standard ones win, which reinstates the platform's 10px bar with its stepper buttons and ignores every `::-webkit-scrollbar` rule; they are now gated behind `@supports not selector(::-webkit-scrollbar)`.
 
+## [1.10.7] - 2026-10-13
+
+### Changed
+
+- Modals (the entry form and the entry Preview) now separate from the page properly: a deeper scrim behind them, a lift of their own, and a hairline edge, so a dialog reads as a sheet above the page instead of a barely-different panel in it. The confirm layer inside the Preview follows the same scrim.
+
+## [1.10.6] - 2026-10-13
+
+### Added
+
+- The entry Preview dialog names what it is showing: a Text entry's title, a passage's reference, or a song's heading, in a header that stays put while the body scrolls. A song's verse tabs move up beside the heading. An entry with no name still opens the headerless dialog it had before.
+
+## [1.10.5] - 2026-10-13
+
+### Changed
+
+- The search-first home's helper line now reads "Try Yoh 3:16 or HAL 411"; both examples resolve against the corpus.
+
+## [1.10.4] - 2026-10-13
+
+### Changed
+
+- The Bible translation switch (TB/SIM), in the reading header and in the passage picker, now fills the hovered option the way the Text screen-mode switch does, instead of only darkening its label.
+
+## [1.10.3] - 2026-10-13
+
+### Fixed
+
+- The Tata Ibadah sidebar lists only the services of the mode it is showing: a dated order no longer appears under the templates (and the other way round) as a "Currently open" card. The open service is highlighted when it is in the list on screen.
+
+## [1.10.2] - 2026-10-13
+
+### Fixed
+
+- The row being dragged in a Tata Ibadah's contents list now counts up with the order it is taking, instead of showing the number it had when it was picked up.
+
+## [1.10.1] - 2026-10-13
+
+### Fixed
+
+- Opening a page from a second-level sidebar — and saving a service entry — keeps a collapsed or mini first sidebar as it was, instead of springing it open again.
+
 ## [1.10.0] - 2026-10-13
 
 ### Added

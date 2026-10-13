@@ -1,6 +1,6 @@
 ---
 id: ITEM-090
-status: in-review
+status: done
 title: Slimmer, softer scrollbars with no stepper buttons
 type: chore
 priority: P2
