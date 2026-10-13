@@ -1,6 +1,6 @@
 ---
 id: ITEM-091
-status: in-review
+status: done
 title: Keep the contents pane following the page on a stage-only swap
 type: fix
 priority: P1

@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.10] - 2026-10-13
+
+### Fixed
+
+- The Preview header's verse-tabs container is no longer named `preview__tabs-host`, whose name contains the `preview__tab` substring the "a single-verse song shows no tabs" test probes for. Rendering is unchanged; the served markup now says what it means.
+
 ## [1.10.9] - 2026-10-13
 
 ### Fixed
