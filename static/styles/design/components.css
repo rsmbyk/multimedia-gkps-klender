@@ -892,7 +892,7 @@ li:hover > .row-edit,
   transform: translateX(100%);
 }
 .read__lang.is-enhanced button,
-.read__lang.is-enhanced a { position: relative; transition: color var(--ease); }
+.read__lang.is-enhanced a { position: relative; transition: background var(--ease), color var(--ease); }
 .read__lang button,
 .read__lang a {
   min-width: 52px; height: 30px;
@@ -904,8 +904,13 @@ li:hover > .row-edit,
   cursor: pointer;
   transition: background var(--ease), color var(--ease);
 }
-.read__lang button:hover,
-.read__lang a:hover { color: var(--ink); }
+/* the pointer's own cue, matching the screen-mode switch (spec 083): an unselected option fills,
+   and the selected one never takes the fill -- the thumb behind it has to stay visible */
+.read__lang button:hover:not([aria-pressed="true"]),
+.read__lang a:hover:not([aria-pressed="true"]) {
+  color: var(--ink);
+  background: var(--icon-hover-bg);
+}
 /* anchors mirror the mockup's button content metrics (centered glyphs, no underline) */
 .read__lang a { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .read__lang button[aria-pressed="true"],

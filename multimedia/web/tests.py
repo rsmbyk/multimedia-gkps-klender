@@ -63,7 +63,7 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'name="q"')
         self.assertContains(response, 'class="field-clear"')          # the clear control
         self.assertContains(response, 'Search Alkitab, Kidung, and Tata Ibadah')
-        self.assertContains(response, 'Try Matius 5:13, KJ 152, or pengampunan dosa')
+        self.assertContains(response, 'Try Yoh 3:16 or HAL 411')
         self.assertContains(response, 'data-tip="Alkitab"')
         self.assertContains(response, 'id="railSearch"')
         self.assertContains(response, 'aria-current="page"')
@@ -1753,28 +1753,42 @@ class ServiceEntryViewTests(TestCase):
         response = self.client.get(reverse('web-tatib') + '?mode=template')
         self.assertContains(response, reverse('web-tatib-service', args=[self.tatib.pk]))
 
-    def test_open_service_has_one_contextual_row_in_opposite_mode(self):
+    def test_the_open_service_is_listed_only_in_the_mode_that_holds_it(self):
+        # the panel lists the mode it shows and nothing else (spec 082): no invented row,
+        # and therefore no "Currently open" copy anywhere
         dated = tatib.TataIbadah.objects.create(
             name='Dated Order', date=date(2026, 8, 23), is_active=True)
-        dated_response = self.client.get(
-            reverse('web-tatib-service', args=[dated.pk]) + '?mode=template')
-        self.assertContains(dated_response, 'Currently open')
-        self.assertContains(dated_response, f'data-name="{dated.pk}"')
-        self.assertEqual(dated_response.content.decode().count(f'data-name="{dated.pk}"'), 1)
 
-        template = self.tatib
-        template_response = self.client.get(
-            reverse('web-tatib-service', args=[template.pk]) + '?mode=dated')
-        self.assertContains(template_response, 'Currently open')
-        self.assertContains(template_response, template.name)
-        self.assertContains(template_response, f'data-name="{template.pk}"')
-        self.assertEqual(template_response.content.decode().count(
-            f'data-name="{template.pk}"'), 1)
+        template_mode = self.client.get(
+            reverse('web-tatib-service', args=[dated.pk]) + '?mode=template').content.decode()
+        self.assertNotIn('Currently open', template_mode)
+        self.assertNotIn(f'data-name="{dated.pk}"', template_mode)
 
-        matching_response = self.client.get(
-            reverse('web-tatib-service', args=[dated.pk]) + '?mode=dated')
-        self.assertNotContains(matching_response, 'Currently open')
-        self.assertEqual(matching_response.content.decode().count(f'data-name="{dated.pk}"'), 1)
+        dated_mode = self.client.get(
+            reverse('web-tatib-service', args=[self.tatib.pk]) + '?mode=dated').content.decode()
+        self.assertNotIn('Currently open', dated_mode)
+        self.assertNotIn(f'data-name="{self.tatib.pk}"', dated_mode)
+
+    def test_the_open_service_keeps_its_own_row_in_its_own_mode(self):
+        dated = tatib.TataIbadah.objects.create(
+            name='Dated Order', date=date(2026, 8, 23), is_active=True)
+
+        html = self.client.get(
+            reverse('web-tatib-service', args=[dated.pk]) + '?mode=dated').content.decode()
+
+        self.assertNotIn('Currently open', html)
+        self.assertEqual(html.count(f'data-name="{dated.pk}"'), 1)
+        self.assertIn(f'data-name="{dated.pk}" data-sim="{dated.pk}"', html)
+
+    def test_the_open_services_row_keeps_its_edit_control(self):
+        dated = tatib.TataIbadah.objects.create(
+            name='Dated Order', date=date(2026, 8, 23), is_active=True)
+
+        html = self.client.get(
+            reverse('web-tatib-service', args=[dated.pk]) + '?mode=dated').content.decode()
+
+        row = html.split(f'data-name="{dated.pk}"')[1].split('</li>')[0]
+        self.assertIn(f'data-editor-open="tatib" data-editor-id="{dated.pk}"', row)
 
     def test_every_entry_carries_its_own_edit_and_delete(self):
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Salam', text='a')
