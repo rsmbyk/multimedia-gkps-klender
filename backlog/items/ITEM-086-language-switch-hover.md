@@ -1,6 +1,6 @@
 ---
 id: ITEM-086
-status: in-review
+status: done
 title: Match the translation switch hover to the screen-mode switch
 type: chore
 priority: P2
