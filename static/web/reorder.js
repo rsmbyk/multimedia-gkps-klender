@@ -71,6 +71,7 @@
     var l = list();
     if (!l) return;
     var number = 0;
+    var grabbed = null;
     [].slice.call(l.children).forEach(function (item) {
       var link = item.querySelector('a[data-i]');
       var entryBreak = item.classList.contains('toc__eos')
@@ -79,7 +80,13 @@
       var cell = item.querySelector('.songrow__c');   /* breaks have no visible number */
       if (cell) cell.textContent = String(number);
       if (link) link.dataset.num = String(number);
+      if (drag && item === drag.row) grabbed = number;
     });
+    /* The row in hand paints nothing of its own -- its contents are hidden and the copy travels
+       with the pointer -- so the number the operator reads while dragging is the copy's, and it
+       has to keep up with the row (spec 081). A break's copy has no cell: nothing to write. */
+    var ghostCell = drag && drag.ghost && drag.ghost.querySelector('.songrow__c');
+    if (ghostCell && grabbed !== null) ghostCell.textContent = String(grabbed);
   }
 
   /* ---------- the morph ----------------------------------------------------- */
