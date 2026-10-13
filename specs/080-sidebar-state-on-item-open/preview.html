@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spec 080 · first-level sidebar state</title>
+<style>
+:root{--canvas:#F7F5F1;--rail-bg:#EDEAE3;--ink:#1F1F1D;--icon-hover-bg:rgba(31,31,29,.08);--active-bg:#1C5C3C;--active-ink:#FFF;--sidebar-selected-bg:#B9D7C9;--divider:#D9D6CD;--head-ink:#646357;--focus:#1C5C3C;--shadow:0 6px 18px -10px rgba(20,20,18,.5);--ease:200ms cubic-bezier(.32,.72,.28,1);
+font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:#E9E7E1}
+*{box-sizing:border-box}body{margin:0;min-width:900px}
+.preview-head{height:58px;background:#FFFEFA;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:14px;padding:0 18px}
+.brand{font-weight:700}.badge{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--head-ink);border:1px solid var(--divider);border-radius:99px;padding:4px 9px}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tabs button,.switch button{border:1px solid var(--divider);border-radius:8px;background:transparent;color:var(--ink);font:inherit;padding:8px 12px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--active-bg);color:var(--active-ink);border-color:var(--active-bg)}
+.switch{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--head-ink)}
+.switch button[aria-pressed="true"]{background:#B3261E;color:#fff;border-color:#B3261E}
+.app{height:calc(100vh - 58px);min-height:620px;display:flex;background:var(--canvas);overflow:hidden}
+.rail{width:80px;flex:none;background:var(--rail-bg);border-right:1px solid var(--divider);display:flex;flex-direction:column;align-items:center;padding:12px 10px;gap:10px}
+.logo{width:40px;height:40px;border:1px solid #CBD3CA;border-radius:50%;display:grid;place-items:center;color:var(--active-bg);font-weight:700;background:#FFFEFA;margin-bottom:22px}
+.rail button{width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#383A34;font-size:19px;cursor:pointer}
+.rail button.active{background:var(--active-bg);color:#fff}
+.panel,.second{width:300px;flex:none;background:var(--canvas);border-right:1px solid var(--divider);display:flex;flex-direction:column;transition:width var(--ease),opacity var(--ease)}
+.second{width:330px;background:#F2EFE9}
+.panel[data-nav="closed"],.panel[data-nav="mini"]{width:0;min-width:0;opacity:0;overflow:hidden;border:0}
+.panel[data-nav="mini"]{width:0}
+.head{padding:12px 14px 10px;display:flex;gap:8px;align-items:center}
+.filter{flex:1;height:38px;border:1px solid var(--divider);border-radius:10px;background:#FFFEFA;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--head-ink);font-size:13px}
+.collapse{width:32px;height:36px;border:0;border-radius:7px;background:transparent;font-size:19px;cursor:pointer;color:#363831}
+.collapse:hover{background:var(--icon-hover-bg)}
+.panel-note{padding:0 16px 10px;font-size:12px;color:var(--head-ink)}
+.scroll{overflow:auto;min-height:0;flex:1;padding:0 9px 16px}
+.month{margin:12px 8px 7px;font-size:11px;font-weight:700;letter-spacing:.13em;color:var(--head-ink)}
+.row{min-height:40px;padding:9px 11px;border-radius:9px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px}
+.row:hover{background:var(--icon-hover-bg)}
+.row[aria-current="true"],.row.sel{background:var(--sidebar-selected-bg);color:#163F2B}
+.row.sel{background:var(--sidebar-selected-bg)}
+.row small{margin-left:auto;font-size:12px;color:var(--head-ink)}
+.second .row{min-height:44px;font-size:13.5px;align-items:flex-start}
+.stage{flex:1;min-width:260px;overflow:auto;padding:30px 34px;position:relative}
+.stage-head{display:flex;align-items:center;justify-content:space-between}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.15em;color:var(--head-ink)}
+.project{background:var(--active-bg);color:#fff;border:0;border-radius:8px;padding:9px 15px;font-weight:600}
+h1{font:700 34px/1.15 Georgia,serif;margin:4px 0 22px}
+.entry{border:1px solid #E5E2DA;border-radius:11px;background:#F4F2EE;padding:12px 14px;margin:0 0 10px}
+.entry h3{margin:0 0 6px;font-size:15px}.line{margin:0 0 6px;font:400 16px/1.7 Georgia,serif}
+.verse b{font:700 12px ui-sans-serif,system-ui;color:var(--active-bg);margin-right:7px;vertical-align:1px}
+.hint{margin-top:22px;padding:12px 14px;border:1px dashed var(--divider);border-radius:10px;font-size:12.5px;color:var(--head-ink);background:#FFFEFA}
+.status{position:absolute;left:34px;bottom:22px;font-size:12.5px;color:var(--head-ink);background:#FFFEFA;border:1px solid var(--divider);border-radius:8px;padding:8px 12px;max-width:min(560px,calc(100% - 68px))}
+.status b{color:var(--ink)}
+.add{font-size:12px;color:var(--active-bg);margin:0 16px 12px;border:1px dashed var(--active-bg);border-radius:8px;background:#FFFEFA;padding:9px;cursor:pointer;font-weight:600}
+/* spec 087 preview: the proposed shared bar, so this page's own scrollbars are not
+   the browser default (which can carry up/down stepper buttons) */
+@supports not selector(::-webkit-scrollbar) {
+  html, html * { scrollbar-width: thin; scrollbar-color: #B4B0A6 transparent; }
+}
+html::-webkit-scrollbar, html *::-webkit-scrollbar { width: 5px; height: 5px; }
+html::-webkit-scrollbar-track, html *::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb, html *::-webkit-scrollbar-thumb { background: color-mix(in srgb, currentColor 26%, transparent); border-radius: 999px; }
+html::-webkit-scrollbar-thumb:hover, html *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, currentColor 42%, transparent); }
+html::-webkit-scrollbar-button, html *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+html::-webkit-scrollbar-corner, html *::-webkit-scrollbar-corner { background: transparent; }
+</style>
+</head>
+<body>
+<header class="preview-head">
+  <span class="brand">GKPS Klender</span><span class="badge">Spec 080 preview</span>
+  <nav class="tabs" aria-label="Scenarios">
+    <button aria-selected="true" data-scene="tatib">Tata Ibadah</button>
+    <button aria-selected="false" data-scene="kidung">Kidung</button>
+    <button aria-selected="false" data-scene="alkitab">Alkitab</button>
+  </nav>
+  <span class="switch">Current build:
+    <button id="bug" aria-pressed="false" type="button">bug off</button>
+  </span>
+</header>
+
+<div class="app">
+  <nav class="rail" aria-label="Main menu">
+    <div class="logo">GK</div>
+    <button data-menu="alkitab" aria-label="Alkitab">▣</button>
+    <button data-menu="kidung" aria-label="Kidung">♫</button>
+    <button data-menu="tatib" class="active" aria-label="Tata Ibadah">▤</button>
+  </nav>
+
+  <aside class="panel" id="panel" data-nav="open">
+    <div class="head">
+      <label class="filter"><span>⌕</span><span id="panelFilter">Filter Tata Ibadah…</span></label>
+      <button class="collapse" id="panelCollapse" aria-label="Collapse Tata Ibadah panel">‹</button>
+    </div>
+    <div id="panelAdd"></div>
+    <div class="scroll" id="panelBody"></div>
+    <p class="panel-note" id="panelNote">First panel · Tata Ibadah</p>
+  </aside>
+
+  <aside class="second" id="second">
+    <div class="head">
+      <label class="filter"><span>⌕</span><span id="chFilter">Filter sections…</span></label>
+      <button class="collapse" aria-label="Close sections">‹</button>
+    </div>
+    <div class="scroll" id="chBody"></div>
+  </aside>
+
+  <main class="stage" id="stage"></main>
+</div>
+
+<script>
+var bugOff = true;
+var scenes = {
+  tatib: {
+    section: 'tatib', panelLabel: 'Filter Tata Ibadah…', chLabel: 'Filter sections…',
+    add: '＋  Add Tata Ibadah',
+    panel: [
+      {head: 'TEMPLATES'},
+      {name: 'Hata Haporsayaon (Niceanum)'}, {name: 'Model C (Indonesia | Efesus 1:3-10)'},
+      {name: 'Model E (Simalungun | Psalmsen 23)'}, {name: 'Pengakuan Iman (Niceanum)'},
+      {rule: true},
+      {name: 'Ibadah Minggu', meta: '4 Okt 2026', current: true}
+    ],
+    secondTitle: 'Ibadah Minggu · contents',
+    second: [
+      {name: '<i>L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa,</i>', stage: {
+        eyebrow: '4 OKTOBER 2026', title: 'Ibadah Minggu', blocks: [
+          ['Votum', ['L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus.',
+                      'J : Amin.']]]}},
+      {name: 'Votum', stage: {eyebrow: '4 OKTOBER 2026', title: 'Ibadah Minggu', blocks: [
+          ['Votum', ['L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa.',
+                      'J : Amin.']]]}},
+      {name: 'HAL 3 — Sai puji Naibata', meta: 'Bait 1, 3', stage: {eyebrow: '4 OKTOBER 2026',
+        title: 'Ibadah Minggu', blocks: [['HAL 3 — Sai puji Naibata',
+          ['Jahowa sihol pujiunku, ai Ham do naibata sitompa au.']]]}},
+      {name: 'Pengakuan Iman (Niceanum)', stage: {eyebrow: '4 OKTOBER 2026', title: 'Ibadah Minggu',
+        blocks: [['Pengakuan Iman', ['Ahu porsea di Debata Jahowa.']]]}}
+    ],
+    entryHint: 'Add an entry → the page refreshes in place. The first panel must stay collapsed.'
+  },
+  kidung: {
+    section: 'kidung', panelLabel: 'Filter songbooks…', chLabel: 'Filter songs…',
+    add: '＋  Add Songbook',
+    panel: [{head: 'SONGBOOKS'},
+      {name: 'HAL', meta: 'Haleluya', current: false}, {name: 'KJ', meta: 'Kidung Jemaat', current: true},
+      {name: 'PKJ', meta: 'Puji Kidung Jemaat'}, {name: 'NKB'}, {name: 'HARIAN'}],
+    secondTitle: 'Kidung Jemaat',
+    second: [
+      {name: 'Jahowa Sihol Pujionku', meta: '435', stage: {eyebrow: 'KIDUNG JEMAAT', title: '435 — Jahowa Sihol Pujionku',
+        blocks: [['Bait 1', ['Jahowa sihol pujiunku, ai Ham do naibata sitompa au.']]]}},
+      {name: 'Sai puji Naibata', meta: '436', stage: {eyebrow: 'KIDUNG JEMAAT', title: '436 — Sai puji Naibata',
+        blocks: [['Bait 1', ['Sai puji Naibata, ai ibana do na mangusehon hita.']]]}},
+      {name: 'Marolopolop Tondingki', meta: '437', stage: {eyebrow: 'KIDUNG JEMAAT', title: '437 — Marolopolop Tondingki',
+        blocks: [['Bait 1', ['Marolopolop tondingki, mamuji goran-Mu.']]]}}
+    ],
+    entryHint: 'Open a song → the songbook panel must stay collapsed and this list stay open.'
+  },
+  alkitab: {
+    section: 'alkitab', panelLabel: 'Filter books…', chLabel: 'Filter chapters…', add: '',
+    panel: [{head: 'PERJANJIAN BARU'}, {name: 'Mateus'}, {name: 'Markus'}, {name: 'Lukas'},
+      {name: 'Yohanes', current: true}, {name: 'Kisah Para Rasul'}],
+    secondTitle: 'Yohanes',
+    second: [
+      {name: 'Yohanes 3', meta: '36', stage: {eyebrow: 'ALKITAB', title: 'Yohanes 3', verses: true,
+        blocks: []}},
+      {name: 'Yohanes 4', meta: '54', stage: {eyebrow: 'ALKITAB', title: 'Yohanes 4', verses: true, blocks: []}},
+      {name: 'Yohanes 5', meta: '47', stage: {eyebrow: 'ALKITAB', title: 'Yohanes 5', verses: true, blocks: []}}
+    ],
+    entryHint: 'Mini the panel first (⌘ the ‹ control), then open a chapter: it must stay mini.'
+  }
+};
+
+var panel = document.getElementById('panel'), panelBody = document.getElementById('panelBody'),
+    chBody = document.getElementById('chBody'), stage = document.getElementById('stage');
+var scene = 'tatib';
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+function renderChrome() {
+  var s = scenes[scene];
+  document.getElementById('panelFilter').textContent = s.panelLabel;
+  document.getElementById('chFilter').textContent = s.chLabel;
+  document.getElementById('panelAdd').innerHTML = s.add ? '<button class="add" id="addEntry">' + s.add + '</button>' : '';
+  document.querySelectorAll('.rail button').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.menu === s.section);
+  });
+  var html = '';
+  s.panel.forEach(function (row) {
+    if (row.head) { html += '<p class="month">' + row.head + '</p>'; return; }
+    if (row.rule) { html += '<div style="height:1px;background:var(--divider);margin:7px 4px"></div>'; return; }
+    html += '<div class="row"' + (row.current ? ' aria-current="true"' : '') + '>' + row.name
+      + (row.meta ? '<small>' + row.meta + '</small>' : '') + '</div>';
+  });
+  panelBody.innerHTML = html;
+  chBody.innerHTML = scenes[scene].second.map(function (row, i) {
+    return '<div class="row' + (i === 0 ? ' sel' : '') + '" data-i="' + i + '">'
+      + '<span>' + row.name + '</span>' + (row.meta ? '<small>' + row.meta + '</small>' : '') + '</div>';
+  }).join('');
+  document.getElementById('chFilter').textContent = s.chLabel;
+  chBody.insertAdjacentHTML('afterbegin', '<p class="month">' + scenes[scene].secondTitle + '</p>');
+  if (document.getElementById('addEntry')) {
+    document.getElementById('addEntry').addEventListener('click', function () {
+      var note = scenes[scene].entryHint;
+      if (!bugOff) panel.dataset.nav = 'open';
+      renderStage({eyebrow: scene === 'tatib' ? '4 OKTOBER 2026' : '', title: scenes[scene].second[1].stage.title,
+        blocks: [['New text', ['Bait baru ditambahkan ke Ibadah Minggu.']]]}, note, 'Entry added');
+    });
+  }
+  document.getElementById('panelNote').textContent = 'First panel · ' + scenes[scene].section
+    + ' · data-nav="' + panel.dataset.nav + '"';
+}
+
+function renderStage(content, note, action) {
+  var s = content;
+  var blocks = '';
+  (s.blocks || []).forEach(function (b) {
+    blocks += '<article class="entry"><h3>' + b[0] + '</h3>' + b[1].map(function (l) {
+      return '<p class="line">' + l + '</p>';
+    }).join('') + '</article>';
+  });
+  if (s.verses) {
+    blocks = '<article class="entry"><p class="verse"><b>16</b>Ai sonon do holong ni roha ni Debata mida portibi on, pala dilehon AnakNa na sasada i.</p>'
+      + '<p class="verse"><b>17</b>Ai ndada diusehon Debata AnakNa tu portibi on asa manguhum.</p></article>';
+  }
+  stage.innerHTML = '<div class="stage-head"><span class="eyebrow">' + s.eyebrow + '</span>'
+    + '<button class="project">▤ &nbsp; Project</button></div><h1>' + s.title + '</h1>' + blocks
+    + '<div class="hint">' + note + '</div>'
+    + '<div class="status">' + (action ? '<b>' + action + '</b> · ' : '')
+    + 'first panel: <b>' + panel.dataset.nav + '</b>, second list: <b>'
+    + (document.getElementById('second').style.display === 'none' ? 'hidden' : 'open') + '</b></div>';
+}
+
+chBody.addEventListener('click', function (event) {
+  var row = event.target.closest('.row[data-i]');
+  if (!row) return;
+  chBody.querySelectorAll('.row').forEach(function (r) { r.classList.remove('sel'); });
+  row.classList.add('sel');
+  var data = scenes[scene].second[Number(row.dataset.i)];
+  if (!bugOff) panel.dataset.nav = 'open';       /* the reported bug */
+  renderStage(data.stage, scenes[scene].entryHint,
+    'opened “' + row.innerText.replace(/\s+/g, ' ').trim() + '” from the second-level list');
+  renderChrome();
+});
+
+document.getElementById('panelCollapse').addEventListener('click', function () {
+  var nav = panel.dataset.nav;
+  if (scene === 'alkitab') panel.dataset.nav = nav === 'open' ? 'mini' : 'open';
+  else panel.dataset.nav = nav === 'closed' ? 'open' : 'closed';
+  renderChrome();
+});
+
+document.querySelectorAll('.rail button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    scene = b.dataset.menu;
+    panel.dataset.nav = 'open';              /* a main-menu switch still opens the panel */
+    document.querySelectorAll('.tabs button').forEach(function (t) {
+      t.setAttribute('aria-selected', String(t.dataset.scene === scene));
+    });
+    renderChrome();
+    renderStage(scenes[scene].second[0].stage, scenes[scene].entryHint,
+      'main menu → ' + scene + ' (panel opens, as today)');
+  });
+});
+
+document.querySelectorAll('.tabs button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    scene = b.dataset.scene;
+    document.querySelectorAll('.tabs button').forEach(function (t) {
+      t.setAttribute('aria-selected', String(t === b));
+    });
+    document.querySelectorAll('.rail button').forEach(function (r) {
+      r.classList.toggle('active', r.dataset.menu === scene);
+    });
+    panel.dataset.nav = 'open';
+    renderChrome(); renderStage(scenes[scene].second[0].stage, scenes[scene].entryHint);
+  });
+});
+
+document.getElementById('bug').addEventListener('click', function () {
+  bugOff = !bugOff;
+  this.setAttribute('aria-pressed', String(!bugOff));
+  this.textContent = bugOff ? 'bug off' : 'bug ON — panel jumps open';
+});
+
+renderChrome();
+renderStage(scenes.tatib.second[0].stage, scenes.tatib.entryHint);
+</script>
+</body>
+</html>
