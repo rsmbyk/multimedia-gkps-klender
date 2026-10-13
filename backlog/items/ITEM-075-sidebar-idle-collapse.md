@@ -25,6 +25,7 @@ Let a matching first sidebar collapse after 60 seconds without rail or first-pan
 ## Notes
 
 - The owner accepted the interactive sidebar follow-ups preview and Spec 072 on 2026-10-13.
+- PR #326 adds the accepted preview artifact and focused idle-collapse browser coverage.
 
 ## Acceptance sketch
 
