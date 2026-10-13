@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/089-preview-tabs-container-name/spec.md
 branch: fix/089-preview-tabs-container-name
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/343
 archived_at:
 archive_reason:
 bump: patch
