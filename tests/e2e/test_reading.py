@@ -894,8 +894,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(panel_clear).to_have_attribute('aria-label', 'Clear Tata Ibadah')
         page.fill('#bookFilter', 'Ibadah')
         expect(panel_clear).to_be_visible()
-        panel_clear.click()
+        panel_clear.focus()
+        page.keyboard.press('Enter')
         expect(page.locator('#bookFilter')).to_have_value('')
+        expect(panel_clear).to_be_hidden()
+        self.assertTrue(page.evaluate(
+            "document.activeElement === document.getElementById('bookFilter')"))
 
         # the search field
         page.goto(self.live_server_url + reverse('web-home'))
@@ -909,6 +913,53 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#searchQuery')).to_have_value('')
         expect(search_clear).to_be_hidden()
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()   # results stay
+
+    def test_clear_controls_have_matching_hit_areas_and_centered_icons(self):
+        page = self._page()
+        for url, field, wrapper in (
+            (reverse('web-book', args=[self.harian.id]), '#songFilter', '.ch__search .filter-box'),
+            (reverse('web-tatib'), '#bookFilter', '.panel__filter .filter-box'),
+            (reverse('web-home'), '#searchQuery', '.search-home__form'),
+        ):
+            page.goto(self.live_server_url + url)
+            page.fill(field, 'test')
+            geometry = page.locator(wrapper).evaluate("""box => {
+                const button = box.querySelector('.field-clear');
+                const input = box.querySelector('input');
+                const svg = button.querySelector('svg');
+                const b = button.getBoundingClientRect();
+                const i = input.getBoundingClientRect();
+                const s = svg.getBoundingClientRect();
+                const w = box.getBoundingClientRect();
+                return {
+                    button: [b.width, b.height], icon: [s.width, s.height],
+                    centered: [Math.abs((b.left + b.right - s.left - s.right) / 2),
+                               Math.abs((b.top + b.bottom - s.top - s.bottom) / 2)],
+                    right: w.right - b.right,
+                    clearance: b.left - (i.right - parseFloat(getComputedStyle(input).paddingRight)),
+                };
+            }""")
+            self.assertEqual(geometry['button'], [26, 26], field)
+            self.assertEqual(geometry['icon'], [14, 14], field)
+            self.assertLessEqual(max(geometry['centered']), 1, field)
+            self.assertAlmostEqual(geometry['right'], 58 if field == '#searchQuery' else 8,
+                                   delta=1, msg=field)
+            self.assertGreaterEqual(geometry['clearance'], 4, field)
+            button = page.locator(wrapper + ' .field-clear')
+            button.hover()
+            page.wait_for_timeout(250)  # let the existing color transition finish
+            self.assertNotEqual(button.evaluate(
+                "el => getComputedStyle(el).backgroundColor"), 'rgba(0, 0, 0, 0)')
+            page.locator(field).focus()
+            page.keyboard.press('Tab')
+            self.assertEqual(button.evaluate(
+                "el => getComputedStyle(el).outlineStyle"), 'solid')
+            page.set_viewport_size({'width': 390, 'height': 844})
+            page.evaluate("document.documentElement.dataset.theme = 'dark'")
+            self.assertEqual(button.evaluate(
+                "el => [el.getBoundingClientRect().width, el.getBoundingClientRect().height]"),
+                [26, 26])
+            page.set_viewport_size({'width': 1280, 'height': 900})
 
     def test_hymn_song_order_is_visible_after_browsing_from_home(self):
         page = self._page()

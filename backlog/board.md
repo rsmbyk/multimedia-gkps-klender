@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-079](./items/ITEM-079-search-clear-controls.md) | Make reading search clear controls consistent | Match clear-button size, icon alignment, and text clearance across home search and both sidebar filters | fix | P2 | S | [076](../specs/076-search-clear-controls/spec.md) | `fix/076-search-clear-controls` | 2026-10-13 |
 
 ## In review
 
