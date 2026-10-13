@@ -1402,3 +1402,107 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertGreater(resumed, 100, f'the result set was not resumed at an offset: {resumed}')
         self.assertLessEqual(resumed, offset)
         self.assertGreaterEqual(resumed, offset - 60, f'resumed far from the remembered offset: {resumed} vs {offset}')
+
+
+@tag('e2e')
+@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class ScrollbarE2ETests(StaticLiveServerTestCase):
+    """The reading UI's scrollbars (spec 087): 5px, custom path, bare ends.
+
+    The mechanism is the point. Chromium takes the custom ``::-webkit-scrollbar``
+    path only while the standard properties are absent; set them and the native
+    thin bar is painted instead -- 10px, with a stepper glyph at each end. So the
+    occupied width and the computed ``scrollbar-width`` together say which bar the
+    app is actually getting.
+    """
+
+    def setUp(self):
+        super().setUp()
+        # enough songbooks that the panel's list overflows its pane
+        for number in range(1, 41):
+            songs.Book.objects.create(name='Kidung %02d' % number, is_hymn_book=False)
+        self._playwright = sync_playwright().start()
+        try:
+            # Playwright hides the scrollbars by default (`--hide-scrollbars`), which
+            # would make every bar measure 0px and this module prove nothing.
+            self.browser = self._playwright.chromium.launch(
+                ignore_default_args=['--hide-scrollbars'])
+        except Exception as error:  # pragma: no cover - depends on environment
+            self._playwright.stop()
+            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
+
+    def tearDown(self):
+        self.browser.close()
+        self._playwright.stop()
+        super().tearDown()
+
+    def _page(self):
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 720})
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.wait_for_load_state('networkidle')
+        page.click('.rail__btn[aria-label="Kidung"]')
+        page.wait_for_selector('#panelBody li')
+        page.wait_for_function(
+            "() => { const b = document.getElementById('panelBody');"
+            " return b.scrollHeight > b.clientHeight; }")
+        return page
+
+    def _metrics(self, page):
+        return page.evaluate("""() => {
+          const body = document.getElementById('panelBody');
+          const style = getComputedStyle(body);
+          const borders = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+          return {
+            occupied: body.offsetWidth - body.clientWidth - borders,
+            scrollbarWidth: style.scrollbarWidth,
+            overflows: body.scrollHeight > body.clientHeight,
+          };
+        }""")
+
+    def test_the_panel_scrollbar_takes_five_pixels_and_the_custom_path(self):
+        page = self._page()
+        metrics = self._metrics(page)
+        self.assertTrue(metrics['overflows'], 'the fixture list did not overflow')
+        self.assertEqual(metrics['occupied'], 5, 'the bar is not the custom 5px one')
+        self.assertEqual(metrics['scrollbarWidth'], 'auto',
+                         'the standard properties are in play: this is the native bar')
+
+        page.evaluate("() => { document.documentElement.dataset.theme = 'dark'; }")
+        dark = self._metrics(page)
+        self.assertEqual(dark['occupied'], 5, 'the bar changes width with the theme')
+        self.assertEqual(dark['scrollbarWidth'], 'auto')
+
+        # the control: with the standard properties put back, the engine takes the
+        # native bar -- 10px here -- so the two measures above do tell them apart
+        page.add_style_tag(content='#panelBody { scrollbar-width: thin; }')
+        native = self._metrics(page)
+        self.assertEqual(native['occupied'], 10, 'the control did not reach the native bar')
+        self.assertEqual(native['scrollbarWidth'], 'thin')
+
+    def test_the_bar_has_no_stepper_glyph_at_its_ends(self):
+        """Scrolled mid-list the bar's top end paints nothing but its transparent
+        track, so it matches the surface beside it -- a stepper button would not."""
+        page = self._page()
+        bar_top, beside = self._ends(page)
+        self.assertEqual(bar_top, beside,
+                         "something is painted over the track at the bar's top end")
+
+        # the control: on the native path the same two strips differ, since that bar
+        # paints its stepper button at the end
+        page.add_style_tag(content='#panelBody { scrollbar-width: thin; }')
+        native_bar_top, native_beside = self._ends(page)
+        self.assertNotEqual(native_bar_top, native_beside,
+                            'the strips cannot tell the two bars apart')
+
+    def _ends(self, page):
+        """The bar's top 5px column, and the 5px of surface just inside it."""
+        box = page.evaluate("""() => {
+          const body = document.getElementById('panelBody');
+          body.scrollTop = (body.scrollHeight - body.clientHeight) / 2;
+          const r = body.getBoundingClientRect();
+          return {right: Math.round(r.right), top: Math.round(r.top)};
+        }""")
+        clip = {'y': box['top'] + 4, 'width': 5, 'height': 12}
+        return (page.screenshot(clip=dict(clip, x=box['right'] - 5)),
+                page.screenshot(clip=dict(clip, x=box['right'] - 10)))

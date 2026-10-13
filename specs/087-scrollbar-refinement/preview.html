@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spec 087 · scrollbar refinement</title>
+<style>
+html{--canvas:#F7F5F1;--rail-bg:#EDEAE3;--ink:#1F1F1D;--divider:#D9D6CD;--head-ink:#646357;--active-bg:#1C5C3C;--page:#E9E7E1;
+--thumb-now:#AAA59B;--thumb-hover-now:#827D73;--thumb:#B4B0A6;--thumb-hover:#948F85}
+html[data-theme="dark"]{--canvas:#14130F;--rail-bg:#232019;--ink:#F5F3EE;--divider:#3A362F;--head-ink:#9C9A91;--active-bg:#7C9CF0;--page:#0B0B09;
+--thumb-now:#514D45;--thumb-hover-now:#777268;--thumb:#45413A;--thumb-hover:#65615A}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--page);color:var(--ink);padding:0 0 34px}
+.preview-head{min-height:58px;display:flex;align-items:center;gap:12px;padding:8px 18px;flex-wrap:wrap;border-bottom:1px solid var(--divider);background:var(--canvas)}
+.brand{font-weight:700}.badge{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--head-ink);border:1px solid var(--divider);border-radius:99px;padding:4px 9px}
+.controls{margin-left:auto;display:flex;gap:12px;align-items:center;font-size:12px;color:var(--head-ink);flex-wrap:wrap}
+.controls button{border:1px solid var(--divider);border-radius:8px;background:transparent;color:var(--ink);font:inherit;padding:7px 11px;cursor:pointer}
+.controls input[type=range]{width:200px}
+.controls b{color:var(--ink)}
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px}
+.pair h2{margin:0 0 3px;font-size:13.5px}
+.pair p{margin:0 0 10px;font-size:12px;color:var(--head-ink)}
+.pair p code{font:11.5px ui-monospace,SFMono-Regular,Menlo,monospace}
+.measure{margin:10px 0 0 !important;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink) !important}
+.measure span{color:var(--head-ink)}
+.pane{height:260px;border:1px solid var(--divider);border-radius:12px;background:var(--canvas);padding:12px 14px;overflow-y:scroll;overflow-x:hidden}
+.pane .line{font:400 14px/1.6 ui-serif,Georgia,serif;margin:0 0 8px}
+.pane .row{height:26px;border-radius:8px;background:var(--rail-bg);margin:0 0 8px}
+
+/* ---------- the page's own scrollbars: the proposed bar, so nothing here shows
+   a native scrollbar by accident ---------- */
+@supports not selector(::-webkit-scrollbar) {
+  html, html * { scrollbar-width: thin; scrollbar-color: var(--thumb) transparent; }
+}
+html *::-webkit-scrollbar { width: 5px; height: 5px; }
+html *::-webkit-scrollbar-track { background: transparent; }
+html *::-webkit-scrollbar-thumb { background: var(--thumb); border-radius: 999px; }
+html *::-webkit-scrollbar-thumb:hover { background: var(--thumb-hover); }
+html *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+html *::-webkit-scrollbar-corner { background: transparent; }
+
+/* ---------- CURRENT BUILD: today's app rule — the standard properties AND the
+   webkit pseudo-elements together, 6px, no button rule. In Chromium that is the
+   native thin bar, which still carries the platform's stepper buttons. ---------- */
+.pane.old,.pane.old *{scrollbar-width:thin;scrollbar-color:var(--thumb-now) transparent}
+.pane.old::-webkit-scrollbar,.pane.old *::-webkit-scrollbar{width:6px;height:6px}
+.pane.old::-webkit-scrollbar-track,.pane.old *::-webkit-scrollbar-track{background:transparent}
+.pane.old::-webkit-scrollbar-thumb,.pane.old *::-webkit-scrollbar-thumb{background:var(--thumb-now);border-radius:999px}
+.pane.old::-webkit-scrollbar-thumb:hover,.pane.old *::-webkit-scrollbar-thumb:hover{background:var(--thumb-hover-now)}
+
+/* ---------- PROPOSED: the standard properties only where the custom
+   pseudo-element is unsupported, so Blink/WebKit draw the 5px custom bar (which
+   has no buttons), and the button pseudo-element is suppressed as a belt. ---------- */
+@supports not selector(::-webkit-scrollbar) {
+  .pane.new,.pane.new *{scrollbar-width:thin;scrollbar-color:var(--thumb) transparent}
+}
+.pane.new::-webkit-scrollbar,.pane.new *::-webkit-scrollbar{width:5px;height:5px}
+.pane.new::-webkit-scrollbar-track,.pane.new *::-webkit-scrollbar-track{background:transparent}
+.pane.new::-webkit-scrollbar-thumb,.pane.new *::-webkit-scrollbar-thumb{background:var(--thumb);border-radius:999px}
+.pane.new::-webkit-scrollbar-thumb:hover,.pane.new *::-webkit-scrollbar-thumb:hover{background:var(--thumb-hover)}
+.pane.new::-webkit-scrollbar-button,.pane.new *::-webkit-scrollbar-button{display:none;width:0;height:0}
+.pane.new::-webkit-scrollbar-corner,.pane.new *::-webkit-scrollbar-corner{background:transparent}
+
+table{border-collapse:collapse;font-size:12.5px;margin:0 20px;color:var(--ink)}
+th,td{border:1px solid var(--divider);padding:6px 10px;text-align:left}
+th{color:var(--head-ink);font-weight:600}
+td code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
+.note{padding:14px 20px 0;font-size:12.5px;color:var(--head-ink);max-width:1000px}
+.note b{color:var(--ink)}
+@media (max-width:860px){.pairs{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="preview-head">
+  <span class="brand">GKPS Klender</span><span class="badge">Spec 087 preview</span>
+  <div class="controls">
+    <span>extra softness <b id="softValue">0%</b></span>
+    <input id="soft" type="range" min="0" max="100" value="0" step="5">
+    <button id="theme">dark</button>
+  </div>
+</header>
+
+<div class="pairs">
+  <div class="pair">
+    <h2>Current build</h2>
+    <p>Today's rule: <code>scrollbar-width: thin</code> + <code>scrollbar-color</code> <b>and</b>
+      <code>::-webkit-scrollbar</code>. Chromium takes the standard-property path, so the webkit rules
+      never run and the platform's steppers stay.</p>
+    <div class="pane old" id="paneOld">
+      <div class="row"></div><p class="line">L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus.</p>
+      <div class="row"></div><p class="line">J : Amin.</p>
+      <div class="row"></div><p class="line">L : TUHAN adalah gembalaku, takkan kekurangan aku.</p>
+      <div class="row"></div><p class="line">J : Haleluya, haleluya, haleluya.</p>
+      <div class="row"></div><p class="line">L : Kiranya kasih karunia Tuhan kita Yesus Kristus menyertai kita sekalian.</p>
+      <div class="row"></div><p class="line">J : Amin, amin, amin.</p>
+    </div>
+    <p class="measure" id="measureOld"></p>
+  </div>
+
+  <div class="pair">
+    <h2>Proposed</h2>
+    <p>The standard properties move behind <code>@supports not selector(::-webkit-scrollbar)</code>, so
+      Chromium draws the 5px custom bar — which has no buttons — and <code>::-webkit-scrollbar-button</code>
+      is suppressed as well.</p>
+    <div class="pane new" id="paneNew">
+      <div class="row"></div><p class="line">L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus.</p>
+      <div class="row"></div><p class="line">J : Amin.</p>
+      <div class="row"></div><p class="line">L : TUHAN adalah gembalaku, takkan kekurangan aku.</p>
+      <div class="row"></div><p class="line">J : Haleluya, haleluya, haleluya.</p>
+      <div class="row"></div><p class="line">L : Kiranya kasih karunia Tuhan kita Yesus Kristus menyertai kita sekalian.</p>
+      <div class="row"></div><p class="line">J : Amin, amin, amin.</p>
+    </div>
+    <p class="measure" id="measureNew"></p>
+  </div>
+</div>
+
+<table>
+  <thead><tr><th>token</th><th>current</th><th>proposed</th><th>contrast vs canvas</th></tr></thead>
+  <tbody>
+    <tr><td><code>--scroll-thumb</code> (light)</td><td><code>#AAA59B</code></td><td><code id="t1"></code></td><td id="c1"></td></tr>
+    <tr><td><code>--scroll-thumb-hover</code> (light)</td><td><code>#827D73</code></td><td><code id="t2"></code></td><td id="c2"></td></tr>
+    <tr><td><code>--scroll-thumb</code> (dark)</td><td><code>#514D45</code></td><td><code id="t3"></code></td><td id="c3"></td></tr>
+    <tr><td><code>--scroll-thumb-hover</code> (dark)</td><td><code>#777268</code></td><td><code id="t4"></code></td><td id="c4"></td></tr>
+  </tbody>
+</table>
+
+<p class="note">The steppers come from the <b>standard</b> properties, not from a missing button rule:
+  <code>scrollbar-width</code> / <code>scrollbar-color</code> win over <code>::-webkit-scrollbar*</code>
+  in Chromium, so the native thin bar is drawn — and measured here it is 10px wide with an up-arrow
+  glyph sitting above the thumb, while the custom bar is 5px with no glyph at all. Hiding
+  <code>::-webkit-scrollbar-button</code> alone cannot help, because the selector belongs to a
+  pseudo-element the browser is not using. The resting thumb is deliberately quieter than a 2:1
+  indicator would be; the hover state stays clearly stronger. At <b>extra softness 0%</b> the table shows
+  the Draft's own values — drag it higher for an even quieter bar and name the number. Hover a bar to see
+  its hover colour.</p>
+
+<script>
+var softness = 0;
+function hex2rgb(h){ return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
+function rgb2hex(c){ return '#' + c.map(function(v){ var s=Math.round(v).toString(16).toUpperCase(); return s.length<2?'0'+s:s; }).join(''); }
+function mix(a,b,t){ var A=hex2rgb(a), B=hex2rgb(b); return rgb2hex(A.map(function(v,i){ return v+(B[i]-v)*t; })); }
+function lum(h){ var c=hex2rgb(h).map(function(v){ v/=255; return v<=0.04045? v/12.92 : Math.pow((v+0.055)/1.055,2.4); });
+  return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]; }
+function ratio(a,b){ var la=lum(a), lb=lum(b), hi=Math.max(la,lb), lo=Math.min(la,lb); return ((hi+0.05)/(lo+0.05)).toFixed(2); }
+
+/* the Draft's tokens, then any extra softness blends them further toward the surface */
+var SPEC = {
+  light: { canvas:'#F7F5F1', thumb:'#B4B0A6', hover:'#948F85', thumbNow:'#AAA59B', hoverNow:'#827D73' },
+  dark:  { canvas:'#14130F', thumb:'#45413A', hover:'#65615A', thumbNow:'#514D45', hoverNow:'#777268' }
+};
+function measure(id) {
+  var el = document.getElementById(id);
+  var cs = getComputedStyle(el);
+  var borders = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+  var bar = el.offsetWidth - el.clientWidth - borders;
+  var native = cs.scrollbarWidth !== 'auto';
+  return 'bar ' + bar + 'px · ' + (native ? 'standard-property path (native bar, steppers possible)'
+    : 'custom ::-webkit-scrollbar path (no stepper buttons)');
+}
+function render() {
+  var dark = document.documentElement.dataset.theme === 'dark';
+  var T = dark ? SPEC.dark : SPEC.light;
+  var extra = (softness / 100) * 0.25;
+  var thumb = mix(T.thumb, T.canvas, extra);
+  var hover = mix(T.hover, T.canvas, extra);
+  document.documentElement.style.setProperty('--thumb', thumb);
+  document.documentElement.style.setProperty('--thumb-hover', hover);
+  document.getElementById('softValue').textContent = softness + '%';
+  function swapTheme(theme, thumbSlot, ratioSlot, specThumb, specHover, nowThumb, hoverSlot) {
+    var c = theme.canvas, e = (softness / 100) * 0.25;
+    document.getElementById(thumbSlot).textContent = mix(specThumb, c, e);
+    document.getElementById(ratioSlot).textContent = ratio(mix(specThumb, c, e), c) + ':1  (was ' + ratio(nowThumb, c) + ')';
+    document.getElementById(hoverSlot).textContent = mix(specHover, c, e);
+  }
+  swapTheme(SPEC.light, 't1', 'c1', SPEC.light.thumb, SPEC.light.hover, SPEC.light.thumbNow, 't2');
+  swapTheme(SPEC.dark, 't3', 'c3', SPEC.dark.thumb, SPEC.dark.hover, SPEC.dark.thumbNow, 't4');
+  document.getElementById('c2').textContent = ratio(mix(SPEC.light.hover, SPEC.light.canvas, extra), SPEC.light.canvas) + ':1  (was ' + ratio(SPEC.light.hoverNow, SPEC.light.canvas) + ')';
+  document.getElementById('c4').textContent = ratio(mix(SPEC.dark.hover, SPEC.dark.canvas, extra), SPEC.dark.canvas) + ':1  (was ' + ratio(SPEC.dark.hoverNow, SPEC.dark.canvas) + ')';
+  window.requestAnimationFrame(function () {
+    document.getElementById('measureOld').innerHTML = '<span>measured</span> ' + measure('paneOld');
+    document.getElementById('measureNew').innerHTML = '<span>measured</span> ' + measure('paneNew');
+  });
+}
+document.getElementById('soft').addEventListener('input', function () { softness = Number(this.value); render(); });
+document.getElementById('theme').addEventListener('click', function () {
+  var dark = document.documentElement.dataset.theme !== 'dark';
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  this.textContent = dark ? 'light' : 'dark';
+  render();
+});
+render();
+</script>
+</body>
+</html>
