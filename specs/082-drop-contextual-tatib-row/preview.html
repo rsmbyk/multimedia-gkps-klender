@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spec 082 · the open Tata Ibadah in the list</title>
+<style>
+:root{--canvas:#F7F5F1;--rail-bg:#EDEAE3;--ink:#1F1F1D;--icon-hover-bg:rgba(31,31,29,.08);--active-bg:#1C5C3C;--active-ink:#FFF;--sidebar-selected-bg:#B9D7C9;--divider:#D9D6CD;--head-ink:#646357;--shadow:0 6px 18px -10px rgba(20,20,18,.5);
+font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:#E9E7E1}
+*{box-sizing:border-box}body{margin:0;min-width:820px}
+.preview-head{height:58px;background:#FFFEFA;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:14px;padding:0 18px}
+.brand{font-weight:700}.badge{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--head-ink);border:1px solid var(--divider);border-radius:99px;padding:4px 9px}
+.switch{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--head-ink)}
+.switch button{border:1px solid var(--divider);border-radius:8px;background:transparent;color:var(--ink);font:inherit;padding:8px 12px;cursor:pointer}
+.switch button[aria-pressed="true"]{background:#B3261E;color:#fff;border-color:#B3261E}
+.app{height:calc(100vh - 58px);min-height:600px;display:flex;background:var(--canvas);overflow:hidden}
+.rail{width:80px;flex:none;background:var(--rail-bg);border-right:1px solid var(--divider);display:flex;flex-direction:column;align-items:center;padding:12px 10px;gap:10px}
+.logo{width:40px;height:40px;border:1px solid #CBD3CA;border-radius:50%;display:grid;place-items:center;color:var(--active-bg);font-weight:700;background:#FFFEFA;margin-bottom:22px}
+.rail button{width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#383A34;font-size:19px}
+.rail button.active{background:var(--active-bg);color:#fff}
+.panel{width:320px;flex:none;background:var(--canvas);border-right:1px solid var(--divider);display:flex;flex-direction:column}
+.head{padding:12px 14px 10px;display:flex;gap:8px;align-items:center}
+.filter{flex:1;height:38px;border:1px solid var(--divider);border-radius:10px;background:#FFFEFA;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--head-ink);font-size:13px}
+.mode{width:32px;height:36px;border:0;border-radius:7px;background:transparent;font-size:18px;cursor:pointer;color:#363831}
+.mode:hover{background:var(--icon-hover-bg)}
+.collapse{width:32px;height:36px;border:0;border-radius:7px;background:transparent;font-size:19px;cursor:pointer;color:#363831}
+.cta{margin:0 14px 12px;border:0;border-radius:9px;background:var(--active-bg);color:#fff;height:39px;font:600 14px ui-sans-serif,system-ui;cursor:pointer}
+.scroll{overflow:auto;min-height:0;flex:1;padding:0 9px 16px}
+.month{margin:12px 8px 7px;font-size:11px;font-weight:700;letter-spacing:.13em;color:var(--head-ink)}
+.book{min-height:46px;padding:9px 11px;border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;font-size:14px}
+.book:hover{background:var(--icon-hover-bg)}
+.book[aria-current="true"]{background:var(--sidebar-selected-bg);color:#163F2B}
+.book__s{font-size:12px;color:var(--head-ink);white-space:nowrap}
+.book[aria-current="true"] .book__s{color:#2C5C46}
+.book.group{min-height:0;padding:10px 11px 0;margin-top:8px;border-top:1px solid var(--divider);margin-left:4px;margin-right:4px;justify-content:flex-start}
+.stage{flex:1;min-width:260px;overflow:auto;padding:30px 34px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.15em;color:var(--head-ink)}
+h1{font:700 32px/1.15 Georgia,serif;margin:4px 0 20px}
+.side{border:1px solid #E5E2DA;border-radius:11px;background:#F4F2EE;padding:12px 14px;margin:0 0 10px}
+.side h3{margin:0 0 6px;font-size:15px}
+.line{margin:0 0 6px;font:400 16px/1.7 Georgia,serif}
+.note{margin-top:20px;padding:12px 14px;border:1px dashed var(--divider);border-radius:10px;font-size:12.5px;color:var(--head-ink);background:#FFFEFA}
+.status{margin-top:12px;font-size:12.5px;color:var(--head-ink)}
+.status b{color:var(--ink)}
+/* spec 087 preview: the proposed shared bar, so this page's own scrollbars are not
+   the browser default (which can carry up/down stepper buttons) */
+@supports not selector(::-webkit-scrollbar) {
+  html, html * { scrollbar-width: thin; scrollbar-color: #B4B0A6 transparent; }
+}
+html::-webkit-scrollbar, html *::-webkit-scrollbar { width: 5px; height: 5px; }
+html::-webkit-scrollbar-track, html *::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb, html *::-webkit-scrollbar-thumb { background: color-mix(in srgb, currentColor 26%, transparent); border-radius: 999px; }
+html::-webkit-scrollbar-thumb:hover, html *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, currentColor 42%, transparent); }
+html::-webkit-scrollbar-button, html *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+html::-webkit-scrollbar-corner, html *::-webkit-scrollbar-corner { background: transparent; }
+</style>
+</head>
+<body>
+<header class="preview-head">
+  <span class="brand">GKPS Klender</span><span class="badge">Spec 082 preview</span>
+  <span class="switch">Current build:
+    <button id="bug" type="button" aria-pressed="false">bug off</button>
+  </span>
+</header>
+<div class="app">
+  <nav class="rail" aria-label="Main menu">
+    <div class="logo">GK</div>
+    <button aria-label="Alkitab">▣</button><button aria-label="Kidung">♫</button>
+    <button class="active" aria-label="Tata Ibadah">▤</button>
+  </nav>
+
+  <aside class="panel">
+    <div class="head">
+      <label class="filter"><span>⌕</span><span>Filter Tata Ibadah…</span></label>
+      <button class="mode" id="mode" aria-pressed="false" title="Show Tata Ibadah templates" aria-label="Show Tata Ibadah templates">▦</button>
+      <button class="collapse" aria-label="Close Tata Ibadah panel">‹</button>
+    </div>
+    <button class="cta">＋ &nbsp; Add Tata Ibadah</button>
+    <div class="scroll" id="panelBody"></div>
+  </aside>
+
+  <main class="stage">
+    <p class="eyebrow">4 OKTOBER 2026</p>
+    <h1>Ibadah Minggu</h1>
+    <div class="side"><h3>Votum</h3><p class="line">L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa.</p><p class="line">J : Amin.</p></div>
+    <div class="note">The open service is <b>Ibadah Minggu · 4 Okt 2026</b> (a dated order).
+      Switch the list mode with the ▦ control and watch the panel: it must list the mode's own
+      services only, and highlight the open one only while it is in that list.</div>
+    <p class="status">Panel rows marked selected: <b id="selCount">1</b> · “Currently open” text in the
+      panel: <b id="ctxCount">none</b></p>
+  </main>
+</div>
+<script>
+var dated = [
+  {head: 'OKTOBER 2026'},
+  {name: 'Ibadah Minggu', meta: '4 Okt 2026', current: true},
+  {name: 'Ibadah 11 Oktober 2026', meta: '11 Okt 2026'},
+  {head: 'AGUSTUS 2026'},
+  {name: 'Ibadah 30 Agustus 2026', meta: '30 Agu 2026'},
+  {name: 'Ibadah 23 Agustus 2026 (Minggu sahabat)', meta: '23 Agu 2026'},
+  {name: 'Tata Ibadah Olob Olob dan Angkat Sidi', meta: '9 Agu 2026'}
+];
+var templates = [
+  {head: 'TEMPLATES'},
+  {name: 'HARAP TENANG'}, {name: 'Hata Haporsayaon (Niceanum)'},
+  {name: 'Model C (Indonesia | Efesus 1:3-10)'}, {name: 'Model C (Simalungun | Psalmsen 23)'},
+  {name: 'Model E (Indonesia | Mazmur 23)'}, {name: 'Model F (Simalungun)'},
+  {name: 'Pengakuan Iman (Niceanum)'}, {name: 'Responsoria HBN (Bahasa Simalungun)'}
+];
+var mode = 'dated', bugOff = true;
+
+function render() {
+  var rows = mode === 'dated' ? dated : templates;
+  var html = rows.map(function (r) {
+    if (r.head) return '<p class="month">' + r.head + '</p>';
+    return '<div class="book"' + (r.current ? ' aria-current="true"' : '') + '>'
+      + '<span class="book__n">' + r.name + '</span>'
+      + (r.meta ? '<span class="book__s">' + r.meta + '</span>' : '') + '</div>';
+  }).join('');
+  /* the reported behaviour: the open dated order is appended when templates are shown */
+  if (!bugOff && mode === 'template') {
+    html += '<div class="book group"><span class="book__n">Ibadah Minggu</span>'
+      + '<span class="book__s">4 Okt 2026 · Currently open</span></div>';
+  }
+  document.getElementById('panelBody').innerHTML = html;
+  var button = document.getElementById('mode');
+  var showingTemplates = mode === 'template';
+  button.setAttribute('aria-pressed', String(showingTemplates));
+  button.textContent = showingTemplates ? '▤' : '▦';
+  button.title = showingTemplates ? 'Show dated Tata Ibadah' : 'Show Tata Ibadah templates';
+  button.setAttribute('aria-label', button.title);
+  document.getElementById('selCount').textContent = String(document.querySelectorAll('#panelBody [aria-current="true"]').length);
+  document.getElementById('ctxCount').textContent =
+    document.getElementById('panelBody').innerText.indexOf('Currently open') === -1 ? 'none' : 'one row';
+}
+document.getElementById('mode').addEventListener('click', function () {
+  mode = mode === 'dated' ? 'template' : 'dated';
+  render();
+});
+document.getElementById('bug').addEventListener('click', function () {
+  bugOff = !bugOff;
+  this.setAttribute('aria-pressed', String(!bugOff));
+  this.textContent = bugOff ? 'bug off' : 'bug ON — an extra row appears';
+  render();
+});
+render();
+</script>
+</body>
+</html>

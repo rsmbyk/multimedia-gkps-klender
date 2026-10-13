@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spec 081 · renumbering the dragged row</title>
+<style>
+:root{--canvas:#F7F5F1;--rail-bg:#EDEAE3;--ink:#1F1F1D;--icon-hover-bg:rgba(31,31,29,.08);--active-bg:#1C5C3C;--active-ink:#FFF;--sidebar-selected-bg:#B9D7C9;--divider:#D9D6CD;--head-ink:#646357;--shadow:0 6px 18px -10px rgba(20,20,18,.5);--ease:200ms cubic-bezier(.32,.72,.28,1);
+font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:#E9E7E1}
+*{box-sizing:border-box}body{margin:0;min-width:760px}
+.preview-head{height:58px;background:#FFFEFA;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:14px;padding:0 18px}
+.brand{font-weight:700}.badge{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--head-ink);border:1px solid var(--divider);border-radius:99px;padding:4px 9px}
+.switch{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--head-ink)}
+.switch button{border:1px solid var(--divider);border-radius:8px;background:transparent;color:var(--ink);font:inherit;padding:8px 12px;cursor:pointer}
+.switch button[aria-pressed="true"]{background:#B3261E;color:#fff;border-color:#B3261E}
+.app{height:calc(100vh - 58px);min-height:560px;display:flex;background:var(--canvas);overflow:hidden}
+.second{width:390px;flex:none;background:#F2EFE9;border-right:1px solid var(--divider);display:flex;flex-direction:column}
+.head{padding:12px 14px 10px;display:flex;gap:8px;align-items:center}
+.filter{flex:1;height:38px;border:1px solid var(--divider);border-radius:10px;background:#FFFEFA;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--head-ink);font-size:13px}
+.collapse{width:32px;height:36px;border:0;border-radius:7px;background:transparent;font-size:19px;cursor:pointer;color:#363831}
+.ch-body{overflow:auto;min-height:0;flex:1;padding:6px 8px 40px}
+#chList{list-style:none;margin:0;padding:0}
+#chList li{position:relative;display:flex;align-items:stroke;align-items:center;gap:4px;border-radius:9px;cursor:grab}
+#chList li[data-move-row]{cursor:grab}
+.songrow{flex:1;min-width:0;display:flex;align-items:center;gap:0;min-height:44px;padding:9px 6px;border-radius:9px;text-decoration:none;color:inherit}
+#chList li:hover > .songrow{background:var(--icon-hover-bg)}
+.songrow__c{flex:none;min-width:3.4rem;font:560 13px/1.4 ui-sans-serif,system-ui;font-variant-numeric:tabular-nums;align-self:center}
+.songrow__t{min-width:0;display:flex;flex-direction:column;line-height:1.35;font-size:14px}
+.songrow__t i{color:var(--head-ink)}
+.verses{font-size:12px;color:var(--head-ink)}
+.grip{flex:none;border:0;background:transparent;color:#8D8B82;padding:6px;cursor:grab;opacity:0;border-radius:6px}
+#chList li:hover .grip{opacity:1}
+.grip svg{width:14px;height:14px;display:block}
+.toc__eos{display:flex;align-items:center;min-height:19px}
+.toc__eosline{flex:1;height:1px;background:var(--divider);margin:0 4px}
+#chList li.is-dragging{background:color-mix(in srgb,var(--active-bg) 18%,var(--canvas));border-radius:9px}
+#chList li.is-dragging > *{visibility:hidden}
+#chList.is-dragging li:not(.is-dragging){transition:transform 60ms cubic-bezier(.32,.72,.28,1)}
+.ghost{position:fixed;z-index:1000;pointer-events:none;border-radius:9px;background:var(--canvas);color:var(--ink);box-shadow:var(--shadow);opacity:.94;display:flex;align-items:center;gap:4px;transition:none!important}
+.ghost .songrow{flex:1;min-width:0;display:flex;align-items:center;min-height:44px;padding:9px 6px}
+.stage{flex:1;min-width:260px;overflow:auto;padding:30px 34px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.15em;color:var(--head-ink)}
+h1{font:700 30px/1.15 Georgia,serif;margin:4px 0 18px}
+.side{border:1px solid #E5E2DA;border-radius:11px;background:#F4F2EE;padding:12px 14px;margin:0 0 10px}
+.side h3{margin:0 0 6px;font-size:15px}
+.line{margin:0 0 6px;font:400 16px/1.7 Georgia,serif}
+.note{margin-top:20px;padding:12px 14px;border:1px dashed var(--divider);border-radius:10px;font-size:12.5px;color:var(--head-ink);background:#FFFEFA}
+.status{margin-top:12px;font-size:12.5px;color:var(--head-ink)}
+.status b{color:var(--ink)}
+/* spec 087 preview: the proposed shared bar, so this page's own scrollbars are not
+   the browser default (which can carry up/down stepper buttons) */
+@supports not selector(::-webkit-scrollbar) {
+  html, html * { scrollbar-width: thin; scrollbar-color: #B4B0A6 transparent; }
+}
+html::-webkit-scrollbar, html *::-webkit-scrollbar { width: 5px; height: 5px; }
+html::-webkit-scrollbar-track, html *::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb, html *::-webkit-scrollbar-thumb { background: color-mix(in srgb, currentColor 26%, transparent); border-radius: 999px; }
+html::-webkit-scrollbar-thumb:hover, html *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, currentColor 42%, transparent); }
+html::-webkit-scrollbar-button, html *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+html::-webkit-scrollbar-corner, html *::-webkit-scrollbar-corner { background: transparent; }
+</style>
+</head>
+<body>
+<header class="preview-head">
+  <span class="brand">GKPS Klender</span><span class="badge">Spec 081 preview</span>
+  <span class="switch">Current build:
+    <button id="bug" type="button" aria-pressed="false">bug off</button>
+  </span>
+</header>
+<div class="app">
+  <aside class="second">
+    <div class="head">
+      <label class="filter"><span>⌕</span><span>Filter sections…</span></label>
+      <button class="collapse" aria-label="Close sections">‹</button>
+    </div>
+    <div class="ch-body">
+      <ul id="chList">
+        <li data-move-row><a class="songrow" data-num="1"><span class="songrow__c">1</span>
+          <span class="songrow__t"><i>L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa,</i></span>
+          <span class="verse-spacer"></span></a><button class="grip" aria-label="Reorder"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/></svg></button></li>
+        <li data-move-row><a class="songrow" data-num="2"><span class="songrow__c">2</span>
+          <span class="songrow__t">Votum</span></a><button class="grip" aria-label="Reorder"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/></svg></button></li>
+        <li data-move-row><a class="songrow" data-num="3"><span class="songrow__c">3</span>
+          <span class="songrow__t"><span>HAL 3 — Sai puji Naibata</span><span class="verses">Bait 1, 3</span></span></a>
+          <button class="grip" aria-label="Reorder"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/></svg></button></li>
+        <li class="toc__eos" data-move-row><span class="toc__eosline"></span>
+          <button class="grip" aria-label="Reorder this break" style="opacity:1"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/></svg></button></li>
+        <li data-move-row><a class="songrow" data-num="4"><span class="songrow__c">4</span>
+          <span class="songrow__t">Pengakuan Iman (Niceanum)</span></a>
+          <button class="grip" aria-label="Reorder"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/></svg></button></li>
+        <li data-move-row><a class="songrow" data-num="5"><span class="songrow__c">5</span>
+          <span class="songrow__t">Mazmur 103</span></a>
+          <button class="grip" aria-label="Reorder"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/></svg></button></li>
+        <li data-move-row><a class="songrow" data-num="6"><span class="songrow__c">6</span>
+          <span class="songrow__t">Doa Bapa Kami</span></a>
+          <button class="grip" aria-label="Reorder"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/></svg></button></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="stage">
+    <p class="eyebrow">4 OKTOBER 2026</p>
+    <h1>Ibadah Minggu</h1>
+    <div class="side"><h3>Votum</h3><p class="line">L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa.</p><p class="line">J : Amin.</p></div>
+    <div class="side"><h3>HAL 3 — Sai puji Naibata</h3><p class="line">Jahowa sihol pujiunku, ai Ham do naibata sitompa au.</p></div>
+    <div class="note">Grab any row in the list and move it. The row in your hand should count
+      <b>1, 2, 3…</b> as it passes the others, and show the position it will land on.</div>
+    <p class="status">The list order is written when you release — <b id="writeNote">no write yet</b>.</p>
+  </main>
+</div>
+<script>
+var list = document.getElementById('chList');
+var bugOff = true, drag = null;
+document.getElementById('bug').addEventListener('click', function () {
+  bugOff = !bugOff;
+  this.setAttribute('aria-pressed', String(!bugOff));
+  this.textContent = bugOff ? 'bug off' : 'bug ON — the row keeps its old number';
+});
+
+function rows() {
+  return [].slice.call(list.children).filter(function (li) { return !!li.querySelector('.grip'); });
+}
+function renumber() {
+  var number = 0;
+  [].slice.call(list.children).forEach(function (li) {
+    var link = li.querySelector('a.songrow');
+    var moveBreak = li.classList.contains('toc__eos') && !!li.querySelector('.grip');
+    if (link || moveBreak) number += 1;
+    var cell = li.querySelector('.songrow__c');
+    if (cell) cell.textContent = String(number);
+    if (link) link.dataset.num = String(number);
+  });
+  return number;
+}
+function ghostNumberCell() { return drag && drag.ghost ? drag.ghost.querySelector('.songrow__c') : null; }
+
+function snapshot() {
+  var before = {};
+  rows().forEach(function (li) { before[li] = li.getBoundingClientRect().top; });
+  return before;
+}
+function morph(before) {
+  rows().forEach(function (li) {
+    if (li === (drag && drag.row)) return;
+    var was = before[li]; if (was == null) return;
+    var delta = was - li.getBoundingClientRect().top;
+    if (!delta) return;
+    li.style.transition = 'none';
+    li.style.transform = 'translateY(' + delta + 'px)';
+    window.requestAnimationFrame(function () { li.style.transition = ''; li.style.transform = ''; });
+  });
+}
+function placeRowAt(y) {
+  var target = null;
+  drag.mids.forEach(function (m) { if (!target && y < m.middle) target = m.row; });
+  var all = rows();
+  var what = all.filter(function (li) { return li !== drag.row; });
+  var at = target ? what.indexOf(target) : what.length;
+  if (at < 0) at = what.length;
+  what.splice(at, 0, drag.row);
+  var slotSet = new Set(all);
+  var cursor = 0;
+  var children = [].slice.call(list.children).map(function (li) {
+    return slotSet.has(li) ? what[cursor++] : li;
+  });
+  children.forEach(function (li, i) {
+    if (list.children[i] !== li) list.insertBefore(li, list.children[i] || null);
+  });
+}
+
+list.addEventListener('pointerdown', function (event) {
+  var li = event.target.closest('li[data-move-row]');
+  if (!li) return;
+  event.preventDefault();
+  var rect = li.getBoundingClientRect();
+  var mids = [];
+  rows().forEach(function (each) {
+    if (each === li) return;
+    var r = each.getBoundingClientRect();
+    mids.push({row: each, middle: r.top + r.height / 2});
+  });
+  drag = {row: li, mids: mids, start: event.clientY, x: event.clientX, offsetY: event.clientY - rect.top,
+          offsetX: event.clientX - rect.left, rect: rect, moved: false, startedAt: null, ghost: null};
+  try { li.setPointerCapture(event.pointerId); } catch (e) { /* no capture */ }
+  list.classList.add('is-dragging');
+});
+
+list.addEventListener('pointermove', function (event) {
+  if (!drag) return;
+  if (!drag.moved && Math.abs(event.clientY - drag.start) > 3) {
+    drag.moved = true;
+    drag.startedAt = Number((drag.row.querySelector('.songrow__c') || {}).textContent || 0);
+    buildGhost();
+    drag.row.classList.add('is-dragging');
+  }
+  if (!drag.moved) return;
+  drag.ghost.style.left = (event.clientX - drag.offsetX) + 'px';
+  drag.ghost.style.top = (event.clientY - drag.offsetY) + 'px';
+  var before = snapshot();
+  placeRowAt(event.clientY);
+  var count = renumber();
+  var cell = ghostNumberCell();
+  if (cell && bugOff) cell.textContent = String(countAt(drag.row));
+  morph(before);
+});
+
+function countAt(row) {
+  var number = 0;
+  var found = null;
+  [].slice.call(list.children).forEach(function (li) {
+    if (li.querySelector('a.songrow') || (li.classList.contains('toc__eos') && li.querySelector('.grip'))) number += 1;
+    if (li === row) found = number;
+  });
+  return found;
+}
+
+function buildGhost() {
+  var copy = document.createElement('div');
+  copy.className = 'ghost';
+  copy.innerHTML = drag.row.innerHTML.replace(/<a /g, '<span ').replace(/<\/a>/g, '</span>');
+  copy.style.width = drag.rect.width + 'px';
+  copy.style.height = drag.rect.height + 'px';
+  drag.ghost = copy;
+  document.body.appendChild(copy);
+}
+
+function endDrag() {
+  if (!drag) return;
+  if (drag.ghost) drag.ghost.remove();
+  drag.row.classList.remove('is-dragging');
+  list.classList.remove('is-dragging');
+  var moved = drag.moved;
+  drag = null;
+  renumber();
+  if (moved) document.getElementById('writeNote').textContent = 'order written';
+}
+list.addEventListener('pointerup', endDrag);
+list.addEventListener('pointercancel', endDrag);
+window.addEventListener('blur', endDrag);
+renumber();
+</script>
+</body>
+</html>

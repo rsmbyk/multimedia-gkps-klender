@@ -16,6 +16,24 @@ Pre-adoption history in the legacy per-version format is archived in
 
 - The Bible translation switch (TB/SIM), in the reading header and in the passage picker, now fills the hovered option the way the Text screen-mode switch does, instead of only darkening its label.
 
+## [1.10.3] - 2026-10-13
+
+### Fixed
+
+- The Tata Ibadah sidebar lists only the services of the mode it is showing: a dated order no longer appears under the templates (and the other way round) as a "Currently open" card. The open service is highlighted when it is in the list on screen.
+
+## [1.10.2] - 2026-10-13
+
+### Fixed
+
+- The row being dragged in a Tata Ibadah's contents list now counts up with the order it is taking, instead of showing the number it had when it was picked up.
+
+## [1.10.1] - 2026-10-13
+
+### Fixed
+
+- Opening a page from a second-level sidebar — and saving a service entry — keeps a collapsed or mini first sidebar as it was, instead of springing it open again.
+
 ## [1.10.0] - 2026-10-13
 
 ### Added

@@ -957,30 +957,30 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('#tatibMode').click()
         expect(page.locator('#tatibMode')).to_have_attribute('aria-pressed', 'true')
         expect(page.locator('html')).to_have_attribute('data-ch', 'open')
-        expect(page.locator('#bookFilter')).to_have_value('')
         expect(page.locator('#songFilter')).to_have_value('Bagian')
         self.assertEqual(page.locator('#read').inner_text(), original_stage)
         self.assertAlmostEqual(page.evaluate("document.getElementById('chBody').scrollTop"),
                                second_scroll, delta=2)
+        # template mode does not hold this dated order: it is not listed, nothing is selected,
+        # and no row is invented for it (spec 082)
+        expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_count(0)
+        expect(page.locator('#panelBody')).not_to_contain_text('Currently open')
+
+        # back in its own mode its own row is selected again, filtered back into view
+        page.locator('#tatibMode').click()
+        expect(page.locator('#tatibMode')).to_have_attribute('aria-pressed', 'false')
+        expect(page.locator('#bookFilter')).to_have_value('')
+        expect(page.locator('#songFilter')).to_have_value('Bagian')
         selected = page.locator('#panelBody .book[aria-current="true"]')
         expect(selected).to_have_count(1)
         expect(selected).to_have_attribute('data-name', str(self.big.pk))
-        expect(selected).to_contain_text('Currently open')
         page.wait_for_function("document.documentElement.dataset.scrollAnim !== 'on'")
         visible = selected.evaluate("""row => {
             const r = row.getBoundingClientRect();
             const b = document.getElementById('panelBody').getBoundingClientRect();
             return r.top >= b.top + 7 && r.bottom <= b.bottom - 7;
         }""")
-        self.assertTrue(visible, 'the contextual current row was not revealed')
-
-        page.locator('#tatibMode').click()
-        expect(page.locator('#tatibMode')).to_have_attribute('aria-pressed', 'false')
-        expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_attribute(
-            'data-name', str(self.big.pk))
-        expect(page.locator('#panelBody')).not_to_contain_text('Currently open')
-        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
-        expect(page.locator('#songFilter')).to_have_value('Bagian')
+        self.assertTrue(visible, 'the selected row was not revealed')
 
         page.locator('#chCollapse').click()
         expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
@@ -996,9 +996,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         # The first pane sits behind the open second pane at this width; its
         # state must still survive the mode action when that level is surfaced.
         page.locator('#tatibMode').evaluate('el => el.click()')
-        selected = page.locator('#panelBody .book[aria-current="true"]')
-        expect(selected).to_have_attribute('data-name', str(template.pk))
-        expect(selected).to_contain_text('Template · Currently open')
+        # this template is not in the dated list: nothing is selected, and no row is invented
+        expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_count(0)
+        expect(page.locator('#panelBody')).not_to_contain_text('Currently open')
         expect(page.locator('html')).to_have_attribute('data-ch', 'open')
 
         page.goto(self.live_server_url + reverse('web-tatib'))
@@ -1426,3 +1426,120 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertGreater(resumed, 100, f'the result set was not resumed at an offset: {resumed}')
         self.assertLessEqual(resumed, offset)
         self.assertGreaterEqual(resumed, offset - 60, f'resumed far from the remembered offset: {resumed} vs {offset}')
+
+
+@tag('e2e')
+@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class SidebarStateOnItemOpenTests(StaticLiveServerTestCase):
+    """Opening a page from a second-level list keeps the first sidebar as it was (spec 080).
+
+    Every reading page is rendered with `data-nav="open"`, so copying the arriving page's
+    value over the live one is what sprang a collapsed (or mini) first panel open.
+    """
+
+    def setUp(self):
+        super().setUp()
+        language = bible.Language.objects.create(name='Indonesia')
+        version = bible.Version.objects.create(
+            lang=language, name='Terjemahan Baru', abbreviation='TB')
+        self.mat = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
+        translation = bible.BookTranslation.objects.create(
+            version=version, book=self.mat, translation='Matius')
+        for chapter in (5, 20):
+            bible.Verse.objects.create(book_translation=translation, chapter=chapter, verse=1,
+                                       text='Isi pasal %d' % chapter)
+        self.songbook = songs.Book.objects.create(
+            name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
+        for number in (1, 2):
+            song = songs.Song.objects.create(
+                book=self.songbook, number=number, title='Nyanyian %d' % number)
+            songs.Verse.objects.create(song=song, number=1, lyric='Bait pertama')
+        # An empty service, so its pane offers the empty state's Add Text
+        self.service = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu', date=date(2026, 8, 23), is_active=True)
+
+        self._playwright = sync_playwright().start()
+        try:
+            self.browser = self._playwright.chromium.launch()
+        except Exception as error:  # pragma: no cover - depends on environment
+            self._playwright.stop()
+            raise unittest.SkipTest(f'playwright browser unavailable: {error}')
+
+    def tearDown(self):
+        self.browser.close()
+        self._playwright.stop()
+        super().tearDown()
+
+    def _page(self, width=1280, height=900):
+        return self.browser.new_page(viewport={'width': width, 'height': height})
+
+    def _add_text_entry(self, page):
+        page.locator('.entry__empty-btn', has_text='Add Text').click()
+        expect(page.locator('#id_text')).to_be_visible()
+        page.fill('#id_text', 'L : Marilah kita bangun berdiri.')
+        page.click('.editor__save')
+        page.wait_for_function(
+            "() => document.getElementById('readBody').innerText.indexOf('Marilah kita bangun berdiri') !== -1")
+
+    def test_a_collapsed_tata_ibadah_panel_survives_adding_an_entry(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.locator('#panelCollapse').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+
+        self._add_text_entry(page)
+
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+        expect(page.locator('#read')).to_contain_text('Marilah kita bangun berdiri')
+
+    def test_a_collapsed_songbook_panel_survives_opening_a_song(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-book', args=[self.songbook.pk]))
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        page.locator('#panelCollapse').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+
+        page.locator('#chList a.songrow').first.click()
+
+        expect(page.locator('#read')).to_contain_text('Nyanyian 1')
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        expect(page.locator('#chList a.songrow[aria-current="true"]')).to_have_count(1)
+
+    def test_a_mini_bible_panel_survives_opening_a_chapter(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        page.locator('#panelCollapse').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+        page.locator('#chList a.ch-num', has_text='20').first.click()
+
+        expect(page.locator('#read')).to_contain_text('Isi pasal 20')
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+    def test_a_main_menu_switch_still_opens_the_arriving_panel(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('#panelCollapse').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+
+        page.locator('a.rail__btn[data-panel="kidung"]').click()
+
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        expect(page.locator('#panelBody')).to_contain_text('Kidung Jemaat')
+        expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
+
+    def test_a_collapsed_panel_survives_opening_a_song_at_a_narrow_width(self):
+        # At this width the first panel covers the song list, so collapsing it is the
+        # only way to reach a song — and the song must not push it back open.
+        page = self._page(width=390, height=844)
+        page.goto(self.live_server_url + reverse('web-book', args=[self.songbook.pk]))
+        page.locator('#panelCollapse').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
+
+        page.locator('#chList a.songrow').first.click()
+
+        expect(page.locator('#read')).to_contain_text('Nyanyian 1')
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
