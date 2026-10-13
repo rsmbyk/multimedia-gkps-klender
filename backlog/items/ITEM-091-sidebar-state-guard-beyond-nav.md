@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/088-sidebar-state-guard-beyond-nav/spec.md
 branch: fix/088-sidebar-state-guard-beyond-nav
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/342
 archived_at:
 archive_reason:
 bump: patch
