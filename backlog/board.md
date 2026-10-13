@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-076](./items/ITEM-076-song-preview-verse-tabs.md) | Give song Preview verse tabs equal shapes | Make song verse tabs fixed-size circles and keep long rows horizontally scrollable. | fix | P2 | S | [073](../specs/073-song-preview-verse-tabs/spec.md) | `fix/073-song-preview-verse-tabs` | 2026-10-13 |
 
 ## In review
 
