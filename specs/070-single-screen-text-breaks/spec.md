@@ -29,7 +29,7 @@ Let an editor split a Single-screen Text entry across projector screens from its
 
 - A content line is a nonempty newline-delimited line in the entry. Blank written lines are paragraph spacing, not automatic screen breaks for this kind.
 - **Default mode:** `screen_breaks = null` projects the complete Single-screen body on one screen, including its paragraph spacing, with the existing fitting and overflow safeguard. Preview shows no active break dividers and labels the mode `Default · 1 screen`.
-- **Custom mode:** adding the first break saves an ordered set of boundaries and changes the mode to `Custom`. Anchor that first break, then add breaks every two content lines in both directions from it. A break may be placed between consecutive content lines even when blank written lines separate them. Later clicks add or remove only the chosen break. Removing the last break leaves a custom one-screen arrangement until Reset breaks is clicked.
+- **Custom mode:** adding the first break saves only that boundary, divides the body into two fitted screens, and changes the mode to `Custom`. A break may be placed between consecutive content lines even when blank written lines separate them. Later clicks add or remove only the chosen break. Removing the last break leaves a custom one-screen arrangement until Reset breaks is clicked.
 - A boundary separates two content lines. Every content line belongs to exactly one generated group in written order. Blank lines remain paragraph spacing when both neighboring content lines share a screen. If a boundary separates those paragraphs, the blank lines at that boundary do not create a blank screen or an empty row at the edge of either content screen.
 - Every content line belongs to exactly one generated screen in written order. Every resulting content screen retains the entry title. Speaker cues are parsed across the complete body before grouping so a cue continues correctly on later screens. Each resulting screen uses the existing Single-screen fitting and overflow safeguard, which may shorten an overfull group. One built-in blank screen follows the entry, as before.
 - The modal and projector read the same saved boundaries. Saving a change refreshes an already open projector. A request with an outdated text signature is rejected and asks the editor to reopen Preview.
@@ -56,12 +56,12 @@ The [Draft interaction preview](./preview.html) adapts the approved [Spec 069 pr
 - **Then** Preview shows `Default · 1 screen` with no active divider
 - **And** the projector shows one fitted content screen, with the existing overflow shortening if needed, followed by its built-in blank screen.
 
-### Scenario: First custom break sets the cadence
+### Scenario: First custom break divides the screen in two
 
 - **Given** a Single-screen Text entry with six content lines in default mode
 - **When** an editor adds a break after line one in Preview
-- **Then** Preview changes to `Custom` and shows breaks after lines one, three, and five
-- **And** the projector shows line 1, lines 2–3, lines 4–5, and line 6 on consecutive content screens
+- **Then** Preview changes to `Custom` and shows only the break after line one
+- **And** the projector shows line 1 on one fitted screen and lines 2–6 on the next fitted screen
 - **And** the written text is unchanged.
 
 ### Scenario: Toggle one break and reset
@@ -95,5 +95,5 @@ The [Draft interaction preview](./preview.html) adapts the approved [Spec 069 pr
 ## Traceability
 
 - Domain/app tests: `multimedia/tatib/tests.py` (kind-specific validation and boundaries), `multimedia/web/tests.py` (save/reset, projector grouping, edits, permissions), `multimedia/web/test_speaker_voices.py` (continued cues).
-- E2E: `tests/e2e/test_single_screen_text_breaks.py` (Preview controls, cadence, reset, and live projector refresh).
+- E2E: `tests/e2e/test_single_screen_text_breaks.py` (Preview controls, one-break split, reset, and live projector refresh).
 - Implementation: `multimedia/tatib/models.py`, `multimedia/tatib/screen_breaks.py`, `multimedia/web/reading/entries.py`, `multimedia/web/reading/views.py`, `multimedia/web/templates/reading/tatib.html`, `static/web/preview.js`, and existing preview styles.

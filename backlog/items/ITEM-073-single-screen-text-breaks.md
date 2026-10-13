@@ -30,7 +30,7 @@ Reuse the preview-modal screen-break interaction for Single-screen Text entries.
 ## Acceptance sketch
 
 - Preview shows `Default · 1 screen` with no active break until an editor changes a gap.
-- The first added break starts the same two-line cadence used by ordinary Text's custom mode; subsequent clicks toggle one boundary.
+- The first added break divides the content into two fitted screens; subsequent clicks toggle one boundary.
 - Custom screens preserve the entry title and speaker cues, update an open projector, and keep the trailing built-in blank screen.
 - Reset and later text edits follow the accepted spec's default and stale-break rules.
 

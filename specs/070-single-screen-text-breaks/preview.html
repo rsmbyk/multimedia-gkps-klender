@@ -38,14 +38,8 @@ const text=['Tuhan, dengarlah doa kami','Kami datang membawa syukur','','Sertai 
 const contentCount=text.filter(Boolean).length;
 const modal=document.getElementById('modal'),rows=document.getElementById('rows');
 let custom=false,breaks=new Set(); // 1-based boundary positions
-function firstCustomBreak(boundary){
-  breaks=new Set([boundary]);
-  for(let n=boundary+2;n<contentCount;n+=2)breaks.add(n);
-  for(let n=boundary-2;n>0;n-=2)breaks.add(n);
-  custom=true;
-}
 function toggle(boundary){
-  if(!custom)firstCustomBreak(boundary);
+  if(!custom){breaks=new Set([boundary]);custom=true;}
   else{custom=true;if(breaks.has(boundary))breaks.delete(boundary);else breaks.add(boundary);}
   render();
 }

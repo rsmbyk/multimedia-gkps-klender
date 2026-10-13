@@ -173,11 +173,7 @@
       if (index !== -1) current.splice(index, 1);
       else if (breaks === null) {
         if (split.dataset.singleScreen === 'true') {
-          var allGaps = [].slice.call(split.querySelectorAll('[data-break-after]'));
-          var chosen = allGaps.indexOf(gap);
-          current = allGaps.filter(function (_each, at) {
-            return Math.abs(at - chosen) % 2 === 0;
-          }).map(function (each) { return Number(each.dataset.breakAfter); });
+          current = [position];
         } else {
           var block = blockGaps(gap);
           current = current.filter(function (value) { return block.indexOf(value) === -1; });
