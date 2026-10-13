@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-10-13
+
+### Fixed
+
+- Opening a page from a second-level sidebar — and saving a service entry — keeps a collapsed or mini first sidebar as it was, instead of springing it open again.
+
 ## [1.10.0] - 2026-10-13
 
 ### Added
