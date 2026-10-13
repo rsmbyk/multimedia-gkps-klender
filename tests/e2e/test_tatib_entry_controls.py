@@ -120,7 +120,11 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
             self.assertLessEqual(acts_box['y'] + acts_box['height'],
                                  item_box['y'] + item_box['height'] + 1,
                                  'entry %d: controls end below the box' % index)
-            self.assertGreater(acts_box['x'], item_box['x'] + item_box['width'] / 2)
+            self.assertGreaterEqual(acts_box['x'], item_box['x'] - 1,
+                                    'entry %d: controls start outside the box' % index)
+            right_gap = item_box['x'] + item_box['width'] - acts_box['x'] - acts_box['width']
+            self.assertAlmostEqual(right_gap, 8, delta=1,
+                                   msg='entry %d: controls are not right-aligned' % index)
 
     def test_the_box_is_at_least_the_controls_height(self):
         page = self._page()

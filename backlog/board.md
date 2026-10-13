@@ -50,6 +50,8 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-073](./items/ITEM-073-single-screen-text-breaks.md) | Manual breaks for Single-screen Text entries | Choose screens for a Single-screen entry from Preview while keeping one screen as default | feat | P2 | M | [070](../specs/070-single-screen-text-breaks/spec.md) | develop | 2026-10-13 |
+| [ITEM-072](./items/ITEM-072-manual-text-screen-breaks.md) | Manual screen breaks for multiline Text entries | Choose which Text entry lines appear together on each projector screen | feat | P2 | M | [069](../specs/069-manual-text-screen-breaks/spec.md) | develop | 2026-10-13 |
 | [ITEM-074](./items/ITEM-074-preview-keyboard-scroll.md) | Scroll Preview text with arrow keys | Focus long Preview content for native arrow-key scrolling | fix | P2 | S | [071](../specs/071-preview-keyboard-scroll/spec.md) | develop | 2026-10-13 |
 | [ITEM-070](./items/ITEM-070-consistent-scrollbars.md) | Consistent scrollbars in the new UI | Match the Tata Ibadah sidebar scrollbar across new UI components | feat | P2 | S | [067](../specs/067-consistent-scrollbars/spec.md) | develop | 2026-10-12 |
 | [ITEM-069](./items/ITEM-069-stage-song-verse-line.md) | Always show a song entry's verses on the Tata Ibadah stage | Stage shows `Bait 1-3` under every song entry with verses, matching the sidebar; deleted targets stay silent | fix | P2 | S | [066](../specs/066-stage-song-verse-line/spec.md) | develop | 2026-10-12 |

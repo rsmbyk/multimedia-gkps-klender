@@ -378,7 +378,10 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         expect(saved_item).to_be_focused()
         self.assertEqual(page.evaluate('getComputedStyle(document.activeElement).outlineStyle'), 'none')
         controls = page.locator('.entry__acts .entry__ctrl')
-        self.assertEqual(controls.count(), 2)
+        self.assertEqual(controls.count(), 3)
+        expect(page.locator('.entry__acts [data-preview-open]')).to_have_count(1)
+        expect(page.locator('.entry__acts [data-entry-edit]')).to_have_count(1)
+        expect(page.locator('.entry__acts [data-entry-delete]')).to_have_count(1)
         expect(page.locator('.entry__acts').first).to_have_css('opacity', '0')
         self.assertEqual(page.locator('.tatib__item--entry').count(), 1)
 

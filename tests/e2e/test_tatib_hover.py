@@ -134,7 +134,9 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
             for opener, modal in (('[data-preview-open]', '#previewModal'),
                                   ('[data-entry-edit]', '#editorModal'),
                                   ('[data-entry-delete]', '#editorModal')):
-                for dismissal in ('button', 'escape', 'backdrop'):
+                dismissals = ('escape', 'backdrop') if modal == '#previewModal' else (
+                    'button', 'escape', 'backdrop')
+                for dismissal in dismissals:
                     with self.subTest(theme=theme, opener=opener, dismissal=dismissal):
                         item.hover()
                         item.locator(opener).click()
@@ -146,7 +148,7 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
                         elif dismissal == 'backdrop':
                             page.mouse.click(5, 5)
                         else:
-                            dialog.locator('[data-preview-close], [data-editor-close]').click()
+                            dialog.locator('[data-editor-close]').click()
                         expect(dialog).not_to_be_visible()
                         self._expect_idle(page, item)
                         item.hover()
@@ -215,7 +217,7 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         page.locator('#chCollapse').tap()
         item.locator('[data-preview-open]').tap()
         expect(page.locator('#previewModal')).to_be_visible()
-        page.locator('[data-preview-close]').tap()
+        page.touchscreen.tap(5, 5)
         expect(page.locator('#previewModal')).not_to_be_visible()
         expect(item.locator('.entry__acts')).to_have_css('opacity', '1')
 

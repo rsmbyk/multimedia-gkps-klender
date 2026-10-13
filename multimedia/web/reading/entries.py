@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError
 
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
+from multimedia.tatib.screen_breaks import line_shape
 
 KINDS = {
     'text': tatib_models.ServiceEntryKind.TEXT,
@@ -57,6 +58,23 @@ class ServiceEntryForm(forms.ModelForm):
 class TextEntryForm(ServiceEntryForm):
     class Meta(ServiceEntryForm.Meta):
         fields = ['kind', 'title', 'text']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_line_shape = (line_shape(self.instance.text)
+                                    if self.instance.pk else None)
+
+    def save(self, commit=True):
+        entry = super().save(commit=False)
+        if (entry.kind in (tatib_models.ServiceEntryKind.TEXT,
+                           tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT)
+                and entry.screen_breaks is not None
+                and self.original_line_shape != line_shape(entry.text)):
+            entry.screen_breaks = None
+            entry.screen_breaks_reset = True
+        if commit:
+            entry.save()
+        return entry
 
 
 class SectionBreakEntryForm(ServiceEntryForm):

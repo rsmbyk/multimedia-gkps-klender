@@ -23,7 +23,19 @@
   </button>
 </div>
 {% endif %}
-{% for item in items %}{% if item.preview %}<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">{% if item.preview.kind == 'song' %}<p class="preview__song">{{ item.preview.heading }}</p>{% if item.preview.verses|length > 1 %}<div class="preview__tabs" role="tablist">{% for verse in item.preview.verses %}<button type="button" role="tab" class="preview__tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% if not forloop.first %} tabindex="-1"{% endif %}>{{ verse.number }}</button>{% endfor %}</div>{% endif %}<div class="preview__panels">{% for verse in item.preview.verses %}<div class="preview__panel" role="tabpanel"{% if not forloop.first %} hidden{% endif %}>{% for line in verse.lines %}<p class="preview__line">{{ line }}</p>{% endfor %}</div>{% endfor %}</div>{% else %}{% if item.preview.reference %}<p class="preview__ref">{{ item.preview.reference }}</p>{% endif %}{% for para in item.preview.paras %}<p class="preview__line{% if para.voice %} is-{{ para.voice }}{% endif %}">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>{% endfor %}{% endif %}</script>{% endif %}{% endfor %}
+{% for item in items %}{% if item.preview %}<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">{% if item.preview.kind == 'editable_text' %}
+<div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-single-screen="{% if item.preview.single_screen %}true{% else %}false{% endif %}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">
+  {% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
+  {% if item.preview.reset_notice %}<p class="preview__notice" role="status">Text lines changed, so the custom breaks were reset.</p>{% endif %}
+  <div class="preview__rows">
+  {% for line in item.preview.lines %}
+    {% if line.present %}<p class="preview__line preview__row{% if line.voice %} is-{{ line.voice }}{% endif %}">{% if line.mark %}<span class="tatib__sp">{{ line.mark }}</span> {% endif %}{{ line.text }}</p>{% else %}<div class="preview__blank-line" aria-label="Blank line"></div>{% endif %}
+    {% if line.can_break_after %}<button type="button" class="preview__gap" data-break-after="{{ line.index }}" aria-label="Add screen break after line {{ line.index }}"><span data-break-label>Add break</span></button>{% endif %}
+  {% endfor %}
+  </div>
+  <p class="preview__error" data-break-error role="alert" hidden></p>
+</div>
+{% elif item.preview.kind == 'song' %}<p class="preview__song">{{ item.preview.heading }}</p>{% if item.preview.verses|length > 1 %}<div class="preview__tabs" role="tablist">{% for verse in item.preview.verses %}<button type="button" role="tab" class="preview__tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% if not forloop.first %} tabindex="-1"{% endif %}>{{ verse.number }}</button>{% endfor %}</div>{% endif %}<div class="preview__panels">{% for verse in item.preview.verses %}<div class="preview__panel" role="tabpanel"{% if not forloop.first %} hidden{% endif %}>{% for line in verse.lines %}<p class="preview__line">{{ line }}</p>{% endfor %}</div>{% endfor %}</div>{% else %}{% if item.preview.reference %}<p class="preview__ref">{{ item.preview.reference }}</p>{% endif %}{% for para in item.preview.paras %}<p class="preview__line{% if para.voice %} is-{{ para.voice }}{% endif %}">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>{% endfor %}{% endif %}</script>{% endif %}{% endfor %}
 {% endblock %}
 
 {% block read_body %}

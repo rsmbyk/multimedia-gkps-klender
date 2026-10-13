@@ -28,6 +28,7 @@ class TataIbadahItem(models.Model):
     item_type = models.IntegerField(choices=TataIbadahItemType.choices)
     title = models.CharField(max_length=64, blank=True)
     text = models.TextField(blank=True)
+
     order_number = models.PositiveIntegerField()
 
     def __str__(self):
@@ -63,6 +64,11 @@ class ServiceEntry(models.Model):
     title = models.CharField(max_length=64, blank=True)
     text = models.TextField(blank=True)
 
+    # None uses the kind's default: paired Text or one fitted Single-screen.
+    # A list holds custom boundaries after 1-based raw text lines.
+    screen_breaks = models.JSONField(null=True, blank=True, default=None)
+    screen_breaks_reset = models.BooleanField(default=False)
+
     # scripture
     book_translation = models.ForeignKey(bible_models.BookTranslation, models.PROTECT,
                                          null=True, blank=True)
@@ -85,6 +91,12 @@ class ServiceEntry(models.Model):
 
     def clean(self):
         errors = {}
+        if self.screen_breaks is not None:
+            from multimedia.tatib.screen_breaks import valid_breaks
+            if self.kind not in (ServiceEntryKind.TEXT, ServiceEntryKind.SINGLE_SCREEN_TEXT) \
+                    or not valid_breaks(self.text, self.screen_breaks,
+                                        single_screen=self.kind == ServiceEntryKind.SINGLE_SCREEN_TEXT):
+                errors['screen_breaks'] = 'Screen breaks must fall between text lines.'
         if self.kind in (ServiceEntryKind.TEXT, ServiceEntryKind.SINGLE_SCREEN_TEXT) \
                 and not (self.text or '').strip():
             errors['text'] = 'A text entry needs its text.'
