@@ -1,6 +1,6 @@
 ---
 id: ITEM-083
-status: in-review
+status: done
 title: Keep the first-level sidebar state when a page opens from a second-level list
 type: fix
 priority: P1
