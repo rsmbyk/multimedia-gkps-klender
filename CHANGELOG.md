@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.5] - 2026-10-13
+
+### Changed
+
+- The search-first home's helper line now reads "Try Yoh 3:16 or HAL 411"; both examples resolve against the corpus.
+
 ## [1.10.0] - 2026-10-13
 
 ### Added

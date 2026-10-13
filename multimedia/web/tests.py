@@ -63,7 +63,7 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'name="q"')
         self.assertContains(response, 'class="field-clear"')          # the clear control
         self.assertContains(response, 'Search Alkitab, Kidung, and Tata Ibadah')
-        self.assertContains(response, 'Try Matius 5:13, KJ 152, or pengampunan dosa')
+        self.assertContains(response, 'Try Yoh 3:16 or HAL 411')
         self.assertContains(response, 'data-tip="Alkitab"')
         self.assertContains(response, 'id="railSearch"')
         self.assertContains(response, 'aria-current="page"')

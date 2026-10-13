@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spec 084 · home search helper line</title>
+<style>
+html{--canvas:#F7F5F1;--rail-bg:#EDEAE3;--ink:#1F1F1D;--icon-hover-bg:rgba(31,31,29,.08);--active-bg:#1C5C3C;--active-ink:#FFF;--divider:#D9D6CD;--head-ink:#646357;--focus:#1C5C3C;--link:#1C5C3C;--shadow:0 6px 18px -10px rgba(20,20,18,.5);--ease:200ms cubic-bezier(.32,.72,.28,1)}
+body{margin:0;font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#E9E7E1;color:var(--ink);min-width:760px}
+.preview-head{height:58px;background:#FFFEFA;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:14px;padding:0 18px}
+.brand{font-weight:700}.badge{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--head-ink);border:1px solid var(--divider);border-radius:99px;padding:4px 9px}
+.switch{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--head-ink)}
+.switch button{border:1px solid var(--divider);border-radius:8px;background:transparent;color:var(--ink);font:inherit;padding:8px 12px;cursor:pointer}
+.switch button[aria-pressed="true"]{background:#B3261E;color:#fff;border-color:#B3261E}
+.app{height:calc(100vh - 58px);min-height:560px;display:flex;background:var(--canvas);overflow:hidden}
+.rail{width:80px;flex:none;background:var(--rail-bg);border-right:1px solid var(--divider);display:flex;flex-direction:column;align-items:center;padding:12px 10px;gap:10px}
+.logo{width:40px;height:40px;border:1px solid #CBD3CA;border-radius:50%;display:grid;place-items:center;color:var(--active-bg);font-weight:700;background:#FFFEFA;margin-bottom:22px}
+.rail button{width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#383A34;font-size:19px}
+.stage{flex:1;overflow:auto;padding:34px 30px}
+.search-home{max-width:640px;margin:6vh auto 0;text-align:center}
+.home__logo{width:96px;height:96px;border-radius:50%;background:#FFFEFA;border:1px solid #CBD3CA;display:grid;place-items:center;margin:0 auto 22px;color:var(--active-bg);font:700 30px Georgia,serif}
+.search-home__form{position:relative;display:flex;align-items:center;gap:8px;height:52px;background:#FFFEFA;border:1px solid var(--divider);border-radius:13px;padding:0 8px 0 16px;box-shadow:var(--shadow)}
+.search-home__form input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:15px;color:var(--ink)}
+.search-home__form input::placeholder{color:#76756C}
+.search-home__form .clear{width:26px;height:26px;border:0;border-radius:50%;background:transparent;color:#5F6059;font-size:17px;cursor:pointer}
+.search-home__form .go{width:38px;height:38px;border:0;border-radius:9px;background:var(--active-bg);color:#fff;cursor:pointer;display:grid;place-items:center}
+.search-home__hint{margin:18px 0 0;font-size:13px;color:var(--head-ink)}
+.examples{margin:26px auto 0;max-width:640px;text-align:left}
+.examples h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--head-ink)}
+.hit{display:flex;align-items:flex-start;gap:12px;border:1px solid #E5E2DA;border-radius:10px;background:#F4F2EE;padding:11px 13px;margin:0 0 8px}
+.hit code{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);background:#FFFEFA;border:1px solid var(--divider);border-radius:6px;padding:3px 7px;white-space:nowrap}
+.hit .t{font-size:14px}
+.hit .m{font-size:12px;color:var(--head-ink)}
+.hit .n{margin-left:auto;font-size:12px;color:var(--head-ink);white-space:nowrap}
+.note{margin-top:20px;font-size:12.5px;color:var(--head-ink);border-top:1px solid var(--divider);padding-top:14px}
+.note b{color:var(--ink)}
+/* spec 087 preview: the proposed shared bar, so this page's own scrollbars are not
+   the browser default (which can carry up/down stepper buttons) */
+@supports not selector(::-webkit-scrollbar) {
+  html, html * { scrollbar-width: thin; scrollbar-color: #B4B0A6 transparent; }
+}
+html::-webkit-scrollbar, html *::-webkit-scrollbar { width: 5px; height: 5px; }
+html::-webkit-scrollbar-track, html *::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb, html *::-webkit-scrollbar-thumb { background: color-mix(in srgb, currentColor 26%, transparent); border-radius: 999px; }
+html::-webkit-scrollbar-thumb:hover, html *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, currentColor 42%, transparent); }
+html::-webkit-scrollbar-button, html *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+html::-webkit-scrollbar-corner, html *::-webkit-scrollbar-corner { background: transparent; }
+</style>
+</head>
+<body>
+<header class="preview-head">
+  <span class="brand">GKPS Klender</span><span class="badge">Spec 084 preview</span>
+  <span class="switch">Current build:
+    <button id="bug" type="button" aria-pressed="false">bug off</button>
+  </span>
+</header>
+<div class="app">
+  <nav class="rail" aria-label="Main menu"><div class="logo">GK</div>
+    <button aria-label="Search">⌕</button><button aria-label="Alkitab">▣</button>
+    <button aria-label="Kidung">♫</button><button aria-label="Tata Ibadah">▤</button></nav>
+  <main class="stage">
+    <section class="search-home">
+      <div class="home__logo">GK</div>
+      <form class="search-home__form" onsubmit="return false">
+        <input id="q" type="search" placeholder="Search Alkitab, Kidung, Tata Ibadah…"
+               aria-label="Search Alkitab, Kidung, and Tata Ibadah">
+        <button class="clear" type="button" aria-label="Clear the filter">×</button>
+        <button class="go" type="submit" aria-label="Search">⌕</button>
+      </form>
+      <p class="search-home__hint" id="hint">Try Yoh 3:16 or HAL 411</p>
+    </section>
+    <section class="examples">
+      <h3>The two examples, resolved against the corpus</h3>
+      <div class="hit"><code>Yoh 3:16</code><div><p class="t" style="margin:0">Yohanes 3:16</p>
+        <p class="m" style="margin:2px 0 0">Alkitab reference · TB — Karena begitu besar kasih Allah akan dunia ini…</p></div>
+        <span class="n">18 rows</span></div>
+      <div class="hit"><code>HAL 411</code><div><p class="t" style="margin:0">HAL 411 — Diatei Tupa ma Bamu Ham Naibata</p>
+        <p class="m" style="margin:2px 0 0">Kidung · /songs/412/</p></div><span class="n">9 rows</span></div>
+      <p class="note">Both were checked against the running stack. The line's geometry is unchanged:
+        <b>13px</b>, <b>var(--head-ink)</b>, 18px under the field, and hidden as soon as results are on
+        screen.</p>
+    </section>
+  </main>
+</div>
+<script>
+var bugOff = true;
+document.getElementById('bug').addEventListener('click', function () {
+  bugOff = !bugOff;
+  this.setAttribute('aria-pressed', String(!bugOff));
+  this.textContent = bugOff ? 'bug off' : 'bug ON — current line';
+  document.getElementById('hint').textContent = bugOff
+    ? 'Try Yoh 3:16 or HAL 411'
+    : 'Try Matius 5:13, KJ 152, or pengampunan dosa';
+});
+</script>
+</body>
+</html>
