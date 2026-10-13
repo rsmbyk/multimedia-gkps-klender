@@ -54,6 +54,8 @@
 
   var activeSection = root.dataset.section || 'alkitab';
   var songSort = 'm';                    /* 'm' = last modified, 'title' = alphabetical */
+  var idleCollapseTimer = null;
+  var IDLE_COLLAPSE_DELAY = 60000;
   var navBeforeCh = null;
   var pendingAnchor = null;
   var railCloseTimer = null;
@@ -89,6 +91,47 @@
   function stageSection() {
     return KIND_SECTION[readKind()] || null;
   }
+
+  function cancelIdleCollapse() {
+    if (idleCollapseTimer !== null) window.clearTimeout(idleCollapseTimer);
+    idleCollapseTimer = null;
+  }
+  function idleCollapseIsDeferred() {
+    return panel.contains(document.activeElement)
+      || !!document.querySelector('.ui.modal.visible, dialog[open], .is-dragging');
+  }
+  function scheduleIdleCollapse(delay, resumeAfterDeferred) {
+    cancelIdleCollapse();
+    if (root.dataset.nav !== 'open' || activeSection !== stageSection()) return;
+    idleCollapseTimer = window.setTimeout(function () {
+      idleCollapseTimer = null;
+      if (root.dataset.nav !== 'open' || activeSection !== stageSection()) return;
+      if (document.visibilityState === 'hidden') return;
+      if (idleCollapseIsDeferred()) {
+        /* A modal or an active drag can outlive the idle interval. Check again
+           until it ends, then give the operator a full quiet interval. */
+        if (!panel.contains(document.activeElement)) scheduleIdleCollapse(1000, true);
+        return;
+      }
+      if (resumeAfterDeferred) { scheduleIdleCollapse(); return; }
+      if (activeSection === 'alkitab') miniPanel();
+      else closePanel();
+    }, delay == null ? IDLE_COLLAPSE_DELAY : delay);
+  }
+  function noteSidebarActivity() {
+    scheduleIdleCollapse();
+  }
+  ['pointerdown', 'pointermove', 'keydown', 'focusin', 'wheel', 'scroll'].forEach(function (eventName) {
+    rail.addEventListener(eventName, noteSidebarActivity, { passive: true });
+    panel.addEventListener(eventName, noteSidebarActivity, { passive: true });
+  });
+  panel.addEventListener('focusout', function (event) {
+    if (!panel.contains(event.relatedTarget)) noteSidebarActivity();
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') cancelIdleCollapse();
+    else scheduleIdleCollapse();
+  });
 
   /* After a stage swap the element references below point at detached nodes;
      re-grab them from the fresh markup. */
@@ -802,17 +845,20 @@
     var snapshot = previous === 'mini' ? snapshotPos() : null;
     root.dataset.nav = 'open';
     syncState();
-    if (snapshot) { restorePos(snapshot); return; }
+    if (snapshot) { restorePos(snapshot); scheduleIdleCollapse(); return; }
     filter.focus();
     filter.select();
+    scheduleIdleCollapse();
   }
   function miniPanel() {
+    cancelIdleCollapse();
     var snapshot = root.dataset.nav === 'open' ? snapshotPos() : null;
     root.dataset.nav = 'mini';
     syncState();
     if (snapshot) restorePos(snapshot);
   }
   function closePanel() {
+    cancelIdleCollapse();
     hideTips();
     cancelPendingRailClose();
     root.dataset.nav = 'closed';
@@ -1111,6 +1157,7 @@
        earlier binding sat on, which is how a control can be present on a deep link
        and dead on the path a person actually clicks through. */
     document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
+    scheduleIdleCollapse();
 
     /* per-kind endings */
     if (kind === 'rail') {
@@ -1337,6 +1384,7 @@
   /* ---------- init ---------- */
   applyTheme(root.dataset.themeMode || 'system', false);
   syncState();
+  scheduleIdleCollapse();
   decorateChapters();
   markRailTile();
   revealCurrent(stageAnchor() || anchorFromUrl(window.location.hash));

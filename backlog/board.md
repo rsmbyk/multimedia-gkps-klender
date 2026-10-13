@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-075](./items/ITEM-075-sidebar-idle-collapse.md) | Collapse an idle matching sidebar | Let a matching first sidebar collapse after 60 seconds without rail or first-panel activity, using Bible mini mode and the existing other-section collapse states. | feat | P2 | M | [072](../specs/072-sidebar-idle-collapse/spec.md) | feat/072-sidebar-idle-collapse | 2026-10-13 |
 
 ## In review
 
