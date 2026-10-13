@@ -1,7 +1,7 @@
 {% comment %}Entry preview (spec 032): ordinary Text entries also edit screen breaks (spec 069).
 The body scrolls; the footer stays visible. Esc and the overlay dismiss it.{% endcomment %}
 <dialog class="preview" id="previewModal" aria-label="Preview">
-  <div class="preview__body" id="previewContent"></div>
+  <div class="preview__body" id="previewContent" tabindex="0"></div>
   <div class="preview__foot">
     <button type="button" class="preview__foot-button" data-break-reset hidden>Reset breaks</button>
     <p class="preview__mode" data-break-mode-label hidden>Screen breaks <span data-break-mode>Default · 2 lines</span></p>

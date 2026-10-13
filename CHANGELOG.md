@@ -17,6 +17,12 @@ Pre-adoption history in the legacy per-version format is archived in
 - Tata Ibadah Text entry previews let editors place and remove projector screen breaks, with automatic two-line grouping until customized.
 - Single-screen Text entry previews now use the same break controls, starting with one fitted screen and allowing custom screens across paragraph spacing.
 
+## [1.6.8] - 2026-10-13
+
+### Fixed
+
+- Clicking text in a long Tata Ibadah Preview now lets arrow keys scroll its body without moving the page behind the dialog.
+
 ## [1.6.7] - 2026-10-13
 
 ### Changed
