@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.3] - 2026-10-13
+
+### Fixed
+
+- The Tata Ibadah sidebar lists only the services of the mode it is showing: a dated order no longer appears under the templates (and the other way round) as a "Currently open" card. The open service is highlighted when it is in the list on screen.
+
 ## [1.10.2] - 2026-10-13
 
 ### Fixed

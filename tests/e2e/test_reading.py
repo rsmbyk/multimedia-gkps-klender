@@ -933,30 +933,30 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('#tatibMode').click()
         expect(page.locator('#tatibMode')).to_have_attribute('aria-pressed', 'true')
         expect(page.locator('html')).to_have_attribute('data-ch', 'open')
-        expect(page.locator('#bookFilter')).to_have_value('')
         expect(page.locator('#songFilter')).to_have_value('Bagian')
         self.assertEqual(page.locator('#read').inner_text(), original_stage)
         self.assertAlmostEqual(page.evaluate("document.getElementById('chBody').scrollTop"),
                                second_scroll, delta=2)
+        # template mode does not hold this dated order: it is not listed, nothing is selected,
+        # and no row is invented for it (spec 082)
+        expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_count(0)
+        expect(page.locator('#panelBody')).not_to_contain_text('Currently open')
+
+        # back in its own mode its own row is selected again, filtered back into view
+        page.locator('#tatibMode').click()
+        expect(page.locator('#tatibMode')).to_have_attribute('aria-pressed', 'false')
+        expect(page.locator('#bookFilter')).to_have_value('')
+        expect(page.locator('#songFilter')).to_have_value('Bagian')
         selected = page.locator('#panelBody .book[aria-current="true"]')
         expect(selected).to_have_count(1)
         expect(selected).to_have_attribute('data-name', str(self.big.pk))
-        expect(selected).to_contain_text('Currently open')
         page.wait_for_function("document.documentElement.dataset.scrollAnim !== 'on'")
         visible = selected.evaluate("""row => {
             const r = row.getBoundingClientRect();
             const b = document.getElementById('panelBody').getBoundingClientRect();
             return r.top >= b.top + 7 && r.bottom <= b.bottom - 7;
         }""")
-        self.assertTrue(visible, 'the contextual current row was not revealed')
-
-        page.locator('#tatibMode').click()
-        expect(page.locator('#tatibMode')).to_have_attribute('aria-pressed', 'false')
-        expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_attribute(
-            'data-name', str(self.big.pk))
-        expect(page.locator('#panelBody')).not_to_contain_text('Currently open')
-        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
-        expect(page.locator('#songFilter')).to_have_value('Bagian')
+        self.assertTrue(visible, 'the selected row was not revealed')
 
         page.locator('#chCollapse').click()
         expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
@@ -972,9 +972,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         # The first pane sits behind the open second pane at this width; its
         # state must still survive the mode action when that level is surfaced.
         page.locator('#tatibMode').evaluate('el => el.click()')
-        selected = page.locator('#panelBody .book[aria-current="true"]')
-        expect(selected).to_have_attribute('data-name', str(template.pk))
-        expect(selected).to_contain_text('Template · Currently open')
+        # this template is not in the dated list: nothing is selected, and no row is invented
+        expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_count(0)
+        expect(page.locator('#panelBody')).not_to_contain_text('Currently open')
         expect(page.locator('html')).to_have_attribute('data-ch', 'open')
 
         page.goto(self.live_server_url + reverse('web-tatib'))
