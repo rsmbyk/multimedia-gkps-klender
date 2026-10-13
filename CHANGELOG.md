@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.6.8] - 2026-10-13
+
+### Fixed
+
+- Clicking text in a long Tata Ibadah Preview now lets arrow keys scroll its body without moving the page behind the dialog.
+
 ## [1.6.7] - 2026-10-13
 
 ### Changed
