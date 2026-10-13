@@ -592,12 +592,28 @@
   bindPanelTiles();
 
   /* ---------- Tata Ibadah contents: quicklinks that jump, never selected ---------- */
+  var activeTatibFlash = null;
+  function releaseTatibFlash() {
+    if (!activeTatibFlash) return;
+    activeTatibFlash.removeEventListener('animationend', onTatibFlashEnd);
+    activeTatibFlash.removeEventListener('animationcancel', onTatibFlashEnd);
+    activeTatibFlash.classList.remove('tatib__flash');
+    activeTatibFlash = null;
+  }
+  function onTatibFlashEnd(event) {
+    if (event.target !== activeTatibFlash || event.animationName !== 'tatibFlash') return;
+    releaseTatibFlash();
+  }
   function jumpTatibItem(anchor) {
     var target = document.getElementById(anchor);
     if (!target) return;
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    var previous = readBody.querySelector('.tatib__flash');
-    if (previous) previous.classList.remove('tatib__flash');
+    if (activeTatibFlash && !activeTatibFlash.isConnected) releaseTatibFlash();
+    if (activeTatibFlash) return;
+    if (prefersReduce()) return;
+    activeTatibFlash = target;
+    target.addEventListener('animationend', onTatibFlashEnd);
+    target.addEventListener('animationcancel', onTatibFlashEnd);
     target.classList.add('tatib__flash');
   }
   function bindChRows() {
@@ -1053,6 +1069,7 @@
       root.dataset.home = fresh.home;
       root.dataset.nav = fresh.nav;
       root.dataset.ch = fresh.ch;
+      releaseTatibFlash();
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
       restoreSavedEdition();

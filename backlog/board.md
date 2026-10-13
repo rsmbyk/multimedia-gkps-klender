@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-078](./items/ITEM-078-toc-repeat-flash.md) | Repeat a service-entry flash after it finishes | Let a Tata Ibadah contents quicklink replay its stage flash after the current animation completes. | fix | P2 | S | [075](../specs/075-toc-repeat-flash/spec.md) | `fix/075-toc-repeat-flash` | 2026-10-13 |
 
 ## In review
 
