@@ -726,3 +726,90 @@ class ReorderE2ETests(StaticLiveServerTestCase):
             f'e{self.break_.pk}', f'e{self.third.pk}',
         ])
         self.assertEqual(sidebar_anchors, pane_anchors)
+
+    # --- the number in hand while a row is dragged (spec 081) ---
+
+    def _ghost_number(self, page):
+        """The number the drag copy paints -- the only one visible while dragging, since the
+        real row's contents are hidden."""
+        return page.evaluate("""() => {
+          const ghost = document.querySelector('[data-reorder-ghost]');
+          const cell = ghost && ghost.querySelector('.songrow__c');
+          return cell ? cell.textContent : null;
+        }""")
+
+    def test_the_dragged_row_carries_its_new_number(self):
+        page = self._page(self._service_url())
+        x, y = self._drag_start(page, self.second.pk)
+        self.assertEqual(self._ghost_number(page), '2')
+
+        target = self._row(page, self.third.pk).bounding_box()
+        page.mouse.move(x, target['y'] + target['height'] - 4, steps=6)
+
+        self.assertEqual(self._row_order(page),
+                         [self.first.pk, self.third.pk, self.second.pk, self.break_.pk])
+        self.assertEqual(self._ghost_number(page), '3')
+        page.mouse.up()
+        self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
+
+    def test_the_number_in_hand_follows_an_upward_drag(self):
+        page = self._page(self._service_url())
+        x, y = self._drag_start(page, self.third.pk)
+        self.assertEqual(self._ghost_number(page), '3')
+
+        first = self._row(page, self.first.pk).bounding_box()
+        page.mouse.move(x, first['y'] + 4, steps=8)
+
+        self.assertEqual(self._row_order(page),
+                         [self.third.pk, self.first.pk, self.second.pk, self.break_.pk])
+        self.assertEqual(self._ghost_number(page), '1')
+        page.mouse.up()
+        self.assertEqual(self._sidebar_numbers(page), ['1', '2', '3'])
+
+    def test_a_section_break_advances_the_number_in_hand(self):
+        page = self._page(self._service_url())
+        x, y = self._drag_start(page, self.third.pk)
+
+        brk = self._row(page, self.break_.pk).bounding_box()
+        page.mouse.move(x, brk['y'] + brk['height'] + 4, steps=6)
+
+        self.assertEqual(self._row_order(page),
+                         [self.first.pk, self.second.pk, self.break_.pk, self.third.pk])
+        self.assertEqual(self._ghost_number(page), '4')
+        # the break counts as a position but still paints no number of its own
+        self.assertEqual(page.locator('#chList .toc__eos .songrow__c').count(), 0)
+        page.mouse.up()
+        # the list counts the invisible break, so the row now reads 4 -- the existing rule
+        self.assertEqual(self._sidebar_numbers(page), ['1', '2', '4'])
+
+    def test_a_cancelled_drag_leaves_the_numbers_alone(self):
+        page = self._page(self._service_url())
+        before = self._sidebar_numbers(page)
+        x, y = self._drag_start(page, self.second.pk)
+        target = self._row(page, self.third.pk).bounding_box()
+        page.mouse.move(x, target['y'] + target['height'] - 4, steps=6)
+        self.assertEqual(self._ghost_number(page), '3')
+
+        page.locator('#chList .songrow__t').first.dispatch_event(
+            'pointercancel', {'pointerId': 1})
+
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
+        self.assertEqual(self._sidebar_numbers(page), before)
+        page.mouse.up()
+
+    def test_a_press_without_movement_leaves_the_numbers_alone(self):
+        page = self._page(self._service_url())
+        before = self._sidebar_numbers(page)
+        grip = page.locator('[data-move-grip="%d"]' % self.second.pk)
+        box = grip.bounding_box()
+        x, y = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x + 1, y + 1)
+        self.assertEqual(page.locator('[data-reorder-ghost]').count(), 0)
+        page.mouse.up()
+        page.wait_for_timeout(150)
+
+        self.assertEqual(self._sidebar_numbers(page), before)

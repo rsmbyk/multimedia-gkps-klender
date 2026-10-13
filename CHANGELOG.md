@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.2] - 2026-10-13
+
+### Fixed
+
+- The row being dragged in a Tata Ibadah's contents list now counts up with the order it is taking, instead of showing the number it had when it was picked up.
+
 ## [1.10.1] - 2026-10-13
 
 ### Fixed
