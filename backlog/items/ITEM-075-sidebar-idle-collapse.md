@@ -1,6 +1,6 @@
 ---
 id: ITEM-075
-status: in_review
+status: done
 title: Collapse an idle matching sidebar
 type: feat
 priority: P2
@@ -25,7 +25,7 @@ Let a matching first sidebar collapse after 60 seconds without rail or first-pan
 ## Notes
 
 - The owner accepted the interactive sidebar follow-ups preview and Spec 072 on 2026-10-13.
-- PR #326 adds the accepted preview artifact and focused idle-collapse browser coverage.
+- PR #326 adds the accepted preview artifact and focused idle-collapse browser coverage; this follow-up completes verification for the slice delivered in PR #325.
 
 ## Acceptance sketch
 
