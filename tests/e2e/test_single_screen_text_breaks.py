@@ -26,7 +26,7 @@ class SingleScreenBreakE2ETests(StaticLiveServerTestCase):
             name='Single-screen break review', date=date(2026, 10, 13), is_active=True)
         tatib.ServiceEntry.objects.create(
             tatib=self.service, order_number=1,
-            kind=tatib.ServiceEntryKind.SINGLE_SCREEN_TEXT,
+            kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
             title='Prayer', text='one\ntwo\n\nthree\nfour\nfive\nsix')
         self.playwright = sync_playwright().start()
         try:
@@ -52,12 +52,12 @@ class SingleScreenBreakE2ETests(StaticLiveServerTestCase):
         expect(screens).to_have_count(2)
         page.locator('[data-entry-pk] [data-preview-open]').click()
         modal = page.locator('#previewModal')
-        expect(modal.locator('[data-break-mode]')).to_have_text('Default · 1 screen')
+        expect(modal.locator('[data-preview-screen-mode]')).to_have_attribute('data-selected', 'single_screen')
         expect(modal.locator('.preview__gap.is-set')).to_have_count(0)
         gap = modal.locator('[data-break-after="1"]')
         gap.focus()
         gap.press('Enter')
-        expect(modal.locator('[data-break-mode]')).to_have_text('Custom')
+        expect(modal.locator('[data-preview-screen-mode]')).to_have_attribute('data-selected', 'custom')
         expect(modal.locator('.preview__gap.is-set')).to_have_count(1)
         expect(gap).to_have_class('preview__gap is-set')
         expect(screens).to_have_count(3)
@@ -75,10 +75,12 @@ class SingleScreenBreakE2ETests(StaticLiveServerTestCase):
         expect(gap).not_to_have_class('preview__gap is-set')
         expect(screens).to_have_count(3)
         gap4.click()
-        expect(modal.locator('[data-break-mode]')).to_have_text('Custom')
+        expect(modal.locator('[data-preview-screen-mode]')).to_have_attribute('data-selected', 'custom')
         expect(modal.locator('.preview__gap.is-set')).to_have_count(0)
         expect(screens).to_have_count(2)
-        modal.locator('[data-break-reset]').click()
-        expect(modal.locator('[data-break-mode]')).to_have_text('Default · 1 screen')
+        modal.locator('[data-preview-mode="single_screen"]').click()
+        expect(modal.locator('[data-mode-confirm]')).to_be_visible()
+        modal.locator('[data-confirm-accept]').click()
+        expect(modal.locator('[data-preview-screen-mode]')).to_have_attribute('data-selected', 'single_screen')
         expect(screens).to_have_count(2)
         context.close()

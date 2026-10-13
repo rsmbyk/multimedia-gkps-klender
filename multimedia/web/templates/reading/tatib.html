@@ -24,13 +24,13 @@
 </div>
 {% endif %}
 {% for item in items %}{% if item.preview %}<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">{% if item.preview.kind == 'editable_text' %}
-<div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-single-screen="{% if item.preview.single_screen %}true{% else %}false{% endif %}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">
+<div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-default-screen-mode="{{ item.preview.default_screen_mode }}" data-screen-state-signature="{{ item.preview.screen_state_signature }}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">
   {% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
   {% if item.preview.reset_notice %}<p class="preview__notice" role="status">Text lines changed, so the custom breaks were reset.</p>{% endif %}
   <div class="preview__rows">
   {% for line in item.preview.lines %}
     {% if line.present %}<p class="preview__line preview__row{% if line.voice %} is-{{ line.voice }}{% endif %}">{% if line.mark %}<span class="tatib__sp">{{ line.mark }}</span> {% endif %}{{ line.text }}</p>{% else %}<div class="preview__blank-line" aria-label="Blank line"></div>{% endif %}
-    {% if line.can_break_after %}<button type="button" class="preview__gap" data-break-after="{{ line.index }}" aria-label="Add screen break after line {{ line.index }}"><span data-break-label>Add break</span></button>{% endif %}
+    {% if line.can_break_after %}<button type="button" class="preview__gap" data-break-after="{{ line.index }}" data-multi-boundary="{% if line.multi_boundary %}true{% else %}false{% endif %}" aria-label="Add screen break after line {{ line.index }}"><span data-break-label>Add break</span></button>{% endif %}
   {% endfor %}
   </div>
   <p class="preview__error" data-break-error role="alert" hidden></p>
@@ -45,7 +45,6 @@
   <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
   <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
-  <button type="button" class="entry__add-btn" data-entry-open="single_screen_text" data-entry-tatib="{{ service_id }}">+ Single-screen</button>
   <button type="button" class="entry__add-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">+ Break</button>
   </span>
 </div>
@@ -118,7 +117,6 @@
   <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
   <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
-  <button type="button" class="entry__add-btn" data-entry-open="single_screen_text" data-entry-tatib="{{ service_id }}">+ Single-screen</button>
   <button type="button" class="entry__add-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">+ Break</button>
 </span></div>
 {% endif %}
@@ -139,10 +137,6 @@
     <button type="button" class="entry__empty-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/></svg>
       <span>Add Text</span>
-    </button>
-    <button type="button" class="entry__empty-btn" data-entry-open="single_screen_text" data-entry-tatib="{{ service_id }}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/></svg>
-      <span>Add Single-Screen</span>
     </button>
     <button type="button" class="entry__empty-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12h17M7 7.5l5 5 5-5M7 16.5l5-5 5 5" opacity=".45"/><path d="M3.5 12h17"/></svg>

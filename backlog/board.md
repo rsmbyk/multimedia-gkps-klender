@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-082](./items/ITEM-082-unified-text-screen-mode.md) | Use one Text entry with a selectable screen mode | Preserve both defaults and custom breaks with a Create choice and three-state Preview switch | feat | P2 | L | [079](../specs/079-unified-text-screen-mode/spec.md) | feat/079-unified-text-screen-mode | 2026-10-13 |
 
 ## In review
 

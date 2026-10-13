@@ -364,28 +364,36 @@ def entry_screen_breaks(request, pk):
         return HttpResponseForbidden('Editing is restricted.')
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
-    entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk,
-                              kind__in=(tatib_models.ServiceEntryKind.TEXT,
-                                        tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT))
     try:
         payload = json.loads(request.body)
     except (ValueError, UnicodeDecodeError):
         return JsonResponse({'error': 'Invalid screen breaks.'}, status=400)
     if not isinstance(payload, dict):
         return JsonResponse({'error': 'Invalid screen breaks.'}, status=400)
-    if payload.get('text_signature') != _text_signature(entry.text):
-        return JsonResponse({'error': 'The text changed. Reopen Preview to set its breaks.'},
-                            status=409)
-    breaks = payload.get('breaks')
-    if breaks is not None and not valid_breaks(
-            entry.text, breaks,
-            single_screen=entry.kind == tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT):
-        return JsonResponse({'error': 'Breaks must fall between written lines.'}, status=400)
-    entry.screen_breaks = breaks
-    entry.screen_breaks_reset = False
-    entry.full_clean()
-    entry.save(update_fields=['screen_breaks', 'screen_breaks_reset'])
-    return JsonResponse({'ok': True, 'breaks': breaks})
+    with transaction.atomic():
+        entry = get_object_or_404(tatib_models.ServiceEntry.objects.select_for_update(), pk=pk,
+                                  kind=tatib_models.ServiceEntryKind.TEXT)
+        if (payload.get('text_signature') != _text_signature(entry.text)
+                or payload.get('screen_state_signature') != _screen_state_signature(entry)):
+            return JsonResponse({'error': 'The text or screen mode changed. Reopen Preview.'},
+                                status=409)
+        mode = payload.get('default_screen_mode', entry.default_screen_mode)
+        if mode not in tatib_models.TextScreenMode.values or 'breaks' not in payload:
+            return JsonResponse({'error': 'Invalid screen mode or breaks.'}, status=400)
+        breaks = payload['breaks']
+        if breaks is not None and not valid_breaks(
+                entry.text, breaks,
+                single_screen=mode == tatib_models.TextScreenMode.SINGLE_SCREEN):
+            return JsonResponse({'error': 'Breaks must fall between written lines.'}, status=400)
+        if mode != entry.default_screen_mode and breaks is not None:
+            return JsonResponse({'error': 'Changing default mode clears custom breaks.'}, status=400)
+        entry.default_screen_mode = mode
+        entry.screen_breaks = breaks
+        entry.screen_breaks_reset = False
+        entry.full_clean()
+        entry.save(update_fields=['default_screen_mode', 'screen_breaks', 'screen_breaks_reset'])
+        return JsonResponse({'ok': True, 'breaks': breaks, 'default_screen_mode': mode,
+                             'screen_state_signature': _screen_state_signature(entry)})
 
 
 def entry_delete(request, pk):
@@ -678,17 +686,24 @@ def _text_signature(text):
     return hashlib.sha256((text or '').encode('utf-8')).hexdigest()
 
 
+def _screen_state_signature(entry):
+    state = json.dumps([entry.default_screen_mode, entry.screen_breaks], separators=(',', ':'))
+    return hashlib.sha256(state.encode('utf-8')).hexdigest()
+
+
 def _text_preview(entry):
     raw = (entry.text or '').split('\n')
-    single = entry.kind == tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT
-    possible = single_screen_boundaries(entry.text) if single else eligible_boundaries(entry.text)
+    multi_boundaries = eligible_boundaries(entry.text)
+    single_boundaries = single_screen_boundaries(entry.text)
     paragraphs = _paragraphs(entry.text)
     return {'kind': 'editable_text', 'title': entry.title,
             'lines': [dict(para, index=index, present=bool(raw[index - 1].strip()),
-                           can_break_after=index in possible)
+                           can_break_after=index in single_boundaries,
+                           multi_boundary=index in multi_boundaries)
                       for index, para in enumerate(paragraphs, 1)],
             'breaks_json': json.dumps(entry.screen_breaks),
-            'single_screen': single,
+            'default_screen_mode': entry.default_screen_mode,
+            'screen_state_signature': _screen_state_signature(entry),
             'signature': _text_signature(entry.text),
             'save_url': reverse('web-entry-screen-breaks', args=[entry.pk]),
             'reset_notice': entry.screen_breaks_reset}
@@ -822,14 +837,14 @@ def _tatib_stage(service):
         if not deleted_target:
             if kind_key in ('scripture', 'song'):
                 preview = _entry_preview(row, kind_key)
-            elif kind_key in ('text', 'single_screen_text'):
+            elif kind_key == 'text':
                 preview = _text_preview(row)
             elif clipped:
                 preview = {'kind': 'text', 'title': title, 'paras': _paragraphs(body)}
         block['preview'] = preview
         items.append(block)
         text_count += 1
-        text_kind = kind_key in ('text', 'single_screen_text')
+        text_kind = kind_key == 'text'
         two_line_label = text_kind and not title
         label = title or row.get_kind_display()
         if two_line_label:
@@ -977,7 +992,8 @@ def _projector_screens(service):
             screens.append(_blank_screen())
         elif entry.kind == tatib_models.ServiceEntryKind.SONG:
             screens.extend(_song_screens(entry))
-        elif entry.kind == tatib_models.ServiceEntryKind.SINGLE_SCREEN_TEXT:
+        elif (entry.kind == tatib_models.ServiceEntryKind.TEXT
+              and entry.default_screen_mode == tatib_models.TextScreenMode.SINGLE_SCREEN):
             # The whole body on one screen; blank lines are paragraph breaks, not new
             # screens, and the fit loop shrinks (then, if need be, truncates) it.
             header, body = entry.resolve()

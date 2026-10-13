@@ -10,6 +10,16 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-10-13
+
+### Added
+
+- Tata Ibadah uses one Text entry with Multi-line or Single-screen projection selected on Create and changed from Preview. Custom screen breaks stay editable in Preview, with confirmation before changing back to a default.
+
+### Changed
+
+- Existing Single-screen Text entries now use the unified Text kind while retaining their words, order, custom breaks, and projector screens.
+
 ## [1.9.4] - 2026-10-13
 
 ### Fixed
