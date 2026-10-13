@@ -12,9 +12,9 @@
 - [x] Green — expand the pointer start target in `static/web/reorder.js` and row cursor styles in `static/styles/design/components.css`
 - [x] Verify save-on-drop, drag ghost, rollback, and no post-drag quicklink
 - [x] Fill Traceability in `./spec.md`
-- [ ] Update ITEM-077 and `backlog/board.md` in the same PR
-- [ ] Set `VERSION`, changelog entry, and `release_version` in the same PR
-- [ ] Conventional Commit with Codex co-author trailer; draft PR into `develop` linking this spec
+- [x] Update ITEM-077 and `backlog/board.md` in the same PR
+- [x] Set `VERSION`, changelog entry, and `release_version` in the same PR
+- [x] Conventional Commit with Codex co-author trailer; draft PR into `develop` linking this spec
 
 ## Done when
 

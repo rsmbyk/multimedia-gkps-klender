@@ -26,12 +26,12 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-077](./items/ITEM-077-toc-whole-row-drag.md) | Drag service entries from the whole sidebar row | Start mouse/pen drags from any movable row area while preserving the click, touch, and keyboard behavior. | feat | P2 | M | [074](../specs/074-toc-whole-row-drag/spec.md) | `feat/074-toc-whole-row-drag` | 2026-10-13 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-077](./items/ITEM-077-toc-whole-row-drag.md) | Drag service entries from the whole sidebar row | Start mouse/pen drags from any movable row area while preserving the click, touch, and keyboard behavior. | feat | P2 | M | [074](../specs/074-toc-whole-row-drag/spec.md) | [#328](https://github.com/rsmbyk/multimedia-gkps-klender/pull/328) | 2026-10-13 |
 | [ITEM-071](./items/ITEM-071-tatib-entry-surface.md) | Subtle surface for Tata Ibadah entries | Quiet fill, outline, and padding for service entry boxes | chore | P2 | S | [068](../specs/068-tatib-entry-surface/spec.md) | [#322](https://github.com/rsmbyk/multimedia-gkps-klender/pull/322) | 2026-10-13 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
