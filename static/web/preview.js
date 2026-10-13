@@ -1,7 +1,7 @@
 /* The entry preview (spec 032; editable Text breaks in spec 069).
  *
  * The pane's Preview button copies the entry's inline payload into
- * the dialog, which owns no header, scrolls its body, and keeps its Close at the foot.
+ * the dialog, which owns no header and scrolls its body.
  * Esc closes it (native <dialog>), as does a click on the overlay. Focus returns to the
  * trigger without leaving a row outline (spec 025). While open, the entry that owns
  * the trigger keeps its hover look behind the backdrop (spec 065).
@@ -162,8 +162,6 @@
       }
       return;
     }
-    var closer = event.target.closest('[data-preview-close]');
-    if (closer && modal.contains(closer)) modal.close();
     var gap = event.target.closest('[data-break-after]');
     if (gap && split && split.contains(gap) && split.dataset.canEdit === 'true') {
       var position = Number(gap.dataset.breakAfter);

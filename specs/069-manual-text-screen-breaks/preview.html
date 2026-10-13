@@ -26,13 +26,13 @@ h3{font-size:13px;margin:0 0 9px}
 .rows.is-custom .gap.set::before{border-color:#646357}
 .rows .gap.set:hover::before,.rows .gap.set:focus-visible::before{border-color:#b3261e;border-style:solid}
 .gap.set:hover,.gap.set:focus-visible{color:#b3261e}
-.foot{display:flex;gap:12px;align-items:center;border-top:1px solid #dde2db;padding:12px 22px;background:#fcfdfb}.foot #close{margin-left:auto}
+.foot{display:flex;gap:12px;align-items:center;border-top:1px solid #dde2db;padding:12px 22px;background:#fcfdfb}
 .hint{color:#69766d;font-size:12px;margin:8px 0 0}
 </style>
 </head>
 <body>
 <main class="page"><p class="eyebrow">Draft concept · no product code</p><h1>Tata Ibadah Text entry</h1><p>The Create/Edit form still edits the words. Open Preview to set where the projector changes screen.</p><div class="entry"><strong>Doa Syafaat</strong><div>Tuhan, dengarlah doa kami<br>Kami datang membawa syukur<br>Sertai setiap keluarga<br>Dan kuatkan yang lemah<br>Bimbing kami hari ini<br>Dalam kasih-Mu selalu</div><button class="secondary" id="open">Preview</button></div></main>
-<dialog id="modal" aria-label="Preview Text entry"><div class="body"><p class="eyebrow">TEXT ENTRY PREVIEW</p><h2>Doa Syafaat</h2><p class="sub">Hover between text lines to add a screen break, or hover a divider to remove it.</p><div class="rows" id="rows"></div><p class="hint">Blank lines always separate screens.</p></div><div class="foot"><button class="secondary" id="reset">Reset breaks</button><p class="mode">Screen breaks <span class="badge" id="mode">Default · 2 lines</span></p><button class="secondary" id="close">Close</button></div></dialog>
+<dialog id="modal" aria-label="Preview Text entry"><div class="body"><p class="eyebrow">TEXT ENTRY PREVIEW</p><h2>Doa Syafaat</h2><p class="sub">Hover between text lines to add a screen break, or hover a divider to remove it.</p><div class="rows" id="rows"></div><p class="hint">Blank lines always separate screens.</p></div><div class="foot"><button class="secondary" id="reset">Reset breaks</button><p class="mode">Screen breaks <span class="badge" id="mode">Default · 2 lines</span></p></div></dialog>
 <script>
 const text=['Tuhan, dengarlah doa kami','Kami datang membawa syukur','Sertai setiap keluarga','Dan kuatkan yang lemah','Bimbing kami hari ini','Dalam kasih-Mu selalu'];
 const modal=document.getElementById('modal'),rows=document.getElementById('rows');
@@ -65,7 +65,7 @@ function render(){
   });
 }
 document.getElementById('open').onclick=()=>modal.showModal();
-document.getElementById('close').onclick=()=>modal.close();
+modal.addEventListener('click',event=>{if(event.target===modal)modal.close();});
 document.getElementById('reset').onclick=()=>{custom=false;breaks=new Set([2,4]);render();};
 render();modal.showModal();
 </script>
