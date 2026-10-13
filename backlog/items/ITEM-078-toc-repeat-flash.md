@@ -1,6 +1,6 @@
 ---
 id: ITEM-078
-status: in_review
+status: done
 title: Repeat a service-entry flash after it finishes
 type: fix
 priority: P2
