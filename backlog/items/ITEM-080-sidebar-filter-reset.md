@@ -1,6 +1,6 @@
 ---
 id: ITEM-080
-status: in_progress
+status: in_review
 title: Clear sidebar filters on main-menu switches
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-13
 updated: 2026-10-13
 spec: ../../specs/077-sidebar-filter-reset/spec.md
 branch: fix/077-sidebar-filter-reset
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/331
 archived_at:
 archive_reason:
 bump: patch
@@ -36,3 +36,4 @@ Empty first- and second-sidebar filters when the operator selects another main r
 ## Links
 
 - Spec: [Spec 077](../../specs/077-sidebar-filter-reset/spec.md)
+- PR: [#331](https://github.com/rsmbyk/multimedia-gkps-klender/pull/331)
