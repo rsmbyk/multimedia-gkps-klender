@@ -147,7 +147,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertIn('CMG Sans', styles['face'])          # the current projector's own face
         self.assertIn('Source Sans Pro', styles['face'])   # and the rest of the OBS surfaces'
         self.assertEqual(styles['weight'], '700')
-        self.assertEqual(styles['buttons'], 0)             # no controls on the display
+        self.assertGreater(styles['buttons'], 0)            # quiet operator controls
         self.assertEqual(styles['head'], 'rgb(255, 209, 102)')      # the header, brighter still...
         self.assertEqual(styles['line'], styles['color'])           # ...from the words
 
@@ -160,7 +160,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         }""")
         self.assertTrue(fit['fitsWidth'], fit)
         self.assertTrue(fit['fitsHeight'], fit)
-        self.assertLessEqual(fit['size'], 100)
+        self.assertLessEqual(fit['size'], 200)
 
         # The fitting must reach the words: the ink stays inside the screen's box.
         ink = page.evaluate("""() => {
@@ -239,9 +239,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertAlmostEqual(centred['headCentreX'], centred['stageCentreX'], delta=2)
         self.assertAlmostEqual(centred['lineCentreX'], centred['stageCentreX'], delta=2)
         self.assertAlmostEqual(centred['boxCentreY'], centred['stageCentreY'], delta=1)
-        # The ink rides within a few px of the middle as well: a 50px header and 100px
-        # lines carry different leading, and half of that difference is what is left.
-        self.assertAlmostEqual(centred['inkCentreY'], centred['stageCentreY'], delta=8)
+        # Spec 091 pins the header to the top while the words use the remaining area.
+        self.assertLess(centred['inkCentreY'], centred['stageCentreY'])
 
     def test_moving_and_toggling_morph_rather_than_jump(self):
         page = self._page(self._projector_url())
@@ -305,11 +304,52 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.get_attribute('body', 'data-showing'), 'true')
         self.assertEqual(page.locator('.screen:visible').count(), 1)
 
+    def test_quiet_controls_support_keyboard_and_mouse_jumps(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('Space')
+        page.keyboard.press('Control+ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '3')
+        page.keyboard.press('Control+ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '5')
+        page.keyboard.press('Control+ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '6')
+        page.keyboard.press('Shift+ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '8')
+        page.keyboard.press('j')
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+        page.locator('#projectorFindInput').fill('Salam')
+        page.keyboard.press('Enter')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '3')
+        page.keyboard.press('c')
+        self.assertTrue(page.locator('body').evaluate("e => e.classList.contains('corner-hidden')"))
+        page.mouse.move(100, 100)
+        self.assertTrue(page.locator('body').evaluate("e => e.classList.contains('corner-hidden')"))
+        page.keyboard.press('c')
+        page.locator('.mouse-zone--next').click(position={'x': 100, 'y': 100})
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '4')
+        page.locator('#cue-service').click()
+        self.assertTrue(page.locator('#entry-list').is_visible())
+        page.locator('.entry-list__item[data-entry-index="3"]').click()
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '6')
+
+    def test_overlays_intercept_projector_clicks(self):
+        page = self._page(self._projector_url())
+        page.locator('.keys').click()
+        self.assertTrue(page.locator('body').evaluate("e => e.classList.contains('keys-open')"))
+        before = page.get_attribute('body', 'data-current-screen')
+        page.mouse.click(16, 200)
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+        self.assertFalse(page.locator('body').evaluate("e => e.classList.contains('keys-open')"))
+        page.locator('#cue-service').click()
+        page.mouse.click(1200, 200)
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+        self.assertFalse(page.locator('body').evaluate("e => e.classList.contains('entry-list-open')"))
+
     def test_every_kind_takes_the_shape_it_should_on_screen(self):
         """The running order, screen by screen: content, then a built-in blank after
         each entry and after each song verse. A stored break is still one blank."""
         page = self._page(self._projector_url())
-        shape = page.eval_on_selector_all('.screen', """els => els.map(e => ({
+        shape = page.eval_on_selector_all('.screen[data-screen]', """els => els.map(e => ({
           blank: e.classList.contains('is-blank'),
           head: (e.querySelector('.screen__head') || {}).textContent || null,
           lines: [...e.querySelectorAll('.screen__line')].map(p => p.textContent)}))""")
@@ -459,7 +499,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('Space')                          # turn the display on
         page.wait_for_timeout(200)
         measured = page.evaluate("""() => {
-          const screens = document.querySelectorAll('.screen');
+          const screens = document.querySelectorAll('.screen[data-screen]');
           const active = document.querySelector('.screen.is-active');
           const stage = document.getElementById('projectorScreens').getBoundingClientRect();
           const lines = active.querySelector('.screen__lines');

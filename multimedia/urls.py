@@ -26,6 +26,10 @@ urlpatterns = [
     # and its pages keep serving the current data untouched.
     path('obs/service/<int:service_id>/', reading_views.service_projector,
          name='web-service-projector'),
+    path('obs/service/<int:service_id>/lookup/', reading_views.projector_lookup,
+         name='web-service-projector-lookup'),
+    path('obs/service/<int:service_id>/detour/', reading_views.projector_detour,
+         name='web-service-projector-detour'),
     path('obs/', include('multimedia.obs.urls')),
     path('', include('multimedia.web.urls')),
 ]

@@ -1,9 +1,7 @@
-/* The projector (spec 006, slice 4).
+/* The service projector (specs 006 and 091).
  *
- * White on black, one screen at a time, and nothing else on it: the operator drives
- * it from the keyboard -- left and right to move, space to turn the display on and
- * off. The page arrives with every screen already rendered, so moving is instant and
- * nothing has to be fetched to show the next two lines.
+ * One service screen at a time, with quiet corner controls for keyboard or mouse.
+ * The page arrives with every service screen rendered, so ordinary steps are instant.
  *
  * It shares the display state with the app's tabs over the same channel (see
  * web/display.js): whatever the operator does here, the shell hears. Update re-reads
@@ -19,6 +17,8 @@
   var service = Number(body.dataset.service);
   var screen = document.getElementById('projectorScreen');
   var stage = document.getElementById('projectorScreens');
+  var entries = JSON.parse(document.getElementById('projectorEntryData').textContent);
+  var screenData = JSON.parse(document.getElementById('projectorScreenData').textContent);
   var KEY = 'gkps-display';
 
   var channel = null;
@@ -28,7 +28,7 @@
   var showing = body.dataset.showing === 'true';
 
   function screens() {
-    return [].slice.call(stage.querySelectorAll('.screen'));
+    return [].slice.call(stage.querySelectorAll('.screen[data-screen]'));
   }
   function read() {
     try {
@@ -59,69 +59,31 @@
     post({type: 'beat', service: service, on: showing});
   }
 
-  /* ---------- fitting the words to the screen -------------------------------
-     The current projector's own two loops, kept in its shape -- do...while, one pixel at
-     a time, from 50 for the title and 100 for the text, floor 2 -- so the words come out
-     as large as they can be and no larger: the loop stops at the first size that fits,
-     which is one pixel more than the first size that does not.
+  /* ---------- fitting the words to the accepted projector stage ------------ */
+  var GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
 
-     Two things differ from the original, both deliberate: the measure is the display's
-     own box rather than the window, and the text's condition also reads the INK's box --
-     a wrapped block can report a height a few pixels inside the words' real extents, and
-     the last line then hangs over the bottom edge. */
-
-  function resizeTitleFont(head) {
-    if (!head) return;
-    var fontSize = 50;
-    do {
-      head.style.fontSize = fontSize + 'px';
-      fontSize -= 1;
-      /* Strictly greater, against the display's own box: the original compared
-         `>= window - 72`, which only works because the window is a different box from
-         the element's parent. Measured against its own parent, a full-width block is
-         always ">= clientWidth - margin", and the loop would run to the floor. */
-    } while ((head.scrollWidth > stage.clientWidth
-              || head.scrollHeight > stage.clientHeight * 0.45) && fontSize > 10);
-  }
-
-  /* Does the words block spill past the display's own box? (Shared by the fit loop
-     and the single-screen truncation.) */
-  function textOverflows(head, lines, box, range) {
-    if (lines.scrollHeight > stage.clientHeight - (head ? head.offsetHeight : 0) - 8) {
-      return true;
-    }
+  function overflows(head, lines) {
+    if (head && (head.scrollWidth > stage.clientWidth + 1
+                 || head.getBoundingClientRect().bottom > stage.getBoundingClientRect().bottom)) return true;
+    if (!lines) return false;
+    if (lines.scrollHeight > lines.clientHeight + 1) return true;
+    var range = document.createRange();
     range.selectNodeContents(lines);
     var ink = range.getBoundingClientRect();
-    return (ink.top < box.top + 4 || ink.bottom > box.bottom - 4
-            || ink.left < box.left - 1 || ink.right > box.right + 2);
+    var box = lines.getBoundingClientRect();
+    var stageBox = stage.getBoundingClientRect();
+    return ink.left < box.left - 1 || ink.right > box.right + 1
+      || ink.top < box.top - 2 || ink.bottom > box.bottom + 2
+      || ink.top < stageBox.top - 1 || ink.bottom > stageBox.bottom + 1;
   }
 
-  function resizeTextFont(head, lines) {
-    if (!lines) return;
-    var box = stage.getBoundingClientRect();
-    var range = document.createRange();
-    var fontSize = 100;
-    do {
-      lines.style.fontSize = fontSize + 'px';
-      fontSize -= 1;
-    } while (textOverflows(head, lines, box, range) && fontSize > 1);
-  }
-
-  /* A single-screen text that still spills at the smallest size: drop its trailing
-     lines, then its trailing characters, and end on an ellipsis. It never hangs over
-     the screen. */
   function truncateText(head, lines) {
-    if (!lines) return;
-    var box = stage.getBoundingClientRect();
-    var range = document.createRange();
-    if (!textOverflows(head, lines, box, range)) return;
+    if (!lines || !overflows(head, lines)) return;
     var rows = [].slice.call(lines.querySelectorAll('.screen__line'));
-    while (rows.length > 1 && textOverflows(head, lines, box, range)) {
-      rows.pop().remove();
-    }
+    while (rows.length > 1 && overflows(head, lines)) rows.pop().remove();
     var last = lines.querySelector('.screen__line:last-child');
     if (!last) return;
-    while (last.textContent.length > 0 && textOverflows(head, lines, box, range)) {
+    while (last.textContent.length && overflows(head, lines)) {
       last.textContent = last.textContent.slice(0, -1);
     }
     last.textContent = last.textContent.replace(/\s+$/, '') + '\u2026';
@@ -131,8 +93,12 @@
     if (!active) return;
     var head = active.querySelector('.screen__head');
     var lines = active.querySelector('.screen__lines');
-    resizeTitleFont(head);
-    resizeTextFont(head, lines);
+    if (!lines) return;
+    for (var size = 200; size >= 2; size -= 1) {
+      lines.style.fontSize = size + 'px';
+      if (head) head.style.fontSize = (size / GOLDEN_RATIO) + 'px';
+      if (!overflows(head, lines)) break;
+    }
     if (active.dataset.fit === 'single') truncateText(head, lines);
   }
 
@@ -147,7 +113,7 @@
     var moved = previous && previous !== active;
 
     all.forEach(function (each) {
-      var on = each === active;
+      var on = each === active && !detour;
       each.classList.toggle('is-active', on);
       /* Both morph classes are cleared every time: a quick move back and forth would
          otherwise leave the arriving screen carrying "leaving" as well, and the
@@ -168,7 +134,12 @@
     previousIndex = current;
     body.dataset.currentScreen = String(current);
     body.dataset.showing = showing ? 'true' : 'false';
-    if (active) fit(active);
+    body.classList.toggle('words-hidden', !showing);
+    if (active && !detour) {
+      applyPassageTranslation(active);
+      fit(active);
+    }
+    renderCue();
     if (!silent) {
       write({service: service, screen: current, on: showing});
       post(showing ? {type: 'show', service: service, screen: current} : {type: 'stop'});
@@ -180,49 +151,538 @@
   var previousIndex = current;
 
   function move(step) {
+    if (detour) { detourStep(step, 'plain'); return; }
     var next = current + step;
     if (next < 0 || next > screens().length - 1) return;
     direction = step;
+    if (entryAt(next) !== entryAt(current)) translation = '';
     current = next;
     showing = true;
     render();
   }
 
-  /* ---------- the operator's keyboard ---------------------------------------
-     Left and right move; space turns the display on and off. Nothing is drawn for
-     these: the screen carries only the header and the words. */
+  /* ---------- quiet HUD and shared input operations ------------------------ */
+  var cue = document.getElementById('corner-cue');
+  var cueService = document.getElementById('cue-service');
+  var cuePrefix = document.getElementById('cue-prefix');
+  var baitList = document.getElementById('cue-baits');
+  var cueProgress = document.getElementById('cue-progress');
+  var cueNext = document.getElementById('cue-next');
+  var cueArrow = document.getElementById('cue-arrow');
+  var cueNextName = document.getElementById('cue-next-name');
+  var keysButton = document.querySelector('.keys');
+  var entryList = document.getElementById('entry-list');
+  var entryDismiss = document.getElementById('entry-list-dismiss');
+  var findPanel = document.getElementById('projectorFind');
+  var findInput = document.getElementById('projectorFindInput');
+  var findResults = document.getElementById('projectorFindResults');
+  var translation = '';
+  var translationTimer;
+  var findKind = '';
+  var findRows = [];
+  var findChoice = 0;
+  var detour = null;
+  var returnScreen = null;
 
+  function entryAt(index) {
+    var active = screens()[index];
+    return active ? entries[Number(active.dataset.entry)] : null;
+  }
+  function entryIndex() {
+    var active = screens()[current];
+    return active ? Number(active.dataset.entry) : 0;
+  }
+  function moveTo(index) {
+    if (index < 0 || index >= screens().length) return;
+    direction = index >= current ? 1 : -1;
+    if (entryAt(index) !== entryAt(current)) translation = '';
+    current = index;
+    showing = true;
+    render();
+  }
+  function moveEntry(offset) {
+    if (detour) { if (detour.kind === 'passage') detourStep(offset, 'ctrl'); return; }
+    var next = entries[entryIndex() + offset];
+    if (next && next.start <= next.end) moveTo(next.start);
+  }
+  function moveToBait(index) {
+    var entry = entryAt(current);
+    if (entry && entry.type === 'song' && entry.baits[index]) moveTo(entry.baits[index].start);
+  }
+  function baitIndex() {
+    var entry = entryAt(current);
+    if (!entry || !entry.baits.length) return -1;
+    return entry.baits.findIndex(function (bait) {
+      return current >= bait.start && current <= bait.end;
+    });
+  }
+  function moveBait(offset) {
+    if (detour) { detourStep(offset, detour.kind === 'passage' ? 'shift' : 'bait'); return; }
+    moveToBait(baitIndex() + offset);
+  }
+  function unitBoundary(last, modifier) {
+    if (detour) { detourBoundary(last, modifier); return; }
+    var entry = entryAt(current);
+    if (!entry) return;
+    if (modifier === 'ctrl') {
+      var target = entries[last ? entries.length - 1 : 0];
+      if (target) moveTo(target.start);
+      return;
+    }
+    if (entry.type === 'song' && entry.baits.length) {
+      var bait = entry.baits[modifier === 'shift' ? (last ? entry.baits.length - 1 : 0) : baitIndex()];
+      if (bait) moveTo(last && modifier !== 'shift' ? Math.max(bait.start, bait.end - 1) : bait.start);
+      return;
+    }
+    moveTo(last ? Math.max(entry.start, entry.end - (screenData[entry.end] && screenData[entry.end].blank ? 1 : 0)) : entry.start);
+  }
+  function toggleWords() { showing = !showing; render(); }
+  function applyPassageTranslation(active) {
+    var entry = entryAt(current);
+    if (!entry || entry.type !== 'passage') return;
+    var variant = ((screenData[current] || {}).translations || {})[translation || entry.translation];
+    if (!variant || !active.querySelector('.screen__head')) return;
+    active.querySelector('.screen__head').textContent = variant.header;
+    active.querySelector('.screen__line').textContent = variant.line;
+  }
+
+  function renderCue() {
+    if (!cue || !entries.length) return;
+    if (detour) { renderDetourCue(); return; }
+    var entry = entryAt(current);
+    if (!entry) return;
+    var data = screenData[current] || {};
+    var isRest = Boolean(data.blank);
+    var lastBaitRest = entry.type === 'song' && isRest && baitIndex() === entry.baits.length - 1;
+    baitList.replaceChildren();
+    baitList.hidden = entry.type !== 'song';
+    if (entry.type === 'song') {
+      entry.baits.forEach(function (bait, index) {
+        var key = document.createElement('button');
+        key.type = 'button'; key.className = 'cue-bait';
+        key.dataset.baitIndex = String(index);
+        key.textContent = String(bait.number);
+        key.setAttribute('aria-label', 'Go to bait ' + bait.number);
+        key.setAttribute('aria-pressed', String(index === (isRest ? baitIndex() + 1 : baitIndex())));
+        baitList.appendChild(key);
+      });
+    }
+    cuePrefix.replaceChildren();
+    var label = document.createElement(entry.untitled ? 'i' : 'span');
+    label.textContent = entry.label + (entry.type === 'song' || entry.type === 'passage' ? ' ·' : '');
+    cuePrefix.appendChild(label);
+    if (entry.type === 'passage') {
+      var flip = document.createElement('button');
+      flip.type = 'button'; flip.className = 'cue-translation';
+      flip.textContent = translation || entry.translation;
+      flip.setAttribute('aria-label', 'Flip passage translation');
+      cuePrefix.appendChild(document.createTextNode(' '));
+      cuePrefix.appendChild(flip);
+    }
+    cueProgress.textContent = !isRest && data.split_total ? data.split + '/' + data.split_total : '';
+    cueNext.classList.toggle('on', entry.type === 'break' || (isRest && (entry.type !== 'song' || lastBaitRest)));
+    cueArrow.classList.toggle('on', entry.type === 'break' || (isRest && (entry.type !== 'song' || lastBaitRest)));
+    var next = entries[entryIndex() + 1];
+    cueNext.hidden = !next;
+    cueNextName.textContent = next ? next.label : '';
+    cueNext.setAttribute('aria-label', next ? 'Go to next entry: ' + next.label : 'No next entry');
+    renderEntryList();
+  }
+  function renderEntryList() {
+    if (!entryList) return;
+    entryList.replaceChildren();
+    var heading = document.createElement('div');
+    heading.className = 'entry-list__heading'; heading.textContent = 'SERVICE ENTRIES';
+    entryList.appendChild(heading);
+    entries.forEach(function (entry, index) {
+      var row = document.createElement('button');
+      row.type = 'button'; row.className = 'entry-list__item';
+      row.dataset.entryIndex = String(index);
+      if (index === entryIndex()) row.setAttribute('aria-current', 'true');
+      var number = document.createElement('span');
+      number.className = 'entry-list__number'; number.textContent = String(index + 1);
+      var title = document.createElement('span'); title.textContent = entry.label || 'Section break';
+      if (entry.baits.length) {
+        var meta = document.createElement('small'); meta.className = 'entry-list__meta';
+        meta.textContent = 'Bait ' + entry.baits.map(function (bait) { return bait.number; }).join(', ');
+        title.appendChild(meta);
+      }
+      row.append(number, title); entryList.appendChild(row);
+    });
+  }
+  function flipTranslation() {
+    if (detour && detour.kind === 'passage') {
+      detour.translation = detour.translation === 'TB' ? 'SIM' : 'TB';
+      if (!detour.translations[detour.translation]) detour.translation = detour.translation === 'TB' ? 'SIM' : 'TB';
+      renderDetour();
+      return;
+    }
+    var entry = entryAt(current);
+    if (!entry || entry.type !== 'passage') return;
+    var translations = (screenData[current] || {}).translations || {};
+    var currentTranslation = translation || entry.translation;
+    var target = currentTranslation === 'TB' ? 'SIM' : 'TB';
+    if (!translations[target]) return;
+    translation = target;
+    var active = screens()[current];
+    active.querySelector('.screen__head').textContent = translations[target].header;
+    active.querySelector('.screen__line').textContent = translations[target].line;
+    renderCue(); fit(active);
+    var flip = cuePrefix.querySelector('.cue-translation');
+    flip.classList.add('flash');
+    window.clearTimeout(translationTimer);
+    translationTimer = window.setTimeout(function () { flip.classList.remove('flash'); }, 1000);
+  }
+  function setKeysOpen(open) {
+    if (open) setEntryListOpen(false);
+    body.classList.toggle('keys-open', open);
+    keysButton.setAttribute('aria-expanded', String(open));
+    cue.inert = open;
+    revealControls();
+  }
+  function setEntryListOpen(open) {
+    if (open && (body.classList.contains('keys-open') || body.classList.contains('corner-hidden'))) return;
+    body.classList.toggle('entry-list-open', open);
+    entryList.hidden = !open;
+    entryDismiss.hidden = true;
+    if (open) window.requestAnimationFrame(function () {
+      if (body.classList.contains('entry-list-open')) entryDismiss.hidden = false;
+    });
+    cueService.setAttribute('aria-expanded', String(open));
+    revealControls();
+    if (open) entryList.querySelector('[aria-current="true"]')?.scrollIntoView({block: 'nearest'});
+  }
+  var cursorTimer, controlsTimer;
+  function revealCursor() {
+    body.classList.remove('cursor-hidden');
+    window.clearTimeout(cursorTimer);
+    cursorTimer = window.setTimeout(function () { body.classList.add('cursor-hidden'); }, 2000);
+  }
+  function revealControls() {
+    window.clearTimeout(controlsTimer);
+    if (body.classList.contains('corner-hidden')) return;
+    body.classList.remove('controls-idle');
+    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
+    controlsTimer = window.setTimeout(function () { body.classList.add('controls-idle'); }, 30000);
+  }
+  ['pointermove', 'pointerdown', 'click'].forEach(function (name) {
+    document.addEventListener(name, revealCursor, {passive: true});
+  });
+  ['pointermove', 'pointerdown', 'click', 'keydown'].forEach(function (name) {
+    document.addEventListener(name, revealControls, {passive: true});
+  });
+  revealCursor(); revealControls();
+
+  keysButton.addEventListener('click', function (event) {
+    event.stopPropagation(); setKeysOpen(!body.classList.contains('keys-open'));
+  });
+  cueService.addEventListener('click', function (event) {
+    event.stopPropagation(); setEntryListOpen(!body.classList.contains('entry-list-open'));
+  });
+  entryDismiss.addEventListener('click', function (event) {
+    event.stopPropagation(); setEntryListOpen(false); cueService.focus();
+  });
+  entryList.addEventListener('click', function (event) {
+    var row = event.target.closest('.entry-list__item');
+    if (!row) return;
+    event.stopPropagation(); leaveDetour(); moveTo(entries[Number(row.dataset.entryIndex)].start);
+    setEntryListOpen(false); cueService.focus();
+  });
+  cueNext.addEventListener('click', function (event) {
+    event.stopPropagation();
+    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
+    if (detour) leaveDetour(); else moveEntry(1);
+  });
+  baitList.addEventListener('click', function (event) {
+    var bait = event.target.closest('.cue-bait');
+    if (!bait) return;
+    event.stopPropagation();
+    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
+    if (detour && detour.kind === 'song') {
+      detour.index = detour.baits[Number(bait.dataset.baitIndex)].start; renderDetour();
+    } else moveToBait(Number(bait.dataset.baitIndex));
+  });
+  cuePrefix.addEventListener('click', function (event) {
+    if (!event.target.closest('.cue-translation')) return;
+    event.stopPropagation(); if (!body.classList.contains('keys-open') && !body.classList.contains('entry-list-open')) flipTranslation();
+  });
+  document.addEventListener('click', function (event) {
+    if (body.classList.contains('keys-open')) {
+      if (!event.target.closest('.sheet') && !event.target.closest('.keys')) setKeysOpen(false);
+      return;
+    }
+    if (body.classList.contains('entry-list-open')) {
+      if (!event.target.closest('.entry-list')) setEntryListOpen(false);
+      return;
+    }
+    if (!findPanel.hidden) return;
+    var zone = event.target.closest('.mouse-zone');
+    if (!zone) return;
+    enterFullscreen();
+    if (zone.dataset.mouseAction === 'previous') move(-1);
+    else if (zone.dataset.mouseAction === 'next') move(1);
+    else toggleWords();
+  });
+
+  /* ---------- find and temporary library detours ---------------------------- */
+  function normalize(value) {
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+  function findUrl(path, params) {
+    return window.location.pathname + path + '?' + new URLSearchParams(params).toString();
+  }
+  function openFind(kind) {
+    if (kind === 'b' && (!entryAt(current) || entryAt(current).type !== 'song') &&
+        (!detour || detour.kind !== 'song')) return;
+    findKind = kind; findChoice = 0;
+    document.getElementById('projectorFindLabel').textContent =
+      kind === 'j' ? 'Find in Service' : kind === 'b' ? 'Go to Bait' : 'Passage or Song';
+    findInput.value = '';
+    findPanel.hidden = false;
+    body.classList.add('find-open');
+    refreshFind();
+    findInput.focus();
+  }
+  function closeFind() { findPanel.hidden = true; body.classList.remove('find-open'); findKind = ''; findRows = []; }
+  var lookupSequence = 0;
+  function refreshFind() {
+    var query = normalize(findInput.value.trim());
+    if (findKind === 'j') {
+      findRows = entries.map(function (entry, index) {
+        return {label: (index + 1) + '  ' + (entry.label || 'Section break'), index: index};
+      }).filter(function (row) { return normalize(row.label).includes(query); });
+    } else if (findKind === 'b') {
+      var baits = detour && detour.kind === 'song' ? detour.baits : entryAt(current).baits;
+      findRows = baits.map(function (bait, index) {
+        return {label: 'Bait ' + bait.number, index: index};
+      }).filter(function (row) { return normalize(row.label).includes(query); });
+    } else if (query) {
+      var sequence = ++lookupSequence;
+      fetch(findUrl('lookup/', {q: findInput.value.trim()}), {credentials: 'same-origin'})
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (sequence !== lookupSequence || findKind !== 'g') return;
+          findRows = data.results || []; findChoice = 0; paintFind();
+        }).catch(function () { findRows = []; paintFind(); });
+      return;
+    } else findRows = [];
+    findChoice = 0;
+    paintFind();
+  }
+  function paintFind() {
+    findResults.replaceChildren();
+    findRows.forEach(function (row, index) {
+      var button = document.createElement('button');
+      button.type = 'button'; button.className = 'projector-find__row';
+      button.dataset.choice = String(index);
+      button.setAttribute('role', 'option');
+      button.setAttribute('aria-selected', String(index === findChoice));
+      button.textContent = row.label;
+      findResults.appendChild(button);
+    });
+  }
+  function chooseFind(index) {
+    var row = findRows[index];
+    if (!row) return;
+    if (findKind === 'j') { leaveDetour(); moveTo(entries[row.index].start); }
+    else if (findKind === 'b') {
+      if (detour && detour.kind === 'song') { detour.index = detour.baits[row.index].start; renderDetour(); }
+      else moveToBait(row.index);
+    } else if (findKind === 'g') openDetour(row);
+    closeFind();
+  }
+  findInput.addEventListener('input', refreshFind);
+  findInput.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeFind(); }
+    else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault(); event.stopPropagation();
+      if (findRows.length) findChoice = (findChoice + (event.key === 'ArrowDown' ? 1 : -1) + findRows.length) % findRows.length;
+      paintFind();
+    } else if (event.key === 'Enter') {
+      event.preventDefault(); event.stopPropagation(); chooseFind(findChoice);
+    } else if (event.key === 'Backspace' && !findInput.value) {
+      event.preventDefault(); event.stopPropagation(); closeFind();
+    }
+  });
+  findResults.addEventListener('click', function (event) {
+    var row = event.target.closest('.projector-find__row');
+    if (row) chooseFind(Number(row.dataset.choice));
+  });
+
+  var detourNode = document.createElement('section');
+  detourNode.className = 'screen projector-detour';
+  detourNode.innerHTML = '<h1 class="screen__head"></h1><div class="screen__lines"></div>';
+  stage.appendChild(detourNode);
+  function leaveDetour() {
+    if (!detour) return;
+    detour = null;
+    detourNode.classList.remove('is-active');
+    if (returnScreen != null) current = returnScreen;
+    returnScreen = null;
+    showing = true;
+    render();
+  }
+  function openDetour(row) {
+    var params = Object.assign({kind: row.kind}, row.target);
+    fetch(findUrl('detour/', params), {credentials: 'same-origin'})
+      .then(function (response) { return response.ok ? response.json() : null; })
+      .then(function (data) {
+        if (!data) return;
+        if (!detour) returnScreen = current;
+        detour = data;
+        detour.index = 0;
+        showing = true;
+        renderDetour();
+      }).catch(function () { /* keep the service screen */ });
+  }
+  function requestPassage(action, level) {
+    if (!detour || detour.kind !== 'passage') return;
+    fetch(findUrl('detour/', {
+      kind: 'passage', book_id: detour.book_id, chapter: detour.chapter,
+      verse: detour.verse, action: action, level: level,
+    }), {credentials: 'same-origin'})
+      .then(function (response) { return response.ok ? response.json() : null; })
+      .then(function (data) {
+        if (!data || !detour) return;
+        detour = data; renderDetour();
+      }).catch(function () { /* retain current verse */ });
+  }
+  function detourStep(step, level) {
+    if (detour.kind === 'passage') { requestPassage(step > 0 ? 'next' : 'previous', level); return; }
+    if (level === 'ctrl') return;
+    if (level === 'bait') {
+      var currentBait = detour.baits.findIndex(function (bait) {
+        return detour.index >= bait.start && detour.index <= bait.end;
+      });
+      var target = detour.baits[currentBait + step];
+      if (target) detour.index = target.start;
+    } else detour.index = Math.max(0, Math.min(detour.index + step, detour.screens.length - 1));
+    renderDetour();
+  }
+  function detourBoundary(last, level) {
+    if (detour.kind === 'passage') { requestPassage(last ? 'last' : 'first', level); return; }
+    if (level === 'ctrl') return;
+    if (level === 'shift') detour.index = detour.baits[last ? detour.baits.length - 1 : 0].start;
+    else {
+      var bait = detour.baits.find(function (item) {
+        return detour.index >= item.start && detour.index <= item.end;
+      });
+      if (bait) detour.index = last ? Math.max(bait.start, bait.end - 1) : bait.start;
+    }
+    renderDetour();
+  }
+  function renderDetour() {
+    if (!detour) return;
+    screens().forEach(function (screen) { screen.classList.remove('is-active'); });
+    var data = detour.kind === 'passage' ? detour.translations[detour.translation]
+      : detour.screens[detour.index];
+    var head = detourNode.querySelector('.screen__head');
+    var lines = detourNode.querySelector('.screen__lines');
+    head.hidden = !data.header;
+    head.textContent = data.header || '';
+    lines.replaceChildren();
+    (data.lines || [{text: data.line || ''}]).forEach(function (line) {
+      var p = document.createElement('p'); p.className = 'screen__line'; p.textContent = line.text;
+      lines.appendChild(p);
+    });
+    detourNode.classList.add('is-active');
+    body.dataset.showing = 'true';
+    fit(detourNode); renderCue();
+  }
+  function renderDetourCue() {
+    var returnEntry = entryAt(returnScreen == null ? current : returnScreen);
+    cuePrefix.replaceChildren();
+    var label = document.createElement('span');
+    label.textContent = detour.label + (detour.kind === 'passage' ? ' · ' : ' ·');
+    cuePrefix.appendChild(label);
+    if (detour.kind === 'passage') {
+      var flip = document.createElement('button'); flip.type = 'button';
+      flip.className = 'cue-translation'; flip.textContent = detour.translation;
+      flip.setAttribute('aria-label', 'Flip passage translation'); cuePrefix.appendChild(flip);
+    }
+    baitList.replaceChildren();
+    baitList.hidden = detour.kind !== 'song';
+    if (detour.kind === 'song') detour.baits.forEach(function (bait, index) {
+      var button = document.createElement('button'); button.type = 'button';
+      button.className = 'cue-bait'; button.dataset.baitIndex = String(index);
+      button.textContent = String(bait.number);
+      button.setAttribute('aria-pressed', String(detour.index >= bait.start && detour.index <= bait.end));
+      baitList.appendChild(button);
+    });
+    var screen = detour.kind === 'song' ? detour.screens[detour.index] : null;
+    cueProgress.textContent = screen && !screen.blank ? screen.split + '/' + screen.split_total : '';
+    cueNext.hidden = false;
+    cueNext.classList.remove('on'); cueArrow.classList.remove('on');
+    cueNextName.textContent = 'back to ' + (returnEntry ? returnEntry.label : 'service');
+    cueNext.setAttribute('aria-label', 'Back to service');
+  }
+
+  function closeLayers() {
+    if (body.classList.contains('keys-open')) { setKeysOpen(false); return true; }
+    if (body.classList.contains('entry-list-open')) { setEntryListOpen(false); return true; }
+    if (!findPanel.hidden) { closeFind(); return true; }
+    return false;
+  }
   document.addEventListener('keydown', function (event) {
-    if (event.altKey || event.ctrlKey || event.metaKey) return;
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown' || event.key === 'PageDown') {
+    if (event.key === 'Escape') {
+      if (closeLayers()) { event.preventDefault(); return; }
+      if (detour) { event.preventDefault(); leaveDetour(); return; }
+      return;
+    }
+    if (!findPanel.hidden) return;
+    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
+    if (event.altKey || event.metaKey) return;
+    var key = event.key.toLowerCase();
+    if (!event.ctrlKey && !event.shiftKey && ['j', 'g', 'b'].includes(key)) {
+      event.preventDefault(); openFind(key); return;
+    }
+    if (!event.ctrlKey && !event.shiftKey && key === 'c') {
       event.preventDefault();
-      move(1);
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp' || event.key === 'PageUp') {
+      var hide = !body.classList.contains('corner-hidden');
+      body.classList.toggle('corner-hidden', hide);
+      cue.hidden = hide; keysButton.hidden = hide;
+      if (!hide) revealControls();
+      return;
+    }
+    if (!event.ctrlKey && !event.shiftKey && key === 't') { event.preventDefault(); flipTranslation(); return; }
+    if (!event.ctrlKey && event.key === ' ') { event.preventDefault(); toggleWords(); return; }
+    var forward = ['ArrowRight', 'ArrowDown', 'PageDown'].includes(event.key);
+    var backward = ['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key);
+    if (forward || backward) {
+      if (event.ctrlKey && (event.key === 'PageUp' || event.key === 'PageDown')) return;
       event.preventDefault();
-      move(-1);
-    } else if (event.key === ' ' || event.key === 'Spacebar' || event.key === 'Enter') {
-      event.preventDefault();
-      showing = !showing;
-      render();
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      current = 0;
-      render();
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      current = screens().length - 1;
-      render();
+      if (event.ctrlKey) moveEntry(forward ? 1 : -1);
+      else if (event.shiftKey) moveBait(forward ? 1 : -1);
+      else move(forward ? 1 : -1);
+    } else if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault(); unitBoundary(event.key === 'End', event.ctrlKey ? 'ctrl' : event.shiftKey ? 'shift' : 'plain');
     }
   });
 
   /* The operator's own gesture asks for the screen, rather than the window grabbing
      it on the way in. Escape from the browser gives it back. */
-  if (screen) {
-    screen.addEventListener('click', function () {
-      if (document.fullscreenElement) return;
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(function () { /* declined */ });
+  function enterFullscreen() {
+    if (document.fullscreenElement || !document.documentElement.requestFullscreen) return;
+    document.documentElement.requestFullscreen().then(function () {
+      if (navigator.keyboard && navigator.keyboard.lock) {
+        navigator.keyboard.lock(['Escape']).catch(function () { /* browser retains Escape */ });
       }
+    }).catch(function () { /* declined */ });
+  }
+  var escapeHoldTimer;
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape' || event.repeat || !document.fullscreenElement) return;
+    window.clearTimeout(escapeHoldTimer);
+    escapeHoldTimer = window.setTimeout(function () {
+      if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+    }, 900);
+  });
+  document.addEventListener('keyup', function (event) {
+    if (event.key === 'Escape') window.clearTimeout(escapeHoldTimer);
+  });
+  if (screen) {
+    screen.addEventListener('click', function (event) {
+      if (!event.target.closest('button')) enterFullscreen();
     });
   }
 
@@ -265,6 +725,13 @@
         var fresh = parsed.getElementById('projectorScreens');
         if (!fresh) return;
         stage.innerHTML = fresh.innerHTML;
+        stage.appendChild(detourNode);
+        var freshEntries = parsed.getElementById('projectorEntryData');
+        var freshScreens = parsed.getElementById('projectorScreenData');
+        if (freshEntries && freshScreens) {
+          entries = JSON.parse(freshEntries.textContent);
+          screenData = JSON.parse(freshScreens.textContent);
+        }
         render(true);
       })
       .catch(function () { /* keep showing what we have */ });

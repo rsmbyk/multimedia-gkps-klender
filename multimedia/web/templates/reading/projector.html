@@ -1,9 +1,7 @@
 {% load static %}
 {% comment %}
-The new service projector (spec 006, slice 4). What the congregation sees: white on
-black, in the face the current projector uses, and nothing but the header and the
-words -- no controls, because the operator drives it from the keyboard (left/right to
-move, space to turn the display on and off).
+The service projector (specs 006 and 091): the words and header stay primary,
+while a quiet corner cue supports the operator on a mirrored display.
 
 It carries one screen per thing to show and keeps no server record of what is on
 screen: which screen is showing lives in the operator's browser and travels between
@@ -22,11 +20,20 @@ that browser's tabs over the display channel (web/projector.js, web/display.js).
 <body class="projector" data-display-channel="gkps-service-display"
       data-service="{{ service_id }}" data-current-screen="0" data-showing="false">
 
+<div class="mouse-zones" aria-hidden="true">
+  <div class="mouse-zone mouse-zone--previous" data-mouse-action="previous"></div>
+  <div class="mouse-zone mouse-zone--display" data-mouse-action="display"></div>
+  <div class="mouse-zone mouse-zone--next" data-mouse-action="next"></div>
+</div>
 <main class="projector__screen" id="projectorScreen">
   <div class="projector__screens" id="projectorScreens">
     {% for screen in screens %}
     <section class="screen{% if screen.blank %} is-blank{% endif %}{% if screen.single %} screen--single{% endif %}"
-             data-screen="{{ forloop.counter0 }}"{% if screen.single %} data-fit="single"{% endif %}
+             data-screen="{{ forloop.counter0 }}" data-entry="{{ screen.entry_index }}"
+             data-bait="{{ screen.bait|default_if_none:'' }}" data-split="{{ screen.split|default_if_none:'' }}"
+             data-split-total="{{ screen.split_total|default_if_none:'' }}"
+             data-bait-rest="{% if screen.bait_rest %}true{% endif %}"
+             {% if screen.single %} data-fit="single"{% endif %}
              aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
       {% if screen.header %}<h1 class="screen__head">{{ screen.header }}</h1>{% endif %}
       {% if screen.lines %}
@@ -43,6 +50,14 @@ that browser's tabs over the display channel (web/projector.js, web/display.js).
   {% endif %}
 </main>
 
+{% include 'reading/projector_controls.html' %}
+<section class="projector-find" id="projectorFind" aria-label="Projector find" hidden>
+  <label for="projectorFindInput" id="projectorFindLabel">Find in Service</label>
+  <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false">
+  <div id="projectorFindResults" role="listbox" aria-label="Matches"></div>
+</section>
+{{ projector_entries|json_script:"projectorEntryData" }}
+{{ projector_screens_data|json_script:"projectorScreenData" }}
 <script src="{% static 'web/projector.js' %}"></script>
 </body>
 </html>
