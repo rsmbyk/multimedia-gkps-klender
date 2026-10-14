@@ -209,6 +209,10 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     display: inline-flex; align-items: center; height: 24px; line-height: 1;
   }
   .cue > #cue-prefix { gap: .2em; }
+  /* The font's visible capitals sit 1px above the centered SVG artwork.
+     Adjust the lettering, keeping the HUD and its hit areas centered. */
+  #cue-prefix > span, #cue-prefix > i, #cue-next-name { transform: translateY(1px); }
+  .cue > .cue-separator, .cue > .cue-progress { padding-top: 2px; }
   .cue .on { color: var(--on); }
   .cue-service {
     appearance: none; display: inline-flex; align-items: center; justify-content: center;
@@ -244,7 +248,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     background: transparent; color: inherit; font: inherit; line-height: inherit;
     transition: color 140ms ease, opacity 140ms ease;
   }
-  .cue-bait, .cue-translation { display: inline-flex; align-items: center; height: 24px; }
+  .cue-bait, .cue-translation { display: inline-flex; align-items: center; height: 24px; padding-top: 2px; }
   .cue-bait { cursor: pointer; }
   .cue-bait[aria-pressed="true"] { color: var(--on); }
   .cue-bait:hover { color: #817d74; }
