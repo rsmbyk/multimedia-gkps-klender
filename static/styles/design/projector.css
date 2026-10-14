@@ -231,9 +231,13 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     color: var(--quiet); cursor: pointer;
   }
   .entry-list-dismiss[hidden] { display: none; }
+  body.projector.entry-list-open .entry-list-dismiss { animation: projectorBackdropIn 180ms var(--display-ease) both; }
+  body.projector.entry-list-closing .entry-list-dismiss { animation: projectorBackdropOut 180ms var(--display-ease) both; }
   .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; padding: 10px 0; background: var(--canvas); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
   .entry-list { max-width: calc(100vw - 64px); max-height: min(560px, calc(100vh - 90px)); }
   .entry-list[hidden] { display: none; }
+  body.projector.entry-list-open .entry-list { animation: projectorListIn 180ms var(--display-ease) both; }
+  body.projector.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
   .entry-list__heading { padding: 5px 16px 9px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
   .entry-list__item { display: grid; grid-template-columns: 26px 1fr; gap: 8px; width: 100%; min-height: 37px; align-items: center; padding: 7px 16px; border: 0; background: none; color: var(--on); text-align: left; font: inherit; cursor: pointer; }
   .entry-list__item:hover, .entry-list__item:focus-visible { background: #2a2722; color: var(--ink); outline: none; }
@@ -282,8 +286,9 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     cursor: url("./cursor-fullscreen.svg") 16 16, zoom-in;
   }
   body.projector.keys-open .mouse-zones, body.projector.entry-list-open .mouse-zones,
+  body.projector.keys-closing .mouse-zones, body.projector.entry-list-closing .mouse-zones,
   body.projector.find-open .mouse-zones { pointer-events: none; }
-  body.projector.keys-open .cue { pointer-events: none; }
+  body.projector.keys-open .cue, body.projector.keys-closing .cue { pointer-events: none; }
   body.projector.controls-idle:not(.keys-open):not(.entry-list-open) .cue,
   body.projector.controls-idle:not(.keys-open):not(.entry-list-open) .keys {
     opacity: 0; visibility: hidden; pointer-events: none;
@@ -302,12 +307,14 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   .cue { z-index: 5; transition: opacity 180ms ease, visibility 0s linear 180ms; }
   body.projector:not(.controls-idle) .cue,
   body.projector:not(.controls-idle) .keys { transition-delay: 0s; }
-  body.projector.keys-open::before {
+  body.projector.keys-open::before, body.projector.keys-closing::before {
     content: "";
     position: absolute; inset: 0; z-index: 1;
     background: rgba(8, 7, 5, 0.62);
     cursor: pointer;
   }
+  body.projector.keys-open::before { animation: projectorBackdropIn 180ms var(--display-ease) both; }
+  body.projector.keys-closing::before { animation: projectorBackdropOut 180ms var(--display-ease) both; }
   .sheet {
     position: absolute; left: 50%; top: 50%; z-index: 4;
     transform: translate(-50%, -50%);
@@ -320,7 +327,32 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     font-size: 14px; font-weight: 400; letter-spacing: 0; line-height: 1.25;
     color: var(--whisper);
   }
-  body.projector.keys-open .sheet { display: flex; }
+  body.projector.keys-open .sheet { display: flex; animation: projectorSheetIn 180ms var(--display-ease) both; }
+  body.projector.keys-closing .sheet { display: flex; pointer-events: none; animation: projectorSheetOut 180ms var(--display-ease) both; }
+  @keyframes projectorBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes projectorBackdropOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes projectorSheetIn {
+    from { opacity: 0; transform: translate(-50%, -50%) translateY(8px) scale(.985); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  @keyframes projectorSheetOut {
+    from { opacity: 1; transform: translate(-50%, -50%); }
+    to { opacity: 0; transform: translate(-50%, -50%) translateY(8px) scale(.985); }
+  }
+  @keyframes projectorListIn {
+    from { opacity: 0; transform: translateY(6px) scale(.99); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes projectorListOut {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(6px) scale(.99); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.projector.keys-open::before, body.projector.keys-closing::before,
+    body.projector.keys-open .sheet, body.projector.keys-closing .sheet,
+    body.projector.entry-list-open .entry-list-dismiss, body.projector.entry-list-closing .entry-list-dismiss,
+    body.projector.entry-list-open .entry-list, body.projector.entry-list-closing .entry-list { animation: none; }
+  }
   .stack { display: flex; flex-direction: column; gap: 24px; }
   .group h3 {
     margin: 0 0 4px;

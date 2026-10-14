@@ -333,21 +333,52 @@
     window.clearTimeout(translationTimer);
     translationTimer = window.setTimeout(function () { flip.classList.remove('flash'); }, 1000);
   }
+  var layerCloseMs = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
+  var keysCloseTimer, entryCloseTimer;
   function setKeysOpen(open) {
     if (open) setEntryListOpen(false);
-    body.classList.toggle('keys-open', open);
+    if (open) {
+      window.clearTimeout(keysCloseTimer);
+      body.classList.remove('keys-closing');
+      body.classList.add('keys-open');
+    } else if (body.classList.contains('keys-open')) {
+      window.clearTimeout(keysCloseTimer);
+      body.classList.remove('keys-open');
+      body.classList.add('keys-closing');
+      keysCloseTimer = window.setTimeout(function () {
+        body.classList.remove('keys-closing');
+        cue.inert = false;
+        revealControls();
+      }, layerCloseMs);
+    }
     keysButton.setAttribute('aria-expanded', String(open));
-    cue.inert = open;
+    cue.inert = open || body.classList.contains('keys-closing');
     revealControls();
   }
   function setEntryListOpen(open) {
     if (open && (body.classList.contains('keys-open') || body.classList.contains('corner-hidden'))) return;
-    body.classList.toggle('entry-list-open', open);
-    entryList.hidden = !open;
-    entryDismiss.hidden = true;
-    if (open) window.requestAnimationFrame(function () {
-      if (body.classList.contains('entry-list-open')) entryDismiss.hidden = false;
-    });
+    if (open) {
+      window.clearTimeout(entryCloseTimer);
+      body.classList.remove('entry-list-closing');
+      body.classList.add('entry-list-open');
+      entryList.hidden = false;
+      entryList.inert = false;
+      entryDismiss.hidden = true;
+      window.requestAnimationFrame(function () {
+        if (body.classList.contains('entry-list-open')) entryDismiss.hidden = false;
+      });
+    } else if (body.classList.contains('entry-list-open')) {
+      window.clearTimeout(entryCloseTimer);
+      body.classList.remove('entry-list-open');
+      body.classList.add('entry-list-closing');
+      entryList.inert = true;
+      entryCloseTimer = window.setTimeout(function () {
+        body.classList.remove('entry-list-closing');
+        entryList.hidden = true;
+        entryDismiss.hidden = true;
+        revealControls();
+      }, layerCloseMs);
+    }
     cueService.setAttribute('aria-expanded', String(open));
     revealControls();
     if (open) entryList.querySelector('[aria-current="true"]')?.scrollIntoView({block: 'nearest'});
@@ -362,7 +393,8 @@
     window.clearTimeout(controlsTimer);
     if (body.classList.contains('corner-hidden')) return;
     body.classList.remove('controls-idle');
-    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
+    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open') ||
+        body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing')) return;
     controlsTimer = window.setTimeout(function () { body.classList.add('controls-idle'); }, 30000);
   }
   ['pointermove', 'pointerdown', 'click'].forEach(function (name) {
@@ -407,6 +439,7 @@
     event.stopPropagation(); if (!body.classList.contains('keys-open') && !body.classList.contains('entry-list-open')) flipTranslation();
   });
   document.addEventListener('click', function (event) {
+    if (body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing')) return;
     if (body.classList.contains('keys-open')) {
       if (!event.target.closest('.sheet') && !event.target.closest('.keys')) setKeysOpen(false);
       return;
@@ -434,6 +467,7 @@
     if (document.fullscreenElement || fullscreenDenied || !document.fullscreenEnabled ||
         !document.documentElement.requestFullscreen) return;
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open') ||
+        body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing') ||
         !findPanel.hidden) return;
     if (!event.target.closest('#projectorScreen, .mouse-zones')) return;
     event.preventDefault();
@@ -635,6 +669,7 @@
   }
 
   function closeLayers() {
+    if (body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing')) return true;
     // Escape changes the browser's focus modality even after a pointer-opened
     // layer. Release its trigger so it does not light up on the mirrored display.
     if (body.classList.contains('keys-open')) {
@@ -653,7 +688,8 @@
       return;
     }
     if (!findPanel.hidden) return;
-    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
+    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open') ||
+        body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing')) return;
     if (event.altKey || event.metaKey) return;
     var key = event.key.toLowerCase();
     if (!event.ctrlKey && !event.shiftKey && ['j', 'g', 'b'].includes(key)) {

@@ -7,6 +7,7 @@
   :root {
     --hall: #2a2823; --wall: #14130F; --ink: #F5F3EE; --head: #FFD166;
     --whisper: #6E6A62; --on: #E8E4DC; --quiet: #8E8A80;
+    --display-ease: cubic-bezier(.32, .72, .28, 1);
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--hall); }
@@ -78,8 +79,12 @@
     color: var(--quiet); cursor: pointer;
   }
   .entry-list-dismiss[hidden] { display: none; }
+  .wall.entry-list-open .entry-list-dismiss { animation: projectorBackdropIn 180ms var(--display-ease) both; }
+  .wall.entry-list-closing .entry-list-dismiss { animation: projectorBackdropOut 180ms var(--display-ease) both; }
   .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; padding: 10px 0; background: var(--wall); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
   .entry-list[hidden] { display: none; }
+  .wall.entry-list-open .entry-list { animation: projectorListIn 180ms var(--display-ease) both; }
+  .wall.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
   .entry-list__heading { padding: 5px 16px 9px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
   .entry-list__item { display: grid; grid-template-columns: 26px 1fr; gap: 8px; width: 100%; min-height: 37px; align-items: center; padding: 7px 16px; border: 0; background: none; color: var(--on); text-align: left; font: inherit; cursor: pointer; }
   .entry-list__item:hover, .entry-list__item:focus-visible { background: #2a2722; color: var(--ink); outline: none; }
@@ -122,8 +127,9 @@
   .mouse-zone--next { cursor: url("./cursor-right.svg") 16 16, e-resize; }
   .mouse-zone--display { cursor: url("./cursor-hide.svg") 16 16, pointer; }
   .wall.words-hidden .mouse-zone--display { cursor: url("./cursor-show.svg") 16 16, pointer; }
-  .wall.keys-open .mouse-zones, .wall.entry-list-open .mouse-zones { pointer-events: none; }
-  .wall.keys-open .cue { pointer-events: none; }
+  .wall.keys-open .mouse-zones, .wall.entry-list-open .mouse-zones,
+  .wall.keys-closing .mouse-zones, .wall.entry-list-closing .mouse-zones { pointer-events: none; }
+  .wall.keys-open .cue, .wall.keys-closing .cue { pointer-events: none; }
   .wall.controls-idle:not(.keys-open):not(.entry-list-open) .cue,
   .wall.controls-idle:not(.keys-open):not(.entry-list-open) .keys {
     opacity: 0; visibility: hidden; pointer-events: none;
@@ -142,12 +148,14 @@
   .cue { z-index: 5; transition: opacity 180ms ease, visibility 0s linear 180ms; }
   .wall:not(.controls-idle) .cue,
   .wall:not(.controls-idle) .keys { transition-delay: 0s; }
-  .wall.keys-open::before {
+  .wall.keys-open::before, .wall.keys-closing::before {
     content: "";
     position: absolute; inset: 0; z-index: 1;
     background: rgba(8, 7, 5, 0.62);
     cursor: pointer;
   }
+  .wall.keys-open::before { animation: projectorBackdropIn 180ms var(--display-ease) both; }
+  .wall.keys-closing::before { animation: projectorBackdropOut 180ms var(--display-ease) both; }
   .sheet {
     position: absolute; left: 50%; top: 50%; z-index: 4;
     transform: translate(-50%, -50%);
@@ -159,7 +167,32 @@
     font-size: 14px; font-weight: 400; letter-spacing: 0; line-height: 1.25;
     color: var(--whisper);
   }
-  .wall.keys-open .sheet { display: flex; }
+  .wall.keys-open .sheet { display: flex; animation: projectorSheetIn 180ms var(--display-ease) both; }
+  .wall.keys-closing .sheet { display: flex; pointer-events: none; animation: projectorSheetOut 180ms var(--display-ease) both; }
+  @keyframes projectorBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes projectorBackdropOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes projectorSheetIn {
+    from { opacity: 0; transform: translate(-50%, -50%) translateY(8px) scale(.985); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  @keyframes projectorSheetOut {
+    from { opacity: 1; transform: translate(-50%, -50%); }
+    to { opacity: 0; transform: translate(-50%, -50%) translateY(8px) scale(.985); }
+  }
+  @keyframes projectorListIn {
+    from { opacity: 0; transform: translateY(6px) scale(.99); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes projectorListOut {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(6px) scale(.99); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wall.keys-open::before, .wall.keys-closing::before,
+    .wall.keys-open .sheet, .wall.keys-closing .sheet,
+    .wall.entry-list-open .entry-list-dismiss, .wall.entry-list-closing .entry-list-dismiss,
+    .wall.entry-list-open .entry-list, .wall.entry-list-closing .entry-list { animation: none; }
+  }
   .stack { display: flex; flex-direction: column; gap: 24px; }
   .group h3 {
     margin: 0 0 4px;
@@ -586,7 +619,8 @@
       window.clearTimeout(controlsTimer);
       if (wall.classList.contains('corner-hidden')) return;
       wall.classList.remove('controls-idle');
-      if (wall.classList.contains('keys-open') || wall.classList.contains('entry-list-open')) return;
+      if (wall.classList.contains('keys-open') || wall.classList.contains('entry-list-open') ||
+          wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
       controlsTimer = window.setTimeout(function () {
         wall.classList.add('controls-idle');
       }, 30000);
@@ -596,21 +630,52 @@
     });
     revealControls();
 
+    var layerCloseMs = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
+    var keysCloseTimer, entryCloseTimer;
     function setOpen(open) {
       if (open) setEntryListOpen(false);
-      wall.classList.toggle('keys-open', open);
+      if (open) {
+        window.clearTimeout(keysCloseTimer);
+        wall.classList.remove('keys-closing');
+        wall.classList.add('keys-open');
+      } else if (wall.classList.contains('keys-open')) {
+        window.clearTimeout(keysCloseTimer);
+        wall.classList.remove('keys-open');
+        wall.classList.add('keys-closing');
+        keysCloseTimer = window.setTimeout(function () {
+          wall.classList.remove('keys-closing');
+          wall.querySelector('.cue').inert = false;
+          revealControls();
+        }, layerCloseMs);
+      }
       button.setAttribute('aria-expanded', open ? 'true' : 'false');
-      wall.querySelector('.cue').inert = open;
+      wall.querySelector('.cue').inert = open || wall.classList.contains('keys-closing');
       revealControls();
     }
     function setEntryListOpen(open) {
       if (open && (wall.classList.contains('keys-open') || wall.classList.contains('corner-hidden'))) return;
-      wall.classList.toggle('entry-list-open', open);
-      entryList.hidden = !open;
-      entryListDismiss.hidden = true;
-      if (open) window.requestAnimationFrame(function () {
-        if (wall.classList.contains('entry-list-open')) entryListDismiss.hidden = false;
-      });
+      if (open) {
+        window.clearTimeout(entryCloseTimer);
+        wall.classList.remove('entry-list-closing');
+        wall.classList.add('entry-list-open');
+        entryList.hidden = false;
+        entryList.inert = false;
+        entryListDismiss.hidden = true;
+        window.requestAnimationFrame(function () {
+          if (wall.classList.contains('entry-list-open')) entryListDismiss.hidden = false;
+        });
+      } else if (wall.classList.contains('entry-list-open')) {
+        window.clearTimeout(entryCloseTimer);
+        wall.classList.remove('entry-list-open');
+        wall.classList.add('entry-list-closing');
+        entryList.inert = true;
+        entryCloseTimer = window.setTimeout(function () {
+          wall.classList.remove('entry-list-closing');
+          entryList.hidden = true;
+          entryListDismiss.hidden = true;
+          revealControls();
+        }, layerCloseMs);
+      }
       cueService.setAttribute('aria-expanded', open ? 'true' : 'false');
       revealControls();
       if (open) entryList.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
@@ -637,6 +702,7 @@
       setOpen(!wall.classList.contains('keys-open'));
     });
     wall.addEventListener('click', function (event) {
+      if (wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
       if (wall.classList.contains('keys-open')) {
         if (!event.target.closest('.sheet')) setOpen(false);
         return;
@@ -674,6 +740,7 @@
     });
 
     document.addEventListener('keydown', function (event) {
+      if (wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
       if (event.key === 'Escape') {
         if (wall.classList.contains('entry-list-open')) setEntryListOpen(false);
         else setOpen(false);

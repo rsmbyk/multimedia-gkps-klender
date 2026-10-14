@@ -372,6 +372,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 '(body, name) => body.classList.contains(name)', open_class))
             self.assertFalse(button.evaluate("el => el.matches(':focus-visible')"))
             self.assertEqual(button.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+            page.wait_for_function("!document.body.classList.contains('keys-closing') && !document.body.classList.contains('entry-list-closing')")
             page.locator('#cue-service').focus()
             page.keyboard.press('Tab')
             self.assertTrue(page.evaluate("document.activeElement.matches(':focus-visible')"))
