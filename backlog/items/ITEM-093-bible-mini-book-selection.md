@@ -1,6 +1,6 @@
 ---
 id: ITEM-093
-status: in_review
+status: done
 title: Keep the Bible book sidebar mini when selecting a book
 type: fix
 priority: P1

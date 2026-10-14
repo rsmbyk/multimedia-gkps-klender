@@ -21,4 +21,4 @@
 
 - [x] All acceptance scenarios in `spec.md` hold
 - [x] Targeted E2E passes
-- [ ] Board and tasks reach Done in this PR before merge
+- [x] Board and tasks reach Done in this PR before merge
