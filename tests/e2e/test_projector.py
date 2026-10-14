@@ -345,6 +345,21 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
         self.assertFalse(page.locator('body').evaluate("e => e.classList.contains('entry-list-open')"))
 
+    def test_escape_closes_both_hud_layers_without_a_lingering_focus_ring(self):
+        page = self._page(self._projector_url())
+        for selector, open_class in (('#cue-service', 'entry-list-open'), ('.keys', 'keys-open')):
+            button = page.locator(selector)
+            button.click()
+            page.mouse.move(700, 100)
+            page.keyboard.press('Escape')
+            self.assertFalse(page.locator('body').evaluate(
+                '(body, name) => body.classList.contains(name)', open_class))
+            self.assertFalse(button.evaluate("el => el.matches(':focus-visible')"))
+            self.assertEqual(button.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+            page.locator('#cue-service').focus()
+            page.keyboard.press('Tab')
+            self.assertTrue(page.evaluate("document.activeElement.matches(':focus-visible')"))
+
     def test_corner_cue_parts_share_the_bottom_band_vertical_center(self):
         for width, height in ((1366, 768), (1920, 1080)):
             context = self.browser.new_context(viewport={'width': width, 'height': height})

@@ -618,8 +618,14 @@
   }
 
   function closeLayers() {
-    if (body.classList.contains('keys-open')) { setKeysOpen(false); return true; }
-    if (body.classList.contains('entry-list-open')) { setEntryListOpen(false); return true; }
+    // Escape changes the browser's focus modality even after a pointer-opened
+    // layer. Release its trigger so it does not light up on the mirrored display.
+    if (body.classList.contains('keys-open')) {
+      setKeysOpen(false); keysButton.blur(); return true;
+    }
+    if (body.classList.contains('entry-list-open')) {
+      setEntryListOpen(false); cueService.blur(); return true;
+    }
     if (!findPanel.hidden) { closeFind(); return true; }
     return false;
   }
