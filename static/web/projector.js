@@ -332,6 +332,14 @@
     if (entryListChoice == null) entryListSearch.removeAttribute('aria-activedescendant');
     else entryListSearch.setAttribute('aria-activedescendant', 'entry-list-option-' + entryListChoice);
   }
+  function scrollEntryListChoice() {
+    var selected = entryList.querySelector('[data-active="true"]');
+    if (!selected) return;
+    var position = entryListMatches.indexOf(entryListChoice);
+    if (position === entryListMatches.length - 1) entryList.scrollTop = entryList.scrollHeight;
+    else if (position === 0) entryList.scrollTop = 0;
+    else selected.scrollIntoView({block: 'nearest'});
+  }
   function flipTranslation() {
     if (detour && detour.kind === 'passage') {
       detour.translation = detour.translation === 'TB' ? 'SIM' : 'TB';
@@ -410,7 +418,7 @@
     }
     cueService.setAttribute('aria-expanded', String(open));
     revealControls();
-    if (open) entryList.querySelector('[data-active="true"]')?.scrollIntoView({block: 'nearest'});
+    if (open) scrollEntryListChoice();
   }
   var cursorTimer, controlsTimer;
   function revealCursor() {
@@ -451,7 +459,7 @@
   entryListSearch.addEventListener('input', function () {
     entryListChoice = undefined;
     renderEntryList();
-    entryList.querySelector('[data-active="true"]')?.scrollIntoView({block: 'nearest'});
+    scrollEntryListChoice();
   });
   entryListSearch.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' || (event.key === 'Backspace' && !entryListSearch.value)) {
@@ -462,7 +470,7 @@
       var position = entryListMatches.indexOf(entryListChoice);
       entryListChoice = entryListMatches[(position + (event.key === 'ArrowDown' ? 1 : -1) + entryListMatches.length) % entryListMatches.length];
       renderEntryList();
-      entryList.querySelector('[data-active="true"]')?.scrollIntoView({block: 'nearest'});
+      scrollEntryListChoice();
     } else if (event.key === 'Enter') {
       event.preventDefault(); event.stopPropagation(); chooseEntryList(entryListChoice);
     }

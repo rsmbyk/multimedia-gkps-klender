@@ -519,6 +519,14 @@
       if (entryListChoice == null) entryListSearch.removeAttribute('aria-activedescendant');
       else entryListSearch.setAttribute('aria-activedescendant', 'entry-list-option-' + entryListChoice);
     }
+    function scrollEntryListChoice() {
+      var selected = entryList.querySelector('[data-active="true"]');
+      if (!selected) return;
+      var position = entryListMatches.indexOf(entryListChoice);
+      if (position === entryListMatches.length - 1) entryList.scrollTop = entryList.scrollHeight;
+      else if (position === 0) entryList.scrollTop = 0;
+      else selected.scrollIntoView({ block: 'nearest' });
+    }
     function currentPages() {
       var entry = currentEntry();
       return entry.type === 'song' ? entry.baits[baitIndex].pages
@@ -731,7 +739,7 @@
       }
       cueService.setAttribute('aria-expanded', open ? 'true' : 'false');
       revealControls();
-      if (open) entryList.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' });
+      if (open) scrollEntryListChoice();
     }
     cueService.addEventListener('click', function (event) {
       event.stopPropagation();
@@ -749,7 +757,7 @@
     entryListSearch.addEventListener('input', function () {
       entryListChoice = undefined;
       renderEntryList();
-      entryList.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' });
+      scrollEntryListChoice();
     });
     entryListSearch.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' || (event.key === 'Backspace' && !entryListSearch.value)) {
@@ -760,7 +768,7 @@
         var position = entryListMatches.indexOf(entryListChoice);
         entryListChoice = entryListMatches[(position + (event.key === 'ArrowDown' ? 1 : -1) + entryListMatches.length) % entryListMatches.length];
         renderEntryList();
-        entryList.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' });
+        scrollEntryListChoice();
       } else if (event.key === 'Enter') {
         event.preventDefault(); event.stopPropagation(); chooseEntryList(entryListChoice);
       }

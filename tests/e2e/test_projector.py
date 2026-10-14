@@ -445,6 +445,30 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('g')
         self.assertTrue(page.locator('#projectorFind').is_visible())
 
+    def test_service_list_arrow_navigation_reaches_both_scroll_ends(self):
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 280})
+        page = self._page(self._projector_url(), context)
+        page.keyboard.press('j')
+        for _ in range(4):
+            page.keyboard.press('ArrowDown')
+        end = page.locator('#entry-list').evaluate("""list => {
+          const row = list.querySelector('[data-active="true"]').getBoundingClientRect();
+          const panel = list.getBoundingClientRect();
+          return {rowBottom: row.bottom, panelBottom: panel.bottom,
+                  scrollTop: list.scrollTop, maxScroll: list.scrollHeight - list.clientHeight};
+        }""")
+        self.assertLessEqual(end['rowBottom'], end['panelBottom'])
+        self.assertAlmostEqual(end['scrollTop'], end['maxScroll'], delta=1)
+        for _ in range(4):
+            page.keyboard.press('ArrowUp')
+        start = page.locator('#entry-list').evaluate("""list => ({
+          rowTop: list.querySelector('[data-active="true"]').getBoundingClientRect().top,
+          headerBottom: list.querySelector('.entry-list__header').getBoundingClientRect().bottom,
+          scrollTop: list.scrollTop
+        })""")
+        self.assertGreaterEqual(start['rowTop'] + 1, start['headerBottom'])
+        self.assertAlmostEqual(start['scrollTop'], 0, delta=1)
+
     def test_corner_cue_parts_share_the_bottom_band_vertical_center(self):
         for width, height in ((1366, 768), (1920, 1080)):
             context = self.browser.new_context(viewport={'width': width, 'height': height})
