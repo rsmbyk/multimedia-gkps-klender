@@ -338,7 +338,12 @@
     var position = entryListMatches.indexOf(entryListChoice);
     if (position === entryListMatches.length - 1) entryList.scrollTop = entryList.scrollHeight;
     else if (position === 0) entryList.scrollTop = 0;
-    else selected.scrollIntoView({block: 'nearest'});
+    else {
+      var header = entryList.querySelector('.entry-list__header').getBoundingClientRect();
+      var row = selected.getBoundingClientRect();
+      var visibleHeight = entryList.clientHeight - header.height;
+      entryList.scrollTop += row.top - header.bottom - (visibleHeight - row.height) / 2;
+    }
   }
   function flipTranslation() {
     if (detour && detour.kind === 'passage') {

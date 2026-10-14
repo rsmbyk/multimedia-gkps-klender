@@ -449,7 +449,20 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         context = self.browser.new_context(viewport={'width': 1440, 'height': 280})
         page = self._page(self._projector_url(), context)
         page.keyboard.press('j')
-        for _ in range(4):
+        for _ in range(2):
+            page.keyboard.press('ArrowDown')
+        middle = page.locator('#entry-list').evaluate("""list => {
+          const row = list.querySelector('[data-active="true"]').getBoundingClientRect();
+          const header = list.querySelector('.entry-list__header').getBoundingClientRect();
+          const panel = list.getBoundingClientRect();
+          return {rowTop: row.top, rowBottom: row.bottom, headerBottom: header.bottom,
+                  panelBottom: panel.bottom, rowCenter: (row.top + row.bottom) / 2,
+                  visibleCenter: (header.bottom + panel.bottom) / 2};
+        }""")
+        self.assertGreaterEqual(middle['rowTop'] + 1, middle['headerBottom'])
+        self.assertLessEqual(middle['rowBottom'], middle['panelBottom'] + 1)
+        self.assertAlmostEqual(middle['rowCenter'], middle['visibleCenter'], delta=2)
+        for _ in range(2):
             page.keyboard.press('ArrowDown')
         end = page.locator('#entry-list').evaluate("""list => {
           const row = list.querySelector('[data-active="true"]').getBoundingClientRect();
