@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-093](./items/ITEM-093-bible-mini-book-selection.md) | Keep the Bible book sidebar mini when selecting a book | Choosing another Bible book opens its chapters without expanding the mini sidebar | fix | P1 | S | [090](../specs/090-bible-mini-book-selection/spec.md) | `fix/090-bible-mini-book-selection` | 2026-10-14 |
 
 ## In review
 
