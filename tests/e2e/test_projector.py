@@ -417,6 +417,16 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         search = page.locator('#entry-list-search')
         self.assertTrue(search.evaluate('el => document.activeElement === el'))
         self.assertEqual(page.locator('.entry-list__item').count(), 5)
+        page.keyboard.press('ArrowDown')
+        styles = page.locator('#entry-list').evaluate("""list => {
+          const current = list.querySelector('[aria-current="true"]');
+          const selected = list.querySelector('[data-active="true"]');
+          return {current: getComputedStyle(current).backgroundColor,
+                  selected: getComputedStyle(selected).backgroundColor,
+                  currentMarker: getComputedStyle(current).boxShadow};
+        }""")
+        self.assertNotEqual(styles['current'], styles['selected'])
+        self.assertNotEqual(styles['currentMarker'], 'none')
         search.fill('bait 1')
         self.assertEqual(page.locator('.entry-list__item').count(), 1)
         search.fill('Salam')
