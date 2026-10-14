@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.10.11] - 2026-10-14
+
+### Fixed
+
+- Selecting another Bible book from the mini sidebar keeps the book panel mini while opening that book's chapter list. The selected book can still toggle its chapters, and the expand control still opens the panel.
+
 ## [1.10.10] - 2026-10-13
 
 ### Fixed

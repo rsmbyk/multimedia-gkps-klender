@@ -579,7 +579,10 @@
         event.preventDefault();
         hideTileTip();
         var href = tile.getAttribute('href') || '';
-        navigate(tile.href, { kind: /\/tatib\//.test(href) ? 'service' : 'lists' });
+        navigate(tile.href, {
+          kind: activeSection === 'alkitab' ? 'bible-book'
+            : /\/tatib\//.test(href) ? 'service' : 'lists'
+        });
       });
     });
     var mode = panel.querySelector('.panel__filter .panel__mode');
@@ -1129,6 +1132,9 @@
       }
     } else if (kind === 'sync') {
       root.dataset.nav = fresh.nav || 'open';
+      root.dataset.ch = fresh.ch || root.dataset.ch;
+    } else if (kind === 'bible-book') {
+      /* Changing books replaces the chapter list, not the operator's mini/open panel choice. */
       root.dataset.ch = fresh.ch || root.dataset.ch;
     } else {
       root.dataset.nav = fresh.nav || root.dataset.nav;

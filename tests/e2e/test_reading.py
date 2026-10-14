@@ -1449,6 +1449,9 @@ class SidebarStateOnItemOpenTests(StaticLiveServerTestCase):
         for chapter in (5, 20):
             bible.Verse.objects.create(book_translation=translation, chapter=chapter, verse=1,
                                        text='Isi pasal %d' % chapter)
+        self.mar = bible.Book.objects.create(name='Mar', testament='new', number_of_chapters=16)
+        bible.BookTranslation.objects.create(
+            version=version, book=self.mar, translation='Markus')
         self.songbook = songs.Book.objects.create(
             name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
         for number in (1, 2):
@@ -1518,6 +1521,35 @@ class SidebarStateOnItemOpenTests(StaticLiveServerTestCase):
 
         expect(page.locator('#read')).to_contain_text('Isi pasal 20')
         expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+    def test_selecting_a_bible_book_preserves_the_mini_panel(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        page.locator('#panelCollapse').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+        mar = page.locator('#panelBody a.book[href="%s"]' % reverse('web-bible-book', args=[self.mar.pk]))
+        mar.click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        expect(page.locator('#panelBody a.book[aria-current="true"]')).to_have_attribute(
+            'href', reverse('web-bible-book', args=[self.mar.pk]))
+        expect(page.locator('#chTitle')).to_contain_text('Markus')
+        expect(page.locator('#chList a.ch-num')).to_have_count(16)
+
+        mar.click()
+        expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+        mar.click()
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+        page.locator('#panelExpand').click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.locator('#panelBody a.book[href="%s"]' % reverse('web-bible-book', args=[self.mat.pk])).click()
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        expect(page.locator('#chTitle')).to_contain_text('Matius')
+        expect(page.locator('#chList a.ch-num')).to_have_count(28)
 
     def test_a_main_menu_switch_still_opens_the_arriving_panel(self):
         page = self._page()
