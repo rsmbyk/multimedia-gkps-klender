@@ -1,6 +1,6 @@
 ---
 id: ITEM-093
-status: in_progress
+status: in_review
 title: Keep the Bible book sidebar mini when selecting a book
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-14
 updated: 2026-10-14
 spec: ../../specs/090-bible-mini-book-selection/spec.md
 branch: fix/090-bible-mini-book-selection
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/345
 archived_at:
 archive_reason:
 bump: patch

@@ -14,11 +14,11 @@
 - [x] Fill Traceability in `./spec.md` with the final test and implementation references
 - [x] Set `bump` on the ITEM and spec header
 - [x] If bump is not `none`: update `VERSION`, `CHANGELOG.md`, and `release_version` in this PR
-- [ ] Update ITEM and [`backlog/board.md`](../../backlog/board.md) in this PR
-- [ ] Conventional Commit and draft PR linking `./spec.md`
+- [x] Update ITEM and [`backlog/board.md`](../../backlog/board.md) in this PR (In review while open)
+- [x] Conventional Commit and [draft PR #345](https://github.com/rsmbyk/multimedia-gkps-klender/pull/345) linking `./spec.md`
 
 ## Done when
 
-- [ ] All acceptance scenarios in `spec.md` hold
-- [ ] Targeted E2E passes
-- [ ] Board, tasks, and version are complete in this PR
+- [x] All acceptance scenarios in `spec.md` hold
+- [x] Targeted E2E passes
+- [ ] Board and tasks reach Done in this PR before merge
