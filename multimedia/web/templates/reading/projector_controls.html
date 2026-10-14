@@ -38,7 +38,13 @@
     </button>
   </div>
   <button type="button" class="entry-list-dismiss" id="entry-list-dismiss" aria-label="Close service entries" hidden></button>
-  <div class="entry-list" id="entry-list" aria-label="Service entries" hidden></div>
+  <div class="entry-list" id="entry-list" aria-label="Service entries" hidden>
+    <div class="entry-list__header">
+      <label class="entry-list__heading" for="entry-list-search">SERVICE ENTRIES</label>
+      <input id="entry-list-search" class="entry-list__search" type="search" placeholder="Search entries" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="entry-list-results">
+    </div>
+    <div id="entry-list-results" class="entry-list__results" role="listbox" aria-label="Matching service entries"></div>
+  </div>
   <button type="button" class="keys" aria-label="Shortcuts" aria-expanded="false" aria-controls="key-list"><svg aria-hidden="true"><use href="#kbd"/></svg></button>
   <div class="sheet" id="key-list">
     <div class="stack">

@@ -82,7 +82,7 @@
   .entry-list-dismiss[hidden] { display: none; }
   .wall.entry-list-open .entry-list-dismiss { animation: projectorBackdropIn 180ms var(--display-ease) both; }
   .wall.entry-list-closing .entry-list-dismiss { animation: projectorBackdropOut 180ms var(--display-ease) both; }
-  .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; padding: 10px 0; background: var(--wall); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
+  .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; scroll-padding-top: 68px; background: var(--wall); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
   @supports not selector(::-webkit-scrollbar) {
     .entry-list { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
   }
@@ -94,9 +94,14 @@
   .entry-list[hidden] { display: none; }
   .wall.entry-list-open .entry-list { animation: projectorListIn 180ms var(--display-ease) both; }
   .wall.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
-  .entry-list__heading { padding: 5px 16px 9px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
+  .entry-list__header { position: sticky; top: 0; z-index: 1; padding: 10px 16px 9px; background: var(--wall); }
+  .entry-list__heading { display: block; margin-bottom: 8px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
+  .entry-list__search { width: 100%; padding: 7px 9px; border: 1px solid #4a463f; border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
+  .entry-list__search:focus-visible { border-color: var(--quiet); }
+  .entry-list__results { padding-bottom: 10px; }
+  .entry-list__empty { padding: 9px 16px; color: var(--quiet); }
   .entry-list__item { display: grid; grid-template-columns: 26px 1fr; gap: 8px; width: 100%; min-height: 37px; align-items: center; padding: 7px 16px; border: 0; background: none; color: var(--on); text-align: left; font: inherit; cursor: pointer; }
-  .entry-list__item:hover, .entry-list__item:focus-visible { background: #2a2722; color: var(--ink); outline: none; }
+  .entry-list__item:hover, .entry-list__item:focus-visible, .entry-list__item[data-active="true"] { background: #2a2722; color: var(--ink); outline: none; }
   .entry-list__item[aria-current="true"] { background: #2a2722; color: var(--on); box-shadow: inset 2px 0 var(--quiet); }
   .entry-list__number { color: var(--quiet); font-variant-numeric: tabular-nums; }
   .entry-list__item[aria-current="true"] .entry-list__number { color: var(--on); }
@@ -299,7 +304,13 @@
     </button>
   </div>
   <button type="button" class="entry-list-dismiss" id="entry-list-dismiss" aria-label="Close service entries" hidden></button>
-  <div class="entry-list" id="entry-list" aria-label="Service entries" hidden></div>
+  <div class="entry-list" id="entry-list" aria-label="Service entries" hidden>
+    <div class="entry-list__header">
+      <label class="entry-list__heading" for="entry-list-search">SERVICE ENTRIES</label>
+      <input id="entry-list-search" class="entry-list__search" type="search" placeholder="Search entries" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="entry-list-results">
+    </div>
+    <div id="entry-list-results" class="entry-list__results" role="listbox" aria-label="Matching service entries"></div>
+  </div>
   <button type="button" class="keys" aria-label="Shortcuts" aria-expanded="false" aria-controls="key-list"><svg aria-hidden="true"><use href="#kbd"/></svg></button>
   <div class="sheet" id="key-list">
     <div class="stack">
@@ -424,6 +435,10 @@
     var cueService = document.getElementById('cue-service');
     var entryList = document.getElementById('entry-list');
     var entryListDismiss = document.getElementById('entry-list-dismiss');
+    var entryListSearch = document.getElementById('entry-list-search');
+    var entryListResults = document.getElementById('entry-list-results');
+    var entryListMatches = [];
+    var entryListChoice = 0;
     var entries = [
       {
         type: 'passage', title: 'Mateus 5:13', prefix: 'Mateus 5:13–16', next: 'NKB 12A',
@@ -457,18 +472,30 @@
 
     function currentEntry() { return entries[entryIndex]; }
     function entryLabel(entry) { return entry.title || entry.prefix; }
+    function normalize(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
     function renderEntryList() {
-      entryList.replaceChildren();
-      var heading = document.createElement('div');
-      heading.className = 'entry-list__heading';
-      heading.textContent = 'SERVICE ENTRIES';
-      entryList.appendChild(heading);
-      entries.forEach(function (entry, index) {
+      var query = normalize(entryListSearch.value.trim());
+      entryListMatches = entries.map(function (entry, index) { return index; }).filter(function (index) {
+        var entry = entries[index];
+        var searchable = (index + 1) + ' ' + entryLabel(entry) + ' ' +
+          (entry.baits ? 'Bait ' + entry.baits.map(function (bait) { return bait.number; }).join(', ') : '');
+        return normalize(searchable).includes(query);
+      });
+      if (!entryListMatches.includes(entryListChoice)) entryListChoice = entryListMatches[0];
+      entryListResults.replaceChildren();
+      entryListMatches.forEach(function (index) {
+        var entry = entries[index];
         var item = document.createElement('button');
         item.type = 'button';
         item.className = 'entry-list__item';
+        item.id = 'entry-list-option-' + index;
+        item.setAttribute('role', 'option');
         item.dataset.entryIndex = String(index);
         if (index === entryIndex) item.setAttribute('aria-current', 'true');
+        item.dataset.active = String(index === entryListChoice);
+        item.setAttribute('aria-selected', String(index === entryListChoice));
         var number = document.createElement('span');
         number.className = 'entry-list__number';
         number.textContent = String(index + 1);
@@ -481,8 +508,16 @@
           name.appendChild(meta);
         }
         item.append(number, name);
-        entryList.appendChild(item);
+        entryListResults.appendChild(item);
       });
+      if (!entryListMatches.length) {
+        var empty = document.createElement('div');
+        empty.className = 'entry-list__empty'; empty.textContent = 'No matching entries';
+        empty.setAttribute('role', 'status');
+        entryListResults.appendChild(empty);
+      }
+      if (entryListChoice == null) entryListSearch.removeAttribute('aria-activedescendant');
+      else entryListSearch.setAttribute('aria-activedescendant', 'entry-list-option-' + entryListChoice);
     }
     function currentPages() {
       var entry = currentEntry();
@@ -665,8 +700,11 @@
       revealControls();
     }
     function setEntryListOpen(open) {
-      if (open && (wall.classList.contains('keys-open') || wall.classList.contains('corner-hidden'))) return;
+      if (open && wall.classList.contains('keys-open')) return;
       if (open) {
+        entryListSearch.value = '';
+        entryListChoice = entryIndex;
+        renderEntryList();
         window.clearTimeout(entryCloseTimer);
         wall.classList.remove('entry-list-closing');
         wall.classList.add('entry-list-open');
@@ -676,7 +714,9 @@
         window.requestAnimationFrame(function () {
           if (wall.classList.contains('entry-list-open')) entryListDismiss.hidden = false;
         });
+        entryListSearch.focus();
       } else if (wall.classList.contains('entry-list-open')) {
+        entryListSearch.blur();
         cueService.blur();
         window.clearTimeout(entryCloseTimer);
         wall.classList.remove('entry-list-open');
@@ -691,7 +731,7 @@
       }
       cueService.setAttribute('aria-expanded', open ? 'true' : 'false');
       revealControls();
-      if (open) entryList.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
+      if (open) entryList.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' });
     }
     cueService.addEventListener('click', function (event) {
       event.stopPropagation();
@@ -701,12 +741,35 @@
       event.stopPropagation();
       setEntryListOpen(false);
     });
+    function chooseEntryList(index) {
+      if (!entries[index]) return;
+      moveToEntry(index);
+      setEntryListOpen(false);
+    }
+    entryListSearch.addEventListener('input', function () {
+      entryListChoice = undefined;
+      renderEntryList();
+      entryList.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' });
+    });
+    entryListSearch.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' || (event.key === 'Backspace' && !entryListSearch.value)) {
+        event.preventDefault(); event.stopPropagation(); setEntryListOpen(false);
+      } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault(); event.stopPropagation();
+        if (!entryListMatches.length) return;
+        var position = entryListMatches.indexOf(entryListChoice);
+        entryListChoice = entryListMatches[(position + (event.key === 'ArrowDown' ? 1 : -1) + entryListMatches.length) % entryListMatches.length];
+        renderEntryList();
+        entryList.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' });
+      } else if (event.key === 'Enter') {
+        event.preventDefault(); event.stopPropagation(); chooseEntryList(entryListChoice);
+      }
+    });
     entryList.addEventListener('click', function (event) {
       var item = event.target.closest('.entry-list__item');
       if (!item) return;
       event.stopPropagation();
-      moveToEntry(Number(item.dataset.entryIndex));
-      setEntryListOpen(false);
+      chooseEntryList(Number(item.dataset.entryIndex));
     });
     button.addEventListener('click', function (event) {
       event.stopPropagation();
@@ -751,7 +814,11 @@
     });
 
     document.addEventListener('keydown', function (event) {
+      if (event.target === entryListSearch) return;
       if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.repeat) {
+        if (event.key.toLowerCase() === 'j' && !wall.classList.contains('keys-open')) {
+          event.preventDefault(); setEntryListOpen(true); return;
+        }
         if (event.key.toLowerCase() === 'k') {
           event.preventDefault(); setOpen(!wall.classList.contains('keys-open')); return;
         }

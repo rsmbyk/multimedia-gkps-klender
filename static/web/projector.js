@@ -173,6 +173,10 @@
   var keysButton = document.querySelector('.keys');
   var entryList = document.getElementById('entry-list');
   var entryDismiss = document.getElementById('entry-list-dismiss');
+  var entryListSearch = document.getElementById('entry-list-search');
+  var entryListResults = document.getElementById('entry-list-results');
+  var entryListMatches = [];
+  var entryListChoice = 0;
   var findPanel = document.getElementById('projectorFind');
   var findInput = document.getElementById('projectorFindInput');
   var findResults = document.getElementById('projectorFindResults');
@@ -290,15 +294,25 @@
   }
   function renderEntryList() {
     if (!entryList) return;
-    entryList.replaceChildren();
-    var heading = document.createElement('div');
-    heading.className = 'entry-list__heading'; heading.textContent = 'SERVICE ENTRIES';
-    entryList.appendChild(heading);
-    entries.forEach(function (entry, index) {
+    var query = normalize(entryListSearch.value.trim());
+    entryListMatches = entries.map(function (entry, index) { return index; }).filter(function (index) {
+      var entry = entries[index];
+      var searchable = (index + 1) + ' ' + (entry.label || 'Section break') + ' ' +
+        (entry.baits.length ? 'Bait ' + entry.baits.map(function (bait) { return bait.number; }).join(', ') : '');
+      return normalize(searchable).includes(query);
+    });
+    if (!entryListMatches.includes(entryListChoice)) entryListChoice = entryListMatches[0];
+    entryListResults.replaceChildren();
+    entryListMatches.forEach(function (index) {
+      var entry = entries[index];
       var row = document.createElement('button');
       row.type = 'button'; row.className = 'entry-list__item';
+      row.id = 'entry-list-option-' + index;
+      row.setAttribute('role', 'option');
       row.dataset.entryIndex = String(index);
       if (index === entryIndex()) row.setAttribute('aria-current', 'true');
+      row.dataset.active = String(index === entryListChoice);
+      row.setAttribute('aria-selected', String(index === entryListChoice));
       var number = document.createElement('span');
       number.className = 'entry-list__number'; number.textContent = String(index + 1);
       var title = document.createElement('span'); title.textContent = entry.label || 'Section break';
@@ -307,8 +321,16 @@
         meta.textContent = 'Bait ' + entry.baits.map(function (bait) { return bait.number; }).join(', ');
         title.appendChild(meta);
       }
-      row.append(number, title); entryList.appendChild(row);
+      row.append(number, title); entryListResults.appendChild(row);
     });
+    if (!entryListMatches.length) {
+      var empty = document.createElement('div');
+      empty.className = 'entry-list__empty'; empty.textContent = 'No matching entries';
+      empty.setAttribute('role', 'status');
+      entryListResults.appendChild(empty);
+    }
+    if (entryListChoice == null) entryListSearch.removeAttribute('aria-activedescendant');
+    else entryListSearch.setAttribute('aria-activedescendant', 'entry-list-option-' + entryListChoice);
   }
   function flipTranslation() {
     if (detour && detour.kind === 'passage') {
@@ -357,8 +379,11 @@
     revealControls();
   }
   function setEntryListOpen(open) {
-    if (open && (body.classList.contains('keys-open') || body.classList.contains('corner-hidden'))) return;
+    if (open && body.classList.contains('keys-open')) return;
     if (open) {
+      entryListSearch.value = '';
+      entryListChoice = entryIndex();
+      renderEntryList();
       window.clearTimeout(entryCloseTimer);
       body.classList.remove('entry-list-closing');
       body.classList.add('entry-list-open');
@@ -368,7 +393,9 @@
       window.requestAnimationFrame(function () {
         if (body.classList.contains('entry-list-open')) entryDismiss.hidden = false;
       });
+      entryListSearch.focus();
     } else if (body.classList.contains('entry-list-open')) {
+      entryListSearch.blur();
       cueService.blur();
       window.clearTimeout(entryCloseTimer);
       body.classList.remove('entry-list-open');
@@ -383,7 +410,7 @@
     }
     cueService.setAttribute('aria-expanded', String(open));
     revealControls();
-    if (open) entryList.querySelector('[aria-current="true"]')?.scrollIntoView({block: 'nearest'});
+    if (open) entryList.querySelector('[data-active="true"]')?.scrollIntoView({block: 'nearest'});
   }
   var cursorTimer, controlsTimer;
   function revealCursor() {
@@ -416,11 +443,34 @@
   entryDismiss.addEventListener('click', function (event) {
     event.stopPropagation(); setEntryListOpen(false);
   });
+  function chooseEntryList(index) {
+    if (!entries[index]) return;
+    leaveDetour(); moveTo(entries[index].start);
+    setEntryListOpen(false);
+  }
+  entryListSearch.addEventListener('input', function () {
+    entryListChoice = undefined;
+    renderEntryList();
+    entryList.querySelector('[data-active="true"]')?.scrollIntoView({block: 'nearest'});
+  });
+  entryListSearch.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' || (event.key === 'Backspace' && !entryListSearch.value)) {
+      event.preventDefault(); event.stopPropagation(); setEntryListOpen(false);
+    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault(); event.stopPropagation();
+      if (!entryListMatches.length) return;
+      var position = entryListMatches.indexOf(entryListChoice);
+      entryListChoice = entryListMatches[(position + (event.key === 'ArrowDown' ? 1 : -1) + entryListMatches.length) % entryListMatches.length];
+      renderEntryList();
+      entryList.querySelector('[data-active="true"]')?.scrollIntoView({block: 'nearest'});
+    } else if (event.key === 'Enter') {
+      event.preventDefault(); event.stopPropagation(); chooseEntryList(entryListChoice);
+    }
+  });
   entryList.addEventListener('click', function (event) {
     var row = event.target.closest('.entry-list__item');
     if (!row) return;
-    event.stopPropagation(); leaveDetour(); moveTo(entries[Number(row.dataset.entryIndex)].start);
-    setEntryListOpen(false);
+    event.stopPropagation(); chooseEntryList(Number(row.dataset.entryIndex));
   });
   cueNext.addEventListener('click', function (event) {
     event.stopPropagation();
@@ -485,11 +535,12 @@
     return window.location.pathname + path + '?' + new URLSearchParams(params).toString();
   }
   function openFind(kind) {
+    if (kind === 'j') { setEntryListOpen(true); return; }
     if (kind === 'b' && (!entryAt(current) || entryAt(current).type !== 'song') &&
         (!detour || detour.kind !== 'song')) return;
     findKind = kind; findChoice = 0;
     document.getElementById('projectorFindLabel').textContent =
-      kind === 'j' ? 'Find in Service' : kind === 'b' ? 'Go to Bait' : 'Passage or Song';
+      kind === 'b' ? 'Go to Bait' : 'Passage or Song';
     findInput.value = '';
     findPanel.hidden = false;
     body.classList.add('find-open');
@@ -500,11 +551,7 @@
   var lookupSequence = 0;
   function refreshFind() {
     var query = normalize(findInput.value.trim());
-    if (findKind === 'j') {
-      findRows = entries.map(function (entry, index) {
-        return {label: (index + 1) + '  ' + (entry.label || 'Section break'), index: index};
-      }).filter(function (row) { return normalize(row.label).includes(query); });
-    } else if (findKind === 'b') {
+    if (findKind === 'b') {
       var baits = detour && detour.kind === 'song' ? detour.baits : entryAt(current).baits;
       findRows = baits.map(function (bait, index) {
         return {label: 'Bait ' + bait.number, index: index};
@@ -537,8 +584,7 @@
   function chooseFind(index) {
     var row = findRows[index];
     if (!row) return;
-    if (findKind === 'j') { leaveDetour(); moveTo(entries[row.index].start); }
-    else if (findKind === 'b') {
+    if (findKind === 'b') {
       if (detour && detour.kind === 'song') { detour.index = detour.baits[row.index].start; renderDetour(); }
       else moveToBait(row.index);
     } else if (findKind === 'g') openDetour(row);
@@ -684,6 +730,7 @@
     return false;
   }
   document.addEventListener('keydown', function (event) {
+    if (event.target === entryListSearch) return;
     if (event.key === 'Escape') {
       if (closeLayers()) { event.preventDefault(); return; }
       if (detour) { event.preventDefault(); leaveDetour(); return; }

@@ -233,7 +233,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   .entry-list-dismiss[hidden] { display: none; }
   body.projector.entry-list-open .entry-list-dismiss { animation: projectorBackdropIn 180ms var(--display-ease) both; }
   body.projector.entry-list-closing .entry-list-dismiss { animation: projectorBackdropOut 180ms var(--display-ease) both; }
-  .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; padding: 10px 0; background: var(--canvas); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
+  .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; scroll-padding-top: 68px; background: var(--canvas); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
   .entry-list { max-width: calc(100vw - 64px); max-height: min(560px, calc(100vh - 90px)); }
   /* Match the app's shared scrollbar; this standalone page does not load components.css. */
   @supports not selector(::-webkit-scrollbar) {
@@ -247,9 +247,14 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   .entry-list[hidden] { display: none; }
   body.projector.entry-list-open .entry-list { animation: projectorListIn 180ms var(--display-ease) both; }
   body.projector.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
-  .entry-list__heading { padding: 5px 16px 9px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
+  .entry-list__header { position: sticky; top: 0; z-index: 1; padding: 10px 16px 9px; background: var(--canvas); }
+  .entry-list__heading { display: block; margin-bottom: 8px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
+  .entry-list__search { width: 100%; padding: 7px 9px; border: 1px solid #4a463f; border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
+  .entry-list__search:focus-visible { border-color: var(--quiet); }
+  .entry-list__results { padding-bottom: 10px; }
+  .entry-list__empty { padding: 9px 16px; color: var(--quiet); }
   .entry-list__item { display: grid; grid-template-columns: 26px 1fr; gap: 8px; width: 100%; min-height: 37px; align-items: center; padding: 7px 16px; border: 0; background: none; color: var(--on); text-align: left; font: inherit; cursor: pointer; }
-  .entry-list__item:hover, .entry-list__item:focus-visible { background: #2a2722; color: var(--ink); outline: none; }
+  .entry-list__item:hover, .entry-list__item:focus-visible, .entry-list__item[data-active="true"] { background: #2a2722; color: var(--ink); outline: none; }
   .entry-list__item[aria-current="true"] { background: #2a2722; color: var(--on); box-shadow: inset 2px 0 var(--quiet); }
   .entry-list__number { color: var(--quiet); font-variant-numeric: tabular-nums; }
   .entry-list__item[aria-current="true"] .entry-list__number { color: var(--on); }
