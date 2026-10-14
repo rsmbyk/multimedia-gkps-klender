@@ -61,6 +61,7 @@ An operator at a single mirrored laptop must be able to identify the current ser
 - Enter never toggles words. Ctrl+Page Up/Down remain browser tab commands. Alt+Left/Right remain browser history commands.
 - J matches this service's entry labels. G uses the existing passage/song picker syntax and search data. B targets available baits on the current song.
 - On JS-entered fullscreen, request the browser's supported keyboard lock for a short Escape; allow a held Escape to leave fullscreen. F11 fullscreen follows browser behavior. Do not claim the page can intercept a browser-reserved key when the browser does not provide it.
+- When browser fullscreen is available, a projection-area click while windowed enters fullscreen only: it never steps or toggles the words. Subsequent clicks navigate normally. After leaving fullscreen, the next projection-area click again enters fullscreen only. HUD buttons retain their explicit actions. If fullscreen is unavailable, windowed mouse navigation remains usable.
 
 ## UI details
 

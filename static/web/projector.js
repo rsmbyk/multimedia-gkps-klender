@@ -418,7 +418,11 @@
     if (!findPanel.hidden) return;
     var zone = event.target.closest('.mouse-zone');
     if (!zone) return;
-    enterFullscreen();
+    if (!document.fullscreenElement && document.fullscreenEnabled &&
+        document.documentElement.requestFullscreen) {
+      enterFullscreen();
+      return; // This click belongs only to entering fullscreen.
+    }
     if (zone.dataset.mouseAction === 'previous') move(-1);
     else if (zone.dataset.mouseAction === 'next') move(1);
     else toggleWords();
@@ -686,11 +690,6 @@
   document.addEventListener('keyup', function (event) {
     if (event.key === 'Escape') window.clearTimeout(escapeHoldTimer);
   });
-  if (screen) {
-    screen.addEventListener('click', function (event) {
-      if (!event.target.closest('button')) enterFullscreen();
-    });
-  }
 
   /* ---------- what the other tabs say --------------------------------------- */
 

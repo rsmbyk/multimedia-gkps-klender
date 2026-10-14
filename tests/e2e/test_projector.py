@@ -326,11 +326,27 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertTrue(page.locator('body').evaluate("e => e.classList.contains('corner-hidden')"))
         page.keyboard.press('c')
         page.locator('.mouse-zone--next').click(position={'x': 100, 'y': 100})
+        page.wait_for_function('document.fullscreenElement !== null')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '3')
+        page.locator('.mouse-zone--next').click(position={'x': 100, 'y': 100})
         self.assertEqual(page.get_attribute('body', 'data-current-screen'), '4')
         page.locator('#cue-service').click()
         self.assertTrue(page.locator('#entry-list').is_visible())
         page.locator('.entry-list__item[data-entry-index="3"]').click()
         self.assertEqual(page.get_attribute('body', 'data-current-screen'), '6')
+
+    def test_first_projection_click_only_enters_fullscreen_in_every_zone(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('ArrowRight')
+        for zone in ('previous', 'display', 'next'):
+            before = page.get_attribute('body', 'data-current-screen')
+            showing = page.get_attribute('body', 'data-showing')
+            page.locator('.mouse-zone--' + zone).click(position={'x': 40, 'y': 40})
+            page.wait_for_function('document.fullscreenElement !== null')
+            self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+            self.assertEqual(page.get_attribute('body', 'data-showing'), showing)
+            page.evaluate('document.exitFullscreen()')
+            page.wait_for_function('document.fullscreenElement === null')
 
     def test_overlays_intercept_projector_clicks(self):
         page = self._page(self._projector_url())
