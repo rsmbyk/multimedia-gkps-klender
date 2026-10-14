@@ -74,6 +74,13 @@
   .cue-service:active { color: var(--ink); background: #49443c; }
   .cue-service:focus-visible { outline: 1px solid var(--on); outline-offset: 3px; }
   .cue-separator { margin: 0 .42em 0 .32em; }
+  .projector-find-dismiss { position: absolute; inset: 0; z-index: 7; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; }
+  .projector-find-dismiss[hidden] { display: none; }
+  .projector-find { position: absolute; z-index: 8; left: 32px; bottom: 58px; width: 400px; max-height: 560px; overflow: auto; padding: 16px; background: var(--wall); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; color: var(--on); font-size: 11px; font-weight: 400; }
+  .projector-find[hidden] { display: none; }
+  .projector-find label { display: block; margin-bottom: 8px; color: var(--quiet); }
+  .projector-find input { width: 100%; padding: 8px 10px; border: 1px solid #4a463f; border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
+  .projector-find input:focus-visible { border-color: var(--on); }
   .entry-list-dismiss {
     position: absolute; inset: 0; z-index: 6; width: 100%; height: 100%;
     padding: 0; border: 0; background: rgba(8, 7, 5, .28);
@@ -142,11 +149,11 @@
   .mouse-zone--next { cursor: url("./cursor-right.svg") 16 16, e-resize; }
   .mouse-zone--display { cursor: url("./cursor-hide.svg") 16 16, pointer; }
   .wall.words-hidden .mouse-zone--display { cursor: url("./cursor-show.svg") 16 16, pointer; }
-  .wall.keys-open .mouse-zones, .wall.entry-list-open .mouse-zones,
+  .wall.keys-open .mouse-zones, .wall.entry-list-open .mouse-zones, .wall.find-open .mouse-zones,
   .wall.keys-closing .mouse-zones, .wall.entry-list-closing .mouse-zones { pointer-events: none; }
   .wall.keys-open .cue, .wall.keys-closing .cue { pointer-events: none; }
-  .wall.controls-idle:not(.keys-open):not(.entry-list-open) .cue,
-  .wall.controls-idle:not(.keys-open):not(.entry-list-open) .keys {
+  .wall.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open) .cue,
+  .wall.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open) .keys {
     opacity: 0; visibility: hidden; pointer-events: none;
   }
   .keys {
@@ -312,6 +319,11 @@
     </div>
     <div id="entry-list-results" class="entry-list__results" role="listbox" aria-label="Matching service entries"></div>
   </div>
+  <button type="button" class="projector-find-dismiss" id="projectorFindDismiss" aria-label="Close passage or song search" hidden></button>
+  <section class="projector-find" id="projectorFind" aria-label="Projector find" hidden>
+    <label for="projectorFindInput">Passage or Song</label>
+    <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false">
+  </section>
   <button type="button" class="keys" aria-label="Shortcuts" aria-expanded="false" aria-controls="key-list"><svg aria-hidden="true"><use href="#kbd"/></svg></button>
   <div class="sheet" id="key-list">
     <div class="stack">
@@ -435,6 +447,9 @@
     var cueService = document.getElementById('cue-service');
     var entryList = document.getElementById('entry-list');
     var entryListDismiss = document.getElementById('entry-list-dismiss');
+    var findPanel = document.getElementById('projectorFind');
+    var findDismiss = document.getElementById('projectorFindDismiss');
+    var findInput = document.getElementById('projectorFindInput');
     var entryListSearch = document.getElementById('entry-list-search');
     var entryListResults = document.getElementById('entry-list-results');
     var entryListMatches = [];
@@ -679,7 +694,8 @@
       if (wall.classList.contains('corner-hidden')) return;
       wall.classList.remove('controls-idle');
       if (wall.classList.contains('keys-open') || wall.classList.contains('entry-list-open') ||
-          wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
+          wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing') ||
+          wall.classList.contains('find-open')) return;
       controlsTimer = window.setTimeout(function () {
         wall.classList.add('controls-idle');
       }, 30000);
@@ -691,6 +707,22 @@
 
     var layerCloseMs = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
     var keysCloseTimer, entryCloseTimer;
+    function setFindOpen(open) {
+      findPanel.hidden = !open;
+      findDismiss.hidden = !open;
+      wall.classList.toggle('find-open', open);
+      if (open) { findInput.value = ''; findInput.focus(); }
+      else { findInput.blur(); findDismiss.blur(); }
+      revealControls();
+    }
+    findDismiss.addEventListener('click', function (event) {
+      event.stopPropagation(); setFindOpen(false);
+    });
+    findInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' || (event.key === 'Backspace' && !findInput.value)) {
+        event.preventDefault(); event.stopPropagation(); setFindOpen(false);
+      }
+    });
     function setOpen(open) {
       if (open) setEntryListOpen(false);
       if (open) {
@@ -798,6 +830,7 @@
         if (!event.target.closest('.entry-list')) setEntryListOpen(false);
         return;
       }
+      if (wall.classList.contains('find-open')) return;
       var zone = event.target.closest('.mouse-zone');
       if (!zone) return;
       if (zone.dataset.mouseAction === 'previous') stepBackward();
@@ -827,10 +860,13 @@
     });
 
     document.addEventListener('keydown', function (event) {
-      if (event.target === entryListSearch) return;
+      if (event.target === entryListSearch || event.target === findInput) return;
       if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.repeat) {
         if (event.key.toLowerCase() === 'j' && !wall.classList.contains('keys-open')) {
           event.preventDefault(); setEntryListOpen(true); return;
+        }
+        if (event.key.toLowerCase() === 'g' && !wall.classList.contains('keys-open') && !wall.classList.contains('entry-list-open')) {
+          event.preventDefault(); setFindOpen(true); return;
         }
         if (event.key.toLowerCase() === 'k') {
           event.preventDefault(); setOpen(!wall.classList.contains('keys-open')); return;
@@ -844,9 +880,11 @@
       }
       if (event.key === 'Escape') {
         if (wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
+        if (wall.classList.contains('find-open')) { setFindOpen(false); return; }
         if (wall.classList.contains('entry-list-open')) setEntryListOpen(false);
         else setOpen(false);
       }
+      if (wall.classList.contains('find-open')) return;
       if (event.key.toLowerCase() === 't' && !wall.classList.contains('keys-open')) flipTranslation();
       if (event.key.toLowerCase() === 'c') {
         var hide = !wall.classList.contains('corner-hidden');

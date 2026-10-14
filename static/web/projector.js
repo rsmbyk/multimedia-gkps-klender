@@ -178,6 +178,7 @@
   var entryListMatches = [];
   var entryListChoice = 0;
   var findPanel = document.getElementById('projectorFind');
+  var findDismiss = document.getElementById('projectorFindDismiss');
   var findInput = document.getElementById('projectorFindInput');
   var findResults = document.getElementById('projectorFindResults');
   var translation = '';
@@ -436,7 +437,8 @@
     if (body.classList.contains('corner-hidden')) return;
     body.classList.remove('controls-idle');
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open') ||
-        body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing')) return;
+        body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing') ||
+        body.classList.contains('find-open')) return;
     controlsTimer = window.setTimeout(function () { body.classList.add('controls-idle'); }, 30000);
   }
   ['pointermove', 'pointerdown', 'click'].forEach(function (name) {
@@ -552,11 +554,24 @@
     findKind = kind; findChoice = 0;
     findInput.value = '';
     findPanel.hidden = false;
+    findDismiss.hidden = false;
     body.classList.add('find-open');
+    revealControls();
     refreshFind();
     findInput.focus();
   }
-  function closeFind() { findPanel.hidden = true; body.classList.remove('find-open'); findKind = ''; findRows = []; }
+  function closeFind() {
+    findPanel.hidden = true;
+    findDismiss.hidden = true;
+    findInput.blur();
+    findDismiss.blur();
+    body.classList.remove('find-open');
+    findKind = ''; findRows = [];
+    revealControls();
+  }
+  findDismiss.addEventListener('click', function (event) {
+    event.stopPropagation(); closeFind();
+  });
   var lookupSequence = 0;
   function refreshFind() {
     var query = normalize(findInput.value.trim());

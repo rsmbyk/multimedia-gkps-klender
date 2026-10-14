@@ -51,6 +51,7 @@ that browser's tabs over the display channel (web/projector.js, web/display.js).
 </main>
 
 {% include 'reading/projector_controls.html' %}
+<button type="button" class="projector-find-dismiss" id="projectorFindDismiss" aria-label="Close passage or song search" hidden></button>
 <section class="projector-find" id="projectorFind" aria-label="Projector find" hidden>
   <label for="projectorFindInput" id="projectorFindLabel">Passage or Song</label>
   <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false">

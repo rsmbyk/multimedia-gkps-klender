@@ -363,6 +363,31 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
         self.assertFalse(page.locator('body').evaluate("e => e.classList.contains('entry-list-open')"))
 
+    def test_open_popups_keep_hud_visible_and_goto_has_clear_click_overlay(self):
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = context.new_page()
+        page.clock.install()
+        page.goto(self.live_server_url + self._projector_url())
+        page.wait_for_load_state('networkidle')
+
+        for key in ('j', 'g', 'k'):
+            page.keyboard.press(key)
+            page.clock.fast_forward(31_000)
+            self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('controls-idle')"))
+            self.assertEqual(page.locator('#corner-cue').evaluate('el => getComputedStyle(el).visibility'), 'visible')
+            self.assertEqual(page.locator('.keys').evaluate('el => getComputedStyle(el).visibility'), 'visible')
+            if key == 'g':
+                dismiss = page.locator('#projectorFindDismiss')
+                self.assertTrue(dismiss.is_visible())
+                self.assertEqual(dismiss.evaluate('el => getComputedStyle(el).backgroundColor'), 'rgba(0, 0, 0, 0)')
+                before = page.get_attribute('body', 'data-current-screen')
+                page.mouse.click(1200, 200)
+                self.assertFalse(page.locator('#projectorFind').is_visible())
+                self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+            else:
+                page.keyboard.press('Escape')
+                page.clock.fast_forward(200)
+
     def test_escape_closes_both_hud_layers_without_a_lingering_focus_ring(self):
         page = self._page(self._projector_url())
         for selector, open_class in (('#cue-service', 'entry-list-open'), ('.keys', 'keys-open')):
