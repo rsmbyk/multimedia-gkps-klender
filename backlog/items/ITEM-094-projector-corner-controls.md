@@ -9,7 +9,7 @@ created: 2026-10-14
 updated: 2026-10-14
 spec: 091
 branch: feat/091-projector-corner
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/346
 archived_at:
 archive_reason:
 bump: minor

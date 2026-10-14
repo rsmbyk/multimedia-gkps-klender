@@ -15,11 +15,11 @@
 - [x] Implement the corner HUD, mouse zones, entry list, inactivity, and responsive overlays from the accepted previews.
 - [x] Run the targeted projector unit and browser classes (45 passing tests).
 - [x] Fill test and implementation paths in `spec.md` traceability.
-- [ ] Set ITEM-094 to In review, update the board, version and changelog for the minor bump, and open a draft PR against `develop` in the same PR.
+- [x] Set ITEM-094 to In review, update the board, version and changelog for the minor bump, and open a draft PR against `develop` in the same PR.
 - [ ] Before merge, complete the required remote CI and E2E, mark ITEM-094 Done, and check off delivered tasks in the same PR.
 
 ## Done when
 
 - [x] Targeted projector scenarios pass and mouse and keyboard operation both work.
 - [x] Implemented geometry and interaction states follow the accepted preview.
-- [ ] ITEM, board, tasks, version, changelog, and PR all describe the same delivered slice.
+- [x] ITEM, board, tasks, version, changelog, and PR all describe the same delivered slice.
