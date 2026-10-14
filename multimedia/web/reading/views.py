@@ -1069,22 +1069,37 @@ def service_projector(request, service_id):
 
 
 def projector_lookup(request, service_id):
-    """Strong reference/title matches for the projector's quick Go To picker."""
+    """The closest passage and song matches for the projector's quick Go To picker."""
     get_object_or_404(tatib_models.TataIbadah, pk=service_id)
     query = (request.GET.get('q') or '').strip()[:120]
     if not query:
         return JsonResponse({'results': []})
     results = search_lib.search(query)
     rows = []
-    minimum_score = 70  # Metadata/reference match; body-only hits score 35 or less.
     for row in results['bible']:
         target = row['target']
-        if (row['score'] >= minimum_score and row['kind'] in ('reference', 'chapter')
-                and target.get('chapter')):
+        if row['kind'] in ('reference', 'chapter') and target.get('chapter'):
             rows.append({'kind': 'passage', 'label': row['title'], 'target': target})
-    for row in results['songs']:
-        if row['score'] >= minimum_score and row['kind'] == 'song':
-            rows.append({'kind': 'song', 'label': row['title'], 'target': row['target']})
+
+    song_hits = [row for row in results['songs'] if row['kind'] == 'song']
+    exact_number_ids = set()
+    if query.isdecimal():
+        exact_number_ids = set(song_models.Song.objects.active().filter(
+            pk__in=[row['target']['song_id'] for row in song_hits],
+            number=int(query),
+        ).values_list('pk', flat=True))
+    # The shared search also scores songbook and lyric matches. Go To keeps
+    # title/reference matches, then shows only the strongest available tier.
+    strong_hits = [
+        (200 if row['target']['song_id'] in exact_number_ids else row['score'], row)
+        for row in song_hits
+        if row['score'] >= 95 or row['target']['song_id'] in exact_number_ids
+    ]
+    if strong_hits:
+        best_score = max(score for score, _ in strong_hits)
+        for score, row in strong_hits:
+            if score == best_score:
+                rows.append({'kind': 'song', 'label': row['title'], 'target': row['target']})
     return JsonResponse({'results': rows[:12]})
 
 

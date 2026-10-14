@@ -2220,9 +2220,28 @@ class ServiceProjectorTests(TestCase):
     def test_library_lookup_only_shows_strong_reference_title_or_number_matches(self):
         url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
         self.assertEqual(self.client.get(url, {'q': 'Kuasa'}).json()['results'][0]['kind'], 'song')
-        self.assertTrue(self.client.get(url, {'q': 'KJ'}).json()['results'])
+        self.assertEqual(self.client.get(url, {'q': 'KJ'}).json()['results'], [])
         self.assertEqual(self.client.get(url, {'q': 'ayat 2'}).json()['results'], [])
         self.assertEqual(self.client.get(url, {'q': 'bait 1'}).json()['results'], [])
+
+    def test_library_lookup_prefers_exact_song_titles_over_prefix_book_and_lyric_hits(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        exact = songs.Song.objects.create(book=self.songbook, number=151, title='Haleluya')
+        songs.Song.objects.create(book=self.songbook, number=153, title='Haleluya Besar')
+        lyric_only = songs.Song.objects.create(book=self.songbook, number=154, title='Pujian Baru')
+        songs.Verse.objects.create(song=lyric_only, number=1, lyric='Haleluya bagi Tuhan')
+        haleluya_book = songs.Book.objects.create(name='Haleluya', short_name='HAL')
+        songs.Song.objects.create(book=haleluya_book, number=1, title='Nyanyian Pagi')
+
+        rows = self.client.get(url, {'q': 'haleluya'}).json()['results']
+        self.assertEqual([row['target']['song_id'] for row in rows], [exact.pk])
+
+    def test_library_lookup_keeps_exact_song_number_without_book_prefix(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        song = songs.Song.objects.create(book=self.songbook, number=1152, title='Another Song')
+        rows = self.client.get(url, {'q': '152'}).json()['results']
+        self.assertEqual([row['target']['song_id'] for row in rows], [self.song.pk])
+        self.assertNotIn(song.pk, [row['target']['song_id'] for row in rows])
 
     def test_a_text_shows_two_lines_at_a_time_under_its_own_header(self):
         self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
