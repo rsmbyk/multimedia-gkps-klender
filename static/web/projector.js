@@ -418,7 +418,7 @@
     if (!findPanel.hidden) return;
     var zone = event.target.closest('.mouse-zone');
     if (!zone) return;
-    if (!document.fullscreenElement && document.fullscreenEnabled &&
+    if (!document.fullscreenElement && !fullscreenDenied && document.fullscreenEnabled &&
         document.documentElement.requestFullscreen) {
       enterFullscreen();
       return; // This click belongs only to entering fullscreen.
@@ -427,6 +427,19 @@
     else if (zone.dataset.mouseAction === 'next') move(1);
     else toggleWords();
   });
+
+  // In windowed mode, any click on the projected page is reserved for the
+  // fullscreen gesture. Capture it before the mouse zones can navigate.
+  document.addEventListener('click', function (event) {
+    if (document.fullscreenElement || fullscreenDenied || !document.fullscreenEnabled ||
+        !document.documentElement.requestFullscreen) return;
+    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open') ||
+        !findPanel.hidden) return;
+    if (!event.target.closest('#projectorScreen, .mouse-zones')) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    enterFullscreen();
+  }, true);
 
   /* ---------- find and temporary library detours ---------------------------- */
   function normalize(value) {
@@ -677,8 +690,19 @@
       if (navigator.keyboard && navigator.keyboard.lock) {
         navigator.keyboard.lock(['Escape']).catch(function () { /* browser retains Escape */ });
       }
-    }).catch(function () { /* declined */ });
+    }).catch(function () {
+      fullscreenDenied = true;
+      syncFullscreenCursor();
+    });
   }
+  var fullscreenDenied = false;
+  function syncFullscreenCursor() {
+    body.classList.toggle('is-fullscreen', Boolean(document.fullscreenElement));
+    body.classList.toggle('fullscreen-available', Boolean(
+      !fullscreenDenied && document.fullscreenEnabled && document.documentElement.requestFullscreen));
+  }
+  document.addEventListener('fullscreenchange', syncFullscreenCursor);
+  syncFullscreenCursor();
   var escapeHoldTimer;
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Escape' || event.repeat || !document.fullscreenElement) return;

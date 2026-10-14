@@ -277,6 +277,10 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   .mouse-zone--next { cursor: url("./cursor-right.svg") 16 16, e-resize; }
   .mouse-zone--display { cursor: url("./cursor-hide.svg") 16 16, pointer; }
   body.projector.words-hidden .mouse-zone--display { cursor: url("./cursor-show.svg") 16 16, pointer; }
+  body.projector.fullscreen-available:not(.is-fullscreen) .projector__screen,
+  body.projector.fullscreen-available:not(.is-fullscreen) .mouse-zone {
+    cursor: url("./cursor-fullscreen.svg") 16 16, zoom-in;
+  }
   body.projector.keys-open .mouse-zones, body.projector.entry-list-open .mouse-zones,
   body.projector.find-open .mouse-zones { pointer-events: none; }
   body.projector.keys-open .cue { pointer-events: none; }
