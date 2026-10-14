@@ -549,11 +549,7 @@
   }
   function openFind(kind) {
     if (kind === 'j') { setEntryListOpen(true); return; }
-    if (kind === 'b' && (!entryAt(current) || entryAt(current).type !== 'song') &&
-        (!detour || detour.kind !== 'song')) return;
     findKind = kind; findChoice = 0;
-    document.getElementById('projectorFindLabel').textContent =
-      kind === 'b' ? 'Go to Bait' : 'Passage or Song';
     findInput.value = '';
     findPanel.hidden = false;
     body.classList.add('find-open');
@@ -564,12 +560,7 @@
   var lookupSequence = 0;
   function refreshFind() {
     var query = normalize(findInput.value.trim());
-    if (findKind === 'b') {
-      var baits = detour && detour.kind === 'song' ? detour.baits : entryAt(current).baits;
-      findRows = baits.map(function (bait, index) {
-        return {label: 'Bait ' + bait.number, index: index};
-      }).filter(function (row) { return normalize(row.label).includes(query); });
-    } else if (query) {
+    if (query) {
       var sequence = ++lookupSequence;
       fetch(findUrl('lookup/', {q: findInput.value.trim()}), {credentials: 'same-origin'})
         .then(function (response) { return response.json(); })
@@ -597,10 +588,7 @@
   function chooseFind(index) {
     var row = findRows[index];
     if (!row) return;
-    if (findKind === 'b') {
-      if (detour && detour.kind === 'song') { detour.index = detour.baits[row.index].start; renderDetour(); }
-      else moveToBait(row.index);
-    } else if (findKind === 'g') openDetour(row);
+    openDetour(row);
     closeFind();
   }
   findInput.addEventListener('input', refreshFind);
@@ -764,7 +752,7 @@
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
     if (event.altKey || event.metaKey) return;
     var key = event.key.toLowerCase();
-    if (!event.ctrlKey && !event.shiftKey && ['j', 'g', 'b'].includes(key)) {
+    if (!event.ctrlKey && !event.shiftKey && ['j', 'g'].includes(key)) {
       event.preventDefault(); openFind(key); return;
     }
     if (!event.ctrlKey && !event.shiftKey && key === 'c') {

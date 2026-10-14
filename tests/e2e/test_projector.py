@@ -315,6 +315,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.get_attribute('body', 'data-current-screen'), '6')
         page.keyboard.press('Shift+ArrowRight')
         self.assertEqual(page.get_attribute('body', 'data-current-screen'), '8')
+        page.keyboard.press('b')
+        self.assertFalse(page.locator('#projectorFind').is_visible())
         page.keyboard.press('j')
         self.assertTrue(page.locator('#entry-list').is_visible())
         page.locator('#entry-list-search').fill('Salam')

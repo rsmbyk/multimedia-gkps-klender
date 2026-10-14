@@ -55,13 +55,13 @@ An operator at a single mirrored laptop must be able to identify the current ser
 | Display | C | Hide or restore the corner HUD and keyboard button, except while typing in find |
 | Display | K | Open or close the keyboard shortcuts sheet |
 | Display | F | Enter or leave browser fullscreen where supported |
-| Find | J / G / B | Open the searchable service list / find a passage or song / find current-song baits |
+| Find | J / G | Open the searchable service list / find a passage or song |
 | Service list or find open | Up/Down, Enter, Backspace, Escape | Previous/next match; open match; delete or close when empty; close the panel |
 | Detour | Escape | Return to the service screen left, after any find or popup is closed |
 | Shortcut sheet or entry list | Escape | Close the open layer without navigating |
 
 - Enter never toggles words. Ctrl+Page Up/Down remain browser tab commands. Alt+Left/Right remain browser history commands.
-- J opens the same service list as the corner icon. Its search filters entry numbers, labels, and selected bait numbers, with a keyboard-selected row separate from the current projected entry. G uses the existing passage/song picker syntax and search data. B targets available baits on the current song.
+- J opens the same service list as the corner icon. Its search filters entry numbers, labels, and selected bait numbers, with a keyboard-selected row separate from the current projected entry. G uses the existing passage/song picker syntax and search data. Song baits remain reachable by Shift navigation or clicking their cue numbers.
 - On JS-entered fullscreen, request the browser's supported keyboard lock for a short Escape; allow a held Escape to leave fullscreen. F11 fullscreen follows browser behavior. Do not claim the page can intercept a browser-reserved key when the browser does not provide it.
 - When browser fullscreen is available, any click in the projection area while windowed enters fullscreen only: it never steps or toggles the words. A fullscreen cursor indicates this on hover. Subsequent clicks navigate normally. After leaving fullscreen, the next projection-area click again enters fullscreen only. HUD buttons retain their explicit actions. If fullscreen is unavailable, windowed mouse navigation remains usable.
 
@@ -94,7 +94,7 @@ The approved preview is the geometry and appearance reference; its five sample e
 ### Scenario: Keyboard-only operation
 
 - **Given** a projector with no mouse activity
-- **When** the operator uses plain, Shift, and Ctrl navigation, Home/End, Space, T, J/G/B, Escape, C, K, and F in their applicable contexts
+- **When** the operator uses plain, Shift, and Ctrl navigation, Home/End, Space, T, J/G, Escape, C, K, and F in their applicable contexts
 - **Then** each command follows the keyboard table; no plain Home/End skips the service, Enter does not hide words, and browser-reserved shortcuts are not claimed.
 
 ### Scenario: Mouse-only operation
