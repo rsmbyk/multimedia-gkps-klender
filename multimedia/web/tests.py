@@ -2217,6 +2217,13 @@ class ServiceProjectorTests(TestCase):
         self.assertEqual(song.status_code, 200)
         self.assertTrue(any(row['kind'] == 'song' for row in song.json()['results']))
 
+    def test_library_lookup_only_shows_strong_reference_title_or_number_matches(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        self.assertEqual(self.client.get(url, {'q': 'Kuasa'}).json()['results'][0]['kind'], 'song')
+        self.assertTrue(self.client.get(url, {'q': 'KJ'}).json()['results'])
+        self.assertEqual(self.client.get(url, {'q': 'ayat 2'}).json()['results'], [])
+        self.assertEqual(self.client.get(url, {'q': 'bait 1'}).json()['results'], [])
+
     def test_a_text_shows_two_lines_at_a_time_under_its_own_header(self):
         self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
                   text='satu\ndua\ntiga\nempat\nlima')

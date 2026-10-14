@@ -1069,19 +1069,21 @@ def service_projector(request, service_id):
 
 
 def projector_lookup(request, service_id):
-    """Small result set for the projector's G detour, using the public search parser."""
+    """Strong reference/title matches for the projector's quick Go To picker."""
     get_object_or_404(tatib_models.TataIbadah, pk=service_id)
     query = (request.GET.get('q') or '').strip()[:120]
     if not query:
         return JsonResponse({'results': []})
     results = search_lib.search(query)
     rows = []
+    minimum_score = 70  # Metadata/reference match; body-only hits score 35 or less.
     for row in results['bible']:
         target = row['target']
-        if row['kind'] in ('reference', 'chapter') and target.get('chapter'):
+        if (row['score'] >= minimum_score and row['kind'] in ('reference', 'chapter')
+                and target.get('chapter')):
             rows.append({'kind': 'passage', 'label': row['title'], 'target': target})
     for row in results['songs']:
-        if row['kind'] == 'song':
+        if row['score'] >= minimum_score and row['kind'] == 'song':
             rows.append({'kind': 'song', 'label': row['title'], 'target': row['target']})
     return JsonResponse({'results': rows[:12]})
 
