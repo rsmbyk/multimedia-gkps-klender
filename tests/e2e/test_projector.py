@@ -345,6 +345,27 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
         self.assertFalse(page.locator('body').evaluate("e => e.classList.contains('entry-list-open')"))
 
+    def test_corner_cue_parts_share_the_bottom_band_vertical_center(self):
+        for width, height in ((1366, 768), (1920, 1080)):
+            context = self.browser.new_context(viewport={'width': width, 'height': height})
+            page = self._page(self._projector_url(), context)
+            centers = page.evaluate("""() => {
+              const mid = selector => {
+                const rect = document.querySelector(selector).getBoundingClientRect();
+                return rect.top + rect.height / 2;
+              };
+              return {
+                cue: mid('#corner-cue'), list: mid('#cue-service'),
+                dot: mid('.cue-separator'), prefix: mid('#cue-prefix'),
+                progress: mid('#cue-progress'), next: mid('#cue-next'), keys: mid('.keys')
+              };
+            }""")
+            expected = height - 32
+            for part, center in centers.items():
+                self.assertAlmostEqual(center, expected, delta=0.5, msg=(part, centers))
+            page.close()
+            context.close()
+
     def test_every_kind_takes_the_shape_it_should_on_screen(self):
         """The running order, screen by screen: content, then a built-in blank after
         each entry and after each song verse. A stored break is still one blank."""

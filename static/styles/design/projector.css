@@ -202,6 +202,13 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     font-size: 16px; font-weight: 650; line-height: 1; color: var(--whisper); letter-spacing: 0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  /* Keep every cue part in the same 24px alignment box. Inline text and buttons
+     otherwise use different font baselines even though the parent is centered. */
+  .cue > .cue-separator, .cue > #cue-prefix, .cue > .cue-baits,
+  .cue > .cue-progress, .cue > .cue-next {
+    display: inline-flex; align-items: center; height: 24px; line-height: 1;
+  }
+  .cue > #cue-prefix { gap: .2em; }
   .cue .on { color: var(--on); }
   .cue-service {
     appearance: none; display: inline-flex; align-items: center; justify-content: center;
@@ -237,6 +244,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     background: transparent; color: inherit; font: inherit; line-height: inherit;
     transition: color 140ms ease, opacity 140ms ease;
   }
+  .cue-bait, .cue-translation { display: inline-flex; align-items: center; height: 24px; }
   .cue-bait { cursor: pointer; }
   .cue-bait[aria-pressed="true"] { color: var(--on); }
   .cue-bait:hover { color: #817d74; }
