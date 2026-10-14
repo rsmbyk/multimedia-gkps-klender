@@ -377,6 +377,22 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             page.keyboard.press('Tab')
             self.assertTrue(page.evaluate("document.activeElement.matches(':focus-visible')"))
 
+    def test_mouse_closed_hud_layers_do_not_show_focus_ring_on_arrow_navigation(self):
+        for selector in ('#cue-service', '.keys'):
+            with self.subTest(selector=selector):
+                page = self._page(self._projector_url())
+                button = page.locator(selector)
+                button.click()
+                if selector == '#cue-service':
+                    page.locator('#entry-list-dismiss').click(position={'x': 1200, 'y': 200})
+                else:
+                    page.mouse.click(16, 200)
+                before = page.get_attribute('body', 'data-current-screen')
+                page.keyboard.press('ArrowRight')
+                self.assertNotEqual(page.get_attribute('body', 'data-current-screen'), before)
+                self.assertFalse(button.evaluate("el => el.matches(':focus-visible')"))
+                self.assertEqual(button.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+
     def test_corner_cue_parts_share_the_bottom_band_vertical_center(self):
         for width, height in ((1366, 768), (1920, 1080)):
             context = self.browser.new_context(viewport={'width': width, 'height': height})

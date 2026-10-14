@@ -342,6 +342,7 @@
       body.classList.remove('keys-closing');
       body.classList.add('keys-open');
     } else if (body.classList.contains('keys-open')) {
+      keysButton.blur();
       window.clearTimeout(keysCloseTimer);
       body.classList.remove('keys-open');
       body.classList.add('keys-closing');
@@ -368,6 +369,7 @@
         if (body.classList.contains('entry-list-open')) entryDismiss.hidden = false;
       });
     } else if (body.classList.contains('entry-list-open')) {
+      cueService.blur();
       window.clearTimeout(entryCloseTimer);
       body.classList.remove('entry-list-open');
       body.classList.add('entry-list-closing');
@@ -412,13 +414,13 @@
     event.stopPropagation(); setEntryListOpen(!body.classList.contains('entry-list-open'));
   });
   entryDismiss.addEventListener('click', function (event) {
-    event.stopPropagation(); setEntryListOpen(false); cueService.focus();
+    event.stopPropagation(); setEntryListOpen(false);
   });
   entryList.addEventListener('click', function (event) {
     var row = event.target.closest('.entry-list__item');
     if (!row) return;
     event.stopPropagation(); leaveDetour(); moveTo(entries[Number(row.dataset.entryIndex)].start);
-    setEntryListOpen(false); cueService.focus();
+    setEntryListOpen(false);
   });
   cueNext.addEventListener('click', function (event) {
     event.stopPropagation();
@@ -688,8 +690,7 @@
       return;
     }
     if (!findPanel.hidden) return;
-    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open') ||
-        body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing')) return;
+    if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
     if (event.altKey || event.metaKey) return;
     var key = event.key.toLowerCase();
     if (!event.ctrlKey && !event.shiftKey && ['j', 'g', 'b'].includes(key)) {

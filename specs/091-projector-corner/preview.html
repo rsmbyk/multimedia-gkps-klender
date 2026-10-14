@@ -648,6 +648,7 @@
         wall.classList.remove('keys-closing');
         wall.classList.add('keys-open');
       } else if (wall.classList.contains('keys-open')) {
+        button.blur();
         window.clearTimeout(keysCloseTimer);
         wall.classList.remove('keys-open');
         wall.classList.add('keys-closing');
@@ -674,6 +675,7 @@
           if (wall.classList.contains('entry-list-open')) entryListDismiss.hidden = false;
         });
       } else if (wall.classList.contains('entry-list-open')) {
+        cueService.blur();
         window.clearTimeout(entryCloseTimer);
         wall.classList.remove('entry-list-open');
         wall.classList.add('entry-list-closing');
@@ -696,7 +698,6 @@
     entryListDismiss.addEventListener('click', function (event) {
       event.stopPropagation();
       setEntryListOpen(false);
-      cueService.focus();
     });
     entryList.addEventListener('click', function (event) {
       var item = event.target.closest('.entry-list__item');
@@ -704,7 +705,6 @@
       event.stopPropagation();
       moveToEntry(Number(item.dataset.entryIndex));
       setEntryListOpen(false);
-      cueService.focus();
     });
     button.addEventListener('click', function (event) {
       event.stopPropagation();
@@ -749,8 +749,8 @@
     });
 
     document.addEventListener('keydown', function (event) {
-      if (wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
       if (event.key === 'Escape') {
+        if (wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
         if (wall.classList.contains('entry-list-open')) setEntryListOpen(false);
         else setOpen(false);
       }
