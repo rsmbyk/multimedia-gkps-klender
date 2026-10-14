@@ -1097,9 +1097,14 @@ def projector_lookup(request, service_id):
     ]
     if strong_hits:
         best_score = max(score for score, _ in strong_hits)
-        for score, row in strong_hits:
-            if score == best_score:
-                rows.append({'kind': 'song', 'label': row['title'], 'target': row['target']})
+        selected = [row for score, row in strong_hits if score == best_score][:12 - len(rows)]
+        songs_by_id = song_models.Song.objects.select_related('book').in_bulk(
+            row['target']['song_id'] for row in selected)
+        for row in selected:
+            song = songs_by_id[row['target']['song_id']]
+            label = (_entry_song_option_label(song).strip()
+                     if song.book.is_hymn_book else row['title'])
+            rows.append({'kind': 'song', 'label': label, 'target': row['target']})
     return JsonResponse({'results': rows[:12]})
 
 

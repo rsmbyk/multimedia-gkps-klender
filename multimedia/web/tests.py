@@ -2215,7 +2215,20 @@ class ServiceProjectorTests(TestCase):
         self.assertTrue(any(row['kind'] == 'passage' for row in passage.json()['results']))
         song = self.client.get(url, {'q': 'KJ 152'})
         self.assertEqual(song.status_code, 200)
-        self.assertTrue(any(row['kind'] == 'song' for row in song.json()['results']))
+        self.assertEqual(song.json()['results'][0]['label'], 'KJ 152 Ada Kuasa dalam DarahNya')
+
+    def test_library_lookup_includes_hymn_sub_number_but_not_a_prefix_for_other_songs(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        hymn = songs.Song.objects.create(
+            book=self.songbook, number=223, sub_number='a', title='Haleluya')
+        other_book = songs.Book.objects.create(name='Lagu', short_name='LG', is_hymn_book=False)
+        songs.Song.objects.create(book=other_book, number=3, title='Nyanyian Baru')
+
+        hymn_rows = self.client.get(url, {'q': 'KJ 223a'}).json()['results']
+        self.assertEqual(hymn_rows[0]['target']['song_id'], hymn.pk)
+        self.assertEqual(hymn_rows[0]['label'], 'KJ 223A Haleluya')
+        other_rows = self.client.get(url, {'q': 'Nyanyian Baru'}).json()['results']
+        self.assertEqual(other_rows[0]['label'], 'Nyanyian Baru')
 
     def test_library_lookup_only_shows_strong_reference_title_or_number_matches(self):
         url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
