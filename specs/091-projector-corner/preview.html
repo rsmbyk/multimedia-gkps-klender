@@ -8,6 +8,7 @@
     --hall: #2a2823; --wall: #14130F; --ink: #F5F3EE; --head: #FFD166;
     --whisper: #6E6A62; --on: #E8E4DC; --quiet: #8E8A80;
     --display-ease: cubic-bezier(.32, .72, .28, 1);
+    --scroll-thumb: #45413A; --scroll-thumb-hover: #65615A;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--hall); }
@@ -82,6 +83,14 @@
   .wall.entry-list-open .entry-list-dismiss { animation: projectorBackdropIn 180ms var(--display-ease) both; }
   .wall.entry-list-closing .entry-list-dismiss { animation: projectorBackdropOut 180ms var(--display-ease) both; }
   .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; padding: 10px 0; background: var(--wall); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
+  @supports not selector(::-webkit-scrollbar) {
+    .entry-list { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+  }
+  .entry-list::-webkit-scrollbar { width: 5px; height: 5px; }
+  .entry-list::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  .entry-list::-webkit-scrollbar-track, .entry-list::-webkit-scrollbar-corner { background: transparent; }
+  .entry-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+  .entry-list::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
   .entry-list[hidden] { display: none; }
   .wall.entry-list-open .entry-list { animation: projectorListIn 180ms var(--display-ease) both; }
   .wall.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }

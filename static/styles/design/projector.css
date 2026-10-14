@@ -235,6 +235,15 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   body.projector.entry-list-closing .entry-list-dismiss { animation: projectorBackdropOut 180ms var(--display-ease) both; }
   .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; padding: 10px 0; background: var(--canvas); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
   .entry-list { max-width: calc(100vw - 64px); max-height: min(560px, calc(100vh - 90px)); }
+  /* Match the app's shared scrollbar; this standalone page does not load components.css. */
+  @supports not selector(::-webkit-scrollbar) {
+    .entry-list { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+  }
+  .entry-list::-webkit-scrollbar { width: 5px; height: 5px; }
+  .entry-list::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  .entry-list::-webkit-scrollbar-track, .entry-list::-webkit-scrollbar-corner { background: transparent; }
+  .entry-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+  .entry-list::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
   .entry-list[hidden] { display: none; }
   body.projector.entry-list-open .entry-list { animation: projectorListIn 180ms var(--display-ease) both; }
   body.projector.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
