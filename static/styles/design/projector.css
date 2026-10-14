@@ -306,6 +306,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     content: "";
     position: absolute; inset: 0; z-index: 1;
     background: rgba(8, 7, 5, 0.62);
+    cursor: pointer;
   }
   .sheet {
     position: absolute; left: 50%; top: 50%; z-index: 4;
