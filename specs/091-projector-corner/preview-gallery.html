@@ -451,6 +451,7 @@
             <h3>Display</h3>
             <p class="row"><span class="fn">Show or Hide Words</span><span class="combo"><span class="chord"><span class="k sp glyph" title="Space" aria-label="Space"><span class="space-mark">␣</span></span></span></span></p>
             <p class="row"><span class="fn">Show or Hide Corner</span><span class="combo"><span class="chord"><span class="k">C</span></span></span></p>
+            <p class="row"><span class="fn">Keyboard Shortcuts</span><span class="combo"><span class="chord"><span class="k">K</span></span></span></p>
           </section>
           <section class="group">
             <h3>Find</h3>
@@ -468,6 +469,7 @@
           </section>
           <section class="group">
             <h3>Fullscreen</h3>
+            <p class="row"><span class="fn">Enter or Leave</span><span class="combo"><span class="chord"><span class="k">F</span></span></span></p>
             <p class="row"><span class="fn">Hold to Leave</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
           </section>
         </div>
@@ -507,6 +509,15 @@
   });
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') setKeysOpen(false);
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.repeat) return;
+    if (event.key.toLowerCase() === 'k') {
+      event.preventDefault(); setKeysOpen(!keysScreen.classList.contains('keys-open'));
+    }
+    if (event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {});
+    }
   });
 </script>
 </body>

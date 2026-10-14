@@ -690,6 +690,17 @@
       return;
     }
     if (!findPanel.hidden) return;
+    if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.repeat) {
+      if (event.key.toLowerCase() === 'k') {
+        event.preventDefault(); setKeysOpen(!body.classList.contains('keys-open')); return;
+      }
+      if (event.key.toLowerCase() === 'f') {
+        event.preventDefault();
+        if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+        else enterFullscreen();
+        return;
+      }
+    }
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
     if (event.altKey || event.metaKey) return;
     var key = event.key.toLowerCase();

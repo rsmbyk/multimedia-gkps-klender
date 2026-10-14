@@ -53,6 +53,8 @@ An operator at a single mirrored laptop must be able to identify the current ser
 | Passage | T | Flip TB/SIM on the current passage without saving it |
 | Display | Space | Toggle words only; leave HUD and keyboard button available |
 | Display | C | Hide or restore the corner HUD and keyboard button, except while typing in find |
+| Display | K | Open or close the keyboard shortcuts sheet |
+| Display | F | Enter or leave browser fullscreen where supported |
 | Find | J / G / B | Find within service labels / passage or song library / current song baits |
 | Find open | Up/Down, Enter, Backspace, Escape | Previous/next match; open match; delete or close when empty; close find |
 | Detour | Escape | Return to the service screen left, after any find or popup is closed |
@@ -92,7 +94,7 @@ The approved preview is the geometry and appearance reference; its five sample e
 ### Scenario: Keyboard-only operation
 
 - **Given** a projector with no mouse activity
-- **When** the operator uses plain, Shift, and Ctrl navigation, Home/End, Space, T, J/G/B, Escape, and C in their applicable contexts
+- **When** the operator uses plain, Shift, and Ctrl navigation, Home/End, Space, T, J/G/B, Escape, C, K, and F in their applicable contexts
 - **Then** each command follows the keyboard table; no plain Home/End skips the service, Enter does not hide words, and browser-reserved shortcuts are not claimed.
 
 ### Scenario: Mouse-only operation

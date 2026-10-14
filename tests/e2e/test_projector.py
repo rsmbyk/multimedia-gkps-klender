@@ -393,6 +393,22 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 self.assertFalse(button.evaluate("el => el.matches(':focus-visible')"))
                 self.assertEqual(button.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
 
+    def test_f_and_k_toggle_fullscreen_and_shortcut_sheet(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('k')
+        self.assertTrue(page.locator('body').evaluate("el => el.classList.contains('keys-open')"))
+        page.keyboard.press('k')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('keys-open')"))
+        page.keyboard.press('f')
+        page.wait_for_function('document.fullscreenElement !== null')
+        page.keyboard.press('f')
+        page.wait_for_function('document.fullscreenElement === null')
+        page.keyboard.press('j')
+        page.locator('#projectorFindInput').click()
+        page.keyboard.type('kf')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('keys-open')"))
+        self.assertIsNone(page.evaluate('document.fullscreenElement'))
+
     def test_corner_cue_parts_share_the_bottom_band_vertical_center(self):
         for width, height in ((1366, 768), (1920, 1080)):
             context = self.browser.new_context(viewport={'width': width, 'height': height})
