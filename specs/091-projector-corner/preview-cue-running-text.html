@@ -8,7 +8,7 @@
 body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG Sans", "Source Sans Pro", sans-serif; }
 .stage { position: relative; width: 100%; height: 340px; background: #1b1a17; }
 .words { position: absolute; inset: 30px 32px 64px; display: grid; place-items: center; color: #f5f3ee; font-size: clamp(30px, 5vw, 72px); font-weight: 700; text-align: center; }
-.cue { position: absolute; left: 32px; right: 128px; bottom: 20px; display: flex; align-items: center; height: 24px; color: #6e6a62; font-size: 16px; font-weight: 650; white-space: nowrap; }
+.cue { position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px; display: flex; align-items: center; height: 24px; color: #6e6a62; font-size: 16px; font-weight: 650; white-space: nowrap; }
 .icon, .separator, .progress, .next-arrow { flex: none; }
 .icon { font-size: 20px; font-weight: 400; }
 .separator { margin: 0 .42em 0 .32em; }
@@ -20,9 +20,9 @@ body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG S
 .source.is-running .source__still { display: none; }
 .source.is-running .source__moving { display: block; }
 .progress { color: #e8e4dc; margin-left: .35em; }
-.next { margin-left: .3em; gap: .2em; }
+.next { margin-left: auto; gap: .2em; }
 .next-arrow { width: 16px; height: 16px; }
-.keyboard { position: absolute; right: 32px; bottom: 20px; color: #6e6a62; font-size: 18px; }
+.keyboard { position: absolute; right: 32px; bottom: 20px; display: grid; place-items: center; width: 34px; height: 24px; color: #6e6a62; font-size: 18px; }
 .explain { padding: 24px 32px; color: #a29d93; font-size: 13px; }
 .explain b { color: #e8e4dc; }
 @media (prefers-reduced-motion: reduce) { .source__moving { display: none !important; } .source__still { display: block !important; } }
@@ -39,7 +39,7 @@ body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG S
   </div>
   <span class="keyboard">⌨</span>
 </div>
-<p class="explain"><b>Try hovering over either label.</b> It repeats the slow horizontal run while hovered and stops when the pointer leaves. Both labels use the same responsive character limit (up to 50), with extra space before the keyboard button. Reduced-motion settings keep the labels still.</p>
+<p class="explain"><b>Try hovering over either label.</b> It repeats the slow horizontal run while hovered and stops when the pointer leaves. Both labels use the same responsive character limit (up to 50), with a minimum 10vw gap before the keyboard button. Reduced-motion settings keep the labels still.</p>
 <script>
   const sources = [...document.querySelectorAll('.source')];
   function characterLimit() { return Math.min(50, Math.max(10, Math.floor((innerWidth - 200) / 20))); }
