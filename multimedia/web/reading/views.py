@@ -1068,12 +1068,45 @@ def service_projector(request, service_id):
     })
 
 
+def _projector_chapter_prefix(query):
+    """Resolve a book alias plus chapter prefix; None means it is not a reference."""
+    match = re.fullmatch(r'(.+?)\s+([0-9]{1,3})', query)
+    if not match:
+        return None
+    book_name = search_lib.normalize(match.group(1).rstrip('.'))
+    info = next((book for book in search_lib.bible_book_index().values()
+                 if any(search_lib.normalize(alias) == book_name for alias in book['aliases'])),
+                None)
+    if info is None:
+        return None
+    chapter_prefix = match.group(2).lstrip('0') or '0'
+    chapters = (bible_models.Verse.objects.filter(book_translation__book=info['book'])
+                .order_by('chapter').values_list('chapter', flat=True).distinct())
+    return [
+        {'kind': 'passage', 'label': f"{info['display']} {chapter}",
+         'target': {'book_id': info['book'].pk, 'chapter': chapter,
+                    'verse': None, 'end_verse': None}}
+        for chapter in chapters if str(chapter).startswith(chapter_prefix)
+    ]
+
+
 def projector_lookup(request, service_id):
     """The closest passage and song matches for the projector's quick Go To picker."""
     get_object_or_404(tatib_models.TataIbadah, pk=service_id)
     query = (request.GET.get('q') or '').strip()[:120]
     if not query:
         return JsonResponse({'results': []})
+    chapter_rows = _projector_chapter_prefix(query)
+    song_reference_filter = _entry_song_reference_filter(query)
+    if chapter_rows is not None or song_reference_filter is not None:
+        rows = chapter_rows or []
+        if song_reference_filter is not None:
+            songs = (song_models.Song.objects.active().filter(
+                song_reference_filter, book__is_deleted=False)
+                .select_related('book').order_by('book__name', 'number', 'sub_number', 'title'))
+            rows.extend({'kind': 'song', 'label': _entry_song_option_label(song).strip(),
+                         'target': {'song_id': song.pk}} for song in songs)
+        return JsonResponse({'results': rows})
     results = search_lib.search(query)
     rows = []
     for row in results['bible']:

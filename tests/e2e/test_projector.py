@@ -9,6 +9,7 @@ pages from one context share it (that is one laptop with two tabs), a second
 context is another laptop and must not be affected.
 """
 
+import json
 import unittest
 from datetime import date
 
@@ -387,6 +388,26 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             else:
                 page.keyboard.press('Escape')
                 page.clock.fast_forward(200)
+
+    def test_goto_keeps_keyboard_selection_visible_in_long_reference_results(self):
+        page = self._page(self._projector_url())
+        rows = [{'kind': 'song', 'label': f'NKB {number}', 'target': {'song_id': number}}
+                for number in range(40)]
+        page.route('**/lookup/**', lambda route: route.fulfill(
+            status=200, content_type='application/json', body=json.dumps({'results': rows})))
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('NKB 2')
+        page.wait_for_function("document.querySelectorAll('.projector-find__row').length === 40")
+        for _ in range(35):
+            page.keyboard.press('ArrowDown')
+        self.assertGreater(page.locator('#projectorFind').evaluate('el => el.scrollTop'), 0)
+        selected = page.locator('.projector-find__row[aria-selected="true"]')
+        self.assertEqual(selected.get_attribute('data-choice'), '35')
+        self.assertTrue(selected.evaluate("""el => {
+          const row = el.getBoundingClientRect();
+          const panel = document.querySelector('#projectorFind').getBoundingClientRect();
+          return row.top >= panel.top && row.bottom <= panel.bottom;
+        }"""))
 
     def test_escape_closes_both_hud_layers_without_a_lingering_focus_ring(self):
         page = self._page(self._projector_url())

@@ -2256,6 +2256,39 @@ class ServiceProjectorTests(TestCase):
         self.assertEqual([row['target']['song_id'] for row in rows], [self.song.pk])
         self.assertNotIn(song.pk, [row['target']['song_id'] for row in rows])
 
+    def test_library_lookup_matches_hymn_book_and_number_prefix_without_truncating(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        book = songs.Book.objects.create(
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        for number in range(200, 220):
+            songs.Song.objects.create(book=book, number=number, title=f'Song {number}')
+        target = songs.Song.objects.create(
+            book=book, number=223, sub_number='a', title='Haleluya')
+        songs.Song.objects.create(book=book, number=223, sub_number='b', title='Other variant')
+
+        self.assertEqual(self.client.get(url, {'q': 'NKB'}).json()['results'], [])
+        for query in ('NKB 2', 'Nyanyikanlah Kidung Baru 2',
+                      'NKB 22', 'Nyanyikanlah Kidung Baru 22',
+                      'NKB 223', 'Nyanyikanlah Kidung Baru 223',
+                      'NKB 223A', 'Nyanyikanlah Kidung Baru 223A'):
+            rows = self.client.get(url, {'q': query}).json()['results']
+            self.assertIn(target.pk, [row['target']['song_id'] for row in rows], query)
+        exact_variant = self.client.get(url, {'q': 'NKB 223A'}).json()['results']
+        self.assertEqual([row['target']['song_id'] for row in exact_variant], [target.pk])
+
+    def test_library_lookup_matches_bible_book_and_chapter_prefix(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        for chapter in (2, 20, 22):
+            bible.Verse.objects.create(
+                book_translation=self.matius, chapter=chapter, verse=1, text='ayat')
+        self.assertEqual(self.client.get(url, {'q': 'Mat'}).json()['results'], [])
+        for query in ('Mat 2', 'Matius 2'):
+            rows = self.client.get(url, {'q': query}).json()['results']
+            self.assertEqual([row['label'] for row in rows],
+                             ['Matius 2', 'Matius 20', 'Matius 22'])
+        verse = self.client.get(url, {'q': 'Mat 5:2'}).json()['results']
+        self.assertEqual(verse[0]['label'], 'Matius 5:2')
+
     def test_a_text_shows_two_lines_at_a_time_under_its_own_header(self):
         self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
                   text='satu\ndua\ntiga\nempat\nlima')

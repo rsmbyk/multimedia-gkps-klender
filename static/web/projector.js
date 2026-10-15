@@ -590,6 +590,7 @@
   }
   function paintFind() {
     findResults.replaceChildren();
+    var selected = null;
     findRows.forEach(function (row, index) {
       var button = document.createElement('button');
       button.type = 'button'; button.className = 'projector-find__row';
@@ -598,7 +599,9 @@
       button.setAttribute('aria-selected', String(index === findChoice));
       button.textContent = row.label;
       findResults.appendChild(button);
+      if (index === findChoice) selected = button;
     });
+    if (selected) selected.scrollIntoView({block: 'nearest'});
   }
   function chooseFind(index) {
     var row = findRows[index];
