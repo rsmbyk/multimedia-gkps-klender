@@ -9,7 +9,7 @@
 - **Preview:** [interactive 1366×768 projector](./preview.html), [states and measurements](./preview-gallery.html)
 - **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
-- **Untitled Text cue amendment:** Draft, pending owner acceptance; [50-character preview](./preview-cue-text-clipping.html)
+- **Untitled Text cue amendment:** Draft, revised preview pending approval; [adjacent-entry preview](./preview-cue-text-clipping.html)
 
 ## Intent
 
@@ -121,13 +121,14 @@ Clicking or keyboard-activating clear empties only its field, fires that input's
 
 ## Draft amendment: clip untitled Text cue labels
 
-The owner approved the [interactive 50-character preview](./preview-cue-text-clipping.html). This amendment remains Draft until explicitly accepted. When an entry has `type: text` and `untitled: true`, the corner cue displays at most the first 50 Unicode characters of its first-line `label`, followed by `…` only when more characters exist. The ellipsis is in addition to those 50 characters. Keep the full `entry.label` in projector data, the J service list, search matching, and accessible names. Titles, song and passage references, section breaks, and library detours keep their existing text.
+The [revised preview](./preview-cue-text-clipping.html) shows two adjacent untitled Text entries and awaits owner approval. This amendment remains Draft until explicitly accepted. When an entry has `type: text` and `untitled: true`, the corner cue displays at most the first 50 Unicode characters of its first-line `label`, followed by `…` only when more characters exist. The ellipsis is in addition to those 50 characters. Keep the full `entry.label` in projector data, the J service list, search matching, and accessible names. Titles, song and passage references, section breaks, and library detours keep their existing text.
 
-Apply the same rule when such an entry appears as the **next-entry hint**. The shortened string is presentation-only: it must not affect current/next navigation or screen counts. Mark first-line labels so CSS can constrain just those labels to `max-width: min(50ch, 42vw)` with `overflow: hidden`, `white-space: nowrap`, and `text-overflow: ellipsis`. Preserve the existing 16px HUD type, 24px alignment box, 32px left and right control offsets, muted colors, and current hover behavior. On narrow viewports, the count, arrow, and keyboard button remain visible; the label may visually ellipsize further to fit. No animation is added.
+Apply the same rule when such an entry appears as the **next-entry hint**. The shortened string is presentation-only: it must not affect current/next navigation or screen counts. Mark first-line labels so CSS constrains **each** to `max-width: min(50ch, 32vw)` with `min-width: 0`, `overflow: hidden`, `white-space: nowrap`, and `text-overflow: ellipsis`. Let the current and next label containers shrink independently; keep the screen count and arrow non-shrinking. Preserve the existing 16px HUD type, 24px alignment box, 32px left and right control offsets, muted colors, and current hover behavior. On narrow viewports, both labels may visually ellipsize further, but the count, arrow, and keyboard button remain visible. No animation is added.
 
 - **Given** an untitled Text first line is 50 characters or fewer, **when** it is current or next, **then** the cue shows it without an added ellipsis.
 - **Given** an untitled Text first line exceeds 50 characters, **when** it is current or next, **then** the cue shows the first 50 characters followed by `…`; J and its search still use the full first line.
 - **Given** the viewport narrows, **when** a long first-line label is shown, **then** its width can shrink below the 50ch cap while the screen count and next control remain on screen.
+- **Given** two adjacent untitled Text entries have long first lines, **when** one is current and one is next, **then** both labels clip independently and neither pushes the count or arrow out of the HUD.
 
 ## Acceptance scenarios
 

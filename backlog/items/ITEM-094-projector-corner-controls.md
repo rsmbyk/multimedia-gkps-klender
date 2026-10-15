@@ -28,7 +28,7 @@ The hall projector mirrors the operator's laptop. Show the current and next serv
 - The Draft includes projector header/body fitting, keyboard navigation, entry and library finds, the service list, mouse zones, and unobtrusive inactivity behavior.
 - The owner accepted the [single-suggestion Go To preview](../../specs/091-projector-corner/preview-goto-autocomplete.html) and its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-one-suggestion-go-to).
 - The owner accepted the [two-field search-clear preview](../../specs/091-projector-corner/preview-search-clear.html) and its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-projector-search-clear-controls).
-- The [50-character untitled Text cue preview](../../specs/091-projector-corner/preview-cue-text-clipping.html) is approved; its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#draft-amendment-clip-untitled-text-cue-labels) awaits explicit Draft acceptance.
+- The [revised adjacent untitled Text cue preview](../../specs/091-projector-corner/preview-cue-text-clipping.html) awaits owner review; its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#draft-amendment-clip-untitled-text-cue-labels) remains Draft.
 - OBS projection sources and old docks are separate surfaces.
 
 ## Acceptance sketch
