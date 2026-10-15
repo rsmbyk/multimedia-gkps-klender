@@ -174,12 +174,14 @@
   var entryList = document.getElementById('entry-list');
   var entryDismiss = document.getElementById('entry-list-dismiss');
   var entryListSearch = document.getElementById('entry-list-search');
+  var entryListClear = document.getElementById('entry-list-clear');
   var entryListResults = document.getElementById('entry-list-results');
   var entryListMatches = [];
   var entryListChoice = 0;
   var findPanel = document.getElementById('projectorFind');
   var findDismiss = document.getElementById('projectorFindDismiss');
   var findInput = document.getElementById('projectorFindInput');
+  var findClear = document.getElementById('projectorFindClear');
   var findResults = document.getElementById('projectorFindResults');
   var findSuggestion = findResults.querySelector('.projector-find__suggestion');
   var findCount = findResults.querySelector('.projector-find__count');
@@ -190,6 +192,21 @@
   var findChoice = 0;
   var detour = null;
   var returnScreen = null;
+
+  function bindSearchClear(input, clear) {
+    function sync() { clear.hidden = !input.value; }
+    clear.addEventListener('click', function (event) {
+      event.stopPropagation();
+      input.value = '';
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      input.focus();
+    });
+    ['input', 'change', 'search'].forEach(function (name) { input.addEventListener(name, sync); });
+    sync();
+    return sync;
+  }
+  var syncEntryListClear = bindSearchClear(entryListSearch, entryListClear);
+  var syncFindClear = bindSearchClear(findInput, findClear);
 
   function entryAt(index) {
     var active = screens()[index];
@@ -398,6 +415,7 @@
     if (open && body.classList.contains('keys-open')) return;
     if (open) {
       entryListSearch.value = '';
+      syncEntryListClear();
       entryListChoice = entryIndex();
       renderEntryList();
       window.clearTimeout(entryCloseTimer);
@@ -555,6 +573,7 @@
     if (kind === 'j') { setEntryListOpen(true); return; }
     findKind = kind; findChoice = 0;
     findInput.value = '';
+    syncFindClear();
     findPanel.hidden = false;
     findDismiss.hidden = false;
     body.classList.add('find-open');

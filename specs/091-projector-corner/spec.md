@@ -8,7 +8,7 @@
 - **Bump:** minor
 - **Preview:** [interactive 1366×768 projector](./preview.html), [states and measurements](./preview-gallery.html)
 - **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
-- **Search clear amendment:** Draft, pending owner acceptance; [two-field preview](./preview-search-clear.html)
+- **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
 
 ## Intent
 
@@ -106,9 +106,9 @@ This amendment changes only the G passage/song popup. The preceding Spec 091 beh
 - **Given** a suggestion is selected, **when** the operator presses Enter or clicks it, **then** only that detour opens and G closes. Escape, empty-input Backspace, and outside clicks close G without changing the projected service position.
 - **Given** a new query or a closed popup, **when** an older lookup response arrives, **then** it neither replaces the current suggestion nor opens a detour. Zero results show `0 / 0` and Enter does nothing.
 
-## Draft amendment: projector search clear controls
+## Accepted amendment: projector search clear controls
 
-The owner approved the [interactive preview](./preview-search-clear.html) for the J service-list search and G Go To search. This amendment remains Draft until explicitly accepted. Reuse the public reading sidebar's 20×20 SVG path (`M5.5 5.5l9 9M14.5 5.5l-9 9`) with a 1.8px round-capped stroke, rendered at 14×14 inside a 26×26 circular button on the right side of each input. The button is vertically centered in a positioned field wrapper, 5px from its right edge. Give the input enough right padding that text never overlaps the button. Suppress the browser-native search cancel icon so only one clear control appears.
+The owner approved the [interactive preview](./preview-search-clear.html) for the J service-list search and G Go To search and explicitly accepted this amendment. Reuse the public reading sidebar's 20×20 SVG path (`M5.5 5.5l9 9M14.5 5.5l-9 9`) with a 1.8px round-capped stroke, rendered at 14×14 inside a 26×26 circular button on the right side of each input. The button is vertically centered in a positioned field wrapper, 5px from its right edge. Give the input enough right padding that text never overlaps the button. Suppress the browser-native search cancel icon so only one clear control appears.
 
 Use the projector's muted `#8e8a80` icon color and transparent resting background. Hover uses `#36322b` behind the icon and `#e8e4dc` for the stroke. Keyboard focus shows a 2px `#e8e4dc` outline with 1px offset. Keep the existing 400px G popup and 360px J list geometry, input colors, labels, and result layouts; at smaller viewports the control remains inside each field. The clear button is hidden when the field is empty, including on initial open, and appears immediately when text is entered.
 

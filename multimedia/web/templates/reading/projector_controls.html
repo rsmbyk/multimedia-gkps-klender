@@ -41,7 +41,10 @@
   <div class="entry-list" id="entry-list" aria-label="Service entries" hidden>
     <div class="entry-list__header">
       <label class="entry-list__heading" for="entry-list-search">SERVICE ENTRIES</label>
-      <input id="entry-list-search" class="entry-list__search" type="search" placeholder="Search entries" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="entry-list-results">
+      <div class="projector-search-field">
+        <input id="entry-list-search" class="entry-list__search" type="search" placeholder="Search entries" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="entry-list-results">
+        <button type="button" class="projector-search-clear" id="entry-list-clear" aria-label="Clear service search" hidden><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button>
+      </div>
     </div>
     <div id="entry-list-results" class="entry-list__results" role="listbox" aria-label="Matching service entries"></div>
   </div>

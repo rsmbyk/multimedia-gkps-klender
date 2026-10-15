@@ -54,7 +54,10 @@ that browser's tabs over the display channel (web/projector.js, web/display.js).
 <button type="button" class="projector-find-dismiss" id="projectorFindDismiss" aria-label="Close passage or song search" hidden></button>
 <section class="projector-find" id="projectorFind" aria-label="Projector find" hidden>
   <label for="projectorFindInput" id="projectorFindLabel">Go To · Passage or Song</label>
-  <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false" placeholder="Try NKB 2, Matius 2, or Haleluya" aria-controls="projectorFindResults">
+  <div class="projector-search-field">
+    <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false" placeholder="Try NKB 2, Matius 2, or Haleluya" aria-controls="projectorFindResults">
+    <button type="button" class="projector-search-clear" id="projectorFindClear" aria-label="Clear Go To search" hidden><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button>
+  </div>
   <button type="button" id="projectorFindResults" class="projector-find__row" disabled>
     <span class="projector-find__suggestion">Start typing to find a match</span>
     <span class="projector-find__count">0 / 0</span>

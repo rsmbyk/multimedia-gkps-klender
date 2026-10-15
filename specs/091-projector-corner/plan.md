@@ -7,7 +7,7 @@
 - **Bump:** minor
 - **Approved look:** [interactive preview](./preview.html) and [gallery](./preview-gallery.html)
 - **Go To amendment:** Accepted; [approved single-suggestion preview](./preview-goto-autocomplete.html)
-- **Search clear amendment:** Draft; [approved two-field preview](./preview-search-clear.html)
+- **Search clear amendment:** Accepted; [approved two-field preview](./preview-search-clear.html)
 
 ## Why
 
@@ -37,8 +37,8 @@ The [approved interaction preview](./preview-goto-autocomplete.html) uses the pr
 
 The owner accepted the [amendment in the spec](./spec.md#accepted-amendment-one-suggestion-go-to). Targeted browser tests cover result counting, replacement and wraparound, query preservation, and no-match/overlay behavior. The main risk is making large reference-prefix result sets hard to navigate; the counter and cycling keep every result reachable without drawing extra attention to the projection.
 
-## Draft amendment: projector search clear controls
+## Accepted amendment: projector search clear controls
 
 The J service list and G Go To fields currently rely on the browser's search-clear affordance, which does not match the public reading sidebars. Use the same stroked × icon and 26px circular button as those sidebar filters, adapted to the projector palette. Show it only for non-empty input; clearing must dispatch the existing input event and leave keyboard focus in the field. This affects only the two projector search inputs and their existing results, with no change to matching, navigation, or overlay behavior.
 
-The owner approved the [interactive two-field preview](./preview-search-clear.html). The [Draft amendment](./spec.md#draft-amendment-projector-search-clear-controls) needs explicit acceptance before product implementation. Targeted projector browser tests will check both clear buttons, live result reset, focus, and the hidden empty state.
+The owner approved the [interactive two-field preview](./preview-search-clear.html) and accepted the [amendment](./spec.md#accepted-amendment-projector-search-clear-controls). Targeted projector browser tests check both clear buttons, live result reset, focus, and the hidden empty state.

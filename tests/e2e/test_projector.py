@@ -481,6 +481,60 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertFalse(page.locator('#projectorFind').is_visible())
         page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
 
+    def test_projector_search_clear_controls_match_both_fields(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('j')
+        service_search = page.locator('#entry-list-search')
+        service_clear = page.locator('#entry-list-clear')
+        self.assertFalse(service_clear.is_visible())
+        service_search.fill('Salam')
+        self.assertTrue(service_clear.is_visible())
+        self.assertEqual(page.locator('.entry-list__item').count(), 1)
+        service_clear.click()
+        self.assertEqual(service_search.input_value(), '')
+        self.assertTrue(service_search.evaluate('el => document.activeElement === el'))
+        self.assertEqual(page.locator('.entry-list__item').count(), 5)
+        self.assertFalse(service_clear.is_visible())
+        service_search.fill('Salam')
+        service_clear.focus()
+        page.keyboard.press('Enter')
+        self.assertEqual(service_search.input_value(), '')
+        self.assertTrue(page.locator('#entry-list').is_visible())
+        page.keyboard.press('Escape')
+
+        page.keyboard.press('g')
+        goto_search = page.locator('#projectorFindInput')
+        goto_clear = page.locator('#projectorFindClear')
+        self.assertFalse(goto_clear.is_visible())
+        goto_search.fill('NKB 2')
+        self.assertTrue(goto_clear.is_visible())
+        goto_clear.click()
+        self.assertEqual(goto_search.input_value(), '')
+        self.assertTrue(goto_search.evaluate('el => document.activeElement === el'))
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Start typing to find a match')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
+        self.assertFalse(goto_clear.is_visible())
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+
+    def test_goto_clear_ignores_pending_lookup(self):
+        page = self._page(self._projector_url())
+        page.evaluate("""() => {
+          window.resolveLookup = null;
+          const originalFetch = window.fetch;
+          window.fetch = (url, options) => String(url).includes('/lookup/')
+            ? new Promise(resolve => { window.resolveLookup = resolve; })
+            : originalFetch(url, options);
+        }""")
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('NKB 2')
+        page.wait_for_function('window.resolveLookup !== null')
+        page.locator('#projectorFindClear').click()
+        page.evaluate("""() => window.resolveLookup({json: () => Promise.resolve({results: [
+          {kind: 'song', label: 'Late result', target: {song_id: 1}}
+        ]})})""")
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Start typing to find a match')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
+
     def test_escape_closes_both_hud_layers_without_a_lingering_focus_ring(self):
         page = self._page(self._projector_url())
         for selector, open_class in (('#cue-service', 'entry-list-open'), ('.keys', 'keys-open')):

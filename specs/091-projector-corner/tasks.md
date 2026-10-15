@@ -4,7 +4,7 @@
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 - **Go To amendment:** Accepted
-- **Search clear amendment:** Draft, pending owner acceptance
+- **Search clear amendment:** Accepted
 
 ## Checklist
 
@@ -35,10 +35,10 @@
 - [x] Run the targeted projector tests and confirm the reference-size and smaller-viewport layout against the approved preview.
 - [x] Update this task list and the Spec 091/ITEM-094/PR descriptions with the delivered amendment before merge.
 
-## Draft amendment: projector search clear controls
+## Accepted amendment: projector search clear controls
 
 - [x] Owner approves the [interactive preview](./preview-search-clear.html) for J and G.
-- [ ] Owner explicitly accepts the [Draft amendment](./spec.md#draft-amendment-projector-search-clear-controls); stop before product code until then.
-- [ ] Add targeted projector browser tests for icon visibility, click and keyboard clear, live result reset, retained focus, and stale G responses.
-- [ ] Add the shared clear-button markup and projector styling to both fields, and wire the buttons to their existing input handlers.
-- [ ] Run the targeted projector browser class and update the Spec/ITEM/PR delivery record.
+- [x] Owner explicitly accepts the [amendment](./spec.md#accepted-amendment-projector-search-clear-controls).
+- [x] Add targeted projector browser tests for icon visibility, click and keyboard clear, live result reset, retained focus, and stale G responses.
+- [x] Add the shared clear-button markup and projector styling to both fields, and wire the buttons to their existing input handlers.
+- [x] Run the targeted projector browser class (33 passing) and update the Spec/ITEM/PR delivery record.

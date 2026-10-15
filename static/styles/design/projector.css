@@ -193,9 +193,20 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
 }
 .projector-find[hidden] { display: none; }
 .projector-find label { display: block; margin-bottom: 8px; color: var(--quiet); }
-.projector-find input { width: 100%; padding: 8px 10px; border: 1px solid #4a463f;
+.projector-find input { width: 100%; padding: 8px 42px 8px 10px; border: 1px solid #4a463f;
   border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
 .projector-find input:focus-visible { border-color: var(--on); }
+.projector-search-field { position: relative; }
+.projector-search-field input::-webkit-search-cancel-button { display: none; }
+.projector-search-clear {
+  position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
+  display: grid; place-items: center; width: 26px; height: 26px; padding: 0;
+  border: 0; border-radius: 50%; background: none; color: var(--quiet); cursor: pointer;
+}
+.projector-search-clear svg { width: 14px; height: 14px; }
+.projector-search-clear:hover { background: #36322b; color: var(--on); }
+.projector-search-clear:focus-visible { outline: 2px solid var(--on); outline-offset: 1px; }
+.projector-search-clear[hidden] { display: none; }
 .projector-find__row { display: flex; align-items: center; gap: 9px; width: 100%; margin-top: 6px; padding: 8px;
   border: 0; border-radius: 4px; background: #2a2722; color: var(--on);
   text-align: left; font: inherit; cursor: pointer; }
@@ -259,7 +270,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   body.projector.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
   .entry-list__header { position: sticky; top: 0; z-index: 1; padding: 10px 16px 9px; background: var(--canvas); }
   .entry-list__heading { display: block; margin-bottom: 8px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
-  .entry-list__search { width: 100%; padding: 7px 9px; border: 1px solid #4a463f; border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
+  .entry-list__search { width: 100%; padding: 7px 42px 7px 9px; border: 1px solid #4a463f; border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
   .entry-list__search:focus-visible { border-color: var(--quiet); }
   .entry-list__results { padding-bottom: 10px; }
   .entry-list__empty { padding: 9px 16px; color: var(--quiet); }
