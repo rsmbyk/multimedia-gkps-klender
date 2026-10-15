@@ -8,13 +8,13 @@
 body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG Sans", "Source Sans Pro", sans-serif; }
 .stage { position: relative; width: 100%; height: 340px; background: #1b1a17; }
 .words { position: absolute; inset: 30px 32px 64px; display: grid; place-items: center; color: #f5f3ee; font-size: clamp(30px, 5vw, 72px); font-weight: 700; text-align: center; }
-.cue { position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px; display: flex; align-items: center; height: 24px; overflow: hidden; color: #6e6a62; font-size: 16px; font-weight: 550; white-space: nowrap; }
+.cue { position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px; display: flex; align-items: center; height: 24px; overflow: hidden; color: #5d5952; font-size: 16px; font-weight: 550; white-space: nowrap; }
 .icon, .separator, .progress, .next-arrow { flex: none; }
-.icon { font-size: 20px; font-weight: 400; }
-.separator { margin: 0 .42em 0 .32em; }
+.icon { color: #6e6a62; font-size: 20px; font-weight: 400; }
+.separator { color: #6e6a62; margin: 0 .42em 0 .32em; }
 .prefix, .next { display: inline-flex; align-items: center; height: 24px; flex: none; }
-.source { display: block; position: relative; overflow: hidden; white-space: nowrap; color: #5d5952; }
-.source:hover, .source.is-running { color: inherit; }
+.source { display: block; position: relative; overflow: hidden; white-space: nowrap; }
+.source:hover, .source.is-running { color: #6e6a62; }
 .source--current { font-style: italic; }
 .source__still { display: block; overflow: hidden; text-overflow: ellipsis; }
 .source__moving { display: none; width: max-content; white-space: nowrap; }
@@ -22,7 +22,7 @@ body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG S
 .source.is-running .source__moving { display: block; }
 .progress { color: #e8e4dc; margin-left: .35em; }
 .next { margin-left: .3em; gap: .2em; }
-.next-arrow { width: 16px; height: 16px; }
+.next-arrow { color: #6e6a62; width: 16px; height: 16px; }
 .keyboard { position: absolute; right: 32px; bottom: 20px; display: grid; place-items: center; width: 34px; height: 24px; color: #6e6a62; font-weight: 400; }
 .keyboard svg { display: block; width: 34px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .explain { padding: 24px 32px; color: #a29d93; font-size: 13px; }
@@ -41,7 +41,7 @@ body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG S
   </div>
   <span class="keyboard"><svg viewBox="0 0 24 24" aria-label="Keyboard shortcuts"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M8 12h.01M12 12h.01M16 12h.01M7 15h10" stroke-width="2.4"/></svg></span>
 </div>
-<p class="explain"><b>Try hovering over either label.</b> All cue text now uses 550 weight. At rest, only the current and next text labels are slightly quieter; hover restores their previous color and repeats the slow horizontal run. The keyboard icon matches the projector's SVG, whose stroke does not change with font weight. Both labels use the same character limit, starting at 50 and shrinking together only if the inline cue would cross the minimum 10vw gap before the keyboard button. Current limit: <span id="limit"></span>. Reduced-motion settings keep the labels still.</p>
+<p class="explain"><b>Try hovering over either label.</b> All resting cue text now uses the quieter #5D5952 color and 550 weight; hover restores the earlier color and repeats the slow horizontal run. Highlighted progress, icons, and the keyboard SVG retain their colors. Both labels use the same character limit, starting at 50 and shrinking together only if the inline cue would cross the minimum 10vw gap before the keyboard button. Current limit: <span id="limit"></span>. Reduced-motion settings keep the labels still.</p>
 <script>
   const sources = [...document.querySelectorAll('.source')];
   const cue = document.querySelector('.cue');
