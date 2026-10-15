@@ -10,6 +10,7 @@
 - **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
+- **Corner cue typography amendment:** Draft; [owner-approved 550-weight preview](./preview-cue-running-text.html)
 
 ## Intent
 
@@ -132,6 +133,16 @@ At rest, both labels remain clipped with an ellipsis. Hovering one label reveals
 - **Given** the viewport narrows, **when** the 50-character versions no longer fit, **then** their shared character limit decreases just enough for the inline cue to fit while the screen count and arrow remain visible and the gap from the next group to the keyboard button stays at least 10vw. If both fit, the limit remains 50.
 - **Given** two adjacent untitled Text entries have long first lines, **when** one is current and one is next, **then** both labels clip independently and neither pushes the count or arrow out of the HUD.
 - **Given** a clipped label is hovered, **when** the pointer remains, **then** its full text runs repeatedly without moving the count, arrow, or other label. Leaving restores the clipped state without a browser tooltip; reduced-motion preference keeps the label still.
+
+## Draft amendment: quieter corner cue typography
+
+The owner approved the [550-weight preview](./preview-cue-running-text.html). Replace the corner cue's inherited `font-weight: 650` with `550` for its 16px text, including current and next labels, bait numbers, and progress. Preserve the 24px alignment box, inline order, and responsive running-label limit.
+
+For current and next **untitled Text first-line labels only**, use `#5D5952` in the resting state instead of inherited `#6E6A62`. Hovering either label restores its former inherited hover color. An active, selected, or highlighted next-entry state must retain its existing color and take priority over the resting tint. Do not alter icon, separator, progress, arrow, keyboard-button, other cue-label, hover, pressed, or focus colors. The keyboard button is a 34×24px SVG with fixed strokes; its visual weight remains unchanged by the cue text weight.
+
+- **Given** a resting cue with adjacent untitled Text labels, **when** it renders, **then** both first-line labels use `#5D5952` and all cue text uses weight 550; the count, icons, and keyboard SVG retain their colors and geometry.
+- **Given** either label is hovered or its next-entry state is highlighted, **when** the state changes, **then** its existing hover or highlight color appears without the resting tint masking it, and the running-text behavior is unchanged.
+- **Given** a song, passage, section break, or detour cue, **when** it renders, **then** its text uses weight 550 while its existing state colors and controls remain unchanged.
 
 ## Acceptance scenarios
 

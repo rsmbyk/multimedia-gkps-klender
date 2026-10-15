@@ -6,6 +6,7 @@
 - **Go To amendment:** Accepted
 - **Search clear amendment:** Accepted
 - **Untitled Text cue amendment:** Accepted
+- **Corner cue typography amendment:** Draft
 
 ## Checklist
 
@@ -51,3 +52,11 @@
 - [x] Add targeted projector browser tests for the shared overflow-triggered limit, adjacent long entries, repeating hover/leave, reduced motion, preserved J labels/search, and narrow viewport geometry.
 - [x] Add the running and clipped label states only to untitled Text labels in the HUD renderer; reserve the quiet gap before the keyboard button.
 - [x] Run the targeted projector browser class (35 passing) and update the Spec/ITEM/PR delivery record.
+
+## Draft amendment: quieter corner cue typography
+
+- [x] Owner approves the [550-weight preview](./preview-cue-running-text.html), including the quieter resting first-line labels.
+- [ ] Owner explicitly accepts the [amendment](./spec.md#draft-amendment-quieter-corner-cue-typography); stop before implementation until then.
+- [ ] Change only cue text weight and resting untitled Text label color, keeping hover and highlight states higher priority and the SVG keyboard button unchanged.
+- [ ] Run targeted projector browser checks for resting, hovered, highlighted, and narrow-viewport cue states.
+- [ ] Update the Spec/ITEM/PR delivery record after implementation.
