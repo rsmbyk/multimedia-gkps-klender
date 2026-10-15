@@ -9,7 +9,7 @@
 - **Go To amendment:** Accepted; [approved single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [approved two-field preview](./preview-search-clear.html)
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
-- **Corner cue typography amendment:** Draft; [owner-approved 550-weight preview](./preview-cue-running-text.html)
+- **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
 
 ## Why
 
@@ -51,8 +51,8 @@ An untitled Text entry uses its first content line as its cue label. Two adjacen
 
 The owner approved the revised preview and explicitly accepted the [amendment](./spec.md#accepted-amendment-running-untitled-text-cue-labels). Targeted projector tests cover adjacent long entries, repeat and stop behavior, reduced motion, count and next-entry visibility, and narrower viewports.
 
-## Draft amendment: quieter corner cue typography
+## Accepted amendment: quieter corner cue typography
 
 The bottom HUD's 650-weight cue text draws more attention than needed, while the 400-weight preview looked too thin. The owner chose the 550-weight preview. Set all cue text to 550, and make only the resting current and next untitled Text labels slightly dimmer. Preserve hover, selected, highlighted, active, and focus colors, as well as the count, separators, arrows, list icon, and keyboard button colors. The keyboard button is SVG artwork, so changing text font weight does not change its strokes. This is a visual-only amendment; keep cue geometry, running-text fitting and animation, and navigation behavior.
 
-After Draft acceptance, update the projector CSS and verify the resting, hovered, highlighted, and narrow-viewport states against the approved preview. The risk is a resting-label override masking the next-entry highlighted state; explicit state selectors and a targeted browser check should guard it.
+The owner accepted the [amendment](./spec.md#accepted-amendment-quieter-corner-cue-typography). Explicit state selectors preserve next-entry highlights; targeted browser coverage checks resting, hovered, highlighted, and narrow-viewport cue states.

@@ -10,7 +10,7 @@
 - **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
-- **Corner cue typography amendment:** Draft; [owner-approved 550-weight preview](./preview-cue-running-text.html)
+- **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
 
 ## Intent
 
@@ -134,7 +134,7 @@ At rest, both labels remain clipped with an ellipsis. Hovering one label reveals
 - **Given** two adjacent untitled Text entries have long first lines, **when** one is current and one is next, **then** both labels clip independently and neither pushes the count or arrow out of the HUD.
 - **Given** a clipped label is hovered, **when** the pointer remains, **then** its full text runs repeatedly without moving the count, arrow, or other label. Leaving restores the clipped state without a browser tooltip; reduced-motion preference keeps the label still.
 
-## Draft amendment: quieter corner cue typography
+## Accepted amendment: quieter corner cue typography
 
 The owner approved the [550-weight preview](./preview-cue-running-text.html). Replace the corner cue's inherited `font-weight: 650` with `550` for its 16px text, including current and next labels, bait numbers, and progress. Preserve the 24px alignment box, inline order, and responsive running-label limit.
 

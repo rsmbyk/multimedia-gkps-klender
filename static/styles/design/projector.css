@@ -220,7 +220,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px;
     display: flex; align-items: center; height: 24px;
     margin: 0; padding: 0;
-    font-size: 16px; font-weight: 650; line-height: 1; color: var(--whisper); letter-spacing: 0.01em;
+    font-size: 16px; font-weight: 550; line-height: 1; color: var(--whisper); letter-spacing: 0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   /* Keep every cue part in the same 24px alignment box. Inline text and buttons
@@ -232,6 +232,11 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   .cue > #cue-prefix { gap: .2em; }
   .cue.cue--fit-text > #cue-prefix, .cue.cue--fit-text > #cue-next { flex: none; }
   .cue-running { display: block; position: relative; overflow: hidden; white-space: nowrap; }
+  /* Only a resting untitled Text label recedes; interactive states inherit
+     their established cue colors, including a highlighted next entry. */
+  .cue-running { color: #5d5952; }
+  .cue-running:hover, .cue-running.is-running,
+  .cue-next:hover .cue-running, .cue-next.on .cue-running { color: inherit; }
   .cue-running__still { display: block; white-space: nowrap; }
   .cue-running__moving { display: none; width: max-content; white-space: nowrap; }
   .cue-running.is-running .cue-running__still { display: none; }

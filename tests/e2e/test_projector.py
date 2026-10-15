@@ -533,10 +533,21 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         following = page.locator('#cue-next-name.cue-running')
         self.assertEqual(current.count(), 1)
         self.assertEqual(following.count(), 1)
+        self.assertEqual(page.locator('#corner-cue').evaluate(
+            'el => getComputedStyle(el).fontWeight'), '550')
+        self.assertEqual(current.evaluate('el => getComputedStyle(el).color'), 'rgb(93, 89, 82)')
+        self.assertEqual(following.evaluate('el => getComputedStyle(el).color'), 'rgb(93, 89, 82)')
+        self.assertEqual(page.locator('#cue-progress').evaluate(
+            'el => getComputedStyle(el).color'), 'rgb(232, 228, 220)')
+        page.locator('#cue-next').evaluate('el => el.classList.add("on")')
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-next-name')).color === 'rgb(232, 228, 220)'")
+        self.assertEqual(following.evaluate('el => getComputedStyle(el).color'), 'rgb(232, 228, 220)')
+        page.locator('#cue-next').evaluate('el => el.classList.remove("on")')
         self.assertEqual(page.locator('.entry-list__item').count(), 2)
         self.assertGreater(len(full), 50)
         for width in (1440, 900, 600, 375):
             page.set_viewport_size({'width': width, 'height': 700})
+            page.evaluate("window.dispatchEvent(new Event('resize'))")
             limit = int(page.locator('#corner-cue').get_attribute('data-running-limit'))
             self.assertLessEqual(limit, 50)
             self.assertGreaterEqual(limit, 1)
@@ -550,9 +561,12 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
               return keys.left - next.right >= innerWidth * .1 - 1;
             }"""))
         page.set_viewport_size({'width': 1440, 'height': 700})
+        page.evaluate("window.dispatchEvent(new Event('resize'))")
         self.assertEqual(page.locator('#corner-cue').get_attribute('data-running-limit'), '50')
         before = page.locator('#cue-progress').bounding_box()['x']
         current.hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-prefix .cue-running')).color === 'rgb(110, 106, 98)'")
+        self.assertEqual(current.evaluate('el => getComputedStyle(el).color'), 'rgb(110, 106, 98)')
         self.assertTrue(current.evaluate("el => el.classList.contains('is-running')"))
         self.assertTrue(current.locator('.cue-running__moving').evaluate(
             "el => el.getAnimations()[0].effect.getTiming().iterations === Infinity"))

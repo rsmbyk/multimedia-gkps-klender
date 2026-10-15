@@ -29,6 +29,7 @@ The hall projector mirrors the operator's laptop. Show the current and next serv
 - The owner accepted the [single-suggestion Go To preview](../../specs/091-projector-corner/preview-goto-autocomplete.html) and its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-one-suggestion-go-to).
 - The owner accepted the [two-field search-clear preview](../../specs/091-projector-corner/preview-search-clear.html) and its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-projector-search-clear-controls).
 - The owner approved the [revised running-text cue preview](../../specs/091-projector-corner/preview-cue-running-text.html) and accepted its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-running-untitled-text-cue-labels).
+- The owner approved the 550-weight, quieter-resting-label [cue preview](../../specs/091-projector-corner/preview-cue-running-text.html) and accepted its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-quieter-corner-cue-typography).
 - OBS projection sources and old docks are separate surfaces.
 
 ## Acceptance sketch
