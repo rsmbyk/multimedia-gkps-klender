@@ -35,7 +35,7 @@
     .goto__result:disabled { opacity: .6; cursor: default; }
     .goto__suggestion { flex: 1; display: flex; align-items: center; min-width: 0; overflow: hidden; white-space: nowrap; }
     .goto__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .goto__book { flex: none; max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #8e8a80; }
+    .goto__book { flex: none; max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #6e6a62; }
     .goto__separator { flex: none; margin: 0 .4em; color: #6e6a62; }
     .goto__count { flex: none; color: #a29d93; }
     .goto__footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px;
@@ -45,6 +45,7 @@
       padding: 10px 12px; border: 1px solid #3a372f; border-radius: 5px;
       background: #24221d; color: #bcb7ae; font-size: 11px; }
     .opened[hidden] { display: none; }
+    .hint { position: absolute; top: 32px; right: 32px; max-width: 360px; color: #8e8a80; font-size: 11px; text-align: right; }
     @media (max-height: 480px) { .goto { bottom: 32px; } .verse__text { font-size: 44px; } }
   </style>
 </head>
@@ -64,6 +65,7 @@
       <div class="goto__footer"><span><kbd>↑ ↓</kbd> cycle · <kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></div>
     </section>
     <div class="opened" id="opened" hidden></div>
+    <div class="hint">Press Down twice to inspect the long-title and long-book example. Each part clips independently; the result counter stays visible.</div>
   </main>
   <script>
     const songs = [
@@ -78,6 +80,7 @@
       {book: 'KJ', name: 'Kidung Jemaat', number: 312, title: 'Nyanyian 312'},
       {book: 'LSM', name: 'Lagu Sekolah Minggu', hymn: false, number: 14, title: 'Kasih Yesus Indah'},
       {book: 'PKA', name: 'Pujian Kaum Anak', hymn: false, number: 27, title: 'Kasih yang Tak Berkesudahan'},
+      {book: 'LPR', name: 'Kumpulan Lagu Pujian Anak dan Remaja Gereja Sepanjang Tahun', hymn: false, number: 48, title: 'Kasih Tuhan yang Tak Berkesudahan Sepanjang Masa dan Segala Generasi'},
     ];
     const chapters = [2, 5, 20, 21, 22, 23, 24, 25, 26, 27, 28].map(number => ({
       book: 'Mat', name: 'Matius', number,
