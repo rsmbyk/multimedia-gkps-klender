@@ -7,6 +7,7 @@
 - **Search clear amendment:** Accepted
 - **Untitled Text cue amendment:** Accepted
 - **Corner cue typography amendment:** Accepted
+- **All resting cue text amendment:** Draft
 
 ## Checklist
 
@@ -60,3 +61,11 @@
 - [x] Change only cue text weight and resting untitled Text label color, keeping hover and highlight states higher priority and the SVG keyboard button unchanged.
 - [x] Run targeted projector browser checks for resting, hovered, highlighted, and narrow-viewport cue states.
 - [x] Update the Spec/ITEM/PR delivery record after implementation.
+
+## Draft amendment: all resting cue text
+
+- [x] Owner approves the [revised cue preview](./preview-cue-running-text.html) at `#514D47` for all normal-state cue text.
+- [ ] Owner explicitly accepts the [amendment](./spec.md#draft-amendment-all-resting-cue-text); stop before implementation until then.
+- [ ] Apply the resting color across cue text while preserving highlighted progress, selection, hover, icons, and keyboard SVG.
+- [ ] Run targeted projector browser checks for passage, song, untitled Text, and detour cues, including hover and selected states.
+- [ ] Update the Spec/ITEM/PR delivery record after implementation.
