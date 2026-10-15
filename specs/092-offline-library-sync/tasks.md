@@ -19,7 +19,7 @@
 - [ ] Check light/dark and narrow status UI against the approved preview; verify focus, disabled, and reduced-motion states.
 - [ ] Fill final implementation/test paths in the spec Traceability section and run only targeted local checks; full suite and browser E2E belong to CI.
 - [ ] Update ITEM-095 and `backlog/board.md` in the implementation PR; set `VERSION`, changelog, and `release_version` in that same PR for the minor bump.
-- [ ] Conventional Commit with Codex trailer and update existing draft PR #346 to carry both specs.
+- [x] Conventional Commit with Codex trailer and update existing draft PR #346 to carry both specs.
 
 ## Done when
 
