@@ -86,7 +86,9 @@ jobs:
                           job for job in jobs if job.get('name', '').startswith('Browser E2E / ')
                       ]
                       if browser_jobs and all(job.get('conclusion') == 'success' for job in browser_jobs):
-                          return matching_pr.get('head', {}).get('sha')
+                          # A prior run's pull_requests entry reflects the PR's *current*
+                          # head. The run's own head_sha is the commit that was tested.
+                          return run.get('head_sha')
               except (OSError, ValueError, KeyError, urllib.error.URLError) as error:
                   print(f'Could not find a previous full E2E run ({type(error).__name__}); rerunning safely.')
               return None
