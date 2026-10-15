@@ -11,6 +11,7 @@
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
 - **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
+- **Go To morph amendment:** Draft; [approved motion preview](./preview-goto-morph.html)
 
 ## Why
 
@@ -61,3 +62,7 @@ The owner accepted the [amendment](./spec.md#accepted-amendment-quieter-corner-c
 ## Accepted amendment: shared corner control colors
 
 The prior color amendment dimmed only untitled Text first-line labels. The owner clarified that all resting cue text and the service-list and keyboard icons should share the same subdued color, then approved a [state preview](./preview-cue-state-colors.html) covering the keyboard, next entry, bait, translation, entry list, and split count. Use one palette for these controls: `#514D47` at rest, `#817D74` on hover, and `#E8E4DC` when highlighted, pressed, or open. The keyboard button never gains a background fill. The split count remains highlighted. Keep the accepted 550 text weight, geometry, fitting, running-label behavior, navigation, and visible keyboard-focus outline. The owner accepted the [amendment](./spec.md#accepted-amendment-shared-corner-control-colors). Explicit state precedence protects highlights; targeted browser checks cover the major cue types and input states.
+
+## Draft amendment: Go To morph animation
+
+The G passage/song popup appears and disappears abruptly while the shortcut sheet and service list already use a restrained 180ms morph. The owner approved the [Go To motion preview](./preview-goto-morph.html). Give the Go To panel the service list's 6px vertical travel, `.99` scale, opacity transition, 180ms duration, and `--display-ease` timing on both open and close. Its transparent full-output overlay remains transparent and intercepts navigation clicks throughout the closing transition. Reduced-motion preference omits animation. Keep search, selection, input focus, results, and projector position unchanged; opening during a pending close must cancel the close cleanly. The risk is a stale close timer hiding a reopened popup or a click leaking through during the transition, so verify rapid reopen and outside-click behavior.

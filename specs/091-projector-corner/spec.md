@@ -12,6 +12,7 @@
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
 - **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
+- **Go To morph amendment:** Draft; [approved motion preview](./preview-goto-morph.html)
 
 ## Intent
 
@@ -155,6 +156,15 @@ The entry-list button, keyboard button, next-entry button, bait buttons, and tra
 - **Given** the pointer hovers over the entry-list, keyboard, next-entry, bait, or translation control, **when** it is not pressed or highlighted, **then** the control uses `#817D74` without a keyboard-button background fill.
 - **Given** one of those controls is pressed, open, selected, or highlighted, **when** it renders, **then** it uses `#E8E4DC` and the keyboard button stays background-free.
 - **Given** the cue shows a split count, **when** other resting text is dimmed, **then** the selected count and its highlighted part stay `#E8E4DC`.
+
+## Draft amendment: Go To morph animation
+
+The owner approved the [Go To motion preview](./preview-goto-morph.html). On G popup open, animate the panel from opacity 0, `translateY(6px) scale(.99)` to opacity 1 and its resting position over 180ms with `--display-ease`, matching the service list. On close, reverse that animation over 180ms before hiding the panel. Keep the overlay transparent, present, and click-intercepting until the close finishes; block projector zones and underlying HUD clicks throughout opening and closing. Disable Go To motion under `prefers-reduced-motion: reduce`, while completing its state transition without delay. Do not change the popup's 400px maximum width, 32px left/58px bottom placement, search results, selected suggestion, dismissal actions, or underlying projected text.
+
+- **Given** G opens or closes, **when** motion is allowed, **then** only the panel fades, shifts 6px, and scales between `.99` and 1 over 180ms; the overlay remains visually transparent.
+- **Given** G is closing, **when** the operator clicks outside or on an underlying navigation surface, **then** no projector navigation fires and the panel hides only after the transition.
+- **Given** G closes and rapidly reopens, **when** the old close timer would expire, **then** the reopened popup stays visible and focused, with its usual search behavior.
+- **Given** reduced motion is preferred, **when** G opens or closes, **then** it changes state without animation or an artificial 180ms wait.
 
 ## Acceptance scenarios
 

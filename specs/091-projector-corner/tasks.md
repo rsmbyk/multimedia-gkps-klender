@@ -8,6 +8,7 @@
 - **Untitled Text cue amendment:** Accepted
 - **Corner cue typography amendment:** Accepted
 - **Shared corner colors amendment:** Accepted
+- **Go To morph amendment:** Draft
 
 ## Checklist
 
@@ -70,3 +71,11 @@
 - [x] Apply shared resting, hover, and highlight/pressed/open colors across cue text and controls; remove keyboard-button background fills.
 - [x] Run targeted projector browser checks for passage, song, untitled Text, and detour cues, including keyboard, next-entry, bait, translation, list, and split-count states.
 - [x] Update the Spec/ITEM/PR delivery record after implementation.
+
+## Draft amendment: Go To morph animation
+
+- [x] Owner approves the [Go To motion preview](./preview-goto-morph.html).
+- [ ] Owner explicitly accepts the [amendment](./spec.md#draft-amendment-go-to-morph-animation); stop before implementation until then.
+- [ ] Add Go To opening/closing state and 180ms service-list-style panel keyframes, with reduced-motion fallback and overlay interception until fully closed.
+- [ ] Add targeted browser checks for open/close, rapid reopen, outside-click protection, and reduced motion.
+- [ ] Update the Spec/ITEM/PR delivery record after implementation.
