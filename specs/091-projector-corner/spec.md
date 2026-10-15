@@ -11,7 +11,7 @@
 - **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
-- **Shared corner colors amendment:** Draft; [approved state preview](./preview-cue-state-colors.html)
+- **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
 
 ## Intent
 
@@ -145,7 +145,7 @@ For current and next **untitled Text first-line labels only**, use `#5D5952` in 
 - **Given** either label is hovered or its next-entry state is highlighted, **when** the state changes, **then** its existing hover or highlight color appears without the resting tint masking it, and the running-text behavior is unchanged.
 - **Given** a song, passage, section break, or detour cue, **when** it renders, **then** its text uses weight 550 while its existing state colors and controls remain unchanged.
 
-## Draft amendment: shared corner control colors
+## Accepted amendment: shared corner control colors
 
 The owner approved the [shared-state preview](./preview-cue-state-colors.html) after clarifying that all corner cue text **and controls** should use one palette. The previously accepted `#5D5952` resting tint for untitled Text first-line labels is superseded by `#514D47` for every resting textual identity in the HUD: passage and song references, titled and untitled Text labels, library-detour labels, unselected bait numbers, and next-entry names. The service-list icon, next arrow, translation label, keyboard SVG, and other corner controls also rest at `#514D47`. Keep the inherited text weight at 550 and the existing 16px size.
 

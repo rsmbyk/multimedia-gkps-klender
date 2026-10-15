@@ -220,7 +220,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px;
     display: flex; align-items: center; height: 24px;
     margin: 0; padding: 0;
-    font-size: 16px; font-weight: 550; line-height: 1; color: var(--whisper); letter-spacing: 0.01em;
+    font-size: 16px; font-weight: 550; line-height: 1; color: #514d47; letter-spacing: 0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   /* Keep every cue part in the same 24px alignment box. Inline text and buttons
@@ -232,11 +232,8 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   .cue > #cue-prefix { gap: .2em; }
   .cue.cue--fit-text > #cue-prefix, .cue.cue--fit-text > #cue-next { flex: none; }
   .cue-running { display: block; position: relative; overflow: hidden; white-space: nowrap; }
-  /* Only a resting untitled Text label recedes; interactive states inherit
-     their established cue colors, including a highlighted next entry. */
-  .cue-running { color: #5d5952; }
-  .cue-running:hover, .cue-running.is-running,
-  .cue-next:hover .cue-running, .cue-next.on .cue-running { color: inherit; }
+  .cue-running:hover, .cue-running.is-running { color: #817d74; }
+  .cue-next.on .cue-running { color: var(--on); }
   .cue-running__still { display: block; white-space: nowrap; }
   .cue-running__moving { display: none; width: max-content; white-space: nowrap; }
   .cue-running.is-running .cue-running__still { display: none; }
@@ -249,6 +246,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
      Adjust the lettering, keeping the HUD and its hit areas centered. */
   #cue-prefix > span, #cue-prefix > i, #cue-next-name { transform: translateY(1px); }
   .cue > .cue-separator, .cue > .cue-progress { padding-top: 2px; }
+  .cue-separator { color: var(--whisper); }
   .cue .on { color: var(--on); }
   .cue-service {
     appearance: none; display: inline-flex; align-items: center; justify-content: center;
@@ -257,8 +255,8 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     transition: color 120ms ease, background-color 120ms ease;
   }
   .cue-service svg { display: block; width: 19px; height: 19px; }
-  .cue-service:hover, .cue-service[aria-expanded="true"] { color: var(--on); background: #2a2722; }
-  .cue-service:active { color: var(--ink); background: #49443c; }
+  .cue-service:hover { color: #817d74; background: #2a2722; }
+  .cue-service[aria-expanded="true"], .cue-service:active { color: var(--on); background: #2a2722; }
   .cue-service:focus-visible { outline: 1px solid var(--on); outline-offset: 3px; }
   .cue-separator { margin: 0 .42em 0 .32em; }
   .entry-list-dismiss {
@@ -307,12 +305,11 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   .cue-bait { cursor: pointer; }
   .cue-bait[aria-pressed="true"] { color: var(--on); }
   .cue-bait:hover { color: #817d74; }
-  .cue-bait[aria-pressed="true"]:hover { color: #d4d0c7; }
-  .cue-bait:active { opacity: .72; }
+  .cue-bait[aria-pressed="true"]:hover, .cue-bait:active { color: var(--on); }
   .cue-translation { cursor: pointer; }
   .cue-translation:hover { color: #817d74; }
   .cue-translation.flash { color: var(--on); }
-  .cue-translation:active { opacity: .72; }
+  .cue-translation:active { color: var(--on); }
   .cue-progress { color: var(--on); }
   .cue-progress:not(:empty)::before { content: "·"; margin: 0 .42em 0 .32em; color: var(--whisper); }
   .cue-next {
@@ -320,8 +317,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     cursor: url("./cursor-right.svg") 16 16, e-resize; white-space: nowrap;
   }
   .cue-next:hover { color: #817d74; }
-  .cue-next.on { color: var(--on); }
-  .cue-next.on:hover { opacity: .9; }
+  .cue-next.on, .cue-next:active { color: var(--on); }
   .cue-bait:focus-visible, .cue-next:focus-visible, .cue-translation:focus-visible { outline: 1px solid var(--on); outline-offset: 3px; }
   .mouse-zones {
     position: absolute; inset: 0 0 64px; z-index: 2;
@@ -347,13 +343,14 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   .keys {
     position: absolute; right: 32px; bottom: 20px;
     margin: 0; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer;
-    color: var(--whisper); line-height: 0; z-index: 5;
+    color: #514d47; line-height: 0; z-index: 5;
     transition: color 120ms ease, background-color 120ms ease, transform 120ms ease,
       opacity 180ms ease, visibility 0s linear 180ms;
   }
   .keys svg { display: block; width: 34px; height: 24px; }
-  .keys:hover, body.projector.keys-open .keys { color: var(--on); background: #2a2722; }
-  .keys:active, body.projector.keys-open .keys:active { color: var(--ink); background: #49443c; transform: scale(0.96); }
+  .keys:hover { color: #817d74; }
+  body.projector.keys-open .keys, .keys:active { color: var(--on); }
+  .keys:active { transform: scale(0.96); }
   body.projector.cursor-hidden, body.projector.cursor-hidden * { cursor: none !important; }
   .cue { z-index: 5; transition: opacity 180ms ease, visibility 0s linear 180ms; }
   body.projector:not(.controls-idle) .cue,

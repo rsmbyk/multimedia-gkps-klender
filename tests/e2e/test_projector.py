@@ -535,8 +535,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(following.count(), 1)
         self.assertEqual(page.locator('#corner-cue').evaluate(
             'el => getComputedStyle(el).fontWeight'), '550')
-        self.assertEqual(current.evaluate('el => getComputedStyle(el).color'), 'rgb(93, 89, 82)')
-        self.assertEqual(following.evaluate('el => getComputedStyle(el).color'), 'rgb(93, 89, 82)')
+        self.assertEqual(current.evaluate('el => getComputedStyle(el).color'), 'rgb(81, 77, 71)')
+        self.assertEqual(following.evaluate('el => getComputedStyle(el).color'), 'rgb(81, 77, 71)')
         self.assertEqual(page.locator('#cue-progress').evaluate(
             'el => getComputedStyle(el).color'), 'rgb(232, 228, 220)')
         page.locator('#cue-next').evaluate('el => el.classList.add("on")')
@@ -565,8 +565,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('#corner-cue').get_attribute('data-running-limit'), '50')
         before = page.locator('#cue-progress').bounding_box()['x']
         current.hover()
-        page.wait_for_function("getComputedStyle(document.querySelector('#cue-prefix .cue-running')).color === 'rgb(110, 106, 98)'")
-        self.assertEqual(current.evaluate('el => getComputedStyle(el).color'), 'rgb(110, 106, 98)')
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-prefix .cue-running')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(current.evaluate('el => getComputedStyle(el).color'), 'rgb(129, 125, 116)')
         self.assertTrue(current.evaluate("el => el.classList.contains('is-running')"))
         self.assertTrue(current.locator('.cue-running__moving').evaluate(
             "el => el.getAnimations()[0].effect.getTiming().iterations === Infinity"))
@@ -588,6 +588,63 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertFalse(current.evaluate("el => el.classList.contains('is-running')"))
         self.assertEqual(current.locator('.cue-running__moving').evaluate(
             'el => getComputedStyle(el).display'), 'none')
+
+    def test_corner_controls_share_rest_hover_and_highlight_colors(self):
+        page = self._page(self._projector_url())
+        color = lambda selector: page.locator(selector).evaluate(
+            'el => getComputedStyle(el).color')
+        rest, hover, highlight = 'rgb(81, 77, 71)', 'rgb(129, 125, 116)', 'rgb(232, 228, 220)'
+        self.assertEqual(color('#corner-cue'), rest)
+        self.assertEqual(color('#cue-service'), rest)
+        self.assertEqual(color('#cue-next'), rest)
+        self.assertEqual(color('.keys'), rest)
+        self.assertEqual(color('#cue-progress'), highlight)
+
+        page.locator('#cue-next').hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-next')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('#cue-next'), hover)
+        page.locator('#cue-service').hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-service')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('#cue-service'), hover)
+        page.locator('#cue-service').click()
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-service')).color === 'rgb(232, 228, 220)'")
+        self.assertEqual(color('#cue-service'), highlight)
+        page.keyboard.press('Escape')
+
+        page.locator('.keys').hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('.keys')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('.keys'), hover)
+        self.assertEqual(page.locator('.keys').evaluate(
+            'el => getComputedStyle(el).backgroundColor'), 'rgba(0, 0, 0, 0)')
+        page.locator('.keys').click()
+        page.wait_for_function("getComputedStyle(document.querySelector('.keys')).color === 'rgb(232, 228, 220)'")
+        self.assertEqual(color('.keys'), highlight)
+        self.assertEqual(page.locator('.keys').evaluate(
+            'el => getComputedStyle(el).backgroundColor'), 'rgba(0, 0, 0, 0)')
+        page.keyboard.press('Escape')
+
+        for _ in range(3):
+            page.keyboard.press('Control+ArrowRight')
+        baits = page.locator('.cue-bait')
+        self.assertGreater(baits.count(), 1)
+        self.assertEqual(color('.cue-bait[aria-pressed="false"]'), rest)
+        self.assertEqual(color('.cue-bait[aria-pressed="true"]'), highlight)
+        baits.last.hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('.cue-bait[aria-pressed=\"false\"]')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('.cue-bait[aria-pressed="false"]'), hover)
+        page.locator('.cue-bait[aria-pressed="true"]').hover()
+        self.assertEqual(color('.cue-bait[aria-pressed="true"]'), highlight)
+
+        page.keyboard.press('Control+ArrowRight')
+        translation = page.locator('.cue-translation')
+        self.assertEqual(translation.count(), 1)
+        self.assertEqual(color('.cue-translation'), rest)
+        translation.hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('.cue-translation')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('.cue-translation'), hover)
+        translation.evaluate('el => el.classList.add("flash")')
+        page.wait_for_function("getComputedStyle(document.querySelector('.cue-translation')).color === 'rgb(232, 228, 220)'")
+        self.assertEqual(color('.cue-translation'), highlight)
 
     def test_goto_clear_ignores_pending_lookup(self):
         page = self._page(self._projector_url())

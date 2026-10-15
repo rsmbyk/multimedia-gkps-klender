@@ -10,7 +10,7 @@
 - **Search clear amendment:** Accepted; [approved two-field preview](./preview-search-clear.html)
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
-- **Shared corner colors amendment:** Draft; [approved state preview](./preview-cue-state-colors.html)
+- **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
 
 ## Why
 
@@ -58,6 +58,6 @@ The bottom HUD's 650-weight cue text draws more attention than needed, while the
 
 The owner accepted the [amendment](./spec.md#accepted-amendment-quieter-corner-cue-typography). Explicit state selectors preserve next-entry highlights; targeted browser coverage checks resting, hovered, highlighted, and narrow-viewport cue states.
 
-## Draft amendment: shared corner control colors
+## Accepted amendment: shared corner control colors
 
-The prior color amendment dimmed only untitled Text first-line labels. The owner clarified that all resting cue text and the service-list and keyboard icons should share the same subdued color, then approved a [state preview](./preview-cue-state-colors.html) covering the keyboard, next entry, bait, translation, entry list, and split count. Use one palette for these controls: `#514D47` at rest, `#817D74` on hover, and `#E8E4DC` when highlighted, pressed, or open. The keyboard button never gains a background fill. The split count remains highlighted. Keep the accepted 550 text weight, geometry, fitting, running-label behavior, navigation, and visible keyboard-focus outline. The risk is a broad state selector obscuring a more specific highlight; use explicit precedence and verify the major cue types and input states.
+The prior color amendment dimmed only untitled Text first-line labels. The owner clarified that all resting cue text and the service-list and keyboard icons should share the same subdued color, then approved a [state preview](./preview-cue-state-colors.html) covering the keyboard, next entry, bait, translation, entry list, and split count. Use one palette for these controls: `#514D47` at rest, `#817D74` on hover, and `#E8E4DC` when highlighted, pressed, or open. The keyboard button never gains a background fill. The split count remains highlighted. Keep the accepted 550 text weight, geometry, fitting, running-label behavior, navigation, and visible keyboard-focus outline. The owner accepted the [amendment](./spec.md#accepted-amendment-shared-corner-control-colors). Explicit state precedence protects highlights; targeted browser checks cover the major cue types and input states.
