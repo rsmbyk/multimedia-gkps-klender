@@ -8,12 +8,12 @@
 body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG Sans", "Source Sans Pro", sans-serif; }
 .stage { position: relative; width: 100%; height: 340px; background: #1b1a17; }
 .words { position: absolute; inset: 30px 32px 64px; display: grid; place-items: center; color: #f5f3ee; font-size: clamp(30px, 5vw, 72px); font-weight: 700; text-align: center; }
-.cue { position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px; display: flex; align-items: center; height: 24px; color: #6e6a62; font-size: 16px; font-weight: 650; white-space: nowrap; }
+.cue { position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px; display: flex; align-items: center; height: 24px; overflow: hidden; color: #6e6a62; font-size: 16px; font-weight: 650; white-space: nowrap; }
 .icon, .separator, .progress, .next-arrow { flex: none; }
 .icon { font-size: 20px; font-weight: 400; }
 .separator { margin: 0 .42em 0 .32em; }
-.prefix, .next { display: inline-flex; align-items: center; min-width: 0; height: 24px; flex: 0 1 auto; }
-.source { display: block; position: relative; min-width: 0; width: min(50ch, 27vw); max-width: 100%; overflow: hidden; white-space: nowrap; }
+.prefix, .next { display: inline-flex; align-items: center; height: 24px; flex: none; }
+.source { display: block; position: relative; overflow: hidden; white-space: nowrap; }
 .source--current { font-style: italic; }
 .source__still { display: block; overflow: hidden; text-overflow: ellipsis; }
 .source__moving { display: none; width: max-content; white-space: nowrap; }
@@ -39,23 +39,34 @@ body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG S
   </div>
   <span class="keyboard">⌨</span>
 </div>
-<p class="explain"><b>Try hovering over either label.</b> It repeats the slow horizontal run while hovered and stops when the pointer leaves. Both labels use the same responsive character limit (up to 50), with a minimum 10vw gap before the keyboard button. Reduced-motion settings keep the labels still.</p>
+<p class="explain"><b>Try hovering over either label.</b> It repeats the slow horizontal run while hovered and stops when the pointer leaves. Both labels use the same character limit, starting at 50 and shrinking together only if the inline cue would cross the minimum 10vw gap before the keyboard button. Current limit: <span id="limit"></span>. Reduced-motion settings keep the labels still.</p>
 <script>
   const sources = [...document.querySelectorAll('.source')];
-  function characterLimit() { return Math.min(50, Math.max(10, Math.floor((innerWidth - 200) / 20))); }
-  function updateLabels() {
-    const limit = characterLimit();
+  const cue = document.querySelector('.cue');
+  function applyLimit(limit) {
     sources.forEach(source => {
       const full = source.dataset.text;
       const characters = Array.from(full);
       source.querySelector('.source__still').textContent = characters.length > limit ? characters.slice(0, limit).join('') + '…' : full;
     });
   }
+  function updateLabels() {
+    sources.forEach(source => source.resetRun());
+    let low = 1, high = 50, chosen = 1;
+    while (low <= high) {
+      const trial = Math.floor((low + high) / 2);
+      applyLimit(trial);
+      if (cue.scrollWidth <= cue.clientWidth + 1) { chosen = trial; low = trial + 1; }
+      else high = trial - 1;
+    }
+    applyLimit(chosen);
+    document.getElementById('limit').textContent = String(chosen);
+  }
   sources.forEach(source => {
     const full = source.dataset.text;
     const still = document.createElement('span');
     still.className = 'source__still';
-    still.textContent = ''; // updateLabels applies one limit to both labels
+    still.textContent = ''; // updateLabels applies one fit-based limit to both labels
     const moving = document.createElement('span');
     moving.className = 'source__moving';
     moving.textContent = full;
@@ -65,10 +76,13 @@ body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG S
       if (animation) animation.cancel();
       animation = null;
       source.classList.remove('is-running');
+      source.style.width = '';
     };
+    source.resetRun = reset;
     source.addEventListener('pointerenter', () => {
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       reset();
+      source.style.width = source.getBoundingClientRect().width + 'px';
       source.classList.add('is-running');
       const distance = Math.max(0, moving.scrollWidth - source.clientWidth);
       if (!distance) { reset(); return; }
