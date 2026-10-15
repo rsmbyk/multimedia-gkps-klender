@@ -13,7 +13,7 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/346
 archived_at:
 archive_reason:
 bump: minor
-release_version: 1.11.0
+release_version: 1.12.0
 ---
 
 # ITEM-094: Quiet controls for the mirrored service projector
@@ -34,6 +34,7 @@ The hall projector mirrors the operator's laptop. Show the current and next serv
 - The owner approved the [Go To motion preview](../../specs/091-projector-corner/preview-goto-morph.html) and accepted its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-go-to-morph-animation): G now shares the service list's open/close morph, with a transparent click-intercepting overlay and reduced-motion fallback.
 - The owner approved the [chapter-only Go To preview](../../specs/091-projector-corner/preview-goto-chapter-first-verse.html) and accepted its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-chapter-only-go-to-opens-its-first-verse): selecting a chapter suggestion opens its first available verse while the suggestion retains the chapter-only label.
 - OBS projection sources and old docks are separate surfaces.
+- This projector slice shares draft PR #346 with Spec 092 by the owner's explicit direction; its local Go To data is provided by that offline library.
 
 ## Acceptance sketch
 

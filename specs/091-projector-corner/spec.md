@@ -13,7 +13,7 @@
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
 - **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
 - **Go To morph amendment:** Accepted; [approved motion preview](./preview-goto-morph.html)
-- **Number-only Go To amendment:** Draft; [approved numeric preview](./preview-goto-number-substring.html)
+- **Number-only Go To amendment:** Accepted; [approved numeric preview](./preview-goto-number-substring.html)
 - **Chapter-only Go To amendment:** Accepted; [approved first-verse preview](./preview-goto-chapter-first-verse.html)
 
 ## Intent
@@ -168,9 +168,9 @@ The owner approved the [Go To motion preview](./preview-goto-morph.html). On G p
 - **Given** G closes and rapidly reopens, **when** the old close timer would expire, **then** the reopened popup stays visible and focused, with its usual search behavior.
 - **Given** reduced motion is preferred, **when** G opens or closes, **then** it changes state without animation or an artificial 180ms wait.
 
-## Draft amendment: number-only Go To substring search
+## Accepted amendment: number-only Go To substring search
 
-The owner approved the [numeric Go To preview](./preview-goto-number-substring.html). For a trimmed query consisting only of decimal digits, match every active song whose `number` contains that digit string, regardless of songbook; songs without a number do not match. For `12`, valid matches include number `12`, numbers `120`–`129`, `212`, and `312`. Normalize leading zeroes consistently with existing numeric lookup. Order results in three tiers: exact number, number prefix, then substring elsewhere; within a tier order by numeric song number, then songbook and title for stable ties. Do not apply the ordinary 12-result cap to this numeric-only set: the existing one-suggestion row and `position / total` counter must reach every match with Up/Down, including wraparound.
+The owner approved the [numeric Go To preview](./preview-goto-number-substring.html) and explicitly accepted this amendment. For a trimmed query consisting only of decimal digits, match every active song whose `number` contains that digit string, regardless of songbook; songs without a number do not match. For `12`, valid matches include number `12`, numbers `120`–`129`, `212`, and `312`. Normalize leading zeroes consistently with existing numeric lookup. Order results in three tiers: exact number, number prefix, then substring elsewhere; within a tier order by numeric song number, then songbook and title for stable ties. Do not apply the ordinary 12-result cap to this numeric-only set: the existing one-suggestion row and `position / total` counter must reach every match with Up/Down, including wraparound.
 
 Keep book-qualified queries such as `NKB 12` on their existing songbook-plus-number-prefix path. Non-numeric title searches, Bible references, result labels, Enter/click selection, stale-response protection, and the exclusion of lyric and verse-body-only matches remain unchanged.
 
@@ -240,4 +240,5 @@ The owner approved the [interaction preview](./preview-goto-chapter-first-verse.
 
 - Domain/app tests: `multimedia/web/tests.py::ServiceProjectorTests` covers screen boundaries, labels, translation payloads, lookup, and detours.
 - E2E: `tests/e2e/test_projector.py::ProjectorE2ETests` covers fitting, keyboard and mouse jumps, and overlay interception.
-- Implementation: `multimedia/web/reading/views.py`, `multimedia/urls.py`, the service projector templates, `static/web/projector.js`, and `static/styles/design/projector.css`.
+- Implementation: `multimedia/web/reading/views.py`, `multimedia/web/reading/offline.py`, `multimedia/urls.py`, the service projector templates, `static/web/projector.js`, `static/web/projector-library.js`, and `static/styles/design/projector.css`.
+- The accepted numeric Go To amendment now reads the complete committed local library introduced by Spec 092; it no longer limits bare-number matches to the top twelve results.

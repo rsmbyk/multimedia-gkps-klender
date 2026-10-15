@@ -1,6 +1,6 @@
 ---
 id: ITEM-095
-status: in-progress
+status: in-review
 title: Save the public library for offline reading and service projection
 type: feat
 priority: P1
@@ -8,12 +8,12 @@ effort: L
 created: 2026-10-15
 updated: 2026-10-15
 spec: 092
-branch: feat/092-offline-library-sync
-pr:
+branch: feat/091-projector-corner
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/346
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.12.0
 ---
 
 # ITEM-095: Save the public library for offline reading and service projection

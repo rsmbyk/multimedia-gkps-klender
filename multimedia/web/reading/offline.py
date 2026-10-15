@@ -7,16 +7,19 @@ without a modified timestamp still invalidates its chunk when edited.
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 from django.conf import settings
+from django.db.models import F
+from django.db.models.functions import Lower
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
-from multimedia.web.reading.views import _ordered_service_rows, _projector_screens, _tatib_stage
+from multimedia.web.reading.views import _ordered_service_rows, _projector_data, _tatib_stage
 
 
 def _canonical(data):
@@ -48,13 +51,20 @@ def _bible_chunk(book):
 
 def _songs_chunk(book):
     rows = []
-    for song in (songs.Song.objects.active().filter(book=book)
-                 .prefetch_related('verse_set').order_by('number', 'sub_number', 'title', 'pk')):
+    song_rows = songs.Song.objects.active().filter(book=book).prefetch_related('verse_set')
+    if book.is_hymn_book:
+        song_rows = song_rows.order_by(F('number').asc(nulls_last=True), Lower('sub_number'), 'title', 'pk')
+    else:
+        song_rows = song_rows.order_by(F('modified').desc(nulls_last=True), 'title')
+    for song in song_rows:
         verses = [{'number': verse.number, 'lyric': verse.lyric}
                   for verse in song.verse_set.all() if not verse.is_deleted]
         verses.sort(key=lambda row: row['number'])
         rows.append({'id': song.pk, 'number': song.number, 'sub_number': song.sub_number,
-                     'title': song.title, 'is_untitled': song.is_untitled,
+                     'title': song.title or '(untitled)', 'is_untitled': song.is_untitled,
+                     'sort_title': re.sub(r'^\s*\d+\s*[.\-)\u2013]?', '', song.title or '').lower(),
+                     'modified_key': str(int(song.modified.timestamp() * 1000000))
+                     if song.modified else '',
                      'verses': verses})
     return {'kind': 'songs', 'id': book.pk, 'name': book.name,
             'short_name': book.short_name, 'is_hymn_book': book.is_hymn_book,
@@ -62,14 +72,16 @@ def _songs_chunk(book):
 
 
 def _service_chunk(service):
+    projector = _projector_data(service)
     items, toc = _tatib_stage(service)
     public_items = [{key: item.get(key) for key in (
         'eos', 'anchor', 'note', 'title', 'subtitle', 'paras', 'clipped',
-        'deleted_target', 'jump') if key in item} for item in items]
+        'deleted_target', 'jump', 'entry', 'old_item', 'pk', 'preview', 'after_marker')
+        if key in item} for item in items]
     public_toc = [{key: item.get(key) for key in (
         'eos', 'anchor', 'n', 'label', 'label_lines', 'titled',
         'two_line_label', 'song_label', 'song_reference', 'song_title',
-        'verse_line', 'txt') if key in item} for item in toc]
+        'verse_line', 'txt', 'entry', 'pk') if key in item} for item in toc]
     rows = []
     for kind, row in _ordered_service_rows(service):
         if kind == 'legacy':
@@ -87,7 +99,7 @@ def _service_chunk(service):
     return {'kind': 'service', 'id': service.pk, 'name': service.name,
             'date': service.date.isoformat() if service.date else None,
             'rows': rows, 'items': public_items, 'toc': public_toc,
-            'screens': _projector_screens(service)}
+            'screens': projector['screens'], 'entries': projector['entries']}
 
 
 def _chunk(kind, pk):
@@ -130,6 +142,7 @@ def projector_shell(request):
     """A reusable offline document; the client fills its screens from IndexedDB."""
     return render(request, 'reading/projector.html', {
         'service_id': 0, 'screens': [], 'page_title': 'Service display',
+        'projector_entries': [], 'projector_screens_data': [],
     })
 
 

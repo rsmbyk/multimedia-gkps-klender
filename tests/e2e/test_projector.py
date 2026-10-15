@@ -11,6 +11,7 @@ context is another laptop and must not be affected.
 
 import json
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -402,29 +403,31 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 page.clock.fast_forward(200)
 
     def test_goto_cycles_one_suggestion_through_all_reference_results(self):
+        def add_songs():
+            songbook = songs.Book.objects.get(short_name='KJ')
+            for number in range(200, 240):
+                songs.Song.objects.create(book=songbook, number=number, title=f'Kidung {number}')
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(add_songs).result()
         page = self._page(self._projector_url())
-        rows = [{'kind': 'song', 'label': f'NKB {number}', 'target': {'song_id': number}}
-                for number in range(40)]
-        page.route('**/lookup/**', lambda route: route.fulfill(
-            status=200, content_type='application/json', body=json.dumps({'results': rows})))
+        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
         page.keyboard.press('g')
-        page.locator('#projectorFindInput').fill('NKB 2')
+        page.locator('#projectorFindInput').fill('KJ 2')
         page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 40'")
         self.assertEqual(page.locator('.projector-find__row').count(), 1)
-        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'NKB 0')
+        self.assertIn('KJ 200', page.locator('.projector-find__suggestion').inner_text())
         for _ in range(35):
             page.keyboard.press('ArrowDown')
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '36 / 40')
-        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'NKB 35')
-        self.assertEqual(page.locator('#projectorFindInput').input_value(), 'NKB 2')
+        self.assertIn('KJ 235', page.locator('.projector-find__suggestion').inner_text())
+        self.assertEqual(page.locator('#projectorFindInput').input_value(), 'KJ 2')
         for _ in range(5):
             page.keyboard.press('ArrowDown')
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 40')
         page.keyboard.press('ArrowUp')
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '40 / 40')
         page.locator('#projectorFindInput').fill('unknown')
-        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 40'")
-        self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 40')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
 
     def test_goto_empty_result_and_overlay_dismissal(self):
         page = self._page(self._projector_url())
@@ -478,45 +481,25 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_ignores_old_lookup_responses(self):
         page = self._page(self._projector_url())
-        page.evaluate("""() => {
-          window.pendingLookups = [];
-          const originalFetch = window.fetch;
-          window.fetch = (url, options) => {
-            if (!String(url).includes('/lookup/')) return originalFetch(url, options);
-            return new Promise(resolve => window.pendingLookups.push(resolve));
-          };
-        }""")
+        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
+        lookup_requests = []
+        page.on('request', lambda request: lookup_requests.append(request.url)
+                if '/lookup/' in request.url or '/detour/' in request.url else None)
         page.keyboard.press('g')
         query = page.locator('#projectorFindInput')
-        query.fill('NKB 2')
-        query.fill('NKB 22')
-        page.wait_for_function('window.pendingLookups.length === 2')
-        page.evaluate("""() => window.pendingLookups[1]({json: () => Promise.resolve({results: [
-          {kind: 'song', label: 'NKB 223A Haleluya', target: {song_id: 1}}
-        ]})})""")
-        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent === 'NKB 223A Haleluya'")
-        page.evaluate("""() => window.pendingLookups[0]({json: () => Promise.resolve({results: [
-          {kind: 'song', label: 'Old result', target: {song_id: 2}}
-        ]})})""")
-        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'NKB 223A Haleluya')
+        query.fill('KJ 15')
+        self.assertIn('KJ 152', page.locator('.projector-find__suggestion').inner_text())
+        query.fill('Mat 5')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Matius 5')
+        self.assertEqual(lookup_requests, [])
         page.keyboard.press('Escape')
         page.locator('#projectorFind').wait_for(state='hidden')
 
     def test_goto_click_opens_the_selected_suggestion(self):
         page = self._page(self._projector_url())
-        page.route('**/lookup/**', lambda route: route.fulfill(
-            status=200, content_type='application/json', body=json.dumps({'results': [
-                {'kind': 'song', 'label': 'NKB 223A Haleluya', 'target': {'song_id': 1}}
-            ]})))
-        page.route('**/detour/**', lambda route: route.fulfill(
-            status=200, content_type='application/json', body=json.dumps({
-                'kind': 'song', 'label': 'NKB 223A',
-                'screens': [{'blank': False, 'header': '', 'lines': ['Haleluya'],
-                             'bait': 1, 'split': 1, 'split_total': 1}],
-                'baits': [{'number': 1, 'start': 0, 'end': 0}],
-            })))
+        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
         page.keyboard.press('g')
-        page.locator('#projectorFindInput').fill('NKB 223')
+        page.locator('#projectorFindInput').fill('KJ 152')
         page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
         page.set_viewport_size({'width': 600, 'height': 400})
         self.assertTrue(page.locator('#projectorFind').evaluate("""el => {
@@ -529,6 +512,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_chapter_suggestion_opens_first_available_verse_by_enter_and_click(self):
         page = self._page(self._projector_url())
+        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
         for method in ('Enter', 'click'):
             page.keyboard.press('g')
             page.locator('#projectorFindInput').fill('Mat 5')
@@ -700,20 +684,11 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_clear_ignores_pending_lookup(self):
         page = self._page(self._projector_url())
-        page.evaluate("""() => {
-          window.resolveLookup = null;
-          const originalFetch = window.fetch;
-          window.fetch = (url, options) => String(url).includes('/lookup/')
-            ? new Promise(resolve => { window.resolveLookup = resolve; })
-            : originalFetch(url, options);
-        }""")
+        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
         page.keyboard.press('g')
-        page.locator('#projectorFindInput').fill('NKB 2')
-        page.wait_for_function('window.resolveLookup !== null')
+        page.locator('#projectorFindInput').fill('KJ 152')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 1')
         page.locator('#projectorFindClear').click()
-        page.evaluate("""() => window.resolveLookup({json: () => Promise.resolve({results: [
-          {kind: 'song', label: 'Late result', target: {song_id: 1}}
-        ]})})""")
         self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Start typing to find a match')
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
 
@@ -1264,8 +1239,9 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')", timeout=8000)
         page.wait_for_timeout(800)
-        self.assertTrue([url for url in asked if self._projector_url() in url],
-                        f'the display must re-read after a save: {asked}')
+        self.assertTrue([url for url in asked if f'/offline/chunk/service/{self.service.pk}/' in url],
+                        f'the display must refresh its service data after a save: {asked}')
+        self.assertIn('Berita baru untuk layar', projector.locator('#projectorScreens').text_content())
 
     def test_a_reorder_reaches_the_display_without_update(self):
         """A drop is written at once, and the display re-reads by itself."""
@@ -1283,5 +1259,5 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         grip.focus()
         page.keyboard.press('ArrowDown')
         page.wait_for_timeout(900)
-        self.assertTrue([url for url in asked if self._projector_url() in url],
-                        f'the display must re-read after a reorder: {asked}')
+        self.assertTrue([url for url in asked if f'/offline/chunk/service/{self.service.pk}/' in url],
+                        f'the display must refresh its service data after a reorder: {asked}')

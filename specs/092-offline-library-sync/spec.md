@@ -104,6 +104,6 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 
 ## Traceability
 
-- **Domain/app tests:** `multimedia/web/tests/test_offline_sync.py`, `multimedia/web/tests/test_reading_data.py` (create or adapt during implementation).
-- **E2E:** `tests/e2e/test_reading.py` and `tests/e2e/test_projector.py` targeted classes for offline, status, direct navigation, and search history.
-- **Implementation:** reading views/URLs and templates, `static/web/reading.js`, `static/web/projector.js`, new scoped service worker and browser library store, and narrow revision/data endpoints. Final paths recorded during implementation.
+- **Domain/app tests:** `tests/test_offline_sync.py`.
+- **E2E:** `tests/e2e/test_offline_library.py` and targeted `tests/e2e/test_projector.py` cases.
+- **Implementation:** `multimedia/web/reading/offline.py`, `multimedia/web/urls.py`, reading/projector templates, `static/web/offline-library.js`, `static/web/offline-render.js`, `static/web/offline-status.js`, `static/web/projector-library.js`, `static/web/projector.js`, `static/web/reading.js`, and `static/web/service-worker.js`.

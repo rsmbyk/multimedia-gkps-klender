@@ -60,6 +60,12 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             page.goto(self.live_server_url + f'/obs/service/{self.service_id}/')
             page.locator('#projectorScreens .screen').first.wait_for(state='attached')
             self.assertIn('Tuhan dengar kami', page.locator('#projectorScreens').text_content())
+            page.keyboard.press('g')
+            page.locator('#projectorFindInput').fill('Mat 1')
+            page.get_by_text('Matius 1', exact=True).wait_for()
+            page.keyboard.press('Enter')
+            page.locator('.projector-detour.is-active').wait_for(state='attached')
+            self.assertIn('Kasih Tuhan membuka Injil', page.locator('.projector-detour').text_content())
             browser.close()
 
     def test_search_history_and_new_tab_are_independent(self):

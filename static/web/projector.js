@@ -22,8 +22,9 @@
   }
   var screen = document.getElementById('projectorScreen');
   var stage = document.getElementById('projectorScreens');
-  var entries = JSON.parse(document.getElementById('projectorEntryData').textContent);
-  var screenData = JSON.parse(document.getElementById('projectorScreenData').textContent);
+  var entries = JSON.parse(document.getElementById('projectorEntryData').textContent) || [];
+  var screenData = JSON.parse(document.getElementById('projectorScreenData').textContent) || [];
+  var savedScreensSignature = JSON.stringify(screenData);
   var KEY = 'gkps-display';
 
   var channel = null;
@@ -684,20 +685,12 @@
   });
   var lookupSequence = 0;
   function refreshFind() {
-    var sequence = ++lookupSequence;
+    ++lookupSequence;
     var query = normalize(findInput.value.trim());
     findRows = []; findChoice = 0; paintFind();
-    if (query) {
-      fetch(findUrl('lookup/', {q: findInput.value.trim()}), {credentials: 'same-origin'})
-        .then(function (response) { return response.json(); })
-        .then(function (data) {
-          if (sequence !== lookupSequence || findKind !== 'g') return;
-          findRows = data.results || []; findChoice = 0; paintFind();
-        }).catch(function () {
-          if (sequence !== lookupSequence || findKind !== 'g') return;
-          findRows = []; paintFind();
-        });
-      return;
+    if (query && window.GKPSProjectorLibrary) {
+      findRows = window.GKPSProjectorLibrary.lookup(findInput.value.trim());
+      paintFind();
     }
   }
   function paintFind() {
@@ -713,6 +706,9 @@
     closeFind();
   }
   findInput.addEventListener('input', refreshFind);
+  document.addEventListener('projector-library:ready', function () {
+    if (!findPanel.hidden && findInput.value.trim()) refreshFind();
+  });
   findInput.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeFind(); }
     else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -741,29 +737,19 @@
     render();
   }
   function openDetour(row) {
-    var params = Object.assign({kind: row.kind}, row.target);
-    fetch(findUrl('detour/', params), {credentials: 'same-origin'})
-      .then(function (response) { return response.ok ? response.json() : null; })
-      .then(function (data) {
-        if (!data) return;
-        if (!detour) returnScreen = current;
-        detour = data;
-        detour.index = 0;
-        showing = true;
-        renderDetour();
-      }).catch(function () { /* keep the service screen */ });
+    var data = window.GKPSProjectorLibrary && window.GKPSProjectorLibrary.detour(row);
+    if (!data) return;
+    if (!detour) returnScreen = current;
+    detour = data;
+    detour.index = 0;
+    showing = true;
+    renderDetour();
   }
   function requestPassage(action, level) {
     if (!detour || detour.kind !== 'passage') return;
-    fetch(findUrl('detour/', {
-      kind: 'passage', book_id: detour.book_id, chapter: detour.chapter,
-      verse: detour.verse, action: action, level: level,
-    }), {credentials: 'same-origin'})
-      .then(function (response) { return response.ok ? response.json() : null; })
-      .then(function (data) {
-        if (!data || !detour) return;
-        detour = data; renderDetour();
-      }).catch(function () { /* retain current verse */ });
+    var data = window.GKPSProjectorLibrary
+      && window.GKPSProjectorLibrary.movePassage(detour, action, level);
+    if (data) { detour = data; renderDetour(); }
   }
   function detourStep(step, level) {
     if (detour.kind === 'passage') { requestPassage(step > 0 ? 'next' : 'previous', level); return; }
@@ -995,12 +981,18 @@
 
   function drawSavedScreens(saved) {
     if (!saved || !Array.isArray(saved.screens)) return;
+    savedScreensSignature = JSON.stringify(saved.screens);
     var fragment = document.createDocumentFragment();
     saved.screens.forEach(function (item, index) {
       var section = document.createElement('section');
       section.className = 'screen' + (item.blank ? ' is-blank' : '')
         + (item.single ? ' screen--single' : '');
       section.dataset.screen = String(index);
+      section.dataset.entry = String(item.entry_index == null ? '' : item.entry_index);
+      section.dataset.bait = String(item.bait == null ? '' : item.bait);
+      section.dataset.split = String(item.split == null ? '' : item.split);
+      section.dataset.splitTotal = String(item.split_total == null ? '' : item.split_total);
+      section.dataset.baitRest = item.bait_rest ? 'true' : 'false';
       if (item.single) section.dataset.fit = 'single';
       section.setAttribute('aria-hidden', index === current ? 'false' : 'true');
       if (item.header) {
@@ -1023,6 +1015,9 @@
       fragment.appendChild(section);
     });
     stage.replaceChildren(fragment);
+    stage.appendChild(detourNode);
+    entries = saved.entries || [];
+    screenData = saved.screens;
     var empty = screen.querySelector('.projector__empty');
     if (empty) empty.hidden = !!saved.screens.length;
     render(true);
@@ -1037,7 +1032,7 @@
     showing = false;
   }
   render(true);
-  if (!stage.children.length && service && window.GKPSOffline) {
+  if (!screens().length && service && window.GKPSOffline) {
     window.GKPSOffline.get('service', service).then(function (saved) {
       if (saved) drawSavedScreens(saved);
       else {
@@ -1049,7 +1044,8 @@
   document.addEventListener('offline:changed', function () {
     if (!window.GKPSOffline) return;
     window.GKPSOffline.get('service', service).then(function (saved) {
-      if (saved && !stage.children.length) drawSavedScreens(saved);
+      if (saved && (!screens().length || JSON.stringify(saved.screens) !== savedScreensSignature))
+        drawSavedScreens(saved);
     }).catch(function () {});
   });
   window.addEventListener('resize', function () { render(true); });

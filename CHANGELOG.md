@@ -10,6 +10,18 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-10-15
+
+### Added
+
+- The public reading app and service projector can open from saved browser shells and an offline library of Bible, songs, and Tata Ibadah data.
+- The offline library syncs changed records in the background, exposes its status, and supports local Go To search in the projector.
+- Reading navigation uses the saved shell and retains independent search history state per tab.
+
+### Changed
+
+- Bare-number projector Go To now cycles through every matching song number across hymn books, ordered by exact, prefix, then substring match.
+
 ## [1.11.0] - 2026-10-14
 
 ### Added

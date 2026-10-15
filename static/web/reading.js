@@ -1304,7 +1304,9 @@
 
     if (fresh.home === 'results') railSearch.setAttribute('href', url);
     document.title = doc.title;
-    if (!opts.skipHistory) {
+    if (opts.replaceUrl) {
+      history.replaceState({gkps: true, url: url, kind: kind}, '', url);
+    } else if (!opts.skipHistory) {
       var pushes = ['chapter', 'song', 'service', 'result', 'search', 'results'];
       if (pushes.indexOf(kind) !== -1) {
         history.pushState({gkps: true, url: url, kind: kind,
@@ -1313,8 +1315,6 @@
         history.replaceState({gkps: true, url: url, kind: 'search',
           searchId: history.state && history.state.searchId || searchId()}, '', url);
       }
-    } else if (opts.replaceUrl) {
-      history.replaceState({gkps: true, url: url, kind: kind}, '', url);
     }
     if (fresh.home === 'results' && (kind === 'search' || kind === 'results')
         && !opts.skipHistory) {

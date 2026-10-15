@@ -54,13 +54,26 @@ Django project `multimedia` with apps:
 URL roots (`multimedia/urls.py`): `/admin/`, `/api/`, `/obs/`, and the Django app at `/` — public
 reading at `/songs/…`, editor at `/manage/…`.
 
-The site root `/` is **maintenance-gated** by `MAINTENANCE_MODE` (env, default on): while on it
-serves a 503 notice (`reading/maintenance.html`), and the reading home is temporarily at `/home/`
-(still the `web-home` url name, so header/search links follow it). While off, `/` serves the home.
-Only `/` is gated; every other surface is unaffected.
+The site root `/` serves the empty-search public reading index by default. Setting
+`MAINTENANCE_MODE=true` serves a 503 notice (`reading/maintenance.html`) at `/`; `/home/` remains a
+compatible reading-home route. Only `/` is gated; every other surface is unaffected.
 
 Public reading pages use the project's own design language (`static/styles/design/tokens.css`,
 `components.css`); Fomantic UI remains in use by the editor and OBS surfaces until they migrate.
+
+### Offline public reading and projector
+
+- `static/web/offline-library.js` owns the browser's revisioned IndexedDB library. It stages
+  changed chunks as a new generation and publishes only a complete generation; public reading and
+  projector Go To use that committed data.
+- `static/web/service-worker.js` caches only the public reading and service-projector shells and
+  their required versioned assets. Its navigation fallback is deliberately limited to those routes;
+  legacy OBS docks, editors, and other pages continue using the network.
+- `static/web/offline-render.js` reuses the saved public shell for in-page reading navigation.
+  Online refreshes request data chunks asynchronously. `static/web/projector-library.js` resolves
+  Go To and service detours from the same local Bible/song library.
+- This storage is a presentation fallback and search source. It does not queue editor writes or
+  replace the server as the authoritative content store.
 
 ## Boundaries
 

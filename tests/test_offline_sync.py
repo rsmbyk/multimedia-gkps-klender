@@ -44,6 +44,8 @@ class OfflineLibraryEndpointTests(TestCase):
         service_data = self.client.get(f'/offline/chunk/service/{self.service.pk}/').json()['data']
         self.assertEqual(service_data['screens'][0]['lines'][0]['text'], 'Tuhan dengar kami')
         self.assertEqual(service_data['rows'][0]['text'], 'Tuhan dengar kami')
+        self.assertEqual(service_data['items'][0]['paras'][0]['text'], 'Tuhan dengar kami')
+        self.assertEqual(service_data['toc'][0]['label'], 'Doa')
 
     def test_revision_changes_after_content_change(self):
         before = {row['key']: row['revision'] for row in self.client.get('/offline/manifest/').json()['chunks']}
@@ -57,3 +59,17 @@ class OfflineLibraryEndpointTests(TestCase):
     def test_hidden_service_is_not_downloadable(self):
         response = self.client.get(f'/offline/chunk/service/{self.hidden.pk}/')
         self.assertEqual(response.status_code, 404)
+
+    def test_deleted_public_records_leave_manifest(self):
+        songbook = songs.Book.objects.create(name='Temporary songs', short_name='TMP')
+        service = tatib.TataIbadah.objects.create(name='Temporary service', is_active=True)
+        before = {row['key'] for row in self.client.get('/offline/manifest/').json()['chunks']}
+        self.assertIn(f'songs:{songbook.pk}', before)
+        self.assertIn(f'service:{service.pk}', before)
+        songbook.is_deleted = True
+        songbook.save()
+        service.is_active = False
+        service.save()
+        after = {row['key'] for row in self.client.get('/offline/manifest/').json()['chunks']}
+        self.assertNotIn(f'songs:{songbook.pk}', after)
+        self.assertNotIn(f'service:{service.pk}', after)

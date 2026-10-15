@@ -9,7 +9,8 @@ var ASSETS = [
   '/static/styles/design/projector.css',
   '/static/web/offline-library.js', '/static/web/offline-status.js',
   '/static/web/offline-render.js', '/static/web/reading.js',
-  '/static/web/projector.js', '/static/web/display.js', '/static/web/focus.js',
+  '/static/web/projector.js', '/static/web/projector-library.js',
+  '/static/web/display.js', '/static/web/focus.js',
   '/static/web/editors.js', '/static/web/date-picker.js', '/static/web/entries.js',
   '/static/web/reorder.js', '/static/web/preview.js'
 ];

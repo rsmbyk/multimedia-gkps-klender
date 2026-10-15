@@ -171,7 +171,12 @@
 
   function shellReady() {
     if (!window.caches) return Promise.resolve(false);
-    return Promise.all(['/home/', '/offline/projector-shell/'].map(function (url) {
+    var required = ['/home/', '/offline/projector-shell/',
+      '/static/styles/design/tokens.css', '/static/styles/design/components.css',
+      '/static/styles/design/projector.css', '/static/styles/design/offline.css',
+      '/static/web/reading.js', '/static/web/offline-render.js',
+      '/static/web/projector.js', '/static/web/projector-library.js'];
+    return Promise.all(required.map(function (url) {
       return caches.match(url).then(Boolean);
     })).then(function (checks) { return checks.every(Boolean); });
   }
