@@ -192,6 +192,8 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   font-size: 11px; font-weight: 400;
 }
 .projector-find[hidden] { display: none; }
+body.projector.find-open .projector-find { animation: projectorListIn 180ms var(--display-ease) both; }
+body.projector.find-closing .projector-find { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
 .projector-find label { display: block; margin-bottom: 8px; color: var(--quiet); }
 .projector-find input { width: 100%; padding: 8px 42px 8px 10px; border: 1px solid #4a463f;
   border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
@@ -334,10 +336,10 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
   }
   body.projector.keys-open .mouse-zones, body.projector.entry-list-open .mouse-zones,
   body.projector.keys-closing .mouse-zones, body.projector.entry-list-closing .mouse-zones,
-  body.projector.find-open .mouse-zones { pointer-events: none; }
+  body.projector.find-open .mouse-zones, body.projector.find-closing .mouse-zones { pointer-events: none; }
   body.projector.keys-open .cue, body.projector.keys-closing .cue { pointer-events: none; }
-  body.projector.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open) .cue,
-  body.projector.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open) .keys {
+  body.projector.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open):not(.find-closing) .cue,
+  body.projector.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open):not(.find-closing) .keys {
     opacity: 0; visibility: hidden; pointer-events: none;
   }
   .keys {
@@ -399,7 +401,8 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     body.projector.keys-open::before, body.projector.keys-closing::before,
     body.projector.keys-open .sheet, body.projector.keys-closing .sheet,
     body.projector.entry-list-open .entry-list-dismiss, body.projector.entry-list-closing .entry-list-dismiss,
-    body.projector.entry-list-open .entry-list, body.projector.entry-list-closing .entry-list { animation: none; }
+    body.projector.entry-list-open .entry-list, body.projector.entry-list-closing .entry-list,
+    body.projector.find-open .projector-find, body.projector.find-closing .projector-find { animation: none; }
   }
   .stack { display: flex; flex-direction: column; gap: 24px; }
   .group h3 {

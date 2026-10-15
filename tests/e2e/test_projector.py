@@ -393,6 +393,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 self.assertEqual(dismiss.evaluate('el => getComputedStyle(el).backgroundColor'), 'rgba(0, 0, 0, 0)')
                 before = page.get_attribute('body', 'data-current-screen')
                 page.mouse.click(1200, 200)
+                self.assertTrue(page.locator('body').evaluate("el => el.classList.contains('find-closing')"))
+                page.clock.fast_forward(200)
                 self.assertFalse(page.locator('#projectorFind').is_visible())
                 self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
             else:
@@ -438,7 +440,41 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.locator('#projectorFindInput').fill('')
         self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Start typing to find a match')
         page.locator('#projectorFindDismiss').click(position={'x': 1200, 'y': 200})
+        page.locator('#projectorFind').wait_for(state='hidden')
+
+    def test_goto_morph_blocks_clicks_during_close_and_survives_rapid_reopen(self):
+        page = self._page(self._projector_url())
+        page.clock.install()
+        before = page.get_attribute('body', 'data-current-screen')
+        page.keyboard.press('g')
+        self.assertEqual(page.locator('#projectorFind').evaluate(
+            'el => getComputedStyle(el).animationName'), 'projectorListIn')
+        page.keyboard.press('Escape')
+        self.assertTrue(page.locator('body').evaluate("el => el.classList.contains('find-closing')"))
+        self.assertEqual(page.locator('#projectorFind').evaluate(
+            'el => getComputedStyle(el).animationName'), 'projectorListOut')
+        self.assertTrue(page.locator('#projectorFindDismiss').is_visible())
+        page.mouse.click(1200, 200)
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+        page.keyboard.press('g')
+        self.assertTrue(page.locator('body').evaluate("el => el.classList.contains('find-open')"))
+        self.assertTrue(page.locator('#projectorFindInput').evaluate('el => document.activeElement === el'))
+        page.clock.fast_forward(250)
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+        page.keyboard.press('Escape')
+        page.clock.fast_forward(200)
         self.assertFalse(page.locator('#projectorFind').is_visible())
+        self.assertFalse(page.locator('#projectorFindDismiss').is_visible())
+
+    def test_goto_morph_is_skipped_for_reduced_motion(self):
+        context = self.browser.new_context(reduced_motion='reduce')
+        page = self._page(self._projector_url(), context=context)
+        page.keyboard.press('g')
+        self.assertEqual(page.locator('#projectorFind').evaluate(
+            'el => getComputedStyle(el).animationName'), 'none')
+        page.keyboard.press('Escape')
+        page.locator('#projectorFind').wait_for(state='hidden')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('find-closing')"))
 
     def test_goto_ignores_old_lookup_responses(self):
         page = self._page(self._projector_url())
@@ -464,7 +500,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         ]})})""")
         self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'NKB 223A Haleluya')
         page.keyboard.press('Escape')
-        self.assertFalse(page.locator('#projectorFind').is_visible())
+        page.locator('#projectorFind').wait_for(state='hidden')
 
     def test_goto_click_opens_the_selected_suggestion(self):
         page = self._page(self._projector_url())
@@ -488,7 +524,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
           return box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;
         }"""))
         page.locator('#projectorFindResults').click()
-        self.assertFalse(page.locator('#projectorFind').is_visible())
+        page.locator('#projectorFind').wait_for(state='hidden')
         page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
 
     def test_projector_search_clear_controls_match_both_fields(self):

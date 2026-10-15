@@ -460,7 +460,7 @@
     translationTimer = window.setTimeout(function () { flip.classList.remove('flash'); }, 1000);
   }
   var layerCloseMs = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
-  var keysCloseTimer, entryCloseTimer;
+  var keysCloseTimer, entryCloseTimer, findCloseTimer;
   function setKeysOpen(open) {
     if (open) setEntryListOpen(false);
     if (open) {
@@ -529,7 +529,7 @@
     body.classList.remove('controls-idle');
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open') ||
         body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing') ||
-        body.classList.contains('find-open')) return;
+        body.classList.contains('find-open') || body.classList.contains('find-closing')) return;
     controlsTimer = window.setTimeout(function () { body.classList.add('controls-idle'); }, 30000);
   }
   ['pointermove', 'pointerdown', 'click'].forEach(function (name) {
@@ -597,7 +597,8 @@
     event.stopPropagation(); if (!body.classList.contains('keys-open') && !body.classList.contains('entry-list-open')) flipTranslation();
   });
   document.addEventListener('click', function (event) {
-    if (body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing')) return;
+    if (body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing') ||
+        body.classList.contains('find-closing')) return;
     if (body.classList.contains('keys-open')) {
       if (!event.target.closest('.sheet') && !event.target.closest('.keys')) setKeysOpen(false);
       return;
@@ -642,10 +643,13 @@
   }
   function openFind(kind) {
     if (kind === 'j') { setEntryListOpen(true); return; }
+    window.clearTimeout(findCloseTimer);
+    body.classList.remove('find-closing');
     findKind = kind; findChoice = 0;
     findInput.value = '';
     syncFindClear();
     findPanel.hidden = false;
+    findPanel.inert = false;
     findDismiss.hidden = false;
     body.classList.add('find-open');
     revealControls();
@@ -653,13 +657,21 @@
     findInput.focus();
   }
   function closeFind() {
+    if (!body.classList.contains('find-open')) return;
     ++lookupSequence;
-    findPanel.hidden = true;
-    findDismiss.hidden = true;
     findInput.blur();
     findDismiss.blur();
     body.classList.remove('find-open');
+    body.classList.add('find-closing');
+    findPanel.inert = true;
     findKind = ''; findRows = [];
+    window.clearTimeout(findCloseTimer);
+    findCloseTimer = window.setTimeout(function () {
+      body.classList.remove('find-closing');
+      findPanel.hidden = true;
+      findDismiss.hidden = true;
+      revealControls();
+    }, layerCloseMs);
     revealControls();
   }
   findDismiss.addEventListener('click', function (event) {
@@ -819,7 +831,8 @@
   }
 
   function closeLayers() {
-    if (body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing')) return true;
+    if (body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing') ||
+        body.classList.contains('find-closing')) return true;
     // Escape changes the browser's focus modality even after a pointer-opened
     // layer. Release its trigger so it does not light up on the mirrored display.
     if (body.classList.contains('keys-open')) {
@@ -837,6 +850,10 @@
       if (closeLayers()) { event.preventDefault(); return; }
       if (detour) { event.preventDefault(); leaveDetour(); return; }
       return;
+    }
+    if (body.classList.contains('find-closing') && event.key.toLowerCase() === 'g' &&
+        !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+      event.preventDefault(); openFind('g'); return;
     }
     if (!findPanel.hidden) return;
     if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.repeat) {

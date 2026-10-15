@@ -12,7 +12,7 @@
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
 - **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
-- **Go To morph amendment:** Draft; [approved motion preview](./preview-goto-morph.html)
+- **Go To morph amendment:** Accepted; [approved motion preview](./preview-goto-morph.html)
 
 ## Intent
 
@@ -157,7 +157,7 @@ The entry-list button, keyboard button, next-entry button, bait buttons, and tra
 - **Given** one of those controls is pressed, open, selected, or highlighted, **when** it renders, **then** it uses `#E8E4DC` and the keyboard button stays background-free.
 - **Given** the cue shows a split count, **when** other resting text is dimmed, **then** the selected count and its highlighted part stay `#E8E4DC`.
 
-## Draft amendment: Go To morph animation
+## Accepted amendment: Go To morph animation
 
 The owner approved the [Go To motion preview](./preview-goto-morph.html). On G popup open, animate the panel from opacity 0, `translateY(6px) scale(.99)` to opacity 1 and its resting position over 180ms with `--display-ease`, matching the service list. On close, reverse that animation over 180ms before hiding the panel. Keep the overlay transparent, present, and click-intercepting until the close finishes; block projector zones and underlying HUD clicks throughout opening and closing. Disable Go To motion under `prefers-reduced-motion: reduce`, while completing its state transition without delay. Do not change the popup's 400px maximum width, 32px left/58px bottom placement, search results, selected suggestion, dismissal actions, or underlying projected text.
 

@@ -31,6 +31,7 @@ The hall projector mirrors the operator's laptop. Show the current and next serv
 - The owner approved the [revised running-text cue preview](../../specs/091-projector-corner/preview-cue-running-text.html) and accepted its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-running-untitled-text-cue-labels).
 - The owner approved the 550-weight, quieter-resting-label [cue preview](../../specs/091-projector-corner/preview-cue-running-text.html) and accepted its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-quieter-corner-cue-typography).
 - The owner approved the [shared corner color preview](../../specs/091-projector-corner/preview-cue-state-colors.html) and accepted its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-shared-corner-control-colors): cue text, list, next, bait, translation, and keyboard controls share resting, hover, and highlighted colors without keyboard-button fill.
+- The owner approved the [Go To motion preview](../../specs/091-projector-corner/preview-goto-morph.html) and accepted its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-go-to-morph-animation): G now shares the service list's open/close morph, with a transparent click-intercepting overlay and reduced-motion fallback.
 - OBS projection sources and old docks are separate surfaces.
 
 ## Acceptance sketch
