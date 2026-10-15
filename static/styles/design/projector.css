@@ -196,10 +196,15 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
 .projector-find input { width: 100%; padding: 8px 10px; border: 1px solid #4a463f;
   border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
 .projector-find input:focus-visible { border-color: var(--on); }
-.projector-find__row { display: block; width: 100%; margin-top: 3px; padding: 8px;
-  border: 0; border-radius: 4px; background: none; color: var(--on);
+.projector-find__row { display: flex; align-items: center; gap: 9px; width: 100%; margin-top: 6px; padding: 8px;
+  border: 0; border-radius: 4px; background: #2a2722; color: var(--on);
   text-align: left; font: inherit; cursor: pointer; }
-.projector-find__row:hover, .projector-find__row[aria-selected="true"] { background: #2a2722; }
+.projector-find__row:hover { background: #36322b; }
+.projector-find__row:disabled { opacity: .6; cursor: default; }
+.projector-find__suggestion { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.projector-find__count { flex: none; color: var(--quiet); }
+.projector-find__footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px;
+  color: var(--quiet); font-size: 10px; }
   .cue {
     position: absolute; left: 32px; right: 84px; bottom: 20px;
     display: flex; align-items: center; height: 24px;

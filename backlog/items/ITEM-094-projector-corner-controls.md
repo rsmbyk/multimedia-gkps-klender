@@ -26,7 +26,7 @@ The hall projector mirrors the operator's laptop. Show the current and next serv
 
 - The [approved preview](../../specs/091-projector-corner/preview.html) and [gallery](../../specs/091-projector-corner/preview-gallery.html) record the visual decisions.
 - The Draft includes projector header/body fitting, keyboard navigation, entry and library finds, the service list, mouse zones, and unobtrusive inactivity behavior.
-- A [single-suggestion Go To preview](../../specs/091-projector-corner/preview-goto-autocomplete.html) has owner preview approval; its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#draft-amendment-one-suggestion-go-to) remains Draft until explicitly accepted.
+- The owner accepted the [single-suggestion Go To preview](../../specs/091-projector-corner/preview-goto-autocomplete.html) and its [Spec 091 amendment](../../specs/091-projector-corner/spec.md#accepted-amendment-one-suggestion-go-to).
 - OBS projection sources and old docks are separate surfaces.
 
 ## Acceptance sketch

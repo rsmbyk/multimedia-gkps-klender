@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
-- **Go To amendment:** Draft, pending owner acceptance
+- **Go To amendment:** Accepted
 
 ## Checklist
 
@@ -25,11 +25,11 @@
 - [x] Implemented geometry and interaction states follow the accepted preview.
 - [x] ITEM, board, tasks, version, changelog, and PR all describe the same delivered slice.
 
-## Draft amendment: one-suggestion Go To
+## Accepted amendment: one-suggestion Go To
 
 - [x] Owner approves the [single-suggestion interaction preview](./preview-goto-autocomplete.html), including normal projector typography.
-- [ ] Owner explicitly accepts the [Draft amendment](./spec.md#draft-amendment-one-suggestion-go-to); stop before product code until then.
-- [ ] Add targeted projector browser tests in `tests/e2e/test_projector.py` for one visible suggestion, full result count, Up/Down wraparound, query preservation, Enter/click selection, empty state, stale responses, and overlay dismissal.
-- [ ] Replace the G popup's list rendering and selection controls in `multimedia/web/templates/reading/projector.html`, `static/web/projector.js`, and `static/styles/design/projector.css`; keep J and lookup ranking unchanged.
-- [ ] Run the targeted projector tests and confirm the reference-size and smaller-viewport layout against the approved preview.
+- [x] Owner explicitly accepts the [amendment](./spec.md#accepted-amendment-one-suggestion-go-to).
+- [x] Add targeted projector browser tests in `tests/e2e/test_projector.py` for one visible suggestion, full result count, Up/Down wraparound, query preservation, Enter/click selection, empty state, stale responses, and overlay dismissal.
+- [x] Replace the G popup's list rendering and selection controls in `multimedia/web/templates/reading/projector.html`, `static/web/projector.js`, and `static/styles/design/projector.css`; keep J and lookup ranking unchanged.
+- [x] Run the targeted projector tests and confirm the reference-size and smaller-viewport layout against the approved preview.
 - [ ] Update this task list and the Spec 091/ITEM-094/PR descriptions with the delivered amendment before merge.

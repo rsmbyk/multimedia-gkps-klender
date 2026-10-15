@@ -53,9 +53,13 @@ that browser's tabs over the display channel (web/projector.js, web/display.js).
 {% include 'reading/projector_controls.html' %}
 <button type="button" class="projector-find-dismiss" id="projectorFindDismiss" aria-label="Close passage or song search" hidden></button>
 <section class="projector-find" id="projectorFind" aria-label="Projector find" hidden>
-  <label for="projectorFindInput" id="projectorFindLabel">Passage or Song</label>
-  <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false">
-  <div id="projectorFindResults" role="listbox" aria-label="Matches"></div>
+  <label for="projectorFindInput" id="projectorFindLabel">Go To · Passage or Song</label>
+  <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false" placeholder="Try NKB 2, Matius 2, or Haleluya" aria-controls="projectorFindResults">
+  <button type="button" id="projectorFindResults" class="projector-find__row" disabled>
+    <span class="projector-find__suggestion">Start typing to find a match</span>
+    <span class="projector-find__count">0 / 0</span>
+  </button>
+  <div class="projector-find__footer"><span>↑ ↓ cycle · Enter open</span><span>Esc close</span></div>
 </section>
 {{ projector_entries|json_script:"projectorEntryData" }}
 {{ projector_screens_data|json_script:"projectorScreenData" }}

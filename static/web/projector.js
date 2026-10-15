@@ -181,6 +181,8 @@
   var findDismiss = document.getElementById('projectorFindDismiss');
   var findInput = document.getElementById('projectorFindInput');
   var findResults = document.getElementById('projectorFindResults');
+  var findSuggestion = findResults.querySelector('.projector-find__suggestion');
+  var findCount = findResults.querySelector('.projector-find__count');
   var translation = '';
   var translationTimer;
   var findKind = '';
@@ -561,6 +563,7 @@
     findInput.focus();
   }
   function closeFind() {
+    ++lookupSequence;
     findPanel.hidden = true;
     findDismiss.hidden = true;
     findInput.blur();
@@ -574,34 +577,27 @@
   });
   var lookupSequence = 0;
   function refreshFind() {
+    var sequence = ++lookupSequence;
     var query = normalize(findInput.value.trim());
+    findRows = []; findChoice = 0; paintFind();
     if (query) {
-      var sequence = ++lookupSequence;
       fetch(findUrl('lookup/', {q: findInput.value.trim()}), {credentials: 'same-origin'})
         .then(function (response) { return response.json(); })
         .then(function (data) {
           if (sequence !== lookupSequence || findKind !== 'g') return;
           findRows = data.results || []; findChoice = 0; paintFind();
-        }).catch(function () { findRows = []; paintFind(); });
+        }).catch(function () {
+          if (sequence !== lookupSequence || findKind !== 'g') return;
+          findRows = []; paintFind();
+        });
       return;
-    } else findRows = [];
-    findChoice = 0;
-    paintFind();
+    }
   }
   function paintFind() {
-    findResults.replaceChildren();
-    var selected = null;
-    findRows.forEach(function (row, index) {
-      var button = document.createElement('button');
-      button.type = 'button'; button.className = 'projector-find__row';
-      button.dataset.choice = String(index);
-      button.setAttribute('role', 'option');
-      button.setAttribute('aria-selected', String(index === findChoice));
-      button.textContent = row.label;
-      findResults.appendChild(button);
-      if (index === findChoice) selected = button;
-    });
-    if (selected) selected.scrollIntoView({block: 'nearest'});
+    findResults.disabled = !findRows.length;
+    findSuggestion.textContent = findRows.length ? findRows[findChoice].label
+      : findInput.value.trim() ? 'No matching passage or song' : 'Start typing to find a match';
+    findCount.textContent = findRows.length ? (findChoice + 1) + ' / ' + findRows.length : '0 / 0';
   }
   function chooseFind(index) {
     var row = findRows[index];
@@ -622,10 +618,7 @@
       event.preventDefault(); event.stopPropagation(); closeFind();
     }
   });
-  findResults.addEventListener('click', function (event) {
-    var row = event.target.closest('.projector-find__row');
-    if (row) chooseFind(Number(row.dataset.choice));
-  });
+  findResults.addEventListener('click', function () { chooseFind(findChoice); });
 
   var detourNode = document.createElement('section');
   detourNode.className = 'screen projector-detour';

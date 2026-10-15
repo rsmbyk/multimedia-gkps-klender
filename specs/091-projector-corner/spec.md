@@ -7,7 +7,7 @@
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** minor
 - **Preview:** [interactive 1366×768 projector](./preview.html), [states and measurements](./preview-gallery.html)
-- **Go To amendment:** Draft, pending owner acceptance; [single-suggestion preview](./preview-goto-autocomplete.html)
+- **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
 
 ## Intent
 
@@ -79,9 +79,9 @@ The approved preview is the geometry and appearance reference; its five sample e
 - **Inactivity:** Pointer disappears after two seconds without movement or click and reappears on movement or click. Corner cue and keyboard button fade after 30 seconds without mouse or keyboard activity, with a 180ms transition, and reappear on the first activity. They do not auto-hide while the shortcut sheet, service-entry list, or Go To popup is open. The manual C-hidden state never reappears merely from activity.
 - **Responsive behavior:** Preserve these proportions and centered content when the viewport differs from 1366×768. The lyric font shrinks to fit available space; controls and their overlays stay inside the projector output and the shortcut sheet/list remain scrollable rather than clipping content. No title, key row, or list action becomes unreachable. Fullscreen uses the same layout rules.
 
-## Draft amendment: one-suggestion Go To
+## Accepted amendment: one-suggestion Go To
 
-This amendment changes only the G passage/song popup. The preceding Spec 091 behavior remains Accepted; this amendment is not implementation-authorized until the owner explicitly accepts it. The [approved interaction preview](./preview-goto-autocomplete.html) is the visual and behavior reference, using illustrative results.
+This amendment changes only the G passage/song popup. The preceding Spec 091 behavior remains Accepted. The owner accepted this amendment after approving the [interaction preview](./preview-goto-autocomplete.html), which uses illustrative results.
 
 ### Behavior
 

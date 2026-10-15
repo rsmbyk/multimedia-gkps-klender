@@ -389,7 +389,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 page.keyboard.press('Escape')
                 page.clock.fast_forward(200)
 
-    def test_goto_keeps_keyboard_selection_visible_in_long_reference_results(self):
+    def test_goto_cycles_one_suggestion_through_all_reference_results(self):
         page = self._page(self._projector_url())
         rows = [{'kind': 'song', 'label': f'NKB {number}', 'target': {'song_id': number}}
                 for number in range(40)]
@@ -397,17 +397,89 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             status=200, content_type='application/json', body=json.dumps({'results': rows})))
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('NKB 2')
-        page.wait_for_function("document.querySelectorAll('.projector-find__row').length === 40")
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 40'")
+        self.assertEqual(page.locator('.projector-find__row').count(), 1)
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'NKB 0')
         for _ in range(35):
             page.keyboard.press('ArrowDown')
-        self.assertGreater(page.locator('#projectorFind').evaluate('el => el.scrollTop'), 0)
-        selected = page.locator('.projector-find__row[aria-selected="true"]')
-        self.assertEqual(selected.get_attribute('data-choice'), '35')
-        self.assertTrue(selected.evaluate("""el => {
-          const row = el.getBoundingClientRect();
-          const panel = document.querySelector('#projectorFind').getBoundingClientRect();
-          return row.top >= panel.top && row.bottom <= panel.bottom;
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '36 / 40')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'NKB 35')
+        self.assertEqual(page.locator('#projectorFindInput').input_value(), 'NKB 2')
+        for _ in range(5):
+            page.keyboard.press('ArrowDown')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 40')
+        page.keyboard.press('ArrowUp')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '40 / 40')
+        page.locator('#projectorFindInput').fill('unknown')
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 40'")
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 40')
+
+    def test_goto_empty_result_and_overlay_dismissal(self):
+        page = self._page(self._projector_url())
+        page.route('**/lookup/**', lambda route: route.fulfill(
+            status=200, content_type='application/json', body=json.dumps({'results': []})))
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('nothing')
+        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent === 'No matching passage or song'")
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
+        self.assertTrue(page.locator('#projectorFindResults').is_disabled())
+        page.keyboard.press('Enter')
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+        page.locator('#projectorFindInput').fill('')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Start typing to find a match')
+        page.locator('#projectorFindDismiss').click(position={'x': 1200, 'y': 200})
+        self.assertFalse(page.locator('#projectorFind').is_visible())
+
+    def test_goto_ignores_old_lookup_responses(self):
+        page = self._page(self._projector_url())
+        page.evaluate("""() => {
+          window.pendingLookups = [];
+          const originalFetch = window.fetch;
+          window.fetch = (url, options) => {
+            if (!String(url).includes('/lookup/')) return originalFetch(url, options);
+            return new Promise(resolve => window.pendingLookups.push(resolve));
+          };
+        }""")
+        page.keyboard.press('g')
+        query = page.locator('#projectorFindInput')
+        query.fill('NKB 2')
+        query.fill('NKB 22')
+        page.wait_for_function('window.pendingLookups.length === 2')
+        page.evaluate("""() => window.pendingLookups[1]({json: () => Promise.resolve({results: [
+          {kind: 'song', label: 'NKB 223A Haleluya', target: {song_id: 1}}
+        ]})})""")
+        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent === 'NKB 223A Haleluya'")
+        page.evaluate("""() => window.pendingLookups[0]({json: () => Promise.resolve({results: [
+          {kind: 'song', label: 'Old result', target: {song_id: 2}}
+        ]})})""")
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'NKB 223A Haleluya')
+        page.keyboard.press('Escape')
+        self.assertFalse(page.locator('#projectorFind').is_visible())
+
+    def test_goto_click_opens_the_selected_suggestion(self):
+        page = self._page(self._projector_url())
+        page.route('**/lookup/**', lambda route: route.fulfill(
+            status=200, content_type='application/json', body=json.dumps({'results': [
+                {'kind': 'song', 'label': 'NKB 223A Haleluya', 'target': {'song_id': 1}}
+            ]})))
+        page.route('**/detour/**', lambda route: route.fulfill(
+            status=200, content_type='application/json', body=json.dumps({
+                'kind': 'song', 'label': 'NKB 223A',
+                'screens': [{'blank': False, 'header': '', 'lines': ['Haleluya'],
+                             'bait': 1, 'split': 1, 'split_total': 1}],
+                'baits': [{'number': 1, 'start': 0, 'end': 0}],
+            })))
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('NKB 223')
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        page.set_viewport_size({'width': 600, 'height': 400})
+        self.assertTrue(page.locator('#projectorFind').evaluate("""el => {
+          const box = el.getBoundingClientRect();
+          return box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;
         }"""))
+        page.locator('#projectorFindResults').click()
+        self.assertFalse(page.locator('#projectorFind').is_visible())
+        page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
 
     def test_escape_closes_both_hud_layers_without_a_lingering_focus_ring(self):
         page = self._page(self._projector_url())
