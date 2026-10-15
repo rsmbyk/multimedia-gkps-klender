@@ -1322,6 +1322,7 @@ def _search_groups(results, shown, base_path):
     return groups
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class HomeView(TemplateView):
     """Search-first home: the landing state with the books panel ready."""
 
@@ -1337,6 +1338,7 @@ class HomeView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class SearchView(TemplateView):
     """Grouped full-corpus results; a bad/missing query keeps the landing."""
 
@@ -1367,6 +1369,7 @@ class SearchView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class BibleView(TemplateView):
     """Alkitab: books panel, chapter tiles, and a chapter on the stage."""
 
@@ -1464,6 +1467,7 @@ class BibleView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class BookIndexView(TemplateView):
     """Kidung root: songbooks beside the rail."""
 
@@ -1479,6 +1483,7 @@ class BookIndexView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class BookDetailView(TemplateView):
     """One songbook: its songs fill the wide second pane."""
 
@@ -1502,6 +1507,7 @@ class BookDetailView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class SongDetailView(TemplateView):
     """A song on stage with its songbook list restored beside it."""
 

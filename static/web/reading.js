@@ -1136,6 +1136,41 @@
     return el ? el.textContent : '';
   }
 
+  function restoreRequestedFocus(opts) {
+    if (!opts.focusKind) return;
+    var focusTarget = null;
+    var scroller = panelBody;
+    if (opts.focusKind === 'songbook' || opts.focusKind === 'song'
+        || opts.focusKind === 'tatib') {
+      var editor = '[data-editor-open="' + opts.focusKind + '"][data-editor-id="' + opts.what + '"]';
+      var opener = chList.querySelector(editor) || panelBody.querySelector(editor);
+      var row = opener && opener.closest('li');
+      focusTarget = row && row.querySelector('a.book, a.songrow');
+      if (focusTarget && chList.contains(focusTarget)) scroller = chBody;
+    } else if (opts.focusKind === 'entry') {
+      focusTarget = readBody.querySelector('[data-entry-pk="' + opts.what + '"]');
+    } else if (opts.focusKind === 'old-item') {
+      focusTarget = readBody.querySelector('[data-old-item-pk="' + opts.what + '"]');
+    } else if (opts.focusKind === 'read') {
+      focusTarget = document.getElementById('read');
+    }
+    if (!focusTarget) return;
+    if (focusTarget.classList.contains('book') || focusTarget.classList.contains('songrow')) {
+      revealRow(focusTarget, scroller);
+      focusTarget.classList.add('row-flash');
+    }
+    if (focusTarget.tabIndex < 0 && !focusTarget.hasAttribute('tabindex')) {
+      focusTarget.setAttribute('tabindex', '-1');
+    }
+    if (opts.entryKeyboardFocus
+        && (opts.focusKind === 'entry' || opts.focusKind === 'old-item')) {
+      focusTarget = focusTarget.querySelector('.entry__ctrl:not([disabled])') || focusTarget;
+      focusTarget.classList.remove('focus-restore-quiet');
+      focusTarget.focus({ preventScroll: true });
+    } else if (window.gkpsFocus) window.gkpsFocus.restoreQuietly(focusTarget);
+    else focusTarget.focus({ preventScroll: true });
+  }
+
   function applyPage(doc, url, opts) {
     opts = opts || {};
     var fresh = doc.documentElement.dataset;
@@ -1172,10 +1207,21 @@
     if (kind === 'refresh') {
       root.dataset.read = fresh.read;
       root.dataset.home = fresh.home;
+      var freshRead = doc.querySelector('#read');
+      if (freshRead && freshRead.dataset.kind === 'tatib') {
+        var freshChList = doc.querySelector('#chList');
+        if (freshChList) {
+          var chScroll = chBody.scrollTop;
+          chList.innerHTML = freshChList.innerHTML;
+          bindChRows();
+          chBody.scrollTop = chScroll;
+        }
+      }
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
       restoreSavedEdition();
       bindLangLinks();
+      restoreRequestedFocus(opts);
       document.title = doc.title;
       document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
       return;
@@ -1428,40 +1474,7 @@
       var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
       if (target) revealSearchTarget(target);
     }
-    if ((kind === 'refresh' || kind === 'lists') && opts.focusKind) {
-      var focusTarget = null;
-      var scroller = panelBody;
-      if (opts.focusKind === 'songbook' || opts.focusKind === 'song'
-          || opts.focusKind === 'tatib') {
-        var editor = '[data-editor-open="' + opts.focusKind + '"][data-editor-id="' + opts.what + '"]';
-        var opener = chList.querySelector(editor) || panelBody.querySelector(editor);
-        var row = opener && opener.closest('li');
-        focusTarget = row && row.querySelector('a.book, a.songrow');
-        if (focusTarget && chList.contains(focusTarget)) scroller = chBody;
-      } else if (opts.focusKind === 'entry') {
-        focusTarget = readBody.querySelector('[data-entry-pk="' + opts.what + '"]');
-      } else if (opts.focusKind === 'old-item') {
-        focusTarget = readBody.querySelector('[data-old-item-pk="' + opts.what + '"]');
-      } else if (opts.focusKind === 'read') {
-        focusTarget = document.getElementById('read');
-      }
-      if (focusTarget) {
-        if (focusTarget.classList.contains('book') || focusTarget.classList.contains('songrow')) {
-          revealRow(focusTarget, scroller);
-          focusTarget.classList.add('row-flash');
-        }
-        if (focusTarget.tabIndex < 0 && !focusTarget.hasAttribute('tabindex')) {
-          focusTarget.setAttribute('tabindex', '-1');
-        }
-        if (opts.entryKeyboardFocus
-            && (opts.focusKind === 'entry' || opts.focusKind === 'old-item')) {
-          focusTarget = focusTarget.querySelector('.entry__ctrl:not([disabled])') || focusTarget;
-          focusTarget.classList.remove('focus-restore-quiet');
-          focusTarget.focus({ preventScroll: true });
-        } else if (window.gkpsFocus) window.gkpsFocus.restoreQuietly(focusTarget);
-        else focusTarget.focus({ preventScroll: true });
-      }
-    }
+    if (kind === 'lists' && opts.focusKind) restoreRequestedFocus(opts);
     if (kind === 'search') {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }

@@ -119,7 +119,11 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
         page.locator(f'[data-old-item-delete="{self.last.pk}"]').click()
         page.wait_for_selector('dialog[open]', timeout=1500)
         expect(page.locator('#editorContent')).to_contain_text('Delete this row?')
-        page.locator('[data-confirm-delete]').click()
+        delete_url = reverse('web-old-item-delete', args=[self.last.pk])
+        with page.expect_response(lambda response: response.url.endswith(delete_url)
+                                  and response.request.method == 'POST', timeout=5000) as deleting:
+            page.locator('[data-confirm-delete]').click()
+        self.assertEqual(deleting.value.status, 200, deleting.value.text()[:500])
         page.wait_for_function("!document.querySelector('dialog[open]')")
         expect(page.locator('#readBody')).not_to_contain_text('Penutup')
         target = page.locator(f'#readBody [data-old-item-pk="{self.middle.pk}"]')
