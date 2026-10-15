@@ -1,5 +1,8 @@
 """Spec 092: the public offline library contains complete, revisioned chunks."""
 
+from pathlib import Path
+
+from django.conf import settings
 from django.test import TestCase
 
 from multimedia.bible import models as bible
@@ -35,6 +38,16 @@ class OfflineLibraryEndpointTests(TestCase):
         self.assertIn(f'service:{self.service.pk}', chunks)
         self.assertNotIn(f'service:{self.hidden.pk}', chunks)
         self.assertEqual(len(chunks[f'songs:{self.songbook.pk}']['revision']), 64)
+
+    def test_service_worker_uses_the_deployed_version_for_its_shell_cache(self):
+        version = (Path(settings.BASE_DIR) / 'VERSION').read_text().strip()
+        response = self.client.get('/service-worker.js')
+        source = response.content.decode('utf-8')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(f"gkps-public-shell-{version}", source)
+        self.assertNotIn('__VERSION__', source)
+        self.assertEqual(response['Service-Worker-Allowed'], '/')
+        self.assertIn('no-cache', response['Cache-Control'])
 
     def test_chunk_has_verses_lyrics_and_projector_screens(self):
         bible_data = self.client.get(f'/offline/chunk/bible/{self.book.pk}/').json()['data']

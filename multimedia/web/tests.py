@@ -2253,8 +2253,30 @@ class ServiceProjectorTests(TestCase):
         url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
         song = songs.Song.objects.create(book=self.songbook, number=1152, title='Another Song')
         rows = self.client.get(url, {'q': '152'}).json()['results']
-        self.assertEqual([row['target']['song_id'] for row in rows], [self.song.pk])
-        self.assertNotIn(song.pk, [row['target']['song_id'] for row in rows])
+        self.assertEqual([row['target']['song_id'] for row in rows], [self.song.pk, song.pk])
+
+    def test_library_lookup_matches_bare_number_substrings_across_books_without_a_cap(self):
+        exact_kj = songs.Song.objects.create(book=self.songbook, number=12, title='Exact in KJ')
+        other = songs.Book.objects.create(
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        exact_other = songs.Song.objects.create(book=other, number=12, title='Exact in NKB')
+        prefix_120 = songs.Song.objects.create(book=other, number=120, title='Prefix 120')
+        prefix_121 = songs.Song.objects.create(book=other, number=121, title='Prefix 121')
+        substring_212 = songs.Song.objects.create(book=other, number=212, title='Substring 212')
+        substring_312 = songs.Song.objects.create(book=other, number=312, title='Substring 312')
+        extras = [songs.Song.objects.create(book=other, number=1200 + index, title=f'Extra {index}')
+                  for index in range(14)]
+        inactive = songs.Song.objects.create(
+            book=other, number=12000, title='Deleted', is_deleted=True)
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+
+        rows = self.client.get(url, {'q': '012'}).json()['results']
+        ids = [row['target']['song_id'] for row in rows]
+        self.assertEqual(ids, [exact_kj.pk, exact_other.pk, prefix_120.pk,
+                               prefix_121.pk, *[row.pk for row in extras],
+                               substring_212.pk, substring_312.pk])
+        self.assertGreater(len(rows), 12)
+        self.assertNotIn(inactive.pk, ids)
 
     def test_library_lookup_matches_hymn_book_and_number_prefix_without_truncating(self):
         url = reverse('web-service-projector-lookup', args=[self.tatib.pk])

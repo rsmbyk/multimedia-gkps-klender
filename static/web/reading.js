@@ -991,8 +991,13 @@
      transitions run instead of a full reload. The links keep their real
      hrefs: without JS (or when a fetch fails) the browser navigates. */
   var navBusy = false;
+  var pendingNavigation = null;
   var SEARCH_LAST = 'gkps-search-last-tab';
   var TAB_KEY = 'gkps-search-tab-id';
+  /* The shell owns in-page history, including restoring each search result's
+     scroll position. Leave scroll restoration to the route renderer instead
+     of letting the browser race it after popstate. */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   function searchId() {
     return window.crypto && crypto.randomUUID ? crypto.randomUUID()
       : Date.now() + '-' + Math.random().toString(36).slice(2);
@@ -1053,8 +1058,21 @@
   }, {passive: true});
   window.addEventListener('pagehide', saveSearchSnapshot);
 
+  function releaseNavigation() {
+    navBusy = false;
+    if (!pendingNavigation) return;
+    var next = pendingNavigation;
+    pendingNavigation = null;
+    window.setTimeout(function () { navigate(next.url, next.opts); }, 0);
+  }
+
   function navigate(url, opts) {
-    if (!url || navBusy) return;
+    if (!url) return;
+    if (navBusy) {
+      if (!(opts && opts.historyTraversal)) saveSearchSnapshot();
+      pendingNavigation = {url: url, opts: opts || {}};
+      return;
+    }
     if (!(opts && opts.historyTraversal)) saveSearchSnapshot();
     navBusy = true;
     function fromServer() {
@@ -1064,44 +1082,51 @@
         return response.text();
       })
       .then(function (html) {
-        navBusy = false;
         applyPage(new window.DOMParser().parseFromString(html, 'text/html'), url, opts || {});
+        releaseNavigation();
       })
       .catch(function (error) {
-        navBusy = false;
         if (window.console && console.error) console.error('in-page navigation failed:', error);
         if (navigator.onLine) window.location.href = url;
         else {
           var status = document.getElementById('searchStatus');
           if (status) status.textContent = 'This content is not saved for offline use.';
         }
+        releaseNavigation();
       });
     }
+    if (opts && opts.forceServer) return fromServer();
     var renderer = window.GKPSOfflineRender;
     if (renderer && renderer.route(url)) {
-      renderer.render(url).then(function (doc) {
-        if (!doc) return fromServer();
-        navBusy = false;
-        applyPage(doc, url, opts || {});
-        if (navigator.onLine && window.GKPSOffline) {
-          renderer.chunkFor(url).then(function (chunkUrl) {
-            if (!chunkUrl) return;
-            return fetch(chunkUrl, {cache: 'no-store', credentials: 'same-origin'})
-              .then(function (response) {
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                return response.json();
-              }).then(function (payload) {
-                if (payload.schema !== 1 || !payload.data) return;
-                if (new URL(url, location.href).pathname !== location.pathname) return;
-                return renderer.render(url, payload.data).then(function (updated) {
-                  if (!updated || navBusy) return;
-                  updated.querySelector('#offlineSavedSource').hidden = true;
-                  applyPage(updated, url, {kind: 'refresh', skipHistory: true});
-                  window.GKPSOffline.sync().catch(function () {});
+      var ready = window.GKPSOffline && window.GKPSOffline.status
+        ? window.GKPSOffline.status().then(function (state) { return state.ready; })
+        : Promise.resolve(false);
+      ready.then(function (isReady) {
+        if (!isReady) return fromServer();
+        renderer.render(url).then(function (doc) {
+          if (!doc) return fromServer();
+          applyPage(doc, url, opts || {});
+          releaseNavigation();
+          if (navigator.onLine && window.GKPSOffline) {
+            renderer.chunkFor(url).then(function (chunkUrl) {
+              if (!chunkUrl) return;
+              return fetch(chunkUrl, {cache: 'no-store', credentials: 'same-origin'})
+                .then(function (response) {
+                  if (!response.ok) throw new Error('HTTP ' + response.status);
+                  return response.json();
+                }).then(function (payload) {
+                  if (payload.schema !== 1 || !payload.data) return;
+                  if (new URL(url, location.href).pathname !== location.pathname) return;
+                  return renderer.render(url, payload.data).then(function (updated) {
+                    if (!updated || navBusy) return;
+                    updated.querySelector('#offlineSavedSource').hidden = true;
+                    applyPage(updated, url, {kind: 'refresh', skipHistory: true});
+                    window.GKPSOffline.sync().catch(function () {});
+                  });
                 });
-              });
-          }).catch(function () { /* the saved copy stays visible */ });
-        }
+            }).catch(function () { /* the saved copy stays visible */ });
+          }
+        }).catch(function () { return fromServer(); });
       }).catch(function () { return fromServer(); });
     } else fromServer();
   }
@@ -1112,10 +1137,23 @@
   }
 
   function applyPage(doc, url, opts) {
+    opts = opts || {};
     var fresh = doc.documentElement.dataset;
     var kind = opts.kind || 'lists';
+    /* A direct offline boot can finish after the operator has already opened a
+       sidebar. Keep those live shell controls while replacing the page content. */
+    var bootNavState = root.dataset.nav;
+    var bootChState = root.dataset.ch;
+    var bootPanelFilter = opts.directBoot ? filter.value : null;
+    var bootSongFilter = opts.directBoot ? songFilterEl.value : null;
+    var bootPanelScroll = opts.directBoot ? panelBody.scrollTop : null;
+    var bootChScroll = opts.directBoot ? chBody.scrollTop : null;
+    var bootSearchValue = opts.directBoot && searchQuery ? searchQuery.value : null;
+    var bootFocusId = opts.directBoot && document.activeElement
+      ? document.activeElement.id : '';
     var changingMainMenu = (kind === 'rail' && opts.section !== activeSection)
-      || (kind === 'results' && (root.dataset.read === 'on' || root.dataset.nav !== 'closed'));
+      || (!opts.directBoot && kind === 'results'
+          && (root.dataset.read === 'on' || root.dataset.nav !== 'closed'));
     var previousChState = root.dataset.ch;
     var previousChScroll = chBody.scrollTop;
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
@@ -1127,6 +1165,21 @@
        operator's own sidebar states survive a stage-only swap (spec 080). */
     var stageOnly = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'refresh';
+
+    /* A background refresh only replaces the saved screen content. Rebuilding
+       the sidebars here detaches their rows while people are using them and can
+       discard keyboard focus, filters, and scroll position. */
+    if (kind === 'refresh') {
+      root.dataset.read = fresh.read;
+      root.dataset.home = fresh.home;
+      stage.innerHTML = doc.querySelector('.stage').innerHTML;
+      refreshStageRefs();
+      restoreSavedEdition();
+      bindLangLinks();
+      document.title = doc.title;
+      document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
+      return;
+    }
 
     /* shared first column: books / songbooks / services */
     panelTitleEl.textContent = txt(doc, '#panelTitle');
@@ -1185,12 +1238,12 @@
       root.dataset.read = fresh.read;
       root.dataset.home = fresh.home;
       if (!stageOnly) {
-        root.dataset.nav = fresh.nav;
+        root.dataset.nav = opts.directBoot ? bootNavState : fresh.nav;
       }
       /* The second-level pane still follows the arriving page: a service opened from the
          first-level panel has to bring its contents with it, and for a chapter or song
          opened from the list the arriving value already matches the live one (spec 088). */
-      root.dataset.ch = fresh.ch;
+      root.dataset.ch = opts.directBoot ? bootChState : fresh.ch;
       releaseTatibFlash();
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
@@ -1290,6 +1343,18 @@
     bindPanelTiles();
     bindPanelTips();
     bindChRows();
+    if (opts.directBoot) {
+      filter.value = bootPanelFilter;
+      songFilterEl.value = bootSongFilter;
+      filter.dispatchEvent(new window.Event('input', {bubbles: true}));
+      songFilterEl.dispatchEvent(new window.Event('input', {bubbles: true}));
+      panelBody.scrollTop = bootPanelScroll;
+      chBody.scrollTop = bootChScroll;
+      if (bootFocusId) {
+        var bootFocusTarget = document.getElementById(bootFocusId);
+        if (bootFocusTarget) bootFocusTarget.focus({preventScroll: true});
+      }
+    }
 
     pageState = readPageState();
     if (swapsStage) {
@@ -1406,6 +1471,10 @@
       if (!restoreSearchSnapshot(restoreId)) {
         window.scrollTo({top: kind === 'more' ? window.scrollY : 0, behavior: 'auto'});
       }
+      if (opts.directBoot && bootSearchValue !== null && searchQuery) {
+        searchQuery.value = bootSearchValue;
+        searchQuery.dispatchEvent(new window.Event('input', {bubbles: true}));
+      }
       saveSearchSnapshot();
     }
   }
@@ -1480,7 +1549,11 @@
     searchForm.addEventListener('submit', function (event) {
       var input = searchForm.querySelector('#searchQuery') || searchQuery;
       var query = input ? input.value.trim() : '';
-      if (!query) { event.preventDefault(); return; }
+      if (!query) {
+        event.preventDefault();
+        navigate('/', {kind: 'results'});
+        return;
+      }
       input.value = query;
       event.preventDefault();
       var action = searchForm.getAttribute('action') || '/search/';
@@ -1521,6 +1594,17 @@
     navigate('/', {kind: 'results', replaceUrl: true});
   });
 
+  function needsOfflineShellHydration() {
+    var path = location.pathname;
+    if (path === '/' || path === '/home/') return false;
+    if (path === '/search' || path === '/search/') return root.dataset.home === 'landing';
+    if (root.dataset.read === 'on') return false;
+    if (/^\/bible(?:\/|$)/.test(path)) return root.dataset.nav === 'closed';
+    if (/^\/songs(?:\/|$)/.test(path)) return root.dataset.section !== 'kidung';
+    if (/^\/tatib(?:\/|$)/.test(path)) return root.dataset.section !== 'tatib';
+    return false;
+  }
+
   /* A sidebar editor saved something: re-render the page's regions in place, so
      every list, the panel selection and the reading stage agree again. */
   document.addEventListener('editor:saved', function (event) {
@@ -1533,12 +1617,19 @@
     var url = stageMatchesSection ? stageInfo.url
       : currentSongbook ? currentSongbook.getAttribute('href')
         : panelOwner().getAttribute('href');
-    navigate(url, {
+    var refreshOptions = {
       kind: stageMatchesSection ? 'refresh' : 'lists',
       what: event.detail && (event.detail.focusId || event.detail.id),
       focusKind: event.detail && (event.detail.focusKind || event.detail.kind),
       entryKeyboardFocus: !!(event.detail && event.detail.entryKeyboardFocus)
-    });
+    };
+    /* Show the just-saved server state immediately. The full offline snapshot can
+       refresh in parallel; waiting for it here delayed editor feedback and could
+       leave the pane showing the previous generation. */
+    navigate(url, Object.assign({}, refreshOptions, {forceServer: true}));
+    if (navigator.onLine && window.GKPSOffline) {
+      window.GKPSOffline.sync().catch(function () { /* the current page is already fresh */ });
+    }
   });
 
   /* ---------- reveal search targets ---------- */
@@ -1588,7 +1679,8 @@
                    skipHistory: true, historyTraversal: true,
                    restoreSearchId: state && state.searchId});
   });
-  if (root.dataset.home === 'landing' && window.GKPSOfflineRender
+  if (root.dataset.home === 'landing' && needsOfflineShellHydration()
+      && window.GKPSOfflineRender
       && window.GKPSOfflineRender.route(location.href)) {
     navigate(location.href, {kind: historyKind(location.pathname), skipHistory: true,
       directBoot: true});

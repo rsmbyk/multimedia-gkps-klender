@@ -9,7 +9,7 @@
 - **Corner cue typography amendment:** Accepted
 - **Shared corner colors amendment:** Accepted
 - **Go To morph amendment:** Accepted
-- **Number-only Go To amendment:** Draft
+- **Number-only Go To amendment:** Accepted
 - **Chapter-only Go To amendment:** Accepted
 
 ## Checklist
@@ -87,7 +87,7 @@
 - [x] Owner approves the [numeric search preview](./preview-goto-number-substring.html).
 - [x] Owner explicitly accepts the [amendment](./spec.md#accepted-amendment-number-only-go-to-substring-search).
 - [x] Match active numbered songs by numeric substring for bare-digit Go To queries, with exact/prefix/substring tiers and no 12-result cap.
-- [ ] Add targeted application and projector browser checks for cross-book matches, ordering, full count/cycling, and unchanged book-qualified and title queries.
+- [x] Add targeted application and projector browser checks for cross-book matches, ordering, full count/cycling, and unchanged book-qualified and title queries.
 - [x] Update the Spec/ITEM delivery record for this combined Spec 091 + 092 implementation; owner authorized one shared PR.
 
 ## Accepted amendment: chapter-only Go To opens its first verse

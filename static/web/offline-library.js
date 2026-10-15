@@ -7,6 +7,7 @@
   try { channel = new BroadcastChannel('gkps-public-library'); } catch (error) { channel = null; }
   var listeners = [];
   var inFlight = null;
+  var queuedSync = null;
   var lastError = null;
 
   function changed() {
@@ -60,12 +61,32 @@
         var tx = db.transaction(['chunks', 'meta'], 'readwrite');
         var content = tx.objectStore('chunks');
         var meta = tx.objectStore('meta');
+        var now = Date.now();
         removed.forEach(function (key) { content.delete(key); });
         chunks.forEach(function (chunk) { content.put(chunk, chunk.key); });
         meta.put({schema: 1, keys: manifest.chunks.map(function (row) { return row.key; }),
           revisions: Object.fromEntries(manifest.chunks.map(function (row) {
             return [row.key, row.revision];
-          })), syncedAt: Date.now(), checkedAt: Date.now()}, 'generation');
+          })), syncedAt: now, checkedAt: now}, 'generation');
+        meta.put({checkedAt: now, error: null}, 'sync-state');
+        tx.oncomplete = function () { db.close(); resolve(); };
+        tx.onerror = function () { db.close(); reject(tx.error); };
+        tx.onabort = function () { db.close(); reject(tx.error); };
+      });
+    });
+  }
+
+  function recordCheck() {
+    return open().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction('meta', 'readwrite');
+        var store = tx.objectStore('meta');
+        var request = store.get('sync-state');
+        request.onsuccess = function () {
+          var state = request.result || {};
+          state.checkedAt = Date.now();
+          store.put(state, 'sync-state');
+        };
         tx.oncomplete = function () { db.close(); resolve(); };
         tx.onerror = function () { db.close(); reject(tx.error); };
         tx.onabort = function () { db.close(); reject(tx.error); };
@@ -78,15 +99,42 @@
       return new Promise(function (resolve, reject) {
         var tx = db.transaction('meta', 'readwrite');
         var store = tx.objectStore('meta');
+        var checkedAt = Date.now();
         var request = store.get('generation');
         request.onsuccess = function () {
           if (request.result) {
-            request.result.checkedAt = Date.now();
+            request.result.checkedAt = checkedAt;
             store.put(request.result, 'generation');
           }
         };
+        var statusRequest = store.get('sync-state');
+        statusRequest.onsuccess = function () {
+          var state = statusRequest.result || {};
+          state.checkedAt = checkedAt;
+          state.error = null;
+          store.put(state, 'sync-state');
+        };
         tx.oncomplete = function () { db.close(); resolve(); };
         tx.onerror = function () { db.close(); reject(tx.error); };
+        tx.onabort = function () { db.close(); reject(tx.error); };
+      });
+    });
+  }
+
+  function recordFailure(error) {
+    return open().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction('meta', 'readwrite');
+        var store = tx.objectStore('meta');
+        var request = store.get('sync-state');
+        request.onsuccess = function () {
+          var state = request.result || {};
+          state.error = String(error && error.message || error || 'Library sync failed');
+          store.put(state, 'sync-state');
+        };
+        tx.oncomplete = function () { db.close(); resolve(); };
+        tx.onerror = function () { db.close(); reject(tx.error); };
+        tx.onabort = function () { db.close(); reject(tx.error); };
       });
     });
   }
@@ -113,30 +161,44 @@
         });
         var nextKeys = new Set(manifest.chunks.map(function (row) { return row.key; }));
         var removed = old ? old.keys.filter(function (key) { return !nextKeys.has(key); }) : [];
-        if (!wanted.length && !removed.length && old) return markChecked();
-        /* Keep only four chunk responses in flight, including on first visit. No
-           IndexedDB writes happen until all revisions have been verified. */
-        var cursor = 0;
-        var results = [];
-        function worker() {
-          if (cursor >= wanted.length) return Promise.resolve();
-          var row = wanted[cursor++];
-          return fetchJSON(row.url).then(function (payload) {
-            if (payload.schema !== 1 || payload.revision !== row.revision
-                || !payload.data || row.key !== payload.data.kind + ':' + payload.data.id) {
-              throw new Error('Library changed during sync: ' + row.key);
-            }
-            results.push({key: row.key, revision: row.revision, data: payload.data});
-            return worker();
-          });
-        }
-        return Promise.all(Array.from({length: Math.min(4, wanted.length)}, worker))
-          .then(function () { return commit(results, removed, manifest); });
+        return recordCheck().then(function () {
+          if (!wanted.length && !removed.length && old) return markChecked();
+          /* Keep only four chunk responses in flight, including on first visit. No
+             IndexedDB writes happen until all revisions have been verified. */
+          var cursor = 0;
+          var results = [];
+          function worker() {
+            if (cursor >= wanted.length) return Promise.resolve();
+            var row = wanted[cursor++];
+            return fetchJSON(row.url).then(function (payload) {
+              if (payload.schema !== 1 || payload.revision !== row.revision
+                  || !payload.data || row.key !== payload.data.kind + ':' + payload.data.id) {
+                throw new Error('Library changed during sync: ' + row.key);
+              }
+              results.push({key: row.key, revision: row.revision, data: payload.data});
+              return worker();
+            });
+          }
+          return Promise.all(Array.from({length: Math.min(4, wanted.length)}, worker))
+            .then(function () { return commit(results, removed, manifest); });
+        });
       });
   }
 
   function sync() {
-    if (inFlight) return inFlight;
+    if (inFlight) {
+      /* A caller during sync can be reacting to a save that happened after the
+         current manifest was read. Queue one fresh pass so that save is not lost. */
+      if (!queuedSync) {
+        var current = inFlight;
+        queuedSync = Promise.resolve(current).then(function () {}, function () {})
+          .then(function () {
+            queuedSync = null;
+            return sync();
+          });
+      }
+      return queuedSync;
+    }
     changed();
     var run = function () { return performSync(); };
     var task = navigator.locks && navigator.locks.request
@@ -145,7 +207,10 @@
       lastError = null;
       if (channel) channel.postMessage({type: 'committed'});
       return value;
-    }, function (error) { lastError = error; throw error; }).finally(function () {
+    }, function (error) {
+      lastError = error;
+      return recordFailure(error).catch(function () {}).then(function () { throw error; });
+    }).finally(function () {
       inFlight = null;
       changed();
     });
@@ -171,11 +236,15 @@
 
   function shellReady() {
     if (!window.caches) return Promise.resolve(false);
-    var required = ['/home/', '/offline/projector-shell/',
+    var required = ['/home/', '/offline/projector-shell/', '/static/assets/gkps.png',
       '/static/styles/design/tokens.css', '/static/styles/design/components.css',
       '/static/styles/design/projector.css', '/static/styles/design/offline.css',
-      '/static/web/reading.js', '/static/web/offline-render.js',
-      '/static/web/projector.js', '/static/web/projector-library.js'];
+      '/static/web/offline-library.js', '/static/web/offline-status.js',
+      '/static/web/offline-render.js', '/static/web/reading.js',
+      '/static/web/projector.js', '/static/web/projector-library.js',
+      '/static/web/display.js', '/static/web/focus.js', '/static/web/editors.js',
+      '/static/web/date-picker.js', '/static/web/entries.js', '/static/web/reorder.js',
+      '/static/web/preview.js'];
     return Promise.all(required.map(function (url) {
       return caches.match(url).then(Boolean);
     })).then(function (checks) { return checks.every(Boolean); });
@@ -183,14 +252,17 @@
 
   function status() {
     return Promise.all([read('meta', 'generation').catch(function () { return null; }),
+                        read('meta', 'sync-state').catch(function () { return null; }),
                         shellReady().catch(function () { return false; }),
                         storedKeys().catch(function () { return new Set(); })])
       .then(function (values) {
         var generation = values[0];
-        return {ready: !!(generation && generation.keys && values[1]
-                          && generation.keys.every(function (key) { return values[2].has(key); })),
-                generation: generation, shellsReady: values[1],
-                syncing: !!inFlight, error: lastError,
+        var syncState = values[1];
+        return {ready: !!(generation && generation.keys && values[2]
+                          && generation.keys.every(function (key) { return values[3].has(key); })),
+                generation: generation, shellsReady: values[2],
+                lastCheckedAt: syncState && syncState.checkedAt || generation && generation.checkedAt,
+                syncing: !!inFlight, error: lastError || syncState && syncState.error,
                 offline: !navigator.onLine};
       });
   }

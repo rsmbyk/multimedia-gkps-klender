@@ -15,8 +15,8 @@
 .offline-sync-dot[data-state="stale"], .offline-sync-mark[data-state="stale"] {
   background: #b0813b;
 }
-.offline-sync-panel { position: fixed; z-index: 50; left: calc(var(--rail-w) + 10px);
-  bottom: 72px; width: min(320px, calc(100vw - var(--rail-w) - 22px));
+.offline-sync-panel { position: fixed; z-index: 50; left: calc(var(--rail-w) + 10px); right: 12px;
+  bottom: 72px; width: auto; max-width: 320px; box-sizing: border-box;
   padding: 16px 17px; border: 1px solid var(--divider); border-radius: 10px;
   background: var(--canvas); color: var(--ink); box-shadow: 0 12px 32px rgba(20,20,18,.23); }
 .offline-sync-panel[hidden] { display: none; }

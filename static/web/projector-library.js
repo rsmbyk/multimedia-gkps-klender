@@ -83,11 +83,12 @@
       }
     }
     var numeric = /^\d+$/.test(phrase);
+    var numericQuery = numeric ? phrase.replace(/^0+(?=\d)/, '') : phrase;
     var hits = songs.map(function (entry) {
       var title = normalize(entry.song.title);
       var number = String(entry.song.number == null ? '' : entry.song.number);
-      var score = numeric ? (number === phrase ? 3 : number.startsWith(phrase) ? 2
-        : number.includes(phrase) ? 1 : 0)
+      var score = numeric ? (number === numericQuery ? 3 : number.startsWith(numericQuery) ? 2
+        : number.includes(numericQuery) ? 1 : 0)
         : title === phrase ? 200 : title.startsWith(phrase) ? 120 : title.includes(phrase) ? 95 : 0;
       return {entry: entry, score: score};
     }).filter(function (row) { return row.score; });

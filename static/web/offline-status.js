@@ -22,7 +22,7 @@
         ? (status.error ? 'stale' : 'ready') : 'empty';
       dot.dataset.state = mark.dataset.state = state;
       synced.textContent = date(status.generation && status.generation.syncedAt, 'Never');
-      checked.textContent = date(status.generation && status.generation.checkedAt, 'Not checked');
+      checked.textContent = date(status.lastCheckedAt, 'Not checked');
       if (status.syncing) {
         title.textContent = 'Syncing library';
         detail.textContent = 'Checking for changes and saving updated content…';
@@ -51,6 +51,7 @@
   button.addEventListener('click', function () {
     panel.hidden = !panel.hidden;
     button.setAttribute('aria-expanded', String(!panel.hidden));
+    if (!panel.hidden) refresh();
   });
   document.addEventListener('pointerdown', function (event) {
     if (panel.hidden || panel.contains(event.target) || button.contains(event.target)) return;

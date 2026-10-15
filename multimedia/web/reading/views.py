@@ -1101,6 +1101,25 @@ def projector_lookup(request, service_id):
     query = (request.GET.get('q') or '').strip()[:120]
     if not query:
         return JsonResponse({'results': []})
+    if query.isdecimal():
+        number_query = str(int(query))
+        numbered_songs = list(song_models.Song.objects.active().filter(
+            book__is_deleted=False, number__isnull=False).select_related('book'))
+
+        def numeric_key(song):
+            number = str(song.number)
+            tier = 0 if number == number_query else 1 if number.startswith(number_query) else 2
+            book_label = song.book.short_name or song.book.name
+            return (tier, song.number, book_label.casefold(),
+                    (song.sub_number or '').casefold(), (song.title or '').casefold(), song.pk)
+
+        matching = sorted((song for song in numbered_songs
+                           if number_query in str(song.number)), key=numeric_key)
+        return JsonResponse({'results': [
+            {'kind': 'song', 'label': _entry_song_option_label(song).strip(),
+             'target': {'song_id': song.pk}}
+            for song in matching
+        ]})
     chapter_rows = _projector_chapter_prefix(query)
     song_reference_filter = _entry_song_reference_filter(query)
     if chapter_rows is not None or song_reference_filter is not None:

@@ -15,12 +15,26 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.db import connections
 from django.test import override_settings, tag
 from django.urls import reverse
 
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
+
+
+def wait_for_offline_ready(page):
+    page.evaluate("""(async () => {
+      const deadline = Date.now() + 25000;
+      while (Date.now() < deadline) {
+        const state = await GKPSOffline.status();
+        if (state.ready && !state.syncing) return true;
+        await new Promise(resolve => setTimeout(resolve, 40));
+      }
+      throw new Error('Offline library did not become ready');
+    })()""")
+
 
 try:
     from playwright.sync_api import sync_playwright
@@ -42,6 +56,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         tatib.TataIbadahItem.objects.create(
             tatib=self.service, order_number=1, item_type=tatib.TataIbadahItemType.TEXT,
             title='Nas', text='Mazmur 23\n\nTuhan adalah gembalaku, takkan kekurangan aku.')
+        self.first_legacy_id = tatib.TataIbadahItem.objects.filter(
+            tatib=self.service, order_number=1).values_list('pk', flat=True).get()
         tatib.ServiceEntry.objects.create(
             tatib=self.service, order_number=2, kind=tatib.ServiceEntryKind.TEXT,
             title='Salam', text='Kasih karunia Tuhan beserta kita semua')
@@ -404,13 +420,16 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_cycles_one_suggestion_through_all_reference_results(self):
         def add_songs():
-            songbook = songs.Book.objects.get(short_name='KJ')
-            for number in range(200, 240):
-                songs.Song.objects.create(book=songbook, number=number, title=f'Kidung {number}')
+            try:
+                songbook = songs.Book.objects.get(short_name='KJ')
+                for number in range(200, 240):
+                    songs.Song.objects.create(book=songbook, number=number, title=f'Kidung {number}')
+            finally:
+                connections.close_all()
         with ThreadPoolExecutor(max_workers=1) as executor:
             executor.submit(add_songs).result()
         page = self._page(self._projector_url())
-        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
+        wait_for_offline_ready(page)
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('KJ 2')
         page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 40'")
@@ -428,6 +447,57 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '40 / 40')
         page.locator('#projectorFindInput').fill('unknown')
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
+
+    def test_goto_bare_number_matches_substrings_across_books_in_tiers(self):
+        def add_songs():
+            try:
+                kj = songs.Book.objects.get(short_name='KJ')
+                nkb = songs.Book.objects.create(
+                    name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+                rows = [
+                    (kj, 12, 'KJ exact'), (nkb, 12, 'NKB exact'),
+                    (nkb, 120, 'Prefix 120'), (nkb, 121, 'Prefix 121'),
+                ]
+                rows.extend((nkb, number, f'Prefix {number}') for number in range(1200, 1214))
+                rows.extend(((nkb, 212, 'Substring 212'), (nkb, 312, 'Substring 312')))
+                for book, number, title in rows:
+                    songs.Song.objects.create(book=book, number=number, title=title)
+            finally:
+                connections.close_all()
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(add_songs).result()
+
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        page.keyboard.press('g')
+        field = page.locator('#projectorFindInput')
+        field.fill('012')
+        expected = ['KJ 12 KJ exact', 'NKB 12 NKB exact',
+                    'NKB 120 Prefix 120', 'NKB 121 Prefix 121']
+        expected.extend(f'NKB {number} Prefix {number}' for number in range(1200, 1214))
+        expected.extend(['NKB 212 Substring 212', 'NKB 312 Substring 312'])
+        page.wait_for_function(
+            "document.querySelector('.projector-find__count').textContent === '1 / %d'" % len(expected))
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), expected[0])
+        seen = [expected[0]]
+        for _ in range(len(expected) - 1):
+            page.keyboard.press('ArrowDown')
+            seen.append(page.locator('.projector-find__suggestion').inner_text().strip())
+        self.assertEqual(seen, expected)
+        self.assertEqual(page.locator('.projector-find__count').inner_text(),
+                         f'{len(expected)} / {len(expected)}')
+        self.assertEqual(field.input_value(), '012')
+        page.keyboard.press('ArrowDown')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), expected[0])
+        page.keyboard.press('ArrowUp')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), expected[-1])
+
+        field.fill('KJ 12')
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), 'KJ 12 KJ exact')
+        field.fill('Ada Kuasa')
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), 'KJ 152 Ada Kuasa')
 
     def test_goto_empty_result_and_overlay_dismissal(self):
         page = self._page(self._projector_url())
@@ -481,7 +551,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_ignores_old_lookup_responses(self):
         page = self._page(self._projector_url())
-        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
+        wait_for_offline_ready(page)
         lookup_requests = []
         page.on('request', lambda request: lookup_requests.append(request.url)
                 if '/lookup/' in request.url or '/detour/' in request.url else None)
@@ -497,7 +567,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_click_opens_the_selected_suggestion(self):
         page = self._page(self._projector_url())
-        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
+        wait_for_offline_ready(page)
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('KJ 152')
         page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
@@ -512,7 +582,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_chapter_suggestion_opens_first_available_verse_by_enter_and_click(self):
         page = self._page(self._projector_url())
-        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
+        wait_for_offline_ready(page)
         for method in ('Enter', 'click'):
             page.keyboard.press('g')
             page.locator('#projectorFindInput').fill('Mat 5')
@@ -684,7 +754,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_clear_ignores_pending_lookup(self):
         page = self._page(self._projector_url())
-        page.wait_for_function("GKPSOffline.status().then(state => state.ready)")
+        wait_for_offline_ready(page)
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('KJ 152')
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 1')
@@ -1230,6 +1300,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
         asked = []
         projector.on('request', lambda request: asked.append(request.url))
+        page.on('request', lambda request: asked.append(request.url))
 
         page.locator('.tatib__item').first.hover()
         page.wait_for_timeout(250)
@@ -1238,7 +1309,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.fill('#id_text', 'Berita baru untuk layar')
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')", timeout=8000)
-        page.wait_for_timeout(800)
+        projector.wait_for_function("document.querySelector('#projectorScreens').textContent.includes('Berita baru untuk layar')",
+                                    timeout=8000)
         self.assertTrue([url for url in asked if f'/offline/chunk/service/{self.service.pk}/' in url],
                         f'the display must refresh its service data after a save: {asked}')
         self.assertIn('Berita baru untuk layar', projector.locator('#projectorScreens').text_content())
@@ -1261,3 +1333,60 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.wait_for_timeout(900)
         self.assertTrue([url for url in asked if f'/offline/chunk/service/{self.service.pk}/' in url],
                         f'the display must refresh its service data after a reorder: {asked}')
+
+    def test_a_failed_service_refresh_preserves_the_projected_screen_and_snapshot(self):
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page('/home/', context)
+        wait_for_offline_ready(page)
+        projector = self._page(self._projector_url(), context)
+        wait_for_offline_ready(projector)
+
+        initial_screen = projector.locator('#projectorScreens').text_content()
+        initial_snapshot = projector.evaluate(
+            'id => GKPSOffline.get("service", id)', self.service.pk)
+        self.assertIn('Tuhan adalah gembalaku', initial_screen)
+        self.assertTrue(any(row.get('text') == 'Mazmur 23\n\nTuhan adalah gembalaku, '
+                                'takkan kekurangan aku.' for row in initial_snapshot['rows']))
+
+        def change_service_after_snapshot():
+            try:
+                entry = tatib.TataIbadahItem.objects.get(pk=self.first_legacy_id)
+                entry.text = 'Server content that must not replace the saved screen'
+                entry.save()
+            finally:
+                connections.close_all()
+
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(change_service_after_snapshot).result()
+
+        failed_chunks = []
+
+        def abort_service_chunk(route):
+            failed_chunks.append(route.request.url)
+            route.abort()
+
+        projector.route(f'**/offline/chunk/service/{self.service.pk}/', abort_service_chunk)
+        page.evaluate("""() => {
+          const channel = new BroadcastChannel('gkps-service-display');
+          channel.postMessage({type: 'update'});
+          channel.close();
+        }""")
+        failure = projector.evaluate("""async () => {
+          const deadline = Date.now() + 10000;
+          while (Date.now() < deadline) {
+            const state = await GKPSOffline.status();
+            if (state.error) return state.error;
+            await new Promise(resolve => setTimeout(resolve, 40));
+          }
+          throw new Error('The failed service refresh was not reported');
+        }""")
+
+        self.assertTrue(failed_chunks, 'the projector did not request the changed service chunk')
+        self.assertTrue(failure)
+        self.assertIn('Tuhan adalah gembalaku', projector.locator('#projectorScreens').text_content())
+        self.assertNotIn('Server content that must not replace the saved screen',
+                         projector.locator('#projectorScreens').text_content())
+        saved_after_failure = projector.evaluate(
+            'id => GKPSOffline.get("service", id)', self.service.pk)
+        self.assertTrue(any(row.get('text') == 'Mazmur 23\n\nTuhan adalah gembalaku, '
+                                'takkan kekurangan aku.' for row in saved_after_failure['rows']))
