@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Running corner cue text · preview</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG Sans", "Source Sans Pro", sans-serif; }
+.stage { position: relative; width: 100%; height: 340px; background: #1b1a17; }
+.words { position: absolute; inset: 30px 32px 64px; display: grid; place-items: center; color: #f5f3ee; font-size: clamp(30px, 5vw, 72px); font-weight: 700; text-align: center; }
+.cue { position: absolute; left: 32px; right: 84px; bottom: 20px; display: flex; align-items: center; height: 24px; color: #6e6a62; font-size: 16px; font-weight: 650; white-space: nowrap; }
+.icon, .separator, .progress, .next-arrow { flex: none; }
+.icon { font-size: 20px; font-weight: 400; }
+.separator { margin: 0 .42em 0 .32em; }
+.prefix, .next { display: inline-flex; align-items: center; min-width: 0; height: 24px; flex: 0 1 auto; }
+.source { display: block; position: relative; min-width: 0; width: min(50ch, 32vw); max-width: 100%; overflow: hidden; white-space: nowrap; }
+.source--current { font-style: italic; }
+.source__still { display: block; overflow: hidden; text-overflow: ellipsis; }
+.source__moving { display: none; width: max-content; white-space: nowrap; }
+.source.is-running .source__still { display: none; }
+.source.is-running .source__moving { display: block; }
+.progress { color: #e8e4dc; margin-left: .35em; }
+.next { margin-left: .3em; gap: .2em; }
+.next-arrow { width: 16px; height: 16px; }
+.keyboard { position: absolute; right: 32px; bottom: 20px; color: #6e6a62; font-size: 18px; }
+.explain { padding: 24px 32px; color: #a29d93; font-size: 13px; }
+.explain b { color: #e8e4dc; }
+@media (prefers-reduced-motion: reduce) { .source__moving { display: none !important; } .source__still { display: block !important; } }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="words">Marilah kita bangkit berdiri!</div>
+  <div class="cue">
+    <span class="icon">☷</span><span class="separator">·</span>
+    <span class="prefix"><span class="source source--current" data-text="L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi."></span></span>
+    <span class="progress">· 1/1</span>
+    <span class="next"><svg class="next-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8h12m-4-4 4 4-4 4"/></svg><span class="source" data-text="L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi."></span></span>
+  </div>
+  <span class="keyboard">⌨</span>
+</div>
+<p class="explain"><b>Try hovering over either label.</b> It makes one slow horizontal pass to reveal the full first line, then returns to the clipped 50-character label. Leaving early stops it. The count and arrow never move. Reduced-motion settings keep the label still.</p>
+<script>
+  document.querySelectorAll('.source').forEach(source => {
+    const full = source.dataset.text;
+    const characters = Array.from(full);
+    const still = document.createElement('span');
+    still.className = 'source__still';
+    still.textContent = characters.length > 50 ? characters.slice(0, 50).join('') + '…' : full;
+    const moving = document.createElement('span');
+    moving.className = 'source__moving';
+    moving.textContent = full;
+    source.append(still, moving);
+    source.title = full;
+    let animation;
+    const reset = () => {
+      if (animation) animation.cancel();
+      animation = null;
+      source.classList.remove('is-running');
+    };
+    source.addEventListener('pointerenter', () => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      reset();
+      source.classList.add('is-running');
+      const distance = Math.max(0, moving.scrollWidth - source.clientWidth);
+      if (!distance) { reset(); return; }
+      animation = moving.animate([
+        {transform: 'translateX(0)'},
+        {transform: 'translateX(0)', offset: .1},
+        {transform: `translateX(-${distance}px)`, offset: .9},
+        {transform: `translateX(-${distance}px)`}
+      ], {duration: Math.max(4000, distance / 45 * 1000), easing: 'linear'});
+      animation.onfinish = reset;
+    });
+    source.addEventListener('pointerleave', reset);
+  });
+</script>
+</body>
+</html>
