@@ -7,6 +7,7 @@
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** minor
 - **Preview:** [interactive 1366×768 projector](./preview.html), [states and measurements](./preview-gallery.html)
+- **Go To amendment:** Draft, pending owner acceptance; [single-suggestion preview](./preview-goto-autocomplete.html)
 
 ## Intent
 
@@ -77,6 +78,32 @@ The approved preview is the geometry and appearance reference; its five sample e
 - **Go To popup:** Passage/song search opens over a transparent, full-output click overlay so projected words remain readable. Clicking outside the popup closes it without triggering a HUD or screen navigation action. Hymn results display the short songbook abbreviation, number and optional uppercase sub-number before the title (for example `KJ 152 Ada Kuasa` or `NKB 223A Haleluya`); non-hymn results keep their title label.
 - **Inactivity:** Pointer disappears after two seconds without movement or click and reappears on movement or click. Corner cue and keyboard button fade after 30 seconds without mouse or keyboard activity, with a 180ms transition, and reappear on the first activity. They do not auto-hide while the shortcut sheet, service-entry list, or Go To popup is open. The manual C-hidden state never reappears merely from activity.
 - **Responsive behavior:** Preserve these proportions and centered content when the viewport differs from 1366×768. The lyric font shrinks to fit available space; controls and their overlays stay inside the projector output and the shortcut sheet/list remain scrollable rather than clipping content. No title, key row, or list action becomes unreachable. Fullscreen uses the same layout rules.
+
+## Draft amendment: one-suggestion Go To
+
+This amendment changes only the G passage/song popup. The preceding Spec 091 behavior remains Accepted; this amendment is not implementation-authorized until the owner explicitly accepts it. The [approved interaction preview](./preview-goto-autocomplete.html) is the visual and behavior reference, using illustrative results.
+
+### Behavior
+
+- Opening G focuses an empty query. As the operator types, keep the query text in the input and show only the first result from the existing Go To lookup, with a `current / total` counter. Do not render a scrolling list of result rows.
+- Up and Down move the current suggestion backward and forward through **every** returned match, including large book-and-number prefix sets. The suggestion label and counter update together. Down after the last wraps to the first; Up before the first wraps to the last. Cycling never inserts the suggestion into, or otherwise changes, the typed query.
+- Editing the query starts a new lookup and resets the selection to the first match. An older response must not replace results for a newer query or a closed popup. While loading, do not leave a stale suggestion selectable.
+- Enter or clicking the visible suggestion opens that passage or song through the existing detour path, then closes G. With no result, Enter does nothing. Escape, Backspace on an empty input, or clicking the transparent outside overlay closes G without opening a detour or navigating the service. Keep the projector's existing HUD visibility and click interception rules while G is open.
+- Preserve the endpoint's current reference matching, title ranking, hymn labels, and result order. The counter uses the full number returned by the endpoint; reference-prefix results are not truncated to the twelve-result title-search limit. J's searchable service list remains a list.
+
+### UI details
+
+- Keep the G popup at the existing 32px left and 58px bottom offsets, at most 400px wide and inside the viewport. Keep its 16px padding, `#14130F` surface, 1px `#3a372f` border, 10px radius, and quiet shadow. The transparent full-output overlay leaves projected words undimmed.
+- Keep the normal projector sans-serif font at 11px and regular weight for the label, input, suggestion, and counter. The label is muted above the input. Below the input, show one 8px-padded suggestion row with a 6px gap; its text truncates within the row and `1 / 44`-style counter aligns on the right. No terminal prompt, glyph prefix, or monospaced type is added.
+- Use the existing dark input (`#2a2722`) and light border focus state. The current suggestion row uses the same restrained dark fill; hover lightens to `#36322b`. Empty-query and no-match states show short muted guidance with `0 / 0` and no selectable row. A 10px muted footer may show Up/Down, Enter, and Escape hints.
+- Keep this compact layout at smaller viewports: the popup width becomes at most viewport width minus 64px, and the input, suggestion, counter, and footer remain visible. Selection changes have no additional motion; reduced-motion behavior is unchanged.
+
+### Amendment acceptance scenarios
+
+- **Given** G is open and `NKB 2` returns 44 matches, **when** the operator presses Down, **then** only one suggestion is visible, it changes in server order, and the counter advances from `1 / 44` to `2 / 44` without changing `NKB 2` in the input.
+- **Given** the first or last match is selected, **when** the operator presses Up or Down across that boundary, **then** selection wraps to the opposite end and every intermediate result remains reachable.
+- **Given** a suggestion is selected, **when** the operator presses Enter or clicks it, **then** only that detour opens and G closes. Escape, empty-input Backspace, and outside clicks close G without changing the projected service position.
+- **Given** a new query or a closed popup, **when** an older lookup response arrives, **then** it neither replaces the current suggestion nor opens a detour. Zero results show `0 / 0` and Enter does nothing.
 
 ## Acceptance scenarios
 

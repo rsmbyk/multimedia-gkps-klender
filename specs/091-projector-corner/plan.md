@@ -6,6 +6,7 @@
 - **Item:** ITEM-094
 - **Bump:** minor
 - **Approved look:** [interactive preview](./preview.html) and [gallery](./preview-gallery.html)
+- **Go To amendment:** Draft; [approved single-suggestion preview](./preview-goto-autocomplete.html)
 
 ## Why
 
@@ -26,3 +27,11 @@ Use plain arrows for the current screen or verse; Shift for a song bait or detou
 ## Validation and risk
 
 Add targeted domain/application tests for corner labels, screen counts, rests, translation, and direct jumps. Add targeted projector E2E for all named keyboard and mouse paths, overlays, inactivity, and fullscreen fallback. Test at the 1366×768 reference size and a smaller viewport. The quiet controls remain visible on the projected wall; the 32px horizontal inset, dim palette, and lack of idle motion are deliberate.
+
+## Draft amendment: one-suggestion Go To
+
+The current G popup paints every match as a row. Book-and-number prefixes can return dozens of valid matches, making that list slow to scan on a mirrored projector. Keep the accepted Go To search rules and result ordering, but show one current suggestion and its position in the result set. Up/Down replaces that suggestion; Enter or a click opens it. The query remains editable while cycling.
+
+The [approved interaction preview](./preview-goto-autocomplete.html) uses the projector's normal sans-serif typography and subdued palette, with no terminal prompt glyphs or monospaced styling. It is sample data only; production results still come from the existing lookup endpoint. The amendment changes the G popup only, not the J service list, search ranking, projector navigation, or saved service content.
+
+Before implementation, the owner must accept the [Draft amendment in the spec](./spec.md#draft-amendment-one-suggestion-go-to). Targeted browser tests will cover result counting, replacement and wraparound, stale-request handling, Enter/click selection, and no-match/overlay behavior. The main risk is making large reference-prefix result sets hard to navigate; the counter and cycling must keep every result reachable without drawing extra attention to the projection.
