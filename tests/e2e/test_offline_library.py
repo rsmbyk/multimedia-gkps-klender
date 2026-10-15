@@ -2,7 +2,7 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
-from django.test import LiveServerTestCase, override_settings
+from django.test import LiveServerTestCase, override_settings, tag
 from playwright.sync_api import sync_playwright
 
 from multimedia.bible import models as bible
@@ -11,6 +11,7 @@ from multimedia.tatib import models as tatib
 
 
 @override_settings(DEBUG=True)
+@tag('e2e')
 class OfflineLibraryE2ETests(LiveServerTestCase):
     def setUp(self):
         super().setUp()
