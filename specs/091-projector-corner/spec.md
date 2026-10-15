@@ -13,6 +13,7 @@
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
 - **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
 - **Go To morph amendment:** Accepted; [approved motion preview](./preview-goto-morph.html)
+- **Number-only Go To amendment:** Draft; [approved numeric preview](./preview-goto-number-substring.html)
 
 ## Intent
 
@@ -165,6 +166,16 @@ The owner approved the [Go To motion preview](./preview-goto-morph.html). On G p
 - **Given** G is closing, **when** the operator clicks outside or on an underlying navigation surface, **then** no projector navigation fires and the panel hides only after the transition.
 - **Given** G closes and rapidly reopens, **when** the old close timer would expire, **then** the reopened popup stays visible and focused, with its usual search behavior.
 - **Given** reduced motion is preferred, **when** G opens or closes, **then** it changes state without animation or an artificial 180ms wait.
+
+## Draft amendment: number-only Go To substring search
+
+The owner approved the [numeric Go To preview](./preview-goto-number-substring.html). For a trimmed query consisting only of decimal digits, match every active song whose `number` contains that digit string, regardless of songbook; songs without a number do not match. For `12`, valid matches include number `12`, numbers `120`–`129`, `212`, and `312`. Normalize leading zeroes consistently with existing numeric lookup. Order results in three tiers: exact number, number prefix, then substring elsewhere; within a tier order by numeric song number, then songbook and title for stable ties. Do not apply the ordinary 12-result cap to this numeric-only set: the existing one-suggestion row and `position / total` counter must reach every match with Up/Down, including wraparound.
+
+Keep book-qualified queries such as `NKB 12` on their existing songbook-plus-number-prefix path. Non-numeric title searches, Bible references, result labels, Enter/click selection, stale-response protection, and the exclusion of lyric and verse-body-only matches remain unchanged.
+
+- **Given** active songs numbered `12`, `120`, `121`, `212`, and `312` in multiple books, **when** the operator types `12`, **then** all five appear in exact, prefix, then substring tier order, and the counter reports the full total.
+- **Given** more than 12 matching numbers, **when** Up/Down cycles past the twelfth, **then** later matches remain reachable and wraparound works.
+- **Given** `NKB 12` or a non-numeric title query, **when** searched, **then** its existing reference or title behavior is unchanged.
 
 ## Acceptance scenarios
 

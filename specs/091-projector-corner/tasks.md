@@ -9,6 +9,7 @@
 - **Corner cue typography amendment:** Accepted
 - **Shared corner colors amendment:** Accepted
 - **Go To morph amendment:** Accepted
+- **Number-only Go To amendment:** Draft
 
 ## Checklist
 
@@ -79,3 +80,11 @@
 - [x] Add Go To opening/closing state and 180ms service-list-style panel keyframes, with reduced-motion fallback and overlay interception until fully closed.
 - [x] Add targeted browser checks for open/close, rapid reopen, outside-click protection, and reduced motion.
 - [x] Update the Spec/ITEM/PR delivery record after implementation.
+
+## Draft amendment: number-only Go To substring search
+
+- [x] Owner approves the [numeric search preview](./preview-goto-number-substring.html).
+- [ ] Owner explicitly accepts the [amendment](./spec.md#draft-amendment-number-only-go-to-substring-search); stop before implementation until then.
+- [ ] Match active numbered songs by numeric substring for bare-digit Go To queries, with exact/prefix/substring tiers and no 12-result cap.
+- [ ] Add targeted application and projector browser checks for cross-book matches, ordering, full count/cycling, and unchanged book-qualified and title queries.
+- [ ] Update the Spec/ITEM/PR delivery record after implementation.

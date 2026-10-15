@@ -12,6 +12,7 @@
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
 - **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
 - **Go To morph amendment:** Accepted; [approved motion preview](./preview-goto-morph.html)
+- **Number-only Go To amendment:** Draft; [approved numeric preview](./preview-goto-number-substring.html)
 
 ## Why
 
@@ -66,3 +67,7 @@ The prior color amendment dimmed only untitled Text first-line labels. The owner
 ## Accepted amendment: Go To morph animation
 
 The G passage/song popup appeared and disappeared abruptly while the shortcut sheet and service list already used a restrained 180ms morph. The owner approved the [Go To motion preview](./preview-goto-morph.html) and accepted the [amendment](./spec.md#accepted-amendment-go-to-morph-animation). The Go To panel now uses the service list's 6px vertical travel, `.99` scale, opacity transition, 180ms duration, and `--display-ease` timing on both open and close. Its transparent full-output overlay remains click-intercepting throughout the closing transition. Reduced-motion preference omits animation. Search, selection, results, and projector position remain unchanged; a rapid reopen cancels the old close timer. Targeted browser tests cover those transition edges.
+
+## Draft amendment: number-only Go To substring search
+
+A bare song number currently finds only exact-number matches. The owner approved the [numeric search preview](./preview-goto-number-substring.html) where a number-only query such as `12` finds numbered songs containing those digits anywhere in the number, across active songbooks: `12`, `120`, `121`, `212`, `312`, and so on. Show exact numbers first, then numbers starting with the query, then numbers containing it later; use numeric order and a stable songbook/title tie-breaker within tiers. Keep all matches available to the existing single-suggestion Up/Down cycler and counter rather than cutting the set to 12. Preserve book-qualified number-prefix searches, title searches, Bible references, and the exclusion of lyric or verse-body matches. The main risk is very broad numeric queries producing large sets; the counter and ordered cycling keep the result set navigable without a larger popup.
