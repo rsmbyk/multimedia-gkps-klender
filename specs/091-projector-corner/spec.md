@@ -8,6 +8,7 @@
 - **Bump:** minor
 - **Preview:** [interactive 1366×768 projector](./preview.html), [states and measurements](./preview-gallery.html)
 - **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
+- **Search clear amendment:** Draft, pending owner acceptance; [two-field preview](./preview-search-clear.html)
 
 ## Intent
 
@@ -104,6 +105,18 @@ This amendment changes only the G passage/song popup. The preceding Spec 091 beh
 - **Given** the first or last match is selected, **when** the operator presses Up or Down across that boundary, **then** selection wraps to the opposite end and every intermediate result remains reachable.
 - **Given** a suggestion is selected, **when** the operator presses Enter or clicks it, **then** only that detour opens and G closes. Escape, empty-input Backspace, and outside clicks close G without changing the projected service position.
 - **Given** a new query or a closed popup, **when** an older lookup response arrives, **then** it neither replaces the current suggestion nor opens a detour. Zero results show `0 / 0` and Enter does nothing.
+
+## Draft amendment: projector search clear controls
+
+The owner approved the [interactive preview](./preview-search-clear.html) for the J service-list search and G Go To search. This amendment remains Draft until explicitly accepted. Reuse the public reading sidebar's 20×20 SVG path (`M5.5 5.5l9 9M14.5 5.5l-9 9`) with a 1.8px round-capped stroke, rendered at 14×14 inside a 26×26 circular button on the right side of each input. The button is vertically centered in a positioned field wrapper, 5px from its right edge. Give the input enough right padding that text never overlaps the button. Suppress the browser-native search cancel icon so only one clear control appears.
+
+Use the projector's muted `#8e8a80` icon color and transparent resting background. Hover uses `#36322b` behind the icon and `#e8e4dc` for the stroke. Keyboard focus shows a 2px `#e8e4dc` outline with 1px offset. Keep the existing 400px G popup and 360px J list geometry, input colors, labels, and result layouts; at smaller viewports the control remains inside each field. The clear button is hidden when the field is empty, including on initial open, and appears immediately when text is entered.
+
+Clicking or keyboard-activating clear empties only its field, fires that input's existing `input` behavior, and returns focus to that field. J re-renders the unfiltered service entries; G returns to the empty-query guidance and `0 / 0` count, invalidating any pending lookup. Clearing does not close either popup, navigate the projector, or trigger an underlying mouse zone. The existing search matching, arrow selection, Enter action, Escape, and overlay dismissal remain unchanged.
+
+- **Given** either field is empty, **when** its popup opens, **then** its clear button is absent and the native cancel glyph is suppressed.
+- **Given** text is entered in J or G, **when** the clear button is clicked or activated with Enter/Space, **then** only that query is emptied, focus stays in its input, and the corresponding results reset without closing the popup.
+- **Given** a pending G lookup, **when** the field is cleared and the old response arrives, **then** empty guidance and `0 / 0` remain visible.
 
 ## Acceptance scenarios
 
