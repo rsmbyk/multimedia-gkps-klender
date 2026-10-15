@@ -9,6 +9,7 @@
 - **Preview:** [interactive 1366×768 projector](./preview.html), [states and measurements](./preview-gallery.html)
 - **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
+- **Untitled Text cue amendment:** Draft, pending owner acceptance; [50-character preview](./preview-cue-text-clipping.html)
 
 ## Intent
 
@@ -117,6 +118,16 @@ Clicking or keyboard-activating clear empties only its field, fires that input's
 - **Given** either field is empty, **when** its popup opens, **then** its clear button is absent and the native cancel glyph is suppressed.
 - **Given** text is entered in J or G, **when** the clear button is clicked or activated with Enter/Space, **then** only that query is emptied, focus stays in its input, and the corresponding results reset without closing the popup.
 - **Given** a pending G lookup, **when** the field is cleared and the old response arrives, **then** empty guidance and `0 / 0` remain visible.
+
+## Draft amendment: clip untitled Text cue labels
+
+The owner approved the [interactive 50-character preview](./preview-cue-text-clipping.html). This amendment remains Draft until explicitly accepted. When an entry has `type: text` and `untitled: true`, the corner cue displays at most the first 50 Unicode characters of its first-line `label`, followed by `…` only when more characters exist. The ellipsis is in addition to those 50 characters. Keep the full `entry.label` in projector data, the J service list, search matching, and accessible names. Titles, song and passage references, section breaks, and library detours keep their existing text.
+
+Apply the same rule when such an entry appears as the **next-entry hint**. The shortened string is presentation-only: it must not affect current/next navigation or screen counts. Mark first-line labels so CSS can constrain just those labels to `max-width: min(50ch, 42vw)` with `overflow: hidden`, `white-space: nowrap`, and `text-overflow: ellipsis`. Preserve the existing 16px HUD type, 24px alignment box, 32px left and right control offsets, muted colors, and current hover behavior. On narrow viewports, the count, arrow, and keyboard button remain visible; the label may visually ellipsize further to fit. No animation is added.
+
+- **Given** an untitled Text first line is 50 characters or fewer, **when** it is current or next, **then** the cue shows it without an added ellipsis.
+- **Given** an untitled Text first line exceeds 50 characters, **when** it is current or next, **then** the cue shows the first 50 characters followed by `…`; J and its search still use the full first line.
+- **Given** the viewport narrows, **when** a long first-line label is shown, **then** its width can shrink below the 50ch cap while the screen count and next control remain on screen.
 
 ## Acceptance scenarios
 

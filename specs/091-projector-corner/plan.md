@@ -8,6 +8,7 @@
 - **Approved look:** [interactive preview](./preview.html) and [gallery](./preview-gallery.html)
 - **Go To amendment:** Accepted; [approved single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [approved two-field preview](./preview-search-clear.html)
+- **Untitled Text cue amendment:** Draft; [approved 50-character preview](./preview-cue-text-clipping.html)
 
 ## Why
 
@@ -42,3 +43,9 @@ The owner accepted the [amendment in the spec](./spec.md#accepted-amendment-one-
 The J service list and G Go To fields currently rely on the browser's search-clear affordance, which does not match the public reading sidebars. Use the same stroked × icon and 26px circular button as those sidebar filters, adapted to the projector palette. Show it only for non-empty input; clearing must dispatch the existing input event and leave keyboard focus in the field. This affects only the two projector search inputs and their existing results, with no change to matching, navigation, or overlay behavior.
 
 The owner approved the [interactive two-field preview](./preview-search-clear.html) and accepted the [amendment](./spec.md#accepted-amendment-projector-search-clear-controls). Targeted projector browser tests check both clear buttons, live result reset, focus, and the hidden empty state.
+
+## Draft amendment: clip untitled Text cue labels
+
+An untitled Text entry uses its first content line as its cue label. A long line consumes too much of the bottom HUD, leaving the screen count and next-entry hint hard to scan. The owner approved a [preview](./preview-cue-text-clipping.html) that shows the first 50 characters plus an ellipsis, with a responsive width cap. Apply this only to first-line labels in the corner cue, for both the current and next entry. Keep the full label in the service list and the underlying projector data.
+
+The [Draft amendment](./spec.md#draft-amendment-clip-untitled-text-cue-labels) requires explicit acceptance before product code. Targeted projector tests should cover exact and over-limit text, count and next-entry visibility, and narrower viewports.

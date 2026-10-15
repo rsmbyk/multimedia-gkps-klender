@@ -5,6 +5,7 @@
 - **Spec:** [./spec.md](./spec.md)
 - **Go To amendment:** Accepted
 - **Search clear amendment:** Accepted
+- **Untitled Text cue amendment:** Draft, pending owner acceptance
 
 ## Checklist
 
@@ -42,3 +43,11 @@
 - [x] Add targeted projector browser tests for icon visibility, click and keyboard clear, live result reset, retained focus, and stale G responses.
 - [x] Add the shared clear-button markup and projector styling to both fields, and wire the buttons to their existing input handlers.
 - [x] Run the targeted projector browser class (33 passing) and update the Spec/ITEM/PR delivery record.
+
+## Draft amendment: clip untitled Text cue labels
+
+- [x] Owner approves the [50-character cue preview](./preview-cue-text-clipping.html).
+- [ ] Owner explicitly accepts the [Draft amendment](./spec.md#draft-amendment-clip-untitled-text-cue-labels); stop before product code until then.
+- [ ] Add targeted projector browser tests for exact/over-limit labels, current and next positions, preserved J labels/search, and narrow viewport geometry.
+- [ ] Clip only untitled Text labels in the HUD renderer and add the responsive label width rule.
+- [ ] Run targeted projector tests and update the Spec/ITEM/PR delivery record.
