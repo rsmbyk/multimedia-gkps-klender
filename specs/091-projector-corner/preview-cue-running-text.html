@@ -8,12 +8,12 @@
 body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG Sans", "Source Sans Pro", sans-serif; }
 .stage { position: relative; width: 100%; height: 340px; background: #1b1a17; }
 .words { position: absolute; inset: 30px 32px 64px; display: grid; place-items: center; color: #f5f3ee; font-size: clamp(30px, 5vw, 72px); font-weight: 700; text-align: center; }
-.cue { position: absolute; left: 32px; right: 84px; bottom: 20px; display: flex; align-items: center; height: 24px; color: #6e6a62; font-size: 16px; font-weight: 650; white-space: nowrap; }
+.cue { position: absolute; left: 32px; right: 128px; bottom: 20px; display: flex; align-items: center; height: 24px; color: #6e6a62; font-size: 16px; font-weight: 650; white-space: nowrap; }
 .icon, .separator, .progress, .next-arrow { flex: none; }
 .icon { font-size: 20px; font-weight: 400; }
 .separator { margin: 0 .42em 0 .32em; }
 .prefix, .next { display: inline-flex; align-items: center; min-width: 0; height: 24px; flex: 0 1 auto; }
-.source { display: block; position: relative; min-width: 0; width: min(50ch, 32vw); max-width: 100%; overflow: hidden; white-space: nowrap; }
+.source { display: block; position: relative; min-width: 0; width: min(50ch, 27vw); max-width: 100%; overflow: hidden; white-space: nowrap; }
 .source--current { font-style: italic; }
 .source__still { display: block; overflow: hidden; text-overflow: ellipsis; }
 .source__moving { display: none; width: max-content; white-space: nowrap; }
@@ -39,19 +39,27 @@ body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG S
   </div>
   <span class="keyboard">⌨</span>
 </div>
-<p class="explain"><b>Try hovering over either label.</b> It makes one slow horizontal pass to reveal the full first line, then returns to the clipped 50-character label. Leaving early stops it. The count and arrow never move. Reduced-motion settings keep the label still.</p>
+<p class="explain"><b>Try hovering over either label.</b> It repeats the slow horizontal run while hovered and stops when the pointer leaves. Both labels use the same responsive character limit (up to 50), with extra space before the keyboard button. Reduced-motion settings keep the labels still.</p>
 <script>
-  document.querySelectorAll('.source').forEach(source => {
+  const sources = [...document.querySelectorAll('.source')];
+  function characterLimit() { return Math.min(50, Math.max(10, Math.floor((innerWidth - 200) / 20))); }
+  function updateLabels() {
+    const limit = characterLimit();
+    sources.forEach(source => {
+      const full = source.dataset.text;
+      const characters = Array.from(full);
+      source.querySelector('.source__still').textContent = characters.length > limit ? characters.slice(0, limit).join('') + '…' : full;
+    });
+  }
+  sources.forEach(source => {
     const full = source.dataset.text;
-    const characters = Array.from(full);
     const still = document.createElement('span');
     still.className = 'source__still';
-    still.textContent = characters.length > 50 ? characters.slice(0, 50).join('') + '…' : full;
+    still.textContent = ''; // updateLabels applies one limit to both labels
     const moving = document.createElement('span');
     moving.className = 'source__moving';
     moving.textContent = full;
     source.append(still, moving);
-    source.title = full;
     let animation;
     const reset = () => {
       if (animation) animation.cancel();
@@ -69,11 +77,12 @@ body { margin: 0; background: #14130f; color: #e8e4dc; font: 400 14px/1.4 "CMG S
         {transform: 'translateX(0)', offset: .1},
         {transform: `translateX(-${distance}px)`, offset: .9},
         {transform: `translateX(-${distance}px)`}
-      ], {duration: Math.max(4000, distance / 45 * 1000), easing: 'linear'});
-      animation.onfinish = reset;
+      ], {duration: Math.max(4000, distance / 45 * 1000), easing: 'linear', iterations: Infinity});
     });
     source.addEventListener('pointerleave', reset);
   });
+  updateLabels();
+  addEventListener('resize', updateLabels);
 </script>
 </body>
 </html>

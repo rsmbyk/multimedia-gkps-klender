@@ -9,7 +9,7 @@
 - **Preview:** [interactive 1366×768 projector](./preview.html), [states and measurements](./preview-gallery.html)
 - **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
-- **Untitled Text cue amendment:** Draft, revised preview pending approval; [adjacent-entry preview](./preview-cue-text-clipping.html)
+- **Untitled Text cue amendment:** Draft, revised preview pending approval; [running-text preview](./preview-cue-running-text.html)
 
 ## Intent
 
@@ -121,14 +121,17 @@ Clicking or keyboard-activating clear empties only its field, fires that input's
 
 ## Draft amendment: clip untitled Text cue labels
 
-The [revised preview](./preview-cue-text-clipping.html) shows two adjacent untitled Text entries and awaits owner approval. This amendment remains Draft until explicitly accepted. When an entry has `type: text` and `untitled: true`, the corner cue displays at most the first 50 Unicode characters of its first-line `label`, followed by `…` only when more characters exist. The ellipsis is in addition to those 50 characters. Keep the full `entry.label` in projector data, the J service list, search matching, and accessible names. Titles, song and passage references, section breaks, and library detours keep their existing text.
+The [revised running-text preview](./preview-cue-running-text.html) shows two adjacent untitled Text entries and awaits owner approval. This amendment remains Draft until explicitly accepted. When an entry has `type: text` and `untitled: true`, the corner cue displays a responsive prefix of its first-line `label`, followed by `…` only when more characters exist. Use the **same** character limit for the current and next labels: `min(50, max(10, floor((viewportWidth - 200) / 20)))` Unicode characters, with the ellipsis in addition to that limit. Keep the full `entry.label` in projector data, the J service list, and search matching. Titles, song and passage references, section breaks, and library detours keep their existing text.
 
-Apply the same rule when such an entry appears as the **next-entry hint**. The shortened string is presentation-only: it must not affect current/next navigation or screen counts. Mark first-line labels so CSS constrains **each** to `max-width: min(50ch, 32vw)` with `min-width: 0`, `overflow: hidden`, `white-space: nowrap`, and `text-overflow: ellipsis`. Let the current and next label containers shrink independently; keep the screen count and arrow non-shrinking. Preserve the existing 16px HUD type, 24px alignment box, 32px left and right control offsets, muted colors, and current hover behavior. On narrow viewports, both labels may visually ellipsize further, but the count, arrow, and keyboard button remain visible. No animation is added.
+Apply the same rule when such an entry appears as the **next-entry hint**. The shortened string is presentation-only: it must not affect current/next navigation or screen counts. Constrain **each** first-line label to `width: min(50ch, 27vw)` and let the current and next containers shrink independently with `min-width: 0`. Keep the count and arrow non-shrinking, the 16px HUD type and 24px alignment box, and the existing muted colors. Keep the cue 32px from the left but reserve 128px on the right while the keyboard button stays 32px from the edge; the reference layout thus leaves a substantial quiet gap between the next label and button.
 
-- **Given** an untitled Text first line is 50 characters or fewer, **when** it is current or next, **then** the cue shows it without an added ellipsis.
-- **Given** an untitled Text first line exceeds 50 characters, **when** it is current or next, **then** the cue shows the first 50 characters followed by `…`; J and its search still use the full first line.
-- **Given** the viewport narrows, **when** a long first-line label is shown, **then** its width can shrink below the 50ch cap while the screen count and next control remain on screen.
+At rest, both labels remain clipped with an ellipsis. Hovering one label reveals its **full** first line through a slow leftward run that repeats for as long as the pointer stays over it. Leaving immediately stops the animation and restores the clipped label; the other label never starts moving from that hover. No browser title tooltip is attached to either label. The count, arrow, next-entry target, and keyboard button stay fixed throughout. Under `prefers-reduced-motion: reduce`, labels remain still and clipped. Other cue content keeps its existing hover behavior.
+
+- **Given** an untitled Text first line is shorter than the current responsive limit, **when** it is current or next, **then** the cue shows it without an added ellipsis.
+- **Given** an untitled Text first line exceeds the current responsive limit, **when** it is current or next, **then** both positions use the same limit and J and its search still use the full first line.
+- **Given** the viewport narrows, **when** long first-line labels are shown, **then** their shared character limit decreases while the screen count, arrow, and quiet gap before the keyboard button remain on screen.
 - **Given** two adjacent untitled Text entries have long first lines, **when** one is current and one is next, **then** both labels clip independently and neither pushes the count or arrow out of the HUD.
+- **Given** a clipped label is hovered, **when** the pointer remains, **then** its full text runs repeatedly without moving the count, arrow, or other label. Leaving restores the clipped state without a browser tooltip; reduced-motion preference keeps the label still.
 
 ## Acceptance scenarios
 

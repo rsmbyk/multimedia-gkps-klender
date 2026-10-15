@@ -8,7 +8,7 @@
 - **Approved look:** [interactive preview](./preview.html) and [gallery](./preview-gallery.html)
 - **Go To amendment:** Accepted; [approved single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [approved two-field preview](./preview-search-clear.html)
-- **Untitled Text cue amendment:** Draft; [revised adjacent-entry preview pending approval](./preview-cue-text-clipping.html)
+- **Untitled Text cue amendment:** Draft; [revised running-text preview pending approval](./preview-cue-running-text.html)
 
 ## Why
 
@@ -46,6 +46,6 @@ The owner approved the [interactive two-field preview](./preview-search-clear.ht
 
 ## Draft amendment: clip untitled Text cue labels
 
-An untitled Text entry uses its first content line as its cue label. Two adjacent untitled entries can consume the bottom HUD together, leaving the count and next arrow hard to scan. The [revised preview](./preview-cue-text-clipping.html) shows both labels capped at the first 50 characters plus an ellipsis, and gives each a responsive width limit. The initial 50-character idea had preview approval; this adjacent-entry revision awaits review. Apply the shortening only to first-line labels in the corner cue, for both the current and next entry. Keep full labels in the service list and underlying projector data.
+An untitled Text entry uses its first content line as its cue label. Two adjacent untitled entries can consume the bottom HUD together, leaving the count and next arrow hard to scan. The [revised running-text preview](./preview-cue-running-text.html) uses the same responsive character limit for both labels and reserves space before the keyboard button. On hover, only the hovered label runs repeatedly to reveal its full first line; at rest both remain clipped and quiet. No hover tooltip appears. The owner liked the running-text direction and requested these refinements; the revised preview awaits review. Apply this only to first-line labels in the corner cue. Keep full labels in the service list and underlying projector data.
 
-The [Draft amendment](./spec.md#draft-amendment-clip-untitled-text-cue-labels) requires preview approval and explicit Draft acceptance before product code. Targeted projector tests should cover exact and over-limit text, adjacent long entries, count and next-entry visibility, and narrower viewports.
+The [Draft amendment](./spec.md#draft-amendment-clip-untitled-text-cue-labels) requires revised-preview approval and explicit Draft acceptance before product code. Targeted projector tests should cover adjacent long entries, repeat and stop behavior, reduced motion, count and next-entry visibility, and narrower viewports.

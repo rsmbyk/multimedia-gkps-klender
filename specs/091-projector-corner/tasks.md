@@ -46,8 +46,8 @@
 
 ## Draft amendment: clip untitled Text cue labels
 
-- [ ] Owner approves the [revised adjacent-entry cue preview](./preview-cue-text-clipping.html); the earlier single-entry 50-character preview was approved.
+- [ ] Owner approves the [revised running-text cue preview](./preview-cue-running-text.html); the prior clipping and one-pass animation previews informed this revision.
 - [ ] Owner explicitly accepts the [Draft amendment](./spec.md#draft-amendment-clip-untitled-text-cue-labels); stop before product code until then.
-- [ ] Add targeted projector browser tests for exact/over-limit labels, two adjacent long entries, preserved J labels/search, and narrow viewport geometry.
-- [ ] Clip only untitled Text labels in the HUD renderer and add the responsive label width rule.
+- [ ] Add targeted projector browser tests for the shared responsive limit, adjacent long entries, repeating hover/leave, reduced motion, preserved J labels/search, and narrow viewport geometry.
+- [ ] Add the running and clipped label states only to untitled Text labels in the HUD renderer; reserve the quiet gap before the keyboard button.
 - [ ] Run targeted projector tests and update the Spec/ITEM/PR delivery record.
