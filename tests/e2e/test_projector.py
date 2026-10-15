@@ -93,6 +93,16 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', title='Doa',
             text='\n'.join(f'Baris {n} dari doa yang panjang ini.' for n in range(1, 30)))
 
+        self.untitled_text_line = (
+            'L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, '
+            'dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi.')
+        self.untitled_service = tatib.TataIbadah.objects.create(
+            name='Ibadah Dua Teks', date=date(2026, 9, 20), is_active=True)
+        for order in (1, 2):
+            tatib.ServiceEntry.objects.create(
+                tatib=self.untitled_service, order_number=order,
+                kind=tatib.ServiceEntryKind.TEXT, title='', text=self.untitled_text_line)
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -515,6 +525,55 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
         self.assertFalse(goto_clear.is_visible())
         self.assertTrue(page.locator('#projectorFind').is_visible())
+
+    def test_adjacent_untitled_text_cues_share_fit_limit_and_run_only_on_hover(self):
+        full = self.untitled_text_line
+        page = self._page(reverse('web-service-projector', args=[self.untitled_service.pk]))
+        current = page.locator('#cue-prefix .cue-running')
+        following = page.locator('#cue-next-name.cue-running')
+        self.assertEqual(current.count(), 1)
+        self.assertEqual(following.count(), 1)
+        self.assertEqual(page.locator('.entry-list__item').count(), 2)
+        self.assertGreater(len(full), 50)
+        for width in (1440, 900, 600, 375):
+            page.set_viewport_size({'width': width, 'height': 700})
+            limit = int(page.locator('#corner-cue').get_attribute('data-running-limit'))
+            self.assertLessEqual(limit, 50)
+            self.assertGreaterEqual(limit, 1)
+            for node in (current, following):
+                self.assertEqual(node.locator('.cue-running__still').inner_text(),
+                                 full[:limit] + '…')
+                self.assertFalse(node.get_attribute('title'))
+            self.assertTrue(page.evaluate("""() => {
+              const next = document.querySelector('#cue-next').getBoundingClientRect();
+              const keys = document.querySelector('.keys').getBoundingClientRect();
+              return keys.left - next.right >= innerWidth * .1 - 1;
+            }"""))
+        page.set_viewport_size({'width': 1440, 'height': 700})
+        self.assertEqual(page.locator('#corner-cue').get_attribute('data-running-limit'), '50')
+        before = page.locator('#cue-progress').bounding_box()['x']
+        current.hover()
+        self.assertTrue(current.evaluate("el => el.classList.contains('is-running')"))
+        self.assertTrue(current.locator('.cue-running__moving').evaluate(
+            "el => el.getAnimations()[0].effect.getTiming().iterations === Infinity"))
+        self.assertEqual(page.locator('#cue-progress').bounding_box()['x'], before)
+        self.assertFalse(following.evaluate("el => el.classList.contains('is-running')"))
+        page.mouse.move(700, 300)
+        self.assertFalse(current.evaluate("el => el.classList.contains('is-running')"))
+        page.keyboard.press('j')
+        self.assertIn(full, page.locator('#entry-list-results').inner_text())
+
+    def test_running_cue_respects_reduced_motion(self):
+        context = self.browser.new_context(
+            viewport={'width': 600, 'height': 700}, reduced_motion='reduce')
+        page = self._page(
+            reverse('web-service-projector', args=[self.untitled_service.pk]),
+            context=context)
+        current = page.locator('#cue-prefix .cue-running')
+        current.hover()
+        self.assertFalse(current.evaluate("el => el.classList.contains('is-running')"))
+        self.assertEqual(current.locator('.cue-running__moving').evaluate(
+            'el => getComputedStyle(el).display'), 'none')
 
     def test_goto_clear_ignores_pending_lookup(self):
         page = self._page(self._projector_url())

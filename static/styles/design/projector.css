@@ -217,7 +217,7 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
 .projector-find__footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px;
   color: var(--quiet); font-size: 10px; }
   .cue {
-    position: absolute; left: 32px; right: 84px; bottom: 20px;
+    position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px;
     display: flex; align-items: center; height: 24px;
     margin: 0; padding: 0;
     font-size: 16px; font-weight: 650; line-height: 1; color: var(--whisper); letter-spacing: 0.01em;
@@ -230,6 +230,16 @@ body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
     display: inline-flex; align-items: center; height: 24px; line-height: 1;
   }
   .cue > #cue-prefix { gap: .2em; }
+  .cue.cue--fit-text > #cue-prefix, .cue.cue--fit-text > #cue-next { flex: none; }
+  .cue-running { display: block; position: relative; overflow: hidden; white-space: nowrap; }
+  .cue-running__still { display: block; white-space: nowrap; }
+  .cue-running__moving { display: none; width: max-content; white-space: nowrap; }
+  .cue-running.is-running .cue-running__still { display: none; }
+  .cue-running.is-running .cue-running__moving { display: block; }
+  @media (prefers-reduced-motion: reduce) {
+    .cue-running .cue-running__moving { display: none !important; }
+    .cue-running .cue-running__still { display: block !important; }
+  }
   /* The font's visible capitals sit 1px above the centered SVG artwork.
      Adjust the lettering, keeping the HUD and its hit areas centered. */
   #cue-prefix > span, #cue-prefix > i, #cue-next-name { transform: translateY(1px); }

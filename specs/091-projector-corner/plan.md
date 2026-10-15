@@ -8,7 +8,7 @@
 - **Approved look:** [interactive preview](./preview.html) and [gallery](./preview-gallery.html)
 - **Go To amendment:** Accepted; [approved single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [approved two-field preview](./preview-search-clear.html)
-- **Untitled Text cue amendment:** Draft; [revised running-text preview pending approval](./preview-cue-running-text.html)
+- **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 
 ## Why
 
@@ -44,8 +44,8 @@ The J service list and G Go To fields currently rely on the browser's search-cle
 
 The owner approved the [interactive two-field preview](./preview-search-clear.html) and accepted the [amendment](./spec.md#accepted-amendment-projector-search-clear-controls). Targeted projector browser tests check both clear buttons, live result reset, focus, and the hidden empty state.
 
-## Draft amendment: clip untitled Text cue labels
+## Accepted amendment: running untitled Text cue labels
 
-An untitled Text entry uses its first content line as its cue label. Two adjacent untitled entries can consume the bottom HUD together, leaving the count and next arrow hard to scan. The [revised running-text preview](./preview-cue-running-text.html) starts both labels at a 50-character limit, keeps the next label immediately after the count, and lowers their **shared** limit only when the combined cue would cross the minimum 10vw clearance before the keyboard button. On hover, only the hovered label runs repeatedly to reveal its full first line; at rest both remain clipped and quiet. No hover tooltip appears. The owner confirmed the inline order and clarified the overflow-triggered limit; this latest preview awaits review. Apply this only to first-line labels in the corner cue. Keep full labels in the service list and underlying projector data.
+An untitled Text entry uses its first content line as its cue label. Two adjacent untitled entries can consume the bottom HUD together, leaving the count and next arrow hard to scan. The [approved running-text preview](./preview-cue-running-text.html) starts both labels at a 50-character limit, keeps the next label immediately after the count, and lowers their **shared** limit only when the combined cue would cross the minimum 10vw clearance before the keyboard button. On hover, only the hovered label runs repeatedly to reveal its full first line; at rest both remain clipped and quiet. No hover tooltip appears. The owner confirmed the inline order, clarified the overflow-triggered limit, and approved this revised preview. Apply this only to first-line labels in the corner cue. Keep full labels in the service list and underlying projector data.
 
-The [Draft amendment](./spec.md#draft-amendment-clip-untitled-text-cue-labels) requires revised-preview approval and explicit Draft acceptance before product code. Targeted projector tests should cover adjacent long entries, repeat and stop behavior, reduced motion, count and next-entry visibility, and narrower viewports.
+The owner approved the revised preview and explicitly accepted the [amendment](./spec.md#accepted-amendment-running-untitled-text-cue-labels). Targeted projector tests cover adjacent long entries, repeat and stop behavior, reduced motion, count and next-entry visibility, and narrower viewports.

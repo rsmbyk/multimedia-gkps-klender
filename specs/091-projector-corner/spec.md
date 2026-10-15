@@ -9,7 +9,7 @@
 - **Preview:** [interactive 1366×768 projector](./preview.html), [states and measurements](./preview-gallery.html)
 - **Go To amendment:** Accepted; [single-suggestion preview](./preview-goto-autocomplete.html)
 - **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
-- **Untitled Text cue amendment:** Draft, revised preview pending approval; [running-text preview](./preview-cue-running-text.html)
+- **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 
 ## Intent
 
@@ -119,9 +119,9 @@ Clicking or keyboard-activating clear empties only its field, fires that input's
 - **Given** text is entered in J or G, **when** the clear button is clicked or activated with Enter/Space, **then** only that query is emptied, focus stays in its input, and the corresponding results reset without closing the popup.
 - **Given** a pending G lookup, **when** the field is cleared and the old response arrives, **then** empty guidance and `0 / 0` remain visible.
 
-## Draft amendment: clip untitled Text cue labels
+## Accepted amendment: running untitled Text cue labels
 
-The [revised running-text preview](./preview-cue-running-text.html) shows two adjacent untitled Text entries and awaits owner approval. This amendment remains Draft until explicitly accepted. When an entry has `type: text` and `untitled: true`, the corner cue displays a prefix of its first-line `label`, followed by `…` only when more characters exist. Start with a **shared** limit of 50 Unicode characters for current and next labels. Lower that limit for both together, to no fewer than one character, **only if** their combined inline cue would overflow the available space before the keyboard clearance. Choose the largest shared limit that fits; remeasure after viewport resize and when the cue content changes. The ellipsis is in addition to the chosen limit. Keep the full `entry.label` in projector data, the J service list, and search matching. Titles, song and passage references, section breaks, and library detours keep their existing text.
+The owner approved the [revised running-text preview](./preview-cue-running-text.html) showing two adjacent untitled Text entries and explicitly accepted this amendment. When an entry has `type: text` and `untitled: true`, the corner cue displays a prefix of its first-line `label`, followed by `…` only when more characters exist. Start with a **shared** limit of 50 Unicode characters for current and next labels. Lower that limit for both together, to no fewer than one character, **only if** their combined inline cue would overflow the available space before the keyboard clearance. Choose the largest shared limit that fits; remeasure after viewport resize and when the cue content changes. The ellipsis is in addition to the chosen limit. Keep the full `entry.label` in projector data, the J service list, and search matching. Titles, song and passage references, section breaks, and library detours keep their existing text.
 
 Apply the same rule when such an entry appears as the **next-entry hint**. The shortened string is presentation-only: it must not affect current/next navigation or screen counts. Let each label's resting width follow its truncated text rather than pre-allocating a fixed percentage of the viewport. Keep the count and arrow non-shrinking, the 16px HUD type and 24px alignment box, and the existing muted colors. Keep the cue 32px from the left and set its right edge to `calc(66px + 10vw)` from the viewport edge: the keyboard button is 34px wide and 32px from the edge. Keep the next-entry group directly inline after the count with its existing small margin. The cue's right boundary reserves a **minimum** 10vw clearance before the keyboard button only when the inline content fills the available width; shorter content may leave a larger natural gap.
 

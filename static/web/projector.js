@@ -192,6 +192,73 @@
   var findChoice = 0;
   var detour = null;
   var returnScreen = null;
+  var runningCueLabels = [];
+
+  function clearRunningCueLabels() {
+    runningCueLabels.forEach(function (node) { if (node.stopRun) node.stopRun(); });
+    runningCueLabels = [];
+    cue.classList.remove('cue--fit-text');
+    delete cue.dataset.runningLimit;
+    cueNextName.classList.remove('cue-running');
+    delete cueNextName.dataset.fullText;
+    cueNextName.onpointerenter = null;
+    cueNextName.onpointerleave = null;
+    cueNextName.style.width = '';
+  }
+  function makeRunningCueLabel(node, full) {
+    node.classList.add('cue-running');
+    node.dataset.fullText = full;
+    var still = document.createElement('span');
+    still.className = 'cue-running__still';
+    var moving = document.createElement('span');
+    moving.className = 'cue-running__moving';
+    moving.textContent = full;
+    node.replaceChildren(still, moving);
+    var animation;
+    node.stopRun = function () {
+      if (animation) animation.cancel();
+      animation = null;
+      node.classList.remove('is-running');
+      node.style.width = '';
+    };
+    node.onpointerenter = function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      node.stopRun();
+      node.style.width = node.getBoundingClientRect().width + 'px';
+      node.classList.add('is-running');
+      var distance = Math.max(0, moving.scrollWidth - node.clientWidth);
+      if (!distance) { node.stopRun(); return; }
+      animation = moving.animate([
+        {transform: 'translateX(0)'},
+        {transform: 'translateX(0)', offset: .1},
+        {transform: 'translateX(-' + distance + 'px)', offset: .9},
+        {transform: 'translateX(-' + distance + 'px)'}
+      ], {duration: Math.max(4000, distance / 45 * 1000), easing: 'linear', iterations: Infinity});
+    };
+    node.onpointerleave = node.stopRun;
+    runningCueLabels.push(node);
+  }
+  function fitRunningCueLabels() {
+    if (!runningCueLabels.length) return;
+    runningCueLabels.forEach(function (node) { node.stopRun(); });
+    cue.classList.add('cue--fit-text');
+    function applyLimit(limit) {
+      runningCueLabels.forEach(function (node) {
+        var characters = Array.from(node.dataset.fullText);
+        node.querySelector('.cue-running__still').textContent = characters.length > limit
+          ? characters.slice(0, limit).join('') + '…' : node.dataset.fullText;
+      });
+    }
+    var low = 1, high = 50, chosen = 1;
+    while (low <= high) {
+      var trial = Math.floor((low + high) / 2);
+      applyLimit(trial);
+      if (cue.scrollWidth <= cue.clientWidth + 1) { chosen = trial; low = trial + 1; }
+      else high = trial - 1;
+    }
+    applyLimit(chosen);
+    cue.dataset.runningLimit = String(chosen);
+  }
 
   function bindSearchClear(input, clear) {
     function sync() { clear.hidden = !input.value; }
@@ -272,6 +339,7 @@
 
   function renderCue() {
     if (!cue || !entries.length) return;
+    clearRunningCueLabels();
     if (detour) { renderDetourCue(); return; }
     var entry = entryAt(current);
     if (!entry) return;
@@ -293,7 +361,8 @@
     }
     cuePrefix.replaceChildren();
     var label = document.createElement(entry.untitled ? 'i' : 'span');
-    label.textContent = entry.label + (entry.type === 'song' || entry.type === 'passage' ? ' ·' : '');
+    if (entry.type === 'text' && entry.untitled) makeRunningCueLabel(label, entry.label);
+    else label.textContent = entry.label + (entry.type === 'song' || entry.type === 'passage' ? ' ·' : '');
     cuePrefix.appendChild(label);
     if (entry.type === 'passage') {
       var flip = document.createElement('button');
@@ -308,8 +377,10 @@
     cueArrow.classList.toggle('on', entry.type === 'break' || (isRest && (entry.type !== 'song' || lastBaitRest)));
     var next = entries[entryIndex() + 1];
     cueNext.hidden = !next;
-    cueNextName.textContent = next ? next.label : '';
+    if (next && next.type === 'text' && next.untitled) makeRunningCueLabel(cueNextName, next.label);
+    else cueNextName.textContent = next ? next.label : '';
     cueNext.setAttribute('aria-label', next ? 'Go to next entry: ' + next.label : 'No next entry');
+    fitRunningCueLabels();
     renderEntryList();
   }
   function renderEntryList() {
