@@ -10,7 +10,7 @@
 - **Search clear amendment:** Accepted; [approved two-field preview](./preview-search-clear.html)
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
-- **All resting cue text amendment:** Draft; [approved quieter preview](./preview-cue-running-text.html)
+- **Shared corner colors amendment:** Draft; [approved state preview](./preview-cue-state-colors.html)
 
 ## Why
 
@@ -58,6 +58,6 @@ The bottom HUD's 650-weight cue text draws more attention than needed, while the
 
 The owner accepted the [amendment](./spec.md#accepted-amendment-quieter-corner-cue-typography). Explicit state selectors preserve next-entry highlights; targeted browser coverage checks resting, hovered, highlighted, and narrow-viewport cue states.
 
-## Draft amendment: all resting cue text
+## Draft amendment: shared corner control colors
 
-The prior color amendment dimmed only untitled Text first-line labels. The owner clarified that all normal-state corner cue text should be quieter, then approved the revised preview at `#514D47`. Apply this color to resting textual parts of the cue regardless of entry type: current identity, unselected bait numbers, and next-entry label. Preserve highlighted progress and selected/active bait or next-entry colors, existing hover colors, the service-list icon, center dot, next arrow, keyboard button, and focus states. Keep the accepted 550 weight, geometry, fitting, running-label behavior, and navigation unchanged. The main risk is a broad resting selector obscuring interactive-state colors; use explicit state overrides and verify the major cue types.
+The prior color amendment dimmed only untitled Text first-line labels. The owner clarified that all resting cue text and the service-list and keyboard icons should share the same subdued color, then approved a [state preview](./preview-cue-state-colors.html) covering the keyboard, next entry, bait, translation, entry list, and split count. Use one palette for these controls: `#514D47` at rest, `#817D74` on hover, and `#E8E4DC` when highlighted, pressed, or open. The keyboard button never gains a background fill. The split count remains highlighted. Keep the accepted 550 text weight, geometry, fitting, running-label behavior, navigation, and visible keyboard-focus outline. The risk is a broad state selector obscuring a more specific highlight; use explicit precedence and verify the major cue types and input states.

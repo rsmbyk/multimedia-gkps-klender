@@ -11,7 +11,7 @@
 - **Search clear amendment:** Accepted; [two-field preview](./preview-search-clear.html)
 - **Untitled Text cue amendment:** Accepted; [approved running-text preview](./preview-cue-running-text.html)
 - **Corner cue typography amendment:** Accepted; [approved 550-weight preview](./preview-cue-running-text.html)
-- **All resting cue text amendment:** Draft; [approved quieter preview](./preview-cue-running-text.html)
+- **Shared corner colors amendment:** Draft; [approved state preview](./preview-cue-state-colors.html)
 
 ## Intent
 
@@ -145,15 +145,16 @@ For current and next **untitled Text first-line labels only**, use `#5D5952` in 
 - **Given** either label is hovered or its next-entry state is highlighted, **when** the state changes, **then** its existing hover or highlight color appears without the resting tint masking it, and the running-text behavior is unchanged.
 - **Given** a song, passage, section break, or detour cue, **when** it renders, **then** its text uses weight 550 while its existing state colors and controls remain unchanged.
 
-## Draft amendment: all resting cue text
+## Draft amendment: shared corner control colors
 
-The owner approved the [revised running-cue preview](./preview-cue-running-text.html) and [cue gallery](./preview-gallery.html) after clarifying that **all** corner cue text should be quieter at rest. The previously accepted `#5D5952` resting tint for untitled Text first-line labels is superseded by `#514D47` for every resting textual identity in the HUD: passage and song references, titled and untitled Text labels, library-detour labels, unselected bait numbers, and next-entry names. Keep the inherited font weight at 550 and the existing 16px size.
+The owner approved the [shared-state preview](./preview-cue-state-colors.html) after clarifying that all corner cue text **and controls** should use one palette. The previously accepted `#5D5952` resting tint for untitled Text first-line labels is superseded by `#514D47` for every resting textual identity in the HUD: passage and song references, titled and untitled Text labels, library-detour labels, unselected bait numbers, and next-entry names. The service-list icon, next arrow, translation label, keyboard SVG, and other corner controls also rest at `#514D47`. Keep the inherited text weight at 550 and the existing 16px size.
 
-This is a resting-text color only. The currently highlighted progress/count remains `#E8E4DC`; selected bait, active or highlighted next entry, translation flash, hover, pressed, and keyboard-focus states retain their existing colors. The service-list icon, center dot, next arrow, and keyboard SVG retain their current `#6E6A62` resting color and stroke. Do not alter HUD geometry, responsive clipping, label animation, controls, or projector navigation.
+The entry-list button, keyboard button, next-entry button, bait buttons, and translation label all use `#817D74` on hover and `#E8E4DC` when highlighted, pressed, or open. Selected bait numbers and a highlighted next entry use `#E8E4DC`; a translation flash uses the same highlight. The split/progress count remains `#E8E4DC`, including its selected part. The neutral center dots may retain `#6E6A62`. The keyboard button has a transparent background in every state, including hover, pressed, and open; retain its fixed SVG stroke and visible keyboard-focus outline. Do not alter HUD geometry, responsive clipping, label animation, hit areas, or projector navigation.
 
-- **Given** any ordinary passage, song, titled or untitled Text, or detour cue, **when** its text is resting, **then** all unhighlighted textual identities use `#514D47` at weight 550.
-- **Given** an unselected bait or next-entry hint, **when** the pointer hovers or that item becomes selected/highlighted, **then** its existing interactive color takes priority over the resting tint.
-- **Given** a cue with a highlighted count and adjacent icons, **when** resting text is dimmed, **then** the count stays `#E8E4DC` and icon, dot, arrow, and keyboard SVG colors remain unchanged.
+- **Given** any ordinary passage, song, titled or untitled Text, or detour cue, **when** its text and controls are resting, **then** unhighlighted identities and controls use `#514D47` at weight 550 for text.
+- **Given** the pointer hovers over the entry-list, keyboard, next-entry, bait, or translation control, **when** it is not pressed or highlighted, **then** the control uses `#817D74` without a keyboard-button background fill.
+- **Given** one of those controls is pressed, open, selected, or highlighted, **when** it renders, **then** it uses `#E8E4DC` and the keyboard button stays background-free.
+- **Given** the cue shows a split count, **when** other resting text is dimmed, **then** the selected count and its highlighted part stay `#E8E4DC`.
 
 ## Acceptance scenarios
 

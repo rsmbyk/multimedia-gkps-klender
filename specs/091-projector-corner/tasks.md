@@ -7,7 +7,7 @@
 - **Search clear amendment:** Accepted
 - **Untitled Text cue amendment:** Accepted
 - **Corner cue typography amendment:** Accepted
-- **All resting cue text amendment:** Draft
+- **Shared corner colors amendment:** Draft
 
 ## Checklist
 
@@ -62,10 +62,11 @@
 - [x] Run targeted projector browser checks for resting, hovered, highlighted, and narrow-viewport cue states.
 - [x] Update the Spec/ITEM/PR delivery record after implementation.
 
-## Draft amendment: all resting cue text
+## Draft amendment: shared corner control colors
 
 - [x] Owner approves the [revised cue preview](./preview-cue-running-text.html) at `#514D47` for all normal-state cue text.
-- [ ] Owner explicitly accepts the [amendment](./spec.md#draft-amendment-all-resting-cue-text); stop before implementation until then.
-- [ ] Apply the resting color across cue text while preserving highlighted progress, selection, hover, icons, and keyboard SVG.
-- [ ] Run targeted projector browser checks for passage, song, untitled Text, and detour cues, including hover and selected states.
+- [x] Owner approves the [shared state preview](./preview-cue-state-colors.html), including the corrected highlighted split count.
+- [ ] Owner explicitly accepts the [amendment](./spec.md#draft-amendment-shared-corner-control-colors); stop before implementation until then.
+- [ ] Apply shared resting, hover, and highlight/pressed/open colors across cue text and controls; remove keyboard-button background fills.
+- [ ] Run targeted projector browser checks for passage, song, untitled Text, and detour cues, including keyboard, next-entry, bait, translation, list, and split-count states.
 - [ ] Update the Spec/ITEM/PR delivery record after implementation.
