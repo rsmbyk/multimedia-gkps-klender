@@ -13,6 +13,7 @@
 - **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
 - **Go To morph amendment:** Accepted; [approved motion preview](./preview-goto-morph.html)
 - **Number-only Go To amendment:** Draft; [approved numeric preview](./preview-goto-number-substring.html)
+- **Chapter-only Go To amendment:** Accepted; [approved first-verse preview](./preview-goto-chapter-first-verse.html)
 
 ## Why
 
@@ -71,3 +72,7 @@ The G passage/song popup appeared and disappeared abruptly while the shortcut sh
 ## Draft amendment: number-only Go To substring search
 
 A bare song number currently finds only exact-number matches. The owner approved the [numeric search preview](./preview-goto-number-substring.html) where a number-only query such as `12` finds numbered songs containing those digits anywhere in the number, across active songbooks: `12`, `120`, `121`, `212`, `312`, and so on. Show exact numbers first, then numbers starting with the query, then numbers containing it later; use numeric order and a stable songbook/title tie-breaker within tiers. Keep all matches available to the existing single-suggestion Up/Down cycler and counter rather than cutting the set to 12. Preserve book-qualified number-prefix searches, title searches, Bible references, and the exclusion of lyric or verse-body matches. The main risk is very broad numeric queries producing large sets; the counter and ordered cycling keep the result set navigable without a larger popup.
+
+## Accepted amendment: chapter-only Go To opens its first verse
+
+The Go To lookup already suggests a Bible book and chapter for `mrk 1`, but its target had no verse. Opening that suggestion sent an invalid passage request and left the service screen in place. The owner approved the [first-verse interaction preview](./preview-goto-chapter-first-verse.html) and accepted the Draft: keep the visible suggestion as `Markus 1`, and let Enter or clicking it open the first available verse in that chapter. Keep chapter-prefix search, suggestion order/count, complete verse references, and the return-to-service behavior unchanged. The lookup now sends a valid first-verse target. Targeted application and browser tests cover a chapter missing verse 1, Enter, click, and Escape back to the service.

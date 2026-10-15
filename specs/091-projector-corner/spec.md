@@ -14,6 +14,7 @@
 - **Shared corner colors amendment:** Accepted; [approved state preview](./preview-cue-state-colors.html)
 - **Go To morph amendment:** Accepted; [approved motion preview](./preview-goto-morph.html)
 - **Number-only Go To amendment:** Draft; [approved numeric preview](./preview-goto-number-substring.html)
+- **Chapter-only Go To amendment:** Accepted; [approved first-verse preview](./preview-goto-chapter-first-verse.html)
 
 ## Intent
 
@@ -176,6 +177,17 @@ Keep book-qualified queries such as `NKB 12` on their existing songbook-plus-num
 - **Given** active songs numbered `12`, `120`, `121`, `212`, and `312` in multiple books, **when** the operator types `12`, **then** all five appear in exact, prefix, then substring tier order, and the counter reports the full total.
 - **Given** more than 12 matching numbers, **when** Up/Down cycles past the twelfth, **then** later matches remain reachable and wraparound works.
 - **Given** `NKB 12` or a non-numeric title query, **when** searched, **then** its existing reference or title behavior is unchanged.
+
+## Accepted amendment: chapter-only Go To opens its first verse
+
+The owner approved the [interaction preview](./preview-goto-chapter-first-verse.html) and explicitly accepted this Draft amendment. A Go To suggestion produced by a Bible book alias or full name plus chapter number or prefix keeps its chapter-only display label (for example `Markus 1`), but selecting it by Enter or clicking the suggestion opens the first available verse of that selected chapter (normally `Markus 1:1`). The selected target must carry a valid verse before the detour request; if verse 1 is absent, use that chapter's lowest available verse. Do not change the visible suggestion, popup geometry, colors, input/focus states, result count/cycling, or the transparent overlay. Keep explicit verse references pointed at their requested verse, and keep Escape returning to the service screen previously left.
+
+- **Given** a Bible chapter-only suggestion such as `Markus 1` is selected
+- **When** the operator presses Enter or clicks the suggestion
+- **Then** Go To closes and the projector shows the first available verse in Markus 1, with its normal passage detour navigation.
+- **Given** an explicit reference such as `Markus 1:5` is selected
+- **When** it opens
+- **Then** the requested verse remains the target.
 
 ## Acceptance scenarios
 

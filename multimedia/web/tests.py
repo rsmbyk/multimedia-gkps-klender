@@ -2286,8 +2286,18 @@ class ServiceProjectorTests(TestCase):
             rows = self.client.get(url, {'q': query}).json()['results']
             self.assertEqual([row['label'] for row in rows],
                              ['Matius 2', 'Matius 20', 'Matius 22'])
+            self.assertEqual([row['target']['verse'] for row in rows], [1, 1, 1])
+        chapter_without_verse_one = self.client.get(url, {'q': 'Mat 5'}).json()['results'][0]
+        self.assertEqual(chapter_without_verse_one['label'], 'Matius 5')
+        self.assertEqual(chapter_without_verse_one['target']['verse'], 2)
+        detour = self.client.get(reverse('web-service-projector-detour', args=[self.tatib.pk]),
+                                 {'kind': 'passage', 'book_id': self.matius.book_id,
+                                  'chapter': 5, 'verse': chapter_without_verse_one['target']['verse']})
+        self.assertEqual(detour.status_code, 200)
+        self.assertEqual(detour.json()['verse'], 2)
         verse = self.client.get(url, {'q': 'Mat 5:2'}).json()['results']
         self.assertEqual(verse[0]['label'], 'Matius 5:2')
+        self.assertEqual(verse[0]['target']['verse'], 2)
 
     def test_a_text_shows_two_lines_at_a_time_under_its_own_header(self):
         self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',

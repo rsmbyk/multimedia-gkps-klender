@@ -10,6 +10,7 @@
 - **Shared corner colors amendment:** Accepted
 - **Go To morph amendment:** Accepted
 - **Number-only Go To amendment:** Draft
+- **Chapter-only Go To amendment:** Accepted
 
 ## Checklist
 
@@ -88,3 +89,11 @@
 - [ ] Match active numbered songs by numeric substring for bare-digit Go To queries, with exact/prefix/substring tiers and no 12-result cap.
 - [ ] Add targeted application and projector browser checks for cross-book matches, ordering, full count/cycling, and unchanged book-qualified and title queries.
 - [ ] Update the Spec/ITEM/PR delivery record after implementation.
+
+## Accepted amendment: chapter-only Go To opens its first verse
+
+- [x] Owner approves the [first-verse interaction preview](./preview-goto-chapter-first-verse.html).
+- [x] Owner explicitly accepts the [amendment](./spec.md#accepted-amendment-chapter-only-go-to-opens-its-first-verse).
+- [x] Resolve chapter-only lookup targets to the first available verse in the selected chapter, while preserving chapter labels and explicit verse references.
+- [x] Add targeted lookup and projector browser checks for Enter and click, chapter prefixes, a chapter without verse 1, and Escape back to the prior service screen.
+- [x] Update the Spec/ITEM/PR delivery record after implementation.

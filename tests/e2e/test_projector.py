@@ -527,6 +527,22 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.locator('#projectorFind').wait_for(state='hidden')
         page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
 
+    def test_goto_chapter_suggestion_opens_first_available_verse_by_enter_and_click(self):
+        page = self._page(self._projector_url())
+        for method in ('Enter', 'click'):
+            page.keyboard.press('g')
+            page.locator('#projectorFindInput').fill('Mat 5')
+            page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent === 'Matius 5'")
+            if method == 'Enter':
+                page.keyboard.press('Enter')
+            else:
+                page.locator('#projectorFindResults').click()
+            page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
+            self.assertIn('Matius 5:3', page.locator('.projector-detour').inner_text())
+            page.locator('#projectorFind').wait_for(state='hidden')
+            page.keyboard.press('Escape')
+            page.wait_for_function("!document.querySelector('.projector-detour').classList.contains('is-active')")
+
     def test_projector_search_clear_controls_match_both_fields(self):
         page = self._page(self._projector_url())
         page.keyboard.press('j')

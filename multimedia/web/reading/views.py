@@ -1080,13 +1080,18 @@ def _projector_chapter_prefix(query):
     if info is None:
         return None
     chapter_prefix = match.group(2).lstrip('0') or '0'
-    chapters = (bible_models.Verse.objects.filter(book_translation__book=info['book'])
-                .order_by('chapter').values_list('chapter', flat=True).distinct())
+    chapter_first_verses = {}
+    for chapter, verse in (bible_models.Verse.objects
+                           .filter(book_translation__book=info['book'])
+                           .order_by('chapter', 'verse')
+                           .values_list('chapter', 'verse')):
+        chapter_first_verses.setdefault(chapter, verse)
     return [
         {'kind': 'passage', 'label': f"{info['display']} {chapter}",
          'target': {'book_id': info['book'].pk, 'chapter': chapter,
-                    'verse': None, 'end_verse': None}}
-        for chapter in chapters if str(chapter).startswith(chapter_prefix)
+                    'verse': verse, 'end_verse': None}}
+        for chapter, verse in chapter_first_verses.items()
+        if str(chapter).startswith(chapter_prefix)
     ]
 
 
