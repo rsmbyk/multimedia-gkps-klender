@@ -32,4 +32,4 @@
 - [x] Add targeted projector browser tests in `tests/e2e/test_projector.py` for one visible suggestion, full result count, Up/Down wraparound, query preservation, Enter/click selection, empty state, stale responses, and overlay dismissal.
 - [x] Replace the G popup's list rendering and selection controls in `multimedia/web/templates/reading/projector.html`, `static/web/projector.js`, and `static/styles/design/projector.css`; keep J and lookup ranking unchanged.
 - [x] Run the targeted projector tests and confirm the reference-size and smaller-viewport layout against the approved preview.
-- [ ] Update this task list and the Spec 091/ITEM-094/PR descriptions with the delivered amendment before merge.
+- [x] Update this task list and the Spec 091/ITEM-094/PR descriptions with the delivered amendment before merge.
