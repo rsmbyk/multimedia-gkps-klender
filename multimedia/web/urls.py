@@ -10,7 +10,8 @@ urlpatterns = [
     # Search-first home; a temporary URL while maintenance is on.
     path('home/', views.HomeView.as_view(), name='web-home'),
     # Full-corpus search across Alkitab, Kidung, and Tata Ibadah.
-    path('search/', reading_views.SearchView.as_view(), name='web-search'),
+    path('search', reading_views.SearchView.as_view(), name='web-search'),
+    path('search/', RedirectView.as_view(url='/search', query_string=True), name='web-search-legacy'),
 
     # Alkitab reading.
     path('bible/', reading_views.BibleView.as_view(), name='web-bible'),

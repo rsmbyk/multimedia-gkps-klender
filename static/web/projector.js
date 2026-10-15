@@ -15,6 +15,11 @@
   var body = document.body;
   var channelName = body.dataset.displayChannel || 'gkps-service-display';
   var service = Number(body.dataset.service);
+  if (!service) {
+    var offlinePath = window.location.pathname.match(/^\/obs\/service\/(\d+)\/$/);
+    if (offlinePath) service = Number(offlinePath[1]);
+    body.dataset.service = String(service);
+  }
   var screen = document.getElementById('projectorScreen');
   var stage = document.getElementById('projectorScreens');
   var entries = JSON.parse(document.getElementById('projectorEntryData').textContent);
@@ -958,6 +963,14 @@
 
   /* Update: re-read the page (a song's lyrics may have changed) and keep the place. */
   function reflow() {
+    if (window.GKPSOffline) {
+      window.GKPSOffline.sync().then(function () {
+        return window.GKPSOffline.get('service', service);
+      }).then(function (saved) {
+        if (saved) drawSavedScreens(saved);
+      }).catch(function () { /* preserve the currently projected screen */ });
+      return;
+    }
     /* A saved change reads back at once; no-store keeps a cached page from being served
        for the read that follows close behind it. */
     fetch(window.location.href, {credentials: 'same-origin', cache: 'no-store'})
@@ -980,6 +993,41 @@
       .catch(function () { /* keep showing what we have */ });
   }
 
+  function drawSavedScreens(saved) {
+    if (!saved || !Array.isArray(saved.screens)) return;
+    var fragment = document.createDocumentFragment();
+    saved.screens.forEach(function (item, index) {
+      var section = document.createElement('section');
+      section.className = 'screen' + (item.blank ? ' is-blank' : '')
+        + (item.single ? ' screen--single' : '');
+      section.dataset.screen = String(index);
+      if (item.single) section.dataset.fit = 'single';
+      section.setAttribute('aria-hidden', index === current ? 'false' : 'true');
+      if (item.header) {
+        var head = document.createElement('h1');
+        head.className = 'screen__head';
+        head.textContent = item.header;
+        section.appendChild(head);
+      }
+      if (item.lines && item.lines.length) {
+        var lines = document.createElement('div');
+        lines.className = 'screen__lines';
+        item.lines.forEach(function (line) {
+          var p = document.createElement('p');
+          p.className = 'screen__line' + (line.voice ? ' is-' + line.voice : '');
+          p.textContent = line.text;
+          lines.appendChild(p);
+        });
+        section.appendChild(lines);
+      }
+      fragment.appendChild(section);
+    });
+    stage.replaceChildren(fragment);
+    var empty = screen.querySelector('.projector__empty');
+    if (empty) empty.hidden = !!saved.screens.length;
+    render(true);
+  }
+
   /* A window opened for a service that is already displaying lands on its screen. */
   var stored = read();
   if (stored && Number(stored.service) === service && stored.screen != null) {
@@ -989,6 +1037,21 @@
     showing = false;
   }
   render(true);
+  if (!stage.children.length && service && window.GKPSOffline) {
+    window.GKPSOffline.get('service', service).then(function (saved) {
+      if (saved) drawSavedScreens(saved);
+      else {
+        var empty = screen.querySelector('.projector__empty');
+        if (empty) empty.textContent = 'This service is not saved for offline use yet.';
+      }
+    }).catch(function () {});
+  }
+  document.addEventListener('offline:changed', function () {
+    if (!window.GKPSOffline) return;
+    window.GKPSOffline.get('service', service).then(function (saved) {
+      if (saved && !stage.children.length) drawSavedScreens(saved);
+    }).catch(function () {});
+  });
   window.addEventListener('resize', function () { render(true); });
   /* The sign of life, and the reason a shell can tell that this window has gone: while it
      is open it shows up every couple of seconds, and when it closes the stamps stop. */

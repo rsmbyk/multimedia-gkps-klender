@@ -991,17 +991,74 @@
      transitions run instead of a full reload. The links keep their real
      hrefs: without JS (or when a fetch fails) the browser navigates. */
   var navBusy = false;
+  var SEARCH_LAST = 'gkps-search-last-tab';
+  var TAB_KEY = 'gkps-search-tab-id';
+  function searchId() {
+    return window.crypto && crypto.randomUUID ? crypto.randomUUID()
+      : Date.now() + '-' + Math.random().toString(36).slice(2);
+  }
+  (function establishTabIdentity() {
+    try {
+      var known = sessionStorage.getItem(TAB_KEY);
+      if (known && (window.name === 'gkps-tab:' + known
+                    || history.state && history.state.gkpsTab === known)) {
+        window.name = 'gkps-tab:' + known;
+        return;
+      }
+      /* A new opener-created tab can inherit a copy of sessionStorage. Its window
+         name is distinct, so drop only search memories, never the shared library. */
+      Object.keys(sessionStorage).filter(function (key) {
+        return key === SEARCH_LAST || key.indexOf('gkps-search-entry:') === 0;
+      }).forEach(function (key) { sessionStorage.removeItem(key); });
+      known = searchId();
+      sessionStorage.setItem(TAB_KEY, known);
+      window.name = 'gkps-tab:' + known;
+    } catch (error) { /* private mode still allows current-page search */ }
+  })();
+  function readSearchSnapshot(id) {
+    try { return JSON.parse(sessionStorage.getItem('gkps-search-entry:' + id) || 'null'); }
+    catch (error) { return null; }
+  }
+  function saveSearchSnapshot() {
+    if (root.dataset.home !== 'results') return;
+    var state = history.state || {};
+    if (!state.searchId) {
+      state.searchId = searchId();
+      history.replaceState(state, '', location.href);
+    }
+    var results = document.getElementById('searchResults');
+    var input = document.getElementById('searchQuery');
+    try { sessionStorage.setItem('gkps-search-entry:' + state.searchId, JSON.stringify({
+      url: location.pathname + location.search,
+      html: results ? results.innerHTML : '',
+      input: input ? input.value : '', scroll: window.scrollY
+    })); } catch (error) { /* private mode or storage quota */ }
+  }
+  function restoreSearchSnapshot(id) {
+    var snapshot = id && readSearchSnapshot(id);
+    if (!snapshot) return false;
+    var results = document.getElementById('searchResults');
+    var input = document.getElementById('searchQuery');
+    if (results) results.innerHTML = snapshot.html;
+    if (input) input.value = snapshot.input;
+    bindStageExtras();
+    window.scrollTo({top: snapshot.scroll || 0, behavior: 'auto'});
+    return true;
+  }
+  document.addEventListener('input', function (event) {
+    if (event.target.id === 'searchQuery') saveSearchSnapshot();
+  });
+  window.addEventListener('scroll', function () {
+    if (root.dataset.home === 'results') window.requestAnimationFrame(saveSearchSnapshot);
+  }, {passive: true});
+  window.addEventListener('pagehide', saveSearchSnapshot);
 
   function navigate(url, opts) {
     if (!url || navBusy) return;
-    /* Leaving the result set by any route: remember where in it the reader was,
-       so the search icon can come back to that offset. */
-    if (root.dataset.home === 'results'
-        && !(opts && (opts.kind === 'search' || opts.kind === 'more' || opts.kind === 'results'))) {
-      try { localStorage.setItem('gkps-search-scroll', String(window.scrollY)); } catch (e) {}
-    }
+    if (!(opts && opts.historyTraversal)) saveSearchSnapshot();
     navBusy = true;
-    fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
+    function fromServer() {
+      return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.text();
@@ -1013,8 +1070,40 @@
       .catch(function (error) {
         navBusy = false;
         if (window.console && console.error) console.error('in-page navigation failed:', error);
-        window.location.href = url;      /* fetch failed: fall back to the real page */
+        if (navigator.onLine) window.location.href = url;
+        else {
+          var status = document.getElementById('searchStatus');
+          if (status) status.textContent = 'This content is not saved for offline use.';
+        }
       });
+    }
+    var renderer = window.GKPSOfflineRender;
+    if (renderer && renderer.route(url)) {
+      renderer.render(url).then(function (doc) {
+        if (!doc) return fromServer();
+        navBusy = false;
+        applyPage(doc, url, opts || {});
+        if (navigator.onLine && window.GKPSOffline) {
+          renderer.chunkFor(url).then(function (chunkUrl) {
+            if (!chunkUrl) return;
+            return fetch(chunkUrl, {cache: 'no-store', credentials: 'same-origin'})
+              .then(function (response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+              }).then(function (payload) {
+                if (payload.schema !== 1 || !payload.data) return;
+                if (new URL(url, location.href).pathname !== location.pathname) return;
+                return renderer.render(url, payload.data).then(function (updated) {
+                  if (!updated || navBusy) return;
+                  updated.querySelector('#offlineSavedSource').hidden = true;
+                  applyPage(updated, url, {kind: 'refresh', skipHistory: true});
+                  window.GKPSOffline.sync().catch(function () {});
+                });
+              });
+          }).catch(function () { /* the saved copy stays visible */ });
+        }
+      }).catch(function () { return fromServer(); });
+    } else fromServer();
   }
 
   function txt(doc, sel) {
@@ -1213,18 +1302,31 @@
     updateChInds();
     window.requestAnimationFrame(updateChInds);
 
-    /* The rail search icon restores the last result set. Only the page that IS
-       the result set may update it -- a stale root state must never let a
-       reading page overwrite the stored search. */
-    if (fresh.home === 'results') {
-      var searchPath = url.indexOf(window.location.origin) === 0
-        ? url.slice(window.location.origin.length) : url;    /* store a path, not an origin */
-      try { localStorage.setItem('gkps-search', searchPath); } catch (e) {}
-      railSearch.setAttribute('href', searchPath);
-    } else if (kind === 'results' && fresh.home === 'landing' && url.split('?')[0] === '/home/') {
-      resetSearchState();
-    }
+    if (fresh.home === 'results') railSearch.setAttribute('href', url);
     document.title = doc.title;
+    if (!opts.skipHistory) {
+      var pushes = ['chapter', 'song', 'service', 'result', 'search', 'results'];
+      if (pushes.indexOf(kind) !== -1) {
+        history.pushState({gkps: true, url: url, kind: kind,
+          searchId: fresh.home === 'results' ? searchId() : null}, '', url);
+      } else if (kind === 'more') {
+        history.replaceState({gkps: true, url: url, kind: 'search',
+          searchId: history.state && history.state.searchId || searchId()}, '', url);
+      }
+    } else if (opts.replaceUrl) {
+      history.replaceState({gkps: true, url: url, kind: kind}, '', url);
+    }
+    if (fresh.home === 'results' && (kind === 'search' || kind === 'results')
+        && !opts.skipHistory) {
+      try { sessionStorage.setItem(SEARCH_LAST, history.state.searchId); } catch (error) {}
+    }
+    if (fresh.home === 'results' && opts.directBoot) {
+      if (!history.state || !history.state.searchId) {
+        history.replaceState({gkps: true, url: url, kind: 'search',
+          searchId: searchId()}, '', url);
+      }
+      try { sessionStorage.setItem(SEARCH_LAST, history.state.searchId); } catch (error) {}
+    }
 
     /* Anything the arriving page carries and another script owns -- the project
        button, for one -- needs its hook run again: the swap replaced the node the
@@ -1298,13 +1400,13 @@
     if (kind === 'search') {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
-    if (kind === 'results') {
-      /* landed on the result set: resume where the reader left it */
-      var remembered = 0;
-      if (fresh.home === 'results') {
-        try { remembered = parseInt(localStorage.getItem('gkps-search-scroll') || '0', 10) || 0; } catch (e) {}
+    if (fresh.home === 'results') {
+      var restoreId = opts.restoreSearchId || opts.skipHistory
+        && history.state && history.state.searchId;
+      if (!restoreSearchSnapshot(restoreId)) {
+        window.scrollTo({top: kind === 'more' ? window.scrollY : 0, behavior: 'auto'});
       }
-      window.scrollTo({ top: remembered, behavior: 'auto' });
+      saveSearchSnapshot();
     }
   }
 
@@ -1386,48 +1488,38 @@
     });
   }
   bindSearchForm();
-  /* A fresh unqueried home is a reset, not sidebar browsing within this shell.
-     Both the initial load and an in-place return to that landing use this gate. */
-  function resetSearchState() {
-    try {
-      localStorage.removeItem('gkps-search');
-      localStorage.removeItem('gkps-search-scroll');
-    } catch (e) { /* storage can be unavailable */ }
-    railSearch.setAttribute('href', '/home/');
-  }
-  if (root.dataset.home === 'landing' && window.location.pathname === '/home/'
-      && !window.location.search) resetSearchState();
-  else try {
-    if (root.dataset.home === 'results') {
-      /* remember the exact result URL, revealed rows included */
-      localStorage.setItem('gkps-search', window.location.pathname + window.location.search);
+  /* The result snapshot belongs to this tab. A direct search URL replaces its
+     latest search; the logo deliberately does not erase it. */
+  if (root.dataset.home === 'results') {
+    if (!history.state || !history.state.searchId) {
+      history.replaceState({gkps: true, url: location.pathname + location.search,
+        kind: 'search', searchId: searchId()}, '', location.href);
     }
-    var lastSearch = storedSearchUrl();
-    if (lastSearch) railSearch.setAttribute('href', lastSearch);
-  } catch (e) {}
-
-  /* The stored result-set URL, or nothing. A value written by an older build (or
-     any non-search URL) is dropped, so the search icon can never open a reading
-     page's sidebar by mistake. */
-  function storedSearchUrl() {
-    var value = null;
-    try { value = localStorage.getItem('gkps-search'); } catch (e) {}
-    if (value && /^\/search\/\?q=/.test(value)) return value;
-    if (value) { try { localStorage.removeItem('gkps-search'); } catch (e) {} }
-    return null;
+    saveSearchSnapshot();
+    try { sessionStorage.setItem(SEARCH_LAST, history.state.searchId); } catch (error) {}
   }
+  function lastSearchSnapshot() {
+    var id = null;
+    try { id = sessionStorage.getItem(SEARCH_LAST); } catch (error) {}
+    var snapshot = id && readSearchSnapshot(id);
+    return snapshot && /^\/search\/?\?q=/.test(snapshot.url)
+      ? {id: id, snapshot: snapshot} : null;
+  }
+  var initialLast = lastSearchSnapshot();
+  railSearch.setAttribute('href', initialLast ? initialLast.snapshot.url : '/');
 
-  /* The search destination. The rail's Search icon and the brand logo are the same
-     route (owner request): back to the last result set, or the landing when there
-     is none. Only the result page itself updates what is stored -- nothing clears
-     it. */
   function openSearch(event) {
     event.preventDefault();
-    navigate(storedSearchUrl() || '/home/', { kind: 'results' });
+    var last = lastSearchSnapshot();
+    navigate(last ? last.snapshot.url : '/', {kind: 'results',
+      restoreSearchId: last && last.id});
   }
   railSearch.addEventListener('click', openSearch);
   var railLogo = document.querySelector('.rail__logo');
-  if (railLogo) railLogo.addEventListener('click', openSearch);
+  if (railLogo) railLogo.addEventListener('click', function (event) {
+    event.preventDefault();
+    navigate('/', {kind: 'results', replaceUrl: true});
+  });
 
   /* A sidebar editor saved something: re-render the page's regions in place, so
      every list, the panel selection and the reading stage agree again. */
@@ -1477,5 +1569,28 @@
   if (searchTarget && root.dataset.read === 'on') revealSearchTarget(searchTarget);
   if (window.location.hash.indexOf('#ti-') === 0) {
     jumpTatibItem(window.location.hash.slice(1));
+  }
+  function historyKind(path) {
+    if (/^\/bible\/\d+\/\d+\/$/.test(path)) return 'chapter';
+    if (/^\/songs\/\d+\/$/.test(path)) return 'song';
+    if (/^\/tatib\/\d+\/$/.test(path)) return 'service';
+    if (path === '/search' || path === '/search/') return 'search';
+    return 'results';
+  }
+  if (!history.state || !history.state.gkps) {
+    history.replaceState({gkps: true, url: location.pathname + location.search,
+      kind: historyKind(location.pathname)}, '', location.href);
+  }
+  window.addEventListener('popstate', function (event) {
+    var state = event.state;
+    var url = state && state.gkps ? state.url : location.pathname + location.search;
+    navigate(url, {kind: state && state.kind || historyKind(location.pathname),
+                   skipHistory: true, historyTraversal: true,
+                   restoreSearchId: state && state.searchId});
+  });
+  if (root.dataset.home === 'landing' && window.GKPSOfflineRender
+      && window.GKPSOfflineRender.route(location.href)) {
+    navigate(location.href, {kind: historyKind(location.pathname), skipHistory: true,
+      directBoot: true});
   }
 })();

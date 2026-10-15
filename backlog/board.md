@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-095](./items/ITEM-095-offline-library-sync.md) | Save the public library for offline reading and service projection | Two saved shells and a complete local library, with incremental sync and tab-local search history | feat | P1 | L | [092](../specs/092-offline-library-sync/spec.md) | `feat/092-offline-library-sync` | 2026-10-15 |
 
 ## In review
 
