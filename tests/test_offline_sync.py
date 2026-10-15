@@ -1,6 +1,7 @@
 """Spec 092: the public offline library contains complete, revisioned chunks."""
 
 from pathlib import Path
+from unittest.mock import patch
 
 from django.conf import settings
 from django.test import TestCase
@@ -48,6 +49,15 @@ class OfflineLibraryEndpointTests(TestCase):
         self.assertNotIn('__VERSION__', source)
         self.assertEqual(response['Service-Worker-Allowed'], '/')
         self.assertIn('no-cache', response['Cache-Control'])
+
+        read_bytes = Path.read_bytes
+        def changed_renderer(path):
+            contents = read_bytes(path)
+            return contents + b'changed' if path.name == 'offline-render.js' else contents
+
+        with patch.object(Path, 'read_bytes', changed_renderer):
+            changed = self.client.get('/service-worker.js')
+        self.assertNotEqual(response.content, changed.content)
 
     def test_chunk_has_verses_lyrics_and_projector_screens(self):
         bible_data = self.client.get(f'/offline/chunk/bible/{self.book.pk}/').json()['data']

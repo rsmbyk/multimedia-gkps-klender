@@ -239,9 +239,9 @@
     read.dataset.kind = section === 'alkitab' ? 'bible' : section === 'kidung' ? 'song' : 'tatib';
     doc.querySelector('#readName').textContent = name;
     doc.querySelector('#readNo').textContent = number || '';
-    doc.querySelector('#readEyebrow').textContent = section === 'alkitab' ? 'Alkitab'
+    doc.querySelector('#readEyebrow').textContent = section === 'alkitab' ? ''
       : section === 'kidung' ? 'Kidung' : 'Tata Ibadah';
-    doc.querySelector('#readEyebrow').hidden = false;
+    doc.querySelector('#readEyebrow').hidden = section === 'alkitab';
     doc.querySelector('#readBody').innerHTML = body;
     doc.querySelector('#offlineSavedSource').hidden = false;
     doc.querySelector('#searchResults').hidden = true;

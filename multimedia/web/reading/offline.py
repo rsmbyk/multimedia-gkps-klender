@@ -149,7 +149,16 @@ def projector_shell(request):
 def service_worker(request):
     source = (Path(settings.BASE_DIR) / 'static/web/service-worker.js').read_text()
     version = (Path(settings.BASE_DIR) / 'VERSION').read_text().strip()
-    response = HttpResponse(source.replace('__VERSION__', version),
+    root = Path(settings.BASE_DIR)
+    asset_paths = [root / path.lstrip('/') for path in
+                   re.findall(r"['\"](/static/[^'\"]+)['\"]", source)]
+    template_paths = (root / 'multimedia/web/templates/reading').rglob('*.html')
+    fingerprint = hashlib.sha256(source.encode('utf-8'))
+    for path in sorted(set(asset_paths).union(template_paths)):
+        fingerprint.update(str(path.relative_to(root)).encode('utf-8'))
+        fingerprint.update(path.read_bytes())
+    cache_version = f'{version}-{fingerprint.hexdigest()[:12]}'
+    response = HttpResponse(source.replace('__VERSION__', cache_version),
                             content_type='text/javascript')
     response['Cache-Control'] = 'no-cache'
     response['Service-Worker-Allowed'] = '/'

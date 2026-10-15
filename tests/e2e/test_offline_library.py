@@ -63,6 +63,7 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             page.get_by_role('link', name='Matius chapter 1').wait_for()
             page.goto(self.live_server_url + f'/bible/{self.book_id}/1/')
             page.get_by_text('Kasih Tuhan membuka Injil').wait_for()
+            self.assertTrue(page.locator('#readEyebrow').evaluate('(el) => el.hidden'))
             page.goto(self.live_server_url + f'/songs/{self.song_id}/')
             page.get_by_text('Kasih Tuhan kekal').wait_for()
             page.goto(self.live_server_url + '/songs/')
