@@ -87,20 +87,25 @@ in the sidebar, projector Go To, and passage editor.
 - A remembered SIM preference may coexist with TB verse fallback for one chapter. The sidebar
   stays on the remembered preference; the verse heading names the content actually shown.
 
-## Proposed Amendment A: choose the Go To edition from its abbreviation
+## Proposed Amendment A: choose Go To edition matches from their abbreviations
 
 **Status: Draft; pending owner acceptance.** This amends only projector Go To behavior in the
 accepted Spec 100. The accepted implementation currently resolves both codes to a book and opens
-the existing default translation. The requested behavior instead carries a unique code's edition
-through the suggestion and into the opened passage.
+the existing default translation. The requested behavior instead carries the edition identified
+by the code through the suggestion and into the opened passage, including both editions when a
+code is shared.
 
-- A canonical `Book.name` code identifies TB; a per-translation SIM abbreviation identifies SIM.
+- A canonical `Book.name` code identifies TB; a per-translation abbreviation identifies its own
+  edition. Carry the identified edition through the suggestion into the opened passage.
 - Show the full book name from the matching edition in the Go To suggestion, then open that
   edition when the operator selects it. For example, `Pah 1` shows `Panguhum 1` and opens SIM;
   `1Ta 2` shows `1 Tawarikh 2` and opens TB.
-- Keep the current Go To result cycling, controls, and translation-flip control. If an exact
-  requested position is missing from the uniquely matched edition, do not substitute a result
-  from the other edition. If a code is shared by both editions, keep the current TB default.
-- Cover chapter and verse references in the projector E2E test. The preview demonstrates the
-  existing suggestion row with the edition-specific label and an explanatory opened-edition note;
-  it introduces no new product control or layout change.
+- When a code is shared by TB and SIM, return a separate result for each edition and let the
+  existing result cycling reach both. Selecting either result opens its edition. If both results
+  use the same full book name, append a muted/dimmed `· TB` or `· SIM` suffix; differing names
+  already identify the edition.
+- Keep the current Go To controls and translation-flip control. If an exact requested position is
+  missing from a matched edition, do not substitute a result from the other edition.
+- Cover chapter, verse, and shared-code references in the projector E2E test. The preview
+  demonstrates the existing suggestion row with edition-specific labels and an explanatory
+  opened-edition note; it introduces no new product control or layout change.

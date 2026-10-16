@@ -48,11 +48,14 @@
 ## Draft Amendment A — projector Go To edition selection
 
 - [x] Record the requested result labels and translation selection as a Draft amendment to Spec 100
-- [x] Preview the existing Go To suggestion row with the requested TB/SIM labels
+- [x] Preview edition-specific Go To results and both states for a shared code
 - [ ] Owner accepts Amendment A
 - [ ] Red — cover `Pah 1` → `Panguhum 1` → SIM and `1Ta 2` → `1 Tawarikh 2` → TB,
-      including edition-specific verse references, in `tests/e2e/test_projector.py`
+      shared `Rut 1` results for TB and SIM with dimmed suffixes when names collide, and
+      edition-specific verse references, in `tests/e2e/test_projector.py`
 - [ ] Green — carry a uniquely matched abbreviation's edition from `lookup()` into its
-      suggestion label and passage detour in `static/web/projector-library.js`
-- [ ] Preserve Go To cycling, flip control, TB default for shared codes, and no cross-edition
-      substitution when the matched edition lacks the requested position
+      suggestion label and passage detour, return both edition matches for shared codes, and
+      render a muted edition suffix for duplicate full names in
+      `static/web/projector-library.js`
+- [ ] Preserve Go To cycling and flip control, and prevent cross-edition substitution when a
+      matched edition lacks the requested position

@@ -171,23 +171,27 @@ Ibr=Heb  Yak=Jak  1Pt=1Pt  2Pt=2Pt  1Yo=1Jo  2Yo=2Jo  3Yo=3Jo  Yud=Jud  Why=Pak
 - **When** the reader switches back to TB
 - **Then** only those three popup labels and accessible names return to their TB wording
 
-## Draft Amendment A: projector Go To follows a uniquely matched abbreviation
+## Draft Amendment A: projector Go To follows matched edition abbreviations
 
 **Pending owner acceptance.** This proposed amendment changes only the Go To abbreviation
 behavior. If accepted, replace the current Search rules sentence that Go To preserves the
 projected translation choice for abbreviation queries with the rules below. All other accepted
 Spec 100 requirements remain unchanged.
 
-### Proposed search and selection rules
+### Proposed search, labeling, and selection rules
 
 - An exact canonical `Book.name` code identifies TB; an exact translation abbreviation identifies
   its own edition. When one code uniquely identifies an edition, the Go To suggestion uses that
   edition's full translated book name and selecting it opens that edition's passage.
-- A shared code keeps the current TB default. Full-name search and other Go To matching behavior
-  remain unchanged.
-- If the uniquely matched edition has no verses at the requested chapter or verse, do not show a
-  result from the other edition as a substitute. Keep the existing result cycling and translation
-  flip control after opening a passage.
+- When the same code identifies both TB and SIM, return one result for each edition. Selecting a
+  result opens its corresponding edition, and both results remain reachable through the existing
+  result-cycling behavior.
+- Use the matched edition's full translated book name in each result label. If both results have
+  the same full book name, append `· TB` or `· SIM` to distinguish them; render that edition suffix
+  in muted/dimmed text. When the full names differ, the names already distinguish the results.
+- Full-name search and other Go To matching behavior remain unchanged. If a matched edition has no
+  verses at the requested chapter or verse, do not show a result from the other edition as a
+  substitute. Keep the translation flip control after opening a passage.
 
 ### Proposed acceptance scenarios
 
@@ -213,6 +217,16 @@ Spec 100 requirements remain unchanged.
 - **When** the operator searches an edition-specific code followed by a verse reference
 - **Then** the result label uses that edition's full book name and selection opens that edition
   at the requested verse
+
+#### Scenario: A shared code returns both editions with disambiguated labels
+
+- **Given** `Rut` is the code for the same book in TB and SIM, both editions have the full book
+  name `Rut`, and both have chapter 1
+- **When** the operator searches `Rut 1`
+- **Then** the existing result cycling exposes one `Rut 1` result for TB and one for SIM
+- **And** their labels read `Rut 1 · TB` and `Rut 1 · SIM`, with the edition suffix muted/dimmed
+- **When** the operator selects each result
+- **Then** the TB result opens TB and the SIM result opens SIM
 
 Preview: [Projector Go To edition preview](./preview.html#projector-goto-amendment).
 
