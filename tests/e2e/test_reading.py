@@ -715,6 +715,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.close()
 
     def test_bible_edition_survives_menu_switches_and_history(self):
+        """Keep sidebar choice and chapter availability while the stage is non-Bible."""
         page = self._page()
         chapter_url = reverse('web-bible-chapter', args=[self.mat.pk, 5])
         songbook_url = reverse('web-book', args=[self.book.pk])
