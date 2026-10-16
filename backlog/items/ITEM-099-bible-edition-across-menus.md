@@ -1,6 +1,6 @@
 ---
 id: ITEM-099
-status: in_review
+status: done
 title: 'Keep Bible translation selection across menu switches'
 type: fix
 priority: P2

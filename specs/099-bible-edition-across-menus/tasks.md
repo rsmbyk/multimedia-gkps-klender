@@ -25,4 +25,4 @@
 
 - [x] All acceptance scenarios in `spec.md` hold
 - [x] Targeted reading and saved-copy E2E cases are green
-- [ ] Board, tasks, and version (if any) are complete in this PR
+- [x] Board, tasks, and version (if any) are complete in this PR
