@@ -20,7 +20,7 @@ class SimBookAbbreviationSeedTests(TestCase):
         full_names = json.loads((RAW / 'book_translations' / 'SIM.json').read_text())
         abbreviations = json.loads((RAW / 'book_abbreviations' / 'SIM.json').read_text())
         book_names = {row['name'] for row in books}
-        expected_codes = '''1Mu 2Mu 3Mu 4Mu 5Mu Jos Pah Rut 1Sa 2Sa 1Ra 2Ra 1Kr 2Kr Esr Neh Est Job Psa Pod Par Dod Jes Jer Tan Hes Dan Hos Joe Ams Obj Jon Mik Nah Hab Sef Hag Sak Mal Mat Mrk Luk Joh Lah Rom 1Ko 2Ko Gal Epe Pil Kol 1Te 2Te 1Ti 2Ti Tit Plm Heb Jak 1Pt 2Pt 1Jo 2Jo 3Jo Jud Pak'''.split()
+        expected_codes = '''1Mu 2Mu 3Mu 4Mu 5Mu Jos Pah Rut 1Sa 2Sa 1Ra 2Ra 1Kr 2Kr Esr Neh Est Job Psa Pod Par Dod Jes Jer Tan Hes Dan Hos Joe Amo Obj Jon Mik Nah Hab Sef Hag Sak Mal Mat Mrk Luk Joh Lah Rom 1Ko 2Ko Gal Epe Pil Kol 1Te 2Te 1Ti 2Ti Tit Plm Heb Jak 1Pt 2Pt 1Jo 2Jo 3Jo Jud Pak'''.split()
 
         self.assertEqual(len(abbreviations), 66)
         self.assertEqual(list(abbreviations.values()), expected_codes)

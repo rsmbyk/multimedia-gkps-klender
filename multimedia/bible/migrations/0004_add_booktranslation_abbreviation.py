@@ -9,7 +9,7 @@ SIM_ABBREVIATIONS = {
     '1Ra': '1Ra', '2Ra': '2Ra', '1Ta': '1Kr', '2Ta': '2Kr', 'Ezr': 'Esr',
     'Neh': 'Neh', 'Est': 'Est', 'Ayb': 'Job', 'Mzm': 'Psa', 'Ams': 'Pod',
     'Pkh': 'Par', 'Kid': 'Dod', 'Yes': 'Jes', 'Yer': 'Jer', 'Rat': 'Tan',
-    'Yeh': 'Hes', 'Dan': 'Dan', 'Hos': 'Hos', 'Yoe': 'Joe', 'Amo': 'Ams',
+    'Yeh': 'Hes', 'Dan': 'Dan', 'Hos': 'Hos', 'Yoe': 'Joe', 'Amo': 'Amo',
     'Oba': 'Obj', 'Yun': 'Jon', 'Mik': 'Mik', 'Nah': 'Nah', 'Hab': 'Hab',
     'Zef': 'Sef', 'Hag': 'Hag', 'Zak': 'Sak', 'Mal': 'Mal', 'Mat': 'Mat',
     'Mrk': 'Mrk', 'Luk': 'Luk', 'Yoh': 'Joh', 'Kis': 'Lah', 'Rom': 'Rom',

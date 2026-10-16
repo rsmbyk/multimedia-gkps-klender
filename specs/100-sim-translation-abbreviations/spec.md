@@ -48,7 +48,7 @@ Kej=1Mu  Kel=2Mu  Ima=3Mu  Bil=4Mu  Ula=5Mu
 Yos=Jos  Hak=Pah  Rut=Rut  1Sa=1Sa  2Sa=2Sa
 1Ra=1Ra  2Ra=2Ra  1Ta=1Kr  2Ta=2Kr  Ezr=Esr  Neh=Neh  Est=Est
 Ayb=Job  Mzm=Psa  Ams=Pod  Pkh=Par  Kid=Dod  Yes=Jes  Yer=Jer  Rat=Tan  Yeh=Hes
-Dan=Dan  Hos=Hos  Yoe=Joe  Amo=Ams  Oba=Obj  Yun=Jon  Mik=Mik  Nah=Nah  Hab=Hab
+Dan=Dan  Hos=Hos  Yoe=Joe  Amo=Amo  Oba=Obj  Yun=Jon  Mik=Mik  Nah=Nah  Hab=Hab
 Zef=Sef  Hag=Hag  Zak=Sak  Mal=Mal
 Mat=Mat  Mrk=Mrk  Luk=Luk  Yoh=Joh  Kis=Lah  Rom=Rom  1Ko=1Ko  2Ko=2Ko  Gal=Gal
 Efe=Epe  Flp=Pil  Kol=Kol  1Te=1Te  2Te=2Te  1Ti=1Ti  2Ti=2Ti  Tit=Tit  Flm=Plm
