@@ -321,7 +321,8 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         page.route('**/editor/entry/*/edit/', lambda route: route.abort())
         item.hover()
         item.locator('[data-entry-edit]').click()
-        expect(page.locator('#editorStatus')).to_have_text('Could not open the editor.')
+        expect(page.locator('.edit-toast[data-state="failure"] .edit-toast__title'))\
+            .to_have_text('Could not load editor')
         expect(page.locator('#editorModal')).not_to_be_visible()
         page.mouse.move(1400, 850)
         # The clicked control keeps ordinary click focus; drop it to see the entry alone.

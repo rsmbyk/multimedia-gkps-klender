@@ -139,7 +139,7 @@
     document.dispatchEvent(new CustomEvent('shell:local-entry-delete'));
   }
 
-  function focusAfterDelete(target) {
+  function focusAfterDelete(target, keyboardFocus) {
     var element = null;
     if (target && target.kind === 'entry') {
       element = document.querySelector('[data-entry-pk="' + target.id + '"]');
@@ -149,7 +149,11 @@
     element = element || document.getElementById('read');
     if (!element) return;
     if (element.tabIndex < 0 && !element.hasAttribute('tabindex')) element.tabIndex = -1;
-    focusTools.restoreQuietly(element);
+    if (keyboardFocus && element !== document.getElementById('read')) {
+      var control = element.querySelector('.entry__ctrl:not([disabled])') || element;
+      control.classList.remove('focus-restore-quiet');
+      control.focus({ preventScroll: true });
+    } else focusTools.restoreQuietly(element);
   }
 
   function announce(message) { if (status) status.textContent = message || ''; }
@@ -802,6 +806,7 @@
     deleteButton.addEventListener('click', function () {
       if (deleting || deleteButton.disabled || (feedback && feedback.isDialogBusy(modal))) return;
       deleting = true;
+      var preserveKeyboardFocus = keyboardOpened;
       var pattern = oldItem
         ? (modal.dataset.oldItemDeleteUrl || '/editor/item/0/delete/')
         : (modal.dataset.entryDeleteUrl || '/editor/entry/0/delete/');
@@ -846,7 +851,7 @@
         }
         if (release) { release(); release = null; }
         close();
-        focusAfterDelete(result.focus);
+        focusAfterDelete(result.focus, preserveKeyboardFocus);
       }).catch(function () {
         announce('');
         if (action) action.failure();
