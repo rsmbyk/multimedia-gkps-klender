@@ -695,8 +695,20 @@
   }
   function paintFind() {
     findResults.disabled = !findRows.length;
-    findSuggestion.textContent = findRows.length ? findRows[findChoice].label
-      : findInput.value.trim() ? 'No matching passage or song' : 'Start typing to find a match';
+    findSuggestion.textContent = '';
+    if (findRows.length) {
+      var row = findRows[findChoice];
+      findSuggestion.appendChild(document.createTextNode(row.label));
+      if (row.editionSuffix) {
+        var suffix = document.createElement('span');
+        suffix.className = 'projector-find__edition';
+        suffix.textContent = ' · ' + row.editionSuffix;
+        findSuggestion.appendChild(suffix);
+      }
+    } else {
+      findSuggestion.textContent = findInput.value.trim()
+        ? 'No matching passage or song' : 'Start typing to find a match';
+    }
     findCount.textContent = findRows.length ? (findChoice + 1) + ' / ' + findRows.length : '0 / 0';
   }
   function chooseFind(index) {

@@ -1,6 +1,6 @@
 # Tasks 100: Use the requested SIM book abbreviations
 
-- **Status:** In Review; Amendment A Draft pending owner acceptance
+- **Status:** In Review; Amendment A accepted and implemented
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 - **Preview:** [./preview.html](./preview.html)
@@ -40,22 +40,22 @@
 
 ## Done when
 
-- [x] All nine acceptance scenarios in `spec.md` hold on online and saved-copy paths named
-      there
+- [x] All acceptance scenarios in `spec.md` hold on the online, saved-copy, and projector Go To
+      paths named there
 - [x] The focused data, server, and browser checks are green
 - [x] Board, tasks, superseded-spec notes, and version metadata are complete in the same PR
 
-## Draft Amendment A — projector Go To edition selection
+## Accepted Amendment A — projector Go To edition selection
 
-- [x] Record the requested result labels and translation selection as a Draft amendment to Spec 100
+- [x] Record the requested result labels and translation selection as Amendment A to Spec 100
 - [x] Preview edition-specific Go To results and both states for a shared code
-- [ ] Owner accepts Amendment A
-- [ ] Red — cover `Pah 1` → `Panguhum 1` → SIM and `1Ta 2` → `1 Tawarikh 2` → TB,
+- [x] Owner accepts Amendment A
+- [x] E2E — cover `Pah 1` → `Panguhum 1` → SIM and `1Ta 2` → `1 Tawarikh 2` → TB,
       shared `Rut 1` results for TB and SIM with dimmed suffixes when names collide, and
       edition-specific verse references, in `tests/e2e/test_projector.py`
-- [ ] Green — carry a uniquely matched abbreviation's edition from `lookup()` into its
+- [x] Implement — carry a uniquely matched abbreviation's edition from `lookup()` into its
       suggestion label and passage detour, return both edition matches for shared codes, and
-      render a muted edition suffix for duplicate full names in
-      `static/web/projector-library.js`
-- [ ] Preserve Go To cycling and flip control, and prevent cross-edition substitution when a
+      render a muted edition suffix for duplicate full names in `static/web/projector-library.js`,
+      `static/web/projector.js`, and `static/styles/design/projector.css`
+- [x] Preserve Go To cycling and flip control, and prevent cross-edition substitution when a
       matched edition lacks the requested position

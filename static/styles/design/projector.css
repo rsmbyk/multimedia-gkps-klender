@@ -215,6 +215,7 @@ body.projector.find-closing .projector-find { animation: projectorListOut 180ms 
 .projector-find__row:hover { background: #36322b; }
 .projector-find__row:disabled { opacity: .6; cursor: default; }
 .projector-find__suggestion { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.projector-find__edition { color: var(--quiet); }
 .projector-find__count { flex: none; color: var(--quiet); }
 .projector-find__footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px;
   color: var(--quiet); font-size: 10px; }

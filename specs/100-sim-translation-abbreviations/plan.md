@@ -1,6 +1,6 @@
 # Plan 100: Use the requested SIM book abbreviations
 
-- **Status:** Accepted; Amendment A Draft pending owner acceptance
+- **Status:** Accepted; Amendment A accepted and implemented
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-100
@@ -59,8 +59,8 @@ in the sidebar, projector Go To, and passage editor.
    repeatable without creating another `BookTranslation`.
 3. Expose both full names and both short codes in the server book index and offline Bible
    chunks. Render online and saved-copy sidebars with the same edition-aware labels.
-4. Let all three named search surfaces use both short codes as aliases. Keep their existing
-   matching, result ordering, selected translation, and navigation behavior.
+4. Let all three named search surfaces use both short codes as aliases. Preserve the existing
+   sidebar and picker behavior; apply the accepted Go To edition-selection rules in Amendment A.
 5. Update the Bible stage title when its visible verse edition changes, and update testament
    headings when the sidebar or passage picker edition changes. Apply that same remembered
    edition to the three main rail popup labels, including during section switches.
@@ -87,13 +87,13 @@ in the sidebar, projector Go To, and passage editor.
 - A remembered SIM preference may coexist with TB verse fallback for one chapter. The sidebar
   stays on the remembered preference; the verse heading names the content actually shown.
 
-## Proposed Amendment A: choose Go To edition matches from their abbreviations
+## Accepted Amendment A: choose Go To edition matches from their abbreviations
 
-**Status: Draft; pending owner acceptance.** This amends only projector Go To behavior in the
-accepted Spec 100. The accepted implementation currently resolves both codes to a book and opens
-the existing default translation. The requested behavior instead carries the edition identified
-by the code through the suggestion and into the opened passage, including both editions when a
-code is shared.
+**Status: Accepted by the project owner on 2026-10-16; implemented.** This amends only projector
+Go To behavior in accepted Spec 100. The accepted implementation currently resolves both codes
+to a book and opens the existing default translation. The requested behavior instead carries the
+edition identified by the code through the suggestion and into the opened passage, including both
+editions when a code is shared.
 
 - A canonical `Book.name` code identifies TB; a per-translation abbreviation identifies its own
   edition. Carry the identified edition through the suggestion into the opened passage.

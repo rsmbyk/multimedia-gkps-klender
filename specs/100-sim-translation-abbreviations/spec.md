@@ -1,7 +1,7 @@
 # Spec: Use the requested SIM book abbreviations
 
 - **ID:** 100
-- **Status:** Accepted; Amendment A Draft pending owner acceptance
+- **Status:** Accepted; Amendment A accepted and implemented
 - **Item:** ITEM-100
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -91,9 +91,12 @@ Ibr=Heb  Yak=Jak  1Pt=1Pt  2Pt=2Pt  1Yo=1Jo  2Yo=2Jo  3Yo=3Jo  Yud=Jud  Why=Pak
 
 - The Bible sidebar filter matches full TB/SIM names and both short codes in either edition,
   preserving its case-insensitive substring behavior and current filter text.
-- Projector Go To resolves a TB or SIM code followed by a chapter or verse reference to the
-  same canonical book and position. It preserves the existing result count, navigation, and
-  projected translation choice.
+- Projector Go To carries a unique TB or SIM code's edition into the suggestion and opened
+  passage. A code shared by both editions returns one result per edition through the existing
+  result cycling. Suggestions use the matched edition's full book name, adding a muted/dimmed
+  `· TB` or `· SIM` suffix when both names are identical. A missing position in one matched
+  edition does not create a substitute result from the other edition. The translation flip
+  control remains available after opening a passage.
 - The new and edit passage book picker filters by both full names and both short codes in
   either toggle state. Filtering does not change the selected book or stored translation.
 - A book with no SIM abbreviation remains findable by its TB code and full names.
@@ -171,14 +174,12 @@ Ibr=Heb  Yak=Jak  1Pt=1Pt  2Pt=2Pt  1Yo=1Jo  2Yo=2Jo  3Yo=3Jo  Yud=Jud  Why=Pak
 - **When** the reader switches back to TB
 - **Then** only those three popup labels and accessible names return to their TB wording
 
-## Draft Amendment A: projector Go To follows matched edition abbreviations
+## Amendment A: projector Go To follows matched edition abbreviations
 
-**Pending owner acceptance.** This proposed amendment changes only the Go To abbreviation
-behavior. If accepted, replace the current Search rules sentence that Go To preserves the
-projected translation choice for abbreviation queries with the rules below. All other accepted
-Spec 100 requirements remain unchanged.
+**Accepted by the project owner on 2026-10-16.** This amendment changes only the Go To
+abbreviation behavior. All other Spec 100 requirements remain unchanged.
 
-### Proposed search, labeling, and selection rules
+### Search, labeling, and selection rules
 
 - An exact canonical `Book.name` code identifies TB; an exact translation abbreviation identifies
   its own edition. When one code uniquely identifies an edition, the Go To suggestion uses that
@@ -193,7 +194,7 @@ Spec 100 requirements remain unchanged.
   verses at the requested chapter or verse, do not show a result from the other edition as a
   substitute. Keep the translation flip control after opening a passage.
 
-### Proposed acceptance scenarios
+### Acceptance scenarios
 
 #### Scenario: SIM abbreviation suggests and opens the SIM passage
 
@@ -243,7 +244,8 @@ Preview: [Projector Go To edition preview](./preview.html#projector-goto-amendme
   `multimedia/web/templates/reading/base.html`,
   `multimedia/web/templates/reading/_entry_form.html`, `static/web/reading.js`,
   `static/web/entries.js`, `static/web/offline-render.js`, and
-  `static/web/projector-library.js`.
+  `static/web/projector-library.js`, `static/web/projector.js`, and
+  `static/styles/design/projector.css`.
 - This spec supersedes the TB-only mini-tile requirement in accepted spec 092 and the
   corresponding mini-tile assertion in accepted spec 099. Their remaining edition-state
   contracts continue to apply.
