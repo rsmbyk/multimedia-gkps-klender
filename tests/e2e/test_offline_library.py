@@ -445,9 +445,11 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertEqual(animation, 'none')
             context.set_offline(True)
             page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Offline'")
+            self.assertEqual(page.locator('html').get_attribute('data-browser-offline'), 'true')
             self.assertEqual(page.locator('#offlineSyncAvailability').inner_text(), 'Syncing library…')
             context.set_offline(False)
             page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Online'")
+            self.assertEqual(page.locator('html').get_attribute('data-browser-offline'), 'false')
             page.evaluate('window.__offlineTestReleaseLock()')
             wait_for_offline_ready(page)
 

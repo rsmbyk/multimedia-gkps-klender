@@ -24,7 +24,7 @@
 - [x] Run the targeted projector unit and browser classes (45 passing tests).
 - [x] Fill test and implementation paths in `spec.md` traceability.
 - [x] Set ITEM-094 to In review, update the board, version and changelog for the minor bump, and open a draft PR against `develop` in the same PR.
-- [ ] Before merge, complete the required remote CI and E2E, mark ITEM-094 Done, and check off delivered tasks in the same PR.
+- [x] Complete the required remote CI and E2E, mark ITEM-094 Done, and check off delivered tasks in the same PR.
 
 ## Done when
 

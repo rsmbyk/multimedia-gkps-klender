@@ -1,6 +1,6 @@
 # Tasks 092: Offline public reading and service projection
 
-- **Status:** Accepted; implementation and targeted checks complete, remote CI pending
+- **Status:** Accepted; implementation complete
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 - **Item:** ITEM-095
@@ -25,8 +25,8 @@
 ## Done when
 
 - [x] Every acceptance scenario in `spec.md` holds in targeted local checks.
-- [ ] Targeted tests and required remote CI are green at the pushed head.
-- [ ] ITEM, board, tasks, version, and changelog are complete in the same PR.
+- [x] Targeted tests and required remote CI are green at the pushed head.
+- [x] ITEM, board, tasks, version, and changelog are complete in the same PR.
 
 ## Draft amendment: persistent saved-copy badge
 
@@ -34,7 +34,7 @@
 - [x] Owner explicitly Accepts the Draft amendment in `plan.md` and `spec.md` before implementation.
 - [x] Move the public-reading saved-copy indicator out of the flowing header and style it as the fixed, click-through badge specified above, including responsive, theme, overlay, and print behavior.
 - [x] Extend the targeted saved-reading browser check for persistence while scrolling, failed-refresh visibility, narrow positioning, and print hiding; existing refresh checks continue to cover fresh-content removal.
-- [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+- [x] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
 
 ## Draft amendment: browser-offline badge color
 
@@ -42,7 +42,7 @@
 - [x] Owner explicitly Accepts this Draft amendment before implementation.
 - [x] Update the saved-copy badge dot from amber to the danger theme token on browser `offline`, and restore amber on browser `online`; do not infer state from request failures or delays.
 - [x] Add targeted browser checks for both transitions in light/dark themes and verify a failed content refresh alone does not change the dot.
-- [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+- [x] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
 
 ## Draft amendment: separate connection and library readiness
 
@@ -50,7 +50,7 @@
 - [x] Owner explicitly Accepts this Draft amendment before implementation.
 - [x] Separate browser connection status from offline-library availability in the main-rail popover, preserving sync state, timestamps, and action behavior.
 - [x] Add targeted browser coverage for online/offline crossed with ready, not-ready, syncing, and update-failed states; check light and dark themes.
-- [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+- [x] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
 
 ## Draft amendment: bottom-positioned status popover
 
@@ -58,7 +58,7 @@
 - [x] Owner explicitly Accepts this Draft amendment before implementation.
 - [x] Move the popover bottom offset to 12px and center the connection row's label and value in a balanced 40px row.
 - [x] Align the narrow-screen browser assertion with the accepted 12px bottom offset.
-- [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+- [x] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
 
 ## Draft amendment: center saved-copy badge
 
@@ -76,7 +76,7 @@
 - [x] Red — extend `tests/e2e/test_offline_library.py` with cached TB/SIM Bible records; assert expanded offline rows use the SIM name, filtering matches it, mini tiles retain the abbreviation, and missing SIM records produce no secondary label.
 - [x] Green — update `static/web/offline-render.js` to select SIM translation metadata for the expanded Bible row while preserving `.book__a` for mini mode and existing fallback behavior for the main TB label.
 - [x] Run the targeted offline-library E2E class; verify online-rendered rows and saved data ordering remain unchanged.
-- [ ] Run required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+- [x] Run required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
 
 ## Draft amendment: follow the selected Bible translation in the sidebar
 
@@ -85,4 +85,4 @@
 - [x] Red — cover TB-to-SIM and SIM-to-TB sidebar label/accessible-name changes, stable mini abbreviations, filtering, row identity, missing SIM, in-page navigation, and refresh reset in targeted browser tests.
 - [x] Green — expose both book names in server and saved-copy rows, synchronize visible sidebar labels with the active reading edition, and remove persisted edition restoration across full reloads.
 - [x] Run targeted reading and offline-library browser checks, including online and saved-copy navigation, then update ITEM-095 with the validated result; update the existing PR when pushing this branch.
-- [ ] Run required remote CI at the final pushed head.
+- [x] Run required remote CI at the final pushed head.
