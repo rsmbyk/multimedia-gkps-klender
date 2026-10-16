@@ -132,6 +132,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                     book_translation=sim_book, chapter=6, verse=1, text='Bapa nami SIM.')
                 bible.Verse.objects.create(
                     book_translation=mat_tb, chapter=6, verse=1, text='Bapa kami TB.')
+            elif self._testMethodName == 'test_bible_edition_survives_menu_switches_and_history':
+                bible.Verse.objects.create(
+                    book_translation=sim_book, chapter=6, verse=1, text='SIM-only chapter.')
 
         if self._testMethodName == 'test_hymn_song_order_is_visible_after_browsing_from_home':
             songs.Song.objects.create(book=self.book, number=10, title='Ten')
@@ -718,13 +721,23 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         song_url = reverse('web-song', args=[self.song.pk])
         book_url = reverse('web-bible-book', args=[self.mat.pk])
 
-        def open_song_page_and_return_to_bible():
+        def open_song_page_and_return_to_bible(edition):
             page.locator('.rail [data-panel="kidung"]').click()
             page.locator(f'#panelBody .book[href="{songbook_url}"]').click()
             page.locator(f'#chList .songrow[href="{song_url}"]').click()
             expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
             page.locator('.rail [data-panel="alkitab"]').click()
             page.locator(f'#panelBody .book[href="{book_url}"]').click()
+            row = page.locator(f'#panelBody .book[href="{book_url}"]')
+            if edition == 'sim':
+                expect(row.locator('.book__n')).to_have_text('Mateus')
+                expect(row.locator('.book__s')).to_have_text('Matius')
+                self.assertNotEqual(
+                    page.locator('#chList .ch-num').nth(5).get_attribute('aria-disabled'),
+                    'true', 'SIM-only chapter should stay available while Bible is open in the sidebar')
+            else:
+                expect(row.locator('.book__n')).to_have_text('Matius')
+                expect(row.locator('.book__s')).to_have_text('Mateus')
             page.locator(f'#chList .ch-num[href="{chapter_url}"]').click()
 
         def open_service_page_and_return_to_bible():
@@ -734,13 +747,16 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             expect(page.locator('#read[data-kind="tatib"]')).to_be_visible()
             page.locator('.rail [data-panel="alkitab"]').click()
             page.locator(f'#panelBody .book[href="{book_url}"]').click()
+            row = page.locator(f'#panelBody .book[href="{book_url}"]')
+            expect(row.locator('.book__n')).to_have_text('Matius')
+            expect(row.locator('.book__s')).to_have_text('Mateus')
             page.locator(f'#chList .ch-num[href="{chapter_url}"]').click()
 
         page.goto(self.live_server_url + chapter_url)
         page.locator('#langSim').click()
         expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
 
-        open_song_page_and_return_to_bible()
+        open_song_page_and_return_to_bible('sim')
         expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
         expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
         row = page.locator(f'#panelBody .book[href="{book_url}"]')
@@ -755,7 +771,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
         page.locator('#langTb').click()
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
-        open_song_page_and_return_to_bible()
+        open_song_page_and_return_to_bible('tb')
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
         expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
         open_service_page_and_return_to_bible()
