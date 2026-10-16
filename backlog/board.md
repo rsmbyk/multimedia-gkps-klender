@@ -26,12 +26,12 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-099](./items/ITEM-099-bible-edition-across-menus.md) | Keep Bible translation selection across menu switches | Retain the tab's TB/SIM choice when returning to Bible through the sidebar; reset on refresh or a new tab | fix | P2 | M | [099](../specs/099-bible-edition-across-menus/spec.md) | `fix/099-bible-edition-across-menus` | 2026-10-16 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-099](./items/ITEM-099-bible-edition-across-menus.md) | Keep Bible translation selection across menu switches | Retain the tab's TB/SIM choice when returning to Bible through the sidebar; reset on refresh or a new tab | fix | P2 | M | [099](../specs/099-bible-edition-across-menus/spec.md) | [#348](https://github.com/rsmbyk/multimedia-gkps-klender/pull/348) | 2026-10-16 |
 | [ITEM-071](./items/ITEM-071-tatib-entry-surface.md) | Subtle surface for Tata Ibadah entries | Quiet fill, outline, and padding for service entry boxes | chore | P2 | S | [068](../specs/068-tatib-entry-surface/spec.md) | [#322](https://github.com/rsmbyk/multimedia-gkps-klender/pull/322) | 2026-10-13 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
