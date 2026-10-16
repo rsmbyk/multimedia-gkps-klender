@@ -63,5 +63,7 @@
   });
   action.addEventListener('click', function () { library.sync().catch(function () {}); });
   library.subscribe(refresh);
+  window.addEventListener('online', refresh);
+  window.addEventListener('offline', refresh);
   refresh();
 })();

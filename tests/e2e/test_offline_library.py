@@ -285,6 +285,41 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
                 'status': initial_status, 'render': saved_render,
                 'source': source.evaluate('el => el.outerHTML'),
             })
+            def saved_badge_dot_color():
+                return source.evaluate(
+                    "el => getComputedStyle(el, '::before').backgroundColor")
+
+            amber = 'rgb(176, 129, 59)'
+            self.assertEqual(page.locator('html').get_attribute('data-browser-offline'), 'false')
+            self.assertEqual(saved_badge_dot_color(), amber,
+                             'a failed refresh alone must not mark the browser offline')
+            page.locator('#offlineSyncButton').click()
+            for theme in ('light', 'dark'):
+                current_theme = page.locator('html').get_attribute('data-theme') or 'light'
+                if current_theme != theme:
+                    page.locator('#themeBtn').click()
+                    page.wait_for_function('(theme) => document.documentElement.dataset.theme === theme', arg=theme)
+                self.assertEqual(page.locator('#offlineConnectionLabel').inner_text(), 'Online')
+                self.assertEqual(page.locator('#offlineSyncAvailability').inner_text(), 'Ready for offline use')
+                context.set_offline(True)
+                page.wait_for_function("document.documentElement.dataset.browserOffline === 'true'")
+                page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Offline'")
+                self.assertEqual(page.locator('#offlineSyncAvailability').inner_text(), 'Ready for offline use')
+                danger = page.evaluate("""() => {
+                  const probe = document.createElement('span');
+                  probe.style.color = 'var(--danger)';
+                  document.body.appendChild(probe);
+                  const color = getComputedStyle(probe).color;
+                  probe.remove();
+                  return color;
+                }""")
+                self.assertEqual(saved_badge_dot_color(), danger)
+                context.set_offline(False)
+                page.wait_for_function("document.documentElement.dataset.browserOffline === 'false'")
+                page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Online'")
+                self.assertEqual(saved_badge_dot_color(), amber)
+            page.locator('#offlineSyncButton').click()
+
             badge = source.evaluate('''el => ({
                 position: getComputedStyle(el).position,
                 pointerEvents: getComputedStyle(el).pointerEvents,
@@ -331,6 +366,15 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertFalse(state['ready'])
             self.assertIsNone(page.evaluate("GKPSOffline.get('bible', %d)" % self.book_id))
             self.assertIsNone(page.evaluate("GKPSOffline.get('songs', %d)" % self.songbook_id))
+            page.locator('#offlineSyncButton').click()
+            page.wait_for_function("document.querySelector('#offlineSyncAvailability').textContent === 'Not ready for offline use'")
+            self.assertEqual(page.locator('#offlineConnectionLabel').inner_text(), 'Online')
+            context.set_offline(True)
+            page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Offline'")
+            self.assertEqual(page.locator('#offlineSyncAvailability').inner_text(), 'Not ready for offline use')
+            context.set_offline(False)
+            page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Online'")
+            page.locator('#offlineSyncButton').click()
 
             page.unroute('**/offline/chunk/songs/*/')
             page.locator('#offlineSyncButton').click()
@@ -377,6 +421,9 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             status_button.click()
             panel = page.locator('#offlineSyncPanel')
             self.assertTrue(panel.is_visible())
+            page.locator('#themeBtn').click()
+            page.wait_for_function("document.documentElement.dataset.theme === 'dark'")
+            status_button.click()
 
             page.wait_for_function("!!navigator.locks && !!navigator.locks.request")
             page.evaluate("""() => {
@@ -396,6 +443,11 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             animation = page.locator('#offlineSyncProgress').evaluate(
                 "el => getComputedStyle(el, '::after').animationName")
             self.assertEqual(animation, 'none')
+            context.set_offline(True)
+            page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Offline'")
+            self.assertEqual(page.locator('#offlineSyncAvailability').inner_text(), 'Syncing library…')
+            context.set_offline(False)
+            page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Online'")
             page.evaluate('window.__offlineTestReleaseLock()')
             wait_for_offline_ready(page)
 
@@ -407,8 +459,6 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertGreaterEqual(bounds['top'], 0)
             self.assertAlmostEqual(bounds['viewportHeight'] - bounds['bottom'], 12, delta=1, msg=bounds)
 
-            page.locator('#themeBtn').click()
-            status_button.click()
             bg = panel.evaluate("el => getComputedStyle(el).backgroundColor")
             token = page.locator('html').evaluate("el => getComputedStyle(el).getPropertyValue('--canvas').trim()")
             self.assertEqual(bg, page.evaluate("value => { const e=document.createElement('div'); e.style.backgroundColor=value; document.body.append(e); const c=getComputedStyle(e).backgroundColor; e.remove(); return c; }", token))
@@ -573,8 +623,16 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             page.locator('#offlineSyncButton').click()
             page.locator('#offlineSyncNow').click()
             page.wait_for_function("document.querySelector('#offlineSyncDetail').textContent.includes('latest update failed')")
+            self.assertEqual(page.locator('#offlineConnectionLabel').inner_text(), 'Online')
+            self.assertEqual(page.locator('#offlineSyncAvailability').inner_text(), 'Ready for offline use')
             saved = page.evaluate("GKPSOffline.get('songs', %d)" % self.songbook_id)
             self.assertEqual(saved['songs'][0]['verses'][0]['lyric'], 'Kasih Tuhan kekal')
+            context.set_offline(True)
+            page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Offline'")
+            self.assertEqual(page.locator('#offlineSyncAvailability').inner_text(), 'Ready for offline use')
+            self.assertIn('latest update failed', page.locator('#offlineSyncDetail').inner_text())
+            context.set_offline(False)
+            page.wait_for_function("document.querySelector('#offlineConnectionLabel').textContent === 'Online'")
 
             page.unroute('**/offline/chunk/songs/*/')
             page.locator('#offlineSyncNow').click()
