@@ -165,3 +165,18 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 - **Given** the offline-library popover is open
 - **When** it is displayed at desktop or narrow viewport width
 - **Then** its bottom edge is 12px above the viewport edge and both Browser connection texts share the vertical center of the row between its dividers.
+
+## Draft amendment: center saved-copy badge
+
+**Status:** Accepted. The owner approved the [centered-badge preview](./preview-saved-copy-centered.html) and this Draft amendment.
+
+- On a public reading page displaying saved content, center the fixed “Saved copy” badge horizontally over the currently visible reading stage, excluding the main rail and any sidebar or chapter column that pushes the stage. Do not center it over the whole browser viewport.
+- Keep the badge 16px from the viewport top at widths above 800px and 12px from the top at widths of 800px or less. Keep its center aligned as the viewport is resized or the reading-stage layout changes, including navigation-column open/closed transitions.
+- Preserve the existing compact pill without changing its appearance: 12px text at weight 500, a 6px dot with 6px internal gap, 7px vertical and 11px horizontal padding, 1px divider-token border, 999px radius, canvas-token background, and the existing subtle shadow. Preserve the amber and danger dot states, visibility rules, stacking, and pointer-events behavior.
+- Do not add layout space or move the reading header or content.
+
+### Scenario: badge centers on the reading stage
+
+- **Given** a public Bible chapter, song, or Tata Ibadah page displays a saved-copy badge
+- **When** the reading stage is shown with navigation columns open or closed, the viewport is resized, or the reader scrolls
+- **Then** the badge remains fixed at the existing top offset and its horizontal center matches the visible reading-stage center rather than the whole viewport; no reading content shifts.

@@ -48,6 +48,23 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
         self.songbook_id = songbook.pk
         self.service_id = service.pk
 
+    def assert_saved_badge_centered_on_stage(self, page):
+        page.wait_for_function("""() => {
+          const badge = document.querySelector('#offlineSavedSource');
+          const stage = document.querySelector('.stage');
+          if (!badge || badge.hidden || !stage) return false;
+          const badgeRect = badge.getBoundingClientRect();
+          const stageRect = stage.getBoundingClientRect();
+          return Math.abs((badgeRect.left + badgeRect.width / 2)
+            - (stageRect.left + stageRect.width / 2)) < 1;
+        }""")
+        centers = page.evaluate("""() => {
+          const badge = document.querySelector('#offlineSavedSource').getBoundingClientRect();
+          const stage = document.querySelector('.stage').getBoundingClientRect();
+          return {badge: badge.left + badge.width / 2, stage: stage.left + stage.width / 2};
+        }""")
+        self.assertAlmostEqual(centers['badge'], centers['stage'], delta=1)
+
     def test_saved_content_and_projector_survive_disconnection(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
@@ -129,12 +146,25 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertEqual(badge['position'], 'fixed')
             self.assertEqual(badge['pointerEvents'], 'none')
             self.assertEqual(badge['parent'], 'read')
+            self.assert_saved_badge_centered_on_stage(page)
+
+            # The badge follows the reading-stage center as its left columns
+            # collapse and reopen, without becoming part of document flow.
+            rail_bible = page.locator('.rail [data-panel="alkitab"]')
+            if page.locator('html').get_attribute('data-nav') == 'open':
+                rail_bible.click()
+                page.wait_for_function("document.documentElement.dataset.nav === 'closed'")
+                self.assert_saved_badge_centered_on_stage(page)
+                rail_bible.click()
+                page.wait_for_function("document.documentElement.dataset.nav === 'open'")
+                self.assert_saved_badge_centered_on_stage(page)
+
             page.evaluate('window.scrollTo(0, document.documentElement.scrollHeight)')
             self.assertAlmostEqual(source.bounding_box()['y'], badge['top'], delta=1)
             page.set_viewport_size({'width': 700, 'height': 600})
             narrow = source.bounding_box()
             self.assertAlmostEqual(narrow['y'], 12, delta=1)
-            self.assertAlmostEqual(700 - narrow['x'] - narrow['width'], 18, delta=1)
+            self.assert_saved_badge_centered_on_stage(page)
             page.emulate_media(media='print')
             self.assertEqual(source.evaluate('el => getComputedStyle(el).display'), 'none')
             page.unroute('**/offline/chunk/**')

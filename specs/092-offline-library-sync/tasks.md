@@ -57,3 +57,12 @@
 - [x] Owner explicitly Accepts this Draft amendment before implementation.
 - [x] Move the popover bottom offset to 12px and center the connection row's label and value in a balanced 40px row.
 - [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+
+## Draft amendment: center saved-copy badge
+
+- [x] Owner approves the [centered-badge visual preview](./preview-saved-copy-centered.html).
+- [x] Owner explicitly Accepts this Draft amendment in `plan.md` and `spec.md` before implementation.
+- [x] Center the fixed badge on the visible reading-stage center, accounting for the rail and currently visible sidebar/chapter columns; keep the 16px desktop and 12px narrow top offsets and preserve the existing badge appearance and behavior.
+- [x] Add or update targeted browser coverage for wide/narrow viewports, sidebar states, resizing, and scrolling without content shift.
+- [x] Run the targeted `test_failed_online_content_refresh_keeps_the_saved_reading` browser check.
+- [ ] Run required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.

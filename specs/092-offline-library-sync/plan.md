@@ -88,3 +88,11 @@ The public reading page currently downloads another HTML page for in-app navigat
 - **Scope:** Change only the popover's bottom offset and the connection row's vertical spacing and alignment.
 - **Approach:** Set the popover 12px above the viewport bottom. Give the connection row a 40px height, center its label and value within that height, and place the following metadata divider immediately after the row so spacing around the row is balanced.
 - **Validation:** Check the approved layout at desktop and narrow widths and confirm the row's labels share the same vertical center between its dividers.
+
+## Draft amendment: center saved-copy badge
+
+- **Status:** Accepted; the [centered-badge preview](./preview-saved-copy-centered.html) and this Draft amendment were approved by the owner.
+- **Why:** Centering the fixed badge in the entire viewport leaves it visually offset from the reading page when navigation columns occupy the left side.
+- **Scope:** Change only the saved-copy badge's horizontal position. Preserve its wording, appearance, browser-offline dot, visibility rules, and fixed top placement.
+- **Approach:** Center the badge on the currently visible reading stage, excluding the main rail and any sidebar or chapter column that pushes the stage. Keep it fixed 16px from the top on wider screens and 12px from the top at widths of 800px or less. Recalculate its center when the viewport or reading-stage layout changes, including sidebar open/closed changes. Retain the existing 12px type, 6px dot and gap, 7px/11px padding, border, pill radius, shadow, theme colors, and click-through behavior.
+- **Validation:** Check the badge against the reading-stage center with navigation columns open and closed, at wide and narrow widths, and while scrolling; confirm it does not shift reading content or cover reading controls.

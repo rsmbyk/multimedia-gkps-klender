@@ -1,4 +1,5 @@
 /* Spec 092: the offline-library rail status matches the approved preview. */
+:root { --offline-stage-inset: calc(var(--rail-w) + var(--books-w) + var(--ch-w-shown)); }
 .rail__foot { gap: 8px; }
 .offline-sync-btn:focus-visible, .offline-sync-action:focus-visible {
   outline: 2px solid var(--focus);
@@ -47,17 +48,24 @@
 .offline-sync-progress::after { content: ''; display: block; width: 48%; height: 100%;
   background: var(--active-bg); animation: offline-sweep 1.1s ease-in-out infinite alternate; }
 @keyframes offline-sweep { from { transform: translateX(-100%); } to { transform: translateX(220%); } }
-.offline-saved-source { position: fixed; z-index: 3; top: 16px; right: clamp(24px, 5vw, 64px);
+.offline-saved-source { position: fixed; z-index: 3; top: 16px;
+  left: calc(50% + var(--offline-stage-inset) / 2); right: auto; transform: translateX(-50%);
   display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 7px 11px;
   border: 1px solid var(--divider); border-radius: 999px;
   background: var(--canvas); color: var(--head-ink); box-shadow: 0 5px 18px rgba(20, 20, 18, .12);
-  font-size: 12px; font-weight: 500; line-height: 1.25; pointer-events: none; }
+  font-size: 12px; font-weight: 500; line-height: 1.25; pointer-events: none;
+  transition: left var(--ease); }
 .offline-saved-source[hidden] { display: none; }
 .offline-saved-source::before { content: ''; width: 6px; height: 6px;
   flex: none; border-radius: 50%; background: #b0813b; }
 :root[data-browser-offline="true"] .offline-saved-source::before { background: var(--danger); }
 @media (max-width: 800px) {
-  .offline-saved-source { top: 12px; right: 18px; }
+  .offline-saved-source { top: 12px; }
+}
+@media (max-width: 720px) {
+  /* The open panel overlays the reading stage at this width; only the rail
+     contributes to the stage's left edge in components.css. */
+  :root[data-nav="open"] { --offline-stage-inset: var(--rail-w); }
 }
 @media print {
   .offline-saved-source { display: none !important; }
