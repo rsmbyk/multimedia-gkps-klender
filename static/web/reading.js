@@ -424,10 +424,17 @@
   function currentEdition() {
     return readEl && readEl.getAttribute('lang') === 'sim' ? 'sim' : 'tb';
   }
-  var selectedEdition = new URLSearchParams(location.search).get('ed') === 'sim' ? 'sim' : currentEdition();
+  var rememberedEdition = root.dataset.bibleEdition;
+  var requestedEdition = new URLSearchParams(location.search).get('ed') === 'sim' ? 'sim' : null;
+  var selectedEdition = rememberedEdition === 'sim' || rememberedEdition === 'tb'
+    ? rememberedEdition : requestedEdition || currentEdition();
+  /* The document root survives every in-page menu and stage swap, but a full
+     load gets a fresh root. Keep the tab-local choice there so shell hooks can
+     reinitialize without mistaking a non-Bible page's language for the choice. */
+  root.dataset.bibleEdition = selectedEdition;
   function syncBibleSidebar() {
     if (activeSection !== 'alkitab') return;
-    var simPrimary = currentEdition() === 'sim';
+    var simPrimary = selectedEdition === 'sim';
     panelBody.querySelectorAll('.book').forEach(function (row) {
       var tb = row.dataset.name || '';
       var sim = row.dataset.sim || '';
@@ -460,7 +467,7 @@
   }
   function decorateChapters() {
     if (activeSection !== 'alkitab') return;
-    var ed = currentEdition();
+    var ed = selectedEdition;
     chList.querySelectorAll('.ch-num').forEach(function (a) {
       var ok = ed === 'sim' ? a.dataset.sim === 'true' : a.dataset.tb === 'true';
       a.classList.toggle('no-data', !ok);
@@ -475,7 +482,10 @@
     if (langTb) langTb.setAttribute('aria-pressed', String(ed !== 'sim'));
     if (langSim) langSim.setAttribute('aria-pressed', String(ed === 'sim'));
     if (langTb) langTb.parentElement.dataset.edition = ed;
-    if (remember) selectedEdition = ed;
+    if (remember) {
+      selectedEdition = ed;
+      root.dataset.bibleEdition = ed;
+    }
     decorateChapters();
     syncBibleSidebar();
   }

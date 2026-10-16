@@ -8,8 +8,8 @@ effort: M
 created: 2026-10-16
 updated: 2026-10-16
 spec: 099
-branch: fix/099-bible-edition-across-menus
-pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/348
+branch: fix/099-bible-edition-across-menus-runtime
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/349
 archived_at:
 archive_reason:
 bump: patch
