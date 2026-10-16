@@ -186,7 +186,7 @@
     <p class="note">Both “Kej” and “1Mu” find the first book in the sidebar filter, passage book picker, and projector Go To reference search. The preview filter above demonstrates the sidebar behavior. Hover or focus the three rail icons to inspect their edition-specific popups.</p>
     <section class="goto-preview" id="projector-goto-amendment" aria-labelledby="goto-title">
       <h2 id="goto-title">Projector Go To · edition matching</h2>
-      <p class="goto-intro">Each result uses the full name for its matched edition. A code shared by both editions returns both results; identical names get a muted edition suffix. Selecting a result opens that edition, with the Go To layout and controls unchanged.</p>
+      <p class="goto-intro">Each result uses the full name for its matched edition. A code shared by both editions returns both results; identical names get a muted edition suffix. Draft Amendment B applies the same behavior to full-name queries. Selecting a result opens that edition, with the Go To layout and controls unchanged.</p>
       <div class="goto-examples">
         <article class="goto-example">
           <label>Search</label>
@@ -206,6 +206,13 @@
           <div class="goto-result"><span>Rut 1 <span class="goto-edition">· TB</span></span><span class="goto-result-count">1 / 2</span></div>
           <div class="goto-result"><span>Rut 1 <span class="goto-edition">· SIM</span></span><span class="goto-result-count">2 / 2</span></div>
           <p class="goto-opened">The existing counter cycles between both editions; selecting a result opens its labeled edition.</p>
+        </article>
+        <article class="goto-example">
+          <label>Draft Amendment B · shared full name · cycle states</label>
+          <div class="goto-query">Markus 1</div>
+          <div class="goto-result"><span>Markus 1 <span class="goto-edition">· TB</span></span><span class="goto-result-count">1 / 2</span></div>
+          <div class="goto-result"><span>Markus 1 <span class="goto-edition">· SIM</span></span><span class="goto-result-count">2 / 2</span></div>
+          <p class="goto-opened">The same treatment would apply to 1 Samuel, 2 Samuel, and Lukas when both editions have the requested passage.</p>
         </article>
       </div>
     </section>

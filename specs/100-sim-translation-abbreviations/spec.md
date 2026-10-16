@@ -1,7 +1,7 @@
 # Spec: Use the requested SIM book abbreviations
 
 - **ID:** 100
-- **Status:** Accepted; Amendment A accepted and implemented
+- **Status:** Accepted; Amendment A implemented; Amendment B Draft
 - **Item:** ITEM-100
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -230,6 +230,34 @@ abbreviation behavior. All other Spec 100 requirements remain unchanged.
 - **Then** the TB result opens TB and the SIM result opens SIM
 
 Preview: [Projector Go To edition preview](./preview.html#projector-goto-amendment).
+
+## Amendment B (Draft): shared full names in projector Go To
+
+The owner reports that `1 Samuel`, `2 Samuel`, `Markus`, and `Lukas` still offer only TB in
+projector Go To. Their canonical codes are shared by TB and SIM, and the saved SIM translations
+have verses. Amendment A covers shared *codes* but explicitly leaves full-name search on its
+older TB-only path. This amendment extends edition selection to an exact full translated book
+name followed by a chapter or verse reference.
+
+- Match the entered full name independently against each TB and SIM translation. Return one
+  result for each matching edition that has the requested chapter or verse.
+- Use the matching edition's full name in its suggestion and open that edition on selection.
+  When the result labels are identical, use the existing muted `· TB` and `· SIM` suffixes and
+  existing result cycling from Amendment A.
+- A full name unique to one edition returns only that edition. A missing position never causes
+  a result for that edition to use the other edition's verses. Keep abbreviation matching,
+  song Go To, and the passage translation flip control as accepted in Amendment A.
+
+### Acceptance scenarios
+
+- Searching `1 Samuel 1` or `2 Samuel 1` shows separate TB and SIM suggestions when both
+  editions have that chapter; selecting either opens its corresponding edition.
+- Searching `Markus 1` or `Lukas 1` shows separate TB and SIM suggestions with muted edition
+  suffixes when their full names are the same; both results can be reached by cycling.
+- An exact full name present in only one edition opens that edition. For a requested verse
+  absent from one edition, only the edition containing it appears.
+
+Preview: [shared-name Go To result treatment](./preview.html#projector-goto-amendment).
 
 ## Traceability
 
