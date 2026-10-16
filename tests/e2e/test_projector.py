@@ -81,6 +81,14 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         matius = bible.BookTranslation.objects.create(version=version, book=mat,
                                                       translation='Matius')
         bible.Verse.objects.create(book_translation=matius, chapter=5, verse=3, text='ayat 3')
+        if self._testMethodName == 'test_goto_passage_translation_flip_brightens_the_label':
+            sim_lang = bible.Language.objects.create(name='Simalungun')
+            sim_version = bible.Version.objects.create(lang=sim_lang, name='Simalungun',
+                                                       abbreviation='SIM')
+            mateus = bible.BookTranslation.objects.create(version=sim_version, book=mat,
+                                                          translation='Mateus')
+            bible.Verse.objects.create(book_translation=mateus, chapter=5, verse=3,
+                                       text='ayat 3 (SIM)')
         tatib.ServiceEntry.objects.create(
             tatib=self.service, order_number=5, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=matius, chapter=5, verse_start=3)
@@ -786,6 +794,80 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 page.keyboard.press('Escape')
                 page.wait_for_function(
                     "!document.querySelector('.projector-detour').classList.contains('is-active')")
+
+    def test_goto_passage_translation_flip_brightens_the_label(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        highlight = 'rgb(232, 228, 220)'
+        detour = page.locator('.projector-detour')
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('Mat 5')
+        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent === 'Matius 5'")
+        page.keyboard.press('Enter')
+        page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
+        page.locator('#projectorFind').wait_for(state='hidden')
+        label = page.locator('.cue-translation')
+        self.assertEqual(label.inner_text(), 'TB')
+
+        page.keyboard.press('t')
+        state = label.evaluate("""el => ({text: el.textContent, flash: el.classList.contains('flash'),
+          color: getComputedStyle(el).color})""")
+        self.assertEqual(state['text'], 'SIM')
+        self.assertTrue(state['flash'])
+        self.assertEqual(state['color'], highlight)
+        self.assertIn('Mateus 5:3', detour.inner_text())
+        self.assertIn('ayat 3 (SIM)', detour.inner_text())
+
+        # flipping again during the hold toggles back and stays bright
+        page.keyboard.press('t')
+        self.assertEqual(label.inner_text(), 'TB')
+        self.assertTrue(label.evaluate("el => el.classList.contains('flash')"))
+        self.assertEqual(label.evaluate('el => getComputedStyle(el).color'), highlight)
+        self.assertIn('Matius 5:3', detour.inner_text())
+        page.wait_for_function(
+            "!document.querySelector('.cue-translation').classList.contains('flash')", timeout=3000)
+        page.wait_for_function(
+            "getComputedStyle(document.querySelector('.cue-translation')).color === 'rgb(81, 77, 71)'")
+
+        # the label click flips it too
+        label.click()
+        self.assertEqual(label.inner_text(), 'SIM')
+        self.assertTrue(label.evaluate("el => el.classList.contains('flash')"))
+        self.assertEqual(label.evaluate('el => getComputedStyle(el).color'), highlight)
+        page.wait_for_function(
+            "!document.querySelector('.cue-translation').classList.contains('flash')", timeout=3000)
+        page.keyboard.press('Escape')
+        page.wait_for_function("!document.querySelector('.projector-detour').classList.contains('is-active')")
+
+        # a single-edition verse neither flips nor brightens
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('Mzm 23')
+        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent === 'Mazmur 23'")
+        page.keyboard.press('Enter')
+        page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
+        page.locator('#projectorFind').wait_for(state='hidden')
+        label = page.locator('.cue-translation')
+        self.assertEqual(label.inner_text(), 'TB')
+        page.keyboard.press('t')
+        self.assertEqual(label.inner_text(), 'TB')
+        self.assertFalse(label.evaluate("el => el.classList.contains('flash')"))
+        self.assertIn('Mazmur 23:1', detour.inner_text())
+        page.keyboard.press('Escape')
+        page.wait_for_function("!document.querySelector('.projector-detour').classList.contains('is-active')")
+
+        # the service cue keeps its own flip and brighten through the shared helper
+        page.mouse.move(0, 0)
+        for _ in range(4):
+            page.keyboard.press('Control+ArrowRight')
+        label = page.locator('.cue-translation')
+        self.assertEqual(label.inner_text(), 'TB')
+        page.keyboard.press('t')
+        self.assertEqual(label.inner_text(), 'SIM')
+        page.wait_for_function(
+            "getComputedStyle(document.querySelector('.cue-translation')).color === 'rgb(232, 228, 220)'")
+        page.wait_for_function(
+            "!document.querySelector('.cue-translation').classList.contains('flash')", timeout=3000)
+        self.assertEqual(label.inner_text(), 'SIM')
 
     def test_projector_search_clear_controls_match_both_fields(self):
         page = self._page(self._projector_url())

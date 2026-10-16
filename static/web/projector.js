@@ -442,11 +442,20 @@
       entryList.scrollTop += row.top - header.bottom - (visibleHeight - row.height) / 2;
     }
   }
+  function flashTranslationLabel() {
+    window.clearTimeout(translationTimer);
+    var flip = cuePrefix.querySelector('.cue-translation');
+    if (!flip) return;
+    flip.classList.add('flash');
+    translationTimer = window.setTimeout(function () { flip.classList.remove('flash'); }, 1000);
+  }
   function flipTranslation() {
     if (detour && detour.kind === 'passage') {
-      detour.translation = detour.translation === 'TB' ? 'SIM' : 'TB';
-      if (!detour.translations[detour.translation]) detour.translation = detour.translation === 'TB' ? 'SIM' : 'TB';
+      var alternate = detour.translation === 'TB' ? 'SIM' : 'TB';
+      if (!detour.translations[alternate]) return;
+      detour.translation = alternate;
       renderDetour();
+      flashTranslationLabel();
       return;
     }
     var entry = entryAt(current);
@@ -460,10 +469,7 @@
     active.querySelector('.screen__head').textContent = translations[target].header;
     active.querySelector('.screen__line').textContent = translations[target].line;
     renderCue(); fit(active);
-    var flip = cuePrefix.querySelector('.cue-translation');
-    flip.classList.add('flash');
-    window.clearTimeout(translationTimer);
-    translationTimer = window.setTimeout(function () { flip.classList.remove('flash'); }, 1000);
+    flashTranslationLabel();
   }
   var layerCloseMs = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
   var keysCloseTimer, entryCloseTimer, findCloseTimer;
