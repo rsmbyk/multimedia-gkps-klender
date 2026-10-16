@@ -80,3 +80,11 @@ The public reading page currently downloads another HTML page for in-app navigat
 - **Scope:** Clarify both states in the main-rail offline-library popover while preserving the existing sync action and timestamps.
 - **Approach:** Label the library availability (`Ready for offline use`, `Not ready for offline use`, or `Syncing library`) separately from a `Browser connection` row (`Online` or `Offline`). Base availability on the saved library and required shells; base connection only on the browser's online/offline state.
 - **Validation:** Review ready/online, ready/offline, not-ready/offline, syncing/offline, and update-failed/online combinations in light and dark themes.
+
+## Draft amendment: bottom-positioned status popover
+
+- **Status:** Accepted; the [bottom-positioned preview](./preview-offline-popover-bottom.html) was approved separately.
+- **Why:** The status popover should sit lower, and the connection row's text should appear centered between its separators.
+- **Scope:** Change only the popover's bottom offset and the connection row's vertical spacing and alignment.
+- **Approach:** Set the popover 12px above the viewport bottom. Give the connection row a 40px height, center its label and value within that height, and place the following metadata divider immediately after the row so spacing around the row is balanced.
+- **Validation:** Check the approved layout at desktop and narrow widths and confirm the row's labels share the same vertical center between its dividers.

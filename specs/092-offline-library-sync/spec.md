@@ -152,3 +152,16 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 - **Given** the offline-library popover is open
 - **When** the browser is online or offline and the saved library is ready, not ready, syncing, or retaining a prior generation after an update failure
 - **Then** the popover shows the browser connection separately from library availability, including combinations such as Ready + Offline and Not ready + Offline; changing connectivity does not imply that library content became unavailable or ready.
+
+## Draft amendment: bottom-positioned status popover
+
+**Status:** Accepted. The [bottom-positioned preview](./preview-offline-popover-bottom.html) was approved separately. This amendment overrides the popover's existing bottom offset and connection-row spacing only.
+
+- Position the offline-library popover 12px above the viewport bottom, retaining its existing left anchor, maximum width, and narrow-screen side clearance.
+- Make the Browser connection row 40px high, with its label and value vertically centered on the same axis. Keep the top divider at the row start and place the Last synced/Last checked divider immediately after the row, with no extra top margin, so the row's text is centered between the dividers.
+
+### Scenario: bottom popover and centered connection row
+
+- **Given** the offline-library popover is open
+- **When** it is displayed at desktop or narrow viewport width
+- **Then** its bottom edge is 12px above the viewport edge and both Browser connection texts share the vertical center of the row between its dividers.

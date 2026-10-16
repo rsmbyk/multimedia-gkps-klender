@@ -16,7 +16,7 @@
   background: #b0813b;
 }
 .offline-sync-panel { position: fixed; z-index: 50; left: calc(var(--rail-w) + 10px); right: 12px;
-  bottom: 72px; width: auto; max-width: 320px; box-sizing: border-box;
+  bottom: 12px; width: auto; max-width: 320px; box-sizing: border-box;
   padding: 16px 17px; border: 1px solid var(--divider); border-radius: 10px;
   background: var(--canvas); color: var(--ink); box-shadow: 0 12px 32px rgba(20,20,18,.23); }
 .offline-sync-panel[hidden] { display: none; }
@@ -26,13 +26,13 @@
 .offline-sync-availability { margin: 2px 0 0; color: var(--head-ink); font-size: 12px; }
 .offline-sync-detail { margin: 6px 0 0 20px; color: var(--head-ink); font-size: 12px; }
 .offline-connection { display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  margin: 14px 0 0; padding-top: 10px; border-top: 1px solid var(--divider);
-  color: var(--head-ink); font-size: 12px; }
+  height: 40px; margin: 14px 0 0; border-top: 1px solid var(--divider);
+  color: var(--head-ink); font-size: 12px; line-height: 1; }
 .offline-connection-value { display: inline-flex; align-items: center; gap: 6px;
   color: var(--ink); font-weight: 500; }
 .offline-connection-value i { width: 7px; height: 7px; flex: none; border-radius: 50%; background: #2d8460; }
 .offline-connection-value[data-offline="true"] i { background: var(--danger); }
-.offline-sync-meta { margin: 17px 0 14px; padding-top: 12px;
+.offline-sync-meta { margin: 0 0 14px; padding-top: 12px;
   border-top: 1px solid var(--divider); color: var(--head-ink); font-size: 12px; }
 .offline-sync-meta div { display: flex; justify-content: space-between; gap: 16px; margin: 4px 0; }
 .offline-sync-meta dd { margin: 0; color: var(--ink); font-weight: 500; text-align: right; }

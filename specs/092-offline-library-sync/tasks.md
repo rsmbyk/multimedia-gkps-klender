@@ -50,3 +50,10 @@
 - [x] Separate browser connection status from offline-library availability in the main-rail popover, preserving sync state, timestamps, and action behavior.
 - [ ] Add targeted browser coverage for online/offline crossed with ready, not-ready, syncing, and update-failed states; check light and dark themes.
 - [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+
+## Draft amendment: bottom-positioned status popover
+
+- [x] Owner approves the [bottom-positioned preview](./preview-offline-popover-bottom.html).
+- [x] Owner explicitly Accepts this Draft amendment before implementation.
+- [x] Move the popover bottom offset to 12px and center the connection row's label and value in a balanced 40px row.
+- [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
