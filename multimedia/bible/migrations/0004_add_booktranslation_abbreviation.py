@@ -15,7 +15,7 @@ SIM_ABBREVIATIONS = {
     'Mrk': 'Mrk', 'Luk': 'Luk', 'Yoh': 'Joh', 'Kis': 'Lah', 'Rom': 'Rom',
     '1Ko': '1Ko', '2Ko': '2Ko', 'Gal': 'Gal', 'Efe': 'Epe', 'Flp': 'Pil',
     'Kol': 'Kol', '1Te': '1Te', '2Te': '2Te', '1Ti': '1Ti', '2Ti': '2Ti',
-    'Tit': 'Tit', 'Flm': 'Pim', 'Ibr': 'Heb', 'Yak': 'Jak', '1Pt': '1Pt',
+    'Tit': 'Tit', 'Flm': 'Plm', 'Ibr': 'Heb', 'Yak': 'Jak', '1Pt': '1Pt',
     '2Pt': '2Pt', '1Yo': '1Jo', '2Yo': '2Jo', '3Yo': '3Jo', 'Yud': 'Jud',
     'Why': 'Pak',
 }

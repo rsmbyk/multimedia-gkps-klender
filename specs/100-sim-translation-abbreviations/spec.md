@@ -51,7 +51,7 @@ Ayb=Job  Mzm=Psa  Ams=Pod  Pkh=Par  Kid=Dod  Yes=Jes  Yer=Jer  Rat=Tan  Yeh=Hes
 Dan=Dan  Hos=Hos  Yoe=Joe  Amo=Ams  Oba=Obj  Yun=Jon  Mik=Mik  Nah=Nah  Hab=Hab
 Zef=Sef  Hag=Hag  Zak=Sak  Mal=Mal
 Mat=Mat  Mrk=Mrk  Luk=Luk  Yoh=Joh  Kis=Lah  Rom=Rom  1Ko=1Ko  2Ko=2Ko  Gal=Gal
-Efe=Epe  Flp=Pil  Kol=Kol  1Te=1Te  2Te=2Te  1Ti=1Ti  2Ti=2Ti  Tit=Tit  Flm=Pim
+Efe=Epe  Flp=Pil  Kol=Kol  1Te=1Te  2Te=2Te  1Ti=1Ti  2Ti=2Ti  Tit=Tit  Flm=Plm
 Ibr=Heb  Yak=Jak  1Pt=1Pt  2Pt=2Pt  1Yo=1Jo  2Yo=2Jo  3Yo=3Jo  Yud=Jud  Why=Pak
 ```
 
