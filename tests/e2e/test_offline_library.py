@@ -65,6 +65,34 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
         }""")
         self.assertAlmostEqual(centers['badge'], centers['stage'], delta=1)
 
+    def test_saved_sidebar_matches_server_order_and_controls(self):
+        smaller = songs.Book.objects.create(name='Short Book', short_name='SB')
+        songs.Song.objects.create(book=smaller, title='One')
+        larger = songs.Book.objects.create(name='Large Book', short_name='LB')
+        for number in range(3):
+            songs.Song.objects.create(book=larger, title=f'Song {number}')
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/songs/')
+            wait_for_offline_ready(page)
+            server_order = page.locator('#panelBody .book__n').all_text_contents()
+            self.assertLess(server_order.index('Large Book'), server_order.index('Short Book'))
+            page.locator('.rail [data-panel="tatib"]').click()
+            page.locator('.rail [data-panel="kidung"]').click()
+            page.wait_for_function("document.documentElement.dataset.section === 'kidung'")
+            self.assertEqual(page.locator('#panelBody .book__n').all_text_contents(), server_order)
+            self.assertEqual(page.locator('#panelBody .row-edit').count(), 2)
+            self.assertEqual(page.locator('#panelBody .row-edit svg').count(), 2)
+            self.assertNotIn('Edit', page.locator('#panelBody .row-edit').first.inner_text())
+            page.locator('.rail [data-panel="alkitab"]').click()
+            page.locator('#panelCollapse').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
+            self.assertTrue(page.locator('#panelBody .book__a').first.is_visible())
+            self.assertEqual(page.locator('#panelBody .book__a').first.inner_text(), 'Mat')
+            browser.close()
+
     def test_saved_content_and_projector_survive_disconnection(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)

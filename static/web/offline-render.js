@@ -58,7 +58,24 @@
       + escape(short || '') + '</span></a>'
       + (editor ? '<button class="row-edit" type="button" data-editor-open="' + editor
         + '" data-editor-id="' + book.id + '" aria-label="Edit ' + escape(name)
-        + '">Edit</button>' : '') + '</li>';
+        + '"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"'
+        + ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        + '<path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg></button>' : '') + '</li>';
+  }
+  function sortedSongbooks(books) {
+    return books.slice().sort(function (a, b) {
+      return b.songs.length - a.songs.length || a.name.localeCompare(b.name);
+    });
+  }
+  function biblePanel(books, selectedId) {
+    return [['old', 'Perjanjian Lama'], ['new', 'Perjanjian Baru']].map(function (group) {
+      var rows = books.filter(function (book) { return book.testament === group[0]; });
+      if (!rows.length) return '';
+      return '<section class="group" data-testament="' + group[0] + '"><h3 class="group__head">'
+        + group[1] + '</h3><ul>' + rows.map(function (book) {
+          return bookLink(book, book.id === selectedId, 'bible', false);
+        }).join('') + '</ul></section>';
+    }).join('');
   }
   function addButtons(serviceId) {
     return ['scripture', 'song', 'text', 'section_break'].map(function (kind) {
@@ -278,9 +295,7 @@
         }).join('') + '</div>';
     }
     var body = edition(tbRows, 'tb') + (simRows.length ? edition(simRows, 'sim') : '');
-    var panel = '<section class="group"><ul>' + books.map(function (item) {
-      return bookLink(item, item.id === book.id, 'bible', !!doc.querySelector('#editorModal'));
-    }).join('') + '</ul></section>';
+    var panel = biblePanel(books, book.id);
     var chapters = Array.from({length: book.chapters}, function (_, index) {
       var n = index + 1;
       var hasTb = tb && tb.verses.some(function (row) { return row.chapter === n; });
@@ -310,7 +325,7 @@
     var citation = book.is_hymn_book ? (book.name + ' ' + song.number
       + (song.sub_number || '').toUpperCase()) : song.title;
     if (!citation) citation = book.name;
-    var panel = '<section class="group"><ul>' + books.map(function (item) {
+    var panel = '<section class="group"><ul>' + sortedSongbooks(books).map(function (item) {
       return bookLink(item, item.id === book.id, 'songs', !!doc.querySelector('#editorModal'));
     }).join('') + '</ul></section>';
     var editor = !!doc.querySelector('#editorModal') && !book.is_hymn_book;
@@ -561,9 +576,7 @@
     doc.querySelector('#searchQuery').setAttribute('value', '');
     doc.querySelector('#searchResults').innerHTML = '';
     doc.querySelector('#searchResults').hidden = true;
-    doc.querySelector('#panelBody').innerHTML = '<section class="group"><ul>'
-      + bible.map(function (item) { return bookLink(item, false, 'bible', false); }).join('')
-      + '</ul></section>';
+    doc.querySelector('#panelBody').innerHTML = biblePanel(bible, null);
     doc.title = 'GKPS Klender — Search Alkitab, Kidung, and Tata Ibadah';
     return doc;
   }
@@ -585,7 +598,8 @@
     var editor = !!doc.querySelector('#editorModal');
     var mode = target.url.searchParams.get('mode') === 'template' ? 'template' : 'dated';
     var panel = section === 'tatib' ? servicePanel(collection, null, mode, editor)
-      : '<section class="group"><ul>' + collection.map(function (item) {
+      : section === 'alkitab' ? biblePanel(collection, selected && selected.id)
+      : '<section class="group"><ul>' + sortedSongbooks(collection).map(function (item) {
         return bookLink(item, selected && item.id === selected.id,
           section === 'alkitab' ? 'bible' : 'songs', editor);
       }).join('') + '</ul></section>';
