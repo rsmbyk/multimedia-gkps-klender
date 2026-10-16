@@ -53,7 +53,9 @@
       + '" data-sim="' + escape(kind === 'service' ? book.id : short || '') + '" aria-label="' + escape(name)
       + (short ? ' (' + escape(short) + ')' : '')
       + '"' + (selected ? ' aria-current="true"' : '') + '><span class="book__n">'
-      + escape(name) + '</span><span class="book__s">' + escape(short || '') + '</span></a>'
+      + escape(name) + '</span>' + (kind === 'bible' ? '<span class="book__a">'
+        + escape(book.name) + '</span>' : '') + '<span class="book__s">'
+      + escape(short || '') + '</span></a>'
       + (editor ? '<button class="row-edit" type="button" data-editor-open="' + editor
         + '" data-editor-id="' + book.id + '" aria-label="Edit ' + escape(name)
         + '">Edit</button>' : '') + '</li>';

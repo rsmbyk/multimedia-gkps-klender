@@ -15,6 +15,7 @@
 - [x] Red/green: browser-store E2E covers first and incremental sync, failed/interrupted generations, eviction detection, cross-tab commit notification, and saved-copy fallback.
 - [x] Red/green: service-worker E2E covers the two shells, direct offline URLs, versioned cache identity, and pass-through of legacy OBS/editor/admin/future routes.
 - [x] Red/green: targeted E2E covers status UI, saved-copy indicator, async content refresh, browser history, repeated searches, tab isolation, direct search URLs, and scroll/Show more/typed-state restoration.
+- [x] Red/green: offline Bible book abbreviations remain visible after returning to the local home and opening the mini sidebar.
 - [x] Red/green: targeted E2E covers immediate projector startup, saved service screens, offline Go To, cross-tab updates, and failed refresh preserving the current screen and snapshot.
 - [x] Check light/dark and narrow status UI against the approved preview; verify focus, disabled, and reduced-motion states.
 - [x] Fill implementation/test paths in the spec Traceability section and run targeted local checks; full suite and browser E2E remain CI checks.
