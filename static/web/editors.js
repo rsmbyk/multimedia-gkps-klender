@@ -16,6 +16,7 @@
   var feedback = window.gkpsEditFeedback;
   if (feedback) feedback.guardDialog(modal);
   var trigger = null;
+  var pendingFormLoad = null;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
       if (!target) return;
@@ -23,6 +24,114 @@
       target.focus({ preventScroll: true });
     }
   };
+
+  function canOpenEditor() {
+    return !pendingFormLoad && !modal.open;
+  }
+
+  function invalidateFormLoad() {
+    if (!pendingFormLoad) return;
+    var request = pendingFormLoad;
+    pendingFormLoad = null;
+    modal.classList.remove('is-loading');
+    if (request.controller) {
+      try { request.controller.abort(); } catch (error) { /* The request identity is enough. */ }
+    }
+  }
+
+  function renderLoading(title) {
+    var body = document.createElement('div');
+    body.className = 'editor__body editor__body--loading';
+
+    var heading = document.createElement('h2');
+    heading.className = 'editor__title editor__loading-title';
+    heading.id = 'editorTitle';
+    heading.textContent = title;
+
+    var loading = document.createElement('div');
+    loading.className = 'editor__loading';
+    loading.setAttribute('role', 'status');
+    loading.setAttribute('aria-live', 'polite');
+
+    var spinner = document.createElement('span');
+    spinner.className = 'editor__loading-spinner';
+    spinner.setAttribute('aria-hidden', 'true');
+
+    var label = document.createElement('span');
+    label.className = 'editor__loading-label';
+    label.textContent = 'Loading editor…';
+    loading.append(spinner, label);
+
+    var actions = document.createElement('div');
+    actions.className = 'editor__actions';
+    var cancel = document.createElement('button');
+    cancel.className = 'editor__cancel';
+    cancel.type = 'button';
+    cancel.dataset.editorClose = '';
+    cancel.textContent = 'Cancel';
+    actions.appendChild(cancel);
+
+    body.append(heading, loading, actions);
+    content.replaceChildren(body);
+    return cancel;
+  }
+
+  function loadEditorForm(options) {
+    if (!canOpenEditor()) return false;
+
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var request = { controller: controller, onLoad: options.onLoad, onFailure: options.onFailure };
+    pendingFormLoad = request;
+    modal.classList.add('is-loading');
+    var cancel = renderLoading(options.title);
+    modal.showModal();
+    cancel.focus();
+
+    var fetchOptions = {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'fetch' }
+    };
+    if (controller) fetchOptions.signal = controller.signal;
+
+    fetch(options.url, fetchOptions).then(function (response) {
+      if (response.status === 403) throw new Error('forbidden');
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.text().then(function (html) {
+        if (!html.trim()) throw new Error('empty');
+        return html;
+      });
+    }).then(function (html) {
+      if (pendingFormLoad !== request || !modal.open) return;
+      pendingFormLoad = null;
+      modal.classList.remove('is-loading');
+      try {
+        request.onLoad(html);
+      } catch (error) {
+        if (modal.open) modal.close();
+        request.onFailure(error);
+      }
+    }).catch(function (error) {
+      if (pendingFormLoad !== request) return;
+      pendingFormLoad = null;
+      modal.classList.remove('is-loading');
+      if (modal.open) modal.close();
+      request.onFailure(error);
+    });
+    return true;
+  }
+
+  /* Sidebar and entry editors share one dialog, so they also share one request
+     identity. Publish this before entries.js is loaded. */
+  window.gkpsEditorLoadForm = {
+    canOpen: canOpenEditor,
+    open: loadEditorForm
+  };
+  modal.addEventListener('cancel', invalidateFormLoad);
+  modal.addEventListener('close', invalidateFormLoad);
+  modal.addEventListener('click', function (event) {
+    if (pendingFormLoad && (event.target === modal
+        || event.target.closest('[data-editor-close]'))) invalidateFormLoad();
+  }, true);
 
   function urlFor(kind, id, book) {
     var pattern = modal.dataset.editorNew;
@@ -43,28 +152,24 @@
 
   function open(kind, id, book) {
     announce('');
-    fetch(urlFor(kind, id, book), {
-      credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' }
-    }).then(function (response) {
-      if (response.status === 403) throw new Error('forbidden');
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.text().then(function (html) {
-        if (!html.trim()) throw new Error('empty');
-        return html;
-      });
-    }).then(function (html) {
-      document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
-      content.innerHTML = html;
-      if (!modal.open) modal.showModal();
-      document.dispatchEvent(new CustomEvent('date-picker:initialize'));
-      var first = content.querySelector('input:not([type=hidden]), select, textarea');
-      if (first) first.focus();
-    }).catch(function (error) {
-      announce('');
-      if (feedback) feedback.showFailure('Could not load editor',
-        error.message === 'forbidden'
-          ? 'Editing is restricted to signed-in staff.'
-          : 'The editor could not be loaded. Try again.');
+    var nouns = { songbook: 'songbook', song: 'song', tatib: 'Tata Ibadah' };
+    return window.gkpsEditorLoadForm.open({
+      url: urlFor(kind, id, book),
+      title: (id ? 'Edit ' : 'New ') + (nouns[kind] || 'editor'),
+      onLoad: function (html) {
+        document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
+        content.innerHTML = html;
+        document.dispatchEvent(new CustomEvent('date-picker:initialize'));
+        var first = content.querySelector('input:not([type=hidden]), select, textarea');
+        if (first) first.focus();
+      },
+      onFailure: function (error) {
+        announce('');
+        if (feedback) feedback.showFailure('Could not load editor',
+          error.message === 'forbidden'
+            ? 'Editing is restricted to signed-in staff.'
+            : 'The editor could not be loaded. Try again.');
+      }
     });
   }
 
@@ -135,7 +240,7 @@
     var closeButton = event.target.closest('[data-editor-close]');
     if (closeButton && modal.contains(closeButton)) { close(); return; }
     var opener = event.target.closest('[data-editor-open]');
-    if (!opener || opener.disabled) return;
+    if (!opener || opener.disabled || !window.gkpsEditorLoadForm.canOpen()) return;
     event.preventDefault();
     trigger = opener;
     open(opener.dataset.editorOpen, opener.dataset.editorId, opener.dataset.editorBook);

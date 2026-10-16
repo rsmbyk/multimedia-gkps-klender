@@ -509,10 +509,36 @@ li:hover > .row-edit,
    viewport scrolls the document it sits over, which is the scrollbar everybody
    notices and nobody wants. */
 .editor__content { padding: 22px; overflow-y: auto; min-height: 0; }
+.editor.is-loading {
+  width: min(490px, calc(100vw - 32px));
+  max-height: min(calc(100dvh - 40px), 46rem);
+}
+.editor.is-loading .editor__content { padding: 24px; }
 .editor__title {
   margin: 0 0 16px; padding: 0 34px 14px 0;
   font-size: 18px; font-weight: 640; letter-spacing: -.01em;
   border-bottom: 1px solid var(--divider);
+}
+.editor__loading-title {
+  margin: 0 0 8px; padding: 0; border: 0;
+  font-size: 20px; line-height: 1.25;
+}
+.editor__loading {
+  display: flex; min-height: 80px; align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px;
+  color: var(--head-ink); text-align: center;
+  font: 400 14px/1.4 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__loading-spinner {
+  box-sizing: border-box; flex: 0 0 18px;
+  width: 18px; height: 18px;
+  border: 2px solid var(--divider); border-top-color: var(--active-bg);
+  border-radius: 50%; animation: editor-load-spin 800ms linear infinite;
+}
+.editor__loading-label { font: inherit; }
+@keyframes editor-load-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .editor__loading-spinner { animation: none; }
 }
 /* The dialog carries no x: the form's own Cancel, Escape and the backdrop are the
    ways out, and chrome that repeats a control the form already has is noise. */

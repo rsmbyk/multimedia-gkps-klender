@@ -203,17 +203,6 @@
     }
   }, true);
 
-  function get(url) {
-    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
-      .then(function (response) {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.text().then(function (html) {
-          if (!html.trim()) throw new Error('empty');
-          return html;
-        });
-      });
-  }
-
   function focusFirst(scope) {
     var first = scope.querySelector(
       '.editor__picker-trigger:not([disabled]), input[type="text"]:not([disabled]), ' +
@@ -221,18 +210,22 @@
     if (first) first.focus();
   }
 
-  function load(url) {
+  function load(url, title) {
     announce('');
-    get(url).then(function (html) {
-      content.innerHTML = html;
-      if (!modal.open) modal.showModal();
-      markOrigin();
-      wire(content);
-      focusFirst(content);
-    }).catch(function () {
-      announce('');
-      if (feedback) feedback.showFailure('Could not load editor',
-        'The editor could not be loaded. Try again.');
+    return window.gkpsEditorLoadForm.open({
+      url: url,
+      title: title,
+      onLoad: function (html) {
+        content.innerHTML = html;
+        markOrigin();
+        wire(content);
+        focusFirst(content);
+      },
+      onFailure: function () {
+        announce('');
+        if (feedback) feedback.showFailure('Could not load editor',
+          'The editor could not be loaded. Try again.');
+      }
     });
   }
 
@@ -877,10 +870,11 @@
     }
     var oldEdit = event.target.closest('[data-old-item-edit]');
     if (oldEdit && !oldEdit.disabled) {
+      if (!window.gkpsEditorLoadForm.canOpen()) return;
       event.preventDefault();
       trigger = oldEdit;
       keyboardOpened = event.detail === 0;
-      load(oldItemEditUrl(oldEdit.dataset.oldItemEdit));
+      load(oldItemEditUrl(oldEdit.dataset.oldItemEdit), 'Edit row');
       return;
     }
     var del = event.target.closest('[data-entry-delete]');
@@ -893,14 +887,17 @@
     }
     var edit = event.target.closest('[data-entry-edit]');
     if (edit && !edit.disabled) {
+      if (!window.gkpsEditorLoadForm.canOpen()) return;
       event.preventDefault();
       trigger = edit;
       keyboardOpened = event.detail === 0;
-      load(editUrl(edit.dataset.entryEdit));
+      load(editUrl(edit.dataset.entryEdit), 'Edit entry');
       return;
     }
     var opener = event.target.closest('[data-entry-open]');
     if (!opener || opener.disabled) return;
+    if (opener.dataset.entryOpen !== 'section_break'
+        && !window.gkpsEditorLoadForm.canOpen()) return;
     event.preventDefault();
     var row = opener.closest('[data-entry-after]');
     var after = row ? row.dataset.entryAfter
@@ -911,7 +908,9 @@
     }
     trigger = opener;
     keyboardOpened = false;
-    load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after));
+    var titles = { scripture: 'Add Passage', song: 'Add Song', text: 'Add Text' };
+    load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after),
+      titles[opener.dataset.entryOpen] || 'Add entry');
   });
 
   /* A break has no fields (spec 057): '+ Break' creates it at once, at the add row's
