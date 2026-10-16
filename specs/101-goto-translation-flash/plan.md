@@ -1,6 +1,6 @@
 # Plan 101: Brighten the translation label after flipping a Go To passage
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-101

@@ -1,7 +1,7 @@
 # Spec: Brighten the translation label after flipping a Go To passage
 
 - **ID:** 101
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-101
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

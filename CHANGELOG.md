@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.13.3] - 2026-10-16
+
+### Fixed
+
+- The TB/SIM label on a passage opened through the projector's Go To brightens for about one
+  second after the flip, matching a service passage cue.
+
 ## [1.13.2] - 2026-10-16
 
 ### Changed
