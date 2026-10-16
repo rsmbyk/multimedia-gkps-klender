@@ -66,4 +66,4 @@
 - [x] Center the fixed badge on the visible reading-stage center, accounting for the rail and currently visible sidebar/chapter columns; keep the 16px desktop and 12px narrow top offsets and preserve the existing badge appearance and behavior.
 - [x] Add or update targeted browser coverage for wide/narrow viewports, sidebar states, resizing, and scrolling without content shift.
 - [x] Run the targeted `test_failed_online_content_refresh_keeps_the_saved_reading` browser check.
-- [ ] Run required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+- [x] Run required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
