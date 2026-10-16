@@ -432,17 +432,44 @@
      load gets a fresh root. Keep the tab-local choice there so shell hooks can
      reinitialize without mistaking a non-Bible page's language for the choice. */
   root.dataset.bibleEdition = selectedEdition;
+  function syncRailTranslationLabels() {
+    var names = selectedEdition === 'sim'
+      ? { alkitab: 'Bibel', kidung: 'Doding', tatib: 'Agenda' }
+      : { alkitab: 'Alkitab', kidung: 'Kidung', tatib: 'Tata Ibadah' };
+    Object.keys(names).forEach(function (section) {
+      var button = rail.querySelector('[data-panel="' + section + '"]');
+      if (!button) return;
+      var label = names[section];
+      if (button.dataset.tip !== label) button.dataset.tip = label;
+      if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
+      if (button.getAttribute('data-tip-open') === 'true') {
+        button.setAttribute('aria-describedby', 'tip-' + label.replace(/\s+/g, '-'));
+      }
+    });
+  }
   function syncBibleSidebar() {
     if (activeSection !== 'alkitab') return;
     var simPrimary = selectedEdition === 'sim';
+    panelBody.querySelectorAll('.group__head[data-label-tb]').forEach(function (heading) {
+      var label = heading.dataset[simPrimary ? 'labelSim' : 'labelTb'];
+      if (label && heading.textContent !== label) heading.textContent = label;
+    });
     panelBody.querySelectorAll('.book').forEach(function (row) {
       var tb = row.dataset.name || '';
       var sim = row.dataset.sim || '';
-      var primary = simPrimary && sim ? sim : tb;
-      var secondary = simPrimary && sim ? tb : sim;
+      var hasTb = row.dataset.hasTb ? row.dataset.hasTb === 'true' : !!tb;
+      var hasSim = row.dataset.hasSim ? row.dataset.hasSim === 'true' : !!sim;
+      var primary = simPrimary && hasSim ? sim : tb;
+      var secondary = hasTb && hasSim ? (simPrimary ? tb : sim) : '';
+      var code = simPrimary ? row.dataset.simCode || row.dataset.tbCode
+        : row.dataset.tbCode || '';
       var name = row.querySelector('.book__n');
       var other = row.querySelector('.book__s');
+      var abbreviation = row.querySelector('.book__a');
       if (name && name.textContent !== primary) name.textContent = primary;
+      if (abbreviation && code && abbreviation.textContent !== code) {
+        abbreviation.textContent = code;
+      }
       if (other) {
         if (secondary) {
           if (other.textContent !== secondary) other.textContent = secondary;
@@ -464,6 +491,21 @@
     var found = null;
     editionBlocks.forEach(function (block) { if (block.ed === ed) found = block; });
     return found;
+  }
+  function syncVisibleBibleTitle() {
+    if (!readEl || readEl.dataset.kind !== 'bible') return;
+    var visibleBlock = null;
+    editionBlocks.forEach(function (block) {
+      if (!block.el.hidden) visibleBlock = block;
+    });
+    if (!visibleBlock) return;
+    var name = visibleBlock.el.dataset.name || '';
+    var readName = document.getElementById('readName');
+    if (name && readName && readName.textContent !== name) readName.textContent = name;
+    if (!name) return;
+    var number = document.getElementById('readNo');
+    document.title = name + (number && number.textContent ? ' ' + number.textContent : '')
+      + ' — GKPS Klender';
   }
   function decorateChapters() {
     if (activeSection !== 'alkitab') return;
@@ -488,6 +530,8 @@
     }
     decorateChapters();
     syncBibleSidebar();
+    syncRailTranslationLabels();
+    syncVisibleBibleTitle();
   }
   function bindLangLinks() {
     if (!stage.dataset.langLinksBound) {
@@ -829,6 +873,8 @@
         var hit = !needle
           || String(row.dataset.name).toLowerCase().indexOf(needle) !== -1
           || String(row.dataset.sim).toLowerCase().indexOf(needle) !== -1
+          || String(row.dataset.tbCode).toLowerCase().indexOf(needle) !== -1
+          || String(row.dataset.simCode).toLowerCase().indexOf(needle) !== -1
           || row.textContent.toLowerCase().indexOf(needle) !== -1;
         row.parentNode.classList.toggle('is-hidden', !hit);
         if (hit) { shownInGroup++; any = true; }
@@ -955,6 +1001,7 @@
     var panelOpen = mode !== 'closed';
     var sectionOpen = panelOpen || root.dataset.ch === 'open';
     var name = SECTION_NAMES[activeSection];
+    syncRailTranslationLabels();
     alkBtn.setAttribute('aria-expanded', String(sectionOpen && activeSection === 'alkitab'));
     kidBtn.setAttribute('aria-expanded', String(sectionOpen && activeSection === 'kidung'));
     tatBtn.setAttribute('aria-expanded', String(sectionOpen && activeSection === 'tatib'));
@@ -1447,6 +1494,7 @@
       chBody.scrollTop = changingMainMenu ? 0 : currentChScroll;
       if (!opts.deferFocus) restoreRequestedFocus(opts);
       document.title = doc.title;
+      syncVisibleBibleTitle();
       document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
       return true;
     }
@@ -1658,6 +1706,7 @@
 
     if (fresh.home === 'results') railSearch.setAttribute('href', url);
     document.title = doc.title;
+    syncVisibleBibleTitle();
     if (opts.replaceUrl) {
       history.replaceState({gkps: true, url: url, kind: kind}, '', url);
     } else if (!opts.skipHistory) {

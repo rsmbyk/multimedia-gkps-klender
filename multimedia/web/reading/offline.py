@@ -40,6 +40,7 @@ def _bible_chunk(book):
         translations.append({
             'id': translation.pk,
             'name': translation.translation,
+            'abbreviation': translation.abbreviation,
             'version': translation.version.abbreviation or translation.version.name,
             'language': translation.version.lang.name,
             'verses': verses,

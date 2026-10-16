@@ -10,6 +10,20 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.13.2] - 2026-10-16
+
+### Changed
+
+- Bible book labels follow the active TB/SIM edition, including SIM abbreviations, Simalungun
+  testament headings, and the visible translation's chapter title. Both editions' book codes work
+  in sidebar, projector, and passage-picker searches; the three main rail popups use Bibel,
+  Doding, and Agenda in SIM.
+
+### Fixed
+
+- Existing SIM translation rows receive abbreviations in place, and fresh Bible seeding stores the
+  same 66 codes without replacing full names or verse links.
+
 ## [1.13.1] - 2026-10-16
 
 ### Fixed

@@ -35,6 +35,7 @@ class BookTranslation(models.Model):
     version = models.ForeignKey(Version, models.PROTECT)
     book = models.ForeignKey(Book, models.PROTECT)
     translation = models.CharField(max_length=32)
+    abbreviation = models.CharField(max_length=8, blank=True, default='')
 
     def __str__(self):
         return f'{self.translation} ({self.version} : {self.book})'

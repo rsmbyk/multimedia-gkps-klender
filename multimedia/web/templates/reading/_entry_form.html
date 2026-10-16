@@ -47,14 +47,19 @@
         <div class="editor__picker-options" data-picker-options role="listbox" aria-label="Books">
           {% regroup books by testament_label as testaments %}
           {% for testament in testaments %}
-          <div class="editor__picker-group" data-picker-group>
-            <p class="editor__songgroup-label">{{ testament.grouper }}</p>
+          <div class="editor__picker-group" data-picker-group
+               data-testament="{{ testament.list.0.testament }}">
+            <p class="editor__songgroup-label" data-testament-label
+               data-label-tb="{{ testament.list.0.testament_label }}"
+               data-label-sim="{{ testament.list.0.testament_sim_label }}">{{ testament.grouper }}</p>
             {% for book in testament.list %}
             <button type="button" role="option" class="editor__songoption editor__songoption--book" data-book="{{ book.id }}"
                     data-book-tb="{{ book.tb_id|default:'' }}" data-book-sim="{{ book.sim_id|default:'' }}"
                     data-chapters="{{ book.chapters }}" data-book-name="{{ book.tb_name }}"
                     data-book-other="{{ book.sim_name }}" data-book-name-tb="{{ book.tb_name }}"
-                    data-book-name-sim="{{ book.sim_name }}" aria-selected="{% if book.selected %}true{% else %}false{% endif %}">
+                    data-book-name-sim="{{ book.sim_name }}" data-book-code-tb="{{ book.tb_abbr }}"
+                    data-book-code-sim="{{ book.sim_abbr }}"
+                    aria-selected="{% if book.selected %}true{% else %}false{% endif %}">
               <span class="book__n">{{ book.tb_name }}</span>
               {% if book.sim_name %}<span class="book__s">{{ book.sim_name }}</span>{% endif %}
             </button>

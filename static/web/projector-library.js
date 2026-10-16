@@ -18,24 +18,98 @@
         document.dispatchEvent(new Event('projector-library:ready'));
       });
   }
-  function firstVerse(book, chapter) {
-    var translation = book.translations.find(function (item) {
-      return item.version.toUpperCase() === 'TB';
-    }) || book.translations[0];
+  function translationFor(book, edition) {
+    if (!book) return null;
+    return book.translations.find(function (item) {
+      return item.version.toUpperCase() === edition;
+    }) || null;
+  }
+  function defaultTranslation(book) {
+    return translationFor(book, 'TB') || (book && book.translations[0]) || null;
+  }
+  function firstVerse(book, chapter, edition) {
+    var translation = edition ? translationFor(book, edition) : defaultTranslation(book);
     var rows = translation ? translation.verses.filter(function (verse) {
       return verse.chapter === chapter;
     }) : [];
     return rows.length ? Math.min.apply(null, rows.map(function (verse) { return verse.verse; })) : null;
   }
-  function bookAliases(book) {
-    return [book.name].concat(book.translations.map(function (item) { return item.name; }));
-  }
-  function passageLabel(book, chapter, verse) {
-    var translation = book.translations.find(function (item) {
-      return item.version.toUpperCase() === 'TB';
-    }) || book.translations[0];
+  function passageLabel(book, chapter, verse, translation) {
+    translation = translation || defaultTranslation(book);
     return (translation ? translation.name : book.name) + ' ' + chapter
       + (verse == null ? '' : ':' + verse);
+  }
+  function codeMatches(rawCode) {
+    var matches = [], seen = {}, recognized = false;
+    books.forEach(function (book) {
+      if (normalize(book.name) === rawCode) {
+        recognized = true;
+        var tb = translationFor(book, 'TB');
+        if (tb) add(book, tb, 'TB');
+      }
+      book.translations.forEach(function (translation) {
+        if (!translation.abbreviation || normalize(translation.abbreviation) !== rawCode) return;
+        var edition = translation.version.toUpperCase();
+        if (edition !== 'TB' && edition !== 'SIM') return;
+        recognized = true;
+        add(book, translation, edition);
+      });
+    });
+    function add(book, translation, edition) {
+      var key = book.id + ':' + edition;
+      if (seen[key]) return;
+      seen[key] = true;
+      matches.push({book: book, translation: translation, edition: edition});
+    }
+    return {recognized: recognized, matches: matches};
+  }
+  function nameMatches(rawName) {
+    var matches = [];
+    books.forEach(function (book) {
+      book.translations.forEach(function (translation) {
+        var edition = translation.version.toUpperCase();
+        if ((edition === 'TB' || edition === 'SIM')
+          && normalize(translation.name) === rawName) {
+          matches.push({book: book, translation: translation, edition: edition});
+        }
+      });
+    });
+    return matches;
+  }
+  function passageMatches(matches, chapterPrefix, requestedVerse) {
+    var chapters = new Set();
+    matches.forEach(function (match) {
+      match.translation.verses.forEach(function (row) { chapters.add(row.chapter); });
+    });
+    var results = [];
+    Array.from(chapters).sort(function (a, b) { return a - b; })
+      .filter(function (chapter) { return String(chapter).startsWith(chapterPrefix); })
+      .forEach(function (chapter) {
+        matches.forEach(function (match) {
+          var verse = requestedVerse == null
+            ? firstVerse(match.book, chapter, match.edition) : requestedVerse;
+          if (verse == null || !match.translation.verses.some(function (row) {
+            return row.chapter === chapter && row.verse === verse;
+          })) return;
+          results.push({kind: 'passage',
+            label: passageLabel(match.book, chapter, requestedVerse == null ? null : verse,
+              match.translation),
+            target: {book_id: match.book.id, chapter: chapter, verse: verse,
+              edition: match.edition}});
+        });
+      });
+    var labelGroups = {};
+    results.forEach(function (result) {
+      var key = normalize(result.label);
+      labelGroups[key] = labelGroups[key] || [];
+      labelGroups[key].push(result);
+    });
+    Object.keys(labelGroups).forEach(function (key) {
+      var group = labelGroups[key];
+      if (new Set(group.map(function (result) { return result.target.edition; })).size < 2) return;
+      group.forEach(function (result) { result.editionSuffix = result.target.edition; });
+    });
+    return results;
   }
   function songLabel(book, song) {
     if (!book.is_hymn_book) return song.title + ' · ' + book.name;
@@ -47,28 +121,17 @@
     if (!phrase) return [];
     var ref = phrase.match(/^(.+?)\s+(\d{1,3})(?::(\d{1,3}))?([a-z])?$/);
     if (ref) {
-      var namedBook = books.find(function (book) {
-        return bookAliases(book).some(function (alias) { return normalize(alias) === ref[1].replace(/\.$/, ''); });
-      });
-      if (namedBook) {
-        var chapterPrefix = ref[2].replace(/^0+/, '') || '0';
-        var chapters = new Set();
-        namedBook.translations.forEach(function (translation) {
-          translation.verses.forEach(function (row) { chapters.add(row.chapter); });
-        });
-        return Array.from(chapters).sort(function (a, b) { return a - b; })
-          .filter(function (chapter) { return String(chapter).startsWith(chapterPrefix); })
-          .map(function (chapter) {
-            var verse = ref[3] ? Number(ref[3]) : firstVerse(namedBook, chapter);
-            if (verse == null) return null;
-            if (ref[3] && !namedBook.translations.some(function (translation) {
-              return translation.verses.some(function (row) {
-                return row.chapter === chapter && row.verse === verse;
-              });
-            })) return null;
-            return {kind: 'passage', label: passageLabel(namedBook, chapter, ref[3] ? verse : null),
-              target: {book_id: namedBook.id, chapter: chapter, verse: verse}};
-          }).filter(Boolean);
+      var bookCode = ref[1].replace(/\.$/, '');
+      var codeResult = codeMatches(bookCode);
+      var chapterPrefix = ref[2].replace(/^0+/, '') || '0';
+      if (codeResult.recognized) {
+        return passageMatches(codeResult.matches, chapterPrefix,
+          ref[3] ? Number(ref[3]) : null);
+      }
+      var namedMatches = nameMatches(bookCode);
+      if (namedMatches.length) {
+        return passageMatches(namedMatches, chapterPrefix,
+          ref[3] ? Number(ref[3]) : null);
       }
       var songbook = songbooks.find(function (book) {
         return [book.name, book.short_name].some(function (name) { return normalize(name) === ref[1]; });
@@ -146,7 +209,7 @@
     return {kind: 'song', label: songLabel(entry.book, entry.song), screens: screens,
       baits: baits, index: 0};
   }
-  function passageDetour(bookId, chapter, verse) {
+  function passageDetour(bookId, chapter, verse, requestedEdition) {
     var book = books.find(function (item) { return item.id === bookId; });
     if (!book) return null;
     var variants = {};
@@ -161,17 +224,19 @@
       variants[code] = {header: reference + (row.title ? '\n' + row.title : ''),
         line: row.text.trim()};
     });
-    var selected = variants.TB ? 'TB' : Object.keys(variants)[0];
+    if (requestedEdition && !variants[requestedEdition]) return null;
+    var selected = requestedEdition || (variants.TB ? 'TB' : Object.keys(variants)[0]);
     if (!selected) return null;
     return {kind: 'passage', book_id: bookId, chapter: chapter, verse: verse,
-      translation: selected, label: passageLabel(book, chapter, verse), translations: variants};
+      translation: selected, label: passageLabel(book, chapter, verse,
+        translationFor(book, selected)), translations: variants};
   }
   function detour(row) {
     if (row.kind === 'song') return songDetour(Number(row.target.song_id));
     return passageDetour(Number(row.target.book_id), Number(row.target.chapter),
       Number(row.target.verse) || firstVerse(books.find(function (book) {
         return book.id === Number(row.target.book_id);
-      }), Number(row.target.chapter)));
+      }), Number(row.target.chapter)), row.target.edition);
   }
   function movePassage(current, action, level) {
     var candidates = books.filter(function (book) { return book.translations.some(function (tr) {

@@ -43,7 +43,7 @@ Keep the reader's deliberate TB or SIM choice during in-page navigation, even wh
 - **Given** a Bible chapter with both Versions is open and the reader has selected SIM
 - **When** the reader switches to Kidung or Tata Ibadah, then opens the Bible menu and selects a book and chapter
 - **Then** the arriving Bible chapter shows SIM text and marks SIM selected
-- **And** the Bible sidebar labels follow SIM while its mini tile keeps the existing TB abbreviation
+- **And** the Bible sidebar labels and mini code follow SIM, using the SIM abbreviation when available as specified in Spec 100
 
 ### Scenario: Keep a deliberate TB choice across menu switches
 

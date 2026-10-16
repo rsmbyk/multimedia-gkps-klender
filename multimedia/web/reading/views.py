@@ -41,7 +41,10 @@ from multimedia.web.reading import legacy_items
 from multimedia.web.reading import search as search_lib
 from multimedia.web.reading import voices
 
-TESTAMENTS = (('old', 'Perjanjian Lama'), ('new', 'Perjanjian Baru'))
+TESTAMENT_LABELS = {
+    'old': {'tb': 'Perjanjian Lama', 'sim': 'Padan na Basaia'},
+    'new': {'tb': 'Perjanjian Baru', 'sim': 'Padan na Baru'},
+}
 
 SECTION_NAMES = {'alkitab': 'Alkitab', 'kidung': 'Kidung', 'tatib': 'Tata Ibadah'}
 
@@ -546,24 +549,40 @@ def entry_chapter_verses(request, pk, chapter):
     return JsonResponse({'count': len(verses), 'verses': verses})
 
 
-def _books_groups(selected_id=None):
+def _books_groups(selected_id=None, edition='tb'):
     info_map = search_lib.bible_book_index()
     groups = []
-    for testament, label in TESTAMENTS:
+    for testament in ('old', 'new'):
+        label = TESTAMENT_LABELS[testament][edition]
         rows = []
         for info in info_map.values():
             book = info['book']
             if book.testament != testament:
                 continue
+            tb = info['by_version'].get('TB')
             sim = info['by_version'].get('SIM')
+            tb_name = tb.translation if tb else info['display']
+            sim_name = sim.translation if sim else ''
+            sim_primary = edition == 'sim' and bool(sim_name)
+            other_name = ((tb_name if tb else '') if sim_primary else
+                          (sim_name if tb and sim else ''))
             rows.append({
                 'id': book.pk,
-                'display': info['display'],
-                'other': sim.translation if sim else '',
-                'abbr': book.name,
+                'display': sim_name if sim_primary else tb_name,
+                'other': other_name,
+                'tb_name': tb_name,
+                'sim_name': sim_name,
+                'abbr': (sim.abbreviation or book.name) if sim_primary else book.name,
+                'tb_abbr': book.name,
+                'sim_abbr': (sim.abbreviation or book.name) if sim else book.name,
+                'has_tb': tb is not None,
+                'has_sim': sim is not None,
                 'current': book.pk == selected_id,
             })
-        groups.append({'testament': testament, 'label': label, 'books': rows})
+        groups.append({'testament': testament, 'label': label,
+                       'tb_label': TESTAMENT_LABELS[testament]['tb'],
+                       'sim_label': TESTAMENT_LABELS[testament]['sim'],
+                       'books': rows})
     return groups
 
 
@@ -1393,6 +1412,7 @@ class BibleView(TemplateView):
         requested = self.request.GET.get('ed', 'tb')
         if requested not in ('tb', 'sim'):
             requested = 'tb'
+        selected_edition = requested
         target = None
         raw_v = self.request.GET.get('v', '')
         raw_to = self.request.GET.get('to', '')
@@ -1402,6 +1422,7 @@ class BibleView(TemplateView):
             target = (start, end)
         verses = {'tb': [], 'sim': []}
         read_on = False
+        visible_edition = selected_edition
         if chapter is not None:
             if not info or not 1 <= chapter <= info['book'].number_of_chapters:
                 raise Http404('Unknown chapter')
@@ -1410,7 +1431,7 @@ class BibleView(TemplateView):
             if not verses['tb'] and not verses['sim']:
                 raise Http404('No text for this chapter')
             if not verses[requested]:
-                requested = 'tb' if verses['tb'] else 'sim'
+                visible_edition = 'tb' if verses['tb'] else 'sim'
             read_on = True
 
         def edition_url(edition):
@@ -1442,24 +1463,35 @@ class BibleView(TemplateView):
         else:
             ch_title = 'Chapters'
         if read_on:
-            page_title = f"{info['display']} {chapter} — GKPS Klender"
+            title_translation = editions[visible_edition]
+            title_name = title_translation.translation if title_translation else info['display']
+            page_title = f"{title_name} {chapter} — GKPS Klender"
         elif info:
-            page_title = f"{info['display']} — GKPS Klender"
+            title_translation = editions[selected_edition]
+            title_name = title_translation.translation if title_translation else info['display']
+            page_title = f"{title_name} — GKPS Klender"
         else:
             page_title = 'Alkitab — GKPS Klender'
         context.update({
             'page_title': page_title,
-            'books_groups': _books_groups(book_id),
+            'books_groups': _books_groups(book_id, selected_edition),
             'book_id': book_id,
-            'book_display': info['display'] if info else '',
+            'bible_edition': selected_edition,
+            'book_display': ((editions[selected_edition].translation
+                              if editions[selected_edition] else info['display'])
+                             if info else ''),
             'chapters': chapters,
             'ch_title': ch_title,
             'tb_verses': verses['tb'],
             'sim_verses': verses['sim'],
-            'read_lang': requested,
+            'read_lang': visible_edition,
             'read_kind': 'bible' if read_on else '',
             'read_show_lang': read_on,
-            'read_name': info['display'] if info else '',
+            'read_name': ((editions[visible_edition].translation
+                           if editions[visible_edition] else info['display'])
+                          if info else ''),
+            'tb_book_name': editions['tb'].translation if editions['tb'] else info['display'] if info else '',
+            'sim_book_name': editions['sim'].translation if editions['sim'] else '',
             'read_no': chapter or '',
             'has_sim': bool(verses['sim']),
             'lang_tb_url': edition_url('tb'),
