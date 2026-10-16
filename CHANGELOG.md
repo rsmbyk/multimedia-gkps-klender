@@ -10,6 +10,14 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-10-16
+
+### Added
+
+- Edit requests for songbooks, songs, Tata Ibadah, service entries, reorder, and custom screen
+  breaks now share per-action progress and result toasts, with modal and duplicate-action guards
+  while writes are pending.
+
 ## [1.12.0] - 2026-10-15
 
 ### Added

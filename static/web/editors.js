@@ -13,6 +13,8 @@
   if (!modal || typeof modal.showModal !== 'function') return;
   var content = document.getElementById('editorContent');
   var status = document.getElementById('editorStatus');
+  var feedback = window.gkpsEditFeedback;
+  if (feedback) feedback.guardDialog(modal);
   var trigger = null;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
@@ -35,6 +37,7 @@
   }
 
   function close() {
+    if (feedback && feedback.isDialogBusy(modal)) return;
     if (modal.open) modal.close();
   }
 
@@ -45,7 +48,10 @@
     }).then(function (response) {
       if (response.status === 403) throw new Error('forbidden');
       if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.text();
+      return response.text().then(function (html) {
+        if (!html.trim()) throw new Error('empty');
+        return html;
+      });
     }).then(function (html) {
       document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
       content.innerHTML = html;
@@ -54,46 +60,74 @@
       var first = content.querySelector('input:not([type=hidden]), select, textarea');
       if (first) first.focus();
     }).catch(function (error) {
-      announce(error.message === 'forbidden'
-        ? 'Editing is restricted to signed-in staff.'
-        : 'Could not open the editor.');
+      announce('');
+      if (feedback) feedback.showFailure('Could not load editor',
+        error.message === 'forbidden'
+          ? 'Editing is restricted to signed-in staff.'
+          : 'The editor could not be loaded. Try again.');
     });
   }
 
   function submit(form) {
+    if (feedback && feedback.isDialogBusy(modal)) return;
     var body = new FormData(form);
-    announce('Saving...');
+    announce('');
+    var resource = /\/songbook\//.test(form.action) ? 'songbook'
+      : /\/tatib\//.test(form.action) ? 'Tata Ibadah'
+        : /\/song\//.test(form.action) ? 'song' : 'changes';
+    var action = feedback && feedback.beginAction({
+      pendingTitle: 'Saving ' + resource + '…',
+      successTitle: resource.charAt(0).toUpperCase() + resource.slice(1) + ' saved',
+      failureTitle: 'Could not save ' + resource,
+      failureMessage: 'Your changes were not saved. Try again.'
+    });
+    var release = feedback ? feedback.setDialogBusy(modal) : null;
+    var invalid = null;
     fetch(form.action, {
       method: 'POST', body: body, credentials: 'same-origin',
       headers: { 'X-Requested-With': 'fetch' }
     }).then(function (response) {
       if (response.status === 400) {
         return response.text().then(function (html) {
+          if (!html.trim()) throw new Error('unexpected');
           document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
           content.innerHTML = html;
-          announce('Please correct the highlighted fields.');
+          announce('');
           document.dispatchEvent(new CustomEvent('date-picker:initialize'));
-          var invalid = content.querySelector('.is-invalid input, .is-invalid select, .is-invalid textarea');
-          if (invalid) invalid.focus();
+          invalid = content.querySelector('.is-invalid input, .is-invalid select, .is-invalid textarea');
           /* the entry modals re-wire their own controls onto the fresh fragment */
           document.dispatchEvent(new CustomEvent('editor:rendered'));
+          if (action) action.failure('Please check the highlighted fields.');
         });
       }
       if (response.status === 403) {
-        announce('Editing is restricted to signed-in staff.');
-        return null;
+        var restricted = new Error('forbidden');
+        restricted.userMessage = 'Editing is restricted to signed-in staff.';
+        throw restricted;
       }
       if (!response.ok) {
-        announce('Could not save. Try again.');
-        return null;
+        throw new Error('request-failed');
       }
-      response.json().then(function (data) {
-        announce('');
+      return response.json().then(function (data) {
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          throw new Error('unexpected');
+        }
+        if (release) { release(); release = null; }
         trigger = null;
         close();
         document.dispatchEvent(new CustomEvent('editor:saved', { detail: data }));
+        if (action) action.success();
       });
-    }).catch(function () { announce('Could not save. Try again.'); });
+    }).catch(function (error) {
+      announce('');
+      if (action) action.failure(error.userMessage
+        || (error.message === 'unexpected'
+          ? 'The server returned an unexpected response.'
+          : 'Your changes were not saved. Try again.'));
+    }).finally(function () {
+      if (release) release();
+      if (invalid && invalid.isConnected) invalid.focus();
+    });
   }
 
   /* One delegated listener each: the shells replace their rows on every swap. */
@@ -111,6 +145,7 @@
     var form = event.target;
     if (!form.classList.contains('editor__form')) return;
     event.preventDefault();
+    if (feedback && feedback.isDialogBusy(modal)) return;
     submit(form);
   });
 

@@ -1,6 +1,6 @@
 ---
 id: ITEM-096
-status: speccing
+status: in-progress
 title: 'Unified feedback for edit requests'
 type: feat
 priority: P1
@@ -8,12 +8,12 @@ effort: M
 created: 2026-10-16
 updated: 2026-10-16
 spec: 093
-branch: feat/093-edit-request-feedback
+branch: feat/092-offline-library-sync
 pr:
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.13.0
 ---
 
 # ITEM-096: Unified feedback for edit requests

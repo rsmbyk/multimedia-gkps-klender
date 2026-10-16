@@ -22,6 +22,8 @@
   var confirmCancel = modal && modal.querySelector('[data-confirm-cancel]');
   var confirmAccept = modal && modal.querySelector('[data-confirm-accept]');
   if (!modal || typeof modal.showModal !== 'function') return;
+  var feedback = window.gkpsEditFeedback;
+  if (feedback) feedback.guardDialog(modal);
 
   var trigger = null;
   var keyboardOpened = false;
@@ -133,13 +135,16 @@
   }
 
   function saveBreaks(next, nextMode) {
-    if (saving) return;
+    if (saving || !split) return;
     saving = true;
     var activeSplit = split;
-    var error = activeSplit.querySelector('[data-break-error]');
-    error.hidden = true;
-    activeSplit.querySelectorAll('[data-break-after]').forEach(function (gap) { gap.disabled = true; });
-    modeControl.querySelectorAll('button').forEach(function (button) { button.disabled = true; });
+    var action = feedback && feedback.beginAction({
+      pendingTitle: 'Saving screen breaks…',
+      successTitle: 'Screen breaks saved',
+      failureTitle: 'Could not save screen breaks',
+      failureMessage: 'Your screen-break changes were not saved. Try again.'
+    });
+    var release = feedback ? feedback.setDialogBusy(modal) : null;
     fetch(activeSplit.dataset.saveUrl, {
       method: 'POST', credentials: 'same-origin',
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf()},
@@ -148,7 +153,18 @@
         screen_state_signature: activeSplit.dataset.screenStateSignature})
     }).then(function (response) {
       return response.json().then(function (data) {
-        if (!response.ok) throw new Error(data.error || 'Could not save screen breaks.');
+        if (!response.ok) {
+          var failure = new Error('request-failed');
+          failure.userMessage = feedback
+            ? feedback.cleanMessage(data && data.error,
+              'Your screen-break changes were not saved. Try again.')
+            : 'Your screen-break changes were not saved. Try again.';
+          throw failure;
+        }
+        if (!data || data.ok !== true || typeof data.default_screen_mode !== 'string'
+            || typeof data.screen_state_signature !== 'string') {
+          throw new Error('unexpected');
+        }
         return data;
       });
     }).then(function (data) {
@@ -160,20 +176,16 @@
         if (notice) notice.remove();
         drawBreaks();
       }
+      if (action) action.success();
       document.dispatchEvent(new CustomEvent('editor:saved', {detail: {kind: 'entry'}}));
     }).catch(function (failure) {
-      if (split === activeSplit) {
-        error.textContent = failure.message;
-        error.hidden = false;
-      }
+      if (action) action.failure(failure.userMessage
+        || (failure.message === 'unexpected'
+          ? 'The server returned an unexpected response.'
+          : 'Your screen-break changes were not saved. Try again.'));
     }).finally(function () {
       saving = false;
-      if (split === activeSplit) {
-        activeSplit.querySelectorAll('[data-break-after]').forEach(function (gap) {
-          gap.disabled = false;
-        });
-      }
-      modeControl.querySelectorAll('button').forEach(function (button) { button.disabled = false; });
+      if (release) release();
     });
   }
 
@@ -300,7 +312,7 @@
   });
 
   modal.addEventListener('click', function (event) {
-    if (event.target === modal && confirmLayer.hidden) modal.close();
+    if (event.target === modal && confirmLayer.hidden && !saving) modal.close();
   });
 
   modal.addEventListener('close', function () {

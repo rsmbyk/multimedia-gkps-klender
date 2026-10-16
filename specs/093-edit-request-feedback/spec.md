@@ -1,7 +1,7 @@
 # Spec 093: Edit request feedback
 
 - **ID:** 093
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-096
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -69,5 +69,5 @@ Every edit action gives the operator one visible, reliable account of its reques
 ## Traceability
 
 - **Domain/app tests:** none; this is browser-side request/UI coordination.
-- **E2E:** `tests/e2e/test_edit_request_feedback.py` (to add after acceptance).
-- **Implementation:** shared toast module, reading-shell template/styles, `static/web/editors.js`, `entries.js`, `reorder.js`, `preview.js` (after acceptance).
+- **E2E:** `tests/e2e/test_edit_request_feedback.py`.
+- **Implementation:** shared toast module, reading-shell template/styles, `static/web/editors.js`, `entries.js`, `reorder.js`, `preview.js`.

@@ -292,7 +292,6 @@
   <div class="ch__reorder" data-reorder-group
        data-reorder-endpoint="{% url 'web-entry-reorder' %}"
        data-reorder-for="{{ service_id }}">
-    <p class="reorder__status" data-reorder-status role="status"></p>
   </div>
   {% endif %}
 
@@ -368,12 +367,15 @@
 
 {% include 'reading/_editor_modal.html' %}
 {% include 'reading/_preview_modal.html' %}
+<div class="edit-toasts" id="editToastHost" popover="manual"
+     aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
 <script src="{% static 'web/offline-library.js' %}"></script>
 <script src="{% static 'web/offline-status.js' %}"></script>
 <script src="{% static 'web/offline-render.js' %}"></script>
 <script src="{% static 'web/focus.js' %}"></script>
 <script src="{% static 'web/reading.js' %}"></script>
 <script src="{% static 'web/display.js' %}"></script>
+<script src="{% static 'web/feedback.js' %}"></script>
 <script src="{% static 'web/editors.js' %}"></script>
 <script src="{% static 'web/date-picker.js' %}"></script>
 <script src="{% static 'web/entries.js' %}"></script>

@@ -1,6 +1,6 @@
 # Plan 093: Edit request feedback
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-096
@@ -18,7 +18,7 @@ Edit failures currently surface as small red text inside whichever pane or dialo
 
 ## Approach
 
-- Mount one toast host in the public reading shell. Use a nonmodal browser top-layer surface so it can render above native editor/preview dialogs and their backdrops; prove stacking in a browser test. Give each logical action its own handle from start to settle, with an initial 180ms loading delay and a result toast even when the request settles before that delay.
+- Mount one toast host in the public reading shell. Use a nonmodal browser top-layer surface so it can render above native editor/preview dialogs and their backdrops; place the host inside the active native dialog while it is open so modal inertness does not block toast controls, then return it to the shell after close. Prove stacking and interaction in a browser test. Give each logical action its own handle from start to settle, with an initial 180ms loading delay and a result toast even when the request settles before that delay.
 - Adopt the approved [v11 preview](./preview-v11.html): 360px maximum width, bottom/right 20px (12px narrow), new at bottom, quiet border/shadow, no visible stack scrollbar, opacity-only entry, and state color changes. Store settlement time per toast. When visible count reaches four, shorten timers for all settled toasts from their original settlement time; keep pending toasts until settlement.
 - Replace generic request-status lines in `editors.js`, `entries.js`, `reorder.js`, and `preview.js` with shared toast calls. Keep field-specific validation next to fields; a 400 response also settles the action toast as a failure summary. Preserve reorder rollback and queue behavior, and custom-break rollback/refresh behavior.
 - Make each modal submission a single pending transaction: disable its form controls and all close paths, including Cancel, backdrop, and Esc, until the response settles. For non-modal writes, disable only the initiating button until settlement. Keep independent actions available elsewhere.

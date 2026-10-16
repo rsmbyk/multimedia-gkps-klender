@@ -17,6 +17,8 @@
   if (!modal || typeof modal.showModal !== 'function') return;
   var content = document.getElementById('editorContent');
   var status = document.getElementById('editorStatus');
+  var feedback = window.gkpsEditFeedback;
+  if (feedback) feedback.guardDialog(modal);
 
   var trigger = null;
   var keyboardOpened = false;
@@ -64,7 +66,10 @@
     var match = document.cookie.match(/(^|;\s*)csrftoken=([^;]+)/);
     return match ? decodeURIComponent(match[2]) : '';
   }
-  function close() { if (modal.open) modal.close(); }
+  function close() {
+    if (feedback && feedback.isDialogBusy(modal)) return;
+    if (modal.open) modal.close();
+  }
 
   /* The entry that owns the opening control keeps its hover look while the modal is
      open (spec 065): the backdrop takes the hover and the dialog the focus. Marked
@@ -108,7 +113,10 @@
     return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.text();
+        return response.text().then(function (html) {
+          if (!html.trim()) throw new Error('empty');
+          return html;
+        });
       });
   }
 
@@ -127,7 +135,11 @@
       markOrigin();
       wire(content);
       focusFirst(content);
-    }).catch(function () { announce('Could not open the editor.'); });
+    }).catch(function () {
+      announce('');
+      if (feedback) feedback.showFailure('Could not load editor',
+        'The editor could not be loaded. Try again.');
+    });
   }
 
   function newUrl(kind, tatib, after) {
@@ -382,9 +394,13 @@
     }
     function loadVerses(pk, number, wantedFrom, wantedTo) {
       return fetch(chapterUrl(pk, number), { credentials: 'same-origin' })
-        .then(function (response) { return response.ok ? response.json() : { verses: [] }; })
+        .then(function (response) {
+          if (!response.ok) throw new Error('request-failed');
+          return response.json();
+        })
         .then(function (data) {
-          verses = data.verses || [];
+          if (!data || !Array.isArray(data.verses)) throw new Error('unexpected');
+          verses = data.verses;
           from.disabled = !verses.length;
           from.innerHTML = verses.map(function (n) {
             return '<option value="' + n + '">' + n + '</option>';
@@ -403,6 +419,8 @@
           from.innerHTML = '';
           renderRangeControl(from);
           syncTo();
+          if (feedback) feedback.showFailure('Could not load chapter verses',
+            'The selected chapter’s verses could not be loaded. Try again.');
         });
     }
     function activeEdition() {
@@ -572,25 +590,41 @@
     function find(query) {
       return fetch((modal.dataset.entrySongsUrl || '/editor/entry/songs/')
                    + '?q=' + encodeURIComponent(query), { credentials: 'same-origin' })
-        .then(function (response) { return response.ok ? response.text() : ''; })
+        .then(function (response) {
+          if (!response.ok) throw new Error('request-failed');
+          return response.text();
+        })
         .then(function (html) {
           /* A slow answer must not overwrite a newer one: the preload that runs
              when the menu opens can land after what the person has typed. */
           if (query !== (search.value || '').trim()) return;
           list.innerHTML = html;
           placeMenu(list.closest('.editor__picker-menu'));
+        }).catch(function () {
+          if (feedback) feedback.showFailure('Could not load songs',
+            'Song options could not be loaded. Try again.');
         });
     }
     function loadVerses(songId) {
       var pattern = modal.dataset.entrySongVersesUrl || '/editor/entry/song/0/verses/';
       return fetch(pattern.replace('/0/', '/' + songId + '/'), { credentials: 'same-origin' })
-        .then(function (response) { return response.ok ? response.json() : { verses: [] }; })
+        .then(function (response) {
+          if (!response.ok) throw new Error('request-failed');
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || !Array.isArray(data.verses)) throw new Error('unexpected');
+          return data;
+        })
         .then(function (data) {
           renderVerses(box, data.verses || []);
           verseSummary(versesPicker, box);
           placeMenu(box.closest('.editor__picker-menu'));
         })
-        .catch(function () { announce('Could not load that song\u2019s verses.'); });
+        .catch(function () {
+          if (feedback) feedback.showFailure('Could not load song verses',
+            'The selected song’s verses could not be loaded. Try again.');
+        });
     }
 
     search.addEventListener('input', function () {
@@ -676,18 +710,29 @@
       + '</div></div>';
     if (!modal.open) modal.showModal();
     markOrigin();
-    content.querySelector('[data-confirm-delete]').addEventListener('click', function () {
+    var deleteButton = content.querySelector('[data-confirm-delete]');
+    deleteButton.addEventListener('click', function () {
+      if (deleteButton.disabled || (feedback && feedback.isDialogBusy(modal))) return;
       var pattern = oldItem
         ? (modal.dataset.oldItemDeleteUrl || '/editor/item/0/delete/')
         : (modal.dataset.entryDeleteUrl || '/editor/entry/0/delete/');
-      announce('Deleting...');
+      var label = oldItem ? 'row' : 'entry';
+      var action = feedback && feedback.beginAction({
+        pendingTitle: 'Deleting ' + label + '…',
+        successTitle: label.charAt(0).toUpperCase() + label.slice(1) + ' deleted',
+        failureTitle: 'Could not delete ' + label,
+        failureMessage: 'Your change was not saved. Try again.'
+      });
+      announce('');
+      var release = feedback ? feedback.setDialogBusy(modal) : null;
       fetch(pattern.replace('/0/', '/' + id + '/'), {
         method: 'POST', credentials: 'same-origin',
         headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf() }
       }).then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        announce('');
         var focus = targetAfterDelete(id, oldItem);
+        if (release) { release(); release = null; }
+        if (action) action.success();
         close();
         document.dispatchEvent(new CustomEvent('editor:saved', {
           detail: {
@@ -697,7 +742,10 @@
             focusId: focus.id
           }
         }));
-      }).catch(function () { announce('Could not delete. Try again.'); });
+      }).catch(function () {
+        announce('');
+        if (action) action.failure();
+      }).finally(function () { if (release) release(); });
     });
   }
 
@@ -705,7 +753,7 @@
     /* Spec 026: projecting no longer refuses an entry write. The operator keeps working
        while a Tata Ibadah is on screen, and the display follows every change. */
     var oldDel = event.target.closest('[data-old-item-delete]');
-    if (oldDel) {
+    if (oldDel && !oldDel.disabled) {
       event.preventDefault();
       trigger = oldDel;
       keyboardOpened = event.detail === 0;
@@ -713,7 +761,7 @@
       return;
     }
     var oldEdit = event.target.closest('[data-old-item-edit]');
-    if (oldEdit) {
+    if (oldEdit && !oldEdit.disabled) {
       event.preventDefault();
       trigger = oldEdit;
       keyboardOpened = event.detail === 0;
@@ -721,7 +769,7 @@
       return;
     }
     var del = event.target.closest('[data-entry-delete]');
-    if (del) {
+    if (del && !del.disabled) {
       event.preventDefault();
       trigger = del;
       keyboardOpened = event.detail === 0;
@@ -729,7 +777,7 @@
       return;
     }
     var edit = event.target.closest('[data-entry-edit]');
-    if (edit) {
+    if (edit && !edit.disabled) {
       event.preventDefault();
       trigger = edit;
       keyboardOpened = event.detail === 0;
@@ -739,26 +787,33 @@
     var opener = event.target.closest('[data-entry-open]');
     if (!opener || opener.disabled) return;
     event.preventDefault();
-    trigger = opener;
-    keyboardOpened = false;
     var row = opener.closest('[data-entry-after]');
     var after = row ? row.dataset.entryAfter
                     : (opener.closest('[data-entry-start]') ? 'start' : '');
     if (opener.dataset.entryOpen === 'section_break') {
-      addBreak(opener.dataset.entryTatib, after);
+      addBreak(opener.dataset.entryTatib, after, opener);
       return;
     }
+    trigger = opener;
+    keyboardOpened = false;
     load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after));
   });
 
   /* A break has no fields (spec 057): '+ Break' creates it at once, at the add row's
      position (the empty-state button passes none, so it lands at the end). */
-  function addBreak(tatib, after) {
+  function addBreak(tatib, after, opener) {
     var url = (modal.dataset.entrySaveNewUrl || '/editor/entry/new/save/')
       + '?tatib=' + encodeURIComponent(tatib);
     var body = new URLSearchParams({ kind: '3' });   /* ServiceEntryKind.SECTION_BREAK */
     if (after) body.set('after', after);
-    announce('Adding...');
+    var action = feedback && feedback.beginAction({
+      pendingTitle: 'Adding section break…',
+      successTitle: 'Section break added',
+      failureTitle: 'Could not add section break',
+      failureMessage: 'The section break was not added. Try again.'
+    });
+    var release = feedback ? feedback.lockControl(opener) : null;
+    announce('');
     fetch(url, {
       method: 'POST', credentials: 'same-origin',
       headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf() },
@@ -767,14 +822,14 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
     }).then(function (saved) {
-      announce('Break added');
-      trigger = null;
+      if (!saved || saved.id == null) throw new Error('unexpected');
+      if (action) action.success();
       document.dispatchEvent(new CustomEvent('editor:saved', {
         detail: { id: saved.id, kind: 'entry', focusKind: 'entry', focusId: saved.id }
       }));
     }).catch(function () {
-      announce('Could not add the break. Try again.');
-    });
+      if (action) action.failure();
+    }).finally(function () { if (release) release(); });
   }
 
   /* ---------- a hovered item reveals its neighbouring add rows (spec 037) ----
