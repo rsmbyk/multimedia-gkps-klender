@@ -114,6 +114,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
         if self._testMethodName in (
             'test_bible_sidebar_labels_follow_edition_and_reset_on_refresh',
+            'test_bible_edition_survives_menu_switches_and_history',
+            'test_bible_edition_preference_returns_after_unavailable_chapter',
+            'test_bible_edition_is_local_to_tab_and_resets_on_reload',
             'test_bible_language_highlight_slides_without_reflow',
             'test_bible_language_highlight_static_and_reduced_motion',
             'test_bible_language_highlight_starts_in_place_without_travel',
@@ -706,6 +709,100 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(row.locator('.book__n')).to_have_text('Matius')
         expect(row.locator('.book__s')).to_have_text('Mateus')
         expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        page.close()
+
+    def test_bible_edition_survives_menu_switches_and_history(self):
+        page = self._page()
+        chapter_url = reverse('web-bible-chapter', args=[self.mat.pk, 5])
+        songbook_url = reverse('web-book', args=[self.book.pk])
+        song_url = reverse('web-song', args=[self.song.pk])
+        book_url = reverse('web-bible-book', args=[self.mat.pk])
+
+        def open_song_page_and_return_to_bible():
+            page.locator('.rail [data-panel="kidung"]').click()
+            page.locator(f'#panelBody .book[href="{songbook_url}"]').click()
+            page.locator(f'#chList .songrow[href="{song_url}"]').click()
+            expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
+            page.locator('.rail [data-panel="alkitab"]').click()
+            page.locator(f'#panelBody .book[href="{book_url}"]').click()
+            page.locator(f'#chList .ch-num[href="{chapter_url}"]').click()
+
+        def open_service_page_and_return_to_bible():
+            page.locator('#railSearch').click()
+            self._search(page, 'Ibadah Minggu III')
+            page.locator('.result-group[data-kind="tatib"] .result-row').first.click()
+            expect(page.locator('#read[data-kind="tatib"]')).to_be_visible()
+            page.locator('.rail [data-panel="alkitab"]').click()
+            page.locator(f'#panelBody .book[href="{book_url}"]').click()
+            page.locator(f'#chList .ch-num[href="{chapter_url}"]').click()
+
+        page.goto(self.live_server_url + chapter_url)
+        page.locator('#langSim').click()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+
+        open_song_page_and_return_to_bible()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
+        row = page.locator(f'#panelBody .book[href="{book_url}"]')
+        expect(row.locator('.book__n')).to_have_text('Mateus')
+        expect(row.locator('.book__s')).to_have_text('Matius')
+
+        page.go_back()
+        expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
+        page.go_forward()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
+
+        page.locator('#langTb').click()
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        open_song_page_and_return_to_bible()
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        open_service_page_and_return_to_bible()
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        expect(row.locator('.book__n')).to_have_text('Matius')
+        expect(row.locator('.book__s')).to_have_text('Mateus')
+
+    def test_bible_edition_is_local_to_tab_and_resets_on_reload(self):
+        context = self.browser.new_context(viewport={'width': 1280, 'height': 900})
+        page = context.new_page()
+        chapter_url = reverse('web-bible-chapter', args=[self.mat.pk, 5])
+        page.goto(self.live_server_url + chapter_url)
+        page.locator('#langSim').click()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+
+        other_tab = page.context.new_page()
+        other_tab.goto(self.live_server_url + chapter_url)
+        expect(other_tab.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        expect(other_tab.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+
+        page.reload()
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        other_tab.close()
+        context.close()
+
+    def test_bible_edition_preference_returns_after_unavailable_chapter(self):
+        page = self._page()
+        chapter_five = reverse('web-bible-chapter', args=[self.mat.pk, 5])
+        page.goto(self.live_server_url + chapter_five)
+        page.locator('#langSim').click()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+
+        page.locator('#railSearch').click()
+        self._search(page, 'Matius 20:1')
+        page.locator('.result-group[data-kind="bible"] .result-row').first.click()
+        expect(page.get_by_text('Janganlah kamu kuatir akan hidupmu.')).to_be_visible()
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        expect(page.locator('#langSim')).to_have_attribute('aria-disabled', 'true')
+
+        page.locator('#railSearch').click()
+        self._search(page, 'Matius 5:13')
+        page.locator('.result-group[data-kind="bible"] .result-row').first.click()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
         page.close()
 
     def test_bible_language_highlight_slides_without_reflow(self):

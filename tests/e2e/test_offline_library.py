@@ -135,6 +135,35 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertEqual(row.locator('.book__a').inner_text(), 'Mat')
             browser.close()
 
+    def test_offline_bible_edition_survives_menu_round_trip(self):
+        bible.Verse.objects.create(
+            book_translation=self.sim_translation, chapter=1, verse=1,
+            text='Holong ni Tuhan mambukka Injil')
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            context.set_offline(True)
+            page.goto(self.live_server_url + f'/bible/{self.book_id}/1/')
+            page.get_by_text('Kasih Tuhan membuka Injil').wait_for()
+            page.locator('#langSim').click()
+            page.get_by_text('Holong ni Tuhan mambukka Injil').wait_for()
+
+            page.locator('.rail [data-panel="kidung"]').click()
+            page.locator(f'#panelBody .book[href="/songs/book/{self.songbook_id}/"]').click()
+            page.locator(f'#chList .songrow[href="/songs/{self.song_id}/"]').click()
+            page.get_by_text('Kasih Tuhan kekal').wait_for()
+            page.locator('.rail [data-panel="alkitab"]').click()
+            page.locator(f'#panelBody .book[href="/bible/{self.book_id}/"]').click()
+            page.locator(f'#chList .ch-num[href="/bible/{self.book_id}/1/"]').click()
+
+            page.get_by_text('Holong ni Tuhan mambukka Injil').wait_for()
+            self.assertEqual(page.locator('#langSim').get_attribute('aria-pressed'), 'true')
+            self.assertEqual(page.locator('#offlineSavedSource').is_visible(), True)
+            browser.close()
+
     def assert_saved_badge_centered_on_stage(self, page):
         page.wait_for_function("""() => {
           const badge = document.querySelector('#offlineSavedSource');
