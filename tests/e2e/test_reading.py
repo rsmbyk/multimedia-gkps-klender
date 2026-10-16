@@ -113,6 +113,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 order_number=2, text='Drag while the sidebar waits')
 
         if self._testMethodName in (
+            'test_bible_sidebar_labels_follow_edition_and_reset_on_refresh',
             'test_bible_language_highlight_slides_without_reflow',
             'test_bible_language_highlight_static_and_reduced_motion',
             'test_bible_language_highlight_starts_in_place_without_travel',
@@ -123,6 +124,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             sim_version = bible.Version.objects.create(lang=sim_lang, name='Simalungun', abbreviation='SIM')
             sim_book = bible.BookTranslation.objects.create(version=sim_version, book=self.mat, translation='Mateus')
             bible.Verse.objects.create(book_translation=sim_book, chapter=5, verse=13, text='Garam ni dunia.')
+            if self._testMethodName == 'test_bible_sidebar_labels_follow_edition_and_reset_on_refresh':
+                bible.Verse.objects.create(
+                    book_translation=sim_book, chapter=6, verse=1, text='Bapa nami SIM.')
+                bible.Verse.objects.create(
+                    book_translation=mat_tb, chapter=6, verse=1, text='Bapa kami TB.')
 
         if self._testMethodName == 'test_hymn_song_order_is_visible_after_browsing_from_home':
             songs.Song.objects.create(book=self.book, number=10, title='Ten')
@@ -160,6 +166,25 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             raise unittest.SkipTest(f'playwright browser unavailable: {error}')
 
     def tearDown(self):
+        # Public-page tests now start an asynchronous local-library sync. Let any
+        # in-flight manifest/chunk reads finish before LiveServerTestCase flushes
+        # SQLite between examples.
+        for context in self.browser.contexts:
+            for page in context.pages:
+                try:
+                    page.evaluate("""async () => {
+                      if (!window.GKPSOffline) return;
+                      await GKPSOffline.install().catch(() => {});
+                      await new Promise(resolve => setTimeout(resolve, 80));
+                      const deadline = Date.now() + 8000;
+                      while (Date.now() < deadline) {
+                        const state = await GKPSOffline.status();
+                        if (!state.syncing) return;
+                        await new Promise(resolve => setTimeout(resolve, 40));
+                      }
+                    }""")
+                except Exception:
+                    pass
         self.browser.close()
         self._playwright.stop()
         super().tearDown()
@@ -189,7 +214,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self._search(page, 'waktu pagi')
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
         expect(page.locator('.result-group__title').filter(has_text='Kidung')).to_be_visible()
-        self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
+        self.assertEqual(page.url, self.live_server_url + reverse('web-search') + '?q=waktu%20pagi')
 
     def test_search_resolves_bible_reference(self):
         page = self._page()
@@ -201,9 +226,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
         expect(page.locator('[data-search-target="true"]')).to_have_count(1)
         expect(page.locator('html')).to_have_attribute('data-read', 'on')
-        self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
+        self.assertEqual(page.url, self.live_server_url
+                         + reverse('web-bible-chapter', args=[self.mat.pk, 5])
+                         + '?v=13&to=13')
 
-    def test_short_query_searches_and_empty_submit_changes_nothing(self):
+    def test_short_query_searches_and_empty_submit_returns_to_index(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         self._search(page, 'waktu pagi')
@@ -211,10 +238,16 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         field = page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')
         field.fill('di')                       # two characters search now
         field.press('Enter')
-        expect(page.get_by_text('Results for').first).to_be_visible()
-        field.fill('')                         # an empty submit keeps the results
+        page.wait_for_function("document.getElementById('searchStatus')?.textContent.includes('di')")
+        field.fill('')                         # an empty submit resolves to the index
         field.press('Enter')
-        expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()
+        expect(page).to_have_url(self.live_server_url + '/')
+        expect(field).to_have_value('')
+        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
+        page.locator('#railSearch').click()
+        expect(page.get_by_text('Results for').first).to_be_visible()
+        expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
+        expect(field).to_have_value('')
 
     def test_search_keeps_last_result_set(self):
         page = self._page()
@@ -224,11 +257,15 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
         page.locator('#railSearch').click()
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
-        # the brand logo is the same route as the search icon (owner request)
+        # The brand returns to the empty index; the Search rail restores this tab's results.
         page.locator('.rail__logo').click()
+        expect(page).to_have_url(self.live_server_url + '/')
+        expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_have_value('')
+        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
+        page.locator('#railSearch').click()
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
-        expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_have_value('waktu pagi')
-        self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
+        expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_have_value(
+            'waktu pagi')
 
     def test_search_icon_exclusive_to_closed_sidebars(self):
         page = self._page()
@@ -249,7 +286,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.get_by_role('link', name='NKB 12').first).to_be_visible()
         page.get_by_role('link', name='NKB 12').first.click()
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
-        self.assertEqual(page.url, self.live_server_url + reverse('web-books'))
+        self.assertEqual(page.url, self.live_server_url + reverse('web-song', args=[self.song.id]))
 
     def test_matching_idle_bible_sidebar_collapses_to_mini(self):
         page = self._page()
@@ -398,7 +435,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
-        expect(page.locator('.rail__foot button')).to_have_count(1)
+        expect(page.locator('.rail__foot button')).to_have_count(2)
         expect(page.locator('#themeBtn')).to_have_attribute('aria-label', 'System mode')
         expect(page.locator('#themeBtn')).to_have_attribute('data-tip', 'System mode')
         expect(page.locator('#themeBtn .system')).to_have_css('opacity', '1')
@@ -495,6 +532,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             actual = selected.evaluate("""el => ({
                 background: getComputedStyle(el).backgroundColor,
                 color: getComputedStyle(el).color,
+                className: el.className,
+                connected: el.isConnected,
                 citation: el.querySelector('.songrow__c')
                   ? getComputedStyle(el.querySelector('.songrow__c')).color : null,
                 secondary: el.querySelector('.book__s') ? {
@@ -502,8 +541,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                   opacity: getComputedStyle(el.querySelector('.book__s')).opacity
                 } : null
             })""")
-            self.assertEqual(actual['background'], expected[theme]['background'], selector)
-            self.assertEqual(actual['color'], expected[theme]['color'], selector)
+            detail = '%s theme=%s actual=%r token=%s' % (
+                selector, theme, actual,
+                page.locator('html').evaluate("el => ({token: getComputedStyle(el).getPropertyValue('--sidebar-selected-bg'), sheets: Array.from(document.styleSheets).map(sheet => sheet.href), path: location.pathname})"))
+            self.assertEqual(actual['background'], expected[theme]['background'], detail)
+            self.assertEqual(actual['color'], expected[theme]['color'], detail)
             if '.songrow[' in selector:
                 self.assertEqual(actual['citation'], expected[theme]['color'])
             if actual['secondary']:
@@ -518,7 +560,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             tile = page.locator('#panelBody .book').filter(has_text=title).first
             expect(tile).to_be_visible()
             tile.click()
-            expect(page).to_have_url(home_url)
+            expected_url = (self.live_server_url + reverse('web-tatib-service', args=[self.service.pk])
+                            if section == 'tatib' else home_url)
+            expect(page).to_have_url(expected_url)
             return tile
 
         page.emulate_media(color_scheme='light')
@@ -536,7 +580,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             open_sidebar_tile('alkitab', 'Matius', theme)
             expect(page.locator('html')).to_have_attribute('data-ch', 'open')
             page.get_by_role('link', name='Matius chapter 5').click()
-            expect(page).to_have_url(home_url)
+            expect(page).to_have_url(self.live_server_url
+                                     + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
             assert_selected_row('#chList .ch-num[aria-current="true"]', theme)
 
             open_sidebar_tile('kidung', 'Nyanyikanlah Kidung Baru', theme)
@@ -546,7 +591,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             song = page.locator('#chList .songrow').filter(has_text='Di Waktu Pagi').first
             expect(song).to_be_visible()
             song.click()
-            expect(page).to_have_url(home_url)
+            expect(page).to_have_url(self.live_server_url + reverse('web-song', args=[self.song.id]))
             assert_selected_row('#chList .songrow[aria-current="true"]', theme)
 
             open_sidebar_tile('tatib', 'Ibadah Minggu III', theme)
@@ -592,7 +637,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('html')).to_have_attribute('data-ch', 'open')
         page.locator('#chList .ch-num').nth(4).click()
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
-        self.assertEqual(page.url, start)        # one page, no address changes
+        self.assertEqual(page.url, self.live_server_url
+                         + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
 
     def test_empty_bible_header_row_does_not_reserve_space(self):
         for width in (1440, 390):
@@ -603,7 +649,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 page.locator('#panelBody .book').filter(has_text='Matius').first.click()
                 page.locator('#chList .ch-num').nth(4).click()
                 expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
-                self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
+                self.assertEqual(page.url, self.live_server_url
+                                 + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
                 geometry = page.evaluate('''() => {
                   const box = selector => document.querySelector(selector).getBoundingClientRect();
                   const stage = document.querySelector('.stage');
@@ -623,6 +670,43 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 self.assertAlmostEqual(min(geometry['titleTop'], geometry['toggleTop']),
                                        geometry['stageTop'] + geometry['paddingTop'], delta=1)
                 page.close()
+
+    def test_bible_sidebar_labels_follow_edition_and_reset_on_refresh(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        row = page.locator(f'#panelBody .book[href="/bible/{self.mat.pk}/"]')
+        expect(row.locator('.book__n')).to_have_text('Matius')
+        expect(row.locator('.book__s')).to_have_text('Mateus')
+        row.evaluate("el => { el.dataset.identityCheck = 'same-row'; }")
+
+        page.locator('#langSim').click()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        expect(row.locator('.book__n')).to_have_text('Mateus')
+        expect(row.locator('.book__s')).to_have_text('Matius')
+        self.assertEqual(row.get_attribute('data-identity-check'), 'same-row')
+        self.assertEqual(row.get_attribute('aria-label'), 'Mateus (Matius)')
+        self.assertEqual(row.get_attribute('data-tip'), 'Mateus — Matius')
+        for name in ('Mateus', 'Matius'):
+            page.locator('#bookFilter').fill(name)
+            self.assertTrue(row.is_visible())
+        page.locator('#bookFilter').fill('')
+        page.locator('#panelCollapse').click()
+        page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
+        self.assertEqual(row.locator('.book__a').inner_text(), 'Mat')
+        self.assertTrue(row.locator('.book__a').is_visible())
+
+        page.locator('#chList .ch-num').nth(5).click()
+        expect(page.get_by_text('Bapa nami SIM.')).to_be_visible()
+        row = page.locator(f'#panelBody .book[href="/bible/{self.mat.pk}/"]')
+        expect(row.locator('.book__n')).to_have_text('Mateus')
+        self.assertEqual(row.locator('.book__a').inner_text(), 'Mat')
+        page.reload()
+        expect(page.get_by_text('Bapa kami TB.')).to_be_visible()
+        row = page.locator(f'#panelBody .book[href="/bible/{self.mat.pk}/"]')
+        expect(row.locator('.book__n')).to_have_text('Matius')
+        expect(row.locator('.book__s')).to_have_text('Mateus')
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        page.close()
 
     def test_bible_language_highlight_slides_without_reflow(self):
         page = self._page()
@@ -726,13 +810,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_bible_language_highlight_starts_in_place_without_travel(self):
         page = self._page()
-        page.add_init_script("try { localStorage.setItem('gkps-lang', 'sim') } catch (e) {}")
-        page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="alkitab"]').click()
-        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
-        page.locator('#chList .ch-num').nth(4).click()
+        page.goto(self.live_server_url
+                  + reverse('web-bible-chapter', args=[self.mat.pk, 5]) + '?ed=sim')
         expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
-        self.assertEqual(page.url, self.live_server_url + reverse('web-home'))
+        self.assertEqual(page.url, self.live_server_url
+                         + reverse('web-bible-chapter', args=[self.mat.pk, 5]) + '?ed=sim')
         switch = page.locator('.read__lang')
         expect(switch.locator('.read__lang-thumb')).to_have_count(1)
         expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
@@ -743,6 +825,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertEqual(thumb.evaluate('el => el.getAnimations().length'), 0)
         # the highlight must not carry the old state or slide in.
         page.locator('#langTb').click()
+        page.locator('.read__lang-thumb').evaluate(
+            'el => Promise.all(el.getAnimations().map(animation => animation.finished))')
         page.locator('#chList .ch-num').nth(19).click()  # chapter 20, TB only
         expect(page.get_by_text('Janganlah kamu kuatir')).to_be_visible()
         switch = page.locator('.read__lang')
@@ -1347,46 +1431,42 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         page.evaluate("localStorage.setItem('gkps-search', '/tatib/1/')")   # what an older build wrote
         page.reload()
-        expect(page.locator('#railSearch')).to_have_attribute('href', reverse('web-home'))
+        expect(page.locator('#railSearch')).to_have_attribute('href', '/')
         page.locator('#railSearch').click()
         page.wait_for_function("document.documentElement.dataset.home === 'landing'")
+        expect(page).to_have_url(self.live_server_url + '/')
         expect(page.locator('html')).to_have_attribute('data-section', 'alkitab')
         expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
-        self.assertIsNone(page.evaluate("localStorage.getItem('gkps-search')"))
-        # the logo takes the same route, not a restart
+        self.assertEqual(page.evaluate("localStorage.getItem('gkps-search')"), '/tatib/1/')
+        # The logo opens a blank index; legacy shared state stays present but ignored.
         page.locator('.rail__logo').click()
         page.wait_for_function("document.documentElement.dataset.home === 'landing'")
+        expect(page).to_have_url(self.live_server_url + '/')
         expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
 
-    def test_fresh_home_resets_remembered_search_but_clear_does_not(self):
+    def test_index_is_empty_but_search_restores_tab_local_state(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + '/')
         self._search(page, 'kasih')
         page.wait_for_selector('#searchStatus')
-        stored = page.evaluate("localStorage.getItem('gkps-search')")
-        self.assertTrue(stored.startswith(reverse('web-search') + '?q=kasih'), stored)
-        page.locator('.search-home .field-clear').click()
+        page.locator('#searchQuery').fill('unsent text')
+        page.locator('.rail__logo').click()
+        expect(page).to_have_url(self.live_server_url + '/')
         expect(page.locator('#searchQuery')).to_have_value('')
-        expect(page.get_by_text('Results for').first).to_be_visible()
-        self.assertEqual(page.evaluate("localStorage.getItem('gkps-search')"), stored)
-        page.locator('.rail [data-panel="alkitab"]').click()
-        page.wait_for_function("document.documentElement.dataset.section === 'alkitab'")
-        page.evaluate("localStorage.setItem('gkps-search-scroll', '300')")
-        page.goto(self.live_server_url + reverse('web-home'))
-        page.wait_for_load_state('networkidle')
-        expect(page.locator('html')).to_have_attribute('data-home', 'landing')
-        self.assertIsNone(page.evaluate("localStorage.getItem('gkps-search')"),
-                          {'script_has_reset': 'resetSearchState' in page.request.get(
-                              self.live_server_url + '/static/web/reading.js').text(),
-                           'errors': page.evaluate("""() => ({path: location.pathname,
-                             home: document.documentElement.dataset.home,
-                             source: document.querySelector('script[src*=\"reading.js\"]')?.src,
-                             href: document.getElementById('railSearch').getAttribute('href')})""")})
-        self.assertIsNone(page.evaluate("localStorage.getItem('gkps-search-scroll')"))
-        expect(page.locator('#railSearch')).to_have_attribute('href', reverse('web-home'))
         page.locator('#railSearch').click()
-        expect(page.locator('html')).to_have_attribute('data-home', 'landing')
-        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
+        expect(page.get_by_text('Results for').first).to_be_visible()
+        expect(page.locator('#searchQuery')).to_have_value('unsent text')
+
+        # A pasted search URL replaces this tab's latest search snapshot.
+        direct_url = self.live_server_url + reverse('web-search') + '?q=Di%20Waktu%20Pagi'
+        page.goto(direct_url)
+        page.wait_for_selector('#searchStatus')
+        expect(page.locator('#searchQuery')).to_have_value('Di Waktu Pagi')
+        expect(page.locator('#railSearch')).to_have_attribute(
+            'href', reverse('web-search') + '?q=Di%20Waktu%20Pagi')
+        page.locator('#railSearch').click()
+        expect(page.locator('#searchQuery')).to_have_value('Di Waktu Pagi')
+        expect(page.get_by_text('Results for').first).to_be_visible()
 
     def test_search_state_survives_sidebar_browsing(self):
         page = self._page()
@@ -1408,8 +1488,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
         page.wait_for_function("document.documentElement.dataset.read === 'on'")
-        stored = page.evaluate("localStorage.getItem('gkps-search')")
-        self.assertTrue(stored.startswith(reverse('web-search') + '?q=kasih'), stored)
+        stored_id = page.evaluate("sessionStorage.getItem('gkps-search-last-tab')")
+        self.assertTrue(stored_id)
+        snapshot = page.evaluate(
+            "id => sessionStorage.getItem('gkps-search-entry:' + id)", stored_id)
+        self.assertIn('/search?q=kasih', snapshot)
+        self.assertIn('kasih', snapshot)
         page.locator('#railSearch').click()
         page.wait_for_selector('#searchStatus')
         expect(page.get_by_text('Results for').first).to_be_visible()

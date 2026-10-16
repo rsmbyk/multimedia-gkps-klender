@@ -61,7 +61,7 @@ class UnifiedTextScreenModeE2ETests(StaticLiveServerTestCase):
             page.locator('[data-project-open]').click()
         projector = popup.value
         projector.wait_for_load_state('networkidle')
-        screens = projector.locator('#projectorScreens .screen')
+        screens = projector.locator('#projectorScreens .screen[data-screen]')
         expect(screens).to_have_count(2)
 
         page.locator('[data-entry-pk] [data-preview-open]').click()

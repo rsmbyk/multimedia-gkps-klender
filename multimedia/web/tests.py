@@ -2133,7 +2133,7 @@ class ServiceProjectorTests(TestCase):
         response = self.client.get(reverse('web-service-projector', args=[99999]))
         self.assertEqual(response.status_code, 404)
 
-    def test_it_is_a_page_of_its_own_with_nothing_but_the_words(self):
+    def test_it_is_a_page_of_its_own_with_quiet_projector_controls(self):
         html = self.html()
         self.assertIn('styles/design/tokens.css', html)      # the product's own dark palette
         self.assertIn('styles/design/projector.css', html)   # the display's own stylesheet
@@ -2141,13 +2141,14 @@ class ServiceProjectorTests(TestCase):
         self.assertNotIn('rail__menu', html)                 # not the reading shell
         self.assertNotIn('panelBody', html)
         self.assertIn('gkps-service-display', html)          # its own channel
-        self.assertNotIn('<button', html)                    # no controls on screen
-        self.assertNotIn('data-projector', html)
+        self.assertIn('id="corner-cue"', html)
+        self.assertIn('class="mouse-zones"', html)
 
     # --- what it shows ----------------------------------------------------
 
     def screens(self, html=None):
-        return (html or self.html()).split('<section class="screen')[1:]
+        return [part.split('</section>', 1)[0]
+                for part in (html or self.html()).split('<section class="screen')[1:]]
 
     def test_a_passage_is_one_verse_a_screen_headed_by_its_reference_and_title(self):
         self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
@@ -2161,6 +2162,164 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('Matius 5:3', screens[1])
         self.assertIn('Berbahagia', screens[1])              # the verse's own title, when it has one
         self.assertIn('ayat 3', screens[1])
+
+    def test_projector_metadata_keeps_entry_bait_and_rest_boundaries(self):
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        self.make(2, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
+        response = self.client.get(self.projector_url())
+        entries = response.context['projector_entries']
+        screens = response.context['projector_screens_data']
+        self.assertEqual([(entry['start'], entry['end']) for entry in entries], [(0, 3), (4, 4)])
+        self.assertEqual([(bait['number'], bait['start'], bait['end'])
+                          for bait in entries[0]['baits']], [(1, 0, 1), (2, 2, 3)])
+        self.assertTrue(screens[1]['bait_rest'])
+        self.assertTrue(screens[3]['bait_rest'])
+        self.assertEqual(entries[1]['type'], 'break')
+
+    def test_passage_metadata_has_its_other_translation_without_changing_entry(self):
+        sim_version = bible.Version.objects.create(
+            lang=self.matius.version.lang, name='Simalungun', abbreviation='SIM')
+        sim = bible.BookTranslation.objects.create(
+            version=sim_version, book=self.matius.book, translation='Mateus')
+        bible.Verse.objects.create(book_translation=sim, chapter=5, verse=2, text='ayat SIM')
+        entry = self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE,
+                          book_translation=self.matius, chapter=5, verse_start=2)
+        response = self.client.get(self.projector_url())
+        variants = response.context['projector_screens_data'][0]['translations']
+        self.assertEqual(variants['TB']['line'], 'ayat 2')
+        self.assertEqual(variants['SIM']['line'], 'ayat SIM')
+        entry.refresh_from_db()
+        self.assertEqual(entry.book_translation_id, self.matius.pk)
+
+    def test_library_detours_return_song_and_passage_without_changing_service(self):
+        song_url = reverse('web-service-projector-detour', args=[self.tatib.pk])
+        song = self.client.get(song_url, {'kind': 'song', 'song_id': self.song.pk})
+        self.assertEqual(song.status_code, 200)
+        self.assertEqual([bait['number'] for bait in song.json()['baits']], [1, 2])
+        passage = self.client.get(song_url, {
+            'kind': 'passage', 'book_id': self.matius.book_id, 'chapter': 5, 'verse': 2,
+        })
+        self.assertEqual(passage.status_code, 200)
+        self.assertEqual(passage.json()['translations']['TB']['line'], 'ayat 2')
+        next_verse = self.client.get(song_url, {
+            'kind': 'passage', 'book_id': self.matius.book_id, 'chapter': 5, 'verse': 2,
+            'action': 'next', 'level': 'plain',
+        })
+        self.assertEqual(next_verse.json()['verse'], 3)
+        self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.tatib).count(), 0)
+
+    def test_library_lookup_finds_a_passage_and_song(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        passage = self.client.get(url, {'q': 'Mat 5:2'})
+        self.assertEqual(passage.status_code, 200)
+        self.assertTrue(any(row['kind'] == 'passage' for row in passage.json()['results']))
+        song = self.client.get(url, {'q': 'KJ 152'})
+        self.assertEqual(song.status_code, 200)
+        self.assertEqual(song.json()['results'][0]['label'], 'KJ 152 Ada Kuasa dalam DarahNya')
+
+    def test_library_lookup_includes_hymn_sub_number_but_not_a_prefix_for_other_songs(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        hymn = songs.Song.objects.create(
+            book=self.songbook, number=223, sub_number='a', title='Haleluya')
+        other_book = songs.Book.objects.create(name='Lagu', short_name='LG', is_hymn_book=False)
+        songs.Song.objects.create(book=other_book, number=3, title='Nyanyian Baru')
+
+        hymn_rows = self.client.get(url, {'q': 'KJ 223a'}).json()['results']
+        self.assertEqual(hymn_rows[0]['target']['song_id'], hymn.pk)
+        self.assertEqual(hymn_rows[0]['label'], 'KJ 223A Haleluya')
+        other_rows = self.client.get(url, {'q': 'Nyanyian Baru'}).json()['results']
+        self.assertEqual(other_rows[0]['label'], 'Nyanyian Baru')
+
+    def test_library_lookup_only_shows_strong_reference_title_or_number_matches(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        self.assertEqual(self.client.get(url, {'q': 'Kuasa'}).json()['results'][0]['kind'], 'song')
+        self.assertEqual(self.client.get(url, {'q': 'KJ'}).json()['results'], [])
+        self.assertEqual(self.client.get(url, {'q': 'ayat 2'}).json()['results'], [])
+        self.assertEqual(self.client.get(url, {'q': 'bait 1'}).json()['results'], [])
+
+    def test_library_lookup_prefers_exact_song_titles_over_prefix_book_and_lyric_hits(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        exact = songs.Song.objects.create(book=self.songbook, number=151, title='Haleluya')
+        songs.Song.objects.create(book=self.songbook, number=153, title='Haleluya Besar')
+        lyric_only = songs.Song.objects.create(book=self.songbook, number=154, title='Pujian Baru')
+        songs.Verse.objects.create(song=lyric_only, number=1, lyric='Haleluya bagi Tuhan')
+        haleluya_book = songs.Book.objects.create(name='Haleluya', short_name='HAL')
+        songs.Song.objects.create(book=haleluya_book, number=1, title='Nyanyian Pagi')
+
+        rows = self.client.get(url, {'q': 'haleluya'}).json()['results']
+        self.assertEqual([row['target']['song_id'] for row in rows], [exact.pk])
+
+    def test_library_lookup_keeps_exact_song_number_without_book_prefix(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        song = songs.Song.objects.create(book=self.songbook, number=1152, title='Another Song')
+        rows = self.client.get(url, {'q': '152'}).json()['results']
+        self.assertEqual([row['target']['song_id'] for row in rows], [self.song.pk, song.pk])
+
+    def test_library_lookup_matches_bare_number_substrings_across_books_without_a_cap(self):
+        exact_kj = songs.Song.objects.create(book=self.songbook, number=12, title='Exact in KJ')
+        other = songs.Book.objects.create(
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        exact_other = songs.Song.objects.create(book=other, number=12, title='Exact in NKB')
+        prefix_120 = songs.Song.objects.create(book=other, number=120, title='Prefix 120')
+        prefix_121 = songs.Song.objects.create(book=other, number=121, title='Prefix 121')
+        substring_212 = songs.Song.objects.create(book=other, number=212, title='Substring 212')
+        substring_312 = songs.Song.objects.create(book=other, number=312, title='Substring 312')
+        extras = [songs.Song.objects.create(book=other, number=1200 + index, title=f'Extra {index}')
+                  for index in range(14)]
+        inactive = songs.Song.objects.create(
+            book=other, number=12000, title='Deleted', is_deleted=True)
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+
+        rows = self.client.get(url, {'q': '012'}).json()['results']
+        ids = [row['target']['song_id'] for row in rows]
+        self.assertEqual(ids, [exact_kj.pk, exact_other.pk, prefix_120.pk,
+                               prefix_121.pk, *[row.pk for row in extras],
+                               substring_212.pk, substring_312.pk])
+        self.assertGreater(len(rows), 12)
+        self.assertNotIn(inactive.pk, ids)
+
+    def test_library_lookup_matches_hymn_book_and_number_prefix_without_truncating(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        book = songs.Book.objects.create(
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        for number in range(200, 220):
+            songs.Song.objects.create(book=book, number=number, title=f'Song {number}')
+        target = songs.Song.objects.create(
+            book=book, number=223, sub_number='a', title='Haleluya')
+        songs.Song.objects.create(book=book, number=223, sub_number='b', title='Other variant')
+
+        self.assertEqual(self.client.get(url, {'q': 'NKB'}).json()['results'], [])
+        for query in ('NKB 2', 'Nyanyikanlah Kidung Baru 2',
+                      'NKB 22', 'Nyanyikanlah Kidung Baru 22',
+                      'NKB 223', 'Nyanyikanlah Kidung Baru 223',
+                      'NKB 223A', 'Nyanyikanlah Kidung Baru 223A'):
+            rows = self.client.get(url, {'q': query}).json()['results']
+            self.assertIn(target.pk, [row['target']['song_id'] for row in rows], query)
+        exact_variant = self.client.get(url, {'q': 'NKB 223A'}).json()['results']
+        self.assertEqual([row['target']['song_id'] for row in exact_variant], [target.pk])
+
+    def test_library_lookup_matches_bible_book_and_chapter_prefix(self):
+        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        for chapter in (2, 20, 22):
+            bible.Verse.objects.create(
+                book_translation=self.matius, chapter=chapter, verse=1, text='ayat')
+        self.assertEqual(self.client.get(url, {'q': 'Mat'}).json()['results'], [])
+        for query in ('Mat 2', 'Matius 2'):
+            rows = self.client.get(url, {'q': query}).json()['results']
+            self.assertEqual([row['label'] for row in rows],
+                             ['Matius 2', 'Matius 20', 'Matius 22'])
+            self.assertEqual([row['target']['verse'] for row in rows], [1, 1, 1])
+        chapter_without_verse_one = self.client.get(url, {'q': 'Mat 5'}).json()['results'][0]
+        self.assertEqual(chapter_without_verse_one['label'], 'Matius 5')
+        self.assertEqual(chapter_without_verse_one['target']['verse'], 2)
+        detour = self.client.get(reverse('web-service-projector-detour', args=[self.tatib.pk]),
+                                 {'kind': 'passage', 'book_id': self.matius.book_id,
+                                  'chapter': 5, 'verse': chapter_without_verse_one['target']['verse']})
+        self.assertEqual(detour.status_code, 200)
+        self.assertEqual(detour.json()['verse'], 2)
+        verse = self.client.get(url, {'q': 'Mat 5:2'}).json()['results']
+        self.assertEqual(verse[0]['label'], 'Matius 5:2')
+        self.assertEqual(verse[0]['target']['verse'], 2)
 
     def test_a_text_shows_two_lines_at_a_time_under_its_own_header(self):
         self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',

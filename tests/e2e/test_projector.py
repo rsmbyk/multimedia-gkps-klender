@@ -9,16 +9,32 @@ pages from one context share it (that is one laptop with two tabs), a second
 context is another laptop and must not be affected.
 """
 
+import json
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.db import connections
 from django.test import override_settings, tag
 from django.urls import reverse
 
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
+
+
+def wait_for_offline_ready(page):
+    page.evaluate("""(async () => {
+      const deadline = Date.now() + 25000;
+      while (Date.now() < deadline) {
+        const state = await GKPSOffline.status();
+        if (state.ready && !state.syncing) return true;
+        await new Promise(resolve => setTimeout(resolve, 40));
+      }
+      throw new Error('Offline library did not become ready');
+    })()""")
+
 
 try:
     from playwright.sync_api import sync_playwright
@@ -40,6 +56,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         tatib.TataIbadahItem.objects.create(
             tatib=self.service, order_number=1, item_type=tatib.TataIbadahItemType.TEXT,
             title='Nas', text='Mazmur 23\n\nTuhan adalah gembalaku, takkan kekurangan aku.')
+        self.first_legacy_id = tatib.TataIbadahItem.objects.filter(
+            tatib=self.service, order_number=1).values_list('pk', flat=True).get()
         tatib.ServiceEntry.objects.create(
             tatib=self.service, order_number=2, kind=tatib.ServiceEntryKind.TEXT,
             title='Salam', text='Kasih karunia Tuhan beserta kita semua')
@@ -91,6 +109,16 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             tatib=self.single_service, order_number=1,
             kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', title='Doa',
             text='\n'.join(f'Baris {n} dari doa yang panjang ini.' for n in range(1, 30)))
+
+        self.untitled_text_line = (
+            'L : Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, '
+            'dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi.')
+        self.untitled_service = tatib.TataIbadah.objects.create(
+            name='Ibadah Dua Teks', date=date(2026, 9, 20), is_active=True)
+        for order in (1, 2):
+            tatib.ServiceEntry.objects.create(
+                tatib=self.untitled_service, order_number=order,
+                kind=tatib.ServiceEntryKind.TEXT, title='', text=self.untitled_text_line)
 
         self._playwright = sync_playwright().start()
         try:
@@ -147,7 +175,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertIn('CMG Sans', styles['face'])          # the current projector's own face
         self.assertIn('Source Sans Pro', styles['face'])   # and the rest of the OBS surfaces'
         self.assertEqual(styles['weight'], '700')
-        self.assertEqual(styles['buttons'], 0)             # no controls on the display
+        self.assertGreater(styles['buttons'], 0)            # quiet operator controls
         self.assertEqual(styles['head'], 'rgb(255, 209, 102)')      # the header, brighter still...
         self.assertEqual(styles['line'], styles['color'])           # ...from the words
 
@@ -160,7 +188,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         }""")
         self.assertTrue(fit['fitsWidth'], fit)
         self.assertTrue(fit['fitsHeight'], fit)
-        self.assertLessEqual(fit['size'], 100)
+        self.assertLessEqual(fit['size'], 200)
 
         # The fitting must reach the words: the ink stays inside the screen's box.
         ink = page.evaluate("""() => {
@@ -239,9 +267,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertAlmostEqual(centred['headCentreX'], centred['stageCentreX'], delta=2)
         self.assertAlmostEqual(centred['lineCentreX'], centred['stageCentreX'], delta=2)
         self.assertAlmostEqual(centred['boxCentreY'], centred['stageCentreY'], delta=1)
-        # The ink rides within a few px of the middle as well: a 50px header and 100px
-        # lines carry different leading, and half of that difference is what is left.
-        self.assertAlmostEqual(centred['inkCentreY'], centred['stageCentreY'], delta=8)
+        # Spec 091 pins the header to the top while the words use the remaining area.
+        self.assertLess(centred['inkCentreY'], centred['stageCentreY'])
 
     def test_moving_and_toggling_morph_rather_than_jump(self):
         page = self._page(self._projector_url())
@@ -305,11 +332,593 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.get_attribute('body', 'data-showing'), 'true')
         self.assertEqual(page.locator('.screen:visible').count(), 1)
 
+    def test_quiet_controls_support_keyboard_and_mouse_jumps(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('Space')
+        page.keyboard.press('Control+ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '3')
+        page.keyboard.press('Control+ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '5')
+        page.keyboard.press('Control+ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '6')
+        page.keyboard.press('Shift+ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '8')
+        page.keyboard.press('b')
+        self.assertFalse(page.locator('#projectorFind').is_visible())
+        page.keyboard.press('j')
+        self.assertTrue(page.locator('#entry-list').is_visible())
+        page.locator('#entry-list-search').fill('Salam')
+        page.keyboard.press('Enter')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '3')
+        page.keyboard.press('c')
+        self.assertTrue(page.locator('body').evaluate("e => e.classList.contains('corner-hidden')"))
+        page.mouse.move(100, 100)
+        self.assertTrue(page.locator('body').evaluate("e => e.classList.contains('corner-hidden')"))
+        page.keyboard.press('c')
+        page.locator('.mouse-zone--next').click(position={'x': 100, 'y': 100})
+        page.wait_for_function('document.fullscreenElement !== null')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '3')
+        page.locator('.mouse-zone--next').click(position={'x': 100, 'y': 100})
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '4')
+        page.locator('#cue-service').click()
+        self.assertTrue(page.locator('#entry-list').is_visible())
+        page.locator('.entry-list__item[data-entry-index="3"]').click()
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '6')
+
+    def test_first_projection_click_only_enters_fullscreen_in_every_zone(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('ArrowRight')
+        for zone in ('previous', 'display', 'next'):
+            before = page.get_attribute('body', 'data-current-screen')
+            showing = page.get_attribute('body', 'data-showing')
+            page.locator('.mouse-zone--' + zone).click(position={'x': 40, 'y': 40})
+            page.wait_for_function('document.fullscreenElement !== null')
+            self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+            self.assertEqual(page.get_attribute('body', 'data-showing'), showing)
+            page.evaluate('document.exitFullscreen()')
+            page.wait_for_function('document.fullscreenElement === null')
+
+    def test_overlays_intercept_projector_clicks(self):
+        page = self._page(self._projector_url())
+        page.locator('.keys').click()
+        self.assertTrue(page.locator('body').evaluate("e => e.classList.contains('keys-open')"))
+        before = page.get_attribute('body', 'data-current-screen')
+        page.mouse.click(16, 200)
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+        self.assertFalse(page.locator('body').evaluate("e => e.classList.contains('keys-open')"))
+        page.locator('#cue-service').click()
+        page.mouse.click(1200, 200)
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+        self.assertFalse(page.locator('body').evaluate("e => e.classList.contains('entry-list-open')"))
+
+    def test_open_popups_keep_hud_visible_and_goto_has_clear_click_overlay(self):
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = context.new_page()
+        page.clock.install()
+        page.goto(self.live_server_url + self._projector_url())
+        page.wait_for_load_state('networkidle')
+
+        for key in ('j', 'g', 'k'):
+            page.keyboard.press(key)
+            page.clock.fast_forward(31_000)
+            self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('controls-idle')"))
+            self.assertEqual(page.locator('#corner-cue').evaluate('el => getComputedStyle(el).visibility'), 'visible')
+            self.assertEqual(page.locator('.keys').evaluate('el => getComputedStyle(el).visibility'), 'visible')
+            if key == 'g':
+                dismiss = page.locator('#projectorFindDismiss')
+                self.assertTrue(dismiss.is_visible())
+                self.assertEqual(dismiss.evaluate('el => getComputedStyle(el).backgroundColor'), 'rgba(0, 0, 0, 0)')
+                before = page.get_attribute('body', 'data-current-screen')
+                page.mouse.click(1200, 200)
+                self.assertTrue(page.locator('body').evaluate("el => el.classList.contains('find-closing')"))
+                page.clock.fast_forward(200)
+                self.assertFalse(page.locator('#projectorFind').is_visible())
+                self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+            else:
+                page.keyboard.press('Escape')
+                page.clock.fast_forward(200)
+
+    def test_goto_cycles_one_suggestion_through_all_reference_results(self):
+        def add_songs():
+            try:
+                songbook = songs.Book.objects.get(short_name='KJ')
+                for number in range(200, 240):
+                    songs.Song.objects.create(book=songbook, number=number, title=f'Kidung {number}')
+            finally:
+                connections.close_all()
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(add_songs).result()
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('KJ 2')
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 40'")
+        self.assertEqual(page.locator('.projector-find__row').count(), 1)
+        self.assertIn('KJ 200', page.locator('.projector-find__suggestion').inner_text())
+        for _ in range(35):
+            page.keyboard.press('ArrowDown')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '36 / 40')
+        self.assertIn('KJ 235', page.locator('.projector-find__suggestion').inner_text())
+        self.assertEqual(page.locator('#projectorFindInput').input_value(), 'KJ 2')
+        for _ in range(5):
+            page.keyboard.press('ArrowDown')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 40')
+        page.keyboard.press('ArrowUp')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '40 / 40')
+        page.locator('#projectorFindInput').fill('unknown')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
+
+    def test_goto_bare_number_matches_substrings_across_books_in_tiers(self):
+        def add_songs():
+            try:
+                kj = songs.Book.objects.get(short_name='KJ')
+                nkb = songs.Book.objects.create(
+                    name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+                rows = [
+                    (kj, 12, 'KJ exact'), (nkb, 12, 'NKB exact'),
+                    (nkb, 120, 'Prefix 120'), (nkb, 121, 'Prefix 121'),
+                ]
+                rows.extend((nkb, number, f'Prefix {number}') for number in range(1200, 1214))
+                rows.extend(((nkb, 212, 'Substring 212'), (nkb, 312, 'Substring 312')))
+                for book, number, title in rows:
+                    songs.Song.objects.create(book=book, number=number, title=title)
+            finally:
+                connections.close_all()
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(add_songs).result()
+
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        page.keyboard.press('g')
+        field = page.locator('#projectorFindInput')
+        field.fill('012')
+        expected = ['KJ 12 KJ exact', 'NKB 12 NKB exact',
+                    'NKB 120 Prefix 120', 'NKB 121 Prefix 121']
+        expected.extend(f'NKB {number} Prefix {number}' for number in range(1200, 1214))
+        expected.extend(['NKB 212 Substring 212', 'NKB 312 Substring 312'])
+        page.wait_for_function(
+            "document.querySelector('.projector-find__count').textContent === '1 / %d'" % len(expected))
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), expected[0])
+        seen = [expected[0]]
+        for _ in range(len(expected) - 1):
+            page.keyboard.press('ArrowDown')
+            seen.append(page.locator('.projector-find__suggestion').inner_text().strip())
+        self.assertEqual(seen, expected)
+        self.assertEqual(page.locator('.projector-find__count').inner_text(),
+                         f'{len(expected)} / {len(expected)}')
+        self.assertEqual(field.input_value(), '012')
+        page.keyboard.press('ArrowDown')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), expected[0])
+        page.keyboard.press('ArrowUp')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), expected[-1])
+
+        field.fill('KJ 12')
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), 'KJ 12 KJ exact')
+        field.fill('Ada Kuasa')
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text().strip(), 'KJ 152 Ada Kuasa')
+
+    def test_goto_empty_result_and_overlay_dismissal(self):
+        page = self._page(self._projector_url())
+        page.route('**/lookup/**', lambda route: route.fulfill(
+            status=200, content_type='application/json', body=json.dumps({'results': []})))
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('nothing')
+        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent === 'No matching passage or song'")
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
+        self.assertTrue(page.locator('#projectorFindResults').is_disabled())
+        page.keyboard.press('Enter')
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+        page.locator('#projectorFindInput').fill('')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Start typing to find a match')
+        page.locator('#projectorFindDismiss').click(position={'x': 1200, 'y': 200})
+        page.locator('#projectorFind').wait_for(state='hidden')
+
+    def test_goto_morph_blocks_clicks_during_close_and_survives_rapid_reopen(self):
+        page = self._page(self._projector_url())
+        page.clock.install()
+        before = page.get_attribute('body', 'data-current-screen')
+        page.keyboard.press('g')
+        self.assertEqual(page.locator('#projectorFind').evaluate(
+            'el => getComputedStyle(el).animationName'), 'projectorListIn')
+        page.keyboard.press('Escape')
+        self.assertTrue(page.locator('body').evaluate("el => el.classList.contains('find-closing')"))
+        self.assertEqual(page.locator('#projectorFind').evaluate(
+            'el => getComputedStyle(el).animationName'), 'projectorListOut')
+        self.assertTrue(page.locator('#projectorFindDismiss').is_visible())
+        page.mouse.click(1200, 200)
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+        page.keyboard.press('g')
+        self.assertTrue(page.locator('body').evaluate("el => el.classList.contains('find-open')"))
+        self.assertTrue(page.locator('#projectorFindInput').evaluate('el => document.activeElement === el'))
+        page.clock.fast_forward(250)
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+        page.keyboard.press('Escape')
+        page.clock.fast_forward(200)
+        self.assertFalse(page.locator('#projectorFind').is_visible())
+        self.assertFalse(page.locator('#projectorFindDismiss').is_visible())
+
+    def test_goto_morph_is_skipped_for_reduced_motion(self):
+        context = self.browser.new_context(reduced_motion='reduce')
+        page = self._page(self._projector_url(), context=context)
+        page.keyboard.press('g')
+        self.assertEqual(page.locator('#projectorFind').evaluate(
+            'el => getComputedStyle(el).animationName'), 'none')
+        page.keyboard.press('Escape')
+        page.locator('#projectorFind').wait_for(state='hidden')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('find-closing')"))
+
+    def test_goto_ignores_old_lookup_responses(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        lookup_requests = []
+        page.on('request', lambda request: lookup_requests.append(request.url)
+                if '/lookup/' in request.url or '/detour/' in request.url else None)
+        page.keyboard.press('g')
+        query = page.locator('#projectorFindInput')
+        query.fill('KJ 15')
+        self.assertIn('KJ 152', page.locator('.projector-find__suggestion').inner_text())
+        query.fill('Mat 5')
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Matius 5')
+        self.assertEqual(lookup_requests, [])
+        page.keyboard.press('Escape')
+        page.locator('#projectorFind').wait_for(state='hidden')
+
+    def test_goto_click_opens_the_selected_suggestion(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('KJ 152')
+        page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        page.set_viewport_size({'width': 600, 'height': 400})
+        self.assertTrue(page.locator('#projectorFind').evaluate("""el => {
+          const box = el.getBoundingClientRect();
+          return box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;
+        }"""))
+        page.locator('#projectorFindResults').click()
+        page.locator('#projectorFind').wait_for(state='hidden')
+        page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
+
+    def test_goto_chapter_suggestion_opens_first_available_verse_by_enter_and_click(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        for method in ('Enter', 'click'):
+            page.keyboard.press('g')
+            page.locator('#projectorFindInput').fill('Mat 5')
+            page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent === 'Matius 5'")
+            if method == 'Enter':
+                page.keyboard.press('Enter')
+            else:
+                page.locator('#projectorFindResults').click()
+            page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
+            self.assertIn('Matius 5:3', page.locator('.projector-detour').inner_text())
+            page.locator('#projectorFind').wait_for(state='hidden')
+            page.keyboard.press('Escape')
+            page.wait_for_function("!document.querySelector('.projector-detour').classList.contains('is-active')")
+
+    def test_projector_search_clear_controls_match_both_fields(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('j')
+        service_search = page.locator('#entry-list-search')
+        service_clear = page.locator('#entry-list-clear')
+        self.assertFalse(service_clear.is_visible())
+        service_search.fill('Salam')
+        self.assertTrue(service_clear.is_visible())
+        self.assertEqual(page.locator('.entry-list__item').count(), 1)
+        service_clear.click()
+        self.assertEqual(service_search.input_value(), '')
+        self.assertTrue(service_search.evaluate('el => document.activeElement === el'))
+        self.assertEqual(page.locator('.entry-list__item').count(), 5)
+        self.assertFalse(service_clear.is_visible())
+        service_search.fill('Salam')
+        service_clear.focus()
+        page.keyboard.press('Enter')
+        self.assertEqual(service_search.input_value(), '')
+        self.assertTrue(page.locator('#entry-list').is_visible())
+        page.keyboard.press('Escape')
+
+        page.keyboard.press('g')
+        goto_search = page.locator('#projectorFindInput')
+        goto_clear = page.locator('#projectorFindClear')
+        self.assertFalse(goto_clear.is_visible())
+        goto_search.fill('NKB 2')
+        self.assertTrue(goto_clear.is_visible())
+        goto_clear.click()
+        self.assertEqual(goto_search.input_value(), '')
+        self.assertTrue(goto_search.evaluate('el => document.activeElement === el'))
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Start typing to find a match')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
+        self.assertFalse(goto_clear.is_visible())
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+
+    def test_adjacent_untitled_text_cues_share_fit_limit_and_run_only_on_hover(self):
+        full = self.untitled_text_line
+        page = self._page(reverse('web-service-projector', args=[self.untitled_service.pk]))
+        current = page.locator('#cue-prefix .cue-running')
+        following = page.locator('#cue-next-name.cue-running')
+        self.assertEqual(current.count(), 1)
+        self.assertEqual(following.count(), 1)
+        self.assertEqual(page.locator('#corner-cue').evaluate(
+            'el => getComputedStyle(el).fontWeight'), '550')
+        self.assertEqual(current.evaluate('el => getComputedStyle(el).color'), 'rgb(81, 77, 71)')
+        self.assertEqual(following.evaluate('el => getComputedStyle(el).color'), 'rgb(81, 77, 71)')
+        self.assertEqual(page.locator('#cue-progress').evaluate(
+            'el => getComputedStyle(el).color'), 'rgb(232, 228, 220)')
+        page.locator('#cue-next').evaluate('el => el.classList.add("on")')
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-next-name')).color === 'rgb(232, 228, 220)'")
+        self.assertEqual(following.evaluate('el => getComputedStyle(el).color'), 'rgb(232, 228, 220)')
+        page.locator('#cue-next').evaluate('el => el.classList.remove("on")')
+        self.assertEqual(page.locator('.entry-list__item').count(), 2)
+        self.assertGreater(len(full), 50)
+        for width in (1440, 900, 600, 375):
+            page.set_viewport_size({'width': width, 'height': 700})
+            page.evaluate("window.dispatchEvent(new Event('resize'))")
+            limit = int(page.locator('#corner-cue').get_attribute('data-running-limit'))
+            self.assertLessEqual(limit, 50)
+            self.assertGreaterEqual(limit, 1)
+            for node in (current, following):
+                self.assertEqual(node.locator('.cue-running__still').inner_text(),
+                                 full[:limit] + '…')
+                self.assertFalse(node.get_attribute('title'))
+            self.assertTrue(page.evaluate("""() => {
+              const next = document.querySelector('#cue-next').getBoundingClientRect();
+              const keys = document.querySelector('.keys').getBoundingClientRect();
+              return keys.left - next.right >= innerWidth * .1 - 1;
+            }"""))
+        page.set_viewport_size({'width': 1440, 'height': 700})
+        page.evaluate("window.dispatchEvent(new Event('resize'))")
+        self.assertEqual(page.locator('#corner-cue').get_attribute('data-running-limit'), '50')
+        before = page.locator('#cue-progress').bounding_box()['x']
+        current.hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-prefix .cue-running')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(current.evaluate('el => getComputedStyle(el).color'), 'rgb(129, 125, 116)')
+        self.assertTrue(current.evaluate("el => el.classList.contains('is-running')"))
+        self.assertTrue(current.locator('.cue-running__moving').evaluate(
+            "el => el.getAnimations()[0].effect.getTiming().iterations === Infinity"))
+        self.assertEqual(page.locator('#cue-progress').bounding_box()['x'], before)
+        self.assertFalse(following.evaluate("el => el.classList.contains('is-running')"))
+        page.mouse.move(700, 300)
+        self.assertFalse(current.evaluate("el => el.classList.contains('is-running')"))
+        page.keyboard.press('j')
+        self.assertIn(full, page.locator('#entry-list-results').inner_text())
+
+    def test_running_cue_respects_reduced_motion(self):
+        context = self.browser.new_context(
+            viewport={'width': 600, 'height': 700}, reduced_motion='reduce')
+        page = self._page(
+            reverse('web-service-projector', args=[self.untitled_service.pk]),
+            context=context)
+        current = page.locator('#cue-prefix .cue-running')
+        current.hover()
+        self.assertFalse(current.evaluate("el => el.classList.contains('is-running')"))
+        self.assertEqual(current.locator('.cue-running__moving').evaluate(
+            'el => getComputedStyle(el).display'), 'none')
+
+    def test_corner_controls_share_rest_hover_and_highlight_colors(self):
+        page = self._page(self._projector_url())
+        color = lambda selector: page.locator(selector).evaluate(
+            'el => getComputedStyle(el).color')
+        rest, hover, highlight = 'rgb(81, 77, 71)', 'rgb(129, 125, 116)', 'rgb(232, 228, 220)'
+        self.assertEqual(color('#corner-cue'), rest)
+        self.assertEqual(color('#cue-service'), rest)
+        self.assertEqual(color('#cue-next'), rest)
+        self.assertEqual(color('.keys'), rest)
+        self.assertEqual(color('#cue-progress'), highlight)
+
+        page.locator('#cue-next').hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-next')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('#cue-next'), hover)
+        page.locator('#cue-service').hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-service')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('#cue-service'), hover)
+        page.locator('#cue-service').click()
+        page.wait_for_function("getComputedStyle(document.querySelector('#cue-service')).color === 'rgb(232, 228, 220)'")
+        self.assertEqual(color('#cue-service'), highlight)
+        page.keyboard.press('Escape')
+
+        page.locator('.keys').hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('.keys')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('.keys'), hover)
+        self.assertEqual(page.locator('.keys').evaluate(
+            'el => getComputedStyle(el).backgroundColor'), 'rgba(0, 0, 0, 0)')
+        page.locator('.keys').click()
+        page.wait_for_function("getComputedStyle(document.querySelector('.keys')).color === 'rgb(232, 228, 220)'")
+        self.assertEqual(color('.keys'), highlight)
+        self.assertEqual(page.locator('.keys').evaluate(
+            'el => getComputedStyle(el).backgroundColor'), 'rgba(0, 0, 0, 0)')
+        page.keyboard.press('Escape')
+
+        for _ in range(3):
+            page.keyboard.press('Control+ArrowRight')
+        baits = page.locator('.cue-bait')
+        self.assertGreater(baits.count(), 1)
+        self.assertEqual(color('.cue-bait[aria-pressed="false"]'), rest)
+        self.assertEqual(color('.cue-bait[aria-pressed="true"]'), highlight)
+        baits.last.hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('.cue-bait[aria-pressed=\"false\"]')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('.cue-bait[aria-pressed="false"]'), hover)
+        page.locator('.cue-bait[aria-pressed="true"]').hover()
+        self.assertEqual(color('.cue-bait[aria-pressed="true"]'), highlight)
+
+        page.keyboard.press('Control+ArrowRight')
+        translation = page.locator('.cue-translation')
+        self.assertEqual(translation.count(), 1)
+        self.assertEqual(color('.cue-translation'), rest)
+        translation.hover()
+        page.wait_for_function("getComputedStyle(document.querySelector('.cue-translation')).color === 'rgb(129, 125, 116)'")
+        self.assertEqual(color('.cue-translation'), hover)
+        translation.evaluate('el => el.classList.add("flash")')
+        page.wait_for_function("getComputedStyle(document.querySelector('.cue-translation')).color === 'rgb(232, 228, 220)'")
+        self.assertEqual(color('.cue-translation'), highlight)
+
+    def test_goto_clear_ignores_pending_lookup(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('KJ 152')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 1')
+        page.locator('#projectorFindClear').click()
+        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Start typing to find a match')
+        self.assertEqual(page.locator('.projector-find__count').inner_text(), '0 / 0')
+
+    def test_escape_closes_both_hud_layers_without_a_lingering_focus_ring(self):
+        page = self._page(self._projector_url())
+        for selector, open_class in (('#cue-service', 'entry-list-open'), ('.keys', 'keys-open')):
+            button = page.locator(selector)
+            button.click()
+            page.mouse.move(700, 100)
+            page.keyboard.press('Escape')
+            self.assertFalse(page.locator('body').evaluate(
+                '(body, name) => body.classList.contains(name)', open_class))
+            self.assertFalse(button.evaluate("el => el.matches(':focus-visible')"))
+            self.assertEqual(button.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+            page.wait_for_function("!document.body.classList.contains('keys-closing') && !document.body.classList.contains('entry-list-closing')")
+            page.locator('#cue-service').focus()
+            page.keyboard.press('Tab')
+            self.assertTrue(page.evaluate("document.activeElement.matches(':focus-visible')"))
+
+    def test_mouse_closed_hud_layers_do_not_show_focus_ring_on_arrow_navigation(self):
+        for selector in ('#cue-service', '.keys'):
+            with self.subTest(selector=selector):
+                page = self._page(self._projector_url())
+                button = page.locator(selector)
+                button.click()
+                if selector == '#cue-service':
+                    page.locator('#entry-list-dismiss').click(position={'x': 1200, 'y': 200})
+                else:
+                    page.mouse.click(16, 200)
+                before = page.get_attribute('body', 'data-current-screen')
+                page.keyboard.press('ArrowRight')
+                self.assertNotEqual(page.get_attribute('body', 'data-current-screen'), before)
+                self.assertFalse(button.evaluate("el => el.matches(':focus-visible')"))
+                self.assertEqual(button.evaluate('el => getComputedStyle(el).outlineStyle'), 'none')
+
+    def test_f_and_k_toggle_fullscreen_and_shortcut_sheet(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('k')
+        self.assertTrue(page.locator('body').evaluate("el => el.classList.contains('keys-open')"))
+        page.keyboard.press('k')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('keys-open')"))
+        page.keyboard.press('f')
+        page.wait_for_function('document.fullscreenElement !== null')
+        page.keyboard.press('f')
+        page.wait_for_function('document.fullscreenElement === null')
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').click()
+        page.keyboard.type('kf')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('keys-open')"))
+        self.assertIsNone(page.evaluate('document.fullscreenElement'))
+
+    def test_service_list_search_and_arrow_navigation_share_one_picker(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('j')
+        self.assertTrue(page.locator('#entry-list').is_visible())
+        self.assertFalse(page.locator('#projectorFind').is_visible())
+        search = page.locator('#entry-list-search')
+        self.assertTrue(search.evaluate('el => document.activeElement === el'))
+        self.assertEqual(page.locator('.entry-list__item').count(), 5)
+        page.keyboard.press('ArrowDown')
+        styles = page.locator('#entry-list').evaluate("""list => {
+          const current = list.querySelector('[aria-current="true"]');
+          const selected = list.querySelector('[data-active="true"]');
+          return {current: getComputedStyle(current).backgroundColor,
+                  selected: getComputedStyle(selected).backgroundColor,
+                  currentMarker: getComputedStyle(current).boxShadow};
+        }""")
+        self.assertNotEqual(styles['current'], styles['selected'])
+        self.assertNotEqual(styles['currentMarker'], 'none')
+        search.fill('bait 1')
+        self.assertEqual(page.locator('.entry-list__item').count(), 1)
+        search.fill('Salam')
+        self.assertEqual(page.locator('.entry-list__item').count(), 1)
+        self.assertEqual(page.locator('.entry-list__item[data-active="true"]').get_attribute('data-entry-index'), '1')
+        page.keyboard.press('Enter')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '3')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('entry-list-open')"))
+
+        page.locator('#cue-service').click()
+        search.fill('')
+        page.keyboard.press('ArrowDown')
+        self.assertEqual(page.locator('.entry-list__item[data-active="true"]').get_attribute('data-entry-index'), '2')
+        page.keyboard.press('Enter')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), '5')
+
+        page.keyboard.press('j')
+        search.fill('no matching entry')
+        self.assertEqual(page.locator('.entry-list__item').count(), 0)
+        self.assertTrue(page.locator('.entry-list__empty').is_visible())
+        page.keyboard.press('Escape')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('entry-list-open')"))
+        page.keyboard.press('j')
+        page.keyboard.press('Backspace')
+        self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('entry-list-open')"))
+        page.keyboard.press('g')
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+
+    def test_service_list_arrow_navigation_reaches_both_scroll_ends(self):
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 280})
+        page = self._page(self._projector_url(), context)
+        page.keyboard.press('j')
+        for _ in range(2):
+            page.keyboard.press('ArrowDown')
+        middle = page.locator('#entry-list').evaluate("""list => {
+          const row = list.querySelector('[data-active="true"]').getBoundingClientRect();
+          const header = list.querySelector('.entry-list__header').getBoundingClientRect();
+          const panel = list.getBoundingClientRect();
+          return {rowTop: row.top, rowBottom: row.bottom, headerBottom: header.bottom,
+                  panelBottom: panel.bottom, rowCenter: (row.top + row.bottom) / 2,
+                  visibleCenter: (header.bottom + panel.bottom) / 2};
+        }""")
+        self.assertGreaterEqual(middle['rowTop'] + 1, middle['headerBottom'])
+        self.assertLessEqual(middle['rowBottom'], middle['panelBottom'] + 1)
+        self.assertAlmostEqual(middle['rowCenter'], middle['visibleCenter'], delta=2)
+        for _ in range(2):
+            page.keyboard.press('ArrowDown')
+        end = page.locator('#entry-list').evaluate("""list => {
+          const row = list.querySelector('[data-active="true"]').getBoundingClientRect();
+          const panel = list.getBoundingClientRect();
+          return {rowBottom: row.bottom, panelBottom: panel.bottom,
+                  scrollTop: list.scrollTop, maxScroll: list.scrollHeight - list.clientHeight};
+        }""")
+        self.assertLessEqual(end['rowBottom'], end['panelBottom'])
+        self.assertAlmostEqual(end['scrollTop'], end['maxScroll'], delta=1)
+        for _ in range(4):
+            page.keyboard.press('ArrowUp')
+        start = page.locator('#entry-list').evaluate("""list => ({
+          rowTop: list.querySelector('[data-active="true"]').getBoundingClientRect().top,
+          headerBottom: list.querySelector('.entry-list__header').getBoundingClientRect().bottom,
+          scrollTop: list.scrollTop
+        })""")
+        self.assertGreaterEqual(start['rowTop'] + 1, start['headerBottom'])
+        self.assertAlmostEqual(start['scrollTop'], 0, delta=1)
+
+    def test_corner_cue_parts_share_the_bottom_band_vertical_center(self):
+        for width, height in ((1366, 768), (1920, 1080)):
+            context = self.browser.new_context(viewport={'width': width, 'height': height})
+            page = self._page(self._projector_url(), context)
+            centers = page.evaluate("""() => {
+              const mid = selector => {
+                const rect = document.querySelector(selector).getBoundingClientRect();
+                return rect.top + rect.height / 2;
+              };
+              return {
+                cue: mid('#corner-cue'), list: mid('#cue-service'),
+                dot: mid('.cue-separator'), prefix: mid('#cue-prefix'),
+                progress: mid('#cue-progress'), next: mid('#cue-next'), keys: mid('.keys')
+              };
+            }""")
+            expected = height - 32
+            for part, center in centers.items():
+                self.assertAlmostEqual(center, expected, delta=0.5, msg=(part, centers))
+            page.close()
+            context.close()
+
     def test_every_kind_takes_the_shape_it_should_on_screen(self):
         """The running order, screen by screen: content, then a built-in blank after
         each entry and after each song verse. A stored break is still one blank."""
         page = self._page(self._projector_url())
-        shape = page.eval_on_selector_all('.screen', """els => els.map(e => ({
+        shape = page.eval_on_selector_all('.screen[data-screen]', """els => els.map(e => ({
           blank: e.classList.contains('is-blank'),
           head: (e.querySelector('.screen__head') || {}).textContent || null,
           lines: [...e.querySelectorAll('.screen__line')].map(p => p.textContent)}))""")
@@ -459,7 +1068,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('Space')                          # turn the display on
         page.wait_for_timeout(200)
         measured = page.evaluate("""() => {
-          const screens = document.querySelectorAll('.screen');
+          const screens = document.querySelectorAll('.screen[data-screen]');
           const active = document.querySelector('.screen.is-active');
           const stage = document.getElementById('projectorScreens').getBoundingClientRect();
           const lines = active.querySelector('.screen__lines');
@@ -691,6 +1300,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
         asked = []
         projector.on('request', lambda request: asked.append(request.url))
+        page.on('request', lambda request: asked.append(request.url))
 
         page.locator('.tatib__item').first.hover()
         page.wait_for_timeout(250)
@@ -699,9 +1309,11 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.fill('#id_text', 'Berita baru untuk layar')
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')", timeout=8000)
-        page.wait_for_timeout(800)
-        self.assertTrue([url for url in asked if self._projector_url() in url],
-                        f'the display must re-read after a save: {asked}')
+        projector.wait_for_function("document.querySelector('#projectorScreens').textContent.includes('Berita baru untuk layar')",
+                                    timeout=8000)
+        self.assertTrue([url for url in asked if f'/offline/chunk/service/{self.service.pk}/' in url],
+                        f'the display must refresh its service data after a save: {asked}')
+        self.assertIn('Berita baru untuk layar', projector.locator('#projectorScreens').text_content())
 
     def test_a_reorder_reaches_the_display_without_update(self):
         """A drop is written at once, and the display re-reads by itself."""
@@ -719,5 +1331,62 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         grip.focus()
         page.keyboard.press('ArrowDown')
         page.wait_for_timeout(900)
-        self.assertTrue([url for url in asked if self._projector_url() in url],
-                        f'the display must re-read after a reorder: {asked}')
+        self.assertTrue([url for url in asked if f'/offline/chunk/service/{self.service.pk}/' in url],
+                        f'the display must refresh its service data after a reorder: {asked}')
+
+    def test_a_failed_service_refresh_preserves_the_projected_screen_and_snapshot(self):
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page('/home/', context)
+        wait_for_offline_ready(page)
+        projector = self._page(self._projector_url(), context)
+        wait_for_offline_ready(projector)
+
+        initial_screen = projector.locator('#projectorScreens').text_content()
+        initial_snapshot = projector.evaluate(
+            'id => GKPSOffline.get("service", id)', self.service.pk)
+        self.assertIn('Tuhan adalah gembalaku', initial_screen)
+        self.assertTrue(any(row.get('text') == 'Mazmur 23\n\nTuhan adalah gembalaku, '
+                                'takkan kekurangan aku.' for row in initial_snapshot['rows']))
+
+        def change_service_after_snapshot():
+            try:
+                entry = tatib.TataIbadahItem.objects.get(pk=self.first_legacy_id)
+                entry.text = 'Server content that must not replace the saved screen'
+                entry.save()
+            finally:
+                connections.close_all()
+
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(change_service_after_snapshot).result()
+
+        failed_chunks = []
+
+        def abort_service_chunk(route):
+            failed_chunks.append(route.request.url)
+            route.abort()
+
+        projector.route(f'**/offline/chunk/service/{self.service.pk}/', abort_service_chunk)
+        page.evaluate("""() => {
+          const channel = new BroadcastChannel('gkps-service-display');
+          channel.postMessage({type: 'update'});
+          channel.close();
+        }""")
+        failure = projector.evaluate("""async () => {
+          const deadline = Date.now() + 10000;
+          while (Date.now() < deadline) {
+            const state = await GKPSOffline.status();
+            if (state.error) return state.error;
+            await new Promise(resolve => setTimeout(resolve, 40));
+          }
+          throw new Error('The failed service refresh was not reported');
+        }""")
+
+        self.assertTrue(failed_chunks, 'the projector did not request the changed service chunk')
+        self.assertTrue(failure)
+        self.assertIn('Tuhan adalah gembalaku', projector.locator('#projectorScreens').text_content())
+        self.assertNotIn('Server content that must not replace the saved screen',
+                         projector.locator('#projectorScreens').text_content())
+        saved_after_failure = projector.evaluate(
+            'id => GKPSOffline.get("service", id)', self.service.pk)
+        self.assertTrue(any(row.get('text') == 'Mazmur 23\n\nTuhan adalah gembalaku, '
+                                'takkan kekurangan aku.' for row in saved_after_failure['rows']))

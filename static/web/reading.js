@@ -300,6 +300,35 @@
   function currentEdition() {
     return readEl && readEl.getAttribute('lang') === 'sim' ? 'sim' : 'tb';
   }
+  var selectedEdition = new URLSearchParams(location.search).get('ed') === 'sim' ? 'sim' : currentEdition();
+  function syncBibleSidebar() {
+    if (activeSection !== 'alkitab') return;
+    var simPrimary = currentEdition() === 'sim';
+    panelBody.querySelectorAll('.book').forEach(function (row) {
+      var tb = row.dataset.name || '';
+      var sim = row.dataset.sim || '';
+      var primary = simPrimary && sim ? sim : tb;
+      var secondary = simPrimary && sim ? tb : sim;
+      var name = row.querySelector('.book__n');
+      var other = row.querySelector('.book__s');
+      if (name && name.textContent !== primary) name.textContent = primary;
+      if (other) {
+        if (secondary) {
+          if (other.textContent !== secondary) other.textContent = secondary;
+        } else other.remove();
+      } else if (secondary && name) {
+        other = document.createElement('span');
+        other.className = 'book__s';
+        other.textContent = secondary;
+        row.appendChild(other);
+      }
+      var description = primary + (secondary ? ' (' + secondary + ')' : '');
+      var tip = primary + (secondary ? ' — ' + secondary : '');
+      if (row.getAttribute('aria-label') !== description) row.setAttribute('aria-label', description);
+      if (row.dataset.tip !== tip) row.dataset.tip = tip;
+      if (row.getAttribute('aria-describedby') === 'ftip') ftip.textContent = tip;
+    });
+  }
   function editionBlock(ed) {
     var found = null;
     editionBlocks.forEach(function (block) { if (block.ed === ed) found = block; });
@@ -315,15 +344,16 @@
       else a.setAttribute('aria-disabled', 'true');
     });
   }
-  function setEdition(ed, persist) {
+  function setEdition(ed, remember) {
     if (!editionBlocks.length) return;
     editionBlocks.forEach(function (block) { block.el.hidden = block.ed !== ed; });
     if (readEl) readEl.setAttribute('lang', ed === 'tb' ? 'id' : 'sim');
     if (langTb) langTb.setAttribute('aria-pressed', String(ed !== 'sim'));
     if (langSim) langSim.setAttribute('aria-pressed', String(ed === 'sim'));
     if (langTb) langTb.parentElement.dataset.edition = ed;
-    if (persist) { try { localStorage.setItem('gkps-lang', ed); } catch (e) {} }
+    if (remember) selectedEdition = ed;
     decorateChapters();
+    syncBibleSidebar();
   }
   function bindLangLinks() {
     [langTb, langSim].forEach(function (link) {
@@ -338,16 +368,13 @@
     });
     if (langTb) langTb.parentElement.classList.add('is-enhanced');
   }
-  function restoreSavedEdition() {
-    try {
-      var savedLang = localStorage.getItem('gkps-lang');
-      if ((savedLang === 'tb' || savedLang === 'sim') && savedLang !== currentEdition()
-          && editionBlock(savedLang)) {
-        setEdition(savedLang, false);
-      }
-    } catch (e) {}
+  function restoreSelectedEdition() {
+    if (selectedEdition !== currentEdition() && editionBlock(selectedEdition)) {
+      setEdition(selectedEdition, false);
+    }
   }
-  restoreSavedEdition();
+  restoreSelectedEdition();
+  syncBibleSidebar();
   bindLangLinks();
 
   /* ---------- shared helpers ---------- */
@@ -991,30 +1018,144 @@
      transitions run instead of a full reload. The links keep their real
      hrefs: without JS (or when a fetch fails) the browser navigates. */
   var navBusy = false;
+  var pendingNavigation = null;
+  var SEARCH_LAST = 'gkps-search-last-tab';
+  var TAB_KEY = 'gkps-search-tab-id';
+  /* The shell owns in-page history, including restoring each search result's
+     scroll position. Leave scroll restoration to the route renderer instead
+     of letting the browser race it after popstate. */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  function searchId() {
+    return window.crypto && crypto.randomUUID ? crypto.randomUUID()
+      : Date.now() + '-' + Math.random().toString(36).slice(2);
+  }
+  (function establishTabIdentity() {
+    try {
+      var known = sessionStorage.getItem(TAB_KEY);
+      if (known && (window.name === 'gkps-tab:' + known
+                    || history.state && history.state.gkpsTab === known)) {
+        window.name = 'gkps-tab:' + known;
+        return;
+      }
+      /* A new opener-created tab can inherit a copy of sessionStorage. Its window
+         name is distinct, so drop only search memories, never the shared library. */
+      Object.keys(sessionStorage).filter(function (key) {
+        return key === SEARCH_LAST || key.indexOf('gkps-search-entry:') === 0;
+      }).forEach(function (key) { sessionStorage.removeItem(key); });
+      known = searchId();
+      sessionStorage.setItem(TAB_KEY, known);
+      window.name = 'gkps-tab:' + known;
+    } catch (error) { /* private mode still allows current-page search */ }
+  })();
+  function readSearchSnapshot(id) {
+    try { return JSON.parse(sessionStorage.getItem('gkps-search-entry:' + id) || 'null'); }
+    catch (error) { return null; }
+  }
+  function saveSearchSnapshot() {
+    if (root.dataset.home !== 'results') return;
+    var state = history.state || {};
+    if (!state.searchId) {
+      state.searchId = searchId();
+      history.replaceState(state, '', location.href);
+    }
+    var results = document.getElementById('searchResults');
+    var input = document.getElementById('searchQuery');
+    try { sessionStorage.setItem('gkps-search-entry:' + state.searchId, JSON.stringify({
+      url: location.pathname + location.search,
+      html: results ? results.innerHTML : '',
+      input: input ? input.value : '', scroll: window.scrollY
+    })); } catch (error) { /* private mode or storage quota */ }
+  }
+  function restoreSearchSnapshot(id) {
+    var snapshot = id && readSearchSnapshot(id);
+    if (!snapshot) return false;
+    var results = document.getElementById('searchResults');
+    var input = document.getElementById('searchQuery');
+    if (results) results.innerHTML = snapshot.html;
+    if (input) input.value = snapshot.input;
+    bindStageExtras();
+    window.scrollTo({top: snapshot.scroll || 0, behavior: 'auto'});
+    return true;
+  }
+  document.addEventListener('input', function (event) {
+    if (event.target.id === 'searchQuery') saveSearchSnapshot();
+  });
+  window.addEventListener('scroll', function () {
+    if (root.dataset.home === 'results') window.requestAnimationFrame(saveSearchSnapshot);
+  }, {passive: true});
+  window.addEventListener('pagehide', saveSearchSnapshot);
+
+  function releaseNavigation() {
+    navBusy = false;
+    if (!pendingNavigation) return;
+    var next = pendingNavigation;
+    pendingNavigation = null;
+    window.setTimeout(function () { navigate(next.url, next.opts); }, 0);
+  }
 
   function navigate(url, opts) {
-    if (!url || navBusy) return;
-    /* Leaving the result set by any route: remember where in it the reader was,
-       so the search icon can come back to that offset. */
-    if (root.dataset.home === 'results'
-        && !(opts && (opts.kind === 'search' || opts.kind === 'more' || opts.kind === 'results'))) {
-      try { localStorage.setItem('gkps-search-scroll', String(window.scrollY)); } catch (e) {}
+    if (!url) return;
+    if (navBusy) {
+      if (!(opts && opts.historyTraversal)) saveSearchSnapshot();
+      pendingNavigation = {url: url, opts: opts || {}};
+      return;
     }
+    if (!(opts && opts.historyTraversal)) saveSearchSnapshot();
     navBusy = true;
-    fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
+    function fromServer() {
+      return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.text();
       })
       .then(function (html) {
-        navBusy = false;
         applyPage(new window.DOMParser().parseFromString(html, 'text/html'), url, opts || {});
+        releaseNavigation();
       })
       .catch(function (error) {
-        navBusy = false;
         if (window.console && console.error) console.error('in-page navigation failed:', error);
-        window.location.href = url;      /* fetch failed: fall back to the real page */
+        if (navigator.onLine) window.location.href = url;
+        else {
+          var status = document.getElementById('searchStatus');
+          if (status) status.textContent = 'This content is not saved for offline use.';
+        }
+        releaseNavigation();
       });
+    }
+    if (opts && opts.forceServer) return fromServer();
+    var renderer = window.GKPSOfflineRender;
+    if (renderer && renderer.route(url)) {
+      var ready = window.GKPSOffline && window.GKPSOffline.status
+        ? window.GKPSOffline.status().then(function (state) { return state.ready; })
+        : Promise.resolve(false);
+      ready.then(function (isReady) {
+        if (!isReady) return fromServer();
+        renderer.render(url).then(function (doc) {
+          if (!doc) return fromServer();
+          applyPage(doc, url, opts || {});
+          releaseNavigation();
+          if (navigator.onLine && window.GKPSOffline) {
+            renderer.chunkFor(url).then(function (chunkUrl) {
+              if (!chunkUrl) return;
+              return fetch(chunkUrl, {cache: 'no-store', credentials: 'same-origin'})
+                .then(function (response) {
+                  if (!response.ok) throw new Error('HTTP ' + response.status);
+                  return response.json();
+                }).then(function (payload) {
+                  if (payload.schema !== 1 || !payload.data) return;
+                  if (new URL(url, location.href).pathname !== location.pathname) return;
+                  return renderer.render(url, payload.data).then(function (updated) {
+                    if (!updated || navBusy) return;
+                    updated.querySelector('#offlineSavedSource').hidden = true;
+                    applyPage(updated, url, {kind: 'refresh', skipHistory: true});
+                    window.GKPSOffline.sync().catch(function () {});
+                  });
+                });
+            }).catch(function () { /* the saved copy stays visible */ });
+          }
+        }).catch(function () { return fromServer(); });
+      }).catch(function () { return fromServer(); });
+    } else fromServer();
   }
 
   function txt(doc, sel) {
@@ -1022,11 +1163,59 @@
     return el ? el.textContent : '';
   }
 
+  function restoreRequestedFocus(opts) {
+    if (!opts.focusKind) return;
+    var focusTarget = null;
+    var scroller = panelBody;
+    if (opts.focusKind === 'songbook' || opts.focusKind === 'song'
+        || opts.focusKind === 'tatib') {
+      var editor = '[data-editor-open="' + opts.focusKind + '"][data-editor-id="' + opts.what + '"]';
+      var opener = chList.querySelector(editor) || panelBody.querySelector(editor);
+      var row = opener && opener.closest('li');
+      focusTarget = row && row.querySelector('a.book, a.songrow');
+      if (focusTarget && chList.contains(focusTarget)) scroller = chBody;
+    } else if (opts.focusKind === 'entry') {
+      focusTarget = readBody.querySelector('[data-entry-pk="' + opts.what + '"]');
+    } else if (opts.focusKind === 'old-item') {
+      focusTarget = readBody.querySelector('[data-old-item-pk="' + opts.what + '"]');
+    } else if (opts.focusKind === 'read') {
+      focusTarget = document.getElementById('read');
+    }
+    if (!focusTarget) return;
+    if (focusTarget.classList.contains('book') || focusTarget.classList.contains('songrow')) {
+      revealRow(focusTarget, scroller);
+      focusTarget.classList.add('row-flash');
+    }
+    if (focusTarget.tabIndex < 0 && !focusTarget.hasAttribute('tabindex')) {
+      focusTarget.setAttribute('tabindex', '-1');
+    }
+    if (opts.entryKeyboardFocus
+        && (opts.focusKind === 'entry' || opts.focusKind === 'old-item')) {
+      focusTarget = focusTarget.querySelector('.entry__ctrl:not([disabled])') || focusTarget;
+      focusTarget.classList.remove('focus-restore-quiet');
+      focusTarget.focus({ preventScroll: true });
+    } else if (window.gkpsFocus) window.gkpsFocus.restoreQuietly(focusTarget);
+    else focusTarget.focus({ preventScroll: true });
+  }
+
   function applyPage(doc, url, opts) {
+    opts = opts || {};
     var fresh = doc.documentElement.dataset;
     var kind = opts.kind || 'lists';
+    /* A direct offline boot can finish after the operator has already opened a
+       sidebar. Keep those live shell controls while replacing the page content. */
+    var bootNavState = root.dataset.nav;
+    var bootChState = root.dataset.ch;
+    var bootPanelFilter = opts.directBoot ? filter.value : null;
+    var bootSongFilter = opts.directBoot ? songFilterEl.value : null;
+    var bootPanelScroll = opts.directBoot ? panelBody.scrollTop : null;
+    var bootChScroll = opts.directBoot ? chBody.scrollTop : null;
+    var bootSearchValue = opts.directBoot && searchQuery ? searchQuery.value : null;
+    var bootFocusId = opts.directBoot && document.activeElement
+      ? document.activeElement.id : '';
     var changingMainMenu = (kind === 'rail' && opts.section !== activeSection)
-      || (kind === 'results' && (root.dataset.read === 'on' || root.dataset.nav !== 'closed'));
+      || (!opts.directBoot && kind === 'results'
+          && (root.dataset.read === 'on' || root.dataset.nav !== 'closed'));
     var previousChState = root.dataset.ch;
     var previousChScroll = chBody.scrollTop;
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
@@ -1038,6 +1227,33 @@
        operator's own sidebar states survive a stage-only swap (spec 080). */
     var stageOnly = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'refresh';
+
+    /* A background refresh only replaces the saved screen content. Rebuilding
+       the sidebars here detaches their rows while people are using them and can
+       discard keyboard focus, filters, and scroll position. */
+    if (kind === 'refresh') {
+      root.dataset.read = fresh.read;
+      root.dataset.home = fresh.home;
+      var freshRead = doc.querySelector('#read');
+      if (freshRead && freshRead.dataset.kind === 'tatib') {
+        var freshChList = doc.querySelector('#chList');
+        if (freshChList) {
+          var chScroll = chBody.scrollTop;
+          chList.innerHTML = freshChList.innerHTML;
+          bindChRows();
+          chBody.scrollTop = chScroll;
+        }
+      }
+      stage.innerHTML = doc.querySelector('.stage').innerHTML;
+      refreshStageRefs();
+      restoreSelectedEdition();
+      syncBibleSidebar();
+      bindLangLinks();
+      restoreRequestedFocus(opts);
+      document.title = doc.title;
+      document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
+      return;
+    }
 
     /* shared first column: books / songbooks / services */
     panelTitleEl.textContent = txt(doc, '#panelTitle');
@@ -1096,16 +1312,16 @@
       root.dataset.read = fresh.read;
       root.dataset.home = fresh.home;
       if (!stageOnly) {
-        root.dataset.nav = fresh.nav;
+        root.dataset.nav = opts.directBoot ? bootNavState : fresh.nav;
       }
       /* The second-level pane still follows the arriving page: a service opened from the
          first-level panel has to bring its contents with it, and for a chapter or song
          opened from the list the arriving value already matches the live one (spec 088). */
-      root.dataset.ch = fresh.ch;
+      root.dataset.ch = opts.directBoot ? bootChState : fresh.ch;
       releaseTatibFlash();
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
-      restoreSavedEdition();
+      restoreSelectedEdition();
       bindLangLinks();
       bindSearchForm();
       bindFieldClears();
@@ -1198,9 +1414,22 @@
       chTop.parentNode.insertBefore(freshChOrder, chTop.nextSibling);
     }
 
+    syncBibleSidebar();
     bindPanelTiles();
     bindPanelTips();
     bindChRows();
+    if (opts.directBoot) {
+      filter.value = bootPanelFilter;
+      songFilterEl.value = bootSongFilter;
+      filter.dispatchEvent(new window.Event('input', {bubbles: true}));
+      songFilterEl.dispatchEvent(new window.Event('input', {bubbles: true}));
+      panelBody.scrollTop = bootPanelScroll;
+      chBody.scrollTop = bootChScroll;
+      if (bootFocusId) {
+        var bootFocusTarget = document.getElementById(bootFocusId);
+        if (bootFocusTarget) bootFocusTarget.focus({preventScroll: true});
+      }
+    }
 
     pageState = readPageState();
     if (swapsStage) {
@@ -1213,18 +1442,31 @@
     updateChInds();
     window.requestAnimationFrame(updateChInds);
 
-    /* The rail search icon restores the last result set. Only the page that IS
-       the result set may update it -- a stale root state must never let a
-       reading page overwrite the stored search. */
-    if (fresh.home === 'results') {
-      var searchPath = url.indexOf(window.location.origin) === 0
-        ? url.slice(window.location.origin.length) : url;    /* store a path, not an origin */
-      try { localStorage.setItem('gkps-search', searchPath); } catch (e) {}
-      railSearch.setAttribute('href', searchPath);
-    } else if (kind === 'results' && fresh.home === 'landing' && url.split('?')[0] === '/home/') {
-      resetSearchState();
-    }
+    if (fresh.home === 'results') railSearch.setAttribute('href', url);
     document.title = doc.title;
+    if (opts.replaceUrl) {
+      history.replaceState({gkps: true, url: url, kind: kind}, '', url);
+    } else if (!opts.skipHistory) {
+      var pushes = ['chapter', 'song', 'service', 'result', 'search', 'results'];
+      if (pushes.indexOf(kind) !== -1) {
+        history.pushState({gkps: true, url: url, kind: kind,
+          searchId: fresh.home === 'results' ? searchId() : null}, '', url);
+      } else if (kind === 'more') {
+        history.replaceState({gkps: true, url: url, kind: 'search',
+          searchId: history.state && history.state.searchId || searchId()}, '', url);
+      }
+    }
+    if (fresh.home === 'results' && (kind === 'search' || kind === 'results')
+        && !opts.skipHistory) {
+      try { sessionStorage.setItem(SEARCH_LAST, history.state.searchId); } catch (error) {}
+    }
+    if (fresh.home === 'results' && opts.directBoot) {
+      if (!history.state || !history.state.searchId) {
+        history.replaceState({gkps: true, url: url, kind: 'search',
+          searchId: searchId()}, '', url);
+      }
+      try { sessionStorage.setItem(SEARCH_LAST, history.state.searchId); } catch (error) {}
+    }
 
     /* Anything the arriving page carries and another script owns -- the project
        button, for one -- needs its hook run again: the swap replaced the node the
@@ -1261,50 +1503,21 @@
       var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
       if (target) revealSearchTarget(target);
     }
-    if ((kind === 'refresh' || kind === 'lists') && opts.focusKind) {
-      var focusTarget = null;
-      var scroller = panelBody;
-      if (opts.focusKind === 'songbook' || opts.focusKind === 'song'
-          || opts.focusKind === 'tatib') {
-        var editor = '[data-editor-open="' + opts.focusKind + '"][data-editor-id="' + opts.what + '"]';
-        var opener = chList.querySelector(editor) || panelBody.querySelector(editor);
-        var row = opener && opener.closest('li');
-        focusTarget = row && row.querySelector('a.book, a.songrow');
-        if (focusTarget && chList.contains(focusTarget)) scroller = chBody;
-      } else if (opts.focusKind === 'entry') {
-        focusTarget = readBody.querySelector('[data-entry-pk="' + opts.what + '"]');
-      } else if (opts.focusKind === 'old-item') {
-        focusTarget = readBody.querySelector('[data-old-item-pk="' + opts.what + '"]');
-      } else if (opts.focusKind === 'read') {
-        focusTarget = document.getElementById('read');
-      }
-      if (focusTarget) {
-        if (focusTarget.classList.contains('book') || focusTarget.classList.contains('songrow')) {
-          revealRow(focusTarget, scroller);
-          focusTarget.classList.add('row-flash');
-        }
-        if (focusTarget.tabIndex < 0 && !focusTarget.hasAttribute('tabindex')) {
-          focusTarget.setAttribute('tabindex', '-1');
-        }
-        if (opts.entryKeyboardFocus
-            && (opts.focusKind === 'entry' || opts.focusKind === 'old-item')) {
-          focusTarget = focusTarget.querySelector('.entry__ctrl:not([disabled])') || focusTarget;
-          focusTarget.classList.remove('focus-restore-quiet');
-          focusTarget.focus({ preventScroll: true });
-        } else if (window.gkpsFocus) window.gkpsFocus.restoreQuietly(focusTarget);
-        else focusTarget.focus({ preventScroll: true });
-      }
-    }
+    if (kind === 'lists' && opts.focusKind) restoreRequestedFocus(opts);
     if (kind === 'search') {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
-    if (kind === 'results') {
-      /* landed on the result set: resume where the reader left it */
-      var remembered = 0;
-      if (fresh.home === 'results') {
-        try { remembered = parseInt(localStorage.getItem('gkps-search-scroll') || '0', 10) || 0; } catch (e) {}
+    if (fresh.home === 'results') {
+      var restoreId = opts.restoreSearchId || opts.skipHistory
+        && history.state && history.state.searchId;
+      if (!restoreSearchSnapshot(restoreId)) {
+        window.scrollTo({top: kind === 'more' ? window.scrollY : 0, behavior: 'auto'});
       }
-      window.scrollTo({ top: remembered, behavior: 'auto' });
+      if (opts.directBoot && bootSearchValue !== null && searchQuery) {
+        searchQuery.value = bootSearchValue;
+        searchQuery.dispatchEvent(new window.Event('input', {bubbles: true}));
+      }
+      saveSearchSnapshot();
     }
   }
 
@@ -1378,7 +1591,11 @@
     searchForm.addEventListener('submit', function (event) {
       var input = searchForm.querySelector('#searchQuery') || searchQuery;
       var query = input ? input.value.trim() : '';
-      if (!query) { event.preventDefault(); return; }
+      if (!query) {
+        event.preventDefault();
+        navigate('/', {kind: 'results'});
+        return;
+      }
       input.value = query;
       event.preventDefault();
       var action = searchForm.getAttribute('action') || '/search/';
@@ -1386,48 +1603,49 @@
     });
   }
   bindSearchForm();
-  /* A fresh unqueried home is a reset, not sidebar browsing within this shell.
-     Both the initial load and an in-place return to that landing use this gate. */
-  function resetSearchState() {
-    try {
-      localStorage.removeItem('gkps-search');
-      localStorage.removeItem('gkps-search-scroll');
-    } catch (e) { /* storage can be unavailable */ }
-    railSearch.setAttribute('href', '/home/');
-  }
-  if (root.dataset.home === 'landing' && window.location.pathname === '/home/'
-      && !window.location.search) resetSearchState();
-  else try {
-    if (root.dataset.home === 'results') {
-      /* remember the exact result URL, revealed rows included */
-      localStorage.setItem('gkps-search', window.location.pathname + window.location.search);
+  /* The result snapshot belongs to this tab. A direct search URL replaces its
+     latest search; the logo deliberately does not erase it. */
+  if (root.dataset.home === 'results') {
+    if (!history.state || !history.state.searchId) {
+      history.replaceState({gkps: true, url: location.pathname + location.search,
+        kind: 'search', searchId: searchId()}, '', location.href);
     }
-    var lastSearch = storedSearchUrl();
-    if (lastSearch) railSearch.setAttribute('href', lastSearch);
-  } catch (e) {}
-
-  /* The stored result-set URL, or nothing. A value written by an older build (or
-     any non-search URL) is dropped, so the search icon can never open a reading
-     page's sidebar by mistake. */
-  function storedSearchUrl() {
-    var value = null;
-    try { value = localStorage.getItem('gkps-search'); } catch (e) {}
-    if (value && /^\/search\/\?q=/.test(value)) return value;
-    if (value) { try { localStorage.removeItem('gkps-search'); } catch (e) {} }
-    return null;
+    saveSearchSnapshot();
+    try { sessionStorage.setItem(SEARCH_LAST, history.state.searchId); } catch (error) {}
   }
+  function lastSearchSnapshot() {
+    var id = null;
+    try { id = sessionStorage.getItem(SEARCH_LAST); } catch (error) {}
+    var snapshot = id && readSearchSnapshot(id);
+    return snapshot && /^\/search\/?\?q=/.test(snapshot.url)
+      ? {id: id, snapshot: snapshot} : null;
+  }
+  var initialLast = lastSearchSnapshot();
+  railSearch.setAttribute('href', initialLast ? initialLast.snapshot.url : '/');
 
-  /* The search destination. The rail's Search icon and the brand logo are the same
-     route (owner request): back to the last result set, or the landing when there
-     is none. Only the result page itself updates what is stored -- nothing clears
-     it. */
   function openSearch(event) {
     event.preventDefault();
-    navigate(storedSearchUrl() || '/home/', { kind: 'results' });
+    var last = lastSearchSnapshot();
+    navigate(last ? last.snapshot.url : '/', {kind: 'results',
+      restoreSearchId: last && last.id});
   }
   railSearch.addEventListener('click', openSearch);
   var railLogo = document.querySelector('.rail__logo');
-  if (railLogo) railLogo.addEventListener('click', openSearch);
+  if (railLogo) railLogo.addEventListener('click', function (event) {
+    event.preventDefault();
+    navigate('/', {kind: 'results', replaceUrl: true});
+  });
+
+  function needsOfflineShellHydration() {
+    var path = location.pathname;
+    if (path === '/' || path === '/home/') return false;
+    if (path === '/search' || path === '/search/') return root.dataset.home === 'landing';
+    if (root.dataset.read === 'on') return false;
+    if (/^\/bible(?:\/|$)/.test(path)) return root.dataset.nav === 'closed';
+    if (/^\/songs(?:\/|$)/.test(path)) return root.dataset.section !== 'kidung';
+    if (/^\/tatib(?:\/|$)/.test(path)) return root.dataset.section !== 'tatib';
+    return false;
+  }
 
   /* A sidebar editor saved something: re-render the page's regions in place, so
      every list, the panel selection and the reading stage agree again. */
@@ -1441,12 +1659,19 @@
     var url = stageMatchesSection ? stageInfo.url
       : currentSongbook ? currentSongbook.getAttribute('href')
         : panelOwner().getAttribute('href');
-    navigate(url, {
+    var refreshOptions = {
       kind: stageMatchesSection ? 'refresh' : 'lists',
       what: event.detail && (event.detail.focusId || event.detail.id),
       focusKind: event.detail && (event.detail.focusKind || event.detail.kind),
       entryKeyboardFocus: !!(event.detail && event.detail.entryKeyboardFocus)
-    });
+    };
+    /* Show the just-saved server state immediately. The full offline snapshot can
+       refresh in parallel; waiting for it here delayed editor feedback and could
+       leave the pane showing the previous generation. */
+    navigate(url, Object.assign({}, refreshOptions, {forceServer: true}));
+    if (navigator.onLine && window.GKPSOffline) {
+      window.GKPSOffline.sync().catch(function () { /* the current page is already fresh */ });
+    }
   });
 
   /* ---------- reveal search targets ---------- */
@@ -1477,5 +1702,29 @@
   if (searchTarget && root.dataset.read === 'on') revealSearchTarget(searchTarget);
   if (window.location.hash.indexOf('#ti-') === 0) {
     jumpTatibItem(window.location.hash.slice(1));
+  }
+  function historyKind(path) {
+    if (/^\/bible\/\d+\/\d+\/$/.test(path)) return 'chapter';
+    if (/^\/songs\/\d+\/$/.test(path)) return 'song';
+    if (/^\/tatib\/\d+\/$/.test(path)) return 'service';
+    if (path === '/search' || path === '/search/') return 'search';
+    return 'results';
+  }
+  if (!history.state || !history.state.gkps) {
+    history.replaceState({gkps: true, url: location.pathname + location.search,
+      kind: historyKind(location.pathname)}, '', location.href);
+  }
+  window.addEventListener('popstate', function (event) {
+    var state = event.state;
+    var url = state && state.gkps ? state.url : location.pathname + location.search;
+    navigate(url, {kind: state && state.kind || historyKind(location.pathname),
+                   skipHistory: true, historyTraversal: true,
+                   restoreSearchId: state && state.searchId});
+  });
+  if (root.dataset.home === 'landing' && needsOfflineShellHydration()
+      && window.GKPSOfflineRender
+      && window.GKPSOfflineRender.route(location.href)) {
+    navigate(location.href, {kind: historyKind(location.pathname), skipHistory: true,
+      directBoot: true});
   }
 })();

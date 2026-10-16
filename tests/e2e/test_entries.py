@@ -119,9 +119,14 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page = self._page(reverse('web-home'))
         page.locator('[data-panel="tatib"]').click()
         page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.legacy.pk])}"]').click()
+        page.wait_for_function(
+            "document.querySelector('#readName') && "
+            "document.querySelector('#readName').textContent.trim() === 'Pengakuan Iman'")
         page.wait_for_selector('#readBody > .tatib__item + .entry__add', state='attached')
         item = page.locator('#readBody > .tatib__item').first
         row = page.locator('#readBody > .entry__add').first
+        item.hover()
+        expect(row).to_have_css('opacity', '1')
         item_box, row_box = item.bounding_box(), row.bounding_box()
         # The add row is not part of the item (spec 036): it starts below the item's box.
         self.assertGreaterEqual(row_box['y'], item_box['y'] + item_box['height'] - 1)
@@ -137,7 +142,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.locator('[data-panel="tatib"]').click()
         page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.full.pk])}"]').click()
         page.wait_for_function("document.querySelector('#readName').textContent.trim() === 'Ibadah Sore'")
-        self.assertTrue(page.url.endswith('/home/'))  # the shell never changes the address bar
+        self.assertTrue(page.url.endswith(reverse('web-tatib-service', args=[self.full.pk])))
         self._reveal(page)
         page.locator('[data-entry-edit]').first.click()
         page.wait_for_selector('dialog[open]')
@@ -192,7 +197,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
             self.assertAlmostEqual(box['height'], book_box['height'], delta=1)
 
         page.get_by_role('button', name='Book').click()
-        page.get_by_placeholder('Filter books...').fill('Matius')
+        page.locator('[data-entry-picker="book"] input[placeholder="Filter books..."]').fill('Matius')
         book_options = page.locator('[data-entry-picker="book"] [data-picker-options]')
         expect(book_options).to_contain_text('Perjanjian Baru')
         page.locator('[data-entry-picker="book"] [data-picker-options] button', has_text='Matius').first.click()

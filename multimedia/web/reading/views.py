@@ -555,10 +555,11 @@ def _books_groups(selected_id=None):
             book = info['book']
             if book.testament != testament:
                 continue
+            sim = info['by_version'].get('SIM')
             rows.append({
                 'id': book.pk,
                 'display': info['display'],
-                'other': info['other'],
+                'other': sim.translation if sim else '',
                 'abbr': book.name,
                 'current': book.pk == selected_id,
             })
@@ -960,50 +961,92 @@ def _song_screens(entry):
     return screens
 
 
-def _projector_screens(service):
-    """What the display shows, screen by screen (spec 006, slice 4; spec 058).
-
-    A passage is one verse at a time, headed by its reference and title; a text is
-    two lines at a time under its own header; a song is its lyrics alone, two lines
-    at a time, with a blank after each verse; a section break shows nothing -- it is
-    the operator's own note. Every other content row ends on one built-in blank.
-    Old rows and entries follow the same shared order as the reading pane.
-    """
-    screens = []
+def _projector_data(service):
+    """Projection screens and their service-entry/bait boundaries (spec 091)."""
+    screens, entries = [], []
     for kind, row in _ordered_service_rows(service):
+        start = len(screens)
+        baits = []
         if kind == 'legacy':
             if row.item_type == tatib_models.TataIbadahItemType.END_OF_SECTION:
-                screens.append(_blank_screen())
-                continue
-            for lines in _line_pairs(row.text, voiced=True):
-                screens.append({'blank': False, 'header': row.title, 'lines': lines})
-            screens.append(_blank_screen())
-            continue
-        entry = row
-        if entry.kind == tatib_models.ServiceEntryKind.SECTION_BREAK:
-            screens.append(_blank_screen())
-        elif entry.kind == tatib_models.ServiceEntryKind.SCRIPTURE:
-            screens.extend(_scripture_screens(entry))
-            screens.append(_blank_screen())
-        elif entry.kind == tatib_models.ServiceEntryKind.SONG:
-            screens.extend(_song_screens(entry))
-        elif (entry.kind == tatib_models.ServiceEntryKind.TEXT
-              and entry.default_screen_mode == tatib_models.TextScreenMode.SINGLE_SCREEN):
-            # The whole body on one screen; blank lines are paragraph breaks, not new
-            # screens, and the fit loop shrinks (then, if need be, truncates) it.
-            header, body = entry.resolve()
-            groups = ([_screen_lines(body, voiced=True)] if entry.screen_breaks is None
-                      else _single_screen_groups(body, entry.screen_breaks))
-            for lines in groups:
-                screens.append({'blank': False, 'header': header,
-                                'lines': lines, 'single': True})
-            screens.append(_blank_screen())
-        else:                                            # a text entry
-            header, body = entry.resolve()
-            for lines in _line_pairs(body, voiced=True, breaks=entry.screen_breaks):
-                screens.append({'blank': False, 'header': header, 'lines': lines})
-            screens.append(_blank_screen())
-    return screens
+                group = [_blank_screen()]
+                entry_type, label, untitled = 'break', row.text or '', False
+            else:
+                group = [{'blank': False, 'header': row.title, 'lines': lines}
+                         for lines in _line_pairs(row.text, voiced=True)]
+                group.append(_blank_screen())
+                entry_type = 'text'
+                untitled = not bool(row.title)
+                label = row.title or _first_line(row.text)
+        elif row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK:
+            group = [_blank_screen()]
+            entry_type, label, untitled = 'break', row.title or '', False
+        elif row.kind == tatib_models.ServiceEntryKind.SCRIPTURE:
+            group = _scripture_screens(row) + [_blank_screen()]
+            entry_type, label, untitled = 'passage', row.citation(), False
+            if row.book_translation_id:
+                for translation in bible_models.BookTranslation.objects.filter(
+                        book_id=row.book_translation.book_id,
+                        version__abbreviation__in=['TB', 'SIM']).select_related('version'):
+                    verses = bible_models.Verse.objects.filter(
+                        book_translation=translation, chapter=row.chapter,
+                        verse__gte=row.verse_start or 1,
+                        verse__lte=row.verse_end or row.verse_start or 0).order_by('verse')
+                    for verse in verses:
+                        position = verse.verse - (row.verse_start or 1)
+                        if 0 <= position < len(group) - 1:
+                            reference = f'{translation.translation} {row.chapter}:{verse.verse}'
+                            group[position].setdefault('translations', {})[
+                                translation.version.abbreviation.upper()] = {
+                                    'header': f'{reference}\n{verse.title}' if verse.title else reference,
+                                    'line': verse.text.strip(),
+                                }
+        elif row.kind == tatib_models.ServiceEntryKind.SONG:
+            group = []
+            if row.song_id:
+                for verse in row.song.verse_set.filter(
+                        number__in=row.verses or [], is_deleted=False).order_by('number'):
+                    bait_start = start + len(group)
+                    pairs = _line_pairs(verse.lyric)
+                    for split, lines in enumerate(pairs, 1):
+                        group.append({'blank': False, 'header': '', 'lines': lines,
+                                      'bait': verse.number, 'split': split,
+                                      'split_total': len(pairs)})
+                    group.append({**_blank_screen(), 'bait': verse.number, 'bait_rest': True})
+                    baits.append({'number': verse.number, 'start': bait_start,
+                                  'end': start + len(group) - 1})
+            entry_type, untitled = 'song', False
+            label = (row.song.book_number if row.song.book.is_hymn_book
+                     else row.song.title or row.song.book.name) if row.song_id else ''
+        else:
+            header, body = row.resolve()
+            single = row.default_screen_mode == tatib_models.TextScreenMode.SINGLE_SCREEN
+            groups = ([_screen_lines(body, voiced=True)] if row.screen_breaks is None
+                      else _single_screen_groups(body, row.screen_breaks)) if single else _line_pairs(
+                          body, voiced=True, breaks=row.screen_breaks)
+            group = [{'blank': False, 'header': header, 'lines': lines, 'single': single}
+                     for lines in groups]
+            group.append(_blank_screen())
+            entry_type, untitled = 'text', not bool(header)
+            label = header or _first_line(body)
+
+        for position, screen in enumerate(group):
+            screen['entry_index'] = len(entries)
+            if entry_type == 'text' and not screen['blank']:
+                screen['split'] = position + 1
+                screen['split_total'] = len(group) - 1
+            screens.append(screen)
+        entries.append({'type': entry_type, 'label': label, 'untitled': untitled,
+                        'start': start, 'end': len(screens) - 1, 'baits': baits,
+                        'translation': (row.book_translation.version.abbreviation.upper()
+                                        if entry_type == 'passage' and row.book_translation_id
+                                        else '')})
+    return {'screens': screens, 'entries': entries}
+
+
+def _projector_screens(service):
+    """Keep the established screen-list interface for callers and tests."""
+    return _projector_data(service)['screens']
 
 
 def service_projector(request, service_id):
@@ -1015,12 +1058,207 @@ def service_projector(request, service_id):
     channel, so several laptops can drive different screens.
     """
     service = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    projector = _projector_data(service)
     return render(request, 'reading/projector.html', {
         'service': service,
         'service_id': service.pk,
-        'screens': _projector_screens(service),
+        'screens': projector['screens'],
+        'projector_screens_data': projector['screens'],
+        'projector_entries': projector['entries'],
         'page_title': f'{service.name} — display',
     })
+
+
+def _projector_chapter_prefix(query):
+    """Resolve a book alias plus chapter prefix; None means it is not a reference."""
+    match = re.fullmatch(r'(.+?)\s+([0-9]{1,3})', query)
+    if not match:
+        return None
+    book_name = search_lib.normalize(match.group(1).rstrip('.'))
+    info = next((book for book in search_lib.bible_book_index().values()
+                 if any(search_lib.normalize(alias) == book_name for alias in book['aliases'])),
+                None)
+    if info is None:
+        return None
+    chapter_prefix = match.group(2).lstrip('0') or '0'
+    chapter_first_verses = {}
+    for chapter, verse in (bible_models.Verse.objects
+                           .filter(book_translation__book=info['book'])
+                           .order_by('chapter', 'verse')
+                           .values_list('chapter', 'verse')):
+        chapter_first_verses.setdefault(chapter, verse)
+    return [
+        {'kind': 'passage', 'label': f"{info['display']} {chapter}",
+         'target': {'book_id': info['book'].pk, 'chapter': chapter,
+                    'verse': verse, 'end_verse': None}}
+        for chapter, verse in chapter_first_verses.items()
+        if str(chapter).startswith(chapter_prefix)
+    ]
+
+
+def projector_lookup(request, service_id):
+    """The closest passage and song matches for the projector's quick Go To picker."""
+    get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    query = (request.GET.get('q') or '').strip()[:120]
+    if not query:
+        return JsonResponse({'results': []})
+    if query.isdecimal():
+        number_query = str(int(query))
+        numbered_songs = list(song_models.Song.objects.active().filter(
+            book__is_deleted=False, number__isnull=False).select_related('book'))
+
+        def numeric_key(song):
+            number = str(song.number)
+            tier = 0 if number == number_query else 1 if number.startswith(number_query) else 2
+            book_label = song.book.short_name or song.book.name
+            return (tier, song.number, book_label.casefold(),
+                    (song.sub_number or '').casefold(), (song.title or '').casefold(), song.pk)
+
+        matching = sorted((song for song in numbered_songs
+                           if number_query in str(song.number)), key=numeric_key)
+        return JsonResponse({'results': [
+            {'kind': 'song', 'label': _entry_song_option_label(song).strip(),
+             'target': {'song_id': song.pk}}
+            for song in matching
+        ]})
+    chapter_rows = _projector_chapter_prefix(query)
+    song_reference_filter = _entry_song_reference_filter(query)
+    if chapter_rows is not None or song_reference_filter is not None:
+        rows = chapter_rows or []
+        if song_reference_filter is not None:
+            songs = (song_models.Song.objects.active().filter(
+                song_reference_filter, book__is_deleted=False)
+                .select_related('book').order_by('book__name', 'number', 'sub_number', 'title'))
+            rows.extend({'kind': 'song', 'label': _entry_song_option_label(song).strip(),
+                         'target': {'song_id': song.pk}} for song in songs)
+        return JsonResponse({'results': rows})
+    results = search_lib.search(query)
+    rows = []
+    for row in results['bible']:
+        target = row['target']
+        if row['kind'] in ('reference', 'chapter') and target.get('chapter'):
+            rows.append({'kind': 'passage', 'label': row['title'], 'target': target})
+
+    song_hits = [row for row in results['songs'] if row['kind'] == 'song']
+    exact_number_ids = set()
+    if query.isdecimal():
+        exact_number_ids = set(song_models.Song.objects.active().filter(
+            pk__in=[row['target']['song_id'] for row in song_hits],
+            number=int(query),
+        ).values_list('pk', flat=True))
+    # The shared search also scores songbook and lyric matches. Go To keeps
+    # title/reference matches, then shows only the strongest available tier.
+    strong_hits = [
+        (200 if row['target']['song_id'] in exact_number_ids else row['score'], row)
+        for row in song_hits
+        if row['score'] >= 95 or row['target']['song_id'] in exact_number_ids
+    ]
+    if strong_hits:
+        best_score = max(score for score, _ in strong_hits)
+        selected = [row for score, row in strong_hits if score == best_score][:12 - len(rows)]
+        songs_by_id = song_models.Song.objects.select_related('book').in_bulk(
+            row['target']['song_id'] for row in selected)
+        for row in selected:
+            song = songs_by_id[row['target']['song_id']]
+            label = (_entry_song_option_label(song).strip()
+                     if song.book.is_hymn_book else row['title'])
+            rows.append({'kind': 'song', 'label': label, 'target': row['target']})
+    return JsonResponse({'results': rows[:12]})
+
+
+def projector_detour(request, service_id):
+    """Render an unplanned song or one freely navigable Bible verse on demand."""
+    get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    kind = request.GET.get('kind')
+    if kind == 'song':
+        song = get_object_or_404(song_models.Song.objects.filter(is_deleted=False),
+                                 pk=request.GET.get('song_id'))
+        screens, baits = [], []
+        for verse in song.verse_set.filter(is_deleted=False).order_by('number'):
+            start = len(screens)
+            groups = _line_pairs(verse.lyric)
+            for split, lines in enumerate(groups, 1):
+                screens.append({'blank': False, 'header': '', 'lines': lines,
+                                'bait': verse.number, 'split': split,
+                                'split_total': len(groups)})
+            screens.append({**_blank_screen(), 'bait': verse.number, 'bait_rest': True})
+            baits.append({'number': verse.number, 'start': start, 'end': len(screens) - 1})
+        label = (song.book_number if song.book.is_hymn_book
+                 else song.title or song.book.name)
+        return JsonResponse({'kind': kind, 'label': label, 'screens': screens, 'baits': baits})
+
+    if kind != 'passage':
+        return JsonResponse({'error': 'Unknown detour'}, status=400)
+    try:
+        book_id = int(request.GET.get('book_id', ''))
+        chapter = int(request.GET.get('chapter', '1'))
+        verse = int(request.GET.get('verse', '1'))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'Invalid reference'}, status=400)
+    action = request.GET.get('action', '')
+    level = request.GET.get('level', 'plain')
+    books = list(bible_models.Book.objects.filter(booktranslation__verse__isnull=False)
+                 .distinct().order_by('pk').values_list('pk', flat=True))
+    if book_id not in books:
+        return JsonResponse({'error': 'Book has no verses'}, status=404)
+    if level == 'ctrl' and action:
+        position = books.index(book_id)
+        if action == 'first': position = 0
+        elif action == 'last': position = len(books) - 1
+        elif action == 'next': position = min(position + 1, len(books) - 1)
+        elif action == 'previous': position = max(position - 1, 0)
+        book_id = books[position]
+        chapter, verse = 1, 1
+
+    translations = list(bible_models.BookTranslation.objects.filter(
+        book_id=book_id).select_related('version').order_by('pk'))
+    preferred = next((t for t in translations if t.version.abbreviation.upper() == 'TB'),
+                     translations[0] if translations else None)
+    if not preferred:
+        return JsonResponse({'error': 'Book has no translation'}, status=404)
+    positions = list(bible_models.Verse.objects.filter(book_translation=preferred)
+                     .order_by('chapter', 'verse').values_list('chapter', 'verse'))
+    if not positions:
+        return JsonResponse({'error': 'Book has no verses'}, status=404)
+    if level == 'shift' and action:
+        chapters = sorted(set(item[0] for item in positions))
+        nearest = min(range(len(chapters)), key=lambda i: abs(chapters[i] - chapter))
+        if action == 'first': nearest = 0
+        elif action == 'last': nearest = len(chapters) - 1
+        elif action == 'next': nearest = min(nearest + 1, len(chapters) - 1)
+        elif action == 'previous': nearest = max(nearest - 1, 0)
+        chapter = chapters[nearest]
+        verse = next(number for ch, number in positions if ch == chapter)
+    else:
+        current_position = next((i for i, item in enumerate(positions)
+                                 if item >= (chapter, verse)), len(positions) - 1)
+        if action == 'next': current_position = min(current_position + 1, len(positions) - 1)
+        elif action == 'previous': current_position = max(current_position - 1, 0)
+        elif action in ('first', 'last') and level == 'plain':
+            chapter_positions = [i for i, item in enumerate(positions) if item[0] == chapter]
+            if chapter_positions:
+                current_position = chapter_positions[-1 if action == 'last' else 0]
+        chapter, verse = positions[current_position]
+    variants = {}
+    for translation in translations:
+        abbreviation = translation.version.abbreviation.upper()
+        if abbreviation not in ('TB', 'SIM'):
+            continue
+        row = bible_models.Verse.objects.filter(
+            book_translation=translation, chapter=chapter, verse=verse).first()
+        if row:
+            reference = f'{translation.translation} {chapter}:{verse}'
+            variants[abbreviation] = {
+                'header': f'{reference}\n{row.title}' if row.title else reference,
+                'line': row.text.strip(),
+            }
+    selected = 'TB' if 'TB' in variants else next(iter(variants), '')
+    if not selected:
+        return JsonResponse({'error': 'Verse unavailable'}, status=404)
+    return JsonResponse({'kind': kind, 'book_id': book_id, 'chapter': chapter,
+                         'verse': verse, 'translation': selected,
+                         'label': f'{preferred.translation} {chapter}:{verse}',
+                         'translations': variants})
 
 
 def _search_row(row):
@@ -1085,6 +1323,7 @@ def _search_groups(results, shown, base_path):
     return groups
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class HomeView(TemplateView):
     """Search-first home: the landing state with the books panel ready."""
 
@@ -1100,6 +1339,7 @@ class HomeView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class SearchView(TemplateView):
     """Grouped full-corpus results; a bad/missing query keeps the landing."""
 
@@ -1130,6 +1370,7 @@ class SearchView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class BibleView(TemplateView):
     """Alkitab: books panel, chapter tiles, and a chapter on the stage."""
 
@@ -1227,6 +1468,7 @@ class BibleView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class BookIndexView(TemplateView):
     """Kidung root: songbooks beside the rail."""
 
@@ -1242,6 +1484,7 @@ class BookIndexView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class BookDetailView(TemplateView):
     """One songbook: its songs fill the wide second pane."""
 
@@ -1265,6 +1508,7 @@ class BookDetailView(TemplateView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class SongDetailView(TemplateView):
     """A song on stage with its songbook list restored beside it."""
 
