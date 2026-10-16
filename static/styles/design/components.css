@@ -644,11 +644,14 @@ li:hover > .row-edit,
 /* The destructive answer is the same button as the others, in the danger colour:
    a confirmation whose two answers are different sizes reads as a mistake. */
 .editor__danger { border: 1px solid var(--danger); background: none; color: var(--danger); }
-.editor__danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.editor__danger:not(:disabled):hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
 .editor__save:focus-visible, .editor__cancel:focus-visible, .editor__danger:focus-visible {
   outline: 2px solid var(--focus); outline-offset: 2px;
 }
 .editor__save:disabled { background: var(--divider); color: var(--head-ink); cursor: not-allowed; }
+.editor__cancel:disabled, .editor__danger:disabled {
+  opacity: .5; cursor: not-allowed;
+}
 
 /* A hint rides inside a label without shouting: "(optional)", "all verses". */
 .editor__hint { font-weight: 400; color: var(--head-ink); }

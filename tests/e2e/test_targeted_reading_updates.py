@@ -121,6 +121,10 @@ class TargetedReadingUpdatesE2ETests(StaticLiveServerTestCase):
         delete_button = dialog.locator('[data-confirm-delete]')
         delete_button.click()
         expect(delete_button).to_be_disabled()
+        cancel_button = dialog.locator('[data-editor-close]')
+        expect(cancel_button).to_be_disabled()
+        self.assertEqual(delete_button.evaluate('el => getComputedStyle(el).cursor'), 'not-allowed')
+        self.assertEqual(cancel_button.evaluate('el => getComputedStyle(el).cursor'), 'not-allowed')
 
         # Repeated keyboard/programmatic activation must not start another POST.
         page.evaluate('document.querySelector("[data-confirm-delete]").click()')
@@ -163,6 +167,7 @@ class TargetedReadingUpdatesE2ETests(StaticLiveServerTestCase):
         dialog.locator('[data-confirm-delete]').click()
         expect(dialog).to_be_visible()
         expect(dialog.locator('[data-confirm-delete]')).to_be_enabled(timeout=3000)
+        expect(dialog.locator('[data-editor-close]')).to_be_enabled()
         expect(page.locator('[data-entry-pk="%s"]' % self.first.pk)).to_be_visible()
         expect(page.locator('.edit-toast[data-state="failure"]')).to_be_visible()
 
