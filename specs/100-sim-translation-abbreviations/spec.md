@@ -1,7 +1,7 @@
 # Spec: Use the requested SIM book abbreviations
 
 - **ID:** 100
-- **Status:** Accepted
+- **Status:** Accepted; Amendment A Draft pending owner acceptance
 - **Item:** ITEM-100
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -170,6 +170,51 @@ Ibr=Heb  Yak=Jak  1Pt=1Pt  2Pt=2Pt  1Yo=1Jo  2Yo=2Jo  3Yo=3Jo  Yud=Jud  Why=Pak
 - **Then** their popups and accessible names read “Bibel,” “Doding,” and “Agenda” respectively
 - **When** the reader switches back to TB
 - **Then** only those three popup labels and accessible names return to their TB wording
+
+## Draft Amendment A: projector Go To follows a uniquely matched abbreviation
+
+**Pending owner acceptance.** This proposed amendment changes only the Go To abbreviation
+behavior. If accepted, replace the current Search rules sentence that Go To preserves the
+projected translation choice for abbreviation queries with the rules below. All other accepted
+Spec 100 requirements remain unchanged.
+
+### Proposed search and selection rules
+
+- An exact canonical `Book.name` code identifies TB; an exact translation abbreviation identifies
+  its own edition. When one code uniquely identifies an edition, the Go To suggestion uses that
+  edition's full translated book name and selecting it opens that edition's passage.
+- A shared code keeps the current TB default. Full-name search and other Go To matching behavior
+  remain unchanged.
+- If the uniquely matched edition has no verses at the requested chapter or verse, do not show a
+  result from the other edition as a substitute. Keep the existing result cycling and translation
+  flip control after opening a passage.
+
+### Proposed acceptance scenarios
+
+#### Scenario: SIM abbreviation suggests and opens the SIM passage
+
+- **Given** the projector library has SIM verses for Panguhum chapter 1
+- **When** the operator searches `Pah 1`
+- **Then** the suggestion reads `Panguhum 1`
+- **When** the operator selects that suggestion
+- **Then** the detour opens the SIM text for Panguhum 1
+
+#### Scenario: TB abbreviation suggests and opens the TB passage
+
+- **Given** the projector library has TB verses for 1 Tawarikh chapter 2
+- **When** the operator searches `1Ta 2`
+- **Then** the suggestion reads `1 Tawarikh 2`
+- **When** the operator selects that suggestion
+- **Then** the detour opens the TB text for 1 Tawarikh 2
+
+#### Scenario: Abbreviated verse references keep the matched edition
+
+- **Given** the requested edition contains the referenced chapter and verse
+- **When** the operator searches an edition-specific code followed by a verse reference
+- **Then** the result label uses that edition's full book name and selection opens that edition
+  at the requested verse
+
+Preview: [Projector Go To edition preview](./preview.html#projector-goto-amendment).
 
 ## Traceability
 

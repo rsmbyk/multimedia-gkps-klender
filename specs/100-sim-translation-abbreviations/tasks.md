@@ -1,6 +1,6 @@
 # Tasks 100: Use the requested SIM book abbreviations
 
-- **Status:** In Review
+- **Status:** In Review; Amendment A Draft pending owner acceptance
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 - **Preview:** [./preview.html](./preview.html)
@@ -44,3 +44,15 @@
       there
 - [x] The focused data, server, and browser checks are green
 - [x] Board, tasks, superseded-spec notes, and version metadata are complete in the same PR
+
+## Draft Amendment A — projector Go To edition selection
+
+- [x] Record the requested result labels and translation selection as a Draft amendment to Spec 100
+- [x] Preview the existing Go To suggestion row with the requested TB/SIM labels
+- [ ] Owner accepts Amendment A
+- [ ] Red — cover `Pah 1` → `Panguhum 1` → SIM and `1Ta 2` → `1 Tawarikh 2` → TB,
+      including edition-specific verse references, in `tests/e2e/test_projector.py`
+- [ ] Green — carry a uniquely matched abbreviation's edition from `lookup()` into its
+      suggestion label and passage detour in `static/web/projector-library.js`
+- [ ] Preserve Go To cycling, flip control, TB default for shared codes, and no cross-edition
+      substitution when the matched edition lacks the requested position

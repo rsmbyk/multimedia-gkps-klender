@@ -1,6 +1,6 @@
 # Plan 100: Use the requested SIM book abbreviations
 
-- **Status:** Accepted
+- **Status:** Accepted; Amendment A Draft pending owner acceptance
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-100
@@ -86,3 +86,21 @@ in the sidebar, projector Go To, and passage editor.
   handle it until the next library sync and then show the new code.
 - A remembered SIM preference may coexist with TB verse fallback for one chapter. The sidebar
   stays on the remembered preference; the verse heading names the content actually shown.
+
+## Proposed Amendment A: choose the Go To edition from its abbreviation
+
+**Status: Draft; pending owner acceptance.** This amends only projector Go To behavior in the
+accepted Spec 100. The accepted implementation currently resolves both codes to a book and opens
+the existing default translation. The requested behavior instead carries a unique code's edition
+through the suggestion and into the opened passage.
+
+- A canonical `Book.name` code identifies TB; a per-translation SIM abbreviation identifies SIM.
+- Show the full book name from the matching edition in the Go To suggestion, then open that
+  edition when the operator selects it. For example, `Pah 1` shows `Panguhum 1` and opens SIM;
+  `1Ta 2` shows `1 Tawarikh 2` and opens TB.
+- Keep the current Go To result cycling, controls, and translation-flip control. If an exact
+  requested position is missing from the uniquely matched edition, do not substitute a result
+  from the other edition. If a code is shared by both editions, keep the current TB default.
+- Cover chapter and verse references in the projector E2E test. The preview demonstrates the
+  existing suggestion row with the edition-specific label and an explanatory opened-edition note;
+  it introduces no new product control or layout change.
