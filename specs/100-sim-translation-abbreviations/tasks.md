@@ -1,6 +1,6 @@
 # Tasks 100: Use the requested SIM book abbreviations
 
-- **Status:** In Progress
+- **Status:** In Review
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 - **Preview:** [./preview.html](./preview.html)
@@ -36,11 +36,11 @@
 - [x] Set `bump: patch` on ITEM/spec and include `VERSION`, changelog, and
       `release_version` in the implementation PR
 - [x] Update ITEM and [`backlog/board.md`](../../backlog/board.md) in the same PR
-- [ ] Conventional Commit + draft PR linking `./spec.md`
+- [x] Conventional Commit + draft PR linking `./spec.md`
 
 ## Done when
 
 - [x] All nine acceptance scenarios in `spec.md` hold on online and saved-copy paths named
       there
 - [x] The focused data, server, and browser checks are green
-- [ ] Board, tasks, superseded-spec notes, and version metadata are complete in the same PR
+- [x] Board, tasks, superseded-spec notes, and version metadata are complete in the same PR
