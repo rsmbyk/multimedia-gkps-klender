@@ -180,3 +180,90 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 - **Given** a public Bible chapter, song, or Tata Ibadah page displays a saved-copy badge
 - **When** the reading stage is shown with navigation columns open or closed, the viewport is resized, or the reader scrolls
 - **Then** the badge remains fixed at the existing top offset and its horizontal center matches the visible reading-stage center rather than the whole viewport; no reading content shifts.
+
+## Draft amendment: show SIM names in the offline Bible sidebar
+
+**Status:** Accepted. The owner approved the [sidebar preview](./preview-bible-sidebar-sim-labels.html) and accepted this Draft amendment. This changes only the label source in the offline-generated Bible sidebar; the row design remains as shown in the preview.
+
+- When the offline shell builds an expanded Bible book list from saved data, keep the TB translation name as the main label and show the saved `SIM` translation name in the existing secondary-label slot.
+- Do not use the internal book abbreviation (for example, `Kej`) as the expanded-row secondary label. If a book has no saved `SIM` translation, omit that secondary label.
+- Keep the internal book abbreviation in the existing mini-sidebar abbreviation slot. Do not change the online/server-rendered sidebar, row styles, book order, selected state, navigation, or fetch behavior.
+- Use the SIM name for the sidebar's secondary search field and combined accessible label, so filtering and assistive technology describe the same text shown in the row.
+
+### Scenario: cached SIM name appears in the expanded sidebar
+
+- **Given** the saved library contains TB and SIM translations for a Bible book and the browser is offline
+- **When** the Bible sidebar is open in its expanded state
+- **Then** the row shows the TB name as primary and the SIM translation name as secondary (for example, “Kejadian” and “1 Musa”), with the existing appearance and book order unchanged.
+
+### Scenario: mini sidebar retains its abbreviation
+
+- **Given** the offline Bible sidebar is collapsed to mini mode
+- **When** a book has a cached SIM translation
+- **Then** its tile continues to show the internal abbreviation (for example, `Kej`) and does not show the SIM name in the tile.
+
+### Scenario: no saved SIM translation
+
+- **Given** a saved Bible book has no SIM translation
+- **When** the offline renderer builds its expanded sidebar row
+- **Then** the row has no secondary translation label, while the mini tile continues to use the internal abbreviation.
+
+### Scenario: sidebar filtering uses the SIM name
+
+- **Given** the offline expanded Bible sidebar includes a saved SIM name
+- **When** the reader filters using that Simalungun name
+- **Then** the corresponding book remains visible and its accessible label includes the same SIM name.
+
+## Draft UI details: offline Bible sidebar labels
+
+- **Preview:** [Offline Bible sidebar SIM labels](./preview-bible-sidebar-sim-labels.html).
+- **Size / spacing:** Preserve the existing book-row dimensions, 14.5px primary text, and 12.5px secondary text; do not add or remove row spacing.
+- **Position / layout:** Keep the SIM name in the current right-hand secondary-label position. Keep the abbreviation centered in the mini tile.
+- **Colors / typography:** Preserve existing theme tokens, weight, and dimmed secondary color.
+- **States:** Preserve current resting, hover, selected, focus, and mini-sidebar states.
+- **Responsive behavior:** Preserve existing sidebar widths and breakpoints; allow the current row clipping behavior to apply to the longer SIM name.
+- **Motion:** None added.
+
+## Draft amendment: follow the selected Bible translation in the sidebar
+
+**Status:** Accepted. The owner accepted the [interactive preview](./preview-bible-sidebar-translation-follow.html): only the expanded labels swap and mini tiles keep the existing TB abbreviations.
+
+- On a normal full page load or refresh, start the Bible reading switch in TB. A deliberate SIM choice remains active through in-page Bible navigation, and a full page refresh resets it to TB. An explicit edition URL may select its requested edition on direct load.
+- In TB, each expanded Bible row uses its TB book name as the primary label and its SIM book name as the secondary label. In SIM, reverse the two labels. Apply the same rule to server-rendered and saved-copy Bible sidebars, including a sidebar opened after the edition switch.
+- Keep the existing `Book.name` abbreviation in `.book__a` for the mini sidebar in both editions. Do not derive a SIM abbreviation or clip its full name into the mini tile.
+- Keep both translated names searchable in either edition. Update the row's accessible label and mini-tile tooltip to describe the current primary and secondary names after a switch.
+- If a book has no SIM translation, show its TB name as the only expanded label in both editions. A missing SIM version for the current chapter keeps the existing disabled-switch behavior.
+- Change visible row text in place when the edition changes. Preserve each row's link, selection, focus, order, filter value, scroll position, and open/mini state. Other public reading sections do not change.
+
+### Scenario: switch from TB to SIM
+
+- **Given** a Bible chapter is open in TB and the expanded sidebar shows `Kejadian · 1 Musa`
+- **When** the reader selects SIM
+- **Then** the chapter shows SIM text and the same sidebar row shows `1 Musa · Kejadian`, with the same selection, position, and link.
+
+### Scenario: mini sidebar keeps the shared code
+
+- **Given** the Bible sidebar is in mini mode and its `Kejadian` tile shows `Kej`
+- **When** the reader switches between TB and SIM
+- **Then** the tile continues to show `Kej`; its tooltip and accessible name reflect the current primary book name.
+
+### Scenario: switch back, navigate, and refresh
+
+- **Given** the reader selected SIM
+- **When** the reader switches to TB, navigates between Bible chapters in-page, or fully refreshes the page
+- **Then** switching to TB restores TB primary labels, in-page navigation retains a deliberate edition choice, and full refresh starts in TB.
+
+### Scenario: saved copy and missing SIM
+
+- **Given** the public Bible sidebar comes from saved data and one book has no SIM translation
+- **When** the reader changes edition on a chapter that supports both translations
+- **Then** rows with both names swap as above, while the book without SIM keeps its TB name alone; neither case requires a network response.
+
+## Draft UI details: translation-following Bible sidebar
+
+- **Preview:** [Interactive TB/SIM sidebar](./preview-bible-sidebar-translation-follow.html).
+- **Size and spacing:** Keep the current 296px expanded sidebar, 38px minimum row height, 14.5px primary name, 12.5px secondary name, and 44px mini tile. Do not change row padding or gap.
+- **Position:** Keep the primary name on the left and secondary name on the right. Mini abbreviations remain centered.
+- **Colors and states:** Keep existing theme colors and resting, hover, selected, and focus treatments. The switch changes label content only.
+- **Responsive behavior:** Retain the existing sidebar breakpoints and row clipping behavior. A long translated primary name can use the existing primary-label ellipsis.
+- **Motion:** Do not add label-swap animation or move the sidebar; the existing reading switch motion remains.

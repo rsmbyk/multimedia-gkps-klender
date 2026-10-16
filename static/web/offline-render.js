@@ -40,22 +40,29 @@
     });
   }
   function bookLink(book, selected, kind, editorEnabled) {
-    var name = kind === 'bible' ? (book.translations.find(function (item) {
+    var translations = book.translations || [];
+    var name = kind === 'bible' ? (translations.find(function (item) {
       return item.version.toUpperCase() === 'TB';
-    }) || book.translations[0] || {}).name || book.name : book.name;
-    var short = kind === 'bible' ? book.name : kind === 'service'
+    }) || translations[0] || {}).name || book.name : book.name;
+    var sim = kind === 'bible' && translations.find(function (item) {
+      return item.version.toUpperCase() === 'SIM';
+    });
+    var short = kind === 'bible' ? (sim ? sim.name : '') : kind === 'service'
       ? book.date_display || book.short_name : book.short_name;
     var href = kind === 'bible' ? '/bible/' + book.id + '/' : kind === 'songs'
       ? '/songs/book/' + book.id + '/' : '/tatib/' + book.id + '/';
     var editor = editorEnabled ? kind === 'service' ? 'tatib'
       : kind === 'songs' && !book.is_hymn_book ? 'songbook' : '' : '';
     return '<li><a class="book" href="' + href + '" data-name="' + escape(kind === 'bible' ? name : book.id)
-      + '" data-sim="' + escape(kind === 'service' ? book.id : short || '') + '" aria-label="' + escape(name)
+      + '" data-sim="' + escape(kind === 'service' ? book.id : short || '') + '"'
+      + (kind === 'bible' ? ' data-tip="' + escape(name + (short ? ' — ' + short : '')) + '"' : '')
+      + ' aria-label="' + escape(name)
       + (short ? ' (' + escape(short) + ')' : '')
       + '"' + (selected ? ' aria-current="true"' : '') + '><span class="book__n">'
       + escape(name) + '</span>' + (kind === 'bible' ? '<span class="book__a">'
-        + escape(book.name) + '</span>' : '') + '<span class="book__s">'
-      + escape(short || '') + '</span></a>'
+        + escape(book.name) + '</span>' : '') + (kind === 'bible'
+        ? (short ? '<span class="book__s">' + escape(short) + '</span>' : '')
+        : '<span class="book__s">' + escape(short || '') + '</span>') + '</a>'
       + (editor ? '<button class="row-edit" type="button" data-editor-open="' + editor
         + '" data-editor-id="' + book.id + '" aria-label="Edit ' + escape(name)
         + '"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"'

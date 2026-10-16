@@ -6,9 +6,9 @@ type: feat
 priority: P1
 effort: L
 created: 2026-10-15
-updated: 2026-10-15
+updated: 2026-10-16
 spec: 092
-branch: feat/091-projector-corner
+branch: feat/092-offline-library-sync
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/346
 archived_at:
 archive_reason:
@@ -33,6 +33,7 @@ Save complete public Bible, song, and Tata Ibadah content plus the two supported
 - First completed sync makes included public reading and service projector routes available offline; interrupted sync leaves the previous generation intact.
 - Current content loads from saved data immediately and refreshes asynchronously online.
 - Direct search URLs, repeat queries, Show more, tab isolation, and Back/Forward honor Spec 092 state rules.
+- Bible sidebar primary and secondary names follow the selected TB/SIM reading edition in online and saved-copy views; mini tiles retain TB book abbreviations, and a full refresh starts in TB.
 
 ## Links
 

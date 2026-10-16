@@ -34,6 +34,11 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
         book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=1)
         translation = bible.BookTranslation.objects.create(
             version=version, book=book, translation='Matius')
+        sim_language = bible.Language.objects.create(name='Simalungun')
+        sim_version = bible.Version.objects.create(
+            lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
+        self.sim_translation = bible.BookTranslation.objects.create(
+            version=sim_version, book=book, translation='Matius Simalungun')
         bible.Verse.objects.create(book_translation=translation, chapter=1, verse=1,
                                    text='Kasih Tuhan membuka Injil')
         songbook = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ',
@@ -47,6 +52,88 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
         self.song_id = song.pk
         self.songbook_id = songbook.pk
         self.service_id = service.pk
+
+    def test_offline_bible_sidebar_uses_sim_names_and_keeps_mini_abbreviations(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            context.set_offline(True)
+            page.locator('.rail__logo').click()
+            page.locator('.rail [data-panel="alkitab"]').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'open'")
+
+            row = page.locator(f'#panelBody .book[href="/bible/{self.book_id}/"]')
+            self.assertEqual(row.locator('.book__n').inner_text(), 'Matius')
+            self.assertEqual(row.locator('.book__s').inner_text(), 'Matius Simalungun')
+            self.assertEqual(row.get_attribute('data-sim'), 'Matius Simalungun')
+            self.assertEqual(row.get_attribute('aria-label'), 'Matius (Matius Simalungun)')
+
+            page.locator('#bookFilter').fill('Matius Simalungun')
+            self.assertTrue(row.is_visible())
+            page.locator('#bookFilter').fill('')
+            page.locator('#panelCollapse').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
+            self.assertEqual(row.locator('.book__a').inner_text(), 'Mat')
+            self.assertTrue(row.locator('.book__a').is_visible())
+            self.assertFalse(row.locator('.book__s').is_visible())
+            browser.close()
+
+    def test_offline_bible_sidebar_omits_secondary_label_without_sim(self):
+        self.sim_translation.delete()
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            context.set_offline(True)
+            page.locator('.rail__logo').click()
+            page.locator('.rail [data-panel="alkitab"]').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'open'")
+
+            row = page.locator(f'#panelBody .book[href="/bible/{self.book_id}/"]')
+            self.assertEqual(row.locator('.book__n').inner_text(), 'Matius')
+            self.assertEqual(row.locator('.book__s').count(), 0)
+            self.assertEqual(row.get_attribute('aria-label'), 'Matius')
+            browser.close()
+
+    def test_offline_bible_sidebar_swaps_names_with_edition(self):
+        bible.Verse.objects.create(
+            book_translation=self.sim_translation, chapter=1, verse=1,
+            text='Holong ni Tuhan mambukka Injil')
+        other = bible.Book.objects.create(name='Mar', testament='new', number_of_chapters=1)
+        tb_version = bible.Version.objects.get(abbreviation='TB')
+        bible.BookTranslation.objects.create(
+            version=tb_version, book=other, translation='Markus')
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            context.set_offline(True)
+            page.goto(self.live_server_url + f'/bible/{self.book_id}/1/')
+            row = page.locator(f'#panelBody .book[href="/bible/{self.book_id}/"]')
+            other_row = page.locator(f'#panelBody .book[href="/bible/{other.pk}/"]')
+            page.wait_for_function(
+                '(args) => document.querySelector(args.selector)?.textContent === args.value',
+                arg={'selector': f'#panelBody .book[href="/bible/{self.book_id}/"] .book__n',
+                     'value': 'Matius'})
+            self.assertEqual(row.locator('.book__s').inner_text(), 'Matius Simalungun')
+            page.locator('#langSim').click()
+            page.get_by_text('Holong ni Tuhan mambukka Injil').wait_for()
+            self.assertEqual(row.locator('.book__n').inner_text(), 'Matius Simalungun')
+            self.assertEqual(row.locator('.book__s').inner_text(), 'Matius')
+            self.assertEqual(row.get_attribute('aria-label'), 'Matius Simalungun (Matius)')
+            self.assertEqual(other_row.locator('.book__n').inner_text(), 'Markus')
+            self.assertEqual(other_row.locator('.book__s').count(), 0)
+            page.locator('#panelCollapse').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
+            self.assertEqual(row.locator('.book__a').inner_text(), 'Mat')
+            browser.close()
 
     def assert_saved_badge_centered_on_stage(self, page):
         page.wait_for_function("""() => {
@@ -130,9 +217,11 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             page.get_by_role('link', name='Matius').first.wait_for()
             page.locator('#panelCollapse').click()
             page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
-            mini_book = page.get_by_role('link', name='Matius (Mat)').first
+            mini_book = page.locator(f'.book[href="/bible/{self.book_id}/"]')
             self.assertEqual(mini_book.locator('.book__a').count(), 1,
                              page.locator('#panelBody').evaluate('(el) => el.innerHTML'))
+            self.assertEqual(mini_book.get_attribute('aria-label'),
+                             'Matius (Matius Simalungun)')
             self.assertTrue(mini_book.locator('.book__a').is_visible())
             self.assertEqual(mini_book.locator('.book__a').inner_text(), 'Mat')
             page.goto(self.live_server_url + f'/bible/{self.book_id}/')

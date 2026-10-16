@@ -113,6 +113,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 order_number=2, text='Drag while the sidebar waits')
 
         if self._testMethodName in (
+            'test_bible_sidebar_labels_follow_edition_and_reset_on_refresh',
             'test_bible_language_highlight_slides_without_reflow',
             'test_bible_language_highlight_static_and_reduced_motion',
             'test_bible_language_highlight_starts_in_place_without_travel',
@@ -123,6 +124,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             sim_version = bible.Version.objects.create(lang=sim_lang, name='Simalungun', abbreviation='SIM')
             sim_book = bible.BookTranslation.objects.create(version=sim_version, book=self.mat, translation='Mateus')
             bible.Verse.objects.create(book_translation=sim_book, chapter=5, verse=13, text='Garam ni dunia.')
+            if self._testMethodName == 'test_bible_sidebar_labels_follow_edition_and_reset_on_refresh':
+                bible.Verse.objects.create(
+                    book_translation=sim_book, chapter=6, verse=1, text='Bapa nami SIM.')
+                bible.Verse.objects.create(
+                    book_translation=mat_tb, chapter=6, verse=1, text='Bapa kami TB.')
 
         if self._testMethodName == 'test_hymn_song_order_is_visible_after_browsing_from_home':
             songs.Song.objects.create(book=self.book, number=10, title='Ten')
@@ -665,6 +671,43 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                                        geometry['stageTop'] + geometry['paddingTop'], delta=1)
                 page.close()
 
+    def test_bible_sidebar_labels_follow_edition_and_reset_on_refresh(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        row = page.locator(f'#panelBody .book[href="/bible/{self.mat.pk}/"]')
+        expect(row.locator('.book__n')).to_have_text('Matius')
+        expect(row.locator('.book__s')).to_have_text('Mateus')
+        row.evaluate("el => { el.dataset.identityCheck = 'same-row'; }")
+
+        page.locator('#langSim').click()
+        expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
+        expect(row.locator('.book__n')).to_have_text('Mateus')
+        expect(row.locator('.book__s')).to_have_text('Matius')
+        self.assertEqual(row.get_attribute('data-identity-check'), 'same-row')
+        self.assertEqual(row.get_attribute('aria-label'), 'Mateus (Matius)')
+        self.assertEqual(row.get_attribute('data-tip'), 'Mateus — Matius')
+        for name in ('Mateus', 'Matius'):
+            page.locator('#bookFilter').fill(name)
+            self.assertTrue(row.is_visible())
+        page.locator('#bookFilter').fill('')
+        page.locator('#panelCollapse').click()
+        page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
+        self.assertEqual(row.locator('.book__a').inner_text(), 'Mat')
+        self.assertTrue(row.locator('.book__a').is_visible())
+
+        page.locator('#chList .ch-num').nth(5).click()
+        expect(page.get_by_text('Bapa nami SIM.')).to_be_visible()
+        row = page.locator(f'#panelBody .book[href="/bible/{self.mat.pk}/"]')
+        expect(row.locator('.book__n')).to_have_text('Mateus')
+        self.assertEqual(row.locator('.book__a').inner_text(), 'Mat')
+        page.reload()
+        expect(page.get_by_text('Bapa kami TB.')).to_be_visible()
+        row = page.locator(f'#panelBody .book[href="/bible/{self.mat.pk}/"]')
+        expect(row.locator('.book__n')).to_have_text('Matius')
+        expect(row.locator('.book__s')).to_have_text('Mateus')
+        expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        page.close()
+
     def test_bible_language_highlight_slides_without_reflow(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
@@ -767,14 +810,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_bible_language_highlight_starts_in_place_without_travel(self):
         page = self._page()
-        page.add_init_script("try { localStorage.setItem('gkps-lang', 'sim') } catch (e) {}")
-        page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="alkitab"]').click()
-        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
-        page.locator('#chList .ch-num').nth(4).click()
+        page.goto(self.live_server_url
+                  + reverse('web-bible-chapter', args=[self.mat.pk, 5]) + '?ed=sim')
         expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
         self.assertEqual(page.url, self.live_server_url
-                         + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+                         + reverse('web-bible-chapter', args=[self.mat.pk, 5]) + '?ed=sim')
         switch = page.locator('.read__lang')
         expect(switch.locator('.read__lang-thumb')).to_have_count(1)
         expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
@@ -785,6 +825,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertEqual(thumb.evaluate('el => el.getAnimations().length'), 0)
         # the highlight must not carry the old state or slide in.
         page.locator('#langTb').click()
+        page.locator('.read__lang-thumb').evaluate(
+            'el => Promise.all(el.getAnimations().map(animation => animation.finished))')
         page.locator('#chList .ch-num').nth(19).click()  # chapter 20, TB only
         expect(page.get_by_text('Janganlah kamu kuatir')).to_be_visible()
         switch = page.locator('.read__lang')
