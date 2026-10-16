@@ -1,6 +1,6 @@
 ---
 id: ITEM-098
-status: in-review
+status: done
 title: 'Open editors immediately during form loads'
 type: fix
 priority: P1

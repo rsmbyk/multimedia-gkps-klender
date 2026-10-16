@@ -1,6 +1,6 @@
 ---
 id: ITEM-096
-status: in-review
+status: done
 title: 'Unified feedback for edit requests'
 type: feat
 priority: P1

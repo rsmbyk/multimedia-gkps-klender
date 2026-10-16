@@ -1,12 +1,12 @@
 ---
 id: ITEM-094
-status: in-review
+status: done
 title: Quiet controls for the mirrored service projector
 type: feat
 priority: P1
 effort: L
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 spec: 091
 branch: feat/091-projector-corner
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/346

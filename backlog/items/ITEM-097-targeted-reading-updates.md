@@ -1,6 +1,6 @@
 ---
 id: ITEM-097
-status: in-review
+status: done
 title: 'Keep reading updates targeted and entry deletion atomic'
 type: fix
 priority: P1

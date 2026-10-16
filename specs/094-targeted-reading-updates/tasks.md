@@ -13,7 +13,7 @@
 - [x] Reconcile changed stage, sidebar rows, and dependent controls without replacing unchanged nodes; retain existing navigation, offline, focus, filters, scroll, and reorder behavior.
 - [x] Run targeted browser tests and relevant endpoint tests; update traceability and release metadata.
 - [x] Commit and push on the owner-selected branch, link the spec in its review PR, and mark ITEM-097 In review.
-- [ ] Before merge, verify required CI at the pushed head and mark the ITEM Done in the same PR.
+- [x] Before merge, verify required CI at the pushed head and mark the ITEM Done in the same PR.
 
 ## Done when
 

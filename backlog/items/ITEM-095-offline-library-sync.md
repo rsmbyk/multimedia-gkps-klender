@@ -1,6 +1,6 @@
 ---
 id: ITEM-095
-status: in-review
+status: done
 title: Save the public library for offline reading and service projection
 type: feat
 priority: P1

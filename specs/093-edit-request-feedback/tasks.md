@@ -13,7 +13,7 @@
 - [x] Route non-modal break creation, reorder persistence, and custom-break add/remove/reset/mode writes through the same API. Preserve reorder queue/rollback and previously confirmed break state; lock only the initiating non-modal control.
 - [x] Run focused browser/Django tests, inspect the real modal/overlay stacking, and update traceability.
 - [x] Push a separate draft PR for Spec 093 after acceptance and required metadata/version updates.
-- [ ] Before merge, set ITEM Done, complete this checklist and the release metadata in that PR; verify required CI at its exact head.
+- [x] Before merge, set ITEM Done, complete this checklist and the release metadata in that PR; verify required CI at its exact head.
 
 ## Done when
 
