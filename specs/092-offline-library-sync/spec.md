@@ -107,3 +107,18 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 - **Domain/app tests:** `tests/test_offline_sync.py`.
 - **E2E:** `tests/e2e/test_offline_library.py` and targeted `tests/e2e/test_projector.py` cases.
 - **Implementation:** `multimedia/web/reading/offline.py`, `multimedia/web/urls.py`, reading/projector templates, `static/web/offline-library.js`, `static/web/offline-render.js`, `static/web/offline-status.js`, `static/web/projector-library.js`, `static/web/projector.js`, `static/web/reading.js`, and `static/web/service-worker.js`.
+
+## Draft amendment: persistent saved-copy badge
+
+**Status:** Accepted. The [sticky-badge preview](./preview-saved-copy-sticky.html) was approved separately. This section supersedes only the inline placement of the saved-copy label in UI details above.
+
+- On a public Bible chapter, song, or Tata Ibadah page showing saved content, render “Saved copy” as a viewport-fixed badge at the top-right of the reading area. It remains visible as the reader scrolls, consumes no header or content space, and is absent from the home/search and projector pages.
+- Use the approved preview's compact pill: 12px text at weight 500, a 6px amber `#b0813b` dot separated by 6px, 7px vertical and 11px horizontal padding, a 1px divider-token border, 999px radius, canvas-token background, and a subtle `0 5px 18px rgba(20, 20, 18, .12)` shadow. Use existing theme tokens for readable light and dark text.
+- Position it 16px below the viewport top and `clamp(24px, 5vw, 64px)` from the right. At viewport widths of 800px or less, use 12px top and 18px right. Keep it below open sidebars, popovers, and dialogs in the stacking order and above ordinary reading content.
+- The badge is informational, has no focus or click target, and does not intercept pointer input. Hide it when a successful fresh response replaces the saved content, when no saved content is available, or when leaving the affected reading page. Do not show it in print.
+
+### Scenario: saved-copy provenance remains visible
+
+- **Given** a long public Bible chapter, song, or Tata Ibadah page rendered from the saved library
+- **When** the reader scrolls through the page while the online refresh has not supplied replacement content
+- **Then** the compact “Saved copy” badge stays at the top-right of the viewport without moving the reading header or blocking controls; it disappears once fresh content replaces the saved copy.

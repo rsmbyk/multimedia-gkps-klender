@@ -120,6 +120,23 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
                 'status': initial_status, 'render': saved_render,
                 'source': source.evaluate('el => el.outerHTML'),
             })
+            badge = source.evaluate('''el => ({
+                position: getComputedStyle(el).position,
+                pointerEvents: getComputedStyle(el).pointerEvents,
+                top: el.getBoundingClientRect().top,
+                parent: el.parentElement.id
+            })''')
+            self.assertEqual(badge['position'], 'fixed')
+            self.assertEqual(badge['pointerEvents'], 'none')
+            self.assertEqual(badge['parent'], 'read')
+            page.evaluate('window.scrollTo(0, document.documentElement.scrollHeight)')
+            self.assertAlmostEqual(source.bounding_box()['y'], badge['top'], delta=1)
+            page.set_viewport_size({'width': 700, 'height': 600})
+            narrow = source.bounding_box()
+            self.assertAlmostEqual(narrow['y'], 12, delta=1)
+            self.assertAlmostEqual(700 - narrow['x'] - narrow['width'], 18, delta=1)
+            page.emulate_media(media='print')
+            self.assertEqual(source.evaluate('el => getComputedStyle(el).display'), 'none')
             page.unroute('**/offline/chunk/**')
             browser.close()
 

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saved copy · floating status preview</title>
+  <link rel="stylesheet" href="../../static/styles/design/tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; }
+    .rail { position: fixed; inset: 0 auto 0 0; z-index: 3; width: 80px; padding: 20px 0;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      border-right: 1px solid var(--divider); background: var(--rail-bg); }
+    .logo { width: 42px; height: 42px; padding: 5px; border-radius: 50%; background: white; }
+    .rail-icons { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px;
+      color: var(--icon); font-size: 23px; }
+    .rail-icons span { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 8px; }
+    .rail-icons .active { background: var(--active-bg); color: var(--active-ink); }
+    .books { position: fixed; inset: 0 auto 0 80px; width: 296px; padding: 32px 14px;
+      overflow: auto; border-right: 1px solid var(--divider); background: var(--rail-bg); }
+    .filter { margin: 0 4px 20px; padding: 10px 12px; border: 1px solid var(--divider);
+      border-radius: 8px; color: var(--head-ink); }
+    .book { display: flex; justify-content: space-between; gap: 10px; padding: 9px 11px;
+      border-radius: 9px; color: var(--ink); }
+    .book small { color: var(--head-ink); }
+    .book.current { background: var(--sidebar-selected-bg); }
+    .chapters { position: fixed; inset: 0 auto 0 376px; width: 80px; padding: 28px 12px;
+      overflow: auto; border-right: 1px solid var(--divider); background: var(--rail-bg); }
+    .chapter { display: grid; height: 46px; place-items: center; border-radius: 9px; font-size: 13px; }
+    .chapter.current { background: var(--sidebar-selected-bg); }
+    .stage { margin-left: 456px; padding: 112px clamp(24px, 5vw, 64px) 120px; }
+    .reading { max-width: 920px; margin: 0 auto; }
+    .title { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    h1 { margin: 0 0 28px; font: 600 clamp(33px, 4vw, 54px)/1.16 ui-serif, Georgia, serif; }
+    h1 span { margin-left: 10px; color: var(--head-ink); font-weight: 400; }
+    .edition { flex: none; margin-bottom: 28px; padding: 6px 8px; border: 1px solid var(--divider);
+      border-radius: 8px; color: var(--head-ink); font-size: 12px; white-space: nowrap; }
+    .edition strong { padding: 5px 10px; border-radius: 5px; background: var(--active-bg);
+      color: var(--active-ink); }
+    h2 { margin: 10px 0 22px; text-align: center; font: italic 22px/1.3 ui-serif, Georgia, serif; }
+    .verse { display: grid; grid-template-columns: 22px 1fr; gap: 18px; margin: 0 0 18px;
+      font: 19px/1.75 ui-serif, Georgia, serif; }
+    .verse b { padding-top: 6px; color: var(--head-ink); font: 500 12px/1.5 ui-sans-serif, system-ui, sans-serif; }
+    .saved-badge { position: fixed; z-index: 4; top: 16px; right: clamp(24px, 5vw, 64px);
+      display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px;
+      border: 1px solid var(--divider); border-radius: 999px; background: var(--canvas);
+      box-shadow: 0 5px 18px rgba(20, 20, 18, .12); color: var(--head-ink);
+      font: 500 12px/1.25 ui-sans-serif, system-ui, sans-serif; pointer-events: none; }
+    .saved-badge[hidden] { display: none; }
+    .saved-badge::before { content: ''; width: 6px; height: 6px; flex: none;
+      border-radius: 50%; background: #b0813b; }
+    .preview-controls { position: fixed; z-index: 5; right: 20px; bottom: 20px;
+      display: flex; align-items: center; gap: 8px; padding: 8px;
+      border: 1px solid var(--divider); border-radius: 10px; background: var(--canvas);
+      box-shadow: 0 8px 24px rgba(20, 20, 18, .2); font-size: 12px; }
+    .preview-controls span { padding: 0 5px; color: var(--head-ink); }
+    .preview-controls button { padding: 6px 9px; border: 1px solid var(--divider);
+      border-radius: 6px; background: transparent; color: var(--ink); cursor: pointer; font: inherit; }
+    .preview-controls button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); }
+    .preview-controls button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    @media (max-width: 800px) {
+      .rail { width: 64px; }
+      .books, .chapters { display: none; }
+      .stage { margin-left: 64px; padding: 88px 18px 100px; }
+      .saved-badge { top: 12px; right: 18px; }
+      .preview-controls { right: 12px; bottom: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="rail" aria-hidden="true">
+    <img class="logo" src="../../static/assets/gkps.png" alt="">
+    <div class="rail-icons"><span>⌕</span><span class="active">▤</span><span>♫</span><span>▣</span></div>
+    <div class="rail-icons" style="flex: 0"><span>◌</span><span>□</span></div>
+  </aside>
+  <aside class="books" aria-label="Book list">
+    <div class="filter">⌕ &nbsp; Filter books...</div>
+    <div class="book">Kejadian <small>Kej</small></div><div class="book">Keluaran <small>Kel</small></div>
+    <div class="book">Imamat <small>Ima</small></div><div class="book">Bilangan <small>Bil</small></div>
+    <div class="book">Ulangan <small>Ula</small></div><div class="book">Yosua <small>Yos</small></div>
+    <div class="book current">Hakim-hakim <small>Hak</small></div><div class="book">Rut <small>Rut</small></div>
+    <div class="book">1 Samuel <small>1Sa</small></div><div class="book">2 Samuel <small>2Sa</small></div>
+    <div class="book">1 Raja-raja <small>1Ra</small></div><div class="book">2 Raja-raja <small>2Ra</small></div>
+  </aside>
+  <aside class="chapters" aria-label="Chapters">
+    <div class="chapter">1</div><div class="chapter">2</div><div class="chapter">3</div>
+    <div class="chapter current">4</div><div class="chapter">5</div><div class="chapter">6</div>
+    <div class="chapter">7</div><div class="chapter">8</div><div class="chapter">9</div>
+    <div class="chapter">10</div><div class="chapter">11</div><div class="chapter">12</div>
+  </aside>
+  <main class="stage">
+    <article class="reading">
+      <div class="title"><h1>Hakim-hakim <span>4</span></h1><div class="edition"><strong>TB</strong> &nbsp; SIM</div></div>
+      <h2>Debora dan Barak</h2>
+      <div id="verses"></div>
+    </article>
+  </main>
+  <p class="saved-badge" id="savedBadge" role="status">Saved copy</p>
+  <div class="preview-controls" aria-label="Preview controls">
+    <span>Scroll to test</span>
+    <button type="button" id="savedToggle" aria-pressed="true">Saved copy</button>
+    <button type="button" id="themeToggle">Dark mode</button>
+  </div>
+  <script>
+    const lines = [
+      'Setelah Ehud mati, orang Israel melakukan pula apa yang jahat di mata TUHAN.',
+      'Lalu TUHAN menyerahkan mereka ke dalam tangan Yabin, raja Kanaan, yang memerintah di Hazor.',
+      'Lalu orang Israel berseru kepada TUHAN, sebab Sisera mempunyai sembilan ratus kereta besi.',
+      'Pada waktu itu Debora, seorang nabiah, isteri Lapidot, memerintah sebagai hakim atas orang Israel.',
+      'Ia biasa duduk di bawah pohon korma Debora antara Rama dan Betel di pegunungan Efraim.'
+    ];
+    document.getElementById('verses').innerHTML = Array.from({length: 30}, (_, i) =>
+      `<p class="verse"><b>${i + 1}</b><span>${lines[i % lines.length]}</span></p>`).join('');
+    document.getElementById('savedToggle').addEventListener('click', event => {
+      const next = event.currentTarget.getAttribute('aria-pressed') !== 'true';
+      event.currentTarget.setAttribute('aria-pressed', String(next));
+      document.getElementById('savedBadge').hidden = !next;
+    });
+    document.getElementById('themeToggle').addEventListener('click', event => {
+      const dark = document.documentElement.dataset.theme !== 'dark';
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      event.currentTarget.textContent = dark ? 'Light mode' : 'Dark mode';
+    });
+  </script>
+</body>
+</html>

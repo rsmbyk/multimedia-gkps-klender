@@ -56,3 +56,11 @@ The public reading page currently downloads another HTML page for in-app navigat
 - Verify that every end-content route creates one history entry, while first-level navigation creates none; test search submission and empty search separately. Cover repeated same-query submissions with changed results, logo versus Search rail behavior, independent/new tabs, direct search URLs replacing the tab's saved search, Show more, unsent field text, scroll, and Back/Forward restoration of distinct same-query entries.
 - Test that old OBS docks, editor/admin routes, and unrelated future pages still use their existing behavior.
 - Keep existing projector screens visible if a later refresh fails. Do not mark the site offline-ready unless both shells and a complete data generation are actually present.
+
+## Draft amendment: persistent saved-copy badge
+
+- **Status:** Accepted; the [visual preview](./preview-saved-copy-sticky.html) was approved separately.
+- **Why:** The current inline “Saved copy” label scrolls out of view, so the reader can lose track of whether the displayed content came from local storage.
+- **Scope:** Change only the public reading page's saved-copy indicator placement and presentation. Keep its provenance rules, wording, sync behavior, and live-content layout unchanged.
+- **Approach:** Show a small, noninteractive badge fixed near the top-right of the reading viewport whenever saved content is being displayed. Remove its inline space above the reading header. Keep it visible through content scrolling and below open panels or dialogs. Hide it as soon as fresh content replaces the saved copy.
+- **Validation:** Check long Bible, song, and Tata Ibadah pages; successful and failed online refresh; light/dark themes; narrow viewports; and scrolling with sidebar or modal overlays.

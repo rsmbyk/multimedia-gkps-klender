@@ -26,3 +26,11 @@
 - [x] Every acceptance scenario in `spec.md` holds in targeted local checks.
 - [ ] Targeted tests and required remote CI are green at the pushed head.
 - [ ] ITEM, board, tasks, version, and changelog are complete in the same PR.
+
+## Draft amendment: persistent saved-copy badge
+
+- [x] Owner approves the [sticky-badge visual preview](./preview-saved-copy-sticky.html).
+- [x] Owner explicitly Accepts the Draft amendment in `plan.md` and `spec.md` before implementation.
+- [x] Move the public-reading saved-copy indicator out of the flowing header and style it as the fixed, click-through badge specified above, including responsive, theme, overlay, and print behavior.
+- [x] Extend the targeted saved-reading browser check for persistence while scrolling, failed-refresh visibility, narrow positioning, and print hiding; existing refresh checks continue to cover fresh-content removal.
+- [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.

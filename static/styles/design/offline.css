@@ -38,11 +38,20 @@
 .offline-sync-progress::after { content: ''; display: block; width: 48%; height: 100%;
   background: var(--active-bg); animation: offline-sweep 1.1s ease-in-out infinite alternate; }
 @keyframes offline-sweep { from { transform: translateX(-100%); } to { transform: translateX(220%); } }
-.offline-saved-source { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 22px;
-  color: var(--head-ink); font-size: 12px; }
+.offline-saved-source { position: fixed; z-index: 3; top: 16px; right: clamp(24px, 5vw, 64px);
+  display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 7px 11px;
+  border: 1px solid var(--divider); border-radius: 999px;
+  background: var(--canvas); color: var(--head-ink); box-shadow: 0 5px 18px rgba(20, 20, 18, .12);
+  font-size: 12px; font-weight: 500; line-height: 1.25; pointer-events: none; }
 .offline-saved-source[hidden] { display: none; }
 .offline-saved-source::before { content: ''; width: 6px; height: 6px;
-  border-radius: 50%; background: #b0813b; }
+  flex: none; border-radius: 50%; background: #b0813b; }
+@media (max-width: 800px) {
+  .offline-saved-source { top: 12px; right: 18px; }
+}
+@media print {
+  .offline-saved-source { display: none !important; }
+}
 @media (prefers-reduced-motion: reduce) {
   .offline-sync-progress::after { animation: none; width: 100%; }
 }
