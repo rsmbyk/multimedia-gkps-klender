@@ -218,7 +218,10 @@
         if (message) item.options.successMessage = cleanMessage(message, item.options.successMessage);
         settle('success');
       },
-      failure: function (message) { settle('failure', message); }
+      failure: function (message, title) {
+        if (title) item.options.failureTitle = cleanMessage(title, item.options.failureTitle);
+        settle('failure', message);
+      }
     };
   }
 

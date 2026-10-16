@@ -18,6 +18,12 @@ Pre-adoption history in the legacy per-version format is archived in
   breaks now share per-action progress and result toasts, with modal and duplicate-action guards
   while writes are pending.
 
+### Fixed
+
+- Service-entry deletion stays locked until its updated reading view is applied; a failed readback
+  now reconciles the accepted deletion locally. In-page navigation patches changed reading and
+  sidebar components while keeping unchanged nodes mounted.
+
 ## [1.12.0] - 2026-10-15
 
 ### Added

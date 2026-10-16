@@ -58,6 +58,100 @@
     return { kind: 'old-item', id: target.dataset.oldItemPk };
   }
 
+  function removeDeletedLocally(id, oldItem) {
+    var selector = oldItem ? '[data-old-item-pk="' : '[data-entry-pk="';
+    var deleted = document.querySelector(selector + id + '"]');
+    if (!deleted) return;
+    var anchor = deleted.dataset.anchor || (oldItem ? '' : 'e' + id);
+    var afterMarker = oldItem ? 'l' + id : 'e' + id;
+    var addRow = document.querySelector('.entry__add[data-entry-after="' + afterMarker + '"]');
+    if (addRow) addRow.remove();
+    var counted = !deleted.classList.contains('tatib__eos')
+      || deleted.hasAttribute('data-entry-pk');
+    deleted.remove();
+
+    var tocRow = null;
+    Array.prototype.some.call(document.querySelectorAll('#chList > li'), function (item) {
+      if (item.dataset.i === anchor) { tocRow = item; return true; }
+      var link = item.querySelector('a[data-i]');
+      if (link && link.dataset.i === anchor) { tocRow = item; return true; }
+      return false;
+    });
+    var deletedNumber = 0;
+    if (tocRow) {
+      var tocLink = tocRow.querySelector('.songrow');
+      deletedNumber = Number(tocRow.dataset.num || tocLink && tocLink.dataset.num || 0);
+      tocRow.remove();
+    }
+    if (counted && deletedNumber) {
+      Array.prototype.forEach.call(document.querySelectorAll('#chList > li'), function (item) {
+        var number = Number(item.dataset.num || 0);
+        if (!number || number <= deletedNumber) return;
+        item.dataset.num = String(number - 1);
+        var link = item.querySelector('.songrow');
+        if (link) {
+          link.dataset.num = String(number - 1);
+          var count = link.querySelector('.songrow__c');
+          if (count) count.textContent = String(number - 1);
+        }
+      });
+    }
+
+    var readBody = document.getElementById('readBody');
+    if (readBody && !readBody.querySelector('[data-entry-pk], [data-old-item-pk]')) {
+      var start = readBody.querySelector('[data-entry-start]');
+      var service = (document.querySelector('[data-project-service]') || {}).dataset;
+      var serviceId = service && service.projectService;
+      if (start) {
+        var empty = document.createElement('div');
+        empty.className = 'entry__empty';
+        var title = document.createElement('p');
+        title.className = 'entry__empty-title';
+        title.textContent = 'This Tata Ibadah is empty.';
+        var hint = document.createElement('p');
+        hint.className = 'entry__empty-hint';
+        hint.textContent = 'Add the first item to start preparing the service.';
+        var actions = document.createElement('div');
+        actions.className = 'entry__empty-actions';
+        [['scripture', 'Add Passage'], ['song', 'Add Song'], ['text', 'Add Text'],
+          ['section_break', 'Add Break']].forEach(function (item) {
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'entry__empty-btn';
+          button.dataset.entryOpen = item[0];
+          if (serviceId) button.dataset.entryTatib = serviceId;
+          button.textContent = item[1];
+          actions.appendChild(button);
+        });
+        empty.appendChild(title);
+        empty.appendChild(hint);
+        empty.appendChild(actions);
+        start.replaceWith(empty);
+      }
+    }
+    if (tocRow && !document.querySelector('#chList > li')) {
+      var emptyStatus = document.getElementById('chEmpty');
+      if (emptyStatus) {
+        emptyStatus.textContent = 'This Tata Ibadah is empty.';
+        emptyStatus.hidden = false;
+      }
+    }
+    document.dispatchEvent(new CustomEvent('shell:local-entry-delete'));
+  }
+
+  function focusAfterDelete(target) {
+    var element = null;
+    if (target && target.kind === 'entry') {
+      element = document.querySelector('[data-entry-pk="' + target.id + '"]');
+    } else if (target && target.kind === 'old-item') {
+      element = document.querySelector('[data-old-item-pk="' + target.id + '"]');
+    }
+    element = element || document.getElementById('read');
+    if (!element) return;
+    if (element.tabIndex < 0 && !element.hasAttribute('tabindex')) element.tabIndex = -1;
+    focusTools.restoreQuietly(element);
+  }
+
   function announce(message) { if (status) status.textContent = message || ''; }
 
   /* The delete is a POST without a form, so it carries the token the way Django
@@ -711,8 +805,10 @@
     if (!modal.open) modal.showModal();
     markOrigin();
     var deleteButton = content.querySelector('[data-confirm-delete]');
+    var deleting = false;
     deleteButton.addEventListener('click', function () {
-      if (deleteButton.disabled || (feedback && feedback.isDialogBusy(modal))) return;
+      if (deleting || deleteButton.disabled || (feedback && feedback.isDialogBusy(modal))) return;
+      deleting = true;
       var pattern = oldItem
         ? (modal.dataset.oldItemDeleteUrl || '/editor/item/0/delete/')
         : (modal.dataset.entryDeleteUrl || '/editor/entry/0/delete/');
@@ -725,27 +821,46 @@
       });
       announce('');
       var release = feedback ? feedback.setDialogBusy(modal) : null;
+      deleteButton.disabled = true;
       fetch(pattern.replace('/0/', '/' + id + '/'), {
         method: 'POST', credentials: 'same-origin',
         headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf() }
       }).then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         var focus = targetAfterDelete(id, oldItem);
-        if (release) { release(); release = null; }
-        if (action) action.success();
-        close();
-        document.dispatchEvent(new CustomEvent('editor:saved', {
+        var savedEvent = new CustomEvent('editor:saved', {
           detail: {
             id: id,
             kind: oldItem ? 'old-item' : 'entry',
             focusKind: focus.kind,
-            focusId: focus.id
+            focusId: focus.id,
+            deferFocus: true,
+            noLocationFallback: true
           }
-        }));
+        });
+        document.dispatchEvent(savedEvent);
+        return Promise.resolve(savedEvent.detail.viewUpdate).catch(function () { return false; })
+          .then(function (updated) { return {focus: focus, updated: updated === true}; });
+      }).then(function (result) {
+        if (!result.updated) {
+          try { removeDeletedLocally(id, oldItem); }
+          catch (error) { if (window.console && console.error) console.error(error); }
+          if (action) action.failure(
+            'The deletion succeeded, but the latest view could not be verified.',
+            'Deleted, but latest view could not be verified');
+        } else if (action) {
+          action.success();
+        }
+        if (release) { release(); release = null; }
+        close();
+        focusAfterDelete(result.focus);
       }).catch(function () {
         announce('');
         if (action) action.failure();
-      }).finally(function () { if (release) release(); });
+        deleting = false;
+        if (release) { release(); release = null; }
+        else deleteButton.disabled = false;
+      });
     });
   }
 

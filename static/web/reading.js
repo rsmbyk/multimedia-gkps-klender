@@ -60,6 +60,7 @@
   var pendingAnchor = null;
   var railCloseTimer = null;
   var railCloseListener = null;
+  var selectionTransitionRestores = new WeakMap();
 
   /* What the current DOM marks as this page's own content; refreshed after
      every in-page navigation. */
@@ -158,6 +159,126 @@
     }
   }
 
+  /* Keep stable reading nodes mounted while applying a server or saved-copy
+     response. Stable keys let rows move without losing identity; unkeyed nodes
+     are matched in place by position and element type. */
+  function nodeIdentity(node) {
+    if (!node || node.nodeType !== 1) return null;
+    var attrs = ['id', 'data-entry-pk', 'data-old-item-pk', 'data-anchor',
+      'data-entry-after', 'data-i', 'data-name', 'data-month', 'data-testament',
+      'data-ed', 'data-move-grip'];
+    for (var i = 0; i < attrs.length; i++) {
+      var value = node.getAttribute(attrs[i]);
+      if (value !== null) return node.tagName + ':' + attrs[i] + ':' + value;
+    }
+    if (node.tagName === 'LI') {
+      var row = node.querySelector('a[data-i], a.book[data-name], a.songrow, a.ch-num');
+      if (row) return 'LI:row:' + (nodeIdentity(row) || row.getAttribute('href') || '');
+      var grip = node.querySelector('[data-move-grip]');
+      if (grip) return 'LI:grip:' + grip.getAttribute('data-move-grip');
+    }
+    if (node.matches('a[href]')) return 'A:href:' + node.getAttribute('href');
+    return null;
+  }
+
+  function compatibleNodes(live, fresh) {
+    if (!live || !fresh || live.nodeType !== fresh.nodeType) return false;
+    if (live.nodeType !== 1) return true;
+    if (live.tagName !== fresh.tagName) return false;
+    var liveKey = nodeIdentity(live);
+    var freshKey = nodeIdentity(fresh);
+    if (liveKey !== freshKey) return false;
+    if (live.id === 'read' && live.dataset.kind !== fresh.dataset.kind) return false;
+    return true;
+  }
+
+  function reconcileNode(live, fresh) {
+    if (!compatibleNodes(live, fresh)) {
+      var replacement = document.importNode(fresh, true);
+      if (live && live.parentNode) live.parentNode.replaceChild(replacement, live);
+      return replacement;
+    }
+    if (live.nodeType !== 1) {
+      if (live.nodeValue !== fresh.nodeValue) live.nodeValue = fresh.nodeValue;
+      return live;
+    }
+    if (live.isEqualNode(fresh)) return live;
+    var selectionChanged = live.matches('.book, .songrow, .ch-num')
+      && live.getAttribute('aria-current') !== fresh.getAttribute('aria-current');
+
+    Array.prototype.slice.call(live.attributes).forEach(function (attribute) {
+      if (!fresh.hasAttribute(attribute.name)) live.removeAttribute(attribute.name);
+    });
+    Array.prototype.forEach.call(fresh.attributes, function (attribute) {
+      if (live.getAttribute(attribute.name) !== attribute.value) {
+        live.setAttribute(attribute.name, attribute.value);
+      }
+    });
+    if (selectionChanged) {
+      var transitionState = selectionTransitionRestores.get(live);
+      if (transitionState) window.clearTimeout(transitionState.timer);
+      else transitionState = {
+        value: live.style.getPropertyValue('transition'),
+        priority: live.style.getPropertyPriority('transition')
+      };
+      live.style.setProperty('transition', 'none', 'important');
+      transitionState.timer = window.setTimeout(function () {
+        if (transitionState.value) {
+          live.style.setProperty('transition', transitionState.value, transitionState.priority);
+        } else {
+          live.style.removeProperty('transition');
+        }
+        selectionTransitionRestores.delete(live);
+      }, 250);
+      selectionTransitionRestores.set(live, transitionState);
+    }
+    reconcileChildren(live, fresh);
+    return live;
+  }
+
+  function reconcileChildren(liveParent, freshParent) {
+    var desired = Array.prototype.slice.call(freshParent.childNodes);
+    var cursor = liveParent.firstChild;
+    desired.forEach(function (freshChild) {
+      var key = nodeIdentity(freshChild);
+      var candidate = null;
+      if (key) {
+        candidate = Array.prototype.find.call(liveParent.childNodes, function (child) {
+          return nodeIdentity(child) === key && compatibleNodes(child, freshChild);
+        });
+      } else if (freshChild.nodeType === 1) {
+        var search = cursor;
+        while (search) {
+          if (!nodeIdentity(search) && compatibleNodes(search, freshChild)) {
+            candidate = search;
+            break;
+          }
+          search = search.nextSibling;
+        }
+      } else if (compatibleNodes(cursor, freshChild) && !nodeIdentity(cursor)) {
+        candidate = cursor;
+      }
+      if (!candidate) {
+        candidate = document.importNode(freshChild, true);
+        liveParent.insertBefore(candidate, cursor);
+      } else {
+        if (candidate !== cursor) liveParent.insertBefore(candidate, cursor);
+        reconcileNode(candidate, freshChild);
+      }
+      cursor = candidate.nextSibling;
+    });
+    while (cursor) {
+      var next = cursor.nextSibling;
+      liveParent.removeChild(cursor);
+      cursor = next;
+    }
+  }
+
+  function setTextIfChanged(element, value) {
+    value = value || '';
+    if (element && element.textContent !== value) element.textContent = value;
+  }
+
   function panelOwner() {
     return activeSection === 'kidung' ? kidBtn
          : activeSection === 'tatib' ? tatBtn : alkBtn;
@@ -249,6 +370,8 @@
     if (held) held.removeAttribute('aria-describedby');
   }
   function bindFloatTip(el) {
+    if (boundFloatTips.has(el)) return;
+    boundFloatTips.add(el);
     el.addEventListener('pointerenter', function (event) {
       if (root.dataset.nav !== 'mini' || event.pointerType === 'touch') return;
       window.clearTimeout(ftimer);
@@ -260,6 +383,7 @@
     });
     el.addEventListener('blur', hideTileTip);
   }
+  var boundFloatTips = new WeakSet();
   /* Every tooltip is about a state that a transition is about to change: a focused
      tile keeps its own label up, and a tile's floating label can be showing under the
      pointer as the panel closes, where no pointerleave ever arrives. Clear them all at
@@ -326,16 +450,18 @@
     decorateChapters();
   }
   function bindLangLinks() {
-    [langTb, langSim].forEach(function (link) {
-      if (!link) return;
-      link.addEventListener('click', function (event) {
-        var want = link === langSim ? 'sim' : 'tb';
+    if (!stage.dataset.langLinksBound) {
+      stage.dataset.langLinksBound = 'true';
+      stage.addEventListener('click', function (event) {
+        var link = event.target.closest('#langTb, #langSim');
+        if (!link || !stage.contains(link)) return;
+        var want = link.id === 'langSim' ? 'sim' : 'tb';
         /* no text in the other edition: keep the last good view */
         if (!editionBlock(want) || want === currentEdition()) { event.preventDefault(); return; }
         event.preventDefault();
         setEdition(want, true);
       });
-    });
+    }
     if (langTb) langTb.parentElement.classList.add('is-enhanced');
   }
   function restoreSavedEdition() {
@@ -565,8 +691,11 @@
   /* book tiles: the page's own book toggles its chapter list in place;
      another book is a normal link to its own page */
   function bindPanelTiles() {
-    panelBody.querySelectorAll('.book').forEach(function (tile) {
-      tile.addEventListener('click', function (event) {
+    if (!panelBody.dataset.tileClicksBound) {
+      panelBody.dataset.tileClicksBound = 'true';
+      panelBody.addEventListener('click', function (event) {
+        var tile = event.target.closest('.book');
+        if (!tile || !panelBody.contains(tile)) return;
         if (activeSection === 'alkitab' && tile.dataset.name === pageState.tileName) {
           /* the open book toggles its chapter list in place */
           event.preventDefault();
@@ -584,10 +713,12 @@
             : /\/tatib\//.test(href) ? 'service' : 'lists'
         });
       });
-    });
-    var mode = panel.querySelector('.panel__filter .panel__mode');
-    if (mode) {
-      mode.addEventListener('click', function (event) {
+    }
+    if (!panel.dataset.modeClicksBound) {
+      panel.dataset.modeClicksBound = 'true';
+      panel.addEventListener('click', function (event) {
+        var mode = event.target.closest('.panel__filter .panel__mode');
+        if (!mode || !panel.contains(mode)) return;
         event.preventDefault();
         var target = mode.href;
         if (stageSection() === 'tatib' && stageInfo.tile) {
@@ -626,8 +757,11 @@
     target.classList.add('tatib__flash');
   }
   function bindChRows() {
-    chList.querySelectorAll('a').forEach(function (link) {
-      link.addEventListener('click', function (event) {
+    if (chList.dataset.rowClicksBound) return;
+    chList.dataset.rowClicksBound = 'true';
+    chList.addEventListener('click', function (event) {
+      var link = event.target.closest('a');
+      if (!link || !chList.contains(link)) return;
         var href = link.getAttribute('href') || '';
         if (href.charAt(0) === '#') {
           /* Tata Ibadah contents are quicklinks, never a destination */
@@ -644,7 +778,6 @@
           event.preventDefault();
           navigate(link.href, { kind: link.classList.contains('ch-num') ? 'chapter' : 'song' });
         }
-      });
     });
   }
   bindChRows();
@@ -685,6 +818,11 @@
   /* ---------- song / section list filter ---------- */
   function applySongFilter(needle) {
     needle = (needle || '').trim().toLowerCase();
+    if (activeSection === 'alkitab') {
+      songEmpty.hidden = true;
+      updateChInds();
+      return;
+    }
     var any = false;
     chList.querySelectorAll('.toc__eos').forEach(function (li) {
       li.classList.toggle('is-hidden', !!needle);
@@ -701,6 +839,14 @@
     if (needle) chBody.scrollTop = 0;
     updateChInds();
   }
+  document.addEventListener('shell:local-entry-delete', function () {
+    applySongFilter(songFilterEl.value);
+    decorateChapters();
+    markRailTile();
+    syncState();
+    updateChInds();
+    window.requestAnimationFrame(updateChInds);
+  });
   songFilterEl.addEventListener('input', function () { applySongFilter(songFilterEl.value); });
   songFilterEl.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') {
@@ -992,6 +1138,7 @@
      hrefs: without JS (or when a fetch fails) the browser navigates. */
   var navBusy = false;
   var pendingNavigation = null;
+  var navigationGeneration = 0;
   var SEARCH_LAST = 'gkps-search-last-tab';
   var TAB_KEY = 'gkps-search-tab-id';
   /* The shell owns in-page history, including restoring each search result's
@@ -1044,7 +1191,11 @@
     if (!snapshot) return false;
     var results = document.getElementById('searchResults');
     var input = document.getElementById('searchQuery');
-    if (results) results.innerHTML = snapshot.html;
+    if (results) {
+      var snapshotTemplate = document.createElement('template');
+      snapshotTemplate.innerHTML = snapshot.html;
+      reconcileChildren(results, snapshotTemplate.content);
+    }
     if (input) input.value = snapshot.input;
     bindStageExtras();
     window.scrollTo({top: snapshot.scroll || 0, behavior: 'auto'});
@@ -1058,23 +1209,57 @@
   }, {passive: true});
   window.addEventListener('pagehide', saveSearchSnapshot);
 
-  function releaseNavigation() {
+  function releaseNavigation(success, resolve) {
     navBusy = false;
+    if (resolve) resolve(!!success);
     if (!pendingNavigation) return;
     var next = pendingNavigation;
     pendingNavigation = null;
-    window.setTimeout(function () { navigate(next.url, next.opts); }, 0);
+    navigate(next.url, next.opts).then(next.resolve);
   }
 
   function navigate(url, opts) {
-    if (!url) return;
+    if (!url) return Promise.resolve(false);
+    opts = opts || {};
+    var resolveCompletion;
+    var completion = new Promise(function (resolve) { resolveCompletion = resolve; });
     if (navBusy) {
-      if (!(opts && opts.historyTraversal)) saveSearchSnapshot();
-      pendingNavigation = {url: url, opts: opts || {}};
-      return;
+      if (!opts.historyTraversal) saveSearchSnapshot();
+      if (pendingNavigation) pendingNavigation.resolve(false);
+      pendingNavigation = {url: url, opts: opts, resolve: resolveCompletion};
+      return completion;
     }
-    if (!(opts && opts.historyTraversal)) saveSearchSnapshot();
+    if (!opts.historyTraversal) saveSearchSnapshot();
     navBusy = true;
+    var generation = ++navigationGeneration;
+    var finished = false;
+    function finish(success) {
+      if (finished) return;
+      finished = true;
+      releaseNavigation(success, resolveCompletion);
+    }
+    function isSuperseded() { return !!pendingNavigation; }
+    function fail(error) {
+      if (window.console && console.error) console.error('in-page navigation failed:', error);
+      if (!isSuperseded() && navigator.onLine && !opts.noLocationFallback) {
+        window.location.href = url;
+      } else if (!navigator.onLine) {
+        var status = document.getElementById('searchStatus');
+        if (status) status.textContent = 'This content is not saved for offline use.';
+      }
+      finish(false);
+    }
+    function applyFresh(doc, kind) {
+      if (!doc || isSuperseded()) { finish(false); return false; }
+      try {
+        applyPage(doc, url, Object.assign({}, opts, kind ? {kind: kind} : {}));
+        finish(true);
+        return true;
+      } catch (error) {
+        fail(error);
+        return false;
+      }
+    }
     function fromServer() {
       return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
       .then(function (response) {
@@ -1082,20 +1267,13 @@
         return response.text();
       })
       .then(function (html) {
-        applyPage(new window.DOMParser().parseFromString(html, 'text/html'), url, opts || {});
-        releaseNavigation();
-      })
-      .catch(function (error) {
-        if (window.console && console.error) console.error('in-page navigation failed:', error);
-        if (navigator.onLine) window.location.href = url;
-        else {
-          var status = document.getElementById('searchStatus');
-          if (status) status.textContent = 'This content is not saved for offline use.';
-        }
-        releaseNavigation();
+        applyFresh(new window.DOMParser().parseFromString(html, 'text/html'));
       });
     }
-    if (opts && opts.forceServer) return fromServer();
+    if (opts.forceServer) {
+      fromServer().catch(fail);
+      return completion;
+    }
     var renderer = window.GKPSOfflineRender;
     if (renderer && renderer.route(url)) {
       var ready = window.GKPSOffline && window.GKPSOffline.status
@@ -1105,9 +1283,8 @@
         if (!isReady) return fromServer();
         renderer.render(url).then(function (doc) {
           if (!doc) return fromServer();
-          applyPage(doc, url, opts || {});
-          releaseNavigation();
-          if (navigator.onLine && window.GKPSOffline) {
+          if (!applyFresh(doc)) return;
+          if (navigator.onLine && window.GKPSOffline && generation === navigationGeneration) {
             renderer.chunkFor(url).then(function (chunkUrl) {
               if (!chunkUrl) return;
               return fetch(chunkUrl, {cache: 'no-store', credentials: 'same-origin'})
@@ -1116,9 +1293,11 @@
                   return response.json();
                 }).then(function (payload) {
                   if (payload.schema !== 1 || !payload.data) return;
-                  if (new URL(url, location.href).pathname !== location.pathname) return;
+                  if (generation !== navigationGeneration || pendingNavigation
+                      || new URL(url, location.href).pathname !== location.pathname) return;
                   return renderer.render(url, payload.data).then(function (updated) {
-                    if (!updated || navBusy) return;
+                    if (!updated || navBusy || generation !== navigationGeneration
+                        || pendingNavigation) return;
                     updated.querySelector('#offlineSavedSource').hidden = true;
                     applyPage(updated, url, {kind: 'refresh', skipHistory: true});
                     window.GKPSOffline.sync().catch(function () {});
@@ -1126,9 +1305,10 @@
                 });
             }).catch(function () { /* the saved copy stays visible */ });
           }
-        }).catch(function () { return fromServer(); });
-      }).catch(function () { return fromServer(); });
-    } else fromServer();
+        }).catch(function () { return fromServer(); }).catch(fail);
+      }).catch(function () { return fromServer(); }).catch(fail);
+    } else fromServer().catch(fail);
+    return completion;
   }
 
   function txt(doc, sel) {
@@ -1191,13 +1371,15 @@
           && (root.dataset.read === 'on' || root.dataset.nav !== 'closed'));
     var previousChState = root.dataset.ch;
     var previousChScroll = chBody.scrollTop;
+    var currentPanelScroll = panelBody.scrollTop;
+    var currentChScroll = chBody.scrollTop;
     var swapsStage = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'result' || kind === 'more' || kind === 'search' || kind === 'results'
       || kind === 'refresh';
     /* A page opened from a second-level list -- and the in-place refresh that follows a save --
-       swaps only the reading stage. Every reading page is rendered with nav="open", so copying
-       that value over the live one is what sprang a collapsed or mini first panel open: the
-       operator's own sidebar states survive a stage-only swap (spec 080). */
+       updates the reading stage while keeping the operator's first-panel open/mini choice.
+       Every server reading page is rendered with nav="open", so copying that value over a
+       live collapsed state is what sprang the panel open (spec 080). */
     var stageOnly = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'refresh';
 
@@ -1211,28 +1393,32 @@
       if (freshRead && freshRead.dataset.kind === 'tatib') {
         var freshChList = doc.querySelector('#chList');
         if (freshChList) {
-          var chScroll = chBody.scrollTop;
-          chList.innerHTML = freshChList.innerHTML;
+          reconcileChildren(chList, freshChList);
           bindChRows();
-          chBody.scrollTop = chScroll;
         }
       }
-      stage.innerHTML = doc.querySelector('.stage').innerHTML;
+      reconcileChildren(stage, doc.querySelector('.stage'));
       refreshStageRefs();
       restoreSavedEdition();
       bindLangLinks();
-      restoreRequestedFocus(opts);
+      bindStageExtras();
+      bindPanelTips();
+      applyFilter(filter.value);
+      applySongFilter(songFilterEl.value);
+      panelBody.scrollTop = changingMainMenu ? 0 : currentPanelScroll;
+      chBody.scrollTop = changingMainMenu ? 0 : currentChScroll;
+      if (!opts.deferFocus) restoreRequestedFocus(opts);
       document.title = doc.title;
       document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
-      return;
+      return true;
     }
 
     /* shared first column: books / songbooks / services */
-    panelTitleEl.textContent = txt(doc, '#panelTitle');
-    panelFilterLabel.textContent = txt(doc, 'label[for="bookFilter"]');
+    setTextIfChanged(panelTitleEl, txt(doc, '#panelTitle'));
+    setTextIfChanged(panelFilterLabel, txt(doc, 'label[for="bookFilter"]'));
     var freshFilter = doc.querySelector('#bookFilter');
     if (freshFilter) filter.placeholder = freshFilter.getAttribute('placeholder') || '';
-    panelBody.innerHTML = doc.querySelector('#panelBody').innerHTML;
+    reconcileChildren(panelBody, doc.querySelector('#panelBody'));
     var freshEmpty = doc.querySelector('#panelEmpty');
     if (freshEmpty) {
       panelEmpty.textContent = freshEmpty.textContent;
@@ -1244,16 +1430,15 @@
     var oldMode = panel.querySelector('.panel__filter .panel__mode');
     var newMode = doc.querySelector('.panel__filter .panel__mode');
     if (newMode) {
-      var imported = document.importNode(newMode, true);
-      if (oldMode) oldMode.parentNode.replaceChild(imported, oldMode);
-      else panel.querySelector('.panel__filter').appendChild(imported);
+      if (oldMode) reconcileNode(oldMode, newMode);
+      else panel.querySelector('.panel__filter').appendChild(document.importNode(newMode, true));
     } else if (oldMode) {
       oldMode.parentNode.removeChild(oldMode);
     }
 
     /* shared second column: chapters / song list / service contents */
-    chTitleEl.textContent = txt(doc, '#chTitle');
-    chFilterLabel.textContent = txt(doc, 'label[for="songFilter"]');
+    setTextIfChanged(chTitleEl, txt(doc, '#chTitle'));
+    setTextIfChanged(chFilterLabel, txt(doc, 'label[for="songFilter"]'));
     var freshSongFilter = doc.querySelector('#songFilter');
     if (freshSongFilter) songFilterEl.placeholder = freshSongFilter.getAttribute('placeholder') || '';
     var freshChSearch = doc.querySelector('.ch__search');
@@ -1264,7 +1449,7 @@
     if (freshChCollapse) chCollapse.setAttribute('aria-label', freshChCollapse.getAttribute('aria-label'));
     var freshSort = doc.querySelector('#songSort');
     if (freshSort) songSortBtn.hidden = freshSort.hidden;
-    chList.innerHTML = doc.querySelector('#chList').innerHTML;
+    reconcileChildren(chList, doc.querySelector('#chList'));
 
     /* state */
     activeSection = fresh.section || activeSection;
@@ -1291,8 +1476,12 @@
          opened from the list the arriving value already matches the live one (spec 088). */
       root.dataset.ch = opts.directBoot ? bootChState : fresh.ch;
       releaseTatibFlash();
-      stage.innerHTML = doc.querySelector('.stage').innerHTML;
+      reconcileChildren(stage, doc.querySelector('.stage'));
       refreshStageRefs();
+      if (kind === 'results' && fresh.home !== 'results' && searchQuery) {
+        var freshSearch = doc.querySelector('#searchQuery');
+        searchQuery.value = freshSearch ? freshSearch.value : '';
+      }
       restoreSavedEdition();
       bindLangLinks();
       bindSearchForm();
@@ -1302,7 +1491,7 @@
       /* section switch: the lists move to the target section; the stage keeps
          whatever it shows (mockup: setSection + openPanel) */
       if (root.dataset.ch === 'open') closeChapters();
-      chList.innerHTML = '';
+      reconcileChildren(chList, document.createDocumentFragment());
       root.dataset.ch = 'closed';
       root.dataset.nav = fresh.nav || 'open';
     } else if (kind === 'mode') {
@@ -1329,11 +1518,9 @@
       root.dataset.ch = fresh.ch || root.dataset.ch;
     }
 
-    /* The sidebar add buttons sit outside the swapped regions, so they cannot be
-       updated in place: a page that never had one (the search-first home) has no
-       element to update, which is exactly how they went missing on the home ->
-       section path. Swap them whole from the page that just arrived instead, and
-       drop them when it has none (Alkitab). */
+    /* Sidebar add controls sit outside the scrollable row containers. Reconcile
+       them in their fixed toolbars, inserting only when the destination adds one
+       and removing only when its section has none. */
     /* The mode toggle belongs to the Tata Ibadah toolbar only. Syncing the toolbar's
        labels was not enough: on the home -> section path the button itself was absent,
        so the section's toggle never appeared and the collapse sat in its place. */
@@ -1353,7 +1540,7 @@
           if (fresh.hasAttribute(attr)) live.setAttribute(attr, fresh.getAttribute(attr));
           else live.removeAttribute(attr);
         });
-        live.innerHTML = fresh.innerHTML;
+        reconcileNode(live, fresh);
       }
       /* One deterministic order, whatever the swap left behind: the mockup's
          [field, toggle, collapse]. Appending each in turn re-parents them. */
@@ -1365,25 +1552,35 @@
     var panelEl = document.getElementById('panel');
     var panelFilter = panelEl && panelEl.querySelector('.panel__filter');
     var oldPanelAdd = document.getElementById('panelAdd');
-    if (oldPanelAdd) oldPanelAdd.parentNode.removeChild(oldPanelAdd);
     var freshPanelAdd = doc.querySelector('#panelAdd');
-    if (freshPanelAdd && panelFilter && panelFilter.parentNode) {
-      panelFilter.parentNode.insertBefore(freshPanelAdd, panelFilter.nextSibling);
+    if (oldPanelAdd && !freshPanelAdd) oldPanelAdd.remove();
+    else if (freshPanelAdd && panelFilter && panelFilter.parentNode) {
+      var panelAdd = oldPanelAdd
+        ? reconcileNode(oldPanelAdd, freshPanelAdd)
+        : document.importNode(freshPanelAdd, true);
+      var panelAddBefore = panelFilter.nextSibling;
+      if (panelAdd !== panelAddBefore) panelFilter.parentNode.insertBefore(panelAdd, panelAddBefore);
     }
     var chTop = document.querySelector('.ch__top');
     var oldChAdd = document.querySelector('.ch__add');
-    if (oldChAdd) oldChAdd.parentNode.removeChild(oldChAdd);
     var freshChAdd = doc.querySelector('.ch__add');
-    if (freshChAdd && chTop && chTop.parentNode) {
-      chTop.parentNode.insertBefore(freshChAdd, chTop.nextSibling);
+    if (oldChAdd && !freshChAdd) oldChAdd.remove();
+    else if (freshChAdd && chTop && chTop.parentNode) {
+      var chAdd = oldChAdd ? reconcileNode(oldChAdd, freshChAdd)
+        : document.importNode(freshChAdd, true);
+      var chAddBefore = chTop.nextSibling;
+      if (chAdd !== chAddBefore) chTop.parentNode.insertBefore(chAdd, chAddBefore);
     }
     /* the Tata Ibadah reorder strip: created and dropped with the section that owns it,
        right below the filter where the sidebar does not scroll */
     var oldChOrder = document.querySelector('.ch__reorder');
-    if (oldChOrder) oldChOrder.parentNode.removeChild(oldChOrder);
     var freshChOrder = doc.querySelector('.ch__reorder');
-    if (freshChOrder && chTop && chTop.parentNode) {
-      chTop.parentNode.insertBefore(freshChOrder, chTop.nextSibling);
+    if (oldChOrder && !freshChOrder) oldChOrder.remove();
+    else if (freshChOrder && chTop && chTop.parentNode) {
+      var chOrder = oldChOrder ? reconcileNode(oldChOrder, freshChOrder)
+        : document.importNode(freshChOrder, true);
+      var chOrderBefore = chTop.nextSibling;
+      if (chOrder !== chOrderBefore) chTop.parentNode.insertBefore(chOrder, chOrderBefore);
     }
 
     bindPanelTiles();
@@ -1401,6 +1598,13 @@
         if (bootFocusTarget) bootFocusTarget.focus({preventScroll: true});
       }
     }
+
+    if (!changingMainMenu) {
+      applyFilter(filter.value);
+      applySongFilter(songFilterEl.value);
+    }
+    panelBody.scrollTop = currentPanelScroll;
+    chBody.scrollTop = currentChScroll;
 
     pageState = readPageState();
     if (swapsStage) {
@@ -1490,22 +1694,40 @@
       }
       saveSearchSnapshot();
     }
+    return true;
   }
 
   /* results and "Show more" open in place too */
   function bindStageExtras() {
-    if (!stage) return;
-    stage.querySelectorAll('.result-row').forEach(function (row) {
-      row.addEventListener('click', function (event) {
-        event.preventDefault();
-        navigate(row.href, { kind: 'result' });
-      });
-    });
-    stage.querySelectorAll('.result-more').forEach(function (more) {
-      more.addEventListener('click', function (event) {
+    if (!stage || stage.dataset.stageClicksBound) return;
+    stage.dataset.stageClicksBound = 'true';
+    stage.addEventListener('click', function (event) {
+      var more = event.target.closest('.result-more');
+      if (more && stage.contains(more)) {
         event.preventDefault();
         navigate(more.href, { kind: 'more' });
-      });
+        return;
+      }
+      var row = event.target.closest('.result-row');
+      if (row && stage.contains(row)) {
+        event.preventDefault();
+        navigate(row.href, { kind: 'result' });
+      }
+    });
+    stage.addEventListener('submit', function (event) {
+      var form = event.target.closest('#globalSearch');
+      if (!form || !stage.contains(form)) return;
+      var input = form.querySelector('#searchQuery') || searchQuery;
+      var query = input ? input.value.trim() : '';
+      if (!query) {
+        event.preventDefault();
+        navigate('/', {kind: 'results'});
+        return;
+      }
+      input.value = query;
+      event.preventDefault();
+      var action = form.getAttribute('action') || '/search/';
+      navigate(action + '?q=' + encodeURIComponent(query), { kind: 'search' });
     });
   }
   bindStageExtras();
@@ -1558,20 +1780,9 @@
   bindFieldClears();
 
   function bindSearchForm() {
-    if (!searchForm) return;
-    searchForm.addEventListener('submit', function (event) {
-      var input = searchForm.querySelector('#searchQuery') || searchQuery;
-      var query = input ? input.value.trim() : '';
-      if (!query) {
-        event.preventDefault();
-        navigate('/', {kind: 'results'});
-        return;
-      }
-      input.value = query;
-      event.preventDefault();
-      var action = searchForm.getAttribute('action') || '/search/';
-      navigate(action + '?q=' + encodeURIComponent(query), { kind: 'search' });
-    });
+    /* The stable stage owns submit handling, so a reconciled form cannot retain
+       stale closures or accumulate one listener per navigation. */
+    bindStageExtras();
   }
   bindSearchForm();
   /* The result snapshot belongs to this tab. A direct search URL replaces its
@@ -1634,12 +1845,17 @@
       kind: stageMatchesSection ? 'refresh' : 'lists',
       what: event.detail && (event.detail.focusId || event.detail.id),
       focusKind: event.detail && (event.detail.focusKind || event.detail.kind),
-      entryKeyboardFocus: !!(event.detail && event.detail.entryKeyboardFocus)
+      entryKeyboardFocus: !!(event.detail && event.detail.entryKeyboardFocus),
+      deferFocus: !!(event.detail && event.detail.deferFocus)
     };
     /* Show the just-saved server state immediately. The full offline snapshot can
        refresh in parallel; waiting for it here delayed editor feedback and could
        leave the pane showing the previous generation. */
-    navigate(url, Object.assign({}, refreshOptions, {forceServer: true}));
+    var viewUpdate = navigate(url, Object.assign({}, refreshOptions, {
+      forceServer: true,
+      noLocationFallback: !!(event.detail && event.detail.noLocationFallback)
+    }));
+    if (event.detail) event.detail.viewUpdate = viewUpdate;
     if (navigator.onLine && window.GKPSOffline) {
       window.GKPSOffline.sync().catch(function () { /* the current page is already fresh */ });
     }
