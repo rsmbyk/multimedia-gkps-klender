@@ -64,5 +64,7 @@
 
 - [x] Diagnose the TB-only path and draft the shared-name behavior
 - [x] Owner accepts Amendment B
+- [x] E2E — cover `1 Samuel`, `2 Samuel`, `Markus`, and `Lukas` as shared full-name
+      references, with both edition results and edition-specific opening
 - [x] Match each full translated name per edition in projector Go To while preserving the
       accepted abbreviation and song search behavior

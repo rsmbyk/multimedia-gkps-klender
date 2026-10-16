@@ -1,6 +1,6 @@
 ---
 id: ITEM-100
-status: in_review
+status: done
 title: 'Use the requested SIM book abbreviations'
 type: fix
 priority: P2

@@ -148,6 +148,19 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                     book_translation=translation, chapter=1, verse=1,
                     text=f'{translation.version.abbreviation} Ruth ayat satu.')
 
+            for code, name in (('1Sa', '1 Samuel'), ('2Sa', '2 Samuel'),
+                               ('Mrk', 'Markus'), ('Luk', 'Lukas')):
+                book = bible.Book.objects.create(
+                    name=code, testament='old' if code.endswith('Sa') else 'new',
+                    number_of_chapters=1)
+                for edition in (version, sim_version):
+                    translation = bible.BookTranslation.objects.create(
+                        version=edition, book=book, translation=name,
+                        abbreviation=code if edition == sim_version else '')
+                    bible.Verse.objects.create(
+                        book_translation=translation, chapter=1, verse=1,
+                        text=f'{edition.abbreviation} {name} ayat satu.')
+
         # a single-screen text: the whole body on one screen, shrunk to fit
         self.single_service = tatib.TataIbadah.objects.create(
             name='Ibadah Satu Layar', date=date(2026, 9, 13), is_active=True)
@@ -696,6 +709,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertIn('Panguhum 1:1', page.locator('.projector-detour').inner_text())
         self.assertEqual(page.locator('.cue-translation').inner_text(), 'SIM')
         page.locator('#projectorFind').wait_for(state='hidden')
+
         page.keyboard.press('Escape')
         page.wait_for_function(
             "!document.querySelector('.projector-detour').classList.contains('is-active')")
@@ -749,6 +763,29 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             "document.querySelector('.projector-detour').classList.contains('is-active')")
         self.assertEqual(page.locator('.cue-translation').inner_text(), 'SIM')
         page.locator('#projectorFind').wait_for(state='hidden')
+
+        page.keyboard.press('Escape')
+        page.wait_for_function(
+            "!document.querySelector('.projector-detour').classList.contains('is-active')")
+        for name in ('1 Samuel', '2 Samuel', 'Markus', 'Lukas'):
+            for index, edition in ((1, 'TB'), (2, 'SIM')):
+                page.keyboard.press('g')
+                query.fill(name + ' 1')
+                page.wait_for_function(
+                    "document.querySelector('.projector-find__count').textContent === '1 / 2'")
+                if index == 2:
+                    page.keyboard.press('ArrowDown')
+                self.assertEqual(page.locator('.projector-find__count').inner_text(),
+                                 f'{index} / 2')
+                self.assertEqual(suggestion.inner_text(), f'{name} 1 · {edition}')
+                page.keyboard.press('Enter')
+                page.wait_for_function(
+                    "document.querySelector('.projector-detour').classList.contains('is-active')")
+                self.assertEqual(page.locator('.cue-translation').inner_text(), edition)
+                page.locator('#projectorFind').wait_for(state='hidden')
+                page.keyboard.press('Escape')
+                page.wait_for_function(
+                    "!document.querySelector('.projector-detour').classList.contains('is-active')")
 
     def test_projector_search_clear_controls_match_both_fields(self):
         page = self._page(self._projector_url())
