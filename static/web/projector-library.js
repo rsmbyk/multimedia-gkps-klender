@@ -34,11 +34,6 @@
     }) : [];
     return rows.length ? Math.min.apply(null, rows.map(function (verse) { return verse.verse; })) : null;
   }
-  function bookAliases(book) {
-    return [book.name].concat(book.translations.flatMap(function (item) {
-      return [item.name];
-    }));
-  }
   function passageLabel(book, chapter, verse, translation) {
     translation = translation || defaultTranslation(book);
     return (translation ? translation.name : book.name) + ' ' + chapter
@@ -67,6 +62,19 @@
       matches.push({book: book, translation: translation, edition: edition});
     }
     return {recognized: recognized, matches: matches};
+  }
+  function nameMatches(rawName) {
+    var matches = [];
+    books.forEach(function (book) {
+      book.translations.forEach(function (translation) {
+        var edition = translation.version.toUpperCase();
+        if ((edition === 'TB' || edition === 'SIM')
+          && normalize(translation.name) === rawName) {
+          matches.push({book: book, translation: translation, edition: edition});
+        }
+      });
+    });
+    return matches;
   }
   function passageMatches(matches, chapterPrefix, requestedVerse) {
     var chapters = new Set();
@@ -120,14 +128,10 @@
         return passageMatches(codeResult.matches, chapterPrefix,
           ref[3] ? Number(ref[3]) : null);
       }
-      var namedBook = books.find(function (book) {
-        return bookAliases(book).some(function (alias) { return normalize(alias) === bookCode; });
-      });
-      if (namedBook) {
-        var translation = defaultTranslation(namedBook);
-        return translation ? passageMatches([{book: namedBook, translation: translation,
-          edition: translation.version.toUpperCase()}], chapterPrefix,
-        ref[3] ? Number(ref[3]) : null) : [];
+      var namedMatches = nameMatches(bookCode);
+      if (namedMatches.length) {
+        return passageMatches(namedMatches, chapterPrefix,
+          ref[3] ? Number(ref[3]) : null);
       }
       var songbook = songbooks.find(function (book) {
         return [book.name, book.short_name].some(function (name) { return normalize(name) === ref[1]; });

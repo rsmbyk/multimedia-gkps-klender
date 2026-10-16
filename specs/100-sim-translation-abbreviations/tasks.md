@@ -1,6 +1,6 @@
 # Tasks 100: Use the requested SIM book abbreviations
 
-- **Status:** In Review; Amendment A implemented; Amendment B Draft
+- **Status:** In Review; Amendments A and B accepted and implemented
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 - **Preview:** [./preview.html](./preview.html)
@@ -60,11 +60,9 @@
 - [x] Preserve Go To cycling and flip control, and prevent cross-edition substitution when a
       matched edition lacks the requested position
 
-## Draft Amendment B — full-name Go To edition selection
+## Accepted Amendment B — full-name Go To edition selection
 
 - [x] Diagnose the TB-only path and draft the shared-name behavior
-- [ ] Owner accepts Amendment B
-- [ ] Cover shared and unique full names, edition-specific opening, and absent positions in
-      focused projector E2E coverage
-- [ ] Match each full translated name per edition in projector Go To while preserving the
+- [x] Owner accepts Amendment B
+- [x] Match each full translated name per edition in projector Go To while preserving the
       accepted abbreviation and song search behavior

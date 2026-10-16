@@ -1,7 +1,7 @@
 # Spec: Use the requested SIM book abbreviations
 
 - **ID:** 100
-- **Status:** Accepted; Amendment A implemented; Amendment B Draft
+- **Status:** Accepted; Amendments A and B accepted and implemented
 - **Item:** ITEM-100
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -231,7 +231,9 @@ abbreviation behavior. All other Spec 100 requirements remain unchanged.
 
 Preview: [Projector Go To edition preview](./preview.html#projector-goto-amendment).
 
-## Amendment B (Draft): shared full names in projector Go To
+## Amendment B: shared full names in projector Go To
+
+**Accepted by the project owner on 2026-10-16.**
 
 The owner reports that `1 Samuel`, `2 Samuel`, `Markus`, and `Lukas` still offer only TB in
 projector Go To. Their canonical codes are shared by TB and SIM, and the saved SIM translations

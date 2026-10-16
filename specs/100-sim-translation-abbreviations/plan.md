@@ -1,6 +1,6 @@
 # Plan 100: Use the requested SIM book abbreviations
 
-- **Status:** Accepted; Amendment A implemented; Amendment B Draft
+- **Status:** Accepted; Amendments A and B accepted and implemented
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-100
@@ -110,9 +110,9 @@ editions when a code is shared.
   demonstrates the existing suggestion row with edition-specific labels and an explanatory
   opened-edition note; it introduces no new product control or layout change.
 
-## Draft Amendment B: include full translated names in Go To edition selection
+## Accepted Amendment B: include full translated names in Go To edition selection
 
 The four reported shared names still resolve through the legacy TB-only full-name lookup.
 Match exact full names per edition using the same result labeling, cycling, availability, and
 opening rules accepted for shared abbreviations. Reuse the existing Go To preview treatment;
-this adds no new control or layout. Implementation waits for owner acceptance of Amendment B.
+this adds no new control or layout. The owner accepted Amendment B on 2026-10-16.
