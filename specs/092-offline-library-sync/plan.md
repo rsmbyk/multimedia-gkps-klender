@@ -96,3 +96,19 @@ The public reading page currently downloads another HTML page for in-app navigat
 - **Scope:** Change only the saved-copy badge's horizontal position. Preserve its wording, appearance, browser-offline dot, visibility rules, and fixed top placement.
 - **Approach:** Center the badge on the currently visible reading stage, excluding the main rail and any sidebar or chapter column that pushes the stage. Keep it fixed 16px from the top on wider screens and 12px from the top at widths of 800px or less. Recalculate its center when the viewport or reading-stage layout changes, including sidebar open/closed changes. Retain the existing 12px type, 6px dot and gap, 7px/11px padding, border, pill radius, shadow, theme colors, and click-through behavior.
 - **Validation:** Check the badge against the reading-stage center with navigation columns open and closed, at wide and narrow widths, and while scrolling; confirm it does not shift reading content or cover reading controls.
+
+## Draft amendment: show SIM names in the offline Bible sidebar
+
+- **Status:** Accepted; the owner approved the [sidebar preview](./preview-bible-sidebar-sim-labels.html) and accepted this Draft amendment.
+- **Why:** The offline-generated Bible sidebar currently places internal book abbreviations such as “Kej” in the secondary-label slot, although the saved Bible data contains the Simalungun book names.
+- **Scope:** Correct only the offline-generated Bible sidebar's secondary labels and related filtering/accessibility names. Preserve the existing server-rendered sidebar, primary TB labels, ordering, navigation, row styling, and mini-sidebar abbreviations.
+- **Approach:** Select the saved translation whose version is `SIM` and use its book translation name as the secondary label. Keep the book's internal abbreviation in `.book__a` for mini mode. If no SIM translation exists, omit the secondary label rather than putting the internal abbreviation there.
+- **Validation:** With both TB and SIM records cached, verify an offline expanded Bible sidebar shows the SIM name (for example, “1 Musa”) beside the TB name, its filter matches either name, and mini mode still displays the abbreviation. Also verify books without a SIM record have no false secondary label.
+
+## Draft amendment: follow the selected Bible translation in the sidebar
+
+- **Status:** Accepted. The owner accepted the [translation-following preview](./preview-bible-sidebar-translation-follow.html): only the expanded primary and secondary labels swap; the mini tiles keep the existing TB abbreviations.
+- **Why:** The Bible reading switch changes verse text but leaves the sidebar's primary label in TB, so the book list no longer matches the language being read.
+- **Scope:** Update the public Bible sidebar in both server-rendered and saved-copy reading. Preserve book order, links, selected row, filters, sidebar dimensions, mini-tile codes, chapter navigation, and the other reading sections.
+- **Approach:** Make each row's TB and SIM names available to the client. Show TB as primary and SIM as secondary on initial load. Switching the reading edition to SIM swaps those two visible labels and their accessible description in place, while both stable filter fields remain searchable; switching back reverses it. The mini tile always uses the existing `Book.name` code. Reset the edition to TB on a full page refresh; preserve a deliberate switch during in-page Bible navigation until then. If a book lacks SIM, retain its TB primary label and omit the secondary label in either edition.
+- **Validation:** Exercise both switch directions, open and mini sidebars, filtering by either name, online and saved-copy pages, a book without SIM, in-page chapter changes, and a full refresh. Check that the reading text and sidebar agree without flashing or rebuilding the whole sidebar.

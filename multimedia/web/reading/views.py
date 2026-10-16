@@ -555,10 +555,11 @@ def _books_groups(selected_id=None):
             book = info['book']
             if book.testament != testament:
                 continue
+            sim = info['by_version'].get('SIM')
             rows.append({
                 'id': book.pk,
                 'display': info['display'],
-                'other': info['other'],
+                'other': sim.translation if sim else '',
                 'abbr': book.name,
                 'current': book.pk == selected_id,
             })

@@ -300,6 +300,35 @@
   function currentEdition() {
     return readEl && readEl.getAttribute('lang') === 'sim' ? 'sim' : 'tb';
   }
+  var selectedEdition = new URLSearchParams(location.search).get('ed') === 'sim' ? 'sim' : currentEdition();
+  function syncBibleSidebar() {
+    if (activeSection !== 'alkitab') return;
+    var simPrimary = currentEdition() === 'sim';
+    panelBody.querySelectorAll('.book').forEach(function (row) {
+      var tb = row.dataset.name || '';
+      var sim = row.dataset.sim || '';
+      var primary = simPrimary && sim ? sim : tb;
+      var secondary = simPrimary && sim ? tb : sim;
+      var name = row.querySelector('.book__n');
+      var other = row.querySelector('.book__s');
+      if (name && name.textContent !== primary) name.textContent = primary;
+      if (other) {
+        if (secondary) {
+          if (other.textContent !== secondary) other.textContent = secondary;
+        } else other.remove();
+      } else if (secondary && name) {
+        other = document.createElement('span');
+        other.className = 'book__s';
+        other.textContent = secondary;
+        row.appendChild(other);
+      }
+      var description = primary + (secondary ? ' (' + secondary + ')' : '');
+      var tip = primary + (secondary ? ' — ' + secondary : '');
+      if (row.getAttribute('aria-label') !== description) row.setAttribute('aria-label', description);
+      if (row.dataset.tip !== tip) row.dataset.tip = tip;
+      if (row.getAttribute('aria-describedby') === 'ftip') ftip.textContent = tip;
+    });
+  }
   function editionBlock(ed) {
     var found = null;
     editionBlocks.forEach(function (block) { if (block.ed === ed) found = block; });
@@ -315,15 +344,16 @@
       else a.setAttribute('aria-disabled', 'true');
     });
   }
-  function setEdition(ed, persist) {
+  function setEdition(ed, remember) {
     if (!editionBlocks.length) return;
     editionBlocks.forEach(function (block) { block.el.hidden = block.ed !== ed; });
     if (readEl) readEl.setAttribute('lang', ed === 'tb' ? 'id' : 'sim');
     if (langTb) langTb.setAttribute('aria-pressed', String(ed !== 'sim'));
     if (langSim) langSim.setAttribute('aria-pressed', String(ed === 'sim'));
     if (langTb) langTb.parentElement.dataset.edition = ed;
-    if (persist) { try { localStorage.setItem('gkps-lang', ed); } catch (e) {} }
+    if (remember) selectedEdition = ed;
     decorateChapters();
+    syncBibleSidebar();
   }
   function bindLangLinks() {
     [langTb, langSim].forEach(function (link) {
@@ -338,16 +368,13 @@
     });
     if (langTb) langTb.parentElement.classList.add('is-enhanced');
   }
-  function restoreSavedEdition() {
-    try {
-      var savedLang = localStorage.getItem('gkps-lang');
-      if ((savedLang === 'tb' || savedLang === 'sim') && savedLang !== currentEdition()
-          && editionBlock(savedLang)) {
-        setEdition(savedLang, false);
-      }
-    } catch (e) {}
+  function restoreSelectedEdition() {
+    if (selectedEdition !== currentEdition() && editionBlock(selectedEdition)) {
+      setEdition(selectedEdition, false);
+    }
   }
-  restoreSavedEdition();
+  restoreSelectedEdition();
+  syncBibleSidebar();
   bindLangLinks();
 
   /* ---------- shared helpers ---------- */
@@ -1219,7 +1246,8 @@
       }
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
-      restoreSavedEdition();
+      restoreSelectedEdition();
+      syncBibleSidebar();
       bindLangLinks();
       restoreRequestedFocus(opts);
       document.title = doc.title;
@@ -1293,7 +1321,7 @@
       releaseTatibFlash();
       stage.innerHTML = doc.querySelector('.stage').innerHTML;
       refreshStageRefs();
-      restoreSavedEdition();
+      restoreSelectedEdition();
       bindLangLinks();
       bindSearchForm();
       bindFieldClears();
@@ -1386,6 +1414,7 @@
       chTop.parentNode.insertBefore(freshChOrder, chTop.nextSibling);
     }
 
+    syncBibleSidebar();
     bindPanelTiles();
     bindPanelTips();
     bindChRows();

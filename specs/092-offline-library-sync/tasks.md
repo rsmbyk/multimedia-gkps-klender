@@ -68,3 +68,21 @@
 - [x] Add or update targeted browser coverage for wide/narrow viewports, sidebar states, resizing, and scrolling without content shift.
 - [x] Run the targeted `test_failed_online_content_refresh_keeps_the_saved_reading` browser check.
 - [x] Run required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+
+## Draft amendment: show SIM names in the offline Bible sidebar
+
+- [x] Owner approves the [sidebar preview](./preview-bible-sidebar-sim-labels.html).
+- [x] Owner explicitly Accepts this Draft amendment before implementation.
+- [x] Red — extend `tests/e2e/test_offline_library.py` with cached TB/SIM Bible records; assert expanded offline rows use the SIM name, filtering matches it, mini tiles retain the abbreviation, and missing SIM records produce no secondary label.
+- [x] Green — update `static/web/offline-render.js` to select SIM translation metadata for the expanded Bible row while preserving `.book__a` for mini mode and existing fallback behavior for the main TB label.
+- [x] Run the targeted offline-library E2E class; verify online-rendered rows and saved data ordering remain unchanged.
+- [ ] Run required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+
+## Draft amendment: follow the selected Bible translation in the sidebar
+
+- [x] Review the [interactive sidebar preview](./preview-bible-sidebar-translation-follow.html) with TB/SIM and open/mini states; the owner specified that mini tiles retain TB abbreviations.
+- [x] Owner explicitly Accepts this Draft amendment before implementation.
+- [x] Red — cover TB-to-SIM and SIM-to-TB sidebar label/accessible-name changes, stable mini abbreviations, filtering, row identity, missing SIM, in-page navigation, and refresh reset in targeted browser tests.
+- [x] Green — expose both book names in server and saved-copy rows, synchronize visible sidebar labels with the active reading edition, and remove persisted edition restoration across full reloads.
+- [x] Run targeted reading and offline-library browser checks, including online and saved-copy navigation, then update ITEM-095 with the validated result; update the existing PR when pushing this branch.
+- [ ] Run required remote CI at the final pushed head.
