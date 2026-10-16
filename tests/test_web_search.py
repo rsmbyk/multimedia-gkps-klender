@@ -45,6 +45,8 @@ class CorpusSearchTests(TestCase):
         mat_tb = bible.BookTranslation.objects.create(version=cls.tb, book=cls.mat, translation='Matius')
         mat_sim = bible.BookTranslation.objects.create(version=sim, book=cls.mat, translation='Mateus')
         kej_tb = bible.BookTranslation.objects.create(version=cls.tb, book=kej, translation='Kejadian')
+        kej_sim = bible.BookTranslation.objects.create(
+            version=sim, book=kej, translation='1 Musa', abbreviation='1Mu')
         bible.Verse.objects.create(book_translation=mat_tb, chapter=5, verse=13,
                                    text='Kamu adalah garam dunia. Jika garam itu menjadi tawar, dengan apakah ia diasinkan?')
         bible.Verse.objects.create(book_translation=mat_tb, chapter=5, verse=14,
@@ -53,6 +55,8 @@ class CorpusSearchTests(TestCase):
                                    text='Hamu do garam ni dunia, tapi anggo naung tawar sira i, aha ma bahen paasom?')
         bible.Verse.objects.create(book_translation=kej_tb, chapter=1, verse=1,
                                    text='Pada mulanya Allah menciptakan langit dan bumi.')
+        bible.Verse.objects.create(book_translation=kej_sim, chapter=1, verse=1,
+                                   text='Bani mula ni mulani itompa Naibata.')
 
         # --- Songs ---
         song_lang = None
@@ -120,6 +124,11 @@ class CorpusSearchTests(TestCase):
         first = search('Kejadian 1')['bible'][0]
         self.assertEqual(first['title'], 'Kejadian 1')
         self.assertIsNone(first['target']['verse'])
+
+    def test_bible_reference_accepts_sim_abbreviation(self):
+        first = search('1Mu 1')['bible'][0]
+        self.assertEqual(first['target']['chapter'], 1)
+        self.assertEqual(first['target']['book_id'], bible.Book.objects.get(name='Kej').pk)
 
     def test_bible_book_name_row(self):
         rows = search('matius')['bible']

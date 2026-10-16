@@ -187,7 +187,7 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 
 - When the offline shell builds an expanded Bible book list from saved data, keep the TB translation name as the main label and show the saved `SIM` translation name in the existing secondary-label slot.
 - Do not use the internal book abbreviation (for example, `Kej`) as the expanded-row secondary label. If a book has no saved `SIM` translation, omit that secondary label.
-- Keep the internal book abbreviation in the existing mini-sidebar abbreviation slot. Do not change the online/server-rendered sidebar, row styles, book order, selected state, navigation, or fetch behavior.
+- Keep the internal book abbreviation in the existing mini-sidebar abbreviation slot for TB. Spec 100 supersedes this TB-only code rule when SIM is selected and a SIM abbreviation exists. Do not change row styles, book order, selected state, navigation, or fetch behavior.
 - Use the SIM name for the sidebar's secondary search field and combined accessible label, so filtering and assistive technology describe the same text shown in the row.
 
 ### Scenario: cached SIM name appears in the expanded sidebar
@@ -200,7 +200,7 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 
 - **Given** the offline Bible sidebar is collapsed to mini mode
 - **When** a book has a cached SIM translation
-- **Then** its tile continues to show the internal abbreviation (for example, `Kej`) and does not show the SIM name in the tile.
+- **Then** its TB tile shows the internal abbreviation (for example, `Kej`) and does not show a full translation name. Spec 100 adds the SIM abbreviation for SIM mode.
 
 ### Scenario: no saved SIM translation
 
@@ -230,7 +230,7 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 
 - On a normal full page load or refresh, start the Bible reading switch in TB. A deliberate SIM choice remains active through in-page Bible navigation, and a full page refresh resets it to TB. An explicit edition URL may select its requested edition on direct load.
 - In TB, each expanded Bible row uses its TB book name as the primary label and its SIM book name as the secondary label. In SIM, reverse the two labels. Apply the same rule to server-rendered and saved-copy Bible sidebars, including a sidebar opened after the edition switch.
-- Keep the existing `Book.name` abbreviation in `.book__a` for the mini sidebar in both editions. Do not derive a SIM abbreviation or clip its full name into the mini tile.
+- Keep the existing `Book.name` abbreviation in `.book__a` for TB and for SIM books without a saved SIM abbreviation. Spec 100 supersedes the both-editions rule when SIM has its own abbreviation.
 - Keep both translated names searchable in either edition. Update the row's accessible label and mini-tile tooltip to describe the current primary and secondary names after a switch.
 - If a book has no SIM translation, show its TB name as the only expanded label in both editions. A missing SIM version for the current chapter keeps the existing disabled-switch behavior.
 - Change visible row text in place when the edition changes. Preserve each row's link, selection, focus, order, filter value, scroll position, and open/mini state. Other public reading sections do not change.
@@ -241,11 +241,11 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 - **When** the reader selects SIM
 - **Then** the chapter shows SIM text and the same sidebar row shows `1 Musa · Kejadian`, with the same selection, position, and link.
 
-### Scenario: mini sidebar keeps the shared code
+### Scenario: mini sidebar uses the current edition code
 
-- **Given** the Bible sidebar is in mini mode and its `Kejadian` tile shows `Kej`
+- **Given** the Bible sidebar is in mini mode and its `Kejadian` tile shows `Kej` in TB
 - **When** the reader switches between TB and SIM
-- **Then** the tile continues to show `Kej`; its tooltip and accessible name reflect the current primary book name.
+- **Then** the tile shows `Kej` in TB and `1Mu` in SIM when that SIM abbreviation is available; its tooltip and accessible name reflect the current primary book name.
 
 ### Scenario: switch back, navigate, and refresh
 

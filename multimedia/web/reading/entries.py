@@ -246,10 +246,15 @@ def scripture_books(selected_translation_pk=None):
             'sim_id': sim.pk if sim else None,
             'tb_name': tb.translation if tb else info['display'],
             'sim_name': sim.translation if sim else '',
+            'tb_abbr': info['book'].name,
+            'sim_abbr': (sim.abbreviation or info['book'].name) if sim else info['book'].name,
+            'testament': info['book'].testament,
             'display': info['display'],
             'other': info['other'],
             'testament_label': ('Perjanjian Lama' if info['book'].testament == 'old'
                                 else 'Perjanjian Baru'),
+            'testament_sim_label': ('Padan na Basaia' if info['book'].testament == 'old'
+                                    else 'Padan na Baru'),
             'chapters': info['book'].number_of_chapters,
             'selected': selected is not None,
             'selected_translation_id': selected.pk if selected else None,

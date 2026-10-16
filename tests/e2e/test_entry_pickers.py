@@ -38,7 +38,20 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         sim_version = bible.Version.objects.create(
             lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
         self.mat_sim = bible.BookTranslation.objects.create(
-            version=sim_version, book=book, translation='Mateus')
+            version=sim_version, book=book, translation='Mateus', abbreviation='Mat')
+        if self._testMethodName in {
+                'test_book_picker_accepts_tb_and_sim_codes_and_updates_testament_labels',
+                'test_edit_passage_picker_accepts_sim_code_and_testament_labels'}:
+            self.kej = bible.Book.objects.create(
+                name='Kej', testament='old', number_of_chapters=50)
+            self.kej_tb = bible.BookTranslation.objects.create(
+                version=version, book=self.kej, translation='Kejadian')
+            self.kej_sim = bible.BookTranslation.objects.create(
+                version=sim_version, book=self.kej, translation='1 Musa', abbreviation='1Mu')
+            bible.Verse.objects.create(
+                book_translation=self.kej_tb, chapter=1, verse=1, text='TB first verse')
+            bible.Verse.objects.create(
+                book_translation=self.kej_sim, chapter=1, verse=1, text='SIM first verse')
         bible.Verse.objects.create(
             book_translation=self.mat_tb, chapter=1, verse=1, text='Pada mulanya')
         bible.Verse.objects.create(
@@ -92,6 +105,10 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         self.sim_entry = tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=self.mat_sim, chapter=1, verse_start=7)
+        if self._testMethodName == 'test_edit_passage_picker_accepts_sim_code_and_testament_labels':
+            self.kej_entry = tatib.ServiceEntry.objects.create(
+                tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.SCRIPTURE,
+                book_translation=self.kej_sim, chapter=1, verse_start=1)
         if self._testMethodName == 'test_song_picker_searches_by_reference_when_editing':
             self.reference_entry = tatib.ServiceEntry.objects.create(
                 tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.SONG,
@@ -320,6 +337,57 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         expect(picker.locator('[data-book]:visible')).to_have_count(2)
         expect(picker.locator('[data-picker-group]')).to_be_visible()
         expect(picker.locator('[data-picker-empty]')).to_be_hidden()
+
+    def test_book_picker_accepts_tb_and_sim_codes_and_updates_testament_labels(self):
+        page = self._page()
+        self._open_modal(page, 'scripture')
+        picker = page.locator('[data-entry-picker="book"]')
+        picker.locator('[data-picker-trigger]').click()
+        old_group = picker.locator('[data-picker-group][data-testament="old"]')
+        new_group = picker.locator('[data-picker-group][data-testament="new"]')
+        option = picker.locator('[data-book-name-tb="Kejadian"]')
+        filter_box = picker.locator('input[type="search"]')
+
+        expect(old_group.locator('[data-testament-label]')).to_have_text('Perjanjian Lama')
+        expect(new_group.locator('[data-testament-label]')).to_have_text('Perjanjian Baru')
+        filter_box.fill('Kej')
+        expect(option).to_be_visible()
+        filter_box.fill('1Mu')
+        expect(option).to_be_visible()
+        page.locator('[data-entry-translation-toggle] [data-edition-option="sim"]').click()
+        expect(old_group.locator('[data-testament-label]')).to_have_text('Padan na Basaia')
+        expect(new_group.locator('[data-testament-label]')).to_have_text('Padan na Baru')
+        expect(option.locator('.book__n')).to_have_text('1 Musa')
+        picker.locator('[data-picker-trigger]').click()
+        expect(filter_box).to_be_visible()
+        filter_box.fill('Kej')
+        expect(option).to_be_visible()
+        filter_box.fill('1Mu')
+        expect(option).to_be_visible()
+
+    def test_edit_passage_picker_accepts_sim_code_and_testament_labels(self):
+        page = self._page()
+        edit = page.locator(f'[data-entry-edit="{self.kej_entry.pk}"]')
+        edit.hover()
+        edit.click()
+
+        picker = page.locator('[data-entry-picker="book"]')
+        picker.locator('[data-picker-trigger]').click()
+        option = picker.locator(f'[data-book-tb="{self.kej_tb.pk}"]')
+        filter_box = picker.locator('input[type="search"]')
+        old_group = picker.locator('[data-picker-group][data-testament="old"]')
+        expect(old_group.locator('[data-testament-label]')).to_have_text('Padan na Basaia')
+        expect(option).to_have_attribute('aria-selected', 'true')
+        filter_box.fill('1Mu')
+        expect(option).to_be_visible()
+        page.locator('[data-entry-translation-toggle] [data-edition-option="tb"]').click()
+        expect(old_group.locator('[data-testament-label]')).to_have_text('Perjanjian Lama')
+        picker.locator('[data-picker-trigger]').click()
+        expect(filter_box).to_be_visible()
+        filter_box.fill('Kej')
+        expect(option).to_be_visible()
+        filter_box.fill('1Mu')
+        expect(option).to_be_visible()
 
     def test_book_picker_shows_tb_and_sim_once_and_keeps_primary_translation(self):
         page = self._page()

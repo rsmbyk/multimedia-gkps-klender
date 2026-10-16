@@ -28,7 +28,9 @@
     return rows.length ? Math.min.apply(null, rows.map(function (verse) { return verse.verse; })) : null;
   }
   function bookAliases(book) {
-    return [book.name].concat(book.translations.map(function (item) { return item.name; }));
+    return [book.name].concat(book.translations.flatMap(function (item) {
+      return [item.name, item.abbreviation || ''];
+    }));
   }
   function passageLabel(book, chapter, verse) {
     var translation = book.translations.find(function (item) {

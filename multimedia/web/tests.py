@@ -119,6 +119,52 @@ class ReadingViewTests(TestCase):
         response = self.client.get(reverse('web-bible-chapter', args=[self.mat.id, 99]))
         self.assertEqual(response.status_code, 404)
 
+    def test_explicit_sim_page_uses_sim_book_name_code_and_testament_labels(self):
+        sim_language = bible.Language.objects.create(name='Simalungun')
+        sim_version = bible.Version.objects.create(
+            lang=sim_language, name='Bibel', abbreviation='SIM')
+        kej = bible.Book.objects.create(name='Kej', testament='old', number_of_chapters=2)
+        kej_tb = bible.BookTranslation.objects.create(
+            version=bible.Version.objects.get(abbreviation='TB'),
+            book=kej, translation='Kejadian')
+        kej_sim = bible.BookTranslation.objects.create(
+            version=sim_version, book=kej, translation='1 Musa', abbreviation='1Mu')
+        bible.Verse.objects.create(
+            book_translation=kej_tb, chapter=1, verse=1, text='Pada mulanya.')
+        bible.Verse.objects.create(
+            book_translation=kej_sim, chapter=1, verse=1, text='Bani mula.')
+        bible.Verse.objects.create(
+            book_translation=kej_tb, chapter=2, verse=1, text='TB-only chapter.')
+
+        sim_response = self.client.get(
+            reverse('web-bible-chapter', args=[kej.pk, 1]), {'ed': 'sim'})
+        self.assertEqual(sim_response.status_code, 200)
+        self.assertEqual(sim_response.context['bible_edition'], 'sim')
+        self.assertEqual(sim_response.context['read_lang'], 'sim')
+        self.assertEqual(sim_response.context['read_name'], '1 Musa')
+        self.assertEqual(sim_response.context['page_title'], '1 Musa 1 — GKPS Klender')
+        self.assertContains(sim_response, 'data-bible-edition="sim"')
+        self.assertContains(sim_response, 'data-tip="Bibel"')
+        old_group = next(group for group in sim_response.context['books_groups']
+                         if group['testament'] == 'old')
+        self.assertEqual(old_group['label'], 'Padan na Basaia')
+        sim_row = next(row for row in old_group['books'] if row['id'] == kej.pk)
+        self.assertEqual(sim_row['display'], '1 Musa')
+        self.assertEqual(sim_row['abbr'], '1Mu')
+
+        fallback = self.client.get(
+            reverse('web-bible-chapter', args=[kej.pk, 2]), {'ed': 'sim'})
+        self.assertEqual(fallback.status_code, 200)
+        self.assertEqual(fallback.context['bible_edition'], 'sim')
+        self.assertEqual(fallback.context['read_lang'], 'tb')
+        self.assertEqual(fallback.context['read_name'], 'Kejadian')
+        self.assertEqual(fallback.context['page_title'], 'Kejadian 2 — GKPS Klender')
+        fallback_group = next(group for group in fallback.context['books_groups']
+                              if group['testament'] == 'old')
+        self.assertEqual(fallback_group['label'], 'Padan na Basaia')
+        fallback_row = next(row for row in fallback_group['books'] if row['id'] == kej.pk)
+        self.assertEqual(fallback_row['abbr'], '1Mu')
+
     # --- Kidung ---
 
     def test_book_index_lists_songbooks(self):
@@ -779,7 +825,7 @@ class ServiceEntryViewTests(TestCase):
         sim_version = bible.Version.objects.create(
             lang=sim_language, name='Bible Simalungun', abbreviation='SIM')
         sim_matius = bible.BookTranslation.objects.create(
-            version=sim_version, book=self.matius.book, translation='Mateus')
+            version=sim_version, book=self.matius.book, translation='Mateus', abbreviation='Mat')
 
         rows = entry_forms.scripture_books()
         self.assertEqual(len(rows), 2)
@@ -791,6 +837,9 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(row['tb_name'], 'Matius')
         self.assertEqual(row['sim_name'], 'Mateus')
         self.assertEqual(row['testament_label'], 'Perjanjian Baru')
+        self.assertEqual(row['testament_sim_label'], 'Padan na Baru')
+        self.assertEqual(row['tb_abbr'], 'Mat')
+        self.assertEqual(row['sim_abbr'], 'Mat')
         self.assertEqual(row['chapters'], 28)
 
     def test_editing_a_saved_sim_passage_keeps_its_translation_selected(self):

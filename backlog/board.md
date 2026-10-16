@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-100](./items/ITEM-100-sim-translation-abbreviations.md) | Use the requested SIM book abbreviations | Store 66 SIM short codes and use the active edition across Bible labels and book searches | fix | P2 | L | [100](../specs/100-sim-translation-abbreviations/spec.md) | `fix/100-sim-translation-abbreviations` | 2026-10-16 |
 
 ## In review
 

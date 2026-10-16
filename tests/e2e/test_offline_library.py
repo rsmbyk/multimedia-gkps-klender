@@ -41,6 +41,20 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             version=sim_version, book=book, translation='Matius Simalungun')
         bible.Verse.objects.create(book_translation=translation, chapter=1, verse=1,
                                    text='Kasih Tuhan membuka Injil')
+        if self._testMethodName in {
+                'test_saved_sim_bible_copy_uses_sim_code_and_heading',
+                'test_offline_bible_sidebar_filters_both_codes_in_sim_mini_mode'}:
+            self.kej = bible.Book.objects.create(
+                name='Kej', testament='old', number_of_chapters=50)
+            kej_tb = bible.BookTranslation.objects.create(
+                version=version, book=self.kej, translation='Kejadian')
+            kej_sim = bible.BookTranslation.objects.create(
+                version=sim_version, book=self.kej, translation='1 Musa', abbreviation='1Mu')
+            bible.Verse.objects.create(
+                book_translation=kej_tb, chapter=1, verse=1, text='Pada mulanya.')
+            bible.Verse.objects.create(
+                book_translation=kej_sim, chapter=1, verse=1, text='Bani mula.')
+            self.kej_id = self.kej.pk
         songbook = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ',
                                              is_hymn_book=True)
         song = songs.Song.objects.create(book=songbook, number=12, title='Kasih')
@@ -79,6 +93,78 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertEqual(row.locator('.book__a').inner_text(), 'Mat')
             self.assertTrue(row.locator('.book__a').is_visible())
             self.assertFalse(row.locator('.book__s').is_visible())
+            browser.close()
+
+    def test_saved_sim_bible_copy_uses_sim_code_and_heading(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            rendered = page.evaluate("""async bookId => {
+              const doc = await GKPSOfflineRender.render(`/bible/${bookId}/1/?ed=sim`);
+              if (!doc) return null;
+              const row = doc.querySelector(`#panelBody .book[href="/bible/${bookId}/"]`);
+              return {
+                title: doc.title,
+                heading: doc.querySelector('#readName').textContent.trim(),
+                visibleName: doc.querySelector('.read__ed:not([hidden])').dataset.name,
+                edition: doc.documentElement.dataset.bibleEdition,
+                testament: doc.querySelector('#panelBody [data-testament="old"] .group__head').textContent.trim(),
+                simCode: row.dataset.simCode,
+                miniCode: row.querySelector('.book__a').textContent.trim(),
+                railLabel: doc.querySelector('.rail [data-panel="alkitab"]').dataset.tip,
+                railName: doc.querySelector('.rail [data-panel="alkitab"]').getAttribute('aria-label')
+              };
+            }""", self.kej_id)
+            self.assertEqual(rendered, {
+                'title': '1 Musa 1 — GKPS Klender',
+                'heading': '1 Musa',
+                'visibleName': '1 Musa',
+                'edition': 'sim',
+                'testament': 'Padan na Basaia',
+                'simCode': '1Mu',
+                'miniCode': '1Mu',
+                'railLabel': 'Bibel',
+                'railName': 'Bibel',
+            })
+            browser.close()
+
+    def test_offline_bible_sidebar_filters_both_codes_in_sim_mini_mode(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            context.set_offline(True)
+            page.locator('.rail__logo').click()
+            page.locator('.rail [data-panel="alkitab"]').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'open'")
+
+            row = page.locator(f'#panelBody .book[href="/bible/{self.kej_id}/"]')
+            for code in ('Kej', '1Mu'):
+                page.locator('#bookFilter').fill(code)
+                self.assertTrue(row.is_visible(), code)
+            page.locator('#bookFilter').fill('')
+            row.click()
+            page.wait_for_function("document.documentElement.dataset.ch === 'open'")
+            page.locator('#chList .ch-num').first.click()
+            page.locator('#langSim').click()
+            page.wait_for_function("document.documentElement.dataset.bibleEdition === 'sim'")
+            page.get_by_text('Bani mula.').wait_for()
+            row = page.locator(f'#panelBody .book[href="/bible/{self.kej_id}/"]')
+            self.assertEqual(row.locator('.book__a').inner_text(), '1Mu')
+            self.assertEqual(
+                page.locator('#panelBody [data-testament="old"] .group__head').text_content().strip(),
+                'Padan na Basaia')
+            for code in ('Kej', '1Mu'):
+                page.locator('#bookFilter').fill(code)
+                self.assertTrue(row.is_visible(), code)
+            page.locator('#bookFilter').fill('')
+            page.locator('#panelCollapse').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
+            self.assertEqual(row.locator('.book__a').inner_text(), '1Mu')
             browser.close()
 
     def test_offline_bible_sidebar_omits_secondary_label_without_sim(self):

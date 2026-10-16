@@ -102,6 +102,21 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             tatib=self.long_service, order_number=1, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=long_translation, chapter=23, verse_start=1)
 
+        if self._testMethodName == 'test_goto_accepts_tb_and_sim_book_abbreviations':
+            self.kej = bible.Book.objects.create(
+                name='Kej', testament='old', number_of_chapters=50)
+            bible.BookTranslation.objects.create(
+                version=version, book=self.kej, translation='Kejadian')
+            sim_language = bible.Language.objects.create(name='Simalungun')
+            sim_version = bible.Version.objects.create(
+                lang=sim_language, name='Bibel', abbreviation='SIM')
+            bible.BookTranslation.objects.create(
+                version=sim_version, book=self.kej, translation='1 Musa', abbreviation='1Mu')
+            for translation in bible.BookTranslation.objects.filter(book=self.kej):
+                bible.Verse.objects.create(
+                    book_translation=translation, chapter=1, verse=1,
+                    text=f'{translation.translation} ayat satu.')
+
         # a single-screen text: the whole body on one screen, shrunk to fit
         self.single_service = tatib.TataIbadah.objects.create(
             name='Ibadah Satu Layar', date=date(2026, 9, 13), is_active=True)
@@ -596,6 +611,24 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             page.locator('#projectorFind').wait_for(state='hidden')
             page.keyboard.press('Escape')
             page.wait_for_function("!document.querySelector('.projector-detour').classList.contains('is-active')")
+
+    def test_goto_accepts_tb_and_sim_book_abbreviations(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        query = page.locator('#projectorFindInput')
+        for abbreviation in ('Kej', '1Mu'):
+            page.keyboard.press('g')
+            query.fill(abbreviation + ' 1')
+            page.wait_for_function(
+                "document.querySelector('.projector-find__suggestion').textContent === 'Kejadian 1'")
+            page.keyboard.press('Enter')
+            page.wait_for_function(
+                "document.querySelector('.projector-detour').classList.contains('is-active')")
+            self.assertIn('Kejadian 1:1', page.locator('.projector-detour').inner_text())
+            page.locator('#projectorFind').wait_for(state='hidden')
+            page.keyboard.press('Escape')
+            page.wait_for_function(
+                "!document.querySelector('.projector-detour').classList.contains('is-active')")
 
     def test_projector_search_clear_controls_match_both_fields(self):
         page = self._page(self._projector_url())

@@ -6,6 +6,7 @@
       data-read="{{ read_state|default:'off' }}"
       data-home="{{ home_state|default:'landing' }}"
       data-section="{{ section|default:'alkitab' }}"
+      {% if bible_edition %}data-bible-edition="{{ bible_edition }}"{% endif %}
       data-ch-mode="{{ ch_mode|default:'chapter' }}">
 <head>
 <meta charset="utf-8">
@@ -57,7 +58,8 @@
     </li>
     <!-- ALKITAB -->
     <li>
-      <a class="rail__btn" data-tip="Alkitab" aria-label="Alkitab" data-panel="alkitab"
+      <a class="rail__btn" data-tip="{% if bible_edition == 'sim' %}Bibel{% else %}Alkitab{% endif %}"
+         aria-label="{% if bible_edition == 'sim' %}Bibel{% else %}Alkitab{% endif %}" data-panel="alkitab"
          aria-expanded="{% if nav_state != 'closed' and section == 'alkitab' %}true{% else %}false{% endif %}"
          aria-controls="panel chapters" href="{% url 'web-bible' %}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
@@ -70,7 +72,8 @@
 
     <!-- KIDUNG -->
     <li>
-      <a class="rail__btn" data-tip="Kidung" aria-label="Kidung" data-panel="kidung"
+      <a class="rail__btn" data-tip="{% if bible_edition == 'sim' %}Doding{% else %}Kidung{% endif %}"
+         aria-label="{% if bible_edition == 'sim' %}Doding{% else %}Kidung{% endif %}" data-panel="kidung"
          aria-expanded="{% if nav_state != 'closed' and section == 'kidung' %}true{% else %}false{% endif %}"
          aria-controls="panel chapters" href="{% url 'web-books' %}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
@@ -84,7 +87,8 @@
 
     <!-- TATA IBADAH -->
     <li>
-      <a class="rail__btn" data-tip="Tata Ibadah" aria-label="Tata Ibadah" data-panel="tatib"
+      <a class="rail__btn" data-tip="{% if bible_edition == 'sim' %}Agenda{% else %}Tata Ibadah{% endif %}"
+         aria-label="{% if bible_edition == 'sim' %}Agenda{% else %}Tata Ibadah{% endif %}" data-panel="tatib"
          aria-expanded="{% if nav_state != 'closed' and section == 'tatib' %}true{% else %}false{% endif %}"
          aria-controls="panel chapters" href="{% url 'web-tatib' %}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"

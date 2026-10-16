@@ -160,7 +160,8 @@ def bible_book_index():
             'by_version': {(t.version.abbreviation or '').upper(): t for t in translations},
             'display': primary.translation if primary else book.name,
             'other': translations[1].translation if len(translations) > 1 else '',
-            'aliases': [book.name] + [t.translation for t in translations],
+            'aliases': ([book.name] + [t.translation for t in translations]
+                        + [t.abbreviation for t in translations if t.abbreviation]),
             'version': (primary.version.abbreviation or primary.version.name).upper()
                        if primary else '',
         }

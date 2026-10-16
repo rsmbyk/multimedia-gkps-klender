@@ -527,6 +527,13 @@
     }
     function renderEdition(edition, updateSelection) {
       var otherEdition = edition === 'sim' ? 'tb' : 'sim';
+      groups.forEach(function (group) {
+        var heading = group.querySelector('[data-testament-label]');
+        if (heading) {
+          var label = heading.dataset[edition === 'sim' ? 'labelSim' : 'labelTb'];
+          if (label) heading.textContent = label;
+        }
+      });
       options.forEach(function (option) {
         var main = option.querySelector('.book__n');
         var secondary = option.querySelector('.book__s');
@@ -570,7 +577,8 @@
       var query = (filter.value || '').trim().toLowerCase();
       var visible = 0;
       options.forEach(function (option) {
-        var names = (option.dataset.bookName || '') + ' ' + (option.dataset.bookOther || '');
+        var names = [option.dataset.bookNameTb, option.dataset.bookNameSim,
+          option.dataset.bookCodeTb, option.dataset.bookCodeSim].join(' ');
         var hit = !query || names.toLowerCase().indexOf(query) !== -1;
         option.hidden = !hit;
         if (hit) visible += 1;

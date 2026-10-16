@@ -39,28 +39,39 @@
       return html ? new DOMParser().parseFromString(html, 'text/html') : null;
     });
   }
-  function bookLink(book, selected, kind, editorEnabled) {
+  function bookLink(book, selected, kind, editorEnabled, edition) {
     var translations = book.translations || [];
-    var name = kind === 'bible' ? (translations.find(function (item) {
+    var tb = kind === 'bible' && translations.find(function (item) {
       return item.version.toUpperCase() === 'TB';
-    }) || translations[0] || {}).name || book.name : book.name;
+    });
     var sim = kind === 'bible' && translations.find(function (item) {
       return item.version.toUpperCase() === 'SIM';
     });
-    var short = kind === 'bible' ? (sim ? sim.name : '') : kind === 'service'
+    var tbName = tb ? tb.name : (translations[0] || {}).name || book.name;
+    var simName = sim ? sim.name : '';
+    var simPrimary = kind === 'bible' && edition === 'sim' && !!simName;
+    var otherTranslation = tb && sim ? (simPrimary ? tb : sim) : null;
+    var name = kind === 'bible' ? (simPrimary ? simName : tbName) : book.name;
+    var otherName = otherTranslation ? otherTranslation.name : '';
+    var tbCode = book.name;
+    var simCode = sim ? sim.abbreviation || book.name : book.name;
+    var miniCode = simPrimary ? simCode : tbCode;
+    var short = kind === 'bible' ? otherName : kind === 'service'
       ? book.date_display || book.short_name : book.short_name;
     var href = kind === 'bible' ? '/bible/' + book.id + '/' : kind === 'songs'
       ? '/songs/book/' + book.id + '/' : '/tatib/' + book.id + '/';
     var editor = editorEnabled ? kind === 'service' ? 'tatib'
       : kind === 'songs' && !book.is_hymn_book ? 'songbook' : '' : '';
-    return '<li><a class="book" href="' + href + '" data-name="' + escape(kind === 'bible' ? name : book.id)
-      + '" data-sim="' + escape(kind === 'service' ? book.id : short || '') + '"'
-      + (kind === 'bible' ? ' data-tip="' + escape(name + (short ? ' — ' + short : '')) + '"' : '')
+    return '<li><a class="book" href="' + href + '" data-name="' + escape(kind === 'bible' ? tbName : book.id)
+      + '" data-sim="' + escape(kind === 'bible' ? simName : kind === 'service' ? book.id : short || '') + '"'
+      + (kind === 'bible' ? ' data-tb-code="' + escape(tbCode) + '" data-sim-code="'
+        + escape(simCode) + '" data-has-tb="' + !!tb + '" data-has-sim="' + !!sim
+        + '" data-tip="' + escape(name + (short ? ' — ' + short : '')) + '"' : '')
       + ' aria-label="' + escape(name)
       + (short ? ' (' + escape(short) + ')' : '')
       + '"' + (selected ? ' aria-current="true"' : '') + '><span class="book__n">'
       + escape(name) + '</span>' + (kind === 'bible' ? '<span class="book__a">'
-        + escape(book.name) + '</span>' : '') + (kind === 'bible'
+        + escape(miniCode) + '</span>' : '') + (kind === 'bible'
         ? (short ? '<span class="book__s">' + escape(short) + '</span>' : '')
         : '<span class="book__s">' + escape(short || '') + '</span>') + '</a>'
       + (editor ? '<button class="row-edit" type="button" data-editor-open="' + editor
@@ -74,13 +85,18 @@
       return b.songs.length - a.songs.length || a.name.localeCompare(b.name);
     });
   }
-  function biblePanel(books, selectedId) {
-    return [['old', 'Perjanjian Lama'], ['new', 'Perjanjian Baru']].map(function (group) {
+  function biblePanel(books, selectedId, edition) {
+    edition = edition === 'sim' ? 'sim' : 'tb';
+    return [
+      ['old', 'Perjanjian Lama', 'Padan na Basaia'],
+      ['new', 'Perjanjian Baru', 'Padan na Baru']
+    ].map(function (group) {
       var rows = books.filter(function (book) { return book.testament === group[0]; });
       if (!rows.length) return '';
-      return '<section class="group" data-testament="' + group[0] + '"><h3 class="group__head">'
-        + group[1] + '</h3><ul>' + rows.map(function (book) {
-          return bookLink(book, book.id === selectedId, 'bible', false);
+      return '<section class="group" data-testament="' + group[0] + '"><h3 class="group__head" data-label-tb="'
+        + group[1] + '" data-label-sim="' + group[2] + '">'
+        + group[edition === 'sim' ? 2 : 1] + '</h3><ul>' + rows.map(function (book) {
+          return bookLink(book, book.id === selectedId, 'bible', false, edition);
         }).join('') + '</ul></section>';
     }).join('');
   }
@@ -284,7 +300,7 @@
     var tb = book.translations.find(function (item) { return item.version.toUpperCase() === 'TB'; });
     var sim = book.translations.find(function (item) { return item.version.toUpperCase() === 'SIM'; });
     var name = (tb || sim || {}).name || book.name;
-    var requested = route.url.searchParams.get('ed') === 'sim' && sim ? 'sim' : 'tb';
+    var requested = route.url.searchParams.get('ed') === 'sim' ? 'sim' : 'tb';
     function chapterRows(translation) {
       return translation ? translation.verses.filter(function (row) {
         return row.chapter === route.chapter;
@@ -292,17 +308,21 @@
     }
     var tbRows = chapterRows(tb), simRows = chapterRows(sim);
     if (!tbRows.length && !simRows.length) return null;
-    if (requested === 'tb' && !tbRows.length) requested = 'sim';
-    function edition(rows, code) {
-      return '<div class="read__ed" data-ed="' + code + '"'
-        + (requested !== code ? ' hidden' : '') + '>' + rows.map(function (row) {
+    var visible = requested;
+    if (!({tb: tbRows, sim: simRows})[visible].length) {
+      visible = tbRows.length ? 'tb' : 'sim';
+    }
+    function edition(rows, code, translation) {
+      return '<div class="read__ed" data-ed="' + code + '" data-name="'
+        + escape(translation ? translation.name : name) + '"'
+        + (visible !== code ? ' hidden' : '') + '>' + rows.map(function (row) {
           return (row.title ? '<h2 class="read__sec">' + escape(row.title) + '</h2>' : '')
             + '<p class="v" data-verse="' + row.verse + '"><span class="v__n">'
             + row.verse + '</span><span>' + escape(row.text) + '</span></p>';
         }).join('') + '</div>';
     }
-    var body = edition(tbRows, 'tb') + (simRows.length ? edition(simRows, 'sim') : '');
-    var panel = biblePanel(books, book.id);
+    var body = edition(tbRows, 'tb', tb) + (simRows.length ? edition(simRows, 'sim', sim) : '');
+    var panel = biblePanel(books, book.id, requested);
     var chapters = Array.from({length: book.chapters}, function (_, index) {
       var n = index + 1;
       var hasTb = tb && tb.verses.some(function (row) { return row.chapter === n; });
@@ -313,17 +333,29 @@
         + ' chapter ' + n + '"' + (n === route.chapter ? ' aria-current="true"' : '')
         + (!hasTb && !hasSim ? ' aria-disabled="true"' : '') + '>' + n + '</a></li>';
     }).join('');
-    common(doc, 'alkitab', name + ' ' + route.chapter, name, route.chapter,
+    var visibleName = (visible === 'sim' ? sim : tb || sim || {}).name || book.name;
+    common(doc, 'alkitab', visibleName + ' ' + route.chapter, visibleName, route.chapter,
       body, panel, chapters, '[data-verse="' + (route.url.searchParams.get('v') || '') + '"]');
+    doc.documentElement.dataset.bibleEdition = requested;
+    doc.querySelector('#read').setAttribute('lang', visible === 'sim' ? 'sim' : 'id');
+    var railLabels = requested === 'sim'
+      ? {alkitab: 'Bibel', kidung: 'Doding', tatib: 'Agenda'}
+      : {alkitab: 'Alkitab', kidung: 'Kidung', tatib: 'Tata Ibadah'};
+    Object.keys(railLabels).forEach(function (section) {
+      var button = doc.querySelector('.rail [data-panel="' + section + '"]');
+      if (!button) return;
+      button.dataset.tip = railLabels[section];
+      button.setAttribute('aria-label', railLabels[section]);
+    });
     var row = doc.querySelector('.read__row');
     var lang = doc.createElement('div');
     lang.className = 'read__lang';
     lang.setAttribute('role', 'group');
     lang.setAttribute('aria-label', 'Choose reading translation');
-    lang.dataset.edition = requested;
+    lang.dataset.edition = visible;
     lang.innerHTML = '<span class="read__lang-thumb" aria-hidden="true"></span>'
-      + '<a id="langTb" href="?ed=tb" aria-pressed="' + (requested === 'tb') + '">TB</a>'
-      + '<a id="langSim" href="?ed=sim" aria-pressed="' + (requested === 'sim')
+      + '<a id="langTb" href="?ed=tb" aria-pressed="' + (visible === 'tb') + '">TB</a>'
+      + '<a id="langSim" href="?ed=sim" aria-pressed="' + (visible === 'sim')
       + '"' + (!simRows.length ? ' data-empty="true" aria-disabled="true"' : '') + '>SIM</a>';
     row.appendChild(lang);
     return doc;

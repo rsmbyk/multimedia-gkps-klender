@@ -117,6 +117,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             'test_bible_edition_survives_menu_switches_and_history',
             'test_bible_edition_preference_returns_after_unavailable_chapter',
             'test_bible_edition_is_local_to_tab_and_resets_on_reload',
+            'test_sim_codes_titles_labels_and_fallback_follow_selected_edition',
             'test_bible_language_highlight_slides_without_reflow',
             'test_bible_language_highlight_static_and_reduced_motion',
             'test_bible_language_highlight_starts_in_place_without_travel',
@@ -125,8 +126,22 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         ):
             sim_lang = bible.Language.objects.create(name='Simalungun')
             sim_version = bible.Version.objects.create(lang=sim_lang, name='Simalungun', abbreviation='SIM')
-            sim_book = bible.BookTranslation.objects.create(version=sim_version, book=self.mat, translation='Mateus')
+            sim_book = bible.BookTranslation.objects.create(
+                version=sim_version, book=self.mat, translation='Mateus', abbreviation='Mat')
             bible.Verse.objects.create(book_translation=sim_book, chapter=5, verse=13, text='Garam ni dunia.')
+            if self._testMethodName == 'test_sim_codes_titles_labels_and_fallback_follow_selected_edition':
+                self.kej = bible.Book.objects.create(
+                    name='Kej', testament='old', number_of_chapters=2)
+                kej_tb = bible.BookTranslation.objects.create(
+                    version=version, book=self.kej, translation='Kejadian')
+                kej_sim = bible.BookTranslation.objects.create(
+                    version=sim_version, book=self.kej, translation='1 Musa', abbreviation='1Mu')
+                bible.Verse.objects.create(
+                    book_translation=kej_tb, chapter=1, verse=1, text='TB first chapter.')
+                bible.Verse.objects.create(
+                    book_translation=kej_sim, chapter=1, verse=1, text='SIM first chapter.')
+                bible.Verse.objects.create(
+                    book_translation=kej_tb, chapter=2, verse=1, text='TB-only chapter.')
             if self._testMethodName == 'test_bible_sidebar_labels_follow_edition_and_reset_on_refresh':
                 bible.Verse.objects.create(
                     book_translation=sim_book, chapter=6, verse=1, text='Bapa nami SIM.')
@@ -712,6 +727,89 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(row.locator('.book__n')).to_have_text('Matius')
         expect(row.locator('.book__s')).to_have_text('Mateus')
         expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        page.close()
+
+    def test_sim_codes_titles_labels_and_fallback_follow_selected_edition(self):
+        no_js_context = self.browser.new_context(java_script_enabled=False)
+        no_js_page = no_js_context.new_page()
+        no_js_page.goto(self.live_server_url + reverse(
+            'web-bible-chapter', args=[self.kej.pk, 1]) + '?ed=sim')
+        expect(no_js_page.locator('#readName')).to_have_text('1 Musa')
+        self.assertEqual(no_js_page.title(), '1 Musa 1 — GKPS Klender')
+        self.assertEqual(
+            no_js_page.locator(f'#panelBody .book[href="/bible/{self.kej.pk}/"] .book__a').inner_text(),
+            '1Mu')
+        self.assertEqual(no_js_page.locator('html').get_attribute('data-bible-edition'), 'sim')
+        self.assertEqual(no_js_page.locator('.rail [data-panel="alkitab"]').get_attribute('data-tip'), 'Bibel')
+        no_js_context.close()
+
+        page = self._page()
+        page.goto(self.live_server_url + reverse(
+            'web-bible-chapter', args=[self.kej.pk, 1]) + '?ed=sim')
+        expect(page.locator('#readName')).to_have_text('1 Musa')
+        self.assertEqual(page.title(), '1 Musa 1 — GKPS Klender')
+        self.assertEqual(page.locator('html').get_attribute('data-bible-edition'), 'sim')
+        expect(page.get_by_text('SIM first chapter.')).to_be_visible()
+
+        row = page.locator(f'#panelBody .book[href="/bible/{self.kej.pk}/"]')
+        expect(row.locator('.book__n')).to_have_text('1 Musa')
+        expect(row.locator('.book__s')).to_have_text('Kejadian')
+        page.locator('#bookFilter').fill('Kej')
+        expect(row).to_be_visible()
+        page.locator('#bookFilter').fill('1Mu')
+        expect(row).to_be_visible()
+        page.locator('#bookFilter').fill('')
+
+        page.locator('#langTb').click()
+        expect(page.locator('#readName')).to_have_text('Kejadian')
+        self.assertEqual(page.title(), 'Kejadian 1 — GKPS Klender')
+        for section, label in (('alkitab', 'Alkitab'), ('kidung', 'Kidung'),
+                               ('tatib', 'Tata Ibadah')):
+            button = page.locator(f'.rail [data-panel="{section}"]')
+            self.assertEqual(button.get_attribute('data-tip'), label)
+            self.assertEqual(button.get_attribute('aria-label'), label)
+        for code in ('Kej', '1Mu'):
+            page.locator('#bookFilter').fill(code)
+            expect(row).to_be_visible()
+        page.locator('#bookFilter').fill('')
+        page.locator('#langSim').click()
+        expect(page.locator('#readName')).to_have_text('1 Musa')
+        self.assertEqual(page.title(), '1 Musa 1 — GKPS Klender')
+
+        expected_sim_labels = {
+            'alkitab': ('Bibel', 'Bibel'),
+            'kidung': ('Doding', 'Doding'),
+            'tatib': ('Agenda', 'Agenda'),
+        }
+        for section, (tip, accessible_name) in expected_sim_labels.items():
+            button = page.locator(f'.rail [data-panel="{section}"]')
+            self.assertEqual(button.get_attribute('data-tip'), tip)
+            self.assertEqual(button.get_attribute('aria-label'), accessible_name)
+            button.hover()
+            page.wait_for_timeout(650)
+            self.assertEqual(button.get_attribute('data-tip-open'), 'true')
+            self.assertEqual(
+                button.evaluate("el => getComputedStyle(el, '::after').content"),
+                f'"{tip}"')
+
+        page.locator('#panelCollapse').click()
+        page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
+        expect(row.locator('.book__a')).to_have_text('1Mu')
+
+        page.locator('.rail [data-panel="kidung"]').click()
+        self.assertEqual(page.locator('html').get_attribute('data-bible-edition'), 'sim')
+        self.assertEqual(page.locator('.rail [data-panel="kidung"]').get_attribute('data-tip'), 'Doding')
+        self.assertEqual(page.locator('.rail [data-panel="kidung"]').get_attribute('aria-label'), 'Doding')
+        page.goto(self.live_server_url + reverse(
+            'web-bible-chapter', args=[self.kej.pk, 2]) + '?ed=sim')
+        row = page.locator(f'#panelBody .book[href="/bible/{self.kej.pk}/"]')
+        expect(page.get_by_text('TB-only chapter.')).to_be_visible()
+        expect(page.locator('#readName')).to_have_text('Kejadian')
+        self.assertEqual(page.title(), 'Kejadian 2 — GKPS Klender')
+        self.assertEqual(page.locator('html').get_attribute('data-bible-edition'), 'sim')
+        expect(row.locator('.book__a')).to_have_text('1Mu')
+        expect(page.locator('#panelBody [data-testament="old"] .group__head')).to_have_text(
+            'Padan na Basaia')
         page.close()
 
     def test_bible_edition_survives_menu_switches_and_history(self):
