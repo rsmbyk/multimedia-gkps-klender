@@ -330,13 +330,15 @@
     }).join('') + '</ul></section>';
     var editor = !!doc.querySelector('#editorModal') && !book.is_hymn_book;
     var children = book.songs.map(function (item, index) {
-      var number = item.number == null ? '' : item.number + (item.sub_number || '').toUpperCase();
+      var number = book.is_hymn_book && item.number != null
+        ? item.number + (item.sub_number || '').toUpperCase() : '';
       return '<li><a class="songrow" href="/songs/' + item.id + '/" data-i="' + item.id
         + '" data-t="' + escape(item.sort_title || item.title.toLowerCase()) + '" data-o="' + index
         + '" data-m="' + escape(item.modified_key || '')
-        + '" data-num="' + escape(number.toLowerCase()) + '"'
-        + (item.id === song.id ? ' aria-current="true"' : '') + '><span class="songrow__c">'
-        + escape(number) + '</span><span class="songrow__t">' + escape(item.title)
+        + '"' + (number ? ' data-num="' + escape(number.toLowerCase()) + '"' : '')
+        + (item.id === song.id ? ' aria-current="true"' : '') + '>'
+        + (number ? '<span class="songrow__c">' + escape(number) + '</span>' : '')
+        + '<span class="songrow__t">' + escape(item.title)
         + '</span></a>' + (editor ? '<button class="row-edit" type="button" data-editor-open="song"'
           + ' data-editor-id="' + item.id + '" aria-label="Edit ' + escape(item.title)
           + '"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"'
@@ -650,12 +652,14 @@
       }).join('');
     } else if (selected && section === 'kidung') {
       children = selected.songs.map(function (song, index) {
-        var number = song.number == null ? '' : song.number + (song.sub_number || '').toUpperCase();
+        var number = selected.is_hymn_book && song.number != null
+          ? song.number + (song.sub_number || '').toUpperCase() : '';
         return '<li><a class="songrow" href="/songs/' + song.id + '/" data-i="' + song.id
           + '" data-t="' + escape(song.sort_title || song.title.toLowerCase()) + '" data-o="' + index
           + '" data-m="' + escape(song.modified_key || '')
-          + '" data-num="' + escape(number.toLowerCase()) + '"><span class="songrow__c">' + escape(number)
-          + '</span><span class="songrow__t">' + escape(song.title) + '</span></a>'
+          + '"' + (number ? ' data-num="' + escape(number.toLowerCase()) + '"' : '') + '>'
+          + (number ? '<span class="songrow__c">' + escape(number) + '</span>' : '')
+          + '<span class="songrow__t">' + escape(song.title) + '</span></a>'
           + (editor && !selected.is_hymn_book ? '<button class="row-edit" type="button"'
             + ' data-editor-open="song" data-editor-id="' + song.id + '" aria-label="Edit '
             + escape(song.title) + '"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor"'

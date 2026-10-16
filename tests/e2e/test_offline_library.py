@@ -93,6 +93,27 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertEqual(page.locator('#panelBody .book__a').first.inner_text(), 'Mat')
             browser.close()
 
+    def test_saved_non_hymn_song_rows_use_full_width(self):
+        book = songs.Book.objects.create(name='Free Songs', short_name='FS')
+        song = songs.Song.objects.create(book=book, title='A full width title', number=115)
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + f'/songs/book/{book.pk}/')
+            wait_for_offline_ready(page)
+            page.locator('.rail [data-panel="tatib"]').click()
+            page.locator('.rail [data-panel="kidung"]').click()
+            page.locator(f'#panelBody .book[href="/songs/book/{book.pk}/"]').click()
+            row = page.locator(f'#chList .songrow[href="/songs/{song.pk}/"]')
+            row.wait_for()
+            self.assertEqual(row.locator('.songrow__c').count(), 0)
+            self.assertEqual(row.locator('.songrow__t').inner_text(), 'A full width title')
+            row.click()
+            row = page.locator(f'#chList .songrow[href="/songs/{song.pk}/"]')
+            self.assertEqual(row.locator('.songrow__c').count(), 0)
+            browser.close()
+
     def test_saved_content_and_projector_survive_disconnection(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
