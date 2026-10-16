@@ -461,6 +461,8 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertGreaterEqual(bounds['top'], 0)
             self.assertAlmostEqual(bounds['viewportHeight'] - bounds['bottom'], 12, delta=1, msg=bounds)
 
+            page.locator('#themeBtn').click()
+            status_button.click()
             bg = panel.evaluate("el => getComputedStyle(el).backgroundColor")
             token = page.locator('html').evaluate("el => getComputedStyle(el).getPropertyValue('--canvas').trim()")
             self.assertEqual(bg, page.evaluate("value => { const e=document.createElement('div'); e.style.backgroundColor=value; document.body.append(e); const c=getComputedStyle(e).backgroundColor; e.remove(); return c; }", token))

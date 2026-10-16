@@ -17,6 +17,8 @@
   if (!modal || typeof modal.showModal !== 'function') return;
   var content = document.getElementById('editorContent');
   var status = document.getElementById('editorStatus');
+  var feedback = window.gkpsEditFeedback;
+  if (feedback) feedback.guardDialog(modal);
 
   var trigger = null;
   var keyboardOpened = false;
@@ -56,6 +58,104 @@
     return { kind: 'old-item', id: target.dataset.oldItemPk };
   }
 
+  function removeDeletedLocally(id, oldItem) {
+    var selector = oldItem ? '[data-old-item-pk="' : '[data-entry-pk="';
+    var deleted = document.querySelector(selector + id + '"]');
+    if (!deleted) return;
+    var anchor = deleted.dataset.anchor || (oldItem ? '' : 'e' + id);
+    var afterMarker = oldItem ? 'l' + id : 'e' + id;
+    var addRow = document.querySelector('.entry__add[data-entry-after="' + afterMarker + '"]');
+    if (addRow) addRow.remove();
+    var counted = !deleted.classList.contains('tatib__eos')
+      || deleted.hasAttribute('data-entry-pk');
+    deleted.remove();
+
+    var tocRow = null;
+    Array.prototype.some.call(document.querySelectorAll('#chList > li'), function (item) {
+      if (item.dataset.i === anchor) { tocRow = item; return true; }
+      var link = item.querySelector('a[data-i]');
+      if (link && link.dataset.i === anchor) { tocRow = item; return true; }
+      return false;
+    });
+    var deletedNumber = 0;
+    if (tocRow) {
+      var tocLink = tocRow.querySelector('.songrow');
+      deletedNumber = Number(tocRow.dataset.num || tocLink && tocLink.dataset.num || 0);
+      tocRow.remove();
+    }
+    if (counted && deletedNumber) {
+      Array.prototype.forEach.call(document.querySelectorAll('#chList > li'), function (item) {
+        var number = Number(item.dataset.num || 0);
+        if (!number || number <= deletedNumber) return;
+        item.dataset.num = String(number - 1);
+        var link = item.querySelector('.songrow');
+        if (link) {
+          link.dataset.num = String(number - 1);
+          var count = link.querySelector('.songrow__c');
+          if (count) count.textContent = String(number - 1);
+        }
+      });
+    }
+
+    var readBody = document.getElementById('readBody');
+    if (readBody && !readBody.querySelector('[data-entry-pk], [data-old-item-pk]')) {
+      var start = readBody.querySelector('[data-entry-start]');
+      var service = (document.querySelector('[data-project-service]') || {}).dataset;
+      var serviceId = service && service.projectService;
+      if (start) {
+        var empty = document.createElement('div');
+        empty.className = 'entry__empty';
+        var title = document.createElement('p');
+        title.className = 'entry__empty-title';
+        title.textContent = 'This Tata Ibadah is empty.';
+        var hint = document.createElement('p');
+        hint.className = 'entry__empty-hint';
+        hint.textContent = 'Add the first item to start preparing the service.';
+        var actions = document.createElement('div');
+        actions.className = 'entry__empty-actions';
+        [['scripture', 'Add Passage'], ['song', 'Add Song'], ['text', 'Add Text'],
+          ['section_break', 'Add Break']].forEach(function (item) {
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'entry__empty-btn';
+          button.dataset.entryOpen = item[0];
+          if (serviceId) button.dataset.entryTatib = serviceId;
+          button.textContent = item[1];
+          actions.appendChild(button);
+        });
+        empty.appendChild(title);
+        empty.appendChild(hint);
+        empty.appendChild(actions);
+        start.replaceWith(empty);
+      }
+    }
+    if (tocRow && !document.querySelector('#chList > li')) {
+      var emptyStatus = document.getElementById('chEmpty');
+      if (emptyStatus) {
+        emptyStatus.textContent = 'This Tata Ibadah is empty.';
+        emptyStatus.hidden = false;
+      }
+    }
+    document.dispatchEvent(new CustomEvent('shell:local-entry-delete'));
+  }
+
+  function focusAfterDelete(target, keyboardFocus) {
+    var element = null;
+    if (target && target.kind === 'entry') {
+      element = document.querySelector('[data-entry-pk="' + target.id + '"]');
+    } else if (target && target.kind === 'old-item') {
+      element = document.querySelector('[data-old-item-pk="' + target.id + '"]');
+    }
+    element = element || document.getElementById('read');
+    if (!element) return;
+    if (element.tabIndex < 0 && !element.hasAttribute('tabindex')) element.tabIndex = -1;
+    if (keyboardFocus && element !== document.getElementById('read')) {
+      var control = element.querySelector('.entry__ctrl:not([disabled])') || element;
+      control.classList.remove('focus-restore-quiet');
+      control.focus({ preventScroll: true });
+    } else focusTools.restoreQuietly(element);
+  }
+
   function announce(message) { if (status) status.textContent = message || ''; }
 
   /* The delete is a POST without a form, so it carries the token the way Django
@@ -64,7 +164,10 @@
     var match = document.cookie.match(/(^|;\s*)csrftoken=([^;]+)/);
     return match ? decodeURIComponent(match[2]) : '';
   }
-  function close() { if (modal.open) modal.close(); }
+  function close() {
+    if (feedback && feedback.isDialogBusy(modal)) return;
+    if (modal.open) modal.close();
+  }
 
   /* The entry that owns the opening control keeps its hover look while the modal is
      open (spec 065): the backdrop takes the hover and the dialog the focus. Marked
@@ -104,14 +207,6 @@
     }
   }, true);
 
-  function get(url) {
-    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
-      .then(function (response) {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.text();
-      });
-  }
-
   function focusFirst(scope) {
     var first = scope.querySelector(
       '.editor__picker-trigger:not([disabled]), input[type="text"]:not([disabled]), ' +
@@ -119,15 +214,23 @@
     if (first) first.focus();
   }
 
-  function load(url) {
+  function load(url, title) {
     announce('');
-    get(url).then(function (html) {
-      content.innerHTML = html;
-      if (!modal.open) modal.showModal();
-      markOrigin();
-      wire(content);
-      focusFirst(content);
-    }).catch(function () { announce('Could not open the editor.'); });
+    return window.gkpsEditorLoadForm.open({
+      url: url,
+      title: title,
+      onLoad: function (html) {
+        content.innerHTML = html;
+        markOrigin();
+        wire(content);
+        focusFirst(content);
+      },
+      onFailure: function () {
+        announce('');
+        if (feedback) feedback.showFailure('Could not load editor',
+          'The editor could not be loaded. Try again.');
+      }
+    });
   }
 
   function newUrl(kind, tatib, after) {
@@ -382,9 +485,13 @@
     }
     function loadVerses(pk, number, wantedFrom, wantedTo) {
       return fetch(chapterUrl(pk, number), { credentials: 'same-origin' })
-        .then(function (response) { return response.ok ? response.json() : { verses: [] }; })
+        .then(function (response) {
+          if (!response.ok) throw new Error('request-failed');
+          return response.json();
+        })
         .then(function (data) {
-          verses = data.verses || [];
+          if (!data || !Array.isArray(data.verses)) throw new Error('unexpected');
+          verses = data.verses;
           from.disabled = !verses.length;
           from.innerHTML = verses.map(function (n) {
             return '<option value="' + n + '">' + n + '</option>';
@@ -403,6 +510,8 @@
           from.innerHTML = '';
           renderRangeControl(from);
           syncTo();
+          if (feedback) feedback.showFailure('Could not load chapter verses',
+            'The selected chapter’s verses could not be loaded. Try again.');
         });
     }
     function activeEdition() {
@@ -572,25 +681,41 @@
     function find(query) {
       return fetch((modal.dataset.entrySongsUrl || '/editor/entry/songs/')
                    + '?q=' + encodeURIComponent(query), { credentials: 'same-origin' })
-        .then(function (response) { return response.ok ? response.text() : ''; })
+        .then(function (response) {
+          if (!response.ok) throw new Error('request-failed');
+          return response.text();
+        })
         .then(function (html) {
           /* A slow answer must not overwrite a newer one: the preload that runs
              when the menu opens can land after what the person has typed. */
           if (query !== (search.value || '').trim()) return;
           list.innerHTML = html;
           placeMenu(list.closest('.editor__picker-menu'));
+        }).catch(function () {
+          if (feedback) feedback.showFailure('Could not load songs',
+            'Song options could not be loaded. Try again.');
         });
     }
     function loadVerses(songId) {
       var pattern = modal.dataset.entrySongVersesUrl || '/editor/entry/song/0/verses/';
       return fetch(pattern.replace('/0/', '/' + songId + '/'), { credentials: 'same-origin' })
-        .then(function (response) { return response.ok ? response.json() : { verses: [] }; })
+        .then(function (response) {
+          if (!response.ok) throw new Error('request-failed');
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || !Array.isArray(data.verses)) throw new Error('unexpected');
+          return data;
+        })
         .then(function (data) {
           renderVerses(box, data.verses || []);
           verseSummary(versesPicker, box);
           placeMenu(box.closest('.editor__picker-menu'));
         })
-        .catch(function () { announce('Could not load that song\u2019s verses.'); });
+        .catch(function () {
+          if (feedback) feedback.showFailure('Could not load song verses',
+            'The selected song’s verses could not be loaded. Try again.');
+        });
     }
 
     search.addEventListener('input', function () {
@@ -676,28 +801,64 @@
       + '</div></div>';
     if (!modal.open) modal.showModal();
     markOrigin();
-    content.querySelector('[data-confirm-delete]').addEventListener('click', function () {
+    var deleteButton = content.querySelector('[data-confirm-delete]');
+    var deleting = false;
+    deleteButton.addEventListener('click', function () {
+      if (deleting || deleteButton.disabled || (feedback && feedback.isDialogBusy(modal))) return;
+      deleting = true;
+      var preserveKeyboardFocus = keyboardOpened;
       var pattern = oldItem
         ? (modal.dataset.oldItemDeleteUrl || '/editor/item/0/delete/')
         : (modal.dataset.entryDeleteUrl || '/editor/entry/0/delete/');
-      announce('Deleting...');
+      var label = oldItem ? 'row' : 'entry';
+      var action = feedback && feedback.beginAction({
+        pendingTitle: 'Deleting ' + label + '…',
+        successTitle: label.charAt(0).toUpperCase() + label.slice(1) + ' deleted',
+        failureTitle: 'Could not delete ' + label,
+        failureMessage: 'Your change was not saved. Try again.'
+      });
+      announce('');
+      var release = feedback ? feedback.setDialogBusy(modal) : null;
+      deleteButton.disabled = true;
       fetch(pattern.replace('/0/', '/' + id + '/'), {
         method: 'POST', credentials: 'same-origin',
         headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf() }
       }).then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        announce('');
         var focus = targetAfterDelete(id, oldItem);
-        close();
-        document.dispatchEvent(new CustomEvent('editor:saved', {
+        var savedEvent = new CustomEvent('editor:saved', {
           detail: {
             id: id,
             kind: oldItem ? 'old-item' : 'entry',
             focusKind: focus.kind,
-            focusId: focus.id
+            focusId: focus.id,
+            deferFocus: true,
+            noLocationFallback: true
           }
-        }));
-      }).catch(function () { announce('Could not delete. Try again.'); });
+        });
+        document.dispatchEvent(savedEvent);
+        return Promise.resolve(savedEvent.detail.viewUpdate).catch(function () { return false; })
+          .then(function (updated) { return {focus: focus, updated: updated === true}; });
+      }).then(function (result) {
+        if (!result.updated) {
+          try { removeDeletedLocally(id, oldItem); }
+          catch (error) { if (window.console && console.error) console.error(error); }
+          if (action) action.failure(
+            'The deletion succeeded, but the latest view could not be verified.',
+            'Deleted, but latest view could not be verified');
+        } else if (action) {
+          action.success();
+        }
+        if (release) { release(); release = null; }
+        close();
+        focusAfterDelete(result.focus, preserveKeyboardFocus);
+      }).catch(function () {
+        announce('');
+        if (action) action.failure();
+        deleting = false;
+        if (release) { release(); release = null; }
+        else deleteButton.disabled = false;
+      });
     });
   }
 
@@ -705,7 +866,7 @@
     /* Spec 026: projecting no longer refuses an entry write. The operator keeps working
        while a Tata Ibadah is on screen, and the display follows every change. */
     var oldDel = event.target.closest('[data-old-item-delete]');
-    if (oldDel) {
+    if (oldDel && !oldDel.disabled) {
       event.preventDefault();
       trigger = oldDel;
       keyboardOpened = event.detail === 0;
@@ -713,15 +874,16 @@
       return;
     }
     var oldEdit = event.target.closest('[data-old-item-edit]');
-    if (oldEdit) {
+    if (oldEdit && !oldEdit.disabled) {
+      if (!window.gkpsEditorLoadForm.canOpen()) return;
       event.preventDefault();
       trigger = oldEdit;
       keyboardOpened = event.detail === 0;
-      load(oldItemEditUrl(oldEdit.dataset.oldItemEdit));
+      load(oldItemEditUrl(oldEdit.dataset.oldItemEdit), 'Edit row');
       return;
     }
     var del = event.target.closest('[data-entry-delete]');
-    if (del) {
+    if (del && !del.disabled) {
       event.preventDefault();
       trigger = del;
       keyboardOpened = event.detail === 0;
@@ -729,36 +891,48 @@
       return;
     }
     var edit = event.target.closest('[data-entry-edit]');
-    if (edit) {
+    if (edit && !edit.disabled) {
+      if (!window.gkpsEditorLoadForm.canOpen()) return;
       event.preventDefault();
       trigger = edit;
       keyboardOpened = event.detail === 0;
-      load(editUrl(edit.dataset.entryEdit));
+      load(editUrl(edit.dataset.entryEdit), 'Edit entry');
       return;
     }
     var opener = event.target.closest('[data-entry-open]');
     if (!opener || opener.disabled) return;
+    if (opener.dataset.entryOpen !== 'section_break'
+        && !window.gkpsEditorLoadForm.canOpen()) return;
     event.preventDefault();
-    trigger = opener;
-    keyboardOpened = false;
     var row = opener.closest('[data-entry-after]');
     var after = row ? row.dataset.entryAfter
                     : (opener.closest('[data-entry-start]') ? 'start' : '');
     if (opener.dataset.entryOpen === 'section_break') {
-      addBreak(opener.dataset.entryTatib, after);
+      addBreak(opener.dataset.entryTatib, after, opener);
       return;
     }
-    load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after));
+    trigger = opener;
+    keyboardOpened = false;
+    var titles = { scripture: 'Add Passage', song: 'Add Song', text: 'Add Text' };
+    load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after),
+      titles[opener.dataset.entryOpen] || 'Add entry');
   });
 
   /* A break has no fields (spec 057): '+ Break' creates it at once, at the add row's
      position (the empty-state button passes none, so it lands at the end). */
-  function addBreak(tatib, after) {
+  function addBreak(tatib, after, opener) {
     var url = (modal.dataset.entrySaveNewUrl || '/editor/entry/new/save/')
       + '?tatib=' + encodeURIComponent(tatib);
     var body = new URLSearchParams({ kind: '3' });   /* ServiceEntryKind.SECTION_BREAK */
     if (after) body.set('after', after);
-    announce('Adding...');
+    var action = feedback && feedback.beginAction({
+      pendingTitle: 'Adding section break…',
+      successTitle: 'Section break added',
+      failureTitle: 'Could not add section break',
+      failureMessage: 'The section break was not added. Try again.'
+    });
+    var release = feedback ? feedback.lockControl(opener) : null;
+    announce('');
     fetch(url, {
       method: 'POST', credentials: 'same-origin',
       headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf() },
@@ -767,14 +941,14 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
     }).then(function (saved) {
-      announce('Break added');
-      trigger = null;
+      if (!saved || saved.id == null) throw new Error('unexpected');
+      if (action) action.success();
       document.dispatchEvent(new CustomEvent('editor:saved', {
         detail: { id: saved.id, kind: 'entry', focusKind: 'entry', focusId: saved.id }
       }));
     }).catch(function () {
-      announce('Could not add the break. Try again.');
-    });
+      if (action) action.failure();
+    }).finally(function () { if (release) release(); });
   }
 
   /* ---------- a hovered item reveals its neighbouring add rows (spec 037) ----

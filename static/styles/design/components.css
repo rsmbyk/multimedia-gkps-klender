@@ -509,10 +509,36 @@ li:hover > .row-edit,
    viewport scrolls the document it sits over, which is the scrollbar everybody
    notices and nobody wants. */
 .editor__content { padding: 22px; overflow-y: auto; min-height: 0; }
+.editor.is-loading {
+  width: min(490px, calc(100vw - 32px));
+  max-height: min(calc(100dvh - 40px), 46rem);
+}
+.editor.is-loading .editor__content { padding: 24px; }
 .editor__title {
   margin: 0 0 16px; padding: 0 34px 14px 0;
   font-size: 18px; font-weight: 640; letter-spacing: -.01em;
   border-bottom: 1px solid var(--divider);
+}
+.editor__loading-title {
+  margin: 0 0 8px; padding: 0; border: 0;
+  font-size: 20px; line-height: 1.25;
+}
+.editor__loading {
+  display: flex; min-height: 80px; align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px;
+  color: var(--head-ink); text-align: center;
+  font: 400 14px/1.4 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__loading-spinner {
+  box-sizing: border-box; flex: 0 0 18px;
+  width: 18px; height: 18px;
+  border: 2px solid var(--divider); border-top-color: var(--active-bg);
+  border-radius: 50%; animation: editor-load-spin 800ms linear infinite;
+}
+.editor__loading-label { font: inherit; }
+@keyframes editor-load-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .editor__loading-spinner { animation: none; }
 }
 /* The dialog carries no x: the form's own Cancel, Escape and the backdrop are the
    ways out, and chrome that repeats a control the form already has is noise. */
@@ -644,11 +670,14 @@ li:hover > .row-edit,
 /* The destructive answer is the same button as the others, in the danger colour:
    a confirmation whose two answers are different sizes reads as a mistake. */
 .editor__danger { border: 1px solid var(--danger); background: none; color: var(--danger); }
-.editor__danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.editor__danger:not(:disabled):hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
 .editor__save:focus-visible, .editor__cancel:focus-visible, .editor__danger:focus-visible {
   outline: 2px solid var(--focus); outline-offset: 2px;
 }
 .editor__save:disabled { background: var(--divider); color: var(--head-ink); cursor: not-allowed; }
+.editor__cancel:disabled, .editor__danger:disabled {
+  opacity: .5; cursor: not-allowed;
+}
 
 /* A hint rides inside a label without shouting: "(optional)", "all verses". */
 .editor__hint { font-weight: 400; color: var(--head-ink); }
@@ -1865,8 +1894,6 @@ kbd {
 }
 .preview__gap:disabled { cursor: default; }
 .preview__gap:disabled:hover span { opacity: 0; }
-.preview__error { color: #a43d32; font-size: 13px; }
-.preview__error[hidden] { display: none; }
 .preview__panel[hidden] { display: none; }
 
 .entry__add-btn {
@@ -2038,15 +2065,118 @@ kbd {
 
 /* ---------- reordering (spec 006, slice 3; spec 026) ------------------------ */
 
-/* A drop, or a settled keyboard move, is written at once: there is no mode, no Save and
-   no Discard. The only thing left to draw is the write's own error line -- empty in the
-   ordinary case, so the container takes no room. */
-.reorder__status {
-  margin: 0;
-  font: 500 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; color: var(--danger);
-}
-.reorder__status:empty { display: none; }
+/* Reordering saves at once; request feedback lives in the shared toast layer. */
 .ch__reorder { padding: 0 12px; }
+
+/* ---------- edit request feedback (spec 093) ------------------------------- */
+.edit-toasts {
+  position: fixed;
+  inset: auto 20px 20px auto;
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 40px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  background: transparent;
+  color: var(--ink);
+  z-index: 2147483647;
+}
+.edit-toasts::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.edit-toasts__stack { display: flex; flex-direction: column; gap: 10px; }
+.edit-toast {
+  --toast-accent: var(--head-ink);
+  --toast-tint: color-mix(in srgb, var(--toast-accent) 12%, var(--canvas));
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  width: 100%;
+  min-height: 64px;
+  padding: 13px 38px 13px 12px;
+  border: 1px solid var(--divider);
+  border-left: 3px solid var(--toast-accent);
+  border-radius: 10px;
+  background: var(--canvas);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 9%);
+  opacity: 0;
+  transition: opacity 140ms ease, border-left-color 180ms ease,
+    color 180ms ease, background-color 180ms ease;
+}
+.edit-toast.is-visible { opacity: 1; }
+.edit-toast.is-exiting { opacity: 0; }
+.edit-toast.is-pending { --toast-accent: #a57a31; }
+.edit-toast.is-success { --toast-accent: #2d8460; }
+.edit-toast.is-failure { --toast-accent: var(--danger); }
+html[data-theme="dark"] .edit-toast.is-pending { --toast-accent: #d5ad62; }
+html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
+.edit-toast__mark {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 18px;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--toast-tint);
+  color: var(--toast-accent);
+  font: 700 12px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.edit-toast__mark svg { width: 18px; height: 18px; overflow: visible; }
+.edit-toast__mark circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 30 14;
+  transform-origin: center;
+  animation: edit-toast-spin 800ms linear infinite;
+}
+@keyframes edit-toast-spin { to { transform: rotate(360deg); } }
+.edit-toast__copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.edit-toast__title {
+  font: 600 14px/1.25 ui-sans-serif, system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.edit-toast__message {
+  color: var(--head-ink);
+  font: 400 12.5px/1.35 ui-sans-serif, system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.edit-toast__dismiss {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--head-ink);
+  font: 400 16px/1 ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+}
+.edit-toast__dismiss:hover { background: var(--icon-hover-bg); color: var(--ink); }
+.edit-toast__dismiss:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+@media (max-width: 740px) {
+  .edit-toasts { inset: auto 12px 12px auto; max-height: calc(100vh - 24px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .edit-toast { transition: none; }
+  .edit-toast__mark circle { animation: none; stroke-dasharray: 44 0; }
+}
 
 /* The order is arranged where it is listed: each entry's row carries its own grip, and only
    the icon is drawn -- no box, no arrows. It shows when the row is hovered or the grip has

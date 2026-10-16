@@ -148,11 +148,6 @@
     body.replaceChildren.apply(body, children);
   }
 
-  function status(message) {
-    var line = document.querySelector('[data-reorder-status]');
-    if (line) line.textContent = message || '';
-  }
-
   function csrf() {
     var match = document.cookie.match(/(^|;\s*)csrftoken=([^;]+)/);
     return match ? decodeURIComponent(match[2]) : '';
@@ -191,8 +186,14 @@
     var strip = group();
     var payload = body();
     if (!strip || payload == null) return;
+    var sentOrder = order();
     inFlight = true;
-    status('');
+    var action = window.gkpsEditFeedback && window.gkpsEditFeedback.beginAction({
+      pendingTitle: 'Saving entry order…',
+      successTitle: 'Entry order saved',
+      failureTitle: 'Could not save entry order',
+      failureMessage: 'The previous order has been restored. Try again.'
+    });
     fetch(strip.dataset.reorderEndpoint, {
       method: 'POST',
       credentials: 'same-origin',
@@ -202,16 +203,18 @@
     }).then(function (response) {
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
-    }).then(function () {
+    }).then(function (result) {
+      if (!result || result.ok !== true) throw new Error('unexpected');
+      if (action) action.success();
       inFlight = false;
-      settled = order();
+      settled = sentOrder;
       if (queued) { queued = false; send(); return; }
       if (window.gkpsDisplay && window.gkpsDisplay.changed) window.gkpsDisplay.changed();
     }).catch(function () {
       inFlight = false;
       queued = false;
-      status('Could not save the new order. It has been put back.');
       restore(settled);
+      if (action) action.failure();
     });
   }
 
@@ -456,7 +459,6 @@
     keyboardTimer = null;
     nodes = {};
     settled = order();
-    status('');
   });
 
   settled = order();

@@ -33,7 +33,6 @@
     {% if line.can_break_after %}<button type="button" class="preview__gap" data-break-after="{{ line.index }}" data-multi-boundary="{% if line.multi_boundary %}true{% else %}false{% endif %}" aria-label="Add screen break after line {{ line.index }}"><span data-break-label>Add break</span></button>{% endif %}
   {% endfor %}
   </div>
-  <p class="preview__error" data-break-error role="alert" hidden></p>
 </div>
 {% elif item.preview.kind == 'song' %}<p class="preview__song">{{ item.preview.heading }}</p>{% if item.preview.verses|length > 1 %}<div class="preview__tabs" role="tablist">{% for verse in item.preview.verses %}<button type="button" role="tab" class="preview__tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% if not forloop.first %} tabindex="-1"{% endif %}>{{ verse.number }}</button>{% endfor %}</div>{% endif %}<div class="preview__panels">{% for verse in item.preview.verses %}<div class="preview__panel" role="tabpanel"{% if not forloop.first %} hidden{% endif %}>{% for line in verse.lines %}<p class="preview__line">{{ line }}</p>{% endfor %}</div>{% endfor %}</div>{% else %}{% if item.preview.reference %}<p class="preview__ref">{{ item.preview.reference }}</p>{% endif %}{% for para in item.preview.paras %}<p class="preview__line{% if para.voice %} is-{{ para.voice }}{% endif %}">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>{% endfor %}{% endif %}</script>{% endif %}{% endfor %}
 {% endblock %}

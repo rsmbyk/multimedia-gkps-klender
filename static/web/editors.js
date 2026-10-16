@@ -13,7 +13,10 @@
   if (!modal || typeof modal.showModal !== 'function') return;
   var content = document.getElementById('editorContent');
   var status = document.getElementById('editorStatus');
+  var feedback = window.gkpsEditFeedback;
+  if (feedback) feedback.guardDialog(modal);
   var trigger = null;
+  var pendingFormLoad = null;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
       if (!target) return;
@@ -21,6 +24,114 @@
       target.focus({ preventScroll: true });
     }
   };
+
+  function canOpenEditor() {
+    return !pendingFormLoad && !modal.open;
+  }
+
+  function invalidateFormLoad() {
+    if (!pendingFormLoad) return;
+    var request = pendingFormLoad;
+    pendingFormLoad = null;
+    modal.classList.remove('is-loading');
+    if (request.controller) {
+      try { request.controller.abort(); } catch (error) { /* The request identity is enough. */ }
+    }
+  }
+
+  function renderLoading(title) {
+    var body = document.createElement('div');
+    body.className = 'editor__body editor__body--loading';
+
+    var heading = document.createElement('h2');
+    heading.className = 'editor__title editor__loading-title';
+    heading.id = 'editorTitle';
+    heading.textContent = title;
+
+    var loading = document.createElement('div');
+    loading.className = 'editor__loading';
+    loading.setAttribute('role', 'status');
+    loading.setAttribute('aria-live', 'polite');
+
+    var spinner = document.createElement('span');
+    spinner.className = 'editor__loading-spinner';
+    spinner.setAttribute('aria-hidden', 'true');
+
+    var label = document.createElement('span');
+    label.className = 'editor__loading-label';
+    label.textContent = 'Loading editor…';
+    loading.append(spinner, label);
+
+    var actions = document.createElement('div');
+    actions.className = 'editor__actions';
+    var cancel = document.createElement('button');
+    cancel.className = 'editor__cancel';
+    cancel.type = 'button';
+    cancel.dataset.editorClose = '';
+    cancel.textContent = 'Cancel';
+    actions.appendChild(cancel);
+
+    body.append(heading, loading, actions);
+    content.replaceChildren(body);
+    return cancel;
+  }
+
+  function loadEditorForm(options) {
+    if (!canOpenEditor()) return false;
+
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var request = { controller: controller, onLoad: options.onLoad, onFailure: options.onFailure };
+    pendingFormLoad = request;
+    modal.classList.add('is-loading');
+    var cancel = renderLoading(options.title);
+    modal.showModal();
+    cancel.focus();
+
+    var fetchOptions = {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'fetch' }
+    };
+    if (controller) fetchOptions.signal = controller.signal;
+
+    fetch(options.url, fetchOptions).then(function (response) {
+      if (response.status === 403) throw new Error('forbidden');
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.text().then(function (html) {
+        if (!html.trim()) throw new Error('empty');
+        return html;
+      });
+    }).then(function (html) {
+      if (pendingFormLoad !== request || !modal.open) return;
+      pendingFormLoad = null;
+      modal.classList.remove('is-loading');
+      try {
+        request.onLoad(html);
+      } catch (error) {
+        if (modal.open) modal.close();
+        request.onFailure(error);
+      }
+    }).catch(function (error) {
+      if (pendingFormLoad !== request) return;
+      pendingFormLoad = null;
+      modal.classList.remove('is-loading');
+      if (modal.open) modal.close();
+      request.onFailure(error);
+    });
+    return true;
+  }
+
+  /* Sidebar and entry editors share one dialog, so they also share one request
+     identity. Publish this before entries.js is loaded. */
+  window.gkpsEditorLoadForm = {
+    canOpen: canOpenEditor,
+    open: loadEditorForm
+  };
+  modal.addEventListener('cancel', invalidateFormLoad);
+  modal.addEventListener('close', invalidateFormLoad);
+  modal.addEventListener('click', function (event) {
+    if (pendingFormLoad && (event.target === modal
+        || event.target.closest('[data-editor-close]'))) invalidateFormLoad();
+  }, true);
 
   function urlFor(kind, id, book) {
     var pattern = modal.dataset.editorNew;
@@ -35,65 +146,93 @@
   }
 
   function close() {
+    if (feedback && feedback.isDialogBusy(modal)) return;
     if (modal.open) modal.close();
   }
 
   function open(kind, id, book) {
     announce('');
-    fetch(urlFor(kind, id, book), {
-      credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' }
-    }).then(function (response) {
-      if (response.status === 403) throw new Error('forbidden');
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.text();
-    }).then(function (html) {
-      document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
-      content.innerHTML = html;
-      if (!modal.open) modal.showModal();
-      document.dispatchEvent(new CustomEvent('date-picker:initialize'));
-      var first = content.querySelector('input:not([type=hidden]), select, textarea');
-      if (first) first.focus();
-    }).catch(function (error) {
-      announce(error.message === 'forbidden'
-        ? 'Editing is restricted to signed-in staff.'
-        : 'Could not open the editor.');
+    var nouns = { songbook: 'songbook', song: 'song', tatib: 'Tata Ibadah' };
+    return window.gkpsEditorLoadForm.open({
+      url: urlFor(kind, id, book),
+      title: (id ? 'Edit ' : 'New ') + (nouns[kind] || 'editor'),
+      onLoad: function (html) {
+        document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
+        content.innerHTML = html;
+        document.dispatchEvent(new CustomEvent('date-picker:initialize'));
+        var first = content.querySelector('input:not([type=hidden]), select, textarea');
+        if (first) first.focus();
+      },
+      onFailure: function (error) {
+        announce('');
+        if (feedback) feedback.showFailure('Could not load editor',
+          error.message === 'forbidden'
+            ? 'Editing is restricted to signed-in staff.'
+            : 'The editor could not be loaded. Try again.');
+      }
     });
   }
 
   function submit(form) {
+    if (feedback && feedback.isDialogBusy(modal)) return;
     var body = new FormData(form);
-    announce('Saving...');
+    announce('');
+    var resource = /\/songbook\//.test(form.action) ? 'songbook'
+      : /\/tatib\//.test(form.action) ? 'Tata Ibadah'
+        : /\/song\//.test(form.action) ? 'song' : 'changes';
+    var action = feedback && feedback.beginAction({
+      pendingTitle: 'Saving ' + resource + '…',
+      successTitle: resource.charAt(0).toUpperCase() + resource.slice(1) + ' saved',
+      failureTitle: 'Could not save ' + resource,
+      failureMessage: 'Your changes were not saved. Try again.'
+    });
+    var release = feedback ? feedback.setDialogBusy(modal) : null;
+    var invalid = null;
     fetch(form.action, {
       method: 'POST', body: body, credentials: 'same-origin',
       headers: { 'X-Requested-With': 'fetch' }
     }).then(function (response) {
       if (response.status === 400) {
         return response.text().then(function (html) {
+          if (!html.trim()) throw new Error('unexpected');
           document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
           content.innerHTML = html;
-          announce('Please correct the highlighted fields.');
+          announce('');
           document.dispatchEvent(new CustomEvent('date-picker:initialize'));
-          var invalid = content.querySelector('.is-invalid input, .is-invalid select, .is-invalid textarea');
-          if (invalid) invalid.focus();
+          invalid = content.querySelector('.is-invalid input, .is-invalid select, .is-invalid textarea');
           /* the entry modals re-wire their own controls onto the fresh fragment */
           document.dispatchEvent(new CustomEvent('editor:rendered'));
+          if (action) action.failure('Please check the highlighted fields.');
         });
       }
       if (response.status === 403) {
-        announce('Editing is restricted to signed-in staff.');
-        return null;
+        var restricted = new Error('forbidden');
+        restricted.userMessage = 'Editing is restricted to signed-in staff.';
+        throw restricted;
       }
       if (!response.ok) {
-        announce('Could not save. Try again.');
-        return null;
+        throw new Error('request-failed');
       }
-      response.json().then(function (data) {
-        announce('');
+      return response.json().then(function (data) {
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          throw new Error('unexpected');
+        }
+        if (release) { release(); release = null; }
         trigger = null;
         close();
         document.dispatchEvent(new CustomEvent('editor:saved', { detail: data }));
+        if (action) action.success();
       });
-    }).catch(function () { announce('Could not save. Try again.'); });
+    }).catch(function (error) {
+      announce('');
+      if (action) action.failure(error.userMessage
+        || (error.message === 'unexpected'
+          ? 'The server returned an unexpected response.'
+          : 'Your changes were not saved. Try again.'));
+    }).finally(function () {
+      if (release) release();
+      if (invalid && invalid.isConnected) invalid.focus();
+    });
   }
 
   /* One delegated listener each: the shells replace their rows on every swap. */
@@ -101,7 +240,7 @@
     var closeButton = event.target.closest('[data-editor-close]');
     if (closeButton && modal.contains(closeButton)) { close(); return; }
     var opener = event.target.closest('[data-editor-open]');
-    if (!opener || opener.disabled) return;
+    if (!opener || opener.disabled || !window.gkpsEditorLoadForm.canOpen()) return;
     event.preventDefault();
     trigger = opener;
     open(opener.dataset.editorOpen, opener.dataset.editorId, opener.dataset.editorBook);
@@ -111,6 +250,7 @@
     var form = event.target;
     if (!form.classList.contains('editor__form')) return;
     event.preventDefault();
+    if (feedback && feedback.isDialogBusy(modal)) return;
     submit(form);
   });
 
