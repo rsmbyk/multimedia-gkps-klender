@@ -253,11 +253,11 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
 
             page.set_viewport_size({'width': 360, 'height': 640})
             page.wait_for_function("innerWidth === 360 && getComputedStyle(document.documentElement).getPropertyValue('--rail-w').trim() === '64px'")
-            bounds = panel.evaluate("el => { const r = el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,cssWidth:getComputedStyle(el).width,viewport:innerWidth,rail:getComputedStyle(document.documentElement).getPropertyValue('--rail-w')}; }")
+            bounds = panel.evaluate("el => { const r = el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,cssWidth:getComputedStyle(el).width,viewport:innerWidth,viewportHeight:innerHeight,rail:getComputedStyle(document.documentElement).getPropertyValue('--rail-w')}; }")
             self.assertGreaterEqual(bounds['left'], 12)
             self.assertLessEqual(bounds['right'], 348, bounds)
             self.assertGreaterEqual(bounds['top'], 0)
-            self.assertLessEqual(bounds['bottom'], 568)
+            self.assertAlmostEqual(bounds['viewportHeight'] - bounds['bottom'], 12, delta=1, msg=bounds)
 
             page.locator('#themeBtn').click()
             status_button.click()

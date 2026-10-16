@@ -56,6 +56,7 @@
 - [x] Owner approves the [bottom-positioned preview](./preview-offline-popover-bottom.html).
 - [x] Owner explicitly Accepts this Draft amendment before implementation.
 - [x] Move the popover bottom offset to 12px and center the connection row's label and value in a balanced 40px row.
+- [x] Align the narrow-screen browser assertion with the accepted 12px bottom offset.
 - [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
 
 ## Draft amendment: center saved-copy badge
