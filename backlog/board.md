@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-099](./items/ITEM-099-bible-edition-across-menus.md) | Keep Bible translation selection across menu switches | Retain the tab's TB/SIM choice when returning to Bible through the sidebar; reset on refresh or a new tab | fix | P2 | M | [099](../specs/099-bible-edition-across-menus/spec.md) | `fix/099-bible-edition-across-menus` | 2026-10-16 |
 
 ## In review
 

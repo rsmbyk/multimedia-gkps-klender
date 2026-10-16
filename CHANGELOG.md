@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.13.1] - 2026-10-16
+
+### Fixed
+
+- The Bible Version choice stays selected when returning from Kidung or Tata Ibadah to a Bible
+  chapter in the same tab. The choice still resets on refresh and remains isolated per tab.
+
 ## [1.13.0] - 2026-10-16
 
 ### Added
