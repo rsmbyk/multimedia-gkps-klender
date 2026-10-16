@@ -26,7 +26,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-096](./items/ITEM-096-edit-request-feedback.md) | Unified feedback for edit requests | Toasts and pending-state guards for public-reading edit requests | feat | P1 | M | [093](../specs/093-edit-request-feedback/spec.md) | `feat/092-offline-library-sync` | 2026-10-16 |
 
 ## In review
 
@@ -34,6 +33,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-094](./items/ITEM-094-projector-corner-controls.md) | Quiet controls for the mirrored service projector | Subtle current/next cue with keyboard and mouse navigation, direct jumps, and a service list | feat | P1 | L | [091](../specs/091-projector-corner/spec.md) | [#346](https://github.com/rsmbyk/multimedia-gkps-klender/pull/346) | 2026-10-14 |
 | [ITEM-095](./items/ITEM-095-offline-library-sync.md) | Save the public library for offline reading and service projection | Two saved shells and a complete local library, with incremental sync and tab-local search history | feat | P1 | L | [091](../specs/091-projector-corner/spec.md) / [092](../specs/092-offline-library-sync/spec.md) | [#346](https://github.com/rsmbyk/multimedia-gkps-klender/pull/346) | 2026-10-15 |
+| [ITEM-096](./items/ITEM-096-edit-request-feedback.md) | Unified feedback for edit requests | Toasts and pending-state guards for public-reading edit requests | feat | P1 | M | [093](../specs/093-edit-request-feedback/spec.md) | [#347](https://github.com/rsmbyk/multimedia-gkps-klender/pull/347) | 2026-10-16 |
 | [ITEM-071](./items/ITEM-071-tatib-entry-surface.md) | Subtle surface for Tata Ibadah entries | Quiet fill, outline, and padding for service entry boxes | chore | P2 | S | [068](../specs/068-tatib-entry-surface/spec.md) | [#322](https://github.com/rsmbyk/multimedia-gkps-klender/pull/322) | 2026-10-13 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

@@ -1,6 +1,6 @@
 ---
 id: ITEM-096
-status: in-progress
+status: in-review
 title: 'Unified feedback for edit requests'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-16
 updated: 2026-10-16
 spec: 093
 branch: feat/092-offline-library-sync
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/347
 archived_at:
 archive_reason:
 bump: minor

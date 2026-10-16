@@ -12,7 +12,7 @@
 - [x] Route songbook/song/Tata Ibadah and service-entry form load/save/delete outcomes through the toast API. Keep 400 field errors and focus, block modal dismissal/edit while pending, and finalize locks on every response path.
 - [x] Route non-modal break creation, reorder persistence, and custom-break add/remove/reset/mode writes through the same API. Preserve reorder queue/rollback and previously confirmed break state; lock only the initiating non-modal control.
 - [x] Run focused browser/Django tests, inspect the real modal/overlay stacking, and update traceability.
-- [ ] Push a separate draft PR for Spec 093 after acceptance and required metadata/version updates.
+- [x] Push a separate draft PR for Spec 093 after acceptance and required metadata/version updates.
 - [ ] Before merge, set ITEM Done, complete this checklist and the release metadata in that PR; verify required CI at its exact head.
 
 ## Done when
