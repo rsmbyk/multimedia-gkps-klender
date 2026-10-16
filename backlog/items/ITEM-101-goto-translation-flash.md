@@ -1,6 +1,6 @@
 ---
 id: ITEM-101
-status: in_review
+status: done
 title: 'Brighten the translation label after flipping a Go To passage'
 type: fix
 priority: P2
