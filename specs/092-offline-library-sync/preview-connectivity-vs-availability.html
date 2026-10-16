@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offline connectivity and library availability · preview</title>
+  <link rel="stylesheet" href="../../static/styles/design/tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font: 14px/1.45 ui-sans-serif, system-ui, sans-serif; }
+    button { font: inherit; }
+    .rail { position: fixed; z-index: 3; inset: 0 auto 0 0; width: var(--rail-w); padding: 20px 0;
+      display: flex; flex-direction: column; align-items: center; background: var(--rail-bg);
+      border-right: 1px solid var(--divider); }
+    .logo { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: #fff; overflow: hidden; }
+    .logo img { width: 40px; height: 40px; padding: 5px; }
+    .menu { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+    .rail-btn { position: relative; width: 44px; height: 44px; display: grid; place-items: center;
+      border: 0; border-radius: 8px; padding: 0; background: none; color: var(--icon); cursor: pointer; }
+    .rail-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor;
+      stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .rail-btn:hover { background: var(--icon-hover-bg); }
+    .rail-btn:focus-visible, .action:focus-visible, .scenario button:focus-visible,
+    .chapter:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+    .rail-btn.active { background: var(--active-bg); color: var(--active-ink); }
+    .foot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .sync-dot { position: absolute; right: 4px; bottom: 4px; width: 9px; height: 9px;
+      border: 2px solid var(--rail-bg); border-radius: 50%; background: #2d8460; }
+    .sync-dot.syncing { background: #b0813b; }
+    .sync-dot.stale { background: #b0813b; }
+    .sync-dot.empty { background: var(--danger); }
+    .panel { position: fixed; z-index: 2; inset: 0 auto 0 var(--rail-w); width: min(296px, 30vw);
+      padding: 38px 18px; border-right: 1px solid var(--divider); background: var(--rail-bg); }
+    .panel h2 { margin: 0 0 26px; font-size: 16px; font-weight: 600; }
+    .panel h3 { margin: 22px 0 10px; font-size: 11px; font-weight: 600; color: var(--head-ink);
+      letter-spacing: .04em; text-transform: uppercase; }
+    .chapter { width: 100%; padding: 9px 10px; border: 0; border-radius: 5px; background: none;
+      color: var(--ink); text-align: left; cursor: pointer; }
+    .chapter:hover, .chapter.selected { background: var(--icon-hover-bg); }
+    main { margin-left: calc(var(--rail-w) + min(296px, 30vw)); padding: 42px min(7vw, 90px); }
+    .eyebrow { color: var(--head-ink); font-size: 12px; }
+    h1 { margin: 6px 0 24px; font: 500 clamp(28px, 3.5vw, 46px)/1.1 ui-serif, Georgia, serif; }
+    .verse { display: grid; grid-template-columns: 28px 1fr; gap: 12px; max-width: 650px;
+      margin: 0 0 18px; font: 18px/1.65 ui-serif, Georgia, serif; }
+    .verse b { font: 500 12px/2.4 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink); }
+    .source { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 22px;
+      color: var(--head-ink); font-size: 12px; }
+    .source[hidden] { display: none; }
+    .source::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #b0813b; }
+    .popover { position: fixed; z-index: 5; left: calc(var(--rail-w) + 10px); bottom: 72px;
+      width: min(320px, calc(100vw - var(--rail-w) - 22px)); padding: 16px 17px;
+      border: 1px solid var(--divider); border-radius: 10px; background: var(--canvas);
+      box-shadow: 0 12px 32px rgba(20,20,18,.23); }
+    .popover[hidden] { display: none; }
+    .popover-head { display: flex; gap: 10px; align-items: center; }
+    .status-mark { width: 10px; height: 10px; flex: none; border-radius: 50%; background: #2d8460; }
+    .status-mark.syncing { background: #b0813b; }
+    .status-mark.empty { background: var(--danger); }
+    .popover h2 { margin: 0; font-size: 14px; font-weight: 600; }
+    .availability { margin: 2px 0 0; color: var(--head-ink); font-size: 12px; }
+    .detail { margin: 6px 0 0 20px; color: var(--head-ink); font-size: 12px; }
+    .meta { margin: 17px 0 14px; padding-top: 12px; border-top: 1px solid var(--divider);
+      color: var(--head-ink); font-size: 12px; }
+    .meta div { display: flex; justify-content: space-between; gap: 16px; margin: 4px 0; }
+    .meta strong { color: var(--ink); font-weight: 500; text-align: right; }
+    .connection { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      margin: 14px 0 0; padding-top: 10px; border-top: 1px solid var(--divider);
+      color: var(--head-ink); font-size: 12px; }
+    .connection-value { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 500; }
+    .connection-value i { width: 7px; height: 7px; border-radius: 50%; background: #2d8460; }
+    .connection-value[data-offline="true"] i { background: var(--danger); }
+    .action { width: 100%; padding: 8px 10px; border: 1px solid var(--divider); border-radius: 5px;
+      background: transparent; color: var(--ink); text-align: center; cursor: pointer; }
+    .action:hover:not(:disabled) { background: var(--icon-hover-bg); }
+    .action:disabled { opacity: .55; cursor: default; }
+    .progress { height: 3px; margin: 13px 0 0; overflow: hidden; border-radius: 3px; background: var(--divider); }
+    .progress[hidden] { display: none; }
+    .progress::after { content: ''; display: block; width: 48%; height: 100%; background: var(--active-bg);
+      animation: sweep 1.1s ease-in-out infinite alternate; }
+    @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(220%); } }
+    .scenario { position: fixed; z-index: 1; top: 18px; right: 18px; display: flex; gap: 6px;
+      flex-wrap: wrap; justify-content: flex-end; max-width: 460px; padding: 9px;
+      border: 1px solid var(--divider); border-radius: 7px; background: var(--canvas);
+      box-shadow: var(--shadow); }
+    .scenario span { width: 100%; text-align: right; color: var(--head-ink); font-size: 11px; }
+    .scenario button { padding: 4px 7px; border: 1px solid var(--divider); border-radius: 4px;
+      background: none; color: var(--ink); cursor: pointer; font-size: 11px; }
+    .scenario button:hover { background: var(--icon-hover-bg); }
+    @media (max-width: 760px) {
+      .panel { display: none; } main { margin-left: var(--rail-w); padding-top: 105px; }
+      .scenario { left: calc(var(--rail-w) + 12px); right: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .progress::after { animation: none; width: 100%; } }
+  </style>
+</head>
+<body>
+  <aside class="rail" aria-label="Main navigation">
+    <span class="logo"><img src="../../static/assets/gkps.png" alt="GKPS Klender"></span>
+    <nav class="menu" aria-label="Sections">
+      <button class="rail-btn" type="button" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button>
+      <button class="rail-btn active" type="button" aria-label="Alkitab"><svg viewBox="0 0 24 24"><path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6zM12 6.6v13.6"/></svg></button>
+      <button class="rail-btn" type="button" aria-label="Kidung"><svg viewBox="0 0 24 24"><path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/></svg></button>
+      <button class="rail-btn" type="button" aria-label="Tata Ibadah"><svg viewBox="0 0 24 24"><rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"/><path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"/></svg></button>
+    </nav>
+    <div class="foot">
+      <button class="rail-btn" id="syncButton" type="button" aria-label="Offline library status" aria-expanded="true" aria-controls="syncPanel" title="Offline library status"><svg viewBox="0 0 24 24"><path d="M19.7 9A8 8 0 0 0 5.6 6.8L4 8.5M4.2 15A8 8 0 0 0 18.3 17l1.7-1.5"/><path d="M4 4.6v3.9h3.9M20 19.4v-3.9h-3.9"/></svg><span class="sync-dot" id="syncDot"></span></button>
+      <button class="rail-btn" id="themeButton" type="button" aria-label="Toggle light and dark mode" title="Toggle light and dark mode"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button>
+    </div>
+  </aside>
+  <aside class="panel" aria-label="Bible books and chapters"><h2>Alkitab</h2><h3>Markus</h3>
+    <button class="chapter selected" type="button" data-chapter="1">Chapter 1</button>
+    <button class="chapter" type="button" data-chapter="2">Chapter 2</button>
+    <button class="chapter" type="button" data-chapter="3">Chapter 3</button>
+  </aside>
+  <main>
+    <div class="eyebrow">Alkitab · Terjemahan Baru</div><h1 id="chapterTitle">Markus 1</h1>
+    <div class="source" id="savedSource" hidden>Saved copy · last synced today at 09:42</div>
+    <p class="verse"><b>1</b><span id="verseOne">Inilah permulaan Injil tentang Yesus Kristus, Anak Allah.</span></p>
+    <p class="verse"><b>2</b><span>Seperti ada tertulis dalam kitab nabi Yesaya.</span></p>
+  </main>
+  <section class="popover" id="syncPanel" aria-label="Offline library" aria-live="polite">
+    <div class="popover-head"><span class="status-mark" id="statusMark"></span><div>
+      <h2>Offline library</h2><p class="availability" id="availability">Ready for offline use</p></div></div>
+    <p class="detail" id="statusDetail">Bible, songs, and Tata Ibadah are saved and available offline.</p>
+    <div class="connection"><span>Browser connection</span><span class="connection-value" id="connectionValue" data-offline="false"><i></i><span id="connectionLabel">Online</span></span></div>
+    <div class="meta"><div><span>Last synced</span><strong id="lastSynced">Today, 09:42</strong></div>
+      <div><span>Last checked</span><strong id="lastChecked">Just now</strong></div></div>
+    <button class="action" id="syncNow" type="button">Sync now</button><div class="progress" id="progress" hidden></div>
+  </section>
+  <div class="scenario" aria-label="Preview controls"><span>Preview controls · availability and connection vary independently</span>
+    <button type="button" data-scenario="ready-online">Ready · online</button>
+    <button type="button" data-scenario="ready-offline">Ready · offline</button>
+    <button type="button" data-scenario="not-ready-offline">Not ready · offline</button>
+    <button type="button" data-scenario="syncing-offline">Syncing · offline</button>
+    <button type="button" data-scenario="update-failed-online">Update failed · online</button>
+  </div>
+  <script>
+    const syncButton = document.getElementById('syncButton');
+    const panel = document.getElementById('syncPanel');
+    const syncNow = document.getElementById('syncNow');
+    const dot = document.getElementById('syncDot');
+    const mark = document.getElementById('statusMark');
+    const availability = document.getElementById('availability');
+    const detail = document.getElementById('statusDetail');
+    const connectionValue = document.getElementById('connectionValue');
+    const connectionLabel = document.getElementById('connectionLabel');
+    const lastSynced = document.getElementById('lastSynced');
+    const lastChecked = document.getElementById('lastChecked');
+    const progress = document.getElementById('progress');
+    const savedSource = document.getElementById('savedSource');
+    let availabilityState = 'ready';
+    let offline = false;
+    let timer;
+    function paint() {
+      dot.className = 'sync-dot ' + (availabilityState === 'first' ? 'empty' : availabilityState === 'syncing' ? 'syncing' : '');
+      mark.className = 'status-mark ' + (availabilityState === 'first' ? 'empty' : availabilityState === 'syncing' ? 'syncing' : '');
+      connectionValue.dataset.offline = String(offline);
+      connectionLabel.textContent = offline ? 'Offline' : 'Online';
+      const copy = {
+        ready: ['Ready for offline use', 'Bible, songs, and Tata Ibadah are saved and available offline.', 'Today, 09:42', 'Just now', 'Sync now'],
+        first: ['Not ready for offline use', 'The first download has not finished; saved content may be unavailable.', 'Never', 'Not checked', 'Start sync'],
+        syncing: ['Syncing library…', 'Checking for changes and saving updated content.', lastSynced.textContent, 'In progress', 'Syncing…'],
+        stale: ['Ready for offline use', 'The latest update failed; the previously saved library is still available.', 'Today, 09:42', 'Failed just now', 'Retry sync'],
+      }[availabilityState];
+      availability.textContent = copy[0]; detail.textContent = copy[1]; lastSynced.textContent = copy[2];
+      lastChecked.textContent = copy[3]; syncNow.textContent = offline ? 'Sync when online' : copy[4];
+      syncNow.disabled = availabilityState === 'syncing' || offline;
+      progress.hidden = availabilityState !== 'syncing';
+    }
+    function setScenario(next) {
+      clearTimeout(timer);
+      const scenarios = {
+        'ready-online': ['ready', false], 'ready-offline': ['ready', true],
+        'not-ready-offline': ['first', true], 'syncing-offline': ['syncing', true],
+        'update-failed-online': ['stale', false]
+      };
+      [availabilityState, offline] = scenarios[next];
+      paint();
+    }
+    syncButton.addEventListener('click', () => {
+      panel.hidden = !panel.hidden;
+      syncButton.setAttribute('aria-expanded', String(!panel.hidden));
+    });
+    syncNow.addEventListener('click', () => {
+      if (syncNow.disabled) return;
+      availabilityState = 'syncing'; paint();
+      timer = setTimeout(() => { availabilityState = 'ready'; paint(); }, 1500);
+    });
+    document.querySelectorAll('[data-scenario]').forEach(button => button.addEventListener('click', () => {
+      setScenario(button.dataset.scenario); panel.hidden = false; syncButton.setAttribute('aria-expanded', 'true');
+    }));
+    document.querySelectorAll('[data-chapter]').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('[data-chapter]').forEach(item => item.classList.toggle('selected', item === button));
+      document.getElementById('chapterTitle').textContent = 'Markus ' + button.dataset.chapter;
+      document.getElementById('verseOne').textContent = button.dataset.chapter === '1'
+        ? 'Inilah permulaan Injil tentang Yesus Kristus, Anak Allah.'
+        : 'Preview chapter text loaded from the ' + (offline || availabilityState === 'stale' ? 'saved library.' : 'latest page.');
+      savedSource.hidden = !offline && availabilityState !== 'stale';
+    }));
+    document.getElementById('themeButton').addEventListener('click', () => {
+      document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    });
+    document.addEventListener('pointerdown', event => {
+      if (!panel.contains(event.target) && !syncButton.contains(event.target) && !event.target.closest('.scenario')) {
+        panel.hidden = true; syncButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+    paint();
+  </script>
+</body>
+</html>

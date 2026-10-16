@@ -42,3 +42,11 @@
 - [x] Update the saved-copy badge dot from amber to the danger theme token on browser `offline`, and restore amber on browser `online`; do not infer state from request failures or delays.
 - [ ] Add targeted browser checks for both transitions in light/dark themes and verify a failed content refresh alone does not change the dot.
 - [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+
+## Draft amendment: separate connection and library readiness
+
+- [x] Owner approves the [connectivity and availability preview](./preview-connectivity-vs-availability.html).
+- [x] Owner explicitly Accepts this Draft amendment before implementation.
+- [x] Separate browser connection status from offline-library availability in the main-rail popover, preserving sync state, timestamps, and action behavior.
+- [ ] Add targeted browser coverage for online/offline crossed with ready, not-ready, syncing, and update-failed states; check light and dark themes.
+- [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.

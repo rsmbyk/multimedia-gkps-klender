@@ -129,8 +129,13 @@
 <section class="offline-sync-panel" id="offlineSyncPanel" aria-label="Offline library"
          aria-live="polite" hidden>
   <div class="offline-sync-head"><span class="offline-sync-mark" id="offlineSyncMark"
-       data-state="empty"></span><h2 id="offlineSyncTitle">Checking saved library</h2></div>
+       data-state="empty"></span><div><h2>Offline library</h2>
+    <p class="offline-sync-availability" id="offlineSyncAvailability">Checking saved library</p></div></div>
   <p class="offline-sync-detail" id="offlineSyncDetail">Checking the saved public library and page shells.</p>
+  <div class="offline-connection"><span>Browser connection</span>
+    <span class="offline-connection-value" id="offlineConnectionValue" data-offline="false">
+      <i aria-hidden="true"></i><span id="offlineConnectionLabel">Online</span></span>
+  </div>
   <dl class="offline-sync-meta">
     <div><dt>Last synced</dt><dd id="offlineLastSynced">Never</dd></div>
     <div><dt>Last checked</dt><dd id="offlineLastChecked">Not checked</dd></div>

@@ -7,8 +7,10 @@
   if (!library || !button || !panel) return;
   var dot = document.getElementById('offlineSyncDot');
   var mark = document.getElementById('offlineSyncMark');
-  var title = document.getElementById('offlineSyncTitle');
+  var availability = document.getElementById('offlineSyncAvailability');
   var detail = document.getElementById('offlineSyncDetail');
+  var connectionValue = document.getElementById('offlineConnectionValue');
+  var connectionLabel = document.getElementById('offlineConnectionLabel');
   var synced = document.getElementById('offlineLastSynced');
   var checked = document.getElementById('offlineLastChecked');
   var action = document.getElementById('offlineSyncNow');
@@ -21,30 +23,31 @@
       var state = status.syncing ? 'syncing' : status.ready
         ? (status.error ? 'stale' : 'ready') : 'empty';
       dot.dataset.state = mark.dataset.state = state;
+      connectionValue.dataset.offline = String(status.offline);
+      connectionLabel.textContent = status.offline ? 'Offline' : 'Online';
       synced.textContent = date(status.generation && status.generation.syncedAt, 'Never');
       checked.textContent = date(status.lastCheckedAt, 'Not checked');
       if (status.syncing) {
-        title.textContent = 'Syncing library';
+        availability.textContent = 'Syncing library…';
         detail.textContent = 'Checking for changes and saving updated content…';
-      } else if (status.ready && status.offline) {
-        title.textContent = 'Ready · offline';
-        detail.textContent = 'Public reading and the service projector can use saved data. Editing needs a connection.';
       } else if (status.ready && status.error) {
-        title.textContent = 'Update failed · saved copy ready';
-        detail.textContent = 'The previous complete library is still available.';
+        availability.textContent = 'Ready for offline use';
+        detail.textContent = 'The latest update failed. The previously saved library is still available.';
       } else if (status.ready) {
-        title.textContent = 'Ready for offline use';
-        detail.textContent = 'Public reading and the service projector are ready offline. Bible, songs, and Tata Ibadah are saved.';
+        availability.textContent = 'Ready for offline use';
+        detail.textContent = 'Bible, songs, and Tata Ibadah are saved and available offline.';
       } else {
-        title.textContent = 'Not ready offline';
-        detail.textContent = 'The two page shells and complete Bible, song, and Tata Ibadah data have not finished saving.';
+        availability.textContent = 'Not ready for offline use';
+        detail.textContent = 'The page shells and complete Bible, song, and Tata Ibadah library have not finished saving.';
       }
       action.textContent = status.syncing ? 'Syncing…' : status.offline ? 'Sync when online'
         : status.error ? 'Retry sync' : status.ready ? 'Sync now' : 'Start sync';
       action.disabled = status.syncing || status.offline;
       progress.hidden = !status.syncing;
     }).catch(function () {
-      title.textContent = 'Not ready offline';
+      connectionValue.dataset.offline = String(!navigator.onLine);
+      connectionLabel.textContent = navigator.onLine ? 'Online' : 'Offline';
+      availability.textContent = 'Not ready for offline use';
       detail.textContent = 'Browser storage is unavailable.';
     });
   }

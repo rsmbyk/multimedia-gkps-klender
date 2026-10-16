@@ -72,3 +72,11 @@ The public reading page currently downloads another HTML page for in-app navigat
 - **Scope:** Change only the status dot on the saved-copy badge. The browser's online/offline status is the sole trigger; request duration or failure does not affect the color.
 - **Approach:** Use the existing danger color token while the browser reports offline, and the existing amber saved-copy color while it reports online. Update immediately on the browser's `offline` and `online` events.
 - **Validation:** Check both transitions in light and dark themes and confirm a failed or delayed content request alone leaves the amber dot unchanged.
+
+## Draft amendment: separate connection and library readiness
+
+- **Status:** Accepted; the [connectivity and availability preview](./preview-connectivity-vs-availability.html) was approved separately.
+- **Why:** “Ready · offline” combines two independent facts: whether the browser reports a connection and whether the saved library is usable offline.
+- **Scope:** Clarify both states in the main-rail offline-library popover while preserving the existing sync action and timestamps.
+- **Approach:** Label the library availability (`Ready for offline use`, `Not ready for offline use`, or `Syncing library`) separately from a `Browser connection` row (`Online` or `Offline`). Base availability on the saved library and required shells; base connection only on the browser's online/offline state.
+- **Validation:** Review ready/online, ready/offline, not-ready/offline, syncing/offline, and update-failed/online combinations in light and dark themes.

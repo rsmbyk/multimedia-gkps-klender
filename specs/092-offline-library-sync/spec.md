@@ -136,3 +136,19 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 - **Given** a public reading page is displaying saved content and its “Saved copy” badge
 - **When** the browser reports offline, then reports online again
 - **Then** the dot changes from amber to the danger theme color, then returns to amber; a delayed or failed server request alone does not change it.
+
+## Draft amendment: separate connection and library readiness
+
+**Status:** Accepted. The [connectivity and availability preview](./preview-connectivity-vs-availability.html) was approved separately.
+
+- In the main-rail offline-library popover, present **Offline library** availability and **Browser connection** as two separate status fields. Do not combine them into a label such as “Ready · offline.”
+- Availability describes the saved library and required shells: `Ready for offline use`, `Not ready for offline use`, or `Syncing library…`. A failed update may explain that the previous saved library remains available, while retaining its ready availability state.
+- Browser connection displays `Online` or `Offline` from the browser's `navigator.onLine` state and its `online`/`offline` events. It does not change the library availability state.
+- Keep the existing Last synced and Last checked fields and Sync now action. Disable the sync action while syncing or while the browser reports offline; show `Sync when online` when offline.
+- Use the approved preview's separate connection row with a small status dot: green for online and the existing `--danger` token for offline. Keep the existing library status mark tied only to library availability or sync state.
+
+### Scenario: connection and offline readiness vary independently
+
+- **Given** the offline-library popover is open
+- **When** the browser is online or offline and the saved library is ready, not ready, syncing, or retaining a prior generation after an update failure
+- **Then** the popover shows the browser connection separately from library availability, including combinations such as Ready + Offline and Not ready + Offline; changing connectivity does not imply that library content became unavailable or ready.
