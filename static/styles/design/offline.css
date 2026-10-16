@@ -46,6 +46,7 @@
 .offline-saved-source[hidden] { display: none; }
 .offline-saved-source::before { content: ''; width: 6px; height: 6px;
   flex: none; border-radius: 50%; background: #b0813b; }
+:root[data-browser-offline="true"] .offline-saved-source::before { background: var(--danger); }
 @media (max-width: 800px) {
   .offline-saved-source { top: 12px; right: 18px; }
 }

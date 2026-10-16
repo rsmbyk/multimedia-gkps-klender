@@ -64,3 +64,11 @@ The public reading page currently downloads another HTML page for in-app navigat
 - **Scope:** Change only the public reading page's saved-copy indicator placement and presentation. Keep its provenance rules, wording, sync behavior, and live-content layout unchanged.
 - **Approach:** Show a small, noninteractive badge fixed near the top-right of the reading viewport whenever saved content is being displayed. Remove its inline space above the reading header. Keep it visible through content scrolling and below open panels or dialogs. Hide it as soon as fresh content replaces the saved copy.
 - **Validation:** Check long Bible, song, and Tata Ibadah pages; successful and failed online refresh; light/dark themes; narrow viewports; and scrolling with sidebar or modal overlays.
+
+## Draft amendment: browser-offline badge color
+
+- **Status:** Accepted; the [offline-color preview](./preview-saved-copy-offline.html) was approved separately.
+- **Why:** Make the browser's offline state visible at a glance while saved reading content remains on screen.
+- **Scope:** Change only the status dot on the saved-copy badge. The browser's online/offline status is the sole trigger; request duration or failure does not affect the color.
+- **Approach:** Use the existing danger color token while the browser reports offline, and the existing amber saved-copy color while it reports online. Update immediately on the browser's `offline` and `online` events.
+- **Validation:** Check both transitions in light and dark themes and confirm a failed or delayed content request alone leaves the amber dot unchanged.

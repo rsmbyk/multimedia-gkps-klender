@@ -122,3 +122,17 @@ Keep public Bible, song, and Tata Ibadah reading and the service projector usabl
 - **Given** a long public Bible chapter, song, or Tata Ibadah page rendered from the saved library
 - **When** the reader scrolls through the page while the online refresh has not supplied replacement content
 - **Then** the compact “Saved copy” badge stays at the top-right of the viewport without moving the reading header or blocking controls; it disappears once fresh content replaces the saved copy.
+
+## Draft amendment: browser-offline badge color
+
+**Status:** Accepted. The [offline-color preview](./preview-saved-copy-offline.html) was approved separately. This amendment overrides the fixed amber-dot color specified in the saved-copy badge UI details above.
+
+- When the browser reports offline (`navigator.onLine === false`), show the badge's 6px status dot in the existing `--danger` theme token (red in light theme, lifted red in dark theme).
+- When the browser reports online, show the dot in the existing amber `#b0813b` saved-copy color.
+- Respond to the browser's `offline` and `online` events so the dot changes while the saved-copy badge is visible. Do not infer browser-offline state from slow, failed, or timed-out server requests.
+
+### Scenario: saved-copy dot follows browser connectivity
+
+- **Given** a public reading page is displaying saved content and its “Saved copy” badge
+- **When** the browser reports offline, then reports online again
+- **Then** the dot changes from amber to the danger theme color, then returns to amber; a delayed or failed server request alone does not change it.

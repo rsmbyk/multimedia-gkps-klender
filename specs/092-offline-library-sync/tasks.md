@@ -34,3 +34,11 @@
 - [x] Move the public-reading saved-copy indicator out of the flowing header and style it as the fixed, click-through badge specified above, including responsive, theme, overlay, and print behavior.
 - [x] Extend the targeted saved-reading browser check for persistence while scrolling, failed-refresh visibility, narrow positioning, and print hiding; existing refresh checks continue to cover fresh-content removal.
 - [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.
+
+## Draft amendment: browser-offline badge color
+
+- [x] Owner approves the [offline-color preview](./preview-saved-copy-offline.html).
+- [x] Owner explicitly Accepts this Draft amendment before implementation.
+- [x] Update the saved-copy badge dot from amber to the danger theme token on browser `offline`, and restore amber on browser `online`; do not infer state from request failures or delays.
+- [ ] Add targeted browser checks for both transitions in light/dark themes and verify a failed content refresh alone does not change the dot.
+- [ ] Run targeted local checks and required remote CI at the final pushed head; update ITEM-095 and PR #346 with the amendment and validation.

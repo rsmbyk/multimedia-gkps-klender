@@ -14,6 +14,9 @@
     listeners.forEach(function (listener) { listener(); });
     document.dispatchEvent(new Event('offline:changed'));
   }
+  function updateBrowserOfflineState() {
+    document.documentElement.dataset.browserOffline = String(!navigator.onLine);
+  }
   if (channel) channel.addEventListener('message', changed);
 
   function open() {
@@ -281,7 +284,14 @@
 
   window.GKPSOffline = {get: get, list: list, sync: sync, status: status, subscribe: subscribe,
                         install: install};
-  window.addEventListener('online', function () { sync().catch(function () {}); });
-  window.addEventListener('offline', changed);
+  updateBrowserOfflineState();
+  window.addEventListener('online', function () {
+    updateBrowserOfflineState();
+    sync().catch(function () {});
+  });
+  window.addEventListener('offline', function () {
+    updateBrowserOfflineState();
+    changed();
+  });
   install().then(function () { return sync(); }).catch(function () { changed(); });
 })();
