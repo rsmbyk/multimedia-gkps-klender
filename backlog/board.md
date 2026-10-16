@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-096](./items/ITEM-096-edit-request-feedback.md) | Unified feedback for edit requests | Toasts and pending-state guards for public-reading edit requests | feat | P1 | M | [093](../specs/093-edit-request-feedback/spec.md) | 2026-10-16 |
 
 ## Ready
 

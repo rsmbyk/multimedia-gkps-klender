@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit request feedback · preview</title>
+<style>
+  :root { font: 14px/1.45 ui-sans-serif, system-ui, sans-serif; color: #272723; background: #f7f5f1; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; }
+  button { font: inherit; cursor: pointer; }
+  .rail { position: fixed; inset: 0 auto 0 0; width: 80px; background: #ebe8e1; border-right: 1px solid #d9d6cf; display: grid; align-content: center; justify-items: center; gap: 16px; }
+  .rail span { width: 44px; height: 44px; border-radius: 8px; display: grid; place-items: center; font-size: 21px; color: #65645d; }
+  .rail .active { color: white; background: #205b40; }
+  .list { position: fixed; inset: 0 auto 0 80px; width: 300px; padding: 22px 16px; background: #f3f0eb; border-right: 1px solid #d9d6cf; }
+  .list h2 { margin: 0 0 22px; font-size: 14px; letter-spacing: .11em; text-transform: uppercase; }
+  .item { padding: 11px 12px; border-radius: 9px; margin: 5px 0; }
+  .item.active { background: #b9d9cc; }
+  .stage { margin-left: 380px; padding: 48px clamp(28px, 5vw, 90px); }
+  .stage .eyebrow { color: #65645d; font-weight: 650; letter-spacing: .13em; }
+  h1 { font: 700 clamp(30px, 4vw, 48px)/1.15 Georgia, serif; margin: 10px 0 28px; }
+  .entry { border: 1px solid #dedbd4; border-radius: 10px; padding: 18px; margin: 10px 0; font: 20px/1.55 Georgia, serif; }
+  .entry strong { font: 600 14px/1.5 ui-sans-serif, system-ui, sans-serif; }
+  .entry .delete { float: right; border: 1px solid #cfcac2; border-radius: 6px; background: transparent; padding: 3px 9px; color: #a43d32; font: 12px/1.5 ui-sans-serif, system-ui, sans-serif; }
+  .entry .delete:hover { background: #f6e4e0; }
+  .entry .delete:disabled { opacity: .45; cursor: not-allowed; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+  .controls button { padding: 8px 11px; border: 1px solid #c9c5bd; border-radius: 8px; background: #fff; }
+  .controls button:hover { background: #eeeae2; }
+  .scrim { position: fixed; inset: 0; background: #0008; display: grid; place-items: center; z-index: 20; }
+  .scrim[hidden] { display: none; }
+  .modal { width: min(600px, calc(100vw - 36px)); padding: 20px 24px; border-radius: 14px; background: #f7f5f1; box-shadow: 0 16px 42px #0003; }
+  .modal h2 { margin: 0 0 16px; font-size: 17px; }
+  .modal p { font: 18px/1.5 Georgia, serif; }
+  .modal textarea { display: block; width: 100%; min-height: 78px; margin: 12px 0 18px; padding: 10px; border: 1px solid #c9c5bd; border-radius: 7px; background: #fffdfa; color: #292722; font: 17px/1.4 Georgia, serif; }
+  .modal button { background: #205b40; color: white; border: 0; border-radius: 7px; padding: 8px 20px; }
+  .modal button:disabled, .modal textarea:disabled { opacity: .55; cursor: not-allowed; }
+  .toast-stack { position: fixed; bottom: 20px; right: 20px; z-index: 1000; width: min(360px, calc(100vw - 32px)); max-height: calc(100vh - 40px); display: flex; flex-direction: column; gap: 10px; overflow-y: auto; overflow-anchor: none; scrollbar-width: none; pointer-events: none; }
+  .toast-stack::-webkit-scrollbar { display: none; }
+  .toast { pointer-events: auto; flex: none; width: 100%; display: flex; gap: 11px; align-items: flex-start; padding: 13px 12px 13px 14px; border: 1px solid #d4cfc7; border-left: 3px solid #a43d32; border-radius: 10px; background: #fffdfa; color: #292722; box-shadow: 0 1px 2px #00000018; opacity: 0; transition: opacity 140ms ease, border-color 180ms ease; }
+  .toast.show { opacity: 1; }
+  .toast.loading { border-left-color: #a48140; }
+  .toast.success { border-left-color: #2d8460; }
+  .mark { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; margin-top: 1px; background: #f6e4e0; color: #a43d32; font-size: 12px; font-weight: 750; }
+  .loading .mark { background: #f3ead9; color: #946d2b; }
+  .success .mark { background: #e2f0e9; color: #2d8460; }
+  .loading .mark::after { content: ''; width: 9px; height: 9px; border: 1.5px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+  .copy { flex: 1; min-width: 0; }
+  .copy strong { display: block; font-size: 14px; line-height: 18px; }
+  .copy small { display: block; margin-top: 3px; color: #69665f; font-size: 12.5px; }
+  .dismiss { flex: none; border: 0; background: none; color: #69665f; width: 24px; height: 24px; border-radius: 5px; margin: -3px -4px 0 0; }
+  .dismiss:hover { background: #eeeae4; color: #292722; }
+  .dismiss:focus-visible { outline: 2px solid #205b40; outline-offset: 2px; }
+  .hint { position: fixed; top: 16px; right: 20px; z-index: 1001; background: #fffdfa; border: 1px solid #d4cfc7; border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #69665f; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } .loading .mark::after { animation: none; } }
+  @media (max-width: 740px) { .rail { width: 64px; } .list { display: none; } .stage { margin-left: 64px; padding: 45px 20px; } .toast-stack { bottom: 12px; right: 12px; width: min(360px, calc(100vw - 24px)); } }
+</style>
+<aside class="rail" aria-hidden="true"><span>⌕</span><span>▤</span><span>♫</span><span class="active">▣</span></aside>
+<aside class="list"><h2>Tata Ibadah</h2><div class="item active">Ibadah Minggu</div><div class="item">Ibadah Minggu Pelajar</div><div class="item">Pengakuan Iman</div></aside>
+<main class="stage"><div class="eyebrow">TATA IBADAH</div><h1>Ibadah Minggu</h1><div class="entry"><button class="delete" data-delete="failure">Delete</button><strong>VOTUM · INTROITUS · DOA</strong><br>L: Marilah kita bangkit berdiri!</div><div class="entry"><button class="delete" data-delete="success">Delete</button>J: Amin.</div><div class="entry">L: Sebab TUHAN itu baik, kasih setia-Nya untuk selama-lamanya.</div><div class="controls"><button id="fail">Simulate failed edit</button><button id="success">Simulate successful save</button><button id="instant">Simulate instant save</button><button id="toggle">Toggle modal overlay</button></div></main>
+<div class="scrim" id="scrim" hidden><div class="modal" id="modal"><h2>Edit text</h2><textarea id="entryText">Marilah kita bangkit berdiri!</textarea><button id="save">Save changes</button> <button id="close">Close</button></div></div>
+<div class="toast-stack" id="stack" aria-live="polite"></div>
+<div class="hint">Preview v11 · Each non-modal delete button locks only itself</div>
+<script>
+  const stack = document.querySelector('#stack');
+  let modalBusy = false;
+  function remove(toast) {
+    if (toast.dataset.closed) return;
+    toast.dataset.closed = 'true';
+    clearTimeout(toast.dismissTimer);
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 200);
+  }
+  function visibleToasts() {
+    return [...stack.children].filter(toast => !toast.dataset.closed);
+  }
+  function scheduleDismissal(toast, crowded) {
+    if (toast.dataset.closed || !toast.settledAt) return;
+    clearTimeout(toast.dismissTimer);
+    const duration = crowded ? (toast.failed ? 1618 : 1000) : (toast.failed ? 3230 : 2000);
+    toast.dismissTimer = setTimeout(() => remove(toast), Math.max(0, toast.settledAt + duration - Date.now()));
+  }
+  function shortenSettledWhenCrowded() {
+    const visible = visibleToasts();
+    if (visible.length >= 4) visible.forEach(toast => scheduleDismissal(toast, true));
+  }
+  function feedback(fails, duration, action, onSettled, labels) {
+    labels = labels || {};
+    const toast = document.createElement('div');
+    toast.className = 'toast loading';
+    toast.innerHTML = '<span class="mark"></span><span class="copy"><strong>' + (labels.loading || 'Saving ' + action + '…') + '</strong><small>Please wait</small></span><button class="dismiss" aria-label="Dismiss notification">×</button>';
+    toast.querySelector('.dismiss').onclick = () => remove(toast);
+    let visible = false, settled = false;
+    function show() {
+      if (visible || toast.dataset.closed) return;
+      stack.append(toast);
+      stack.scrollTop = stack.scrollHeight;
+      requestAnimationFrame(() => toast.classList.add('show'));
+      visible = true;
+      shortenSettledWhenCrowded();
+    }
+    const delay = setTimeout(() => { if (!settled) show(); }, 180);
+    setTimeout(() => {
+      settled = true;
+      clearTimeout(delay);
+      if (toast.dataset.closed) {
+        if (onSettled) onSettled();
+        return;
+      }
+      show();
+      toast.classList.remove('loading');
+      toast.classList.add(fails ? 'failure' : 'success');
+      toast.querySelector('.mark').textContent = fails ? '!' : '✓';
+      toast.querySelector('.copy').innerHTML = fails
+        ? '<strong>' + (labels.failure || 'Could not save ' + action) + '</strong><small>Your change was not saved. Try again.</small>'
+        : '<strong>' + (labels.success || action[0].toUpperCase() + action.slice(1) + ' saved') + '</strong><small>Your change is ready.</small>';
+      toast.failed = fails;
+      toast.settledAt = Date.now();
+      scheduleDismissal(toast, visibleToasts().length >= 4);
+      shortenSettledWhenCrowded();
+      if (onSettled) onSettled();
+    }, duration);
+  }
+  document.querySelector('#fail').onclick = () => feedback(true, 1100, 'entry');
+  document.querySelector('#success').onclick = () => feedback(false, 900, 'songbook');
+  document.querySelector('#instant').onclick = () => feedback(false, 70, 'song');
+  document.querySelectorAll('[data-delete]').forEach(button => {
+    button.onclick = () => {
+      if (button.disabled) return;
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+      const fails = button.dataset.delete === 'failure';
+      feedback(fails, 3000, 'entry', () => {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+      }, { loading: 'Deleting entry…', failure: 'Could not delete entry', success: 'Entry deleted' });
+    };
+  });
+  document.querySelector('#save').onclick = () => {
+    if (modalBusy) return;
+    modalBusy = true;
+    document.querySelector('#modal').setAttribute('aria-busy', 'true');
+    document.querySelectorAll('#modal textarea, #modal button').forEach(control => { control.disabled = true; });
+    feedback(true, 3000, 'screen breaks', () => {
+      modalBusy = false;
+      document.querySelector('#modal').removeAttribute('aria-busy');
+      document.querySelectorAll('#modal textarea, #modal button').forEach(control => { control.disabled = false; });
+    });
+  };
+  document.querySelector('#close').onclick = () => {
+    if (!modalBusy) document.querySelector('#scrim').hidden = true;
+  };
+  document.querySelector('#toggle').onclick = () => {
+    if (!modalBusy) document.querySelector('#scrim').hidden = !document.querySelector('#scrim').hidden;
+  };
+  document.querySelector('#scrim').onclick = (event) => {
+    if (event.target.id === 'scrim' && !modalBusy) document.querySelector('#scrim').hidden = true;
+  };
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !modalBusy) document.querySelector('#scrim').hidden = true;
+  });
+  window.addEventListener('load', () => feedback(false, 900, 'songbook'));
+</script>
