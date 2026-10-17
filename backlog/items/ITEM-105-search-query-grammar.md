@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: [105](../../specs/105-search-query-grammar/spec.md)
 branch: feat/105-search-query-grammar
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/357
 archived_at:
 archive_reason:
 bump: patch
