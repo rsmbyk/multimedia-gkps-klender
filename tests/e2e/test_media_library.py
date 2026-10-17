@@ -163,6 +163,90 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         self.assertNotEqual(library.evaluate('el => getComputedStyle(el).color'), initial_color)
         self.assertEqual(upload.evaluate('el => getComputedStyle(el).backgroundColor'), active_background)
 
+    def test_media_source_tabs_slide_thumb_in_both_directions(self):
+        page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('[data-entry-open="media"]').first.dispatch_event('click')
+        upload = page.locator('[data-media-tab-button="upload"]')
+        library = page.locator('[data-media-tab-button="library"]')
+        thumb = page.locator('.media-entry__tab-thumb')
+        expect(thumb).to_have_count(1)
+        expect(thumb).to_have_attribute('aria-hidden', 'true')
+        self.assertEqual(upload.get_attribute('aria-selected'), 'true')
+        start_x = thumb.bounding_box()['x']
+
+        thumb.evaluate('el => { el.style.transitionDuration = "3s"; }')
+        library.click()
+        expect(library).to_have_attribute('aria-selected', 'true')
+        expect(page.locator('[data-media-panel="library"]')).to_be_visible()
+        page.wait_for_function(
+            'el => el.getAnimations().some(animation => animation.playState === "running")',
+            arg=thumb.element_handle())
+        thumb.evaluate('el => el.getAnimations().forEach(animation => animation.finish())')
+        library_x = thumb.bounding_box()['x']
+        self.assertGreater(library_x, start_x)
+
+        upload.focus()
+        upload.press('Enter')
+        expect(upload).to_have_attribute('aria-selected', 'true')
+        expect(page.locator('[data-media-panel="upload"]')).to_be_visible()
+        page.wait_for_function(
+            'el => el.getAnimations().some(animation => animation.playState === "running")',
+            arg=thumb.element_handle())
+        thumb.evaluate('el => el.getAnimations().forEach(animation => animation.finish())')
+        self.assertAlmostEqual(thumb.bounding_box()['x'], start_x, delta=2)
+
+    def test_media_source_thumb_respects_reduced_motion(self):
+        page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.emulate_media(reduced_motion='reduce')
+        page.locator('[data-entry-open="media"]').first.dispatch_event('click')
+        thumb = page.locator('.media-entry__tab-thumb')
+        expect(thumb).to_have_count(1)
+        self.assertEqual(thumb.evaluate('el => getComputedStyle(el).transitionProperty'), 'none')
+        page.locator('[data-media-tab-button="library"]').click()
+        expect(page.locator('[data-media-tab-button="library"]')).to_have_attribute('aria-selected', 'true')
+        self.assertEqual(thumb.evaluate('el => el.getAnimations().length'), 0)
+
+    def test_media_library_current_marker_clears_when_another_main_menu_is_clicked(self):
+        library_path = reverse('web-media-library')
+        page = self.page(library_path)
+        media_link = page.locator('.rail__btn[data-tip="Media Library"]')
+        expect(media_link).to_have_attribute('aria-current', 'page')
+
+        page.locator('.rail__btn[data-panel="alkitab"]').click()
+        expect(page.locator('.rail__btn[data-panel="alkitab"]')).to_have_attribute('aria-expanded', 'true')
+        expect(media_link).not_to_have_attribute('aria-current', 'page')
+
+        page.goto(self.live_server_url + library_path)
+        expect(media_link).to_have_attribute('aria-current', 'page')
+        page.locator('.rail__btn[data-panel="kidung"]').click()
+        expect(page.locator('.rail__btn[data-panel="kidung"]')).to_have_attribute('aria-expanded', 'true')
+        expect(media_link).not_to_have_attribute('aria-current', 'page')
+
+        page.goto(self.live_server_url + library_path)
+        expect(media_link).to_have_attribute('aria-current', 'page')
+        page.locator('.rail__btn[data-panel="tatib"]').click()
+        expect(page.locator('.rail__btn[data-panel="tatib"]')).to_have_attribute('aria-expanded', 'true')
+        expect(media_link).not_to_have_attribute('aria-current', 'page')
+
+    def test_media_library_current_marker_tracks_browser_history(self):
+        library_path = reverse('web-media-library')
+        page = self.page(library_path)
+        media_link = page.locator('.rail__btn[data-tip="Media Library"]')
+        expect(media_link).to_have_attribute('aria-current', 'page')
+        page.locator('.rail__btn[data-panel="tatib"]').click()
+        service_link = page.locator('#panelBody a.book').filter(has_text=self.service.name)
+        service_link.click()
+        service_path = reverse('web-tatib-service', args=[self.service.pk])
+        page.wait_for_function('path => location.pathname === path', arg=service_path)
+        expect(media_link).not_to_have_attribute('aria-current', 'page')
+
+        page.go_back()
+        page.wait_for_function('path => location.pathname === path', arg=library_path)
+        expect(media_link).to_have_attribute('aria-current', 'page')
+        page.go_forward()
+        page.wait_for_function('path => location.pathname === path', arg=service_path)
+        expect(media_link).not_to_have_attribute('aria-current', 'page')
+
     def test_library_selection_survives_tab_switch_but_save_follows_visible_tab(self):
         page = self.connected_page(reverse('web-tatib-service', args=[self.service.pk]))
         page.locator('[data-entry-open="media"]').first.dispatch_event('click')

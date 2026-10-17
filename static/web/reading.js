@@ -26,6 +26,7 @@
   var indDown = document.getElementById('indDown');
   var filter = document.getElementById('bookFilter');
   var rail = document.querySelector('.rail');
+  var railMediaLibrary = document.getElementById('railMediaLibrary');
   var railSearch = document.getElementById('railSearch');
   var alkBtn = rail.querySelector('[data-panel="alkitab"]');
   var kidBtn = rail.querySelector('[data-panel="kidung"]');
@@ -332,9 +333,11 @@
   }
   /* A rail click leaves focus on the tile, and a focused tile keeps its label up --
      which reads as a stuck tooltip once the sidebar it opened has closed. */
-  rail.addEventListener('click', function () {
+  rail.addEventListener('click', function (event) {
     hideTip();
     window.setTimeout(hideTip, 260);         /* after any re-focus the state change does */
+    var mainMenu = event.target.closest('.rail__btn[data-panel]');
+    if (mainMenu && railMediaLibrary) railMediaLibrary.removeAttribute('aria-current');
   });
   rail.querySelectorAll('.rail__btn[data-tip]').forEach(function (btn) {
     bindTip(btn);
@@ -1438,6 +1441,14 @@
   function applyPage(doc, url, opts) {
     opts = opts || {};
     var fresh = doc.documentElement.dataset;
+    var freshMediaLibrary = doc.getElementById('railMediaLibrary');
+    if (railMediaLibrary && freshMediaLibrary) {
+      if (freshMediaLibrary.getAttribute('aria-current') === 'page') {
+        railMediaLibrary.setAttribute('aria-current', 'page');
+      } else {
+        railMediaLibrary.removeAttribute('aria-current');
+      }
+    }
     var kind = opts.kind || 'lists';
     /* A direct offline boot can finish after the operator has already opened a
        sidebar. Keep those live shell controls while replacing the page content. */

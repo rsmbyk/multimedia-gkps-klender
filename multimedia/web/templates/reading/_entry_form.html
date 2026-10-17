@@ -23,6 +23,7 @@
   {% if kind == 'media' %}
   {% if not entry %}
   <div class="media-entry__tabs" role="tablist" aria-label="Choose media source" data-media-tab="upload">
+    <span class="media-entry__tab-thumb" aria-hidden="true"></span>
     <button type="button" role="tab" data-media-tab-button="upload" aria-selected="true">Upload</button>
     <button type="button" role="tab" data-media-tab-button="library" aria-selected="false">Media Library</button>
   </div>
