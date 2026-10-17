@@ -16,11 +16,11 @@
 - [x] Run the targeted Media Library E2E module (19 passing) and `git diff --check`
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` and release version 1.14.6 on the ITEM and spec; update `VERSION` and `CHANGELOG.md`
-- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in the same PR (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in PR #359 (In review while open; Done before merge)
+- [x] Conventional Commit + draft PR #359 linking `./spec.md` (same PR; extra commits fine)
 
 ## Done when
 
 - [x] All three acceptance scenarios in `spec.md` hold in the Media Library status popover.
 - [x] The E2E assertions named above pass.
-- [ ] Board, tasks, and version metadata are complete in the same PR.
+- [x] Board, tasks, and version metadata are complete in the same PR.

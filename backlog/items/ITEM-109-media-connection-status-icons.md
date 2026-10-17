@@ -1,6 +1,6 @@
 ---
 id: ITEM-109
-status: in_progress
+status: in_review
 title: 'Show distinct connection icons in the Media Library status row'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: 109
 branch: fix/109-media-connection-status-icons
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/359
 archived_at:
 archive_reason:
 bump: patch
