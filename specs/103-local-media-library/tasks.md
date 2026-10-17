@@ -1,6 +1,6 @@
 # Tasks 103: Local Media Library and service media entries
 
-- **Status:** Accepted amendment implemented; PR checks pending (2026-10-17)
+- **Status:** Accepted amendment implemented; full CI passed at `e7e26ac` (2026-10-17); PR remains open
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -13,7 +13,7 @@
 - [x] Server metadata/reference migration, service-entry forms/endpoints, and local companion. Large file bodies bypass Vercel.
 - [x] Focused browser E2E for entry Create/Edit, library controls, disconnected/missing state, and blank media projector navigation.
 - [x] Review the live Library view against the approved preview in disconnected and connected states, and check small-screen and reduced-motion behavior. Both Chrome and OBS dock use the same loopback companion and Docker-managed volume.
-- [x] Run 53 targeted local tests and push the implementation; full CI at the final head remains to be checked.
+- [x] Run 53 targeted local tests and push the implementation; full CI fast checks and all Browser E2E shards passed at implementation commit [`e7e26ac`](https://github.com/rsmbyk/multimedia-gkps-klender/commit/e7e26ac).
 - [x] Fill Traceability in `./spec.md`; complete final acceptance review before marking Done.
 - [x] Keep ITEM-103 and `backlog/board.md` in the same PR; mark In review with [#353](https://github.com/rsmbyk/multimedia-gkps-klender/pull/353). Mark Done before merge.
 - [x] Apply `bump: minor` in this PR: `VERSION` and changelog 1.14.0, matching the current `develop` 1.13.4 line.
@@ -21,8 +21,8 @@
 
 ## Done when
 
-- [ ] All acceptance scenarios in `spec.md` hold, including blank media Preview/projector behavior.
-- [ ] The full PR, tests, board, tasks, and version records are complete before merge.
+- [x] All acceptance scenarios in `spec.md` hold, including blank media Preview/projector behavior.
+- [x] The full PR, tests, board, tasks, and version records are complete before merge.
 
 ## Accepted Compose amendment — 2026-10-17
 
