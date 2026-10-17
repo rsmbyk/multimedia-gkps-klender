@@ -85,6 +85,67 @@ class ServiceEntryTests(TestCase):
         entry = self._entry(kind=tatib.ServiceEntryKind.SECTION_BREAK, title='PAMUNGKAHNI')
         self.assertEqual(entry.resolve(), ('', ''))
 
+    def test_media_entry_uses_library_filename_and_has_no_projected_body(self):
+        media = tatib.MediaIdentity.objects.create(
+            sha256='a' * 64, byte_count=1024, family='pdf', display_filename='notes.pdf')
+        entry = self._entry(kind=tatib.ServiceEntryKind.MEDIA, media=media,
+                            media_filename='notes.pdf')
+        self.assertEqual(entry.resolve(), ('notes.pdf', ''))
+        self.assertEqual(entry.media.sha256, 'a' * 64)
+
+    def test_media_reference_cannot_be_replaced_after_creation(self):
+        first = tatib.MediaIdentity.objects.create(
+            sha256='a' * 64, byte_count=1024, family='pdf', display_filename='notes.pdf')
+        second = tatib.MediaIdentity.objects.create(
+            sha256='b' * 64, byte_count=1024, family='pdf', display_filename='other.pdf')
+        entry = self._entry(kind=tatib.ServiceEntryKind.MEDIA, media=first,
+                            media_filename='notes.pdf')
+        entry.save()
+        entry.title = 'New title'
+        entry.full_clean()
+        entry.save()
+        entry.media = second
+        with self.assertRaises(ValidationError):
+            entry.full_clean()
+        entry.media = first
+        entry.media_filename = 'renamed.pdf'
+        with self.assertRaises(ValidationError):
+            entry.full_clean()
+        entry.media_filename = 'notes.pdf'
+        entry.kind = tatib.ServiceEntryKind.SECTION_BREAK
+        with self.assertRaises(ValidationError):
+            entry.full_clean()
+
+    def test_media_projection_is_one_blank_screen(self):
+        from multimedia.web.reading.views import _projector_data
+        media = tatib.MediaIdentity.objects.create(
+            sha256='c' * 64, byte_count=42, family='image', display_filename='photo.png')
+        self._entry(kind=tatib.ServiceEntryKind.MEDIA, media=media,
+                    media_filename='photo.png').save()
+        projector = _projector_data(self.tatib)
+        screens, entries = projector['screens'], projector['entries']
+        self.assertEqual(len(screens), 1)
+        self.assertTrue(screens[0]['blank'])
+        self.assertEqual(entries[0]['type'], 'media')
+
+    def test_media_edit_form_ignores_replacement_file(self):
+        from multimedia.web.reading.entries import build_entry_form
+        original = tatib.MediaIdentity.objects.create(
+            sha256='a' * 64, byte_count=10, family='pdf', display_filename='notes.pdf')
+        replacement = tatib.MediaIdentity.objects.create(
+            sha256='b' * 64, byte_count=11, family='pdf', display_filename='other.pdf')
+        entry = self._entry(kind=tatib.ServiceEntryKind.MEDIA, media=original,
+                            media_filename='notes.pdf')
+        entry.save()
+        form = build_entry_form('media', data={'kind': str(tatib.ServiceEntryKind.MEDIA),
+                                               'title': 'Edited', 'media': replacement.pk,
+                                               'media_filename': 'other.pdf'}, instance=entry)
+        self.assertTrue(form.is_valid(), form.errors)
+        updated = form.save()
+        self.assertEqual(updated.media_id, original.pk)
+        self.assertEqual(updated.media_filename, 'notes.pdf')
+        self.assertEqual(updated.title, 'Edited')
+
     def test_a_scripture_entry_cites_its_range_and_joins_its_verses(self):
         entry = self._entry(kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
                             chapter=5, verse_start=13, verse_end=14)

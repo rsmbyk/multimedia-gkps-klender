@@ -114,7 +114,7 @@
         var actions = document.createElement('div');
         actions.className = 'entry__empty-actions';
         [['scripture', 'Add Passage'], ['song', 'Add Song'], ['text', 'Add Text'],
-          ['section_break', 'Add Break']].forEach(function (item) {
+          ['section_break', 'Add Break'], ['media', 'Add Media']].forEach(function (item) {
           var button = document.createElement('button');
           button.type = 'button';
           button.className = 'entry__empty-btn';
@@ -790,6 +790,7 @@
     wireSongPicker(scope);
     wireTextSave(scope);
     wireScreenMode(scope);
+    if (window.gkpsMediaEntry) window.gkpsMediaEntry.wire(scope);
   }
 
   /* editors.js swaps the form back in after a 400; that copy needs wiring too. */
@@ -921,7 +922,7 @@
     }
     trigger = opener;
     keyboardOpened = false;
-    var titles = { scripture: 'Add Passage', song: 'Add Song', text: 'Add Text' };
+    var titles = { scripture: 'Add Passage', song: 'Add Song', text: 'Add Text', media: 'Add Media' };
     load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after),
       titles[opener.dataset.entryOpen] || 'Add entry');
   });

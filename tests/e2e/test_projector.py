@@ -187,6 +187,16 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 tatib=self.untitled_service, order_number=order,
                 kind=tatib.ServiceEntryKind.TEXT, title='', text=self.untitled_text_line)
 
+        if self._testMethodName == 'test_media_navigation_clears_projector_then_text_resumes':
+            media = tatib.MediaIdentity.objects.create(
+                sha256='d' * 64, byte_count=1024, family='pdf', display_filename='notes.pdf')
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, order_number=6, kind=tatib.ServiceEntryKind.MEDIA,
+                media=media, media_filename='notes.pdf')
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, order_number=7, kind=tatib.ServiceEntryKind.TEXT,
+                title='Closing', text='Amin')
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -222,6 +232,18 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             '.slide', 'els => els.map(e => ({slide: e.dataset.slide, kind: e.dataset.kind,'
                      ' active: e.classList.contains("is-active"),'
                      ' hidden: e.getAttribute("aria-hidden")}))')
+
+    def test_media_navigation_clears_projector_then_text_resumes(self):
+        page = self._page(self._projector_url())
+        for _ in range(5):
+            page.keyboard.press('Control+ArrowRight')
+        page.wait_for_function("document.querySelector('.screen.is-active').dataset.entry === '5'")
+        media = page.locator('.screen.is-active')
+        self.assertIn('is-blank', media.get_attribute('class'))
+        self.assertEqual(media.inner_text().strip(), '')
+        page.keyboard.press('Control+ArrowRight')
+        page.wait_for_function("document.querySelector('.screen.is-active').dataset.entry === '6'")
+        self.assertIn('Amin', page.locator('.screen.is-active').inner_text())
 
     # --- only the words, on the product's dark palette ------------------------
 

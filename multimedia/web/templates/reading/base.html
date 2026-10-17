@@ -98,6 +98,7 @@
         </svg>
       </a>
     </li>
+    <li><a class="rail__btn" href="{% url 'web-media-library' %}" data-tip="Media Library" aria-label="Media Library"{% if read_kind == 'media-library' %} aria-current="page"{% endif %}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3.5 3.5 2.5-2.5 5 5"/></svg></a></li>
   </ul>
 
   <div class="rail__foot">
@@ -369,6 +370,7 @@
 </main>
 
 {% include 'reading/_editor_modal.html' %}
+<dialog class="media-error-dialog" id="mediaErrorDialog" aria-labelledby="mediaErrorTitle"><h2 id="mediaErrorTitle">File not supported</h2><p id="mediaErrorMessage"></p><button type="button" id="mediaErrorClose">OK</button></dialog>
 {% include 'reading/_preview_modal.html' %}
 <div class="edit-toasts" id="editToastHost" popover="manual"
      aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
@@ -381,7 +383,10 @@
 <script src="{% static 'web/feedback.js' %}"></script>
 <script src="{% static 'web/editors.js' %}"></script>
 <script src="{% static 'web/date-picker.js' %}"></script>
+<script src="{% static 'web/media-stage.js' %}"></script>
+<script src="{% static 'web/media-entry.js' %}"></script>
 <script src="{% static 'web/entries.js' %}"></script>
+<script src="{% static 'web/media-library.js' %}"></script>
 <script src="{% static 'web/reorder.js' %}"></script>
 <script src="{% static 'web/preview.js' %}"></script>
 </body>

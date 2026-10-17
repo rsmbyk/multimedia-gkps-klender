@@ -10,6 +10,14 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-10-17
+
+### Added
+
+- A computer-level Media Library companion stores verified image, audio, video, PDF, and PowerPoint files in the operating-system user's data folder, shared by Chrome and the OBS dock on that computer.
+- Tata Ibadah media entries keep immutable fingerprint references with optional titles. The service page shows a missing-file state, while media Preview and projector content remain blank in this first slice.
+- The Media Library page lists local files and their service uses, offers type and unused filters, date and size sorting, local removal, and per-computer unused-file retention.
+
 ## [1.13.6] - 2026-10-17
 
 ### Changed

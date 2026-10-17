@@ -24,11 +24,14 @@ urlpatterns = [
     # Tata Ibadah reading.
     path('tatib/', reading_views.TatibView.as_view(), name='web-tatib'),
     path('tatib/<int:service_id>/', reading_views.TatibView.as_view(), name='web-tatib-service'),
+    path('media-library/', reading_views.media_library, name='web-media-library'),
+    path('media-library/references/', reading_views.media_references, name='web-media-references'),
 
     # Service entries (spec 006, slice 2): the content pane's own editor. These come
     # BEFORE the generic editor patterns below: 'editor/<str:kind>/new/' would otherwise
     # swallow 'editor/entry/new/' with kind='entry', and the old view would 404.
     path('editor/entry/new/', reading_views.entry_form, name='web-entry-new'),
+    path('editor/media/register/', reading_views.media_register, name='web-media-register'),
     path('editor/entry/new/save/', reading_views.entry_save, name='web-entry-save-new'),
     path('editor/entry/<int:pk>/edit/', reading_views.entry_form, name='web-entry-edit'),
     path('editor/entry/<int:pk>/save/', reading_views.entry_save, name='web-entry-save'),
