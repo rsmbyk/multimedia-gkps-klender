@@ -410,6 +410,8 @@ class UnifiedTextScreenModeMigrationTests(TransactionTestCase):
                          [(0, 'multi_line', [1]), (0, 'single_screen', [2]),
                           (0, 'single_screen', None)])
         self.assertEqual([row.title for row in rows], ['Paired', 'Fitted', 'Default fitted'])
+        # The projector uses the current model, whose media columns arrive in 0010.
+        self.migrate(MigrationExecutor(connection).loader.graph.leaf_nodes())
         service = tatib.TataIbadah.objects.get(pk=self.service_id)
         screens = _projector_screens(service)
         self.assertEqual([screen.get('single', False) for screen in screens if not screen['blank']],
