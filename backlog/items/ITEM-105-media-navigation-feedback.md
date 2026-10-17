@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: specs/105-media-navigation-feedback/spec.md
 branch: feat/105-media-navigation-feedback
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/356
 archived_at:
 archive_reason:
 bump: patch
@@ -34,6 +34,8 @@ destination.
 - Implementation is on `feat/105-media-navigation-feedback`, based on the current Spec 104 media
   feature stack; `develop` is an ancestor of this branch.
 - Targeted verification passed: all 16 tests in `tests.e2e.test_media_library`.
+- Draft implementation PR [#356](https://github.com/rsmbyk/multimedia-gkps-klender/pull/356)
+  targets the open Spec 104 feature branch and will be retargeted after its parent merges.
 
 ## Acceptance sketch
 

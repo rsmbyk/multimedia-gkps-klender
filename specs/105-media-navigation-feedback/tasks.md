@@ -66,7 +66,8 @@ new page.
 - [x] Set `bump: patch` on the ITEM and spec header
 - [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in the implementation PR
 - [x] Add `VERSION` / changelog patch entry and set `release_version` in the ITEM in the same PR
-- [ ] Conventional Commit and draft PR linking `./spec.md`
+- [x] Conventional Commit `34ca879` and draft PR [#356](https://github.com/rsmbyk/multimedia-gkps-klender/pull/356)
+      linking `./spec.md`
 
 ## Done when
 
