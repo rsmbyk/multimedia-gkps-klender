@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-102](./items/ITEM-102-saved-tatib-date-header.md) | Show the Tata Ibadah date header in the saved-copy reading path | The in-place navigation's renderer keeps the date above a dated service title | fix | P2 | S | [102](../specs/102-saved-tatib-date-header/spec.md) | 2026-10-17 |
 
 ## Ready
 
