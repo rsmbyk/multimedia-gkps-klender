@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-105](./items/ITEM-105-media-navigation-feedback.md) | Keep media navigation selection feedback in sync | Slide the media-source selection and clear stale Media Library sidebar selection after in-place navigation | fix | P2 | S | [105](../specs/105-media-navigation-feedback/spec.md) | `feat/105-media-navigation-feedback` | 2026-10-17 |
 
 ## In review
 

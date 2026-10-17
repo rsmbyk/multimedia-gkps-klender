@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.14.2] - 2026-10-17
+
+### Fixed
+
+- The New media source tabs use a sliding selection surface with reduced-motion support, and the
+  Media Library sidebar highlight now follows main-menu selection and in-place page history.
+
 ## [1.14.1] - 2026-10-17
 
 ### Changed
