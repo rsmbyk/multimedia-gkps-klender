@@ -1,7 +1,7 @@
 # Spec 104: Restrict the search page to the listed content fields
 
 - **ID:** 104
-- **Status:** Draft
+- **Status:** Accepted (owner, 2026-10-17)
 - **Item:** ITEM-104
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

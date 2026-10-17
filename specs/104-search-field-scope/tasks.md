@@ -1,6 +1,6 @@
 # Tasks 104: Restrict the search page to the listed content fields
 
-- **Status:** Draft
+- **Status:** Accepted (owner, 2026-10-17)
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 

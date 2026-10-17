@@ -1,6 +1,6 @@
 # Plan 105: Search query grammar and ranking
 
-- **Status:** Draft
+- **Status:** Accepted (owner, 2026-10-17)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-105

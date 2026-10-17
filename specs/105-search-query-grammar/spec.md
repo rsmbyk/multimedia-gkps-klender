@@ -1,7 +1,7 @@
 # Spec 105: Search query grammar and ranking
 
 - **ID:** 105
-- **Status:** Draft
+- **Status:** Accepted (owner, 2026-10-17)
 - **Item:** ITEM-105
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

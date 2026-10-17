@@ -16,6 +16,8 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-104](./items/ITEM-104-search-field-scope.md) | Restrict the search page to the listed content fields | Only verse text/title, song title/lyrics, service name, row title, and text-entry body match; no reference, book, songbook, date, or label rows | fix | P1 | M | [104](../specs/104-search-field-scope/spec.md) | 2026-10-17 |
+| [ITEM-105](./items/ITEM-105-search-query-grammar.md) | Search query grammar and token ranking | Tokens, quoted phrases, `-` exclusions, soft-AND coverage and order ranking, and the purged-query status line | feat | P1 | L | [105](../specs/105-search-query-grammar/spec.md) | 2026-10-17 |
 
 ## Ready
 
