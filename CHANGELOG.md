@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.14.3] - 2026-10-17
+
+### Fixed
+
+- Tata Ibadah media entries and add-media actions remain visible when a saved service opens
+  through in-place navigation.
+
 ## [1.14.2] - 2026-10-17
 
 ### Fixed

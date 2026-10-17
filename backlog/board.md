@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-106](./items/ITEM-106-tatib-offline-media-rendering.md) | Keep media entries visible in saved Tata Ibadah pages | Keep media icons and add actions when in-place navigation uses the saved-page renderer | fix | P2 | M | [106](../specs/106-tatib-offline-media-rendering/spec.md) | `fix/106-tatib-offline-media-rendering` | 2026-10-17 |
 
 ## In review
 

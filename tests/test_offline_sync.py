@@ -70,6 +70,23 @@ class OfflineLibraryEndpointTests(TestCase):
         self.assertEqual(service_data['items'][0]['paras'][0]['text'], 'Tuhan dengar kami')
         self.assertEqual(service_data['toc'][0]['label'], 'Doa')
 
+    def test_service_chunk_keeps_media_identity_for_saved_page_rendering(self):
+        fingerprint = 'a' * 64
+        media = tatib.MediaIdentity.objects.create(
+            sha256=fingerprint, byte_count=2048, family=tatib.MediaFamily.PDF,
+            display_filename='service.pdf')
+        entry = tatib.ServiceEntry.objects.create(
+            tatib=self.service, order_number=2, kind=tatib.ServiceEntryKind.MEDIA,
+            media=media, media_filename='service.pdf')
+
+        data = self.client.get(f'/offline/chunk/service/{self.service.pk}/').json()['data']
+        item = next(row for row in data['items'] if row['anchor'] == f'e{entry.pk}')
+
+        self.assertEqual(item['kind'], 'media')
+        self.assertEqual(item['media_hash'], fingerprint)
+        self.assertEqual(item['media_family'], 'pdf')
+        self.assertNotIn('bytes', item)
+
     def test_revision_changes_after_content_change(self):
         before = {row['key']: row['revision'] for row in self.client.get('/offline/manifest/').json()['chunks']}
         verse = self.song.verse_set.get(number=1)

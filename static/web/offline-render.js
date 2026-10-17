@@ -101,8 +101,8 @@
     }).join('');
   }
   function addButtons(serviceId) {
-    return ['scripture', 'song', 'text', 'section_break'].map(function (kind) {
-      var names = {scripture: 'Passage', song: 'Song', text: 'Text', section_break: 'Break'};
+    return ['scripture', 'song', 'text', 'section_break', 'media'].map(function (kind) {
+      var names = {scripture: 'Passage', song: 'Song', text: 'Text', section_break: 'Break', media: 'Media'};
       return '<button type="button" class="entry__add-btn" data-entry-open="' + kind
         + '" data-entry-tatib="' + serviceId + '">+ ' + names[kind] + '</button>';
     }).join('');
@@ -455,12 +455,18 @@
           + '">' + (para.mark ? '<span class="tatib__sp">' + escape(para.mark)
           + '</span> ' : '') + escape(para.text) + '</p>';
       }).join('');
+      var media = item.kind === 'media';
       return '<section class="tatib__item' + (item.entry ? ' tatib__item--entry' : '')
-        + (item.preview || item.entry || item.old_item ? ' tatib__item--acts' : '') + '" id="ti-' + escape(item.anchor)
+        + (item.preview || item.entry || item.old_item ? ' tatib__item--acts' : '')
+        + (media ? ' tatib__item--media' : '') + '" id="ti-' + escape(item.anchor)
         + '" data-anchor="' + escape(item.anchor) + '"'
         + (item.entry ? ' data-entry-pk="' + item.pk + '"' : item.old_item
           ? ' data-old-item-pk="' + item.pk + '"' : '')
-        + (item.clipped ? ' data-clipped="true"' : '') + '>' + title
+        + (media ? ' data-media-hash="' + escape(item.media_hash)
+          + '" data-media-family="' + escape(item.media_family) + '"' : '')
+        + (item.clipped ? ' data-clipped="true"' : '') + '>'
+        + (media ? '<span class="entry__media-icon" aria-hidden="true" data-media-icon="'
+          + escape(item.media_family) + '"></span>' : '') + title
         + (item.deleted_target ? '<p class="entry__deleted-warning" role="status">'
           + 'This song, songbook, or an included verse was deleted.</p>' : '')
         + (item.subtitle ? '<p class="read__sub">' + escape(item.subtitle) + '</p>' : '')
