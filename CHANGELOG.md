@@ -10,6 +10,15 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.15.0] - 2026-10-18
+
+### Added
+
+- Media Library files can be temporarily shared through a private Cloudflare R2 bucket for seven days. The local companion owns direct uploads, verified downloads, transfer progress, and history across browser closure.
+- Missing online media for today and future Tata Ibadah services downloads automatically with bounded retries; past services provide a manual download action.
+- Media Library and Tata Ibadah show online and local availability, and files required by today or future services cannot be removed from the local library.
+- Daily cleanup, an R2 configuration/smoke command, and setup guidance for the eight-day bucket lifecycle backstop.
+
 ## [1.14.6] - 2026-10-17
 
 ### Changed

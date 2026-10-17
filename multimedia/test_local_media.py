@@ -111,6 +111,15 @@ class LocalLibraryTests(TestCase):
         self.library.sync_references([file['sha256']])
         self.assertIsNone(self.library.list_files()[0]['unused_since'])
 
+    def test_today_future_reference_blocks_manual_delete_but_past_reference_does_not(self):
+        payload = b'%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n'
+        file = self.library.import_bytes('notes.pdf', payload)
+        self.library.sync_references([file['sha256']], [file['sha256']])
+        with self.assertRaisesRegex(ValueError, 'today or later'):
+            self.library.remove(file['sha256'])
+        self.library.sync_references([file['sha256']], [])
+        self.assertTrue(self.library.remove(file['sha256']))
+
     def test_shorter_retention_gives_existing_unused_file_until_tomorrow(self):
         pdf = b'%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n'
         self.library.import_bytes('notes.pdf', pdf)
@@ -135,3 +144,72 @@ class LocalLibraryTests(TestCase):
         self.assertIsNone(self.library.verified_file(file['sha256']))
         self.assertEqual(self.library.list_files(), [])
         self.assertIsNone(self.library.verified_file('../index.sqlite3'))
+
+class TransferPlanTests(TestCase):
+    def setUp(self):
+        import threading
+        from multimedia.local_transfers import TransferManager
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.library = LocalLibrary(Path(self.temp.name))
+        self.manager = TransferManager.__new__(TransferManager)
+        self.manager.library = self.library
+        self.manager.lock = threading.RLock()
+        self.manager.cancel_events = {}
+        self.manager.app_origins = ()
+
+    def test_auto_download_plan_persists_without_browser_and_deduplicates(self):
+        from multimedia.local_transfers import now
+        sha = 'a' * 64
+        args = (sha, 'service.pdf', 'pdf', 42,
+                'https://account.r2.cloudflarestorage.com/bucket/file?sig=1',
+                (now() + timedelta(days=3)).isoformat())
+        self.assertIsNone(self.manager.start_download(*args, automatic=True,
+                                                       eligible_until='2026-10-21'))
+        self.assertIsNone(self.manager.start_download(*args, automatic=True,
+                                                       eligible_until='2026-10-22'))
+        reopened = LocalLibrary(Path(self.temp.name))
+        with reopened._db() as db:
+            plans = list(db.execute('SELECT * FROM auto_downloads'))
+        self.assertEqual(len(plans), 1)
+        self.assertEqual(plans[0]['eligible_until'], '2026-10-22')
+
+    def test_only_r2_https_urls_are_accepted(self):
+        from multimedia.local_transfers import validate_url
+        for url in ('http://account.r2.cloudflarestorage.com/file',
+                    'https://example.com/file', 'file:///tmp/file'):
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                validate_url(url)
+
+    def test_download_verifies_fingerprint_before_exposing_file(self):
+        import threading
+        pdf = b'%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n'
+        sha = hashlib.sha256(pdf).hexdigest()
+        url = 'https://account.r2.cloudflarestorage.com/bucket/file?sig=1'
+        with patch('multimedia.local_transfers.urllib.request.urlopen', return_value=io.BytesIO(b'X' * len(pdf))):
+            with self.assertRaisesRegex(IOError, 'fingerprint'):
+                self.manager._download(1, sha, 'service.pdf', len(pdf), url, threading.Event())
+        self.assertEqual(self.library.list_files(), [])
+        self.assertFalse(list(self.library.root.glob('.download-*')))
+        with patch('multimedia.local_transfers.urllib.request.urlopen', return_value=io.BytesIO(pdf)):
+            self.manager._download(2, sha, 'service.pdf', len(pdf), url, threading.Event())
+        self.assertEqual(self.library.list_files()[0]['sha256'], sha)
+
+    def test_restart_records_failed_job_and_preserves_retry_backoff(self):
+        from multimedia.local_transfers import now
+        sha = 'a' * 64
+        url = 'https://account.r2.cloudflarestorage.com/bucket/file?sig=1'
+        self.manager.start_download(sha, 'service.pdf', 'pdf', 42, url,
+                                    (now() + timedelta(days=3)).isoformat(),
+                                    automatic=True, eligible_until='2026-10-22')
+        with self.library._db() as db:
+            db.execute('INSERT INTO transfers (direction, sha256, name, size, status, automatic, started_at) '
+                       'VALUES (?, ?, ?, ?, ?, ?, ?)',
+                       ('download', sha, 'service.pdf', 42, 'active', 1, now().isoformat()))
+        reopened = LocalLibrary(Path(self.temp.name))
+        with reopened._db() as db:
+            job = db.execute('SELECT status FROM transfers').fetchone()
+            plan = db.execute('SELECT attempts, next_attempt FROM auto_downloads').fetchone()
+        self.assertEqual(job['status'], 'failed')
+        self.assertEqual(plan['attempts'], 1)
+        self.assertGreater(datetime.fromisoformat(plan['next_attempt']), now())

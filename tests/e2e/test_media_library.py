@@ -24,6 +24,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         super().setUp()
         self.service = TataIbadah.objects.create(name='Ibadah Minggu', date=date(2026, 10, 18), is_active=True)
         if self._testMethodName in ('test_service_entry_distinguishes_disconnected_and_missing',
+                                    'test_service_media_status_dialog_has_ordered_availability',
                                     'test_edit_media_only_exposes_title',
                                     'test_titled_media_entry_heading_aligns_with_file_icon',
                                     'test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen'):
@@ -98,12 +99,11 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
 
     def connection_drops_after_settings_save_page(self, path):
         page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
-        status_requests = {'count': 0}
+        status_requests = {'drop_after_settings': False}
         def companion(route):
             url = route.request.url
             if url.endswith('/status'):
-                status_requests['count'] += 1
-                if status_requests['count'] == 2:
+                if status_requests['drop_after_settings']:
                     route.abort()
                     return
                 payload = {'connection': 'connected', 'file_count': 0, 'total_size': 0,
@@ -111,12 +111,14 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
             elif url.endswith('/files') or url.endswith('/references'):
                 payload = {'files': []}
             elif url.endswith('/settings'):
+                status_requests['drop_after_settings'] = True
                 payload = {'retention': '30'}
             else:
                 payload = {'error': 'Not found'}
             route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
                           headers={'Access-Control-Allow-Origin': self.live_server_url})
         page.route('http://127.0.0.1:63174/**', companion)
+        page._media_status_state = status_requests
         page.goto(self.live_server_url + path)
         return page
 
@@ -319,6 +321,54 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#mediaCount')).to_have_text('1')
         expect(page.locator('#mediaTotalSize')).to_have_text('2 KB')
 
+    def test_service_media_status_dialog_has_ordered_availability(self):
+        page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
+        expect(page.locator('#serviceMediaButton')).to_be_visible()
+        page.locator('#serviceMediaButton').click()
+        dialog = page.locator('#serviceMediaDialog')
+        expect(dialog).to_be_visible()
+        expect(dialog.locator('.service-media__row')).to_have_count(1)
+        expect(dialog.locator('.service-media__main strong')).to_have_text('service.pdf')
+        expect(dialog.locator('[data-online-state]')).to_have_attribute('aria-label', 'Unavailable online')
+        expect(dialog.locator('[data-local-state]')).to_have_attribute('aria-label', 'Local library unavailable')
+        page.keyboard.press('Escape')
+        expect(dialog).not_to_be_visible()
+
+    def test_sidebar_transfer_session_shows_active_then_finished(self):
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        job = {'id': 1, 'direction': 'upload', 'sha256': 'a' * 64,
+               'name': 'service.pdf', 'size': 100, 'bytes_done': 25,
+               'status': 'active', 'automatic': 0,
+               'started_at': '2026-10-18T09:00:00+00:00', 'ended_at': None}
+        state = {'job': job}
+        def companion(route):
+            url = route.request.url
+            if url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': 0, 'total_size': 0,
+                           'retention': '30', 'write_token': 'test-token'}
+            elif url.endswith('/transfers'):
+                payload = {'transfers': [state['job']], 'retrying': []}
+            else:
+                payload = {'files': []}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers={'Access-Control-Allow-Origin': self.live_server_url})
+        page.route('http://127.0.0.1:63174/**', companion)
+        page.goto(self.live_server_url + reverse('web-media-library'))
+        rail = page.locator('#mediaTransferRail')
+        expect(rail).to_be_visible()
+        expect(page.locator('#mediaTransferRailDot')).to_have_attribute('data-state', 'active')
+        rail.click()
+        expect(page.locator('#mediaTransfersList')).to_contain_text('25%')
+        page.keyboard.press('Escape')
+        expect(page.locator('#mediaTransfersDialog')).not_to_be_visible()
+        state['job'] = dict(job, status='completed', bytes_done=100,
+                            ended_at='2026-10-18T09:01:00+00:00')
+        expect(page.locator('#mediaTransferRailDot')).to_have_attribute('data-state', 'completed')
+        rail.click()
+        expect(page.locator('#mediaTransfersList')).to_contain_text('Completed')
+        page.keyboard.press('Escape')
+        expect(rail).not_to_be_visible()
+
     def test_connection_icon_tracks_status_refresh(self):
         page = self.connection_drops_after_settings_save_page(reverse('web-media-library'))
         page.locator('#mediaSettingsButton').click()
@@ -329,6 +379,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#mediaConnection')).to_have_attribute('data-state', 'unavailable')
         expect(page.locator('#mediaConnection .media-library__connection-icon--unavailable')).to_be_visible()
         expect(page.locator('#mediaConnection .media-library__connection-icon--connected')).not_to_be_visible()
+        page._media_status_state['drop_after_settings'] = False
         page.reload()
         page.locator('#mediaStatusButton').click()
         expect(page.locator('#mediaConnection')).to_have_text('Connected')

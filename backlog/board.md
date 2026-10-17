@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-112](./items/ITEM-112-temporary-media-handoff.md) | Temporarily share and acquire Media Library files | Seven-day per-file online handoff with companion transfers and service status | feat | P1 | L | [112](../specs/112-temporary-media-handoff/spec.md) | `feat/112-temporary-media-handoff` | 2026-10-18 |
 
 ## In review
 
