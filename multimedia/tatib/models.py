@@ -38,11 +38,42 @@ class TataIbadahItem(models.Model):
         ordering = ('tatib', 'order_number')
 
 
+class MediaFamily(models.TextChoices):
+    IMAGE = 'image', 'Image'
+    AUDIO = 'audio', 'Audio'
+    VIDEO = 'video', 'Video'
+    PDF = 'pdf', 'PDF'
+    POWERPOINT = 'slides', 'PowerPoint'
+
+
+class MediaIdentity(models.Model):
+    """Server-side identity only; file bytes live in an operator's local library."""
+
+    sha256 = models.CharField(max_length=64, primary_key=True)
+    byte_count = models.PositiveIntegerField()
+    family = models.CharField(max_length=6, choices=MediaFamily.choices)
+    display_filename = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+
+    def clean(self):
+        import re
+        errors = {}
+        if not re.fullmatch(r'[0-9a-f]{64}', self.sha256 or ''):
+            errors['sha256'] = 'A complete SHA-256 fingerprint is required.'
+        if not self.byte_count or self.byte_count > 200_000_000:
+            errors['byte_count'] = 'A media file must be between 1 byte and 200 MB.'
+        if not self.display_filename or '/' in self.display_filename or '\\' in self.display_filename:
+            errors['display_filename'] = 'A plain filename is required.'
+        if errors:
+            raise ValidationError(errors)
+
+
 class ServiceEntryKind(models.IntegerChoices):
     TEXT = 0
     SCRIPTURE = 1
     SONG = 2
     SECTION_BREAK = 3
+    MEDIA = 4
 
 
 class TextScreenMode(models.TextChoices):
@@ -87,6 +118,10 @@ class ServiceEntry(models.Model):
     song = models.ForeignKey(song_models.Song, models.PROTECT, null=True, blank=True)
     verses = models.JSONField(default=list, blank=True)
 
+    # Media bytes remain on the operator computer; the service keeps identity and label.
+    media = models.ForeignKey(MediaIdentity, models.PROTECT, null=True, blank=True)
+    media_filename = models.CharField(max_length=255, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     class Meta:
@@ -115,6 +150,19 @@ class ServiceEntry(models.Model):
                 errors['song'] = 'A song entry needs a song.'
             elif not self.verses:
                 errors['verses'] = 'Keep at least one verse in the service.'
+        if self.kind == ServiceEntryKind.MEDIA:
+            if not self.media_id:
+                errors['media'] = 'A media entry needs a file reference.'
+            if not self.media_filename:
+                errors['media_filename'] = 'A media entry needs a filename.'
+            if self.pk:
+                saved = type(self).objects.filter(pk=self.pk).values(
+                    'media_id', 'media_filename').first()
+                if saved and (saved['media_id'] != self.media_id
+                              or saved['media_filename'] != self.media_filename):
+                    errors['media'] = 'The file reference cannot change after creation.'
+        elif self.pk and type(self).objects.filter(pk=self.pk, kind=ServiceEntryKind.MEDIA).exists():
+            errors['kind'] = 'A media entry cannot change its kind after creation.'
         if errors:
             raise ValidationError(errors)
 
@@ -135,6 +183,8 @@ class ServiceEntry(models.Model):
             if song.number is not None:
                 return f'{book.name} {song.number}{(song.sub_number or "").upper()}'
             return song.title or book.name
+        if self.kind == ServiceEntryKind.MEDIA:
+            return self.title or self.media_filename
         return self.title
 
     def resolve(self):
@@ -145,6 +195,8 @@ class ServiceEntry(models.Model):
             return self.citation(), self._song_body()
         if self.kind == ServiceEntryKind.SECTION_BREAK:
             return '', ''
+        if self.kind == ServiceEntryKind.MEDIA:
+            return self.citation(), ''
         return self.title, self.text
 
     @property

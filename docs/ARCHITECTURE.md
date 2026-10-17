@@ -77,6 +77,26 @@ Public reading pages use the project's own design language (`static/styles/desig
 
 ## Boundaries
 
+### Computer-level Media Library
+
+`multimedia/local_media.py` is a separate Python companion process on the projector
+computer. It stores file bytes and a SQLite index in the current operating-system
+user's data directory: `%LOCALAPPDATA%\GKPS Klender\Media Library` on Windows,
+`~/Library/Application Support/GKPS Klender/Media Library` on macOS, and
+`$XDG_DATA_HOME/gkps-klender/media-library` (or `~/.local/share/...`) on Linux.
+The `files/` directory uses SHA-256 names; the index holds the displayed filename,
+detected family, upload date, usage state, and local retention setting. See
+[`docs/local-media-companion.md`](local-media-companion.md) for startup.
+
+The companion accepts requests only on `127.0.0.1:47863` from explicitly
+configured application origins. Selection sends bytes to a temporary inspection
+endpoint; Save sends them to the import endpoint for the verified atomic copy.
+Both return the hash and metadata. Django stores only that identity and an immutable service-entry
+reference. The same companion and folder serve Chrome and the OBS dock on one
+computer. The Media Library page fetches service references from Django, then
+sends a complete reference inventory to the companion before unused-file cleanup.
+Neither browser profile nor Vercel stores these file bytes.
+
 - Content domains (`bible`, `songs`, `tatib`, `bookmarks`) own their models and rules.
 - `api` exposes the domains over REST; `obs` and `web` are presentation surfaces.
 - Process and product docs live under `docs/`; they are not runtime code.

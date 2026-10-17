@@ -13,7 +13,7 @@ pr:
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.14.0
 ---
 
 # ITEM-103: Local Media Library and service media entries

@@ -20,6 +20,7 @@ KINDS = {
     'scripture': tatib_models.ServiceEntryKind.SCRIPTURE,
     'song': tatib_models.ServiceEntryKind.SONG,
     'section_break': tatib_models.ServiceEntryKind.SECTION_BREAK,
+    'media': tatib_models.ServiceEntryKind.MEDIA,
 }
 
 
@@ -158,17 +159,43 @@ class SongEntryForm(ServiceEntryForm):
         return entry
 
 
+class MediaEntryForm(ServiceEntryForm):
+    """An edit can rename the entry, never point it at different bytes."""
+
+    class Meta(ServiceEntryForm.Meta):
+        fields = ['kind', 'title', 'media', 'media_filename']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['kind'].disabled = True
+            self.fields['media'].disabled = True
+            self.fields['media_filename'].disabled = True
+
+    def clean_kind(self):
+        if self.cleaned_data['kind'] != tatib_models.ServiceEntryKind.MEDIA:
+            raise ValidationError('This entry must remain a media entry.')
+        return self.cleaned_data['kind']
+
+    def clean_media_filename(self):
+        value = self.cleaned_data['media_filename']
+        if '/' in value or '\\' in value:
+            raise ValidationError('A plain filename is required.')
+        return value
+
+
 FORMS = {
     'text': TextEntryForm,
     'section_break': SectionBreakEntryForm,
     'scripture': ScriptureEntryForm,
     'song': SongEntryForm,
+    'media': MediaEntryForm,
 }
 
 
 TITLES = {
     'text': 'text', 'scripture': 'passage',
-    'song': 'song', 'section_break': 'break',
+    'song': 'song', 'section_break': 'break', 'media': 'media',
 }
 
 

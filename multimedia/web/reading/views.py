@@ -299,6 +299,54 @@ def entry_form(request, kind=None, pk=None):
     })
 
 
+def media_register(request):
+    """Register verified companion metadata; no file bytes cross this endpoint."""
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    try:
+        payload = json.loads(request.body)
+        media = tatib_models.MediaIdentity(
+            sha256=payload['sha256'], byte_count=payload['size'],
+            family=payload['family'], display_filename=payload['name'])
+        media.clean_fields()
+        media.clean()
+    except (ValueError, TypeError, KeyError, tatib_models.ValidationError):
+        return JsonResponse({'error': 'Invalid media metadata.'}, status=400)
+    existing, created = tatib_models.MediaIdentity.objects.get_or_create(
+        sha256=media.sha256,
+        defaults={'byte_count': media.byte_count, 'family': media.family,
+                  'display_filename': media.display_filename})
+    if not created and (existing.byte_count != media.byte_count or existing.family != media.family):
+        return JsonResponse({'error': 'Fingerprint metadata conflicts.'}, status=409)
+    return JsonResponse({'sha256': existing.sha256, 'filename': media.display_filename,
+                         'family': existing.family, 'size': existing.byte_count})
+
+
+def media_library(request):
+    """The page shell; each computer supplies its own local file inventory."""
+    return render(request, 'reading/media_library.html', {
+        'read_state': 'on', 'nav_state': 'closed', 'ch_state': 'closed',
+        'read_kind': 'media-library', 'read_name': 'Media Library',
+        'page_title': 'Media Library — GKPS Klender',
+    })
+
+
+def media_references(request):
+    """Current service uses, for local-library display and safe cleanup."""
+    rows = (tatib_models.ServiceEntry.objects
+            .filter(kind=tatib_models.ServiceEntryKind.MEDIA, media__isnull=False)
+            .select_related('tatib').order_by('-tatib__date', '-tatib__created_at', 'pk'))
+    uses = {}
+    for entry in rows:
+        uses.setdefault(entry.media_id, []).append({
+            'service': entry.tatib.name, 'date': entry.tatib.date.isoformat() if entry.tatib.date else None,
+            'title': entry.title, 'url': reverse('web-tatib-service', args=[entry.tatib_id]) + f'#ti-e{entry.pk}',
+        })
+    return JsonResponse({'uses': uses})
+
+
 def entry_save(request, pk=None):
     if not editors.editors_allowed(request):
         return HttpResponseForbidden('Editing is restricted.')
@@ -846,6 +894,10 @@ def _tatib_stage(service):
                  'deleted_target': deleted_target, 'subtitle': verse_line,
                  'paras': paras, 'clipped': clipped,
                  'note': row.title if row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK else ''}
+        if kind_key == 'media' and row.media_id:
+            family = row.media.get_family_display()
+            block.update(media_hash=row.media_id, media_family=row.media.family,
+                         subtitle=(f'{family} · {row.media_filename}' if row.title else family))
         if kind_key in ('scripture', 'song') and not deleted_target:
             block['jump'] = _entry_jump(row)
         preview = None
@@ -1000,6 +1052,9 @@ def _projector_data(service):
         elif row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK:
             group = [_blank_screen()]
             entry_type, label, untitled = 'break', row.title or '', False
+        elif row.kind == tatib_models.ServiceEntryKind.MEDIA:
+            group = [_blank_screen()]
+            entry_type, label, untitled = 'media', row.citation(), not bool(row.title)
         elif row.kind == tatib_models.ServiceEntryKind.SCRIPTURE:
             group = _scripture_screens(row) + [_blank_screen()]
             entry_type, label, untitled = 'passage', row.citation(), False

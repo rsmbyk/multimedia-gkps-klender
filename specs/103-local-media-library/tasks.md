@@ -7,14 +7,14 @@
 ## Checklist
 
 - [x] Owner accepts this Draft; implementation authorized on 2026-10-17.
-- [ ] After spec/ITEM 102 lands on `develop`, rebase `feat/103-local-media-library` onto that integration base and check its references before opening the implementation PR. Keep spec/ITEM ID 103.
-- [ ] Document the decided per-user OS data folder, companion packaging, loopback pairing/origin rules, local index, and Windows/macOS/Linux startup path; update `docs/ARCHITECTURE.md` and an ADR when chosen.
-- [ ] Red: focused domain/application tests for media identity, immutable entry reference, import validation, local deduplication, missing state, and cleanup (`multimedia/tatib/tests.py`, `multimedia/web/tests.py`, new companion tests).
-- [ ] Green: server metadata/reference migration, service-entry forms/endpoints, and local companion. Keep all large file bodies off Vercel.
-- [ ] Red: focused browser E2E for entry Create/Edit, library controls, disconnected/missing state, and blank media projector navigation (new media E2E module plus `tests/e2e/test_projector.py`).
-- [ ] Green: UI integration matching both approved previews, including responsive/dark/reduced-motion behavior and Chrome/OBS-dock sharing of one local folder.
+- [x] Spec/ITEM 102 landed on `develop`; rebased `feat/103-local-media-library` onto `ad3ed42` and checked the distinct 102/103 references. Recheck against `develop` before opening the implementation PR.
+- [x] Document the per-user OS data folder, companion startup, loopback origin rules, and local index in `docs/ARCHITECTURE.md`, `docs/local-media-companion.md`, and ADR 0004.
+- [x] Focused domain/application tests for media identity, immutable entry reference, import validation, local deduplication, missing state, and cleanup.
+- [x] Server metadata/reference migration, service-entry forms/endpoints, and local companion. Large file bodies bypass Vercel.
+- [x] Focused browser E2E for entry Create/Edit, library controls, disconnected/missing state, and blank media projector navigation.
+- [x] Review the live Library view against the approved preview in disconnected and connected states, and check small-screen and reduced-motion behavior. Both Chrome and OBS dock use the same loopback companion and OS-user folder.
 - [ ] Run targeted local tests only, then push for full CI and browser E2E at the exact head.
-- [ ] Fill Traceability in `./spec.md` and check all acceptance scenarios.
+- [x] Fill Traceability in `./spec.md`; complete final acceptance review before marking Done.
 - [ ] Keep ITEM-103 and `backlog/board.md` in the same PR; mark In review with PR link, then Done before merge.
 - [ ] Apply `bump: minor` in that PR: update `VERSION`, changelog version section, and ITEM `release_version` based on the then-current integration line.
 - [ ] Conventional Commit with Codex trailer and a draft PR to `develop` using the repository PR template.

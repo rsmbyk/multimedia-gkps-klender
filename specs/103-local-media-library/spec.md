@@ -165,6 +165,6 @@ The two linked HTML previews are the visual source of truth. They are planning a
 
 ## Traceability
 
-- Domain/app tests: to be filled during implementation (`multimedia/tatib/tests.py`, `multimedia/web/tests.py`, companion tests).
-- E2E: to be filled during implementation (focused media tests and `tests/e2e/test_projector.py`).
-- Implementation: none; Draft only.
+- Domain/app tests: `multimedia/tatib/tests.py` (media identity, immutable reference, blank projector screen), `multimedia/web/test_media.py` (metadata registration, entry save, reference inventory), and `multimedia/test_local_media.py` (deduplication, content inspection, verified reads, retention).
+- E2E: `tests/e2e/test_media_library.py` (connected/disconnected library, picker state, duplicate upload, entry creation, missing state) and `tests/e2e/test_projector.py::ProjectorE2ETests.test_media_navigation_clears_projector_then_text_resumes`.
+- Implementation: `multimedia/local_media.py`, `multimedia/tatib/models.py`, `multimedia/web/reading/{entries,views}.py`, `multimedia/web/templates/reading/{media_library,_entry_form,tatib,base}.html`, and `static/web/media-{entry,library,stage}.js`.
