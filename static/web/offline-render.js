@@ -511,64 +511,176 @@
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/\s+/g, ' ').trim().toLowerCase();
   }
-  function score(title, body, query) {
-    var a = normalized(title), c = normalized(body);
-    if (a === query) return 200;
-    if (a.startsWith(query)) return 120;
-    if (a.includes(query)) return 95;
-    if (c.includes(query)) return 35;
-    if (query.indexOf(' ') !== -1) {
-      var combined = a + ' ' + c;
-      if (query.split(' ').every(function (word) { return combined.includes(word); })) return 16;
+  var NOTICE_EXCLUSION_ONLY = 'Nothing to search — an exclusion like “-Israel” needs at least one other word.';
+  var NOTICE_NO_WORDS = 'Nothing to search — add at least one word.';
+
+  function isWordChar(ch) {
+    return /^[\p{L}\p{N}]$/u.test(ch) || /^[\u0300-\u036f]$/.test(ch);
+  }
+
+  // Spec 105: symbols separate words, quotes make a phrase, a dash excludes.
+  function parseQuery(input) {
+    var text = String(input || ''), tokens = [], excluded = false, index = 0;
+    while (index < text.length) {
+      var ch = text[index];
+      if (ch === '"') {
+        index += 1;
+        var words = [], word = '';
+        while (index < text.length && text[index] !== '"') {
+          if (isWordChar(text[index])) { word += text[index]; }
+          else if (word) { words.push(word); word = ''; }
+          index += 1;
+        }
+        if (word) words.push(word);
+        if (index < text.length) index += 1;
+        if (words.length) tokens.push({words: words, excluded: excluded, phrase: true});
+        excluded = false;
+        continue;
+      }
+      if (ch === '-' && index + 1 < text.length
+          && (isWordChar(text[index + 1]) || text[index + 1] === '"')) {
+        excluded = true;
+        index += 1;
+        continue;
+      }
+      if (isWordChar(ch)) {
+        var bare = '';
+        while (index < text.length && isWordChar(text[index])) { bare += text[index]; index += 1; }
+        tokens.push({words: [bare], excluded: excluded, phrase: false});
+        excluded = false;
+        continue;
+      }
+      excluded = false;
+      index += 1;
     }
-    return 0;
+    tokens.forEach(function (token) {
+      token.display = token.words.join(' ');
+      token.text = normalized(token.display);
+    });
+    var canonical = tokens.map(function (token) {
+      var body = token.phrase ? "'" + token.display + "'" : token.display;
+      return token.excluded ? '-' + body : body;
+    }).join(' ');
+    var notice = '';
+    if (!tokens.length) notice = NOTICE_NO_WORDS;
+    else if (!tokens.some(function (token) { return !token.excluded; })) {
+      notice = NOTICE_EXCLUSION_ONLY;
+    }
+    return {tokens: tokens, canonical: canonical, notice: notice};
+  }
+
+  function occurrences(text, token) {
+    var found = [], start = text.indexOf(token.text);
+    while (start !== -1) { found.push(start); start = text.indexOf(token.text, start + 1); }
+    return found;
+  }
+
+  // Longest run of matched tokens that keeps the query's order inside one field.
+  function bestOrder(fields, tokens) {
+    var best = 0;
+    fields.forEach(function (field) {
+      var events = [];
+      tokens.forEach(function (token, index) {
+        occurrences(field, token).forEach(function (position) {
+          events.push([position, -index]);
+        });
+      });
+      if (!events.length) return;
+      events.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+      var tails = [];
+      events.forEach(function (event) {
+        var value = -event[1], low = 0, high = tails.length;
+        while (low < high) {
+          var middle = (low + high) >> 1;
+          if (tails[middle] < value) { low = middle + 1; } else { high = middle; }
+        }
+        if (low === tails.length) { tails.push(value); } else { tails[low] = value; }
+      });
+      best = Math.max(best, tails.length);
+    });
+    return best;
+  }
+
+  function metrics(title, body, tokens) {
+    var fields = [normalized(title), normalized(body)], matched = [];
+    for (var index = 0; index < tokens.length; index += 1) {
+      var token = tokens[index];
+      var hit = fields.some(function (field) { return field.indexOf(token.text) !== -1; });
+      if (token.excluded) {
+        if (hit) return null;
+        continue;
+      }
+      if (hit) matched.push(token);
+    }
+    if (!matched.length) return {coverage: 0, order: 0};
+    return {coverage: matched.length, order: bestOrder(fields, matched)};
+  }
+
+  function anchorExcerpt(body, tokens) {
+    var text = String(body || '').replace(/\s+/g, ' ').trim();
+    if (!text) return '';
+    var folded = normalized(text), token = null;
+    for (var index = 0; index < tokens.length; index += 1) {
+      if (!tokens[index].excluded && folded.indexOf(tokens[index].text) !== -1) {
+        token = tokens[index];
+        break;
+      }
+    }
+    var position = token ? folded.indexOf(token.text) : 0;
+    var start = Math.max(0, position - 44), end = start + 172;
+    return (start ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
   }
   function searchPage(doc, target, bible, books, services) {
     var query = target.query;
     if (!query) return homePage(doc, bible);
-    var phrase = normalized(query);
+    var parsed = parseQuery(query), tokens = parsed.tokens;
+    var include = tokens.filter(function (token) { return !token.excluded; });
     var rows = {bible: [], songs: [], tatib: []};
-    function add(kind, title, meta, body, url, rank) {
-      if (!rank) return;
-      rows[kind].push({title: title, meta: meta, body: body, url: url, score: rank});
+    function add(kind, title, meta, body, url, fieldTitle) {
+      var found = metrics(fieldTitle === undefined ? title : fieldTitle, body, tokens);
+      if (!found || !found.coverage) return;
+      rows[kind].push({title: title, meta: meta, body: body, url: url,
+                       coverage: found.coverage, order: found.order});
     }
-    bible.forEach(function (book) {
-      var tb = book.translations.find(function (item) { return item.version.toUpperCase() === 'TB'; });
-      var preferred = tb || book.translations[0];
-      var name = preferred ? preferred.name : book.name;
-      book.translations.forEach(function (translation) {
-        translation.verses.forEach(function (verse) {
-          var label = name + ' ' + verse.chapter + ':' + verse.verse;
-          add('bible', label, translation.version + ' · ' + (verse.title || ''),
-              verse.text, '/bible/' + book.id + '/' + verse.chapter + '/?v=' + verse.verse,
-              score(verse.title || '', verse.text, phrase));
+    if (include.length) {
+      bible.forEach(function (book) {
+        var tb = book.translations.find(function (item) { return item.version.toUpperCase() === 'TB'; });
+        var preferred = tb || book.translations[0];
+        var name = preferred ? preferred.name : book.name;
+        book.translations.forEach(function (translation) {
+          translation.verses.forEach(function (verse) {
+            var label = name + ' ' + verse.chapter + ':' + verse.verse;
+            add('bible', label, translation.version + ' · ' + (verse.title || ''),
+                verse.text, '/bible/' + book.id + '/' + verse.chapter + '/?v=' + verse.verse,
+                verse.title || '');
+          });
         });
       });
-    });
-    books.forEach(function (book) {
-      book.songs.forEach(function (song) {
-        var reference = song.number == null ? '' : book.short_name + ' ' + song.number
-          + (song.sub_number || '').toUpperCase();
-        var longRef = song.number == null ? '' : book.name + ' ' + song.number
-          + (song.sub_number || '').toUpperCase();
-        var lyric = song.verses.map(function (verse) { return verse.lyric; }).join(' ');
-        add('songs', song.title, reference + ' ' + longRef + ' ' + book.name,
-            lyric, '/songs/' + song.id + '/', score(song.title || '', lyric, phrase));
+      books.forEach(function (book) {
+        book.songs.forEach(function (song) {
+          var reference = song.number == null ? '' : book.short_name + ' ' + song.number
+            + (song.sub_number || '').toUpperCase();
+          var longRef = song.number == null ? '' : book.name + ' ' + song.number
+            + (song.sub_number || '').toUpperCase();
+          var lyric = song.verses.map(function (verse) { return verse.lyric; }).join(' ');
+          add('songs', song.title, reference + ' ' + longRef + ' ' + book.name,
+              lyric, '/songs/' + song.id + '/');
+        });
       });
-    });
-    services.forEach(function (service) {
-      var body = service.rows.filter(function (row) {
-        return !(row.kind === 'legacy' && row.item_type === 1)
-          && !(row.kind === 'entry' && row.entry_kind === 3);
-      }).map(function (row) { return row.title + ' ' + row.text; }).join(' ');
-      add('tatib', service.name, service.date || 'Tata Ibadah', body,
-          '/tatib/' + service.id + '/', score(service.name, body, phrase));
-    });
+      services.forEach(function (service) {
+        var body = service.rows.filter(function (row) {
+          return !(row.kind === 'legacy' && row.item_type === 1)
+            && !(row.kind === 'entry' && row.entry_kind === 3);
+        }).map(function (row) { return row.title + ' ' + row.text; }).join(' ');
+        add('tatib', service.name, service.date || 'Tata Ibadah', body,
+            '/tatib/' + service.id + '/');
+      });
+    }
     var names = {bible: 'Alkitab', songs: 'Kidung', tatib: 'Tata Ibadah'};
     var html = '';
     ['bible', 'songs', 'tatib'].forEach(function (kind) {
       var group = rows[kind].sort(function (a, b) {
-        return b.score - a.score || a.title.localeCompare(b.title);
+        return b.coverage - a.coverage || b.order - a.order || a.title.localeCompare(b.title);
       });
       if (!group.length) return;
       var amount = Math.max(8, Number(target.url.searchParams.get(kind)) || 8);
@@ -576,8 +688,7 @@
         + '<h2 class="result-group__title">' + names[kind] + '</h2><span class="result-group__count">'
         + group.length + (group.length === 1 ? ' result' : ' results') + '</span></div><ul class="result-list">';
       group.slice(0, amount).forEach(function (row) {
-        var excerpt = normalized(row.body).includes(phrase)
-          ? row.body.slice(Math.max(0, normalized(row.body).indexOf(phrase) - 44), 172) : '';
+        var excerpt = anchorExcerpt(row.body, tokens);
         html += '<li><a class="result-row" data-kind="' + kind + '" href="' + escape(row.url)
           + '"><span class="result-row__title">' + escape(row.title)
           + '</span><span class="result-row__meta">' + escape(row.meta)
@@ -600,11 +711,13 @@
     doc.documentElement.dataset.home = 'results';
     doc.querySelector('#searchQuery').value = query;
     doc.querySelector('#searchQuery').setAttribute('value', query);
+    var status = html ? 'Results for “' + escape(parsed.canonical) + '”'
+      : parsed.notice ? escape(parsed.notice)
+      : 'No results for “' + escape(parsed.canonical) + '”. Try another keyword.';
     doc.querySelector('#searchResults').innerHTML = '<p class="search-results__intro"'
-      + ' id="searchStatus" role="status">' + (html ? 'Results for “' + escape(query)
-      + '”' : 'No results for “' + escape(query) + '”. Try another keyword.') + '</p>' + html;
+      + ' id="searchStatus" role="status">' + status + '</p>' + html;
     doc.querySelector('#searchResults').hidden = false;
-    doc.title = 'Results for “' + query + '” — GKPS Klender';
+    doc.title = 'Results for “' + parsed.canonical + '” — GKPS Klender';
     return doc;
   }
   function homePage(doc, bible) {

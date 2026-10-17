@@ -1372,6 +1372,8 @@ class SearchView(TemplateView):
         context.update(_shell('alkitab', 'closed', 'closed', False, 'landing'))
         context.update({
             'query': query,
+            'canonical': query,
+            'notice': '',
             'books_groups': _books_groups(),
             'result_groups': [],
         })
@@ -1384,7 +1386,9 @@ class SearchView(TemplateView):
             context['page_title'] = 'Search — GKPS Klender'
             return context
         context['home_state'] = 'results'
-        context['page_title'] = f'Results for “{query}” — GKPS Klender'
+        context['canonical'] = results.canonical
+        context['notice'] = results.notice
+        context['page_title'] = f'Results for “{results.canonical}” — GKPS Klender'
         context['result_groups'] = _search_groups(results, _shown_counts(request), request.path)
         return context
 

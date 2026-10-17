@@ -13,7 +13,8 @@ from django.test import SimpleTestCase, TestCase
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
-from multimedia.web.reading.search import normalize, search, search_page
+from multimedia.web.reading.search import (
+    NOTICE_EXCLUSION_ONLY, NOTICE_NO_WORDS, normalize, parse_query, search, search_page)
 
 
 class QueryRulesTests(SimpleTestCase):
@@ -304,9 +305,10 @@ class PageSearchTests(TestCase):
         rows = search_page('pengampunan dosa')['songs']
         self.assertEqual(rows[0]['target']['song_id'], self.kj152.id)
 
-    def test_song_ranking_title_exact_then_prefix_then_substring(self):
+    def test_song_ranking_title_tie_break(self):
+        # Spec 105: coverage and order decide first; equal rows fall back to title.
         ids = self.targets(search_page('kasih')['songs'], 'song_id')
-        self.assertEqual(ids[:3], [self.kj100.id, self.pkj120.id, self.kj120.id])
+        self.assertEqual(ids[:3], [self.kj100.id, self.pkj120.id, self.song99.id])
 
     def test_service_name_matches(self):
         rows = search_page('Ibadah Minggu III')['tatib']
@@ -355,10 +357,12 @@ class PageSearchTests(TestCase):
         self.assertEqual(search_page('matius')['bible'], [])
 
     def test_songbook_name_lists_no_song(self):
-        self.assertEqual(search_page('Kidung Jemaat')['songs'], [])
+        # Unquoted words may still hit a lyric (spec 105's soft AND); the quoted
+        # phrase is the songbook name itself, and no songbook row exists.
+        self.assertEqual(search_page('"Kidung Jemaat"')['songs'], [])
 
     def test_song_numbers_and_references_list_no_song(self):
-        for query in ('152', 'KJ 152', 'Kidung Jemaat 152', 'HAL 411'):
+        for query in ('152', 'KJ 152', '"Kidung Jemaat 152"', 'HAL 411'):
             with self.subTest(query=query):
                 self.assertEqual(search_page(query)['songs'], [])
 
@@ -382,4 +386,164 @@ class PageSearchTests(TestCase):
         result = search_page('zzzqqq')
         self.assertTrue(result.valid)
         self.assertEqual(result.total, 0)
+
+
+class QueryGrammarTests(SimpleTestCase):
+    """The query grammar (spec 105): symbols, quotes, exclusions, canonical form."""
+
+    @staticmethod
+    def canonical(typed):
+        _tokens, canonical, _notice = parse_query(typed)
+        return canonical
+
+    def test_symbols_separate_words(self):
+        tokens, canonical, notice = parse_query('Allah, Tuhan. Yesus:Kristus')
+        self.assertEqual([token.text for token in tokens],
+                         ['allah', 'tuhan', 'yesus', 'kristus'])
+        self.assertEqual(canonical, 'Allah Tuhan Yesus Kristus')
+        self.assertIsNone(notice)
+
+    def test_digits_are_word_characters(self):
+        tokens, _canonical, _notice = parse_query('5:13')
+        self.assertEqual([token.text for token in tokens], ['5', '13'])
+
+    def test_owner_example_canonical(self):
+        tokens, canonical, _notice = parse_query('Allah, "Tuhan. Yesus:Kristus" -kasih')
+        self.assertEqual(canonical, "Allah 'Tuhan Yesus Kristus' -kasih")
+        self.assertEqual(
+            [(token.text, token.excluded, token.phrase) for token in tokens],
+            [('allah', False, False),
+             ('tuhan yesus kristus', False, True),
+             ('kasih', True, False)])
+
+    def test_a_quoted_phrase_is_one_token(self):
+        tokens, canonical, _notice = parse_query('"Tuhan Yesus"')
+        self.assertEqual(len(tokens), 1)
+        self.assertTrue(tokens[0].phrase)
+        self.assertEqual(tokens[0].text, 'tuhan yesus')
+        self.assertEqual(canonical, "'Tuhan Yesus'")
+
+    def test_symbols_inside_a_phrase_are_ignored_dashes_included(self):
+        self.assertEqual(self.canonical('"Tuhan. Yesus:Kristus"'), "'Tuhan Yesus Kristus'")
+        tokens, canonical, _notice = parse_query('"Tuhan -Yesus"')
+        self.assertEqual(canonical, "'Tuhan Yesus'")
+        self.assertFalse(tokens[0].excluded)
+        self.assertEqual(tokens[0].text, 'tuhan yesus')
+
+    def test_an_unclosed_quote_runs_to_the_end(self):
+        tokens, canonical, _notice = parse_query('"Tuhan Yesus')
+        self.assertEqual(canonical, "'Tuhan Yesus'")
+        self.assertEqual(tokens[0].text, 'tuhan yesus')
+
+    def test_a_dash_excludes_the_next_token(self):
+        tokens, canonical, _notice = parse_query('Bangsa -Israel')
+        self.assertEqual(canonical, 'Bangsa -Israel')
+        self.assertEqual([(token.text, token.excluded) for token in tokens],
+                         [('bangsa', False), ('israel', True)])
+
+    def test_an_exclusion_only_query_explains_itself(self):
+        tokens, canonical, notice = parse_query('-Israel')
+        self.assertEqual([token.text for token in tokens], ['israel'])
+        self.assertEqual(canonical, '-Israel')
+        self.assertEqual(notice, NOTICE_EXCLUSION_ONLY)
+
+    def test_a_symbols_only_query_has_no_words(self):
+        tokens, canonical, notice = parse_query('---')
+        self.assertEqual(tokens, [])
+        self.assertEqual(canonical, '')
+        self.assertEqual(notice, NOTICE_NO_WORDS)
+
+    def test_an_already_canonical_query_is_unchanged(self):
+        self.assertEqual(self.canonical('Tuhan Yesus'), 'Tuhan Yesus')
+
+    def test_an_empty_query_has_no_words(self):
+        _tokens, _canonical, notice = parse_query('   ')
+        self.assertEqual(notice, NOTICE_NO_WORDS)
+
+
+class QueryRankingTests(TestCase):
+    """Spec 105 on the page matcher: soft AND, coverage, order, phrases, exclusion."""
+
+    @classmethod
+    def setUpTestData(cls):
+        language = bible.Language.objects.create(name='Indonesia')
+        tb = bible.Version.objects.create(
+            lang=language, name='Terjemahan Baru', abbreviation='TB')
+        book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
+        translation = bible.BookTranslation.objects.create(
+            version=tb, book=book, translation='Matius')
+        texts = {
+            1: 'Tuhan Yesus datang',
+            2: 'Yesus Tuhan datang',
+            3: 'Tuhan saja',
+            4: 'Tuhan, Yesus',
+            5: 'Tuhan Yesus Kristus',
+            6: 'bangsa Israel',
+            7: 'bangsa',
+            8: 'berkasih sesama',
+            9: 'Kasih-Nya kekal',
+            10: 'Yesus dahulu, lalu Tuhan, lalu Yesus lagi',
+        }
+        for verse, text in texts.items():
+            bible.Verse.objects.create(
+                book_translation=translation, chapter=1, verse=verse, text=text)
+
+    @staticmethod
+    def listed(query):
+        return [row['target']['verse'] for row in search_page(query)['bible']]
+
+    def test_soft_and_lists_partial_matches_below_full_ones(self):
+        rows = self.listed('Tuhan Yesus')
+        self.assertEqual(rows[0], 1)
+        self.assertIn(3, rows)                     # only 'Tuhan' -- still listed
+        self.assertGreater(rows.index(3), rows.index(1))
+
+    def test_order_ranks_within_equal_coverage(self):
+        rows = self.listed('Tuhan Yesus')
+        self.assertLess(rows.index(1), rows.index(2))   # in order beats reversed
+
+    def test_the_best_occurrence_configuration_is_used(self):
+        rows = self.listed('Tuhan Yesus')
+        # verse 10's first 'Yesus' precedes 'Tuhan', but a later 'Yesus' follows it
+        self.assertLess(rows.index(10), rows.index(2))
+
+    def test_title_is_the_final_tie_break(self):
+        rows = self.listed('Tuhan Yesus')
+        self.assertLess(rows.index(1), rows.index(4))
+
+    def test_a_quoted_phrase_matches_only_consecutively(self):
+        rows = self.listed('"Tuhan Yesus"')
+        self.assertEqual(sorted(rows), [1, 5])
+        self.assertNotIn(2, rows)
+        self.assertNotIn(4, rows)
+
+    def test_a_symbol_between_phrase_words_breaks_the_phrase(self):
+        self.assertNotIn(4, self.listed('"Tuhan Yesus"'))
+        self.assertIn(4, self.listed('Tuhan Yesus'))
+
+    def test_symbols_inside_a_phrase_are_ignored(self):
+        self.assertIn(5, self.listed('"Tuhan. Yesus:Kristus"'))
+
+    def test_a_dash_excludes(self):
+        self.assertEqual(self.listed('bangsa -Israel'), [7])
+
+    def test_substring_tokens_match_inside_words(self):
+        rows = self.listed('kasih')
+        self.assertIn(8, rows)                     # 'berkasih'
+        self.assertIn(9, rows)                     # 'Kasih-Nya'
+
+    def test_an_exclusion_only_query_lists_nothing_and_says_why(self):
+        result = search_page('-Israel')
+        self.assertEqual(result.total, 0)
+        self.assertEqual(result.canonical, '-Israel')
+        self.assertEqual(result.notice, NOTICE_EXCLUSION_ONLY)
+
+    def test_a_symbols_only_query_lists_nothing_and_says_why(self):
+        result = search_page('---')
+        self.assertEqual(result.total, 0)
+        self.assertEqual(result.notice, NOTICE_NO_WORDS)
+
+    def test_the_canonical_form_is_the_purged_query(self):
+        result = search_page('Allah, "Tuhan. Yesus:Kristus" -kasih')
+        self.assertEqual(result.canonical, "Allah 'Tuhan Yesus Kristus' -kasih")
 

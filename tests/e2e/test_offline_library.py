@@ -130,6 +130,40 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertEqual(titles(saved('KJ 12'), 'songs'), [])
             browser.close()
 
+    def test_saved_copy_query_grammar_agrees_with_the_page(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+
+            def saved(query):
+                return page.evaluate("""async query => {
+                  const doc = await GKPSOfflineRender.render(
+                    '/search/?q=' + encodeURIComponent(query));
+                  if (!doc) return null;
+                  return {
+                    status: doc.getElementById('searchStatus').textContent.trim(),
+                    groups: Array.from(doc.querySelectorAll('.result-group'))
+                      .map(group => group.dataset.kind)
+                  };
+                }""", query)
+
+            cases = [
+                ('"Kasih Tuhan"', "Results for “‘Kasih Tuhan’”", ['bible', 'songs']),
+                ('Kasih -Tuhan', 'No results for “Kasih -Tuhan”. Try another keyword.', []),
+                ('-Tuhan',
+                 'Nothing to search — an exclusion like “-Israel” needs at least one other word.',
+                 []),
+                ('---', 'Nothing to search — add at least one word.', []),
+            ]
+            for query, status, groups in cases:
+                with self.subTest(query=query):
+                    result = saved(query)
+                    self.assertEqual(result['status'], status)
+                    self.assertEqual(result['groups'], groups)
+            browser.close()
+
     def test_saved_sim_bible_copy_uses_sim_code_and_heading(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)

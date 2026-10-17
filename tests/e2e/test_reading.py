@@ -237,6 +237,29 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.result-group__title').filter(has_text='Kidung')).to_be_visible()
         self.assertEqual(page.url, self.live_server_url + reverse('web-search') + '?q=waktu%20pagi')
 
+    def test_search_page_reads_the_query_grammar(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+
+        # A quoted phrase matches only consecutively, and the status line shows it.
+        self._search(page, '"Kasih dan kasih"')
+        expect(page.locator('#searchStatus')).to_have_text("Results for “‘Kasih dan kasih’”")
+        expect(page.locator('.result-group[data-kind="bible"] .result-row').first).to_be_visible()
+
+        # A dash excludes: 'terang dunia' lists, 'garam dunia' does not.
+        self._search(page, 'dunia -garam')
+        expect(page.locator('#searchStatus')).to_have_text('Results for “dunia -garam”')
+        expect(page.locator('.result-group[data-kind="bible"] .result-row__title',
+                            has_text='Matius 5:14')).to_have_count(1)
+        expect(page.locator('.result-group[data-kind="bible"] .result-row__title',
+                            has_text='Matius 5:13')).to_have_count(0)
+
+        # A lone exclusion lists nothing and says why.
+        self._search(page, '-garam')
+        expect(page.locator('#searchStatus')).to_have_text(
+            'Nothing to search — an exclusion like “-Israel” needs at least one other word.')
+        expect(page.locator('.result-group')).to_have_count(0)
+
     def test_search_lists_no_bible_reference(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
