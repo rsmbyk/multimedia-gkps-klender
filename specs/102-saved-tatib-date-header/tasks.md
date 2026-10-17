@@ -25,9 +25,9 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` on the ITEM and spec header
 - [x] If bump is not `none`: `VERSION` (1.13.4), changelog `## [1.13.4]`, and `release_version` in **this PR**
-- [ ] Create ITEM-102 and update [`backlog/board.md`](../../backlog/board.md) in **this PR**
+- [x] Create ITEM-102 and update [`backlog/board.md`](../../backlog/board.md) in **this PR**
       (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [x] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
 
 ## Done when
 

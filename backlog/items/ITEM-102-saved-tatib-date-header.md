@@ -1,6 +1,6 @@
 ---
 id: ITEM-102
-status: speccing
+status: in_review
 title: 'Show the Tata Ibadah date header in the saved-copy reading path'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: [102](../../specs/102-saved-tatib-date-header/spec.md)
 branch: fix/102-saved-tatib-date-header
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/352
 archived_at:
 archive_reason:
 bump: patch
