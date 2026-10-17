@@ -1,6 +1,6 @@
 ---
 id: ITEM-106
-status: in_progress
+status: in_review
 title: 'Keep media entries visible in saved Tata Ibadah pages'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: specs/106-tatib-offline-media-rendering/spec.md
 branch: fix/106-tatib-offline-media-rendering
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/358
 archived_at:
 archive_reason:
 bump: patch
