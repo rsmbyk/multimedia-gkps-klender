@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-103](./items/ITEM-103-local-media-library.md) | Local Media Library and service media entries | Shared computer folder, immutable media references, and missing-file visibility | feat | P1 | L | [103](../specs/103-local-media-library/spec.md) | `feat/103-local-media-library` | 2026-10-17 |
 
 ## In review
 
