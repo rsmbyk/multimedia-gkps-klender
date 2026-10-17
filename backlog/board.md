@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-107](./items/ITEM-107-media-ui-polish.md) | Clarify Media Library controls and align media entry labels | Add sort and library icons, align service media text, and clarify upload limits | fix | P2 | S | [107](../specs/107-media-ui-polish/spec.md) | `fix/107-media-ui-polish` | 2026-10-17 |
 
 ## In review
 

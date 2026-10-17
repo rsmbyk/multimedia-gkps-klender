@@ -175,7 +175,7 @@
     async function choose(file) {
       if (!file) return;
       if (file.size > 200000000) return showError('File too large', 'The maximum file size is 200 MB. Choose a smaller file.');
-      if (!file.size) return showError('File not supported', 'Choose a non-empty image, audio, video, PDF, PPT, or PPTX file.');
+      if (!file.size) return showError('File not supported', 'Choose a non-empty image, audio, video, PDF, or PPT/PPTX file.');
       save.disabled = true;
       try {
         var local = await status();

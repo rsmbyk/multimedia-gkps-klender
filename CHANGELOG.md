@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.14.4] - 2026-10-17
+
+### Fixed
+
+- The Media Library sort control keeps its order icon when the selection changes, and the main sidebar uses a folder icon for mixed media. Tata Ibadah media titles align beside their file icons, while the upload hint separates supported formats from the emphasized 200 MB limit and groups PPT/PPTX.
+
 ## [1.14.2] - 2026-10-17
 
 ### Fixed

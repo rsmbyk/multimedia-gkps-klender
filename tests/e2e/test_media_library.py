@@ -24,12 +24,14 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         super().setUp()
         self.service = TataIbadah.objects.create(name='Ibadah Minggu', date=date(2026, 10, 18), is_active=True)
         if self._testMethodName in ('test_service_entry_distinguishes_disconnected_and_missing',
-                                    'test_edit_media_only_exposes_title'):
+                                    'test_edit_media_only_exposes_title',
+                                    'test_titled_media_entry_heading_aligns_with_file_icon'):
             media = MediaIdentity.objects.create(sha256='b' * 64, byte_count=2048,
                                                  family='pdf', display_filename='service.pdf')
             ServiceEntry.objects.create(tatib=self.service, order_number=1,
                                         kind=ServiceEntryKind.MEDIA, media=media,
-                                        media_filename='service.pdf')
+                                        media_filename='service.pdf',
+                                        title='Tingting' if self._testMethodName == 'test_titled_media_entry_heading_aligns_with_file_icon' else '')
         self.playwright = sync_playwright().start()
         try:
             self.browser = self.playwright.chromium.launch()
@@ -98,6 +100,12 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
         page.locator('[data-entry-open="media"]').first.dispatch_event('click')
         expect(page.locator('form[data-media-create]')).to_be_visible()
+        hint = page.locator('.media-entry__drop [data-media-prompt] p')
+        self.assertEqual(hint.inner_text().splitlines(), [
+            'Supported files: images, audio, video, PDF, and PPT/PPTX',
+            'Maximum 200 MB per file',
+        ])
+        self.assertEqual(hint.locator('strong').nth(1).inner_text(), 'Maximum 200 MB')
         expect(page.locator('[data-media-tab-button="upload"]')).to_have_attribute('aria-selected', 'true')
         expect(page.locator('form[data-media-create] .editor__save')).to_be_disabled()
         page.locator('[data-media-tab-button="library"]').click()
@@ -148,7 +156,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
         page.locator('[data-entry-open="media"]').first.dispatch_event('click')
         supported = page.locator('.media-entry__drop [data-media-prompt] p')
-        label = supported.locator('strong')
+        label = supported.locator('strong').first
         self.assertEqual(supported.evaluate('el => getComputedStyle(el).fontSize'), '12px')
         self.assertEqual(label.evaluate('el => getComputedStyle(el).fontSize'), '12px')
 
@@ -271,6 +279,8 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
     def test_library_filter_sort_and_dialogs(self):
         page = self.connected_page(reverse('web-media-library'))
         expect(page.locator('.media-library__filename')).to_have_text('notes.pdf')
+        self.assertEqual(page.locator('#railMediaLibrary svg path').count(), 3)
+        expect(page.locator('#mediaSortButton svg')).to_be_visible()
         page.locator('[data-media-type="image"]').click()
         expect(page.locator('#mediaResultCount')).to_have_text('0 of 1 files shown')
         page.locator('[data-media-type="pdf"]').click()
@@ -278,6 +288,8 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.locator('#mediaSortButton').click()
         page.locator('[data-media-sort="size-asc"]').click()
         expect(page.locator('#mediaSortButton')).to_have_text('File size · smallest')
+        expect(page.locator('#mediaSortButton svg')).to_be_visible()
+        expect(page.locator('#mediaSortButton')).to_have_attribute('aria-label', 'Sort files: File size · smallest')
         page.locator('#mediaSettingsButton').click()
         expect(page.locator('#mediaSettingsDialog')).to_be_visible()
         page.locator('#mediaSettingsDialog [data-media-close]').click()
@@ -313,6 +325,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
         row = page.locator('.tatib__item--media')
         expect(row).to_contain_text('Local library unavailable')
+        self.assertEqual(row.locator('.read__sec').evaluate('el => getComputedStyle(el).marginTop'), '0px')
         self.assertFalse('is-missing' in row.get_attribute('class'))
         page.route('http://127.0.0.1:63174/**', lambda route: route.fulfill(
             status=200, content_type='application/json', body='{"files":[]}',
@@ -320,6 +333,13 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.reload()
         page.wait_for_function("document.querySelector('.tatib__item--media').classList.contains('is-missing')")
         expect(row).not_to_contain_text('Local library unavailable')
+
+    def test_titled_media_entry_heading_aligns_with_file_icon(self):
+        page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
+        row = page.locator('.tatib__item--media')
+        expect(row.locator('.read__sec')).to_have_text('Tingting')
+        self.assertEqual(row.locator('.read__sec').evaluate('el => getComputedStyle(el).marginTop'), '0px')
+        self.assertEqual(row.locator('.read__sub').evaluate('el => getComputedStyle(el).marginTop'), '0px')
 
     def test_create_dialog_fits_small_screen_and_reduced_motion(self):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
