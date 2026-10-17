@@ -1,6 +1,6 @@
 ---
 id: ITEM-110
-status: in_review
+status: done
 title: 'Give Tata Ibadah media entries more breathing room'
 type: fix
 priority: P2

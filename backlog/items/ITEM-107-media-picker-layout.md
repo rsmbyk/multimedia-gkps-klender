@@ -1,6 +1,6 @@
 ---
 id: ITEM-107
-status: in_review
+status: done
 title: 'Polish media picker layout and tab feedback'
 type: chore
 priority: P2

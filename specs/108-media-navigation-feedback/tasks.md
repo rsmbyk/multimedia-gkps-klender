@@ -1,6 +1,6 @@
 # Tasks 108: Keep media navigation selection feedback in sync
 
-- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests and full CI passed on code head `4913119`
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 

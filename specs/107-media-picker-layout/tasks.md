@@ -1,6 +1,6 @@
 # Tasks 107: Polish media picker layout and tab feedback
 
-- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests and full CI passed on code head `4913119`
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 

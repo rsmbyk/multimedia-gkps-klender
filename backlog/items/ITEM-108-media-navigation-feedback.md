@@ -1,6 +1,6 @@
 ---
 id: ITEM-108
-status: in_review
+status: done
 title: 'Keep media navigation selection feedback in sync'
 type: fix
 priority: P2

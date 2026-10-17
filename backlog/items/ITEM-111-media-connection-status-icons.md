@@ -1,6 +1,6 @@
 ---
 id: ITEM-111
-status: in_review
+status: done
 title: 'Show distinct connection icons in the Media Library status row'
 type: fix
 priority: P2

@@ -1,6 +1,6 @@
 # Tasks 109: Clarify Media Library controls and align media entry labels
 
-- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests and full CI passed on code head `4913119`
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -14,7 +14,7 @@
 - [x] Run the targeted Media Library E2E class (17 passing) and `git diff --check`.
 - [x] Fill spec traceability with actual test and implementation references.
 - [x] Set the patch release version in `VERSION`, `CHANGELOG.md`, and ITEM release metadata.
-- [ ] Move ITEM-109 to Done and update [`backlog/board.md`](../../backlog/board.md) in consolidated PR #359.
+- [x] Move ITEM-109 to Done and update [`backlog/board.md`](../../backlog/board.md) in consolidated PR #359.
 - [x] Include this spec in the conventional-commit history and consolidated PR #359 to `develop`.
 
 ## Done when

@@ -1,6 +1,6 @@
 # Tasks 110: Give Tata Ibadah media entries more breathing room
 
-- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests and full CI passed on code head `4913119`
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -15,7 +15,7 @@
 - [x] Set the patch version from the current media stack: `VERSION` 1.14.5, `CHANGELOG.md`, and ITEM `release_version: 1.14.5`.
 - [x] Update ITEM and [`backlog/board.md`](../../backlog/board.md) in consolidated PR #359.
 - [x] Commit as `fix(media): give Tata Ibadah media rows more room` with the Codex co-author trailer.
-- [ ] Include this spec in PR #359 to `develop`; move ITEM to Done before merge.
+- [x] Include this spec in PR #359 to `develop`; move ITEM to Done before merge.
 
 ## Done when
 

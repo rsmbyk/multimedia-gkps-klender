@@ -1,6 +1,6 @@
 ---
 id: ITEM-106
-status: in_review
+status: done
 title: 'Keep media entries visible in saved Tata Ibadah pages'
 type: fix
 priority: P2

@@ -1,6 +1,6 @@
 # Tasks 106: Keep media entries visible in saved Tata Ibadah pages
 
-- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests and full CI passed on code head `4913119`
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -18,7 +18,7 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` on the ITEM and spec header
 - [x] Add `VERSION`, changelog `## [1.14.3]`, and `release_version: 1.14.3`
-- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in consolidated PR #359 (Done before merge)
+- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in consolidated PR #359 (Done before merge)
 - [x] Conventional Commit with Codex trailer; include `./spec.md` in PR #359 to `develop`
 
 ## Done when

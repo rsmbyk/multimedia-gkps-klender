@@ -1,6 +1,6 @@
 ---
 id: ITEM-109
-status: in_review
+status: done
 title: 'Clarify Media Library controls and align media entry labels'
 type: fix
 priority: P2

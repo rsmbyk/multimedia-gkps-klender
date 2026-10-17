@@ -1,6 +1,6 @@
 ---
 id: ITEM-103
-status: in_review
+status: done
 title: 'Local Media Library and service media entries'
 type: feat
 priority: P1

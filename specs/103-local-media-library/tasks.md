@@ -1,6 +1,6 @@
 # Tasks 103: Local Media Library and service media entries
 
-- **Status:** Accepted implementation and Compose amendment included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
+- **Status:** Accepted implementation and Compose amendment included in consolidated PR #359; 148 targeted tests and full CI passed on code head `4913119`
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -16,14 +16,14 @@
 - [x] Run 53 targeted local tests and push the implementation; full CI fast checks and all Browser E2E shards passed at implementation commit [`e7e26ac`](https://github.com/rsmbyk/multimedia-gkps-klender/commit/e7e26ac).
 - [x] Re-run the consolidated media, saved-renderer, Compose, and projector Django modules after integrating Spec 106: 148 tests passed.
 - [x] Fill Traceability in `./spec.md`; complete final acceptance review before marking Done.
-- [ ] Keep ITEM-103 and `backlog/board.md` in consolidated PR [#359](https://github.com/rsmbyk/multimedia-gkps-klender/pull/359); mark Done before merge.
+- [x] Keep ITEM-103 and `backlog/board.md` complete in consolidated PR [#359](https://github.com/rsmbyk/multimedia-gkps-klender/pull/359); mark Done before merge.
 - [x] Apply `bump: minor` in this PR: `VERSION` and changelog 1.14.0, matching the current `develop` 1.13.4 line.
 - [x] Conventional Commits with Codex trailers and consolidated PR [#359](https://github.com/rsmbyk/multimedia-gkps-klender/pull/359) to `develop` using the repository PR template.
 
 ## Done when
 
 - [x] All acceptance scenarios in `spec.md` hold, including blank media Preview/projector behavior.
-- [ ] The full consolidated PR checks, board, tasks, and version records are complete before merge.
+- [x] The full consolidated PR checks, board, tasks, and version records are complete before merge.
 
 ## Accepted Compose amendment — 2026-10-17
 
