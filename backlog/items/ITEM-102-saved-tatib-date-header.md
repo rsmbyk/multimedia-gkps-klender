@@ -1,6 +1,6 @@
 ---
 id: ITEM-102
-status: in_review
+status: done
 title: 'Show the Tata Ibadah date header in the saved-copy reading path'
 type: fix
 priority: P2
