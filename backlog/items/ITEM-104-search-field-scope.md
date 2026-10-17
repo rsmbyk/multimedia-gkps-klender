@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: [104](../../specs/104-search-field-scope/spec.md)
 branch: fix/104-search-field-scope
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/355
 archived_at:
 archive_reason:
 bump: patch
