@@ -26,12 +26,12 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-105](./items/ITEM-105-media-navigation-feedback.md) | Keep media navigation selection feedback in sync | Slide the media-source selection and clear stale Media Library sidebar selection after in-place navigation | fix | P2 | S | [105](../specs/105-media-navigation-feedback/spec.md) | `feat/105-media-navigation-feedback` | 2026-10-17 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-105](./items/ITEM-105-media-navigation-feedback.md) | Keep media navigation selection feedback in sync | Slide the media-source selection and clear stale Media Library sidebar selection after in-place navigation | fix | P2 | S | [105](../specs/105-media-navigation-feedback/spec.md) | [#356](https://github.com/rsmbyk/multimedia-gkps-klender/pull/356) | 2026-10-17 |
 | [ITEM-104](./items/ITEM-104-media-picker-layout.md) | Polish media picker layout and tab feedback | Keep the empty-library modal tall, align supported-files type, and add switch-style tab hover | chore | P2 | S | [104](../specs/104-media-picker-layout/spec.md) | [#354](https://github.com/rsmbyk/multimedia-gkps-klender/pull/354) | 2026-10-17 |
 | [ITEM-103](./items/ITEM-103-local-media-library.md) | Local Media Library and service media entries | Docker-managed local volume, immutable media references, and missing-file visibility | feat | P1 | L | [103](../specs/103-local-media-library/spec.md) | [#353](https://github.com/rsmbyk/multimedia-gkps-klender/pull/353) | 2026-10-17 |
 | [ITEM-071](./items/ITEM-071-tatib-entry-surface.md) | Subtle surface for Tata Ibadah entries | Quiet fill, outline, and padding for service entry boxes | chore | P2 | S | [068](../specs/068-tatib-entry-surface/spec.md) | [#322](https://github.com/rsmbyk/multimedia-gkps-klender/pull/322) | 2026-10-13 |
