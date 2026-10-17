@@ -26,12 +26,12 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-112](./items/ITEM-112-temporary-media-handoff.md) | Temporarily share and acquire Media Library files | Seven-day per-file online handoff with companion transfers and service status | feat | P1 | L | [112](../specs/112-temporary-media-handoff/spec.md) | `feat/112-temporary-media-handoff` | 2026-10-18 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-112](./items/ITEM-112-temporary-media-handoff.md) | Temporarily share and acquire Media Library files | Seven-day per-file online handoff with companion transfers and service status | feat | P1 | L | [112](../specs/112-temporary-media-handoff/spec.md) | [#360](https://github.com/rsmbyk/multimedia-gkps-klender/pull/360) | 2026-10-18 |
 | [ITEM-071](./items/ITEM-071-tatib-entry-surface.md) | Subtle surface for Tata Ibadah entries | Quiet fill, outline, and padding for service entry boxes | chore | P2 | S | [068](../specs/068-tatib-entry-surface/spec.md) | [#322](https://github.com/rsmbyk/multimedia-gkps-klender/pull/322) | 2026-10-13 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

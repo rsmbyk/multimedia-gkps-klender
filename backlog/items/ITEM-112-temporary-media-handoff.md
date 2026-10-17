@@ -1,6 +1,6 @@
 ---
 id: ITEM-112
-status: in_progress
+status: in_review
 title: 'Temporarily share and acquire Media Library files'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-18
 spec: specs/112-temporary-media-handoff/spec.md
 branch: feat/112-temporary-media-handoff
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/360
 archived_at:
 archive_reason:
 bump: minor
