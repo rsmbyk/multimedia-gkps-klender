@@ -8,7 +8,7 @@
 
 - [x] Spec Accepted by the project owner on 2026-10-17
 - [x] Create implementation branch `feat/104-media-picker-layout` from the Spec 103 feature branch, which supplies the modal and companion integration this slice extends
-- [x] Red — E2E coverage for connected-empty, unavailable, disabled Save, equal modal dimensions across tabs, supported-files font sizing, and inactive-tab hover: `tests/e2e/test_media_library.py`
+- [x] Red — E2E coverage for connected-empty, unavailable, disabled Save, equal modal dimensions across tabs, footer alignment at the modal bottom, supported-files font sizing, and inactive-tab hover: `tests/e2e/test_media_library.py`
 - [x] Green — render the empty-state markup and connection-specific state in `static/web/media-entry.js`
 - [x] Green — keep the creation dialog's height stable, fill/scroll the active file panel, and style the quiet empty state in `static/styles/design/components.css`
 - [x] Green — set the supported-files label to inherit the paragraph's 12 px size while preserving its semibold weight in `static/styles/design/components.css`

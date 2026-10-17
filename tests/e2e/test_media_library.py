@@ -111,6 +111,10 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         dialog = page.locator('#editorModal')
         dialog.evaluate('async el => { await Promise.all(el.getAnimations().map(animation => animation.finished)); }')
         upload_box = dialog.bounding_box()
+        upload_cancel_box = dialog.locator('.editor__cancel').bounding_box()
+        upload_footer_gap = upload_box['y'] + upload_box['height'] - (
+            upload_cancel_box['y'] + upload_cancel_box['height'])
+        self.assertLessEqual(upload_footer_gap, 24)
         page.locator('[data-media-tab-button="library"]').click()
         empty_state = page.locator('[data-media-library-list] .media-entry__empty')
         expect(empty_state).to_contain_text('No media in this library yet')
@@ -119,6 +123,10 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         expect(empty_state).to_have_attribute('role', 'status')
         expect(page.locator('form[data-media-create] .editor__save')).to_be_disabled()
         library_box = dialog.bounding_box()
+        library_cancel_box = dialog.locator('.editor__cancel').bounding_box()
+        library_footer_gap = library_box['y'] + library_box['height'] - (
+            library_cancel_box['y'] + library_cancel_box['height'])
+        self.assertLessEqual(library_footer_gap, 24)
         self.assertAlmostEqual(upload_box['height'], 760, delta=1)
         self.assertAlmostEqual(library_box['height'], upload_box['height'], delta=1)
         expect(dialog.locator('[name="title"]')).to_be_visible()
