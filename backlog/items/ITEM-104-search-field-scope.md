@@ -1,6 +1,6 @@
 ---
 id: ITEM-104
-status: in_review
+status: done
 title: 'Restrict the search page to the listed content fields'
 type: fix
 priority: P1
