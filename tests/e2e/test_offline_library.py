@@ -96,6 +96,40 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             self.assertFalse(row.locator('.book__s').is_visible())
             browser.close()
 
+    def test_saved_copy_search_matches_only_the_listed_fields(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+
+            def saved(query):
+                return page.evaluate("""async query => {
+                  const doc = await GKPSOfflineRender.render(
+                    '/search/?q=' + encodeURIComponent(query));
+                  if (!doc) return null;
+                  const groups = {};
+                  doc.querySelectorAll('.result-group').forEach(group => {
+                    groups[group.dataset.kind] = Array.from(
+                      group.querySelectorAll('.result-row__title')).map(el => el.textContent.trim());
+                  });
+                  return groups;
+                }""", query)
+
+            def titles(groups, kind):
+                return (groups or {}).get(kind, [])
+
+            # The listed fields still match on the saved copy.
+            self.assertIn('Matius 1:1', titles(saved('Kasih Tuhan membuka Injil'), 'bible'))
+            self.assertIn('Kasih', titles(saved('Kasih Tuhan kekal'), 'songs'))
+            self.assertIn('Ibadah Minggu', titles(saved('Tuhan dengar kami'), 'tatib'))
+
+            # Excluded fields list nothing: references and book/songbook names.
+            self.assertEqual(titles(saved('Matius 1:1'), 'bible'), [])
+            self.assertEqual(titles(saved('Kidung Jemaat'), 'songs'), [])
+            self.assertEqual(titles(saved('KJ 12'), 'songs'), [])
+            browser.close()
+
     def test_saved_sim_bible_copy_uses_sim_code_and_heading(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
