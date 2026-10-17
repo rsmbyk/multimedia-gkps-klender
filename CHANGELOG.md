@@ -10,6 +10,17 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.13.6] - 2026-10-17
+
+### Changed
+
+- The search page reads a query grammar: symbols separate words, `"quoted phrases"` match as one
+  phrase, and `-word` excludes. Results rank by how many tokens they match, then by how many
+  appear in the query's order, then by title; partial matches still list below full ones. The
+  status line and page title show the purged query, a lone exclusion explains why it lists
+  nothing, and the saved copy follows the same grammar. This replaces the score ladder spec 104
+  introduced on the page; the field set and the projector Go To are unchanged.
+
 ## [1.13.5] - 2026-10-17
 
 ### Added

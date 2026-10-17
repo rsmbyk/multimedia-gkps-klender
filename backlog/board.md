@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-105](./items/ITEM-105-search-query-grammar.md) | Search query grammar and token ranking | Tokens, quoted phrases, `-` exclusions, soft-AND coverage and order ranking, and the purged-query status line | feat | P1 | L | [105](../specs/105-search-query-grammar/spec.md) | 2026-10-17 |
 
 ## Ready
 
@@ -46,6 +45,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | [ITEM-026](./items/ITEM-026-square-date-cells.md) | Make Tata Ibadah calendar date cells square | Equal-width/height date cells while preserving Sunday accents and popover behavior | chore | P2 | S | [024](../specs/024-square-date-cells/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-027](./items/ITEM-027-quiet-modal-focus.md) | Avoid automatic row outlines after modal close | Quiet automatic restoration across modals without removing deliberate keyboard focus | fix | P1 | M | [025](../specs/025-quiet-modal-focus/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-028](./items/ITEM-028-live-projection-editing.md) | Keep editing while projecting, and follow every change | Allow add/edit/delete/reorder during projection; reorder persists on drop; the display follows every change | feat | P1 | M | [026](../specs/026-live-projection-editing/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
+| [ITEM-105](./items/ITEM-105-search-query-grammar.md) | Search query grammar and token ranking | Tokens, quoted phrases, `-` exclusions, soft-AND coverage and order ranking, and the purged-query status line | feat | P1 | L | [105](../specs/105-search-query-grammar/spec.md) |  | 2026-10-17 |
 
 ## Done
 

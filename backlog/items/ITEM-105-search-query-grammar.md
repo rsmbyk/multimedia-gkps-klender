@@ -1,6 +1,6 @@
 ---
 id: ITEM-105
-status: speccing
+status: in_review
 title: 'Search query grammar and token ranking'
 type: feat
 priority: P1
@@ -13,7 +13,7 @@ pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.13.6
 ---
 
 # ITEM-105: Search query grammar and token ranking
