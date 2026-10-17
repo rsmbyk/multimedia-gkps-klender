@@ -1,7 +1,7 @@
 /* Media entry creation: binary bytes go to the loopback companion, metadata to Django. */
 (function () {
   'use strict';
-  var helper = 'http://127.0.0.1:47863/v1';
+  var helper = 'http://127.0.0.1:63174/v1';
   var names = { image: 'Image', audio: 'Audio', video: 'Video', pdf: 'PDF', slides: 'PowerPoint' };
   var error = document.getElementById('mediaErrorDialog');
   var editorDialog = document.getElementById('editorModal');

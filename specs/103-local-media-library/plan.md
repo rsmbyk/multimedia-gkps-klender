@@ -1,6 +1,6 @@
 # Plan 103: Local Media Library and service media entries
 
-- **Status:** Accepted by owner on 2026-10-17
+- **Status:** Accepted amendment (2026-10-17)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-103
@@ -9,54 +9,57 @@
 
 ## Why
 
-Operators prepare a Tata Ibadah on projector laptops and already keep its files on those computers. Vercel cannot serve as the durable local file folder. Chrome and the OBS browser dock have separate browser storage, so each browser storing its own upload would duplicate work. A computer-level library makes the same bytes available to both browser contexts, while the service order keeps durable references even when a particular computer lacks the file. The owner approved the linked UI previews on 2026-10-17 and requested no file-content preview or projector rendering in this slice.
+Operators use the same projector computers for the web app and OBS dock, and need one local copy of each media file that both browser contexts can reach. Running the companion in the existing Docker Compose stack avoids separate per-OS installation and folder setup. A Docker-managed named volume keeps the bytes and local index on that computer, while Vercel stores only file metadata and service-entry references.
 
-## Assumptions for this Draft
+## Assumptions for this amendment
 
-- The local companion runs as a separate process on each operator computer, is maintained in this repository, and stores files in an ordinary computer folder outside browser storage. The web app remains deployed on Vercel.
-- A media reference is identified by SHA-256 of the bytes; the filename is display metadata, not identity. This is a product contract to review, not a shipped schema.
-- The supported families are image, audio, video, PDF, and PowerPoint (`.ppt` / `.pptx`), with 200 MB as the maximum individual file size. The inspected content determines the family even if the filename extension is misleading.
-- "No projector display yet" means advancing to a media entry clears previous projected content and leaves the projector content area blank. Its navigation controls may remain.
-- "No file preview yet" means a media entry does not render its binary contents in the existing Preview modal. The stage still shows the entry's title, file type, filename, and missing state.
-- Integration order: the parallel spec/ITEM 102 branch lands on `develop` before this spec/ITEM 103 branch. Keep ID 103; rebase onto that integrated `develop` before opening the implementation PR.
+- Keep the existing media identity, entry, library, and companion API behavior from the accepted Spec 103. Change how the companion is launched and where it persists its local data.
+- Run the companion as a service in the existing Compose project, with a named volume mounted at a fixed in-container library root. The volume stores both media bytes and the SQLite index.
+- Chrome and OBS's browser dock run on the host. They use `http://127.0.0.1:63174`; Docker's service DNS name is only for container-to-container traffic. This changes the companion's host endpoint from `47863`; API paths and payloads remain unchanged.
+- The companion listens on its container interface, while Compose publishes port `63174` only on host loopback. Its origin allowlist includes the exact production origin and both local web origins, `http://localhost:<WEB_PORT>` and `http://127.0.0.1:<WEB_PORT>`, where `<WEB_PORT>` is the effective Compose web port (default `63404`).
+- The operator sets `GKPS_MEDIA_PRODUCTION_ORIGIN` in the project-root `.env` on each projector computer. Compose combines it with both local origins and passes the resulting exact list to the companion as `GKPS_MEDIA_ALLOWED_ORIGINS`; the production value is the site's scheme and hostname (including a nonstandard port only if used), with no path or trailing slash. It is local Compose configuration, not a Vercel environment variable.
+- Compose gives the companion a restart policy. It will start after the Docker engine starts, provided the operator has configured Docker Desktop / Engine to start at login and has not explicitly stopped or removed the service.
+- Operators do not need the Docker volume's filesystem path. The connected status popup will show connection, file count, and total size, without a folder-location row.
+- The named volume is local to one Docker host. Cross-computer transfer, cloud sync, and a backup/restore UI remain out of scope.
 
 ## Scope / edges
 
 **In:**
 
-- A cross-platform local companion, computer folder, local manifest, status, content verification, safe file import, removal, and cleanup.
-- One top-level Media Library page for inspecting local files, usage references, filters, sorting, status, and per-computer retention settings.
-- One `+ Media` creation flow on Tata Ibadah with Upload and Media Library tabs. Create a service media entry for any supported family inferred from content.
-- Immutable file reference on each entry; Edit changes only the optional entry title. Deleting an entry leaves its local file available for later reuse.
-- Missing-file state when an entry's fingerprint is absent locally. Removing local bytes leaves service entries intact.
-- The agreed blank Preview/projector behavior for media entries, while preserving existing non-media projection.
+- Add the local media companion to the existing Docker Compose stack.
+- Persist the companion's file bytes and index in a named Docker volume at a configurable/fixed container root.
+- Publish companion port `63174` only to `127.0.0.1` on the Docker host and update the browser clients to use that loopback URL.
+- Configure the production origin in the project-root `.env` and let Compose combine it with both local origins (`localhost` and `127.0.0.1` at the effective `WEB_PORT`).
+- Restart the companion when Docker starts after login, without a separate OS-native startup service.
+- Remove the folder-location row from the connected status popup and stop returning the container path to the browser.
+- Update companion, architecture, and Compose documentation to describe the Docker-managed library and volume lifecycle.
 
 **Out:**
 
-- R2 publishing, inter-computer downloads, cloud expiry, or automatic recovery from another computer.
-- Rendering image/audio/video/PDF/PPT/PPTX contents in Preview or on the projector; OBS behavior.
-- Editing or replacing an existing entry's file reference. A different file requires a new entry.
-- Importing more than one file in one media entry, remote URL imports, and server-side persistent binary storage.
+- Bind mounts to an OS-specific host folder, host-path detection, or a folder picker.
+- Requiring operators to browse or edit files in Docker's volume directly.
+- Backup/export, volume migration between computers, R2, or other cloud synchronization.
+- Media Preview/projector rendering, PPT/PPTX slide display, or OBS-specific behavior.
 
 ## Approach
 
-1. Add a server-side media identity/metadata record and a service-entry reference. Preserve entry order and existing kinds. Keep the entry's original display filename so a local rename does not change the service label.
-2. Add a small companion in this repository that binds only to loopback, owns a user-visible local folder and index, computes SHA-256 while importing, validates size and content, and exposes narrowly scoped status/list/import/read/remove operations to both Chrome and OBS dock on the same computer. It must not expose arbitrary filesystem paths or broad cross-origin write access.
-3. Use the companion for file bodies. The Vercel-hosted Django app stores metadata and entry references only. A file chosen from the existing library is linked without copying it again. A new upload is copied into the local folder before the service entry is saved; failure leaves no service entry pointing at an unconfirmed import.
-4. Render the Media Library and entry form from the approved previews, including the missing-file state, type/unused filters, grouped date ordering, sort controls, and one-click navigation to referencing entries.
-5. Reconcile local files against current service references and apply the per-computer unused-file retention policy. When the reference inventory cannot be confirmed, defer automatic deletion rather than incorrectly deleting a used file.
-6. Ensure media entries clear projector content and do not display file content in Preview. Existing service navigation and non-media rendering continue to work.
+1. Add a `media` service to `docker-compose.yml` using the repository's Python image/build and the existing companion module. Configure its storage root to the named volume mount so the byte files and SQLite index share the volume.
+2. Change the companion's browser endpoint from port `47863` to `63174`, updating the companion listener, browser clients, and tests together. Publish `63174` as `127.0.0.1:63174:63174`; allow the process to bind inside the container without exposing the port on other host interfaces. Keep API paths and payloads unchanged.
+3. Require `GKPS_MEDIA_PRODUCTION_ORIGIN` in the project-root `.env`. Compose combines that exact production origin with `http://localhost:<WEB_PORT>` and `http://127.0.0.1:<WEB_PORT>` (default `63404`) and passes the list as `GKPS_MEDIA_ALLOWED_ORIGINS`; fail closed if the production origin is missing or malformed.
+4. Add `restart: unless-stopped` (or equivalent documented behavior) so the service returns when Docker starts after login; `docker compose down` still requires a later `up` because it removes the container.
+5. Remove the filesystem path from the status response and status popup. Retain connection state, file count, total size, and all existing disconnected behavior.
+6. Add focused Compose/configuration and companion tests, then update the existing Spec 103 PR and its operator documentation.
 
-## TDD and UI checks
+## TDD and verification
 
-- Domain/app: focused tests in `multimedia/tatib/tests.py`, `multimedia/web/tests.py`, and a new companion test module for hash identity, type validation, import/reuse, missing references, and retention.
-- Browser E2E: focused media-entry/library tests and targeted `tests/e2e/test_projector.py` cases for blank media screens and non-media continuity.
-- Platform checks: the same companion protocol and path handling on Windows, macOS, and Linux; Chrome and OBS dock connect to one computer-level folder.
+- Companion tests: `multimedia/test_local_media.py` verifies the configured volume root, file/index persistence, origin enforcement, and verified reads.
+- Compose tests: `tests/test_docker_compose.py` verifies the companion service, named volume mount, loopback-only `63174` port mapping, restart policy, production origin, and both local web origins at the configured port. Companion and browser-client tests verify the same endpoint port and unchanged API behavior.
+- Browser E2E: `tests/e2e/test_media_library.py` verifies the connected status omits the path, still shows counts and size, and reports unavailable behavior when the companion is stopped.
+- Run the targeted Django/companion tests, targeted media-library E2E, `docker compose config`, and `git diff --check`.
 
 ## Risks
 
-- This is a two-process feature. Installing/starting the companion and connecting it safely from a Vercel page need a concrete, reviewable implementation design, especially origin checks and a user-facing disconnected state. Do not silently fall back to browser storage.
-- Browser MIME types and filenames are insufficient to identify file contents; the preview's signature checks are illustrative, not production validators. Supported formats need robust validation and malformed-file tests.
-- A cross-computer service reference can exist before the local bytes arrive. The application must not mistake "missing here" for deletion of the shared entry.
-- Cleanup must not use a stale service-reference list during network loss. Manual removal and automatic cleanup are separate decisions.
-- Other feature branches may advance `develop` before this Draft is accepted. Refresh numbering, board links, migration numbering, and code integration points before implementation.
+- A Docker-managed volume is less directly browsable than a host folder; deleting the volume deletes the library. Documentation must distinguish ordinary `docker compose down` from `docker compose down -v`.
+- Docker Desktop / Engine must be installed and started on each computer. Restart policy cannot start a Docker engine that is not running.
+- The browser must reach the helper through host loopback. A Compose DNS name will not work in Chrome or the OBS dock, and publishing the port beyond loopback would violate the local-only boundary.
+- A production origin is deployment configuration and must be an exact origin, without path or trailing slash. Do not guess or silently widen the allowlist.

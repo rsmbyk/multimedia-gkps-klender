@@ -33,7 +33,7 @@
     var rows = Array.prototype.slice.call(document.querySelectorAll('.tatib__item--media'));
     if (!rows.length) return;
     rows.forEach(function (row) { renderRow(row, 'unavailable'); });
-    fetch('http://127.0.0.1:47863/v1/files', { mode: 'cors', cache: 'no-store' })
+    fetch('http://127.0.0.1:63174/v1/files', { mode: 'cors', cache: 'no-store' })
       .then(function (response) { if (!response.ok) throw new Error('Local library unavailable'); return response.json(); })
       .then(function (result) {
         var hashes = new Set((result.files || []).map(function (file) { return file.sha256; }));

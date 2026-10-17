@@ -44,7 +44,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
 
     def page(self, path):
         page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
-        page.route('http://127.0.0.1:47863/**', lambda route: route.abort())
+        page.route('http://127.0.0.1:63174/**', lambda route: route.abort())
         page.goto(self.live_server_url + path)
         return page
 
@@ -55,7 +55,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         def companion(route):
             url = route.request.url
             if url.endswith('/status'):
-                payload = {'connection': 'connected', 'folder': '/test/media-library',
+                payload = {'connection': 'connected',
                            'file_count': 1, 'total_size': 2048, 'retention': '30', 'write_token': 'test-token'}
             elif url.endswith('/files') or url.endswith('/references'):
                 payload = {'files': [sample]}
@@ -65,7 +65,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
                 payload = {'error': 'Not found'}
             route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
                           headers={'Access-Control-Allow-Origin': self.live_server_url})
-        page.route('http://127.0.0.1:47863/**', companion)
+        page.route('http://127.0.0.1:63174/**', companion)
         page.goto(self.live_server_url + path)
         return page
 
@@ -73,7 +73,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page = self.page(reverse('web-media-library'))
         page.locator('#mediaStatusButton').click()
         expect(page.locator('#mediaConnection')).to_have_text('Unavailable')
-        expect(page.locator('#mediaFolder')).not_to_be_visible()
+        expect(page.locator('#mediaStatusPopup')).not_to_contain_text('Folder')
         expect(page.locator('#mediaCount')).not_to_be_visible()
         expect(page.locator('#mediaTotalSize')).not_to_be_visible()
         expect(page.locator('#mediaEmpty')).to_contain_text('unavailable')
@@ -105,8 +105,9 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.media-library__filename')).to_have_text('notes.pdf')
         page.locator('#mediaStatusButton').click()
         expect(page.locator('#mediaConnection')).to_have_text('Connected')
-        expect(page.locator('#mediaFolder')).to_have_text('/test/media-library')
+        expect(page.locator('#mediaStatusPopup')).not_to_contain_text('Folder')
         expect(page.locator('#mediaCount')).to_have_text('1')
+        expect(page.locator('#mediaTotalSize')).to_have_text('2 KB')
 
     def test_library_filter_sort_and_dialogs(self):
         page = self.connected_page(reverse('web-media-library'))
@@ -154,7 +155,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         row = page.locator('.tatib__item--media')
         expect(row).to_contain_text('Local library unavailable')
         self.assertFalse('is-missing' in row.get_attribute('class'))
-        page.route('http://127.0.0.1:47863/**', lambda route: route.fulfill(
+        page.route('http://127.0.0.1:63174/**', lambda route: route.fulfill(
             status=200, content_type='application/json', body='{"files":[]}',
             headers={'Access-Control-Allow-Origin': self.live_server_url}))
         page.reload()

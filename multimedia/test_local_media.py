@@ -2,13 +2,20 @@
 
 import hashlib
 import io
+import os
 import zipfile
 import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest import TestCase
+from unittest.mock import patch
 
-from multimedia.local_media import LocalLibrary, InvalidMedia
+from multimedia.local_media import (
+    LocalLibrary,
+    InvalidMedia,
+    parse_allowed_origins,
+    status_payload,
+)
 
 
 class LocalLibraryTests(TestCase):
@@ -16,6 +23,31 @@ class LocalLibraryTests(TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.library = LocalLibrary(Path(self.temp.name))
+
+    def test_configured_volume_root_is_used_and_reused(self):
+        root = Path(self.temp.name) / 'docker-volume'
+        with patch.dict(os.environ, {'GKPS_MEDIA_LIBRARY_ROOT': str(root)}):
+            first = LocalLibrary()
+            saved = first.import_bytes('notes.pdf', b'%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n')
+            reopened = LocalLibrary()
+            self.assertEqual(reopened.root, root.resolve())
+            self.assertEqual(reopened.list_files()[0]['sha256'], saved['sha256'])
+
+    def test_status_payload_does_not_expose_storage_path(self):
+        self.library.import_bytes('notes.pdf', b'%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n')
+        payload = status_payload(self.library, 'write-token')
+        self.assertNotIn('folder', payload)
+        self.assertEqual(payload['file_count'], 1)
+        self.assertGreater(payload['total_size'], 0)
+
+    def test_allowed_origins_require_exact_origins_without_paths(self):
+        origins = parse_allowed_origins(
+            'https://example.org,http://localhost:63404,http://127.0.0.1:63404'
+        )
+        self.assertEqual(len(origins), 3)
+        for invalid in ('', 'https://example.org/app', 'https://example.org/', '*'):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                parse_allowed_origins(invalid)
 
     def test_same_bytes_reuse_the_first_filename_and_upload_date(self):
         payload = b'%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n'

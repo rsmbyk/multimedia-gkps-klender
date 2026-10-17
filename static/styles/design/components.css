@@ -572,7 +572,6 @@ li:hover > .row-edit,
 .media-library__status.is-unavailable .media-library__status-row { padding-bottom: 0; }
 .media-library__status-row > span { color: var(--head-ink); }
 .media-library__status-row strong { text-align: right; font-weight: 600; }
-.media-library__path { overflow-wrap: anywhere; font-size: 12px; }
 .media-library__filters { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 15px 0; border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); }
 .media-library__filters { border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--focus) 28%, var(--divider)); }
 .media-library__chips { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }

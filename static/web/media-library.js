@@ -3,7 +3,7 @@
   'use strict';
   var page = document.getElementById('mediaLibrary');
   if (!page) return;
-  var endpoint = 'http://127.0.0.1:47863/v1';
+  var endpoint = 'http://127.0.0.1:63174/v1';
   var familyNames = { image: 'Image', audio: 'Audio', video: 'Video', pdf: 'PDF', slides: 'PowerPoint' };
   var files = [], uses = null, token = '', retention = '30', connected = false;
   var types = new Set(), unusedOnly = false, sort = 'date-desc', pendingRemove = null;
@@ -31,7 +31,6 @@
     document.querySelectorAll('[data-media-connected]').forEach(function (el) { el.hidden = !connected; });
     if (connected) {
       token = status.write_token; retention = status.retention;
-      $('mediaFolder').textContent = status.folder;
       $('mediaCount').textContent = String(files.length);
       $('mediaTotalSize').textContent = fmtSize(files.reduce(function (sum, file) { return sum + file.size; }, 0));
     }
@@ -80,7 +79,7 @@
       }
       list.appendChild(row(file));
     });
-    if (connected) setStatus({ write_token: token, retention: retention, folder: $('mediaFolder').textContent });
+    if (connected) setStatus({ write_token: token, retention: retention });
   }
   function openDialog(dialog) { dialog.showModal(); }
   function closeDialog(dialog) {

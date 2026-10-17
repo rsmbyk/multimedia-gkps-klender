@@ -1,7 +1,7 @@
 # Spec: Local Media Library and service media entries
 
 - **ID:** 103
-- **Status:** Accepted by owner on 2026-10-17
+- **Status:** Accepted amendment (2026-10-17)
 - **Item:** ITEM-103
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -16,7 +16,7 @@ Let operators attach a locally stored file to a Tata Ibadah once and use that sa
 
 ### In scope
 
-- A local companion and local folder for media bytes and per-computer settings on Windows, macOS, and Linux.
+- A local companion running in the existing Docker Compose stack, with media bytes and per-computer settings stored in a Docker-managed named volume on Windows, macOS, and Linux Docker hosts.
 - Service media entries for images, audio, video, PDF, and PowerPoint (`.ppt`, `.pptx`).
 - Upload from the service-entry Create form, or link a file already in the local Media Library.
 - A top-level Media Library page for viewing local files, usage, missing/unused state, manual removal, and retention settings.
@@ -43,12 +43,14 @@ Let operators attach a locally stored file to a Tata Ibadah once and use that sa
 
 ## Local companion and connection
 
-- The companion lives in this repository but runs locally as a separate process, bound to loopback only. It stores files in a computer folder outside browser storage and exposes status, list, import, read, and remove operations through a narrow local interface. Chrome and the OBS dock on the same computer see the same files. A service page may be opened on another computer and correctly report missing local bytes.
-- The default library root is per operating-system user: Windows `%LOCALAPPDATA%\GKPS Klender\Media Library`, macOS `~/Library/Application Support/GKPS Klender/Media Library`, and Linux `$XDG_DATA_HOME/gkps-klender/media-library` (or `~/.local/share/gkps-klender/media-library` when `XDG_DATA_HOME` is unset). The companion resolves the actual path, creates it on first use, and reports that resolved path in the connected status popup. Files and the local index live under this root; the installation folder, browser profile, Vercel deployment, and OS temporary/cache directories are not storage locations. This Draft does not add a folder picker or relocation workflow.
-- The local interface must authenticate/authorize writes, restrict allowed web origins, and reject path traversal or requests for arbitrary local files. Only verified library identities can be read. The exact pairing/installation mechanism is an implementation design decision that must satisfy these conditions before code is shipped.
+- The companion runs as a service in the existing Docker Compose stack. A named Docker volume stores both media bytes and the SQLite index at a fixed container path. The volume is local to the Docker host and shared by the app's browser contexts on that same computer. A service page opened on another computer correctly reports missing local bytes until that computer has its own copy.
+- The companion's data root is the named volume mount; there is no OS-specific host path, bind mount, folder picker, or folder-location display. The local status response omits the container path. Operators manage files through the Media Library UI. Removing the named volume removes the local library; ordinary container recreation and `docker compose down`/`up` retain it.
+- The browser calls `http://127.0.0.1:63174`. This replaces the previous `47863` endpoint; companion API paths and payloads remain unchanged. The companion listens on its container interface, and Compose publishes the port only on host loopback (`127.0.0.1:63174:63174`). The browser does not connect to the Compose service name. The local interface must authorize writes, restrict allowed web origins to exact configured origins, reject path traversal or arbitrary local-file requests, and only read verified library identities.
+- The operator sets `GKPS_MEDIA_PRODUCTION_ORIGIN` in the project-root `.env` on each projector computer. This is the production app's exact scheme and host, without a path or trailing slash; it is local Compose configuration, not a Vercel environment variable. Compose combines it with `http://localhost:<WEB_PORT>` and `http://127.0.0.1:<WEB_PORT>`, where `<WEB_PORT>` is the effective Compose web port (default `63404`), and passes all three exact origins to the companion as `GKPS_MEDIA_ALLOWED_ORIGINS`. A missing or invalid production origin prevents the companion from starting; it must not fall back to a permissive origin.
+- The companion service uses a restart policy so it returns when Docker starts after login. This assumes Docker Desktop / Engine itself is configured to start at login. A manually stopped/removed Compose service does not start until the operator runs `docker compose up` again.
 - When the companion is unavailable, the status indicator is unavailable, local files cannot be imported/read/removed, and every media service entry shows `Local library unavailable` beside its saved type/filename label. Its type icon uses a muted color; even a previously missing entry does not use the danger icon until the companion reconnects and confirms absence. Existing text, song, and passage operations remain usable.
-- The status popup reports connection, folder location using that OS's path, local file count, and total local byte size. It does not label a file "missing" merely because the helper is disconnected.
-- When disconnected, the status popup keeps its heading and shows `Connection — Unavailable`. It hides the folder, file count, and total size rows, including any cached values.
+- The connected status popup reports connection, local file count, and total local byte size; it does not reveal the Docker volume path. It does not label a file "missing" merely because the helper is disconnected.
+- When disconnected, the status popup keeps its heading and shows `Connection — Unavailable`. It hides the file count and total size, including any cached values.
 
 ## Create, edit, and missing rules
 
@@ -82,7 +84,7 @@ Let operators attach a locally stored file to a Tata Ibadah once and use that sa
 
 The two linked HTML previews are the visual source of truth. They are planning artifacts, not implementation. Preserve their current geometry and states unless the owner approves a revision.
 
-- **Library page:** top-level rail icon; centered content column with 40 px desktop top padding and 28 px small-screen top padding; 29 px desktop heading; 42 px settings/status buttons at top right. Status button has a green/red 9 px dot and opens a right-aligned popup. Settings opens a centered modal. Both close on backdrop/outside click and Escape and use short scale/fade transitions; reduced-motion mode removes these animations.
+- **Library page:** top-level rail icon; centered content column with 40 px desktop top padding and 28 px small-screen top padding; 29 px desktop heading; 42 px settings/status buttons at top right. Status button has a green/red 9 px dot and opens a right-aligned popup. The connected popup shows connection, file count, and total size, with no folder path. Settings opens a centered modal. Both close on backdrop/outside click and Escape and use short scale/fade transitions; reduced-motion mode removes these animations.
 - **Library controls:** type chips are 12 px pill buttons; the Unused chip is separated by a centered dot. Result count and custom sort control share the filter row. Active chips use the accent fill. The sort popup matches app menu styling. Hover, focus-visible, active/selected, empty, disconnected, and disabled states match the preview in light/dark themes.
 - **Library rows:** 42 px square type-icon area, file text, and vertically centered 36 px icon-only danger remove button. Each Tata Ibadah reference is a separate line. Unused rows have a soft tint. Group dates use long Indonesian month names; file metadata uses the same date format. The shared app scrollbar is 5 px with no stepper buttons where supported.
 - **Entry Create:** modal width up to 840 px, viewport margins at least 16 px, height up to 760 px/viewport minus 36 px, with a scrollable file list. A centered 320 x 42 px two-choice switch sits below the title. Upload has a large dashed drop area; selected-file state replaces all prompt content. The optional title and Save/Cancel footer remain visible below the selection area. At <=650 px viewport width, modal width is viewport minus 20 px, horizontal padding is 18 px, and the drop area remains at least 220 px tall.
@@ -145,6 +147,32 @@ The two linked HTML previews are the visual source of truth. They are planning a
 - **When** the local companion cannot be reached
 - **Then** each entry retains its saved title, type, and filename, shows `Local library unavailable` in muted text, and uses its normal type icon without a missing-file danger state. The edit dialog reports that availability cannot be checked. Once reconnected, each entry returns to its verified available or missing state.
 
+### Scenario: Companion starts with the local Compose stack
+
+- **Given** Docker Compose is configured with the production and local app origins
+- **When** the operator runs `docker compose up -d` on the projector computer
+- **Then** the Django service, database, and media companion run together, and Chrome and the OBS dock can reach the companion at `http://127.0.0.1:63174`.
+
+### Scenario: Media survives companion recreation
+
+- **Given** files and the SQLite index are stored in the named media volume
+- **When** the companion container is restarted or the Compose stack is brought down and up without `-v`
+- **Then** the same files, filenames, hashes, and retention settings are still available.
+- **And** removing the named volume with an explicit destructive volume-removal command removes that computer's local library.
+
+### Scenario: Allowed production and both local loopback origins
+
+- **Given** the companion is configured with the exact production origin and both local origins at the effective Compose web port
+- **When** the Media Library is opened from `http://localhost:<WEB_PORT>` or `http://127.0.0.1:<WEB_PORT>`
+- **Then** it can connect to the companion through host loopback.
+- **And** a request from any unlisted origin is rejected.
+
+### Scenario: Connected status does not expose Docker storage path
+
+- **Given** the companion is connected
+- **When** the operator opens the status popup
+- **Then** it shows connection, file count, and total size without a folder-location row or container filesystem path.
+
 ### Scenario: Remove local bytes without removing references
 
 - **Given** a local file is used by one or more Tata Ibadahs
@@ -165,6 +193,7 @@ The two linked HTML previews are the visual source of truth. They are planning a
 
 ## Traceability
 
-- Domain/app tests: `multimedia/tatib/tests.py` (media identity, immutable reference, blank projector screen), `multimedia/web/test_media.py` (metadata registration, entry save, reference inventory), and `multimedia/test_local_media.py` (deduplication, content inspection, verified reads, retention).
+- Domain/app tests: `multimedia/tatib/tests.py` (media identity, immutable reference, blank projector screen), `multimedia/web/test_media.py` (metadata registration, entry save, reference inventory), and `multimedia/test_local_media.py` (deduplication, content inspection, verified reads, retention, configured root, and allowed origins).
+- Compose tests: `tests/test_docker_compose.py` (companion service, named-volume mount, loopback-only port `63174`, restart policy, production origin, and both local loopback origins); companion/browser tests also verify that clients use `63174` consistently.
 - E2E: `tests/e2e/test_media_library.py` (connected/disconnected library, picker state, duplicate upload, entry creation, missing state) and `tests/e2e/test_projector.py::ProjectorE2ETests.test_media_navigation_clears_projector_then_text_resumes`.
 - Implementation: `multimedia/local_media.py`, `multimedia/tatib/models.py`, `multimedia/web/reading/{entries,views}.py`, `multimedia/web/templates/reading/{media_library,_entry_form,tatib,base}.html`, and `static/web/media-{entry,library,stage}.js`.
