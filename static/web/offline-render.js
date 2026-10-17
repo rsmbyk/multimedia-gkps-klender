@@ -477,6 +477,11 @@
         .replace(/entry__add-btn/g, 'entry__empty-btn').replace(/\+ /g, 'Add ')
       + '</div></div>';
     common(doc, 'tatib', service.name, service.name, '', body, panel, children);
+    /* Same rule as the server's format_date_long: a dated service leads with its date. */
+    var serviceDate = dateParts(service.date);
+    doc.querySelector('#readEyebrow').textContent = serviceDate
+      ? serviceDate.day + ' ' + MONTHS_LONG[serviceDate.month - 1] + ' ' + serviceDate.year
+      : 'Tata Ibadah';
     var otherMode = mode === 'template' ? 'dated' : 'template';
     doc.querySelector('.panel__filter').insertAdjacentHTML('afterbegin',
       tatibModeButton('/tatib/' + service.id + '/?mode=' + otherMode, mode));
