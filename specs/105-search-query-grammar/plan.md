@@ -11,16 +11,17 @@
 Owner request, restated (2026-10-17): symbols are separators except the quote and the exclusion
 dash; each word is a token; quoted phrases are searched as phrases; `-word` excludes; results rank
 by how many tokens they match, then by how many appear in the query's order; the status line shows
-the purged query; a lone exclusion explains itself.
+the purged query; a lone exclusion explains itself. Matching stays substring-based — `kasih` still
+matches `mengasihi` and `Kasih-Nya`.
 
 Everything here lands on the page matcher (`search_page()`, introduced by spec 104) and the saved
 copy (`offline-render.js` `searchPage()`). The legacy `search()` — the Go To's free-text fallback —
-is not edited ("do not touch anything on goto. only search page"), so no Go-To behavior or test
-moves.
+is a separate function and is not edited ("do not touch anything on goto. only search page"); the
+owner confirmed the separation explicitly (2026-10-17: "separate the goto and search page search()
+function to avoid future conflicts or bugs"). No Go-To behavior or test moves.
 
-Today's page matcher cannot express any of this: it scores whole-phrase substrings (`icontains`)
-on a 200/120/95/35/16 ladder, has no tokens, no phrases, no exclusion, and shows whatever the user
-typed.
+Today's page matcher cannot express any of this: it scores plain substrings on a 200/120/95/35/16
+ladder, has no tokens, no phrases, no exclusion, and shows whatever the user typed.
 
 ## Scope / edges
 
@@ -53,20 +54,24 @@ typed.
    owner's `Allah, "Tuhan. Yesus:Kristus" -kasih` → `Allah 'Tuhan Yesus Kristus' -kasih`.
 2. **Matching (`search_page`).** For each corpus, fetch a superset with one `icontains` per include
    word (OR across words and fields — the same shape as today's candidate queries), then verify in
-   Python: tokenize each field's text with the same rule (words, positions), check whole words and
-   consecutive phrase words, drop rows matching an excluded token, and keep rows with coverage ≥ 1.
+   Python on the folded field text: a token matches where `normalize(token) in normalize(field)`
+   (substrings count — `kasih` matches `mengasihi`), a phrase where its folded words appear as one
+   contiguous stretch, an excluded token anywhere drops the row; keep rows with coverage ≥ 1.
    Fields per row kind are spec 104's.
 3. **Ranking.** Coverage descending, then the order score: per field, the longest run of matched
-   tokens that appears in the query's order (subsequence, non-adjacent allowed, repeated tokens may
-   take any occurrence) — a small DP/greedy scan over the token positions; take the best field.
-   Then `normalize(title)` ascending, as today. The ladder and `score` are not used by the page.
+   tokens whose chosen match offsets increase in the query's order (subsequence, non-adjacent
+   allowed, repeated tokens may take any occurrence). Compute it as an LCS-style DP over the
+   query's tokens and the field's match offsets — greedy fails when the first token's earliest
+   match sits late — and take the best field. Then `normalize(title)` ascending, as today. The
+   ladder and `score` are not used by the page.
 4. **Display.** `SearchResults` (or the page result object) carries `canonical` and `notice`;
    `SearchView` passes them to the template; `search.html` renders the canonical line, the page
    title, and the two notices in the existing `#searchStatus` paragraph. The field keeps
    `request.GET['q']` as typed; the URL is untouched.
-5. **Saved copy.** Port the same parser and ranking into `searchPage()`; build the same canonical
-   line and notices; keep the existing group markup, counts, and paging. Keep one shared table of
-   inputs → (rows, canonical, notice) in the tests so both renderers are checked against it.
+5. **Saved copy.** Port the same parser, substring matcher, and offset-based ranking into
+   `searchPage()`; build the same canonical line and notices; keep the existing group markup,
+   counts, and paging. Keep one shared table of inputs → (rows, canonical, notice) in the tests so
+   both renderers are checked against it.
 6. **Excerpt.** Anchored on the first matched token in the row's body (phrase start for a quoted
    phrase), same 44/172 window.
 7. **Docs and housekeeping.** Module docstring: `search()` is the Go To's frozen fallback,
@@ -78,9 +83,10 @@ typed.
 - Domain: `tests/test_web_search.py` — new `search_page()` tests: symbols to tokens; digits are
   words; quoted phrase is one token; dash inside quotes is ignored; `-word` excludes; exclusion
   only and symbols only give the notice and no rows; canonical table (owner's example, already-
-  canonical input unchanged); whole-word match (`kasih` not `mengasihi`); phrase adjacency; coverage
-  ordering; order ordering (in-order beats reversed); best-occurrence configuration; tie-break by
-  title. The legacy `search()` tests stay green untouched.
+  canonical input unchanged); substring match (`kasih` matches `mengasihi` and `Kasih-Nya`);
+  phrase adjacency and a symbol between the words breaking it; coverage ordering; order ordering
+  (in-order beats reversed); best-occurrence configuration; tie-break by title. The legacy
+  `search()` tests stay green untouched.
 - App: `multimedia/web/tests.py` — the served page shows the canonical status line, the exclusion
   notice, and partial matches below full ones.
 - E2E: `tests/e2e/test_reading.py` — one grammar walk (quoted phrase + exclusion + canonical
@@ -93,13 +99,17 @@ typed.
   (owner's choice, 2026-10-17): `Tuhan Yesus` lists verses with only `Tuhan`, and `Kidung Jemaat`
   lists songs whose title or lyrics contain either word. Group counts will be large; that is the
   chosen semantics, not a regression.
-- **Whole words, not fragments.** `kasih` no longer matches `mengasihi`. Deliberate: tokens need
-  word positions for the order rule. Say if substring recall should stay.
+- **Substring recall stays wide.** `kasih` matches `mengasihi`, `Kasih-Nya`, and `berkasih`
+  (owner, 2026-10-17: tokens still match fragments). Order is therefore computed on match offsets,
+  not word positions.
+- **Phrase strictness.** A symbol between the words in the stored text breaks a quoted phrase;
+  that follows "searches exactly". Unquoted tokens still match inside it.
 - **Performance.** The candidate query is one `icontains` per include word; common words (e.g.
-  `tuhan`) fetch thousands of rows and are tokenized in Python. Measure the page on the prod copy
+  `tuhan`) fetch thousands of rows and are scanned in Python. Measure the page on the prod copy
   before implementation; if it is slow, prefilter on the rarest token first.
 - **Parity.** Two parsers (Python and JS) must agree on the canonical string and the order. One
   shared input table in the tests is the guard.
-- **Frozen Go To.** The page no longer calls `search()`; that function and its tests stay untouched.
+- **Separate matchers.** The page no longer calls `search()`; that function and its tests stay
+  untouched, so the Go To cannot drift with page changes.
 - **104 supersession.** 105 replaces the ladder 104 described; if 104 is accepted alone first, its
   ladder ships and is then replaced — note it in the changelog of the later PR.

@@ -32,7 +32,7 @@ are unchanged. No reference lists anything on the search page, and the home hint
 (owner, 2026-10-17; see UI details). The projector's Go To is not part of this spec and does not
 change (owner, 2026-10-17).
 
-The page gets its own matcher (`search_page()`) built on these six fields. The legacy `search()`
+The page gets its own matcher (`search_page()`) built on these six fields — a separation the owner asked for explicitly (2026-10-17: "separate the goto and search page search() function to avoid future conflicts or bugs"). The legacy `search()`
 stays exactly as it is — it is the Go To's free-text fallback, and the owner froze that path
 ("do not touch anything on goto. only search page"). Spec 105 replaces the ranking described here
 with token coverage and order once accepted; the field scope stands either way.

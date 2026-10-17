@@ -41,7 +41,8 @@ Owner corrections (2026-10-17):
 - The Go To is frozen — "do not touch anything on goto. only search page". So `search()`,
   `projector_lookup`, and `projector-library.js` are not edited at all, and the page gets its own
   matcher (`search_page()`) instead of changing the shared one. That also removes the earlier idea
-  of filtering reference rows inside `SearchView`.
+  of filtering reference rows inside `SearchView`. The owner confirmed the split (2026-10-17:
+  "separate the goto and search page search() function to avoid future conflicts or bugs").
 - The home hint goes entirely — both of its examples are references that list nothing, and the
   owner wants no helper line rather than a replacement ("just remove the home hint").
 

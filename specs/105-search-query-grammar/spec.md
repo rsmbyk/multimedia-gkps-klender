@@ -17,7 +17,8 @@ lone exclusion says why it lists nothing.
 Spec 104 says *which fields* may match. This spec is the query layer over them: how the typed
 string is cut into tokens, how a result qualifies, how it ranks, and what the page shows. It
 replaces spec 104's ranking ladder on the search page; 104's field scope stands either way. The
-projector's Go To is out of scope and untouched (owner, 2026-10-17).
+projector's Go To is out of scope and untouched (owner, 2026-10-17), and the page keeps its own
+matcher so the two search functions cannot drift into each other.
 
 ## Scope
 
@@ -25,8 +26,9 @@ projector's Go To is out of scope and untouched (owner, 2026-10-17).
 
 - The parser: symbols to spaces, words as tokens, quoted phrases, `-` exclusions, digits as word
   characters, case and diacritic folding.
-- Matching: soft AND over the spec-104 fields — a result lists when it matches at least one include
-  token in any field and no excluded token in any field.
+- Matching: soft AND over the spec-104 fields on folded text — a token matches as a substring, a
+  phrase as a contiguous stretch; a result lists when it matches at least one include token in any
+  field and no excluded token in any field.
 - Ranking: matched-token count first, then token order, then the existing title order.
 - The canonical (purged) query string: rebuilt from the tokens, shown in the status line and page
   title; the field and the URL keep what was typed.
@@ -39,7 +41,8 @@ projector's Go To is out of scope and untouched (owner, 2026-10-17).
 
 - The projector's Go To — untouched, no code, behavior, or test change (owner: "do not touch
   anything on goto"). Its fallback keeps calling the legacy `search()`, which this spec does not
-  edit.
+  edit; the page's `search_page()` is a separate function (owner, 2026-10-17: "separate the goto
+  and search page search() function").
 - The field set itself — spec 104 (verse text/title, song title/lyrics, service name, row title,
   text-entry body).
 - The look: groups, row shapes, group counts, `shown` paging, and the clear control. Only the
@@ -63,15 +66,19 @@ projector's Go To is out of scope and untouched (owner, 2026-10-17).
     else it is a symbol.
 - Inside quotes every character is literal text except the closing `"`: symbols, **including the
   dash**, become spaces.
-- Each bare word is one token. Each quoted phrase is **one** token whose words must appear
-  consecutively (a phrase is not split into separate tokens).
+- Each bare word is one token. Each quoted phrase is **one** token (a phrase is not split into
+  separate tokens).
 - Empty tokens are dropped.
 
 ### Matching
 
-- A token matches a result when one of the result's searchable fields contains it — whole words
-  only, never a fragment: `kasih` does not match `mengasihi`. A phrase matches where its words
-  appear consecutively in one field.
+- Matching is done on folded text (case and diacritics), without word boundaries: a token matches
+  wherever its characters appear inside a field — `kasih` matches `kasih`, `Kasih-Nya`,
+  `mengasihi`, and `berkasih`. Symbols in the stored text stay as written; only the query turns
+  symbols into spaces.
+- A phrase matches where its words appear as one contiguous stretch of that folded text:
+  `"Tuhan Yesus"` matches `Tuhan Yesus` and not `Yesus Tuhan`; a symbol between the words in the
+  stored text (a comma, a dash) breaks the phrase.
 - Searchable fields are spec 104's, per row kind: verse — title, text; song — title, lyrics (live
   verses joined in order); service — name; row — title, body.
 - **Coverage** = how many distinct include tokens the result matches. A token found in two fields
@@ -82,10 +89,10 @@ projector's Go To is out of scope and untouched (owner, 2026-10-17).
 ### Ranking
 
 1. **Coverage**, descending — more matched tokens first.
-2. **Order**, descending — the longest run of matched tokens that appears in the query's own order
-   inside one field. Words need not be adjacent; a repeated token may take any occurrence; the
-   longest run over the best field and the best occurrences is used. A single matched token scores
-   1.
+2. **Order**, descending — the longest run of matched tokens whose chosen matches appear in the
+   query's own order inside one field, by their offsets in that field. Matches need not be
+   adjacent; a token that occurs several times may take any occurrence; the longest run over the
+   best field and the best occurrences is used. A single matched token scores 1.
 3. **Title**, normalized ascending — the existing deterministic tie-break.
 
 More coverage always beats better order. Ranking stays inside each group; the three groups stay
@@ -137,6 +144,12 @@ same input the two renderers produce the same canonical string and the same orde
 - **When** I search `Allah, Tuhan. Yesus:Kristus`
 - **Then** it reads four tokens — `Allah`, `Tuhan`, `Yesus`, `Kristus`, in that order
 
+### Scenario: Tokens match inside words
+
+- **Given** a lyric containing `mengasihi` and another containing `Kasih-Nya`
+- **When** I search `kasih`
+- **Then** both are listed — token matching is by substring, not by whole word
+
 ### Scenario: Soft AND lists partial matches below full ones
 
 - **Given** one text with both `Tuhan` and `Yesus` and another with only `Tuhan`
@@ -168,7 +181,14 @@ same input the two renderers produce the same canonical string and the same orde
 - **Then** only rows where `Tuhan Yesus` appears consecutively are listed — a row with `Yesus`
   before `Tuhan` is not
 
-### Scenario: Symbols inside a phrase are ignored, dashes included
+### Scenario: A symbol between phrase words breaks the phrase
+
+- **Given** a text reading `Tuhan, Yesus`
+- **When** I search `"Tuhan Yesus"`
+- **Then** the phrase does not match that text, while the unquoted `Tuhan Yesus` still lists it —
+  both tokens match inside it
+
+### Scenario: Symbols inside a quoted phrase are ignored, dashes included
 
 - **When** I search `"Tuhan. Yesus:Kristus"` or `"Tuhan -Yesus"`
 - **Then** both read the phrase `Tuhan Yesus` (and the second drops the dash, not the word)
@@ -212,7 +232,7 @@ same input the two renderers produce the same canonical string and the same orde
 ## Traceability
 
 - Domain/app tests: `tests/test_web_search.py` — new `search_page()` tests: tokenizing and
-  canonical form (the owner's example included), whole-word and phrase matching, exclusion,
+  canonical form (the owner's example included), substring and phrase matching, exclusion,
   exclusion-only and symbols-only notices, coverage and order ranking (including the best
   occurrence configuration and the tie-break); the legacy `search()` tests stay green untouched
   (Go To). `multimedia/web/tests.py` — the served page: canonical status line, exclusion notice,
