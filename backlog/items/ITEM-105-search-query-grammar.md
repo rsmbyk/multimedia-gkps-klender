@@ -1,6 +1,6 @@
 ---
 id: ITEM-105
-status: speccing
+status: done
 title: 'Search query grammar and token ranking'
 type: feat
 priority: P1
@@ -9,11 +9,11 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: [105](../../specs/105-search-query-grammar/spec.md)
 branch: feat/105-search-query-grammar
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/357
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.13.6
 ---
 
 # ITEM-105: Search query grammar and token ranking
@@ -29,7 +29,7 @@ line shows the purged query. A lone exclusion explains why it lists nothing.
 
 - Owner rules, 2026-10-17 (twelve rules; recorded in spec 105's Domain rules).
 - Owner chose soft AND: all-token results rank first, partial matches still list below.
-- Tokens still match substrings/fragments (owner, 2026-10-17): `kasih` matches `mengasihi`.
+- Tokens still match substrings/fragments (owner, 2026-10-17): `kasih` matches `berkasih` and `Kasih-Nya`.
 - The owner asked for the Go To and the page to use separate search functions ("separate the goto
   and search page search() function to avoid future conflicts or bugs"); `search_page()` is the
   page's matcher and the legacy `search()` stays the Go To's fallback.

@@ -2,10 +2,12 @@
 
 Two matchers live here, deliberately apart:
 
-- ``search_page()`` serves the public search page (spec 104). It matches only the
-  listed content fields: a verse's text or title, a song's title or lyrics, a
-  service's name, a row's title, and a text entry's body. Book rows, songbook
-  rows, references, dates, and section labels never match.
+- ``search_page()`` serves the public search page (specs 104 and 105). It matches
+  only the listed content fields: a verse's text or title, a song's title or
+  lyrics, a service's name, a row's title, and a text-entry body; book rows,
+  songbook rows, references, dates, and section labels never match. Spec 105
+  replaced its ranking ladder with the query grammar: tokens, quoted phrases,
+  ``-`` exclusions, soft AND, coverage, then query order.
 - ``search()`` is the projector Go To's free-text fallback. It keeps the original
   behaviour -- book names and references, songbook references, meta scores -- and
   must not change with the page (owner: "do not touch anything on goto").
@@ -17,6 +19,8 @@ turn ``target`` into URLs; templates render the rest.
 
 import re
 import unicodedata
+from bisect import bisect_left
+from dataclasses import dataclass
 
 from django.db.models import Prefetch, Q
 
@@ -25,6 +29,11 @@ from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
 
 GROUP_ORDER = ('bible', 'songs', 'tatib')
+
+NOTICE_EXCLUSION_ONLY = (
+    'Nothing to search \u2014 an exclusion like \u201c-Israel\u201d needs at least one other word.'
+)
+NOTICE_NO_WORDS = 'Nothing to search \u2014 add at least one word.'
 
 MONTHS_SHORT = ('Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des')
 MONTHS_LONG = ('Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember')
@@ -52,12 +61,99 @@ def normalize(text):
     return re.sub(r'\s+', ' ', text).strip().casefold()
 
 
+@dataclass(frozen=True)
+class QueryToken:
+    """One query token: a bare word or a quoted phrase, maybe excluded."""
+
+    words: tuple
+    text: str
+    excluded: bool = False
+    phrase: bool = False
+
+    @property
+    def display(self):
+        """The typed spelling, words joined by single spaces."""
+        return ' '.join(self.words)
+
+    def canonical(self):
+        body = f"'{self.display}'" if self.phrase else self.display
+        return f'-{body}' if self.excluded else body
+
+
+def _is_word_char(char):
+    return char.isalnum() or unicodedata.combining(char)
+
+
+def parse_query(query):
+    """Split a typed query into tokens and rebuild its canonical form (spec 105).
+
+    Outside quotes ``\"`` opens or closes a phrase, a ``-`` before a word or a
+    quote excludes the next token, and every other symbol separates words.
+    Inside quotes only ``\"`` closes; every other symbol, the dash included,
+    separates the phrase's words. Case and spelling stay as typed. Returns
+    ``(tokens, canonical, notice)``.
+    """
+    tokens = []
+    excluded = False
+    index, length = 0, len(query)
+    while index < length:
+        char = query[index]
+        if char == '"':
+            index += 1
+            words, word = [], []
+            while index < length and query[index] != '"':
+                current = query[index]
+                if _is_word_char(current):
+                    word.append(current)
+                else:
+                    if word:
+                        words.append(''.join(word))
+                        word = []
+                index += 1
+            if word:
+                words.append(''.join(word))
+            if index < length:
+                index += 1                      # the closing quote
+            if words:
+                tokens.append(QueryToken(tuple(words), normalize(' '.join(words)),
+                                         excluded=excluded, phrase=True))
+            excluded = False
+            continue
+        if (char == '-' and index + 1 < length
+                and (_is_word_char(query[index + 1]) or query[index + 1] == '"')):
+            excluded = True
+            index += 1
+            continue
+        if _is_word_char(char):
+            word = []
+            while index < length and _is_word_char(query[index]):
+                word.append(query[index])
+                index += 1
+            bare = ''.join(word)
+            tokens.append(QueryToken((bare,), normalize(bare), excluded=excluded))
+            excluded = False
+            continue
+        excluded = False
+        index += 1
+
+    canonical = ' '.join(token.canonical() for token in tokens)
+    if not tokens:
+        notice = NOTICE_NO_WORDS
+    elif not any(not token.excluded for token in tokens):
+        notice = NOTICE_EXCLUSION_ONLY
+    else:
+        notice = None
+    return tokens, canonical, notice
+
+
 class SearchResults:
     """Query, validity, and rows grouped in display order."""
 
     def __init__(self, query='', valid=True):
         self.query = query
         self.valid = valid
+        self.canonical = ''
+        self.notice = ''
         self.groups = {key: [] for key in GROUP_ORDER}
 
     def __getitem__(self, key):
@@ -385,37 +481,99 @@ def search(query):
 # These helpers therefore never touch the legacy functions above.
 
 
-def _page_score(entry, phrase, words):
-    """The page's ladder over the listed fields only: title first, then body.
+def _occurrences(text, token):
+    """Every match offset of a folded token inside folded text (substrings count)."""
+    start = text.find(token.text)
+    while start >= 0:
+        yield start
+        start = text.find(token.text, start + 1)
 
-    Meta strings (translation code, citation, date, section label) never score;
-    they are display only.
+
+def _order_score(fields, tokens):
+    """The longest run of matched tokens that keeps the query's order in one field.
+
+    Offsets must increase; matches need not be adjacent, and a token that occurs
+    several times may take any occurrence. Computed as a longest increasing
+    subsequence over the occurrences, so the best configuration wins rather than
+    the first one a greedy walk would take.
     """
-    title = entry['lookup_title']
-    body = entry['lookup_body']
-    if title == phrase:
-        return 200
-    if title.startswith(phrase):
-        return 120
-    if phrase in title:
-        return 95
-    if phrase in body:
-        return 35
-    if len(words) > 1:
-        combined = f'{title} {body}'
-        if all(word in combined for word in words):
-            return 16
-    return 0
+    best = 0
+    for text in fields:
+        events = []
+        for index, token in enumerate(tokens):
+            for position in _occurrences(text, token):
+                events.append((position, -index))
+        if not events:
+            continue
+        events.sort()                 # equal offsets: the higher token index first
+        tails = []
+        for _position, negative in events:
+            index = -negative
+            place = bisect_left(tails, index)
+            if place == len(tails):
+                tails.append(index)
+            else:
+                tails[place] = index
+        best = max(best, len(tails))
+    return best
 
 
-def _page_bible_hits(phrase, words, raw, books):
+def _page_metrics(entry, tokens):
+    """(coverage, order) for the row, or None when an excluded token matches it.
+
+    Coverage counts distinct include tokens, once each however many fields or
+    occurrences they hit; order is the best in-order run across the fields.
+    """
+    fields = (entry['lookup_title'], entry['lookup_body'])
+    matched = []
+    for token in tokens:
+        if token.excluded:
+            if any(token.text in field for field in fields):
+                return None
+            continue
+        if any(token.text in field for field in fields):
+            matched.append(token)
+    if not matched:
+        return 0, 0
+    return len(matched), _order_score(fields, matched)
+
+
+def _page_excerpt(body, tokens):
+    """The window around the first matched include token in the body."""
+    folded = normalize(body)
+    if folded:
+        for token in tokens:
+            if not token.excluded and token.text in folded:
+                return _excerpt(body, token.text)
+    return _excerpt(body, '')
+
+
+def _page_row(hit, tokens):
+    return {
+        'kind': hit['kind'],
+        'title': hit['title'],
+        'meta': hit['meta'],
+        'excerpt': _page_excerpt(hit['body'], tokens),
+        'target': hit['target'],
+        'score': hit['coverage'],
+    }
+
+
+def _page_ranked_rows(hits, tokens):
+    """Coverage first, then the order score, then the existing title tie-break."""
+    hits.sort(key=lambda hit: (-hit['coverage'], -hit['order'], normalize(hit['title'])))
+    return [_page_row(hit, tokens) for hit in hits]
+
+
+def _page_bible_hits(tokens, books):
     """Verse text and title only (spec 104); never a book or reference row."""
-    criteria = Q(text__icontains=raw) | Q(title__icontains=raw)
-    if len(words) > 1:
-        all_words = Q()
-        for word in words:
-            all_words &= (Q(text__icontains=word) | Q(title__icontains=word))
-        criteria |= all_words
+    include = [token for token in tokens if not token.excluded]
+    if not include:
+        return []
+    criteria = Q()
+    for token in include:
+        for word in token.words:
+            criteria |= Q(text__icontains=word) | Q(title__icontains=word)
     seen = {}
     candidates = (bible_models.Verse.objects.filter(criteria)
                   .select_related('book_translation__version', 'book_translation__book'))
@@ -430,28 +588,32 @@ def _page_bible_hits(phrase, words, raw, books):
             body=verse.text,
             target={'book_id': info['book'].pk, 'chapter': verse.chapter,
                     'verse': verse.verse, 'end_verse': verse.verse})
-        score = _page_score(entry, phrase, words)
-        if not score:
+        metrics = _page_metrics(entry, tokens)
+        if metrics is None:
             continue
-        entry['score'] = score
+        coverage, order = metrics
+        if not coverage:
+            continue
+        entry['coverage'], entry['order'] = coverage, order
         key = (verse.book_translation.book_id, verse.chapter, verse.verse)
         prior = seen.get(key)
-        if (prior is None or score > prior['score']
-                or (score == prior['score'] and abbreviation == info['version'])):
+        if (prior is None or (coverage, order) > (prior['coverage'], prior['order'])
+                or ((coverage, order) == (prior['coverage'], prior['order'])
+                    and abbreviation == info['version'])):
             seen[key] = entry
-    return _ranked_rows(list(seen.values()), phrase)
+    return _page_ranked_rows(list(seen.values()), tokens)
 
 
-def _page_song_hits(phrase, words, raw):
+def _page_song_hits(tokens):
     """Song title and live lyrics only (spec 104); never a songbook or number row."""
-    criteria = (Q(title__icontains=raw)
-                | Q(verse__is_deleted=False, verse__lyric__icontains=raw))
-    if len(words) > 1:
-        all_words = Q()
-        for word in words:
-            all_words &= (Q(title__icontains=word)
-                          | Q(verse__is_deleted=False, verse__lyric__icontains=word))
-        criteria |= all_words
+    include = [token for token in tokens if not token.excluded]
+    if not include:
+        return []
+    criteria = Q()
+    for token in include:
+        for word in token.words:
+            criteria |= (Q(title__icontains=word)
+                         | Q(verse__is_deleted=False, verse__lyric__icontains=word))
     active_songs = song_models.Song.objects.active().filter(book__is_deleted=False)
     ids = set(active_songs.filter(criteria).values_list('id', flat=True))
     if not ids:
@@ -468,13 +630,17 @@ def _page_song_hits(phrase, words, raw):
             title=song.title or citation,
             lookup_title=song.title or '',
             meta=citation,
-            body='\n'.join(verse.lyric for verse in song.verse_set.all()),
+            body=chr(10).join(verse.lyric for verse in song.verse_set.all()),
             target={'song_id': song.pk})
-        score = _page_score(entry, phrase, words)
-        if score:
-            entry['score'] = score
-            hits.append(entry)
-    return _ranked_rows(hits, phrase)
+        metrics = _page_metrics(entry, tokens)
+        if metrics is None:
+            continue
+        coverage, order = metrics
+        if not coverage:
+            continue
+        entry['coverage'], entry['order'] = coverage, order
+        hits.append(entry)
+    return _page_ranked_rows(hits, tokens)
 
 
 def _page_service_public_rows(service):
@@ -500,25 +666,22 @@ def _page_tatib_rows(service):
     return [(kind, row) for _number, _kind, _pk, kind, row in sorted(rows)]
 
 
-def _page_tatib_hits(phrase, words, raw):
+def _page_tatib_hits(tokens):
     """Service name, legacy text-row title/body, entry title, text-entry body."""
+    include = [token for token in tokens if not token.excluded]
+    if not include:
+        return []
     text_item = Q(tataibadahitem__item_type=tatib_models.TataIbadahItemType.TEXT)
     text_entry = Q(service_entries__kind=tatib_models.ServiceEntryKind.TEXT)
-    item_match = (Q(text_item, tataibadahitem__title__icontains=raw)
-                  | Q(text_item, tataibadahitem__text__icontains=raw)
-                  | Q(service_entries__title__icontains=raw)
-                  | Q(text_entry, service_entries__text__icontains=raw))
-    criteria = Q(name__icontains=raw) | item_match
-    if len(words) > 1:
-        all_words = Q()
-        for word in words:
-            all_words &= (
+    criteria = Q()
+    for token in include:
+        for word in token.words:
+            criteria |= (
                 Q(name__icontains=word)
                 | Q(text_item, tataibadahitem__title__icontains=word)
                 | Q(text_item, tataibadahitem__text__icontains=word)
                 | Q(service_entries__title__icontains=word)
                 | Q(text_entry, service_entries__text__icontains=word))
-        criteria |= all_words
     services = (tatib_models.TataIbadah.objects.filter(is_active=True)
                 .filter(criteria)
                 .prefetch_related('tataibadahitem_set', 'service_entries')
@@ -531,35 +694,45 @@ def _page_tatib_hits(phrase, words, raw):
         meta = format_date_short(service.date) if service.date else 'Template'
         entry = _entry(kind='service', title=service.name, meta=meta,
                        target={'tatib_id': service.pk, 'item_order': None})
-        score = _page_score(entry, phrase, words)
-        if score:
-            entry['score'] = score
-            hits.append(entry)
+        metrics = _page_metrics(entry, tokens)
+        if metrics is not None:
+            coverage, order = metrics
+            if coverage:
+                entry['coverage'], entry['order'] = coverage, order
+                hits.append(entry)
         for number, (kind, row) in enumerate(_page_tatib_rows(service), start=1):
-            section = f'{service.name} \u00b7 Section {number}'
+            section = f'{service.name} · Section {number}'
             item_entry = _entry(
                 kind='item', title=row.title or section, lookup_title=row.title or '',
                 meta=section, body=row.text,
                 target={'tatib_id': service.pk,
                         'item_order': row.order_number if kind == 'legacy' else f'e{row.pk}'})
-            item_score = _page_score(item_entry, phrase, words)
-            if item_score:
-                item_entry['score'] = item_score
+            item_metrics = _page_metrics(item_entry, tokens)
+            if item_metrics is None:
+                continue
+            item_coverage, item_order = item_metrics
+            if item_coverage:
+                item_entry['coverage'], item_entry['order'] = item_coverage, item_order
                 hits.append(item_entry)
-    return _ranked_rows(hits, phrase)
+    return _page_ranked_rows(hits, tokens)
 
 
 def search_page(query):
-    """The public search page's matcher (spec 104); see the module docstring."""
+    """The public search page's matcher (specs 104 and 105); see the module docstring."""
     raw = str(query or '').strip()
     result = SearchResults(query=raw)
-    phrase = normalize(raw)
-    if not phrase:
+    if not raw:
         result.valid = False
         return result
-    words = phrase.split(' ')
+    tokens, canonical, notice = parse_query(raw)
+    result.canonical = canonical
+    result.notice = notice or ''
+    include = [token for token in tokens if not token.excluded]
+    if not include:
+        # An exclusion-only or symbols-only query lists nothing; the notice says why.
+        return result
     books = bible_book_index()
-    result.groups['bible'] = _page_bible_hits(phrase, words, raw, books)
-    result.groups['songs'] = _page_song_hits(phrase, words, raw)
-    result.groups['tatib'] = _page_tatib_hits(phrase, words, raw)
+    result.groups['bible'] = _page_bible_hits(tokens, books)
+    result.groups['songs'] = _page_song_hits(tokens)
+    result.groups['tatib'] = _page_tatib_hits(tokens)
     return result

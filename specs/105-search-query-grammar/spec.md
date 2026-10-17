@@ -73,8 +73,9 @@ matcher so the two search functions cannot drift into each other.
 ### Matching
 
 - Matching is done on folded text (case and diacritics), without word boundaries: a token matches
-  wherever its characters appear inside a field — `kasih` matches `kasih`, `Kasih-Nya`,
-  `mengasihi`, and `berkasih`. Symbols in the stored text stay as written; only the query turns
+  wherever its characters appear inside a field — `kasih` matches `kasih`, `Kasih-Nya`, and
+  `berkasih` (a vowel change does not: `mengasihi` has no `kasih` inside it). Symbols in the stored
+  text stay as written; only the query turns
   symbols into spaces.
 - A phrase matches where its words appear as one contiguous stretch of that folded text:
   `"Tuhan Yesus"` matches `Tuhan Yesus` and not `Yesus Tuhan`; a symbol between the words in the
@@ -146,7 +147,7 @@ same input the two renderers produce the same canonical string and the same orde
 
 ### Scenario: Tokens match inside words
 
-- **Given** a lyric containing `mengasihi` and another containing `Kasih-Nya`
+- **Given** a lyric containing `berkasih` and another containing `Kasih-Nya`
 - **When** I search `kasih`
 - **Then** both are listed — token matching is by substring, not by whole word
 

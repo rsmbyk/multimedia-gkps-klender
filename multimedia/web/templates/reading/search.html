@@ -1,12 +1,12 @@
 {% extends 'reading/base.html' %}
 
-{% block title %}{% if query %}Search — GKPS Klender{% else %}GKPS Klender — Search Alkitab, Kidung, and Tata Ibadah{% endif %}{% endblock %}
+{% block title %}{{ page_title }}{% endblock %}
 
 {% block panel_body %}{% include 'reading/_books_panel.html' %}{% endblock %}
 
 {% block search_results %}
 {% if result_groups %}
-<p class="search-results__intro" id="searchStatus" role="status">Results for “{{ query }}”</p>
+<p class="search-results__intro" id="searchStatus" role="status">Results for “{{ canonical }}”</p>
 {% for group in result_groups %}
 <section class="result-group" data-kind="{{ group.kind }}">
   <div class="result-group__head">
@@ -25,7 +25,9 @@
   {% if group.more_url %}<a class="result-more" href="{{ group.more_url }}">Show more</a>{% endif %}
 </section>
 {% endfor %}
+{% elif notice %}
+<p class="search-results__intro" id="searchStatus" role="status">{{ notice }}</p>
 {% elif query %}
-<p class="search-results__intro" id="searchStatus" role="status">No results for “{{ query }}”. Try another keyword.</p>
+<p class="search-results__intro" id="searchStatus" role="status">No results for “{{ canonical }}”. Try another keyword.</p>
 {% endif %}
 {% endblock %}

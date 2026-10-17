@@ -87,6 +87,27 @@ class ReadingViewTests(TestCase):
         self.assertNotContains(response, 'Kamu adalah garam dunia.')
         self.assertNotContains(response, '?v=13')
 
+    def test_search_page_shows_the_canonical_status_line(self):
+        typed = 'Allah, "Tuhan. Yesus:Kristus" -kasih'
+        response = self.client.get(reverse('web-search'), {'q': typed})
+        self.assertEqual(response.context['query'], typed)
+        self.assertEqual(response.context['canonical'], "Allah 'Tuhan Yesus Kristus' -kasih")
+        self.assertTrue(response.context['page_title'].startswith('Results for “Allah'))
+        self.assertContains(response, 'Results for')
+        self.assertContains(response, 'Tuhan Yesus Kristus')
+
+    def test_search_page_explains_a_lone_exclusion(self):
+        response = self.client.get(reverse('web-search'), {'q': '-Israel'})
+        self.assertContains(response, 'Nothing to search')
+        self.assertContains(response, 'needs at least one other word')
+        self.assertEqual(response.context['result_groups'], [])
+
+    def test_search_page_lists_partial_matches_below_full_ones(self):
+        response = self.client.get(reverse('web-search'), {'q': 'terang dunia'})
+        body = response.content.decode()
+        self.assertIn('Matius 5:13', body)          # only 'dunia' -- still listed
+        self.assertLess(body.index('Matius 5:14'), body.index('Matius 5:13'))
+
     def test_search_field_has_a_clear_control(self):
         response = self.client.get(reverse('web-search'), {'q': 'kasih'})
         self.assertContains(response, 'field-clear')
