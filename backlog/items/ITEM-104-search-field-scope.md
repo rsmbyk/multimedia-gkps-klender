@@ -1,6 +1,6 @@
 ---
 id: ITEM-104
-status: speccing
+status: in_review
 title: 'Restrict the search page to the listed content fields'
 type: fix
 priority: P1
@@ -13,7 +13,7 @@ pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.13.5
 ---
 
 # ITEM-104: Restrict the search page to the listed content fields
