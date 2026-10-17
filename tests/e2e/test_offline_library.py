@@ -1,10 +1,11 @@
 """Spec 092 browser checks for saved shells and tab-local search state."""
 
 from concurrent.futures import ThreadPoolExecutor
+from datetime import date
 
 from django.db import connections
 from django.test import LiveServerTestCase, override_settings, tag
-from playwright.sync_api import Error as PlaywrightError, sync_playwright
+from playwright.sync_api import Error as PlaywrightError, expect, sync_playwright
 
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
@@ -128,6 +129,39 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
                 'railLabel': 'Bibel',
                 'railName': 'Bibel',
             })
+            browser.close()
+
+    def test_saved_dated_tatib_reading_keeps_its_date_header(self):
+        service = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+
+            rendered = page.evaluate("""async payload => {
+              const eyebrow = doc => doc && doc.querySelector('#readEyebrow').textContent.trim();
+              return {
+                dated: eyebrow(await GKPSOfflineRender.render(`/tatib/${payload.dated}/`)),
+                templated: eyebrow(
+                  await GKPSOfflineRender.render(`/tatib/${payload.dated}/?mode=template`)),
+                undated: eyebrow(await GKPSOfflineRender.render(`/tatib/${payload.undated}/`)),
+              };
+            }""", {'dated': service.pk, 'undated': self.service_id})
+            self.assertEqual(rendered, {
+                'dated': '23 Agustus 2026',
+                'templated': '23 Agustus 2026',
+                'undated': 'Tata Ibadah',
+            })
+
+            page.locator('.rail [data-panel="tatib"]').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'open'")
+            page.locator(f'#panelBody .book[href="/tatib/{service.pk}/"]').click()
+            page.wait_for_function(
+                "document.querySelector('#readName').textContent.trim() === 'Ibadah Minggu III'")
+            expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
             browser.close()
 
     def test_offline_bible_sidebar_filters_both_codes_in_sim_mini_mode(self):
