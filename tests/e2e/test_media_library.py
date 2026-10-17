@@ -69,6 +69,22 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + path)
         return page
 
+    def empty_connected_page(self, path):
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        def companion(route):
+            if route.request.url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': 0, 'total_size': 0,
+                           'retention': '30', 'write_token': 'test-token'}
+            elif route.request.url.endswith('/files') or route.request.url.endswith('/references'):
+                payload = {'files': []}
+            else:
+                payload = {'error': 'Not found'}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers={'Access-Control-Allow-Origin': self.live_server_url})
+        page.route('http://127.0.0.1:63174/**', companion)
+        page.goto(self.live_server_url + path)
+        return page
+
     def test_disconnected_library_hides_local_inventory_details(self):
         page = self.page(reverse('web-media-library'))
         page.locator('#mediaStatusButton').click()
@@ -87,6 +103,57 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.locator('[data-media-tab-button="library"]').click()
         expect(page.locator('form[data-media-create] .editor__save')).to_be_disabled()
         expect(page.locator('[data-media-library-list]')).to_contain_text('unavailable')
+
+    def test_empty_library_keeps_tall_create_modal_and_quiet_empty_state(self):
+        page = self.empty_connected_page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('[data-entry-open="media"]').first.dispatch_event('click')
+        expect(page.locator('form[data-media-create]')).to_be_visible()
+        dialog = page.locator('#editorModal')
+        dialog.evaluate('async el => { await Promise.all(el.getAnimations().map(animation => animation.finished)); }')
+        upload_box = dialog.bounding_box()
+        page.locator('[data-media-tab-button="library"]').click()
+        empty_state = page.locator('[data-media-library-list] .media-entry__empty')
+        expect(empty_state).to_contain_text('No media in this library yet')
+        expect(empty_state).to_contain_text(
+            'Upload a file to add it to this computer’s Media Library.')
+        expect(empty_state).to_have_attribute('role', 'status')
+        expect(page.locator('form[data-media-create] .editor__save')).to_be_disabled()
+        library_box = dialog.bounding_box()
+        self.assertAlmostEqual(upload_box['height'], 760, delta=1)
+        self.assertAlmostEqual(library_box['height'], upload_box['height'], delta=1)
+        expect(dialog.locator('[name="title"]')).to_be_visible()
+        expect(dialog.locator('.editor__cancel')).to_be_visible()
+
+        page.set_viewport_size({'width': 390, 'height': 440})
+        small_box = dialog.bounding_box()
+        self.assertGreaterEqual(small_box['x'], 0)
+        self.assertLessEqual(small_box['x'] + small_box['width'], 390)
+        self.assertGreaterEqual(small_box['y'], 0)
+        self.assertLessEqual(small_box['y'] + small_box['height'], 440)
+        expect(dialog.locator('[name="title"]')).to_be_visible()
+        expect(dialog.locator('.editor__cancel')).to_be_visible()
+        library_panel = page.locator('[data-media-panel="library"]')
+        self.assertGreater(library_panel.evaluate('el => el.scrollHeight'),
+                           library_panel.evaluate('el => el.clientHeight'))
+
+    def test_supported_files_text_size_and_inactive_tab_hover_match_app_switches(self):
+        page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('[data-entry-open="media"]').first.dispatch_event('click')
+        supported = page.locator('.media-entry__drop [data-media-prompt] p')
+        label = supported.locator('strong')
+        self.assertEqual(supported.evaluate('el => getComputedStyle(el).fontSize'), '12px')
+        self.assertEqual(label.evaluate('el => getComputedStyle(el).fontSize'), '12px')
+
+        upload = page.locator('[data-media-tab-button="upload"]')
+        library = page.locator('[data-media-tab-button="library"]')
+        initial_background = library.evaluate('el => getComputedStyle(el).backgroundColor')
+        active_background = upload.evaluate('el => getComputedStyle(el).backgroundColor')
+        initial_color = library.evaluate('el => getComputedStyle(el).color')
+        library.hover()
+        page.wait_for_timeout(250)
+        self.assertNotEqual(library.evaluate('el => getComputedStyle(el).backgroundColor'), initial_background)
+        self.assertNotEqual(library.evaluate('el => getComputedStyle(el).color'), initial_color)
+        self.assertEqual(upload.evaluate('el => getComputedStyle(el).backgroundColor'), active_background)
 
     def test_library_selection_survives_tab_switch_but_save_follows_visible_tab(self):
         page = self.connected_page(reverse('web-tatib-service', args=[self.service.pk]))

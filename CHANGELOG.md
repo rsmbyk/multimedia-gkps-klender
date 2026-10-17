@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.14.1] - 2026-10-17
+
+### Changed
+
+- The Tata Ibadah New media modal keeps a consistent tall layout across its source tabs, presents a spacious empty Media Library state, and gives the inactive tab the same hover feedback as the app's other switches. The supported-files label now matches the size of its descriptive text.
+
 ## [1.14.0] - 2026-10-17
 
 ### Added

@@ -509,7 +509,7 @@ li:hover > .row-edit,
    viewport scrolls the document it sits over, which is the scrollbar everybody
    notices and nobody wants. */
 .editor__content { padding: 22px; overflow-y: auto; min-height: 0; }
-.editor:has([data-media-create]) { width: min(840px, calc(100vw - 32px)); max-height: min(760px, calc(100dvh - 32px)); }
+.editor:has([data-media-create]) { width: min(840px, calc(100vw - 32px)); height: min(760px, calc(100dvh - 32px)); max-height: min(760px, calc(100dvh - 32px)); }
 .editor[open]:has([data-entry-form="media"]) { animation: media-library-in 190ms cubic-bezier(.2,.8,.2,1) both; }
 .editor[open].media-closing:has([data-entry-form="media"]) { animation: media-library-out 150ms ease-in both; }
 .editor:has([data-media-create]) .editor__content { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
@@ -517,8 +517,9 @@ li:hover > .row-edit,
 .editor:has([data-media-create]) .editor__form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .editor:has([data-media-create]) .editor__form > .editor__field { margin: 14px 26px 0; }
 .editor:has([data-media-create]) .editor__actions { margin: 14px 26px 20px; border: 0; padding: 0; }
-.media-entry__tabs { align-self: center; display: grid; grid-template-columns: 1fr 1fr; width: min(320px, calc(100% - 36px)); margin: 15px auto; padding: 3px; border: 1px solid var(--divider); border-radius: 9px; background: var(--icon-hover-bg); }
-.media-entry__tabs button { min-height: 36px; border: 0; border-radius: 6px; background: transparent; color: var(--head-ink); font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer; }
+.media-entry__tabs { align-self: center; display: grid; grid-template-columns: 1fr 1fr; width: min(320px, calc(100% - 36px)); margin: 15px auto; padding: 3px; border: 1px solid var(--divider); border-radius: 9px; background: var(--rail-bg); }
+.media-entry__tabs button { min-height: 36px; border: 0; border-radius: 6px; background: transparent; color: var(--head-ink); font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background var(--ease), color var(--ease); }
+.media-entry__tabs button:hover:not([aria-selected="true"]) { background: var(--icon-hover-bg); color: var(--ink); }
 .media-entry__tabs button[aria-selected="true"] { background: var(--active-bg); color: var(--active-ink); }
 .media-entry__panel { min-height: 0; flex: 1; padding: 0 26px; display: flex; flex-direction: column; }
 .media-entry__panel[hidden] { display: none; }
@@ -528,6 +529,7 @@ li:hover > .row-edit,
 .media-entry__drop [hidden] { display: none; }
 .media-entry__drop strong { font-size: 17px; }
 .media-entry__drop p, .media-entry__note { margin: 0; font-size: 12px; color: var(--head-ink); }
+.media-entry__drop p strong { font-size: inherit; }
 .media-entry__upload-icon { font-size: 36px; color: var(--focus); }
 .media-entry__upload-btn { margin-top: 5px; padding: 9px 15px; border: 1px solid var(--active-bg); border-radius: 9px; background: var(--active-bg); color: var(--active-ink); font-weight: 600; cursor: pointer; }
 .media-entry__upload-btn:hover { filter: brightness(1.12); box-shadow: 0 4px 12px #0002; }
@@ -536,6 +538,12 @@ li:hover > .row-edit,
 .media-entry__file-icon { width: 54px; height: 54px; border-radius: 8px; display: grid; place-items: center; color: var(--focus); background: color-mix(in srgb, var(--focus) 12%, var(--canvas)); }
 .media-entry__file-icon svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .media-entry__panel--library { border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); overflow-y: auto; }
+.media-entry__panel--library [data-media-library-list].is-empty { display: grid; flex: 1; min-height: 0; place-items: center; }
+.media-entry__empty { width: min(440px, 100%); padding: 32px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.media-entry__empty-icon { width: 52px; height: 52px; flex: none; color: var(--focus); }
+.media-entry__empty-icon svg { display: block; width: 100%; height: 100%; }
+.media-entry__panel--library .media-entry__empty h3 { margin: 0; color: var(--ink); font-size: 17px; font-weight: 650; line-height: 1.25; text-transform: none; }
+.media-entry__empty p { margin: 0; color: var(--head-ink); font-size: 13px; line-height: 1.45; }
 .media-entry__panel--library h3 { margin: 17px 0 6px; color: var(--head-ink); font-size: 12px; text-transform: uppercase; }
 .media-entry__panel--library button { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 8px; border: 0; border-bottom: 1px solid var(--divider); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
 .media-entry__panel--library button[aria-selected="true"] { border: 1px solid var(--focus); border-radius: 8px; background: color-mix(in srgb, var(--focus) 10%, var(--canvas)); }

@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-104](./items/ITEM-104-media-picker-layout.md) | Polish media picker layout and tab feedback | Keep the empty-library modal tall, align supported-files type, and add switch-style tab hover | chore | P2 | S | [104](../specs/104-media-picker-layout/spec.md) | feat/104-media-picker-layout | 2026-10-17 |
 
 ## In review
 
