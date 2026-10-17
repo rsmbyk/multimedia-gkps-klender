@@ -114,6 +114,7 @@
     }
     function renderLibrary() {
       libraryList.replaceChildren();
+      libraryList.classList.remove('is-empty');
       var previous = '';
       files.slice().sort(function (a, b) { return b.uploaded_at.localeCompare(a.uploaded_at); }).forEach(function (item) {
         var day = formatDate(item.uploaded_at);
@@ -139,7 +140,23 @@
         button.onclick = function () { selected.library = item; sync(); };
         libraryList.appendChild(button);
       });
-      if (!files.length) libraryList.textContent = 'No files in this Media Library.';
+      if (!files.length) {
+        libraryList.classList.add('is-empty');
+        var empty = document.createElement('div');
+        empty.className = 'media-entry__empty';
+        empty.setAttribute('role', 'status');
+        empty.setAttribute('aria-live', 'polite');
+        var icon = document.createElement('span');
+        icon.className = 'media-entry__empty-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.innerHTML = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="38" height="38" rx="4"/><circle cx="17" cy="16" r="3.5"/><path d="m6 36 12-12 8 8 7-7 9 9"/></svg>';
+        var heading = document.createElement('h3');
+        heading.textContent = 'No media in this library yet';
+        var helper = document.createElement('p');
+        helper.textContent = 'Upload a file to add it to this computer’s Media Library.';
+        empty.append(icon, heading, helper);
+        libraryList.appendChild(empty);
+      }
       sync();
     }
     async function refreshLibrary() {
@@ -148,7 +165,11 @@
         files = result.files || [];
         if (form.isConnected) renderLibrary();
       } catch (problem) {
-        if (form.isConnected) libraryList.textContent = 'Local library unavailable.';
+        if (form.isConnected) {
+          libraryList.replaceChildren();
+          libraryList.classList.remove('is-empty');
+          libraryList.textContent = 'Local library unavailable.';
+        }
       }
     }
     async function choose(file) {
