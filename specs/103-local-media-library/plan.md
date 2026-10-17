@@ -18,7 +18,7 @@ Operators prepare a Tata Ibadah on projector laptops and already keep its files 
 - The supported families are image, audio, video, PDF, and PowerPoint (`.ppt` / `.pptx`), with 200 MB as the maximum individual file size. The inspected content determines the family even if the filename extension is misleading.
 - "No projector display yet" means advancing to a media entry clears previous projected content and leaves the projector content area blank. Its navigation controls may remain.
 - "No file preview yet" means a media entry does not render its binary contents in the existing Preview modal. The stage still shows the entry's title, file type, filename, and missing state.
-- 102 is already allocated by a parallel feature branch; 103 is reserved for this Draft. Recheck the IDs and integration base before opening a PR.
+- Integration order: the parallel spec/ITEM 102 branch lands on `develop` before this spec/ITEM 103 branch. Keep ID 103; rebase onto that integrated `develop` before opening the implementation PR.
 
 ## Scope / edges
 
