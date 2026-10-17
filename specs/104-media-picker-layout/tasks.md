@@ -1,6 +1,6 @@
 # Tasks 104: Polish media picker layout and tab feedback
 
-- **Status:** In progress
+- **Status:** Implemented; draft PR #354 open
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -17,10 +17,10 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch`; update `VERSION` to 1.14.1, add the changelog entry, and set `release_version: 1.14.1`
 - [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md)
-- [ ] Conventional Commit and draft PR linking `./spec.md`
+- [x] Conventional Commit and draft PR #354 linking `./spec.md`
 
 ## Done when
 
-- [ ] All acceptance scenarios in `spec.md` hold
-- [ ] The targeted E2E coverage is green
-- [ ] Board, tasks, and version metadata are complete in the implementation PR
+- [x] All acceptance scenarios in `spec.md` hold
+- [x] The targeted E2E coverage is green
+- [x] Board, tasks, and version metadata are complete in the implementation PR
