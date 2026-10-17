@@ -13,7 +13,7 @@ from django.test import SimpleTestCase, TestCase
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
-from multimedia.web.reading.search import normalize, search
+from multimedia.web.reading.search import normalize, search, search_page
 
 
 class QueryRulesTests(SimpleTestCase):
@@ -209,3 +209,177 @@ class CorpusSearchTests(TestCase):
         result = search('di')
         self.assertTrue(result.valid)
         self.assertGreater(result.total, 0)
+
+
+class PageSearchTests(TestCase):
+    """The public search page's matcher (spec 104).
+
+    Only the six listed fields match; book names, songbook names and references, bare
+    numbers, dates, section labels, and non-text entry bodies never do. Entry rows are
+    indexed for the first time, and a service built only from entries can be found by
+    its own name.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        # --- Bible ---
+        lang_id = bible.Language.objects.create(name='Indonesia')
+        cls.tb = bible.Version.objects.create(
+            lang=lang_id, name='Terjemahan Baru', abbreviation='TB')
+        cls.mat = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
+        kej = bible.Book.objects.create(name='Kej', testament='old', number_of_chapters=50)
+        mat_tb = bible.BookTranslation.objects.create(
+            version=cls.tb, book=cls.mat, translation='Matius')
+        kej_tb = bible.BookTranslation.objects.create(
+            version=cls.tb, book=kej, translation='Kejadian')
+        bible.Verse.objects.create(
+            book_translation=mat_tb, chapter=5, verse=13,
+            text='Kamu adalah garam dunia. Jika garam itu menjadi tawar, dengan apakah ia diasinkan?')
+        bible.Verse.objects.create(
+            book_translation=kej_tb, chapter=1, verse=1,
+            text='Pada mulanya Allah menciptakan langit dan bumi.')
+        bible.Verse.objects.create(
+            book_translation=mat_tb, chapter=5, verse=3, title='Ucapan bahagia',
+            text='Berbahagialah orang yang miskin di hadapan Allah.')
+
+        # --- Songs ---
+        kj = songs.Book.objects.create(name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
+        pkj = songs.Book.objects.create(
+            name='Pelengkap Kidung Jemaat', short_name='PKJ', is_hymn_book=True)
+        cls.kj100 = songs.Song.objects.create(book=kj, number=100, title='Kasih')
+        songs.Verse.objects.create(song=cls.kj100, number=1, lyric='Kasih itu sabar')
+        cls.pkj120 = songs.Song.objects.create(book=pkj, number=120, title='Kasih Jemaat Terpilih')
+        songs.Verse.objects.create(song=cls.pkj120, number=1, lyric='Pujilah Tuhan, hai jemaat')
+        cls.kj120 = songs.Song.objects.create(book=kj, number=120, title='Sebab Kasih-Nya Kekal')
+        songs.Verse.objects.create(
+            song=cls.kj120, number=1, lyric='Kasih setia-Mu tak berkesudahan, ya Tuhan')
+        cls.kj152 = songs.Song.objects.create(book=kj, number=152, title='Bila Kuperhatikan')
+        songs.Verse.objects.create(song=cls.kj152, number=1, lyric='Di dalam Dia ada pengampunan dosa')
+        cls.song99 = songs.Song.objects.create(book=kj, number=99, title='Nyanyian Khusus')
+        songs.Verse.objects.create(song=cls.song99, number=1, lyric='Sungguh indah kasih Tuhan')
+
+        # --- Tata Ibadah: one legacy service, one entry-only service ---
+        cls.svc = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
+        cls.item = tatib.TataIbadahItem.objects.create(
+            tatib=cls.svc, item_type=tatib.TataIbadahItemType.TEXT, title='Doa Pengampunan',
+            text='Tuhan ampunilah dosa kami', order_number=2)
+        cls.svc_entry_only = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu', date=None, is_active=True)
+        cls.votum = tatib.ServiceEntry.objects.create(
+            tatib=cls.svc_entry_only, kind=tatib.ServiceEntryKind.TEXT, title='Votum',
+            text='Marilah kita bangkit berdiri', order_number=1)
+        cls.untitled = tatib.ServiceEntry.objects.create(
+            tatib=cls.svc_entry_only, kind=tatib.ServiceEntryKind.TEXT, title='',
+            text='Dikuduskanlah nama-Mu', order_number=2)
+        cls.song_entry = tatib.ServiceEntry.objects.create(
+            tatib=cls.svc, kind=tatib.ServiceEntryKind.SONG, song=cls.song99,
+            verses=[1], order_number=3)
+        cls.passage_entry = tatib.ServiceEntry.objects.create(
+            tatib=cls.svc, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=mat_tb,
+            chapter=5, verse_start=13, verse_end=13, order_number=4)
+        tatib.ServiceEntry.objects.create(
+            tatib=cls.svc, kind=tatib.ServiceEntryKind.SECTION_BREAK, order_number=5)
+
+    @staticmethod
+    def targets(rows, key):
+        return [row['target'][key] for row in rows]
+
+    # --- the six fields still match ---
+
+    def test_verse_text_matches(self):
+        rows = search_page('garam dunia')['bible']
+        self.assertEqual([row['target']['verse'] for row in rows], [13])
+        self.assertEqual(rows[0]['kind'], 'verse')
+
+    def test_verse_title_matches(self):
+        rows = search_page('ucapan bahagia')['bible']
+        self.assertEqual([row['target']['verse'] for row in rows], [3])
+
+    def test_song_title_matches(self):
+        rows = search_page('Bila Kuperhatikan')['songs']
+        self.assertEqual(rows[0]['target']['song_id'], self.kj152.id)
+
+    def test_song_lyric_matches(self):
+        rows = search_page('pengampunan dosa')['songs']
+        self.assertEqual(rows[0]['target']['song_id'], self.kj152.id)
+
+    def test_song_ranking_title_exact_then_prefix_then_substring(self):
+        ids = self.targets(search_page('kasih')['songs'], 'song_id')
+        self.assertEqual(ids[:3], [self.kj100.id, self.pkj120.id, self.kj120.id])
+
+    def test_service_name_matches(self):
+        rows = search_page('Ibadah Minggu III')['tatib']
+        self.assertEqual(rows[0]['title'], 'Ibadah Minggu III')
+
+    def test_legacy_text_row_title_and_body_match(self):
+        rows = search_page('pengampunan')['tatib']
+        row = next(row for row in rows if row['title'] == 'Doa Pengampunan')
+        self.assertEqual(row['meta'], 'Ibadah Minggu III \u00b7 Section 1')
+        self.assertEqual(row['target'], {'tatib_id': self.svc.id, 'item_order': 2})
+
+    def test_entry_title_and_text_match(self):
+        rows = search_page('Votum')['tatib']
+        row = next(row for row in rows
+                   if row['target']['item_order'] == f'e{self.votum.pk}')
+        self.assertEqual(row['title'], 'Votum')
+        self.assertEqual(row['meta'], 'Ibadah Minggu \u00b7 Section 1')
+        body_rows = search_page('bangkit berdiri')['tatib']
+        self.assertIn(f'e{self.votum.pk}', self.targets(body_rows, 'item_order'))
+
+    def test_untitled_entry_gets_the_section_fallback(self):
+        rows = search_page('dikuduskanlah')['tatib']
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['title'], 'Ibadah Minggu \u00b7 Section 2')
+        self.assertEqual(rows[0]['target']['item_order'], f'e{self.untitled.pk}')
+
+    def test_entry_only_service_is_listed_by_its_name(self):
+        rows = search_page('Ibadah Minggu')['tatib']
+        listed = [row['target']['tatib_id'] for row in rows
+                  if row['target']['item_order'] is None]
+        self.assertIn(self.svc_entry_only.id, listed)
+
+    def test_service_row_matches_only_its_name(self):
+        rows = search_page('Doa Pengampunan')['tatib']
+        self.assertTrue(rows)
+        self.assertFalse([row for row in rows if row['target']['item_order'] is None])
+
+    # --- excluded fields list nothing ---
+
+    def test_bible_references_list_nothing(self):
+        for query in ('Matius 5:13', 'Matius 5', 'Yoh 3:16'):
+            with self.subTest(query=query):
+                self.assertEqual(search_page(query)['bible'], [])
+
+    def test_bible_book_name_lists_no_row(self):
+        self.assertEqual(search_page('matius')['bible'], [])
+
+    def test_songbook_name_lists_no_song(self):
+        self.assertEqual(search_page('Kidung Jemaat')['songs'], [])
+
+    def test_song_numbers_and_references_list_no_song(self):
+        for query in ('152', 'KJ 152', 'Kidung Jemaat 152', 'HAL 411'):
+            with self.subTest(query=query):
+                self.assertEqual(search_page(query)['songs'], [])
+
+    def test_service_date_and_section_label_list_nothing(self):
+        self.assertEqual(search_page('23 Agu 2026')['tatib'], [])
+        self.assertEqual(search_page('Section 2')['tatib'], [])
+
+    def test_non_text_entry_bodies_list_nothing(self):
+        # The song entry's lyric and the passage entry's verses are display bodies only.
+        self.assertEqual(search_page('Sungguh indah')['tatib'], [])
+        self.assertEqual(search_page('garam dunia')['tatib'], [])
+
+    # --- shape ---
+
+    def test_empty_query_is_not_searched(self):
+        result = search_page('   ')
+        self.assertFalse(result.valid)
+        self.assertEqual(result.total, 0)
+
+    def test_no_results(self):
+        result = search_page('zzzqqq')
+        self.assertTrue(result.valid)
+        self.assertEqual(result.total, 0)
+

@@ -1378,7 +1378,7 @@ class SearchView(TemplateView):
         if not has_param:
             context['page_title'] = 'GKPS Klender — Search Alkitab, Kidung, and Tata Ibadah'
             return context
-        results = search_lib.search(query)
+        results = search_lib.search_page(query)
         if not results.valid:
             # An empty query keeps the landing.
             context['page_title'] = 'Search — GKPS Klender'

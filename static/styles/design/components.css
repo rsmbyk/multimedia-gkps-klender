@@ -828,12 +828,10 @@ li:hover > .row-edit,
 }
 .search-home__submit svg { width: 20px; height: 20px; }
 .search-home__submit:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.search-home__hint { margin: 18px 0 0; font-size: 13px; color: var(--head-ink); }
 [data-read="on"] .search-home { display: none; }
 .search-results[hidden], .search-home[hidden] { display: none; }
 [data-home="results"] .search-home { min-height: 0; padding: 6px 0 26px; }
-[data-home="results"] .search-home__logo,
-[data-home="results"] .search-home__hint { display: none; }
+[data-home="results"] .search-home__logo { display: none; }
 [data-read="on"] .search-results { display: none; }
 .search-results { width: min(100%, 690px); margin: 0 auto; padding-bottom: 48px; }
 .search-results__intro { margin: 0 0 26px; color: var(--head-ink); font-size: 14px; }
