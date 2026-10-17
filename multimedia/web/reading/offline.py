@@ -76,7 +76,8 @@ def _service_chunk(service):
     projector = _projector_data(service)
     items, toc = _tatib_stage(service)
     public_items = [{key: item.get(key) for key in (
-        'eos', 'anchor', 'note', 'title', 'subtitle', 'paras', 'clipped',
+        'eos', 'anchor', 'note', 'title', 'subtitle', 'paras', 'clipped', 'kind',
+        'media_hash', 'media_family',
         'deleted_target', 'jump', 'entry', 'old_item', 'pk', 'preview', 'after_marker')
         if key in item} for item in items]
     public_toc = [{key: item.get(key) for key in (

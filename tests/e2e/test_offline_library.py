@@ -232,6 +232,66 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
             browser.close()
 
+    def test_saved_media_entry_and_controls_survive_sidebar_navigation_offline(self):
+        service = tatib.TataIbadah.objects.create(
+            name='Media service', date=date(2026, 8, 30), is_active=True)
+        tatib.TataIbadahItem.objects.create(
+            tatib=service, item_type=0, title='Opening', text='Welcome', order_number=1)
+        fingerprint = 'b' * 64
+        media = tatib.MediaIdentity.objects.create(
+            sha256=fingerprint, byte_count=2048, family=tatib.MediaFamily.PDF,
+            display_filename='invoice.pdf')
+        tatib.ServiceEntry.objects.create(
+            tatib=service, order_number=2, kind=tatib.ServiceEntryKind.MEDIA,
+            media=media, media_filename='invoice.pdf')
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            context.set_offline(True)
+
+            page.locator('.rail [data-panel="tatib"]').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'open'")
+            page.locator(f'#panelBody .book[href="/tatib/{service.pk}/"]').click()
+            page.wait_for_function(
+                f"location.pathname === '/tatib/{service.pk}/' && "
+                "document.querySelector('.tatib__item--media')")
+
+            media_row = page.locator('.tatib__item--media')
+            expect(media_row).to_have_attribute('data-media-hash', fingerprint)
+            expect(media_row).to_have_attribute('data-media-family', 'pdf')
+            expect(media_row.locator('[data-media-icon="pdf"] svg')).to_have_count(1)
+            expect(page.locator('[data-entry-open="media"]')).to_have_count(3)
+            expect(page.locator('.entry__start [data-entry-open="media"]')).to_be_visible()
+            browser.close()
+
+    def test_empty_saved_tatib_shows_add_media_after_sidebar_navigation_offline(self):
+        service = tatib.TataIbadah.objects.create(
+            name='Empty media service', date=date(2026, 8, 30), is_active=True)
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            context.set_offline(True)
+
+            page.locator('.rail [data-panel="tatib"]').click()
+            page.wait_for_function("document.documentElement.dataset.nav === 'open'")
+            page.locator(f'#panelBody .book[href="/tatib/{service.pk}/"]').click()
+            page.wait_for_function(
+                f"location.pathname === '/tatib/{service.pk}/' && "
+                "document.querySelector('.entry__empty')")
+
+            add_media = page.locator('.entry__empty [data-entry-open="media"]')
+            expect(add_media).to_be_visible()
+            expect(add_media).to_contain_text('Add Media')
+            browser.close()
+
     def test_offline_bible_sidebar_filters_both_codes_in_sim_mini_mode(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
