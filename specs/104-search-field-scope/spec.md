@@ -28,7 +28,7 @@ Three defects motivate it, measured against the live-data copy:
 
 This amends the field coverage of accepted spec 004; grouping, ranking mechanics, and the shell
 are unchanged. Bible reference resolution stays; the songbook-number resolution does not, and the
-home hint's song example follows it (see UI details).
+home hint is removed with it (owner, 2026-10-17; see UI details).
 
 ## Scope
 
@@ -42,8 +42,9 @@ home hint's song example follows it (see UI details).
   names/codes, bare song numbers and songbook references (`KJ 152`, `Kidung Jemaat 152`,
   `HAL 411`), service dates, row section labels, and the meta and `refs` tiers of the ranking
   ladder.
-- The home hint's song example (`Try Yoh 3:16 or HAL 411`): its second half must resolve under the
-  new rules; the owner picks the replacement and its assertions move with it.
+- The home hint `Try Yoh 3:16 or HAL 411`: removed entirely — its element and CSS rule go, and
+  its six assertions become absence checks. Its song half is a reference that stops resolving,
+  and the owner wants no helper line.
 
 ### Out of scope
 
@@ -51,7 +52,8 @@ home hint's song example follows it (see UI details).
   working exactly as today and ranks first. Songbook references are not in this list — they stop
   resolving (Domain rules).
 - The look: groups, row shapes, counts, excerpts, `shown` paging, and the clear control do not
-  change. No preview is presented.
+  change; the hint's removal is a one-line subtraction the owner asked for. No preview is
+  presented.
 - The offline library's payload (`offline.py`) and sync — the stored rows already carry every
   matched field; no model or migration changes.
 - The projector's Go To find — its `KJ 152` / `NKB 2`-style and numeric finds resolve in
@@ -103,13 +105,15 @@ saved copy and the listed fields match there too.
 
 ## UI details
 
-The look does not change, so no new preview is presented: the same three groups and row shapes
-render; only which rows match changes. Entry rows reuse the item-row shape and link to their
-anchor (`#ti-e<pk>`); legacy rows keep `#ti-<order>`.
+The look does not change beyond the home hint's removal (below), so no new preview is presented:
+the same three groups and row shapes render; only which rows match changes. Entry rows reuse the
+item-row shape and link to their anchor (`#ti-e<pk>`); legacy rows keep `#ti-<order>`.
 
-- **Home hint:** `Try Yoh 3:16 or HAL 411` becomes `Try Yoh 3:16 or <song example>` — the second
-  half must resolve under the new rules (owner picks; proposal `pengampunan dosa`, which finds two
-  songs). Its assertions move with it.
+- **Home hint:** removed (owner, 2026-10-17). The `<p class="search-home__hint">` line leaves
+  `multimedia/web/templates/reading/base.html` (line 343); its rule leaves
+  `static/styles/design/components.css` (`.search-home__hint` at 831, plus the `.search-home__hint`
+  half of the paired `[data-home="results"]` selector at 835–836); its six assertions become
+  absence checks. Nothing replaces it.
 
 ## Acceptance scenarios
 
@@ -125,11 +129,12 @@ anchor (`#ti-e<pk>`); legacy rows keep `#ti-<order>`.
 - **When** I search `152`, `KJ 152`, `Kidung Jemaat 152`, or `HAL 411`
 - **Then** the songs group lists no song — a song matches only through its title or lyrics
 
-### Scenario: The home hint teaches a working query
+### Scenario: The home shows no helper line
 
-- **Given** the home page shows `Try Yoh 3:16 or <song example>`
-- **When** I search either half
-- **Then** `Yoh 3:16` resolves to the verse and the song example lists at least one song
+- **Given** the landing home
+- **When** it renders
+- **Then** no `search-home__hint` line appears under the field, and the logo, field, clear
+  control, and rail are unchanged
 
 ### Scenario: Bible references keep resolving, book names stop
 
@@ -183,8 +188,9 @@ anchor (`#ti-e<pk>`); legacy rows keep `#ti-<order>`.
   grouping, bible reference, short queries, deleted song/verse hidden) stay green.
 - E2E: `tests/e2e/test_reading.py` — planned `test_search_matches_only_the_listed_fields`;
   `tests/e2e/test_offline_library.py` — planned `test_saved_copy_search_matches_the_same_fields`.
-- Home hint: `multimedia/web/templates/reading/base.html` plus
+- Home hint: the element and its CSS rule are removed; its six assertions —
   `multimedia/web/tests.py::test_home_is_search_first` and five `tests/e2e/test_reading.py` sites
-  move to the owner-accepted example.
+  (229, 267, 285, 1651, 1657) — become `search-home__hint` absence checks.
 - Implementation: `multimedia/web/reading/search.py` (`_entry`, `_match_score`, `_bible_hits`,
-  `_song_hits`, `_tatib_hits`), `static/web/offline-render.js` (`searchPage()`).
+  `_song_hits`, `_tatib_hits`), `static/web/offline-render.js` (`searchPage()`),
+  `multimedia/web/templates/reading/base.html`, `static/styles/design/components.css`.
