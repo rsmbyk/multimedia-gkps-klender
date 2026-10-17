@@ -1,24 +1,79 @@
 # Local Media Library companion
 
-The Media Library uses one folder per operating-system user, shared by Chrome and the OBS browser dock on the same computer. Start the companion on every computer that needs to import or inspect files. It is a separate Python process from Django and the Vercel deployment.
+The companion runs in the project's Docker Compose stack and stores media bytes
+and its SQLite index in a Docker-managed named volume. It serves both the local
+Chrome browser and OBS's browser dock through host loopback, so no Python
+process needs to be started separately and no host folder needs to be chosen.
 
-Install the repository's Python dependencies, then set `GKPS_MEDIA_ALLOWED_ORIGINS` to the exact origin shown in the browser address bar (scheme, hostname, and optional port, without a trailing slash). For example:
+## First-time setup on a projector computer
 
-```sh
-GKPS_MEDIA_ALLOWED_ORIGINS=https://your-app.example python -m multimedia.local_media
-```
+1. Install Docker Desktop (Windows or macOS) or Docker Engine with the Compose
+   plugin (Linux), and configure Docker to start when you log in.
+2. Get the project checkout on that computer and copy `.env.example` to `.env`
+   in the project root.
+3. Set `GKPS_MEDIA_PRODUCTION_ORIGIN` in `.env` to the exact production site's
+   origin: scheme and hostname (and port only if the site uses a nonstandard
+   port), with no path or trailing slash. For example:
 
-On Windows PowerShell:
+   ```dotenv
+   GKPS_MEDIA_PRODUCTION_ORIGIN=https://multimedia.example.org
+   ```
 
-```powershell
-$env:GKPS_MEDIA_ALLOWED_ORIGINS = 'https://your-app.example'
-python -m multimedia.local_media
-```
+   This is local Compose configuration, not a Vercel environment variable. The
+   value must match the origin in the production browser address bar.
+4. Start the stack from the project root:
 
-For local development, use the exact development origin, such as `http://127.0.0.1:8000`. Multiple exact origins may be separated by commas. The companion prints the resolved library folder and listens on `http://127.0.0.1:47863`. Keep the process running while using the Media Library. Its SQLite index is in that folder; back up the entire folder to preserve filenames and retention state along with file bytes. On restart, the existing folder and index are reused.
+   ```sh
+   docker compose up --build -d
+   ```
 
-The browser may ask to allow local-network access to the companion. Allow it for the configured app origin. If the process is stopped or the browser blocks the connection, Media Library status shows **Unavailable** and service media entries show **Local library unavailable**. Existing service entries remain saved. The status popup reveals the actual folder path only when connected.
+   Compose starts Django, PostgreSQL, and the media companion. The companion's
+   allowed origins include the configured production origin and both local
+   origins at the effective `WEB_PORT` (`63404` by default):
+   `http://localhost:<WEB_PORT>` and `http://127.0.0.1:<WEB_PORT>`.
 
-Imports have a 200 MB limit. Selecting a file inspects a temporary copy; saving the entry imports it into the library. The companion checks content signatures regardless of extension and uses SHA-256 of the full bytes for identity. Importing the same bytes again reuses the original library filename. Removing a file deletes only its local copy; Tata Ibadah entries stay. Unused-file cleanup runs only after a successful, complete reference inventory from Django, so a disconnected app cannot silently cause cleanup. The default retention is 30 days per computer.
+Once the stack is running, the production site and local web app can use the
+Media Library. The browser reaches the helper at `http://127.0.0.1:63174`.
+Compose binds that port to host loopback only; do not expose it through a proxy
+or a public network interface. The companion also checks the request host,
+exact browser origin, and a session token for writes. A browser may ask for
+permission to access a local network service; allow it for the configured app
+origin.
 
-The companion binds only to loopback, accepts only configured browser origins, and requires a session token for writes. Do not expose its port through a proxy or on a public network interface.
+## Starting it later
+
+If the stack is running, the companion is already available. When Docker starts
+after login, Compose's `unless-stopped` restart policy brings the companion
+back automatically, provided it was not explicitly stopped. If the containers
+were removed with `docker compose down`, run `docker compose up -d` again. To
+rebuild after updating the project, use `docker compose up --build -d`.
+
+## Storage and removal
+
+Compose creates a named volume called `<compose-project>_media_library_data`.
+It keeps the file bytes and `index.sqlite3` together across container restarts,
+image rebuilds, and ordinary `docker compose down` / `docker compose up` cycles.
+Operators manage files through the Media Library page; they do not need to
+browse the volume or know its path. The status popup shows connection, file
+count, and total size when connected, without disclosing a folder location.
+
+Removing only the companion volume permanently deletes that computer's local
+Media Library. `docker compose down -v` removes all volumes for this Compose
+project, including both the media library and the local PostgreSQL database.
+Do not use it as a routine restart command. Cloud sync, volume migration, and
+backup/restore controls are not part of this version.
+
+## Availability and file behavior
+
+If the companion is stopped or the browser cannot connect to it, the status
+shows `Connection — Unavailable`; counts and size are hidden. Service entries
+remain saved and show `Local library unavailable` because file availability
+cannot be checked. When connected, the app verifies each file against its
+SHA-256 identity. The companion checks content signatures, enforces the 200 MB
+limit, stores files by fingerprint, and keeps the first library filename for
+identical bytes. Removing a file from this computer does not delete the service
+entry. Unused-file cleanup runs only after a complete server reference
+inventory is received.
+
+The first version stores images, audio, video, PDF, PPT, and PPTX files. It does
+not render file contents in Preview, the projector, or OBS.

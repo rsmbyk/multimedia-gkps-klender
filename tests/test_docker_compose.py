@@ -52,6 +52,7 @@ class DockerComposePortRulesTests(SimpleTestCase):
         services = self.compose.get("services", {})
         self.assertIn("web", services)
         self.assertIn("db", services)
+        self.assertIn("media", services)
 
     def test_published_ports_avoid_well_known_range(self):
         published = {}
@@ -85,6 +86,35 @@ class DockerComposePortRulesTests(SimpleTestCase):
         self.assertEqual(web_container, 8000)
         self.assertEqual(db_container, 5432)
 
+    def test_media_companion_uses_private_loopback_port_and_named_volume(self):
+        media = self.compose["services"]["media"]
+        self.assertEqual(media["ports"], ["127.0.0.1:63174:63174"])
+        self.assertEqual(media["restart"], "unless-stopped")
+        self.assertEqual(media["environment"]["GKPS_MEDIA_LIBRARY_ROOT"], "/var/lib/gkps-media")
+        self.assertEqual(
+            media["volumes"], ["media_library_data:/var/lib/gkps-media"]
+        )
+        self.assertNotIn(".:/app", media["volumes"])
+        self.assertIn("media_library_data", self.compose["volumes"])
+
+    def test_media_companion_allowlist_uses_required_production_and_both_web_origins(self):
+        origins = self.compose["services"]["media"]["environment"]["GKPS_MEDIA_ALLOWED_ORIGINS"]
+        self.assertIn("${GKPS_MEDIA_PRODUCTION_ORIGIN:?", origins)
+        self.assertIn("http://localhost:${WEB_PORT:-63404}", origins)
+        self.assertIn("http://127.0.0.1:${WEB_PORT:-63404}", origins)
+
+    def test_media_companion_endpoint_is_consistent_in_browser_and_python_clients(self):
+        sources = (
+            REPO_ROOT / "multimedia/local_media.py",
+            REPO_ROOT / "static/web/media-library.js",
+            REPO_ROOT / "static/web/media-entry.js",
+            REPO_ROOT / "static/web/media-stage.js",
+        )
+        for source in sources:
+            text = source.read_text(encoding="utf-8")
+            self.assertIn("63174", text, f"{source.name} must use the companion port")
+            self.assertNotIn("47863", text, f"{source.name} retains the old companion port")
+
     def test_env_example_matches_compose_defaults(self):
         self.assertTrue(ENV_EXAMPLE.exists(), ".env.example is missing")
         text = ENV_EXAMPLE.read_text(encoding="utf-8")
@@ -92,3 +122,4 @@ class DockerComposePortRulesTests(SimpleTestCase):
         db_default, _ = self._published("db")
         self.assertIn(f"WEB_PORT={web_default}", text)
         self.assertIn(f"DB_PORT={db_default}", text)
+        self.assertIn("GKPS_MEDIA_PRODUCTION_ORIGIN=", text)

@@ -18,10 +18,10 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlsplit
 
 MAX_BYTES = 200_000_000
-PORT = 47863
+PORT = 63174
 
 
 class InvalidMedia(ValueError):
@@ -29,6 +29,12 @@ class InvalidMedia(ValueError):
 
 
 def default_root():
+    configured_root = os.environ.get('GKPS_MEDIA_LIBRARY_ROOT')
+    if configured_root:
+        root = Path(configured_root).expanduser()
+        if not root.is_absolute():
+            raise ValueError('GKPS_MEDIA_LIBRARY_ROOT must be an absolute path.')
+        return root
     if sys.platform == 'win32':
         return Path(os.environ.get('LOCALAPPDATA') or Path.home() / 'AppData' / 'Local') / 'GKPS Klender' / 'Media Library'
     if sys.platform == 'darwin':
@@ -36,6 +42,31 @@ def default_root():
     data_home = os.environ.get('XDG_DATA_HOME')
     return (Path(data_home) if data_home and Path(data_home).is_absolute()
             else Path.home() / '.local' / 'share') / 'gkps-klender' / 'media-library'
+
+
+def parse_allowed_origins(value):
+    """Parse exact browser origins; paths, wildcards, and malformed URLs fail closed."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError('Set GKPS_MEDIA_ALLOWED_ORIGINS to exact app origins before starting.')
+    origins = value.split(',')
+    parsed_origins = set()
+    for raw_origin in origins:
+        origin = raw_origin.strip()
+        if not origin or any(char.isspace() for char in origin):
+            raise ValueError('GKPS_MEDIA_ALLOWED_ORIGINS contains an invalid origin.')
+        try:
+            parsed = urlsplit(origin)
+            # Accessing .port also validates malformed or out-of-range ports.
+            parsed.port
+        except ValueError as exc:
+            raise ValueError('GKPS_MEDIA_ALLOWED_ORIGINS contains an invalid origin.') from exc
+        if (parsed.scheme not in {'http', 'https'} or not parsed.hostname
+                or parsed.username is not None or parsed.password is not None
+                or parsed.path or parsed.query or parsed.fragment
+                or origin != f'{parsed.scheme}://{parsed.netloc}'):
+            raise ValueError('GKPS_MEDIA_ALLOWED_ORIGINS must contain exact origins without paths.')
+        parsed_origins.add(origin)
+    return frozenset(parsed_origins)
 
 
 def detect_family(path):
@@ -308,10 +339,7 @@ class MediaHandler(BaseHTTPRequestHandler):
             return self._reply(403, {'error': 'Origin is not allowed.'})
         path = urlparse(self.path).path
         if path == '/v1/status':
-            files = self.library.list_files()
-            return self._reply(200, {'connection': 'connected', 'folder': str(self.library.root),
-                                     'file_count': len(files), 'total_size': sum(f['size'] for f in files),
-                                     'retention': self.library.retention(), 'write_token': self.token})
+            return self._reply(200, status_payload(self.library, self.token))
         if path == '/v1/files':
             return self._reply(200, {'files': self.library.list_files()})
         if path.startswith('/v1/files/'):
@@ -373,16 +401,24 @@ class MediaHandler(BaseHTTPRequestHandler):
         return self._reply(200, {'removed': self.library.remove(sha)})
 
 
+def status_payload(library, token):
+    files = library.list_files()
+    return {'connection': 'connected', 'file_count': len(files),
+            'total_size': sum(file['size'] for file in files),
+            'retention': library.retention(), 'write_token': token}
+
+
 def main():
-    origins = frozenset(filter(None, os.environ.get('GKPS_MEDIA_ALLOWED_ORIGINS', '').split(',')))
-    if not origins:
-        raise SystemExit('Set GKPS_MEDIA_ALLOWED_ORIGINS to the exact app origin before starting.')
-    MediaHandler.library = LocalLibrary()
+    try:
+        origins = parse_allowed_origins(os.environ.get('GKPS_MEDIA_ALLOWED_ORIGINS', ''))
+        library = LocalLibrary()
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    MediaHandler.library = library
     MediaHandler.origins = origins
     MediaHandler.token = secrets.token_urlsafe(32)
-    server = ThreadingHTTPServer(('127.0.0.1', PORT), MediaHandler)
-    print(f'Media Library: {MediaHandler.library.root}', flush=True)
-    print(f'Listening at http://127.0.0.1:{PORT}', flush=True)
+    server = ThreadingHTTPServer(('0.0.0.0', PORT), MediaHandler)
+    print(f'Media Library companion listening on container port {PORT}', flush=True)
     server.serve_forever()
 
 

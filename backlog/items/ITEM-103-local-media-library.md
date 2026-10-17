@@ -20,13 +20,17 @@ release_version: 1.14.0
 
 ## Summary
 
-Keep media bytes in a shared local computer folder rather than browser storage or Vercel. Add a Media Library view and immutable file references on Tata Ibadah media entries. Operators can add or reuse an image, audio, video, PDF, PPT, or PPTX file and see when its bytes are missing on their computer. File-content Preview and projector rendering remain blank in this first slice.
+Keep media bytes in a Docker-managed volume on the local computer rather than browser storage or Vercel. Add a Media Library view and immutable file references on Tata Ibadah media entries. Operators can add or reuse an image, audio, video, PDF, PPT, or PPTX file and see when its bytes are missing on their computer. File-content Preview and projector rendering remain blank in this first slice.
 
 ## Notes
 
 - The owner approved the linked Library and entry-form visual previews on 2026-10-17.
 - The owner accepted Spec 103 on 2026-10-17.
-- A separate local companion is needed so Chrome and the OBS dock can use the same folder.
+- Accepted amendment on 2026-10-17: run the companion in the existing Docker Compose stack and store media bytes plus the SQLite index in a named Docker volume.
+- The browser contexts connect to the companion through host loopback; the folder path is not displayed to operators.
+- The companion endpoint changes from `127.0.0.1:47863` to `127.0.0.1:63174`; API paths and payloads remain unchanged.
+- The companion allowlist includes the production origin and both local web origins (`http://localhost:<WEB_PORT>` and `http://127.0.0.1:<WEB_PORT>`, default port `63404`).
+- Set `GKPS_MEDIA_PRODUCTION_ORIGIN` in the project-root `.env`; Compose combines it with those two local origins and passes the full allowlist as `GKPS_MEDIA_ALLOWED_ORIGINS` to the companion. This is local Compose configuration, not a Vercel variable.
 - Files are limited to 200 MB; content inspection determines type, and SHA-256 determines identity.
 - Integration order assumes spec/ITEM 102 merges into `develop` before this item. Keep ID 103, then rebase before the implementation PR.
 
