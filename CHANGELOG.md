@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.14.5] - 2026-10-17
+
+### Changed
+
+- Tata Ibadah media entries have more vertical breathing room, with compact insets on narrow screens and long filenames wrapping within the row.
+
 ## [1.14.4] - 2026-10-17
 
 ### Fixed

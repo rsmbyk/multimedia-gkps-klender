@@ -27,6 +27,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-107](./items/ITEM-107-media-ui-polish.md) | Clarify Media Library controls and align media entry labels | Add sort and library icons, align service media text, and clarify upload limits | fix | P2 | S | [107](../specs/107-media-ui-polish/spec.md) | `fix/107-media-ui-polish` | 2026-10-17 |
+| [ITEM-108](./items/ITEM-108-roomier-media-entries.md) | Give Tata Ibadah media entries more breathing room | Increase media-row height and vertical padding while keeping text and break rows unchanged | fix | P2 | S | [108](../specs/108-roomier-media-entries/spec.md) | `fix/108-roomier-media-entries` | 2026-10-17 |
 
 ## In review
 

@@ -25,13 +25,22 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         self.service = TataIbadah.objects.create(name='Ibadah Minggu', date=date(2026, 10, 18), is_active=True)
         if self._testMethodName in ('test_service_entry_distinguishes_disconnected_and_missing',
                                     'test_edit_media_only_exposes_title',
-                                    'test_titled_media_entry_heading_aligns_with_file_icon'):
+                                    'test_titled_media_entry_heading_aligns_with_file_icon',
+                                    'test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen'):
+            filename = ('Invoice-AATTCSTN-0002-with-a-long-filename-for-narrow-screens.pdf'
+                        if self._testMethodName == 'test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen'
+                        else 'service.pdf')
             media = MediaIdentity.objects.create(sha256='b' * 64, byte_count=2048,
-                                                 family='pdf', display_filename='service.pdf')
+                                                 family='pdf', display_filename=filename)
             ServiceEntry.objects.create(tatib=self.service, order_number=1,
                                         kind=ServiceEntryKind.MEDIA, media=media,
-                                        media_filename='service.pdf',
+                                        media_filename=filename,
                                         title='Tingting' if self._testMethodName == 'test_titled_media_entry_heading_aligns_with_file_icon' else '')
+            if self._testMethodName == 'test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen':
+                ServiceEntry.objects.create(tatib=self.service, order_number=2,
+                                            kind=ServiceEntryKind.TEXT, text='Opening words')
+                ServiceEntry.objects.create(tatib=self.service, order_number=3,
+                                            kind=ServiceEntryKind.SECTION_BREAK)
         self.playwright = sync_playwright().start()
         try:
             self.browser = self.playwright.chromium.launch()
@@ -340,6 +349,47 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         expect(row.locator('.read__sec')).to_have_text('Tingting')
         self.assertEqual(row.locator('.read__sec').evaluate('el => getComputedStyle(el).marginTop'), '0px')
         self.assertEqual(row.locator('.read__sub').evaluate('el => getComputedStyle(el).marginTop'), '0px')
+
+    def test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen(self):
+        desktop_page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
+        desktop_row = desktop_page.locator('.tatib__item--media')
+        desktop_icon = desktop_row.locator('.entry__media-icon')
+        self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).minHeight'), '80px')
+        self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).paddingTop'), '16px')
+        self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).paddingBottom'), '16px')
+        self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).paddingLeft'), '64px')
+        self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).paddingRight'), '16px')
+        desktop_box, desktop_icon_box = desktop_row.bounding_box(), desktop_icon.bounding_box()
+        self.assertAlmostEqual(desktop_box['y'] + desktop_box['height'] / 2,
+                               desktop_icon_box['y'] + desktop_icon_box['height'] / 2, delta=1)
+
+        page = self.browser.new_page(viewport={'width': 390, 'height': 800})
+        page.route('http://127.0.0.1:63174/**', lambda route: route.abort())
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        row = page.locator('.tatib__item--media')
+        icon = row.locator('.entry__media-icon')
+        self.assertEqual(row.evaluate('el => getComputedStyle(el).minHeight'), '80px')
+        self.assertEqual(row.evaluate('el => getComputedStyle(el).paddingTop'), '16px')
+        self.assertEqual(row.evaluate('el => getComputedStyle(el).paddingBottom'), '16px')
+        self.assertEqual(row.evaluate('el => getComputedStyle(el).paddingLeft'), '60px')
+        self.assertEqual(row.evaluate('el => getComputedStyle(el).paddingRight'), '12px')
+        heading = row.locator('.read__sec')
+        expect(heading).to_contain_text('Invoice-AATTCSTN-0002-with-a-long-filename-for-narrow-screens.pdf')
+        self.assertGreater(heading.bounding_box()['height'], 24)
+        row_box, icon_box = row.bounding_box(), icon.bounding_box()
+        self.assertAlmostEqual(row_box['y'] + row_box['height'] / 2,
+                               icon_box['y'] + icon_box['height'] / 2, delta=1)
+        text_row = page.locator('.tatib__item--acts:not(.tatib__item--media)')
+        break_row = page.locator('.tatib__eos')
+        self.assertEqual(text_row.evaluate('el => getComputedStyle(el).minHeight'), '56px')
+        self.assertEqual(text_row.evaluate('el => getComputedStyle(el).paddingTop'), '8px')
+        self.assertEqual(break_row.evaluate('el => getComputedStyle(el).minHeight'), '56px')
+        self.assertEqual(break_row.evaluate('el => getComputedStyle(el).paddingTop'), '8px')
+        self.assertAlmostEqual(text_row.bounding_box()['y'] - row_box['y'] - row_box['height'],
+                               12, delta=1)
+        self.assertLessEqual(page.evaluate('document.documentElement.scrollWidth'),
+                             page.evaluate('document.documentElement.clientWidth'))
+        self.assertGreater(row.bounding_box()['height'], 80)
 
     def test_create_dialog_fits_small_screen_and_reduced_motion(self):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
