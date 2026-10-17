@@ -512,7 +512,7 @@ li:hover > .row-edit,
 .editor:has([data-media-create]) { width: min(840px, calc(100vw - 32px)); height: min(760px, calc(100dvh - 32px)); max-height: min(760px, calc(100dvh - 32px)); }
 .editor[open]:has([data-entry-form="media"]) { animation: media-library-in 190ms cubic-bezier(.2,.8,.2,1) both; }
 .editor[open].media-closing:has([data-entry-form="media"]) { animation: media-library-out 150ms ease-in both; }
-.editor:has([data-media-create]) .editor__content { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.editor:has([data-media-create]) .editor__content { padding: 0; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
 .editor:has([data-media-create]) .editor__title { margin: 0; padding: 20px 26px; border-bottom: 1px solid var(--divider); font-size: 21px; }
 .editor:has([data-media-create]) .editor__form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .editor:has([data-media-create]) .editor__form > .editor__field { margin: 14px 26px 0; }
