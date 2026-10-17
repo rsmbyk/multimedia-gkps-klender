@@ -10,7 +10,7 @@
 
 - [ ] Spec Accepted by the project owner
 - [ ] Branch from the current base (`feat/105-search-query-grammar`); spec 104's page matcher lands first
-- [ ] Red — domain tests (`tests/test_web_search.py`, new `search_page()` class): tokenizing table (symbols, digits, quotes, dash, dash-in-quotes, unclosed quote), canonical table (owner's `Allah, "Tuhan. Yesus:Kristus" -kasih` → `Allah 'Tuhan Yesus Kristus' -kasih`), exclusion, exclusion-only and symbols-only notices, substring match (`kasih` matches `mengasihi` and `Kasih-Nya`), phrase adjacency (and a symbol between phrase words breaking the phrase), coverage order, order score (in-order beats reversed; best-occurrence configuration), title tie-break
+- [ ] Red — domain tests (`tests/test_web_search.py`, new `search_page()` class): tokenizing table (symbols, digits, quotes, dash, dash-in-quotes, unclosed quote), canonical table (owner's `Allah, "Tuhan. Yesus:Kristus" -kasih` → `Allah 'Tuhan Yesus Kristus' -kasih`), exclusion, exclusion-only and symbols-only notices, substring match (`kasih` matches `berkasih` and `Kasih-Nya`), phrase adjacency (and a symbol between phrase words breaking the phrase), coverage order, order score (in-order beats reversed; best-occurrence configuration), title tie-break
 - [ ] Green — `multimedia/web/reading/search.py`: `parse_query()` + `search_page()` matching and ranking (soft AND, coverage, order), excerpt anchor
 - [ ] Red — app tests (`multimedia/web/tests.py`): served page shows the canonical status line and page title, the exclusion notice, and partial matches below full ones
 - [ ] Green — `multimedia/web/reading/views.py` `SearchView` passes `canonical` + `notice`; `multimedia/web/templates/reading/search.html` renders them

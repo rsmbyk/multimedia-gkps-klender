@@ -12,7 +12,7 @@ Owner request, restated (2026-10-17): symbols are separators except the quote an
 dash; each word is a token; quoted phrases are searched as phrases; `-word` excludes; results rank
 by how many tokens they match, then by how many appear in the query's order; the status line shows
 the purged query; a lone exclusion explains itself. Matching stays substring-based — `kasih` still
-matches `mengasihi` and `Kasih-Nya`.
+matches `berkasih` and `Kasih-Nya`.
 
 Everything here lands on the page matcher (`search_page()`, introduced by spec 104) and the saved
 copy (`offline-render.js` `searchPage()`). The legacy `search()` — the Go To's free-text fallback —
@@ -55,7 +55,7 @@ ladder, has no tokens, no phrases, no exclusion, and shows whatever the user typ
 2. **Matching (`search_page`).** For each corpus, fetch a superset with one `icontains` per include
    word (OR across words and fields — the same shape as today's candidate queries), then verify in
    Python on the folded field text: a token matches where `normalize(token) in normalize(field)`
-   (substrings count — `kasih` matches `mengasihi`), a phrase where its folded words appear as one
+   (substrings count — `kasih` matches `berkasih`), a phrase where its folded words appear as one
    contiguous stretch, an excluded token anywhere drops the row; keep rows with coverage ≥ 1.
    Fields per row kind are spec 104's.
 3. **Ranking.** Coverage descending, then the order score: per field, the longest run of matched
@@ -83,7 +83,7 @@ ladder, has no tokens, no phrases, no exclusion, and shows whatever the user typ
 - Domain: `tests/test_web_search.py` — new `search_page()` tests: symbols to tokens; digits are
   words; quoted phrase is one token; dash inside quotes is ignored; `-word` excludes; exclusion
   only and symbols only give the notice and no rows; canonical table (owner's example, already-
-  canonical input unchanged); substring match (`kasih` matches `mengasihi` and `Kasih-Nya`);
+  canonical input unchanged); substring match (`kasih` matches `berkasih` and `Kasih-Nya`);
   phrase adjacency and a symbol between the words breaking it; coverage ordering; order ordering
   (in-order beats reversed); best-occurrence configuration; tie-break by title. The legacy
   `search()` tests stay green untouched.
@@ -99,7 +99,7 @@ ladder, has no tokens, no phrases, no exclusion, and shows whatever the user typ
   (owner's choice, 2026-10-17): `Tuhan Yesus` lists verses with only `Tuhan`, and `Kidung Jemaat`
   lists songs whose title or lyrics contain either word. Group counts will be large; that is the
   chosen semantics, not a regression.
-- **Substring recall stays wide.** `kasih` matches `mengasihi`, `Kasih-Nya`, and `berkasih`
+- **Substring recall stays wide.** `kasih` matches `Kasih-Nya` and `berkasih`
   (owner, 2026-10-17: tokens still match fragments). Order is therefore computed on match offsets,
   not word positions.
 - **Phrase strictness.** A symbol between the words in the stored text breaks a quoted phrase;
