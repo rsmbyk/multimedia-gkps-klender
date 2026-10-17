@@ -150,7 +150,7 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
                 }""", query)
 
             cases = [
-                ('"Kasih Tuhan"', "Results for “‘Kasih Tuhan’”", ['bible', 'songs']),
+                ('"Kasih Tuhan"', "Results for “'Kasih Tuhan'”", ['bible', 'songs']),
                 ('Kasih -Tuhan', 'No results for “Kasih -Tuhan”. Try another keyword.', []),
                 ('-Tuhan',
                  'Nothing to search — an exclusion like “-Israel” needs at least one other word.',

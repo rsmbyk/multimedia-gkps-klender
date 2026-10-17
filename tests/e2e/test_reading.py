@@ -243,7 +243,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
         # A quoted phrase matches only consecutively, and the status line shows it.
         self._search(page, '"Kasih dan kasih"')
-        expect(page.locator('#searchStatus')).to_have_text("Results for “‘Kasih dan kasih’”")
+        expect(page.locator('#searchStatus')).to_have_text("Results for “'Kasih dan kasih'”")
         expect(page.locator('.result-group[data-kind="bible"] .result-row').first).to_be_visible()
 
         # A dash excludes: 'terang dunia' lists, 'garam dunia' does not.
@@ -264,8 +264,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         self._search(page, 'Matius 5:13')
-        expect(page.locator('.result-group[data-kind="bible"]')).to_have_count(0)
-        expect(page.get_by_text('No results for')).to_be_visible()
+        # Digits are tokens (spec 105), so other verses can match '5'; the point is
+        # that the reference itself resolves to no row.
+        expect(page.locator('.result-group[data-kind="bible"] .result-row__title',
+                            has_text='Matius 5:13')).to_have_count(0)
+        expect(page.locator('.result-row[href*="v=13"]')).to_have_count(0)
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_have_count(0)
 
     def test_short_query_searches_and_empty_submit_returns_to_index(self):
         page = self._page()
