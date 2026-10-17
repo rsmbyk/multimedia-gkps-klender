@@ -32,21 +32,26 @@ are unchanged. No reference lists anything on the search page, and the home hint
 (owner, 2026-10-17; see UI details). The projector's Go To is not part of this spec and does not
 change (owner, 2026-10-17).
 
+The page gets its own matcher (`search_page()`) built on these six fields. The legacy `search()`
+stays exactly as it is — it is the Go To's free-text fallback, and the owner froze that path
+("do not touch anything on goto. only search page"). Spec 105 replaces the ranking described here
+with token coverage and order once accepted; the field scope stands either way.
+
 ## Scope
 
 ### In scope
 
-- The match set of the public search page — the server page (`multimedia/web/reading/search.py`
-  plus the page's own `SearchView` grouping) and the saved copy (`static/web/offline-render.js`
+- The match set of the public search page — its own server matcher (`search_page()` in
+  `multimedia/web/reading/search.py`) and the saved copy (`static/web/offline-render.js`
   `searchPage()`) — one contract for both.
 - Indexing service entries: entry titles, text-entry bodies, and listing services that carry only
   entries.
 - Removing out-of-scope match sources from the page: Bible book names/aliases/translation codes,
   songbook names/codes, bare song numbers and songbook references (`KJ 152`, `Kidung Jemaat 152`,
-  `HAL 411`), service dates, row section labels, and the meta and reference tiers of the ranking
-  ladder.
-- Listing no reference row: the page drops the Bible reference row the shared matcher still builds
-  for the Go To, and the saved copy stops scoring its label/alias bump.
+  `HAL 411`), service dates, row section labels, reference rows, and the meta and `refs` channels
+  of the ranking ladder.
+- Listing no reference row: the page matcher never builds one. The saved copy stops scoring its
+  verse label/alias bump and its song reference bump.
 - The home hint `Try Yoh 3:16 or HAL 411`: removed entirely — its element and CSS rule go, and
   its six assertions become absence checks. Both of its examples are references that list
   nothing, and the owner wants no helper line.
@@ -54,10 +59,9 @@ change (owner, 2026-10-17).
 ### Out of scope
 
 - The projector's Go To — untouched (owner, 2026-10-17: "do not touch anything on goto. only
-  search page"). Its `KJ 152` / `NKB 2`-style and numeric finds resolve in `projector_lookup`
-  itself before the shared matcher (views.py:1124–1153), and its `Mat 5:2`-style finds keep
-  reading the matcher's Bible reference row — which is exactly why that row stays in `search()`
-  and only the page drops it. No projector code, behavior, or test change.
+  search page"). `projector_lookup` and `projector-library.js` are not edited, and the legacy
+  `search()` it calls for free-text fallbacks stays byte-identical — including the Bible reference
+  row its `Mat 5:2`-style finds read. No projector code, behavior, or test change.
 - The look: groups, row shapes, counts, excerpts, `shown` paging, and the clear control do not
   change; the hint's removal is a one-line subtraction the owner asked for. No preview is
   presented.
@@ -93,18 +97,16 @@ These list nothing on the search page (their display is untouched):
   no label (spec 038), so there is no title to find.
 - Passage and song entries: not matched by their computed citation or their rendered body.
 
-No reference row is listed: a whole query that is a Bible reference (`Matius 5:13` → no verse;
-`Matius 5` → no chapter) or a songbook reference (`KJ 152`, `Kidung Jemaat 152` → no song) lists
-nothing on the page — a query matches only through the fields above. The shared matcher still
-builds the Bible reference row, because the Go To's lookup fallback reads it (Out of scope); the
-page drops `reference`/`chapter` rows before grouping, and the saved copy never scores the
-label/alias bump. Songbook references leave at the source instead, because the Go To resolves
-those itself before the matcher.
+The page matcher builds no reference row at all: a whole query that is a Bible reference
+(`Matius 5:13` → no verse; `Matius 5` → no chapter) or a songbook reference (`KJ 152`,
+`Kidung Jemaat 152` → no song) lists nothing on the page. The legacy `search()` keeps its own
+reference row for the Go To's fallback and is not edited (Out of scope).
 
 The ranking ladder survives minus its meta channels and its reference tier: exact title (200),
 prefix (120), title substring (95), body (35), all words across title and body (16). Meta strings
 — translation code, citation, date, section label — and the song `refs` list no longer score at
-any tier; they stay visible. The hardcoded reference row (score 1000) never reaches the page.
+any tier; they stay visible. Spec 105 replaces this ladder with token coverage and order once
+accepted.
 
 An untitled row keeps the `{service.name} · Section {n}` fallback, numbered in the service's
 shared row order (legacy rows and entries interleaved as the contents pane orders them).
@@ -196,31 +198,29 @@ item-row shape and link to their anchor (`#ti-e<pk>`); legacy rows keep `#ti-<or
 
 ## Traceability
 
-- Domain/app tests: `multimedia/web/tests.py` — planned negatives
-  `test_search_ignores_songbook_names_and_numbers`, `test_search_ignores_bible_book_names`,
-  `test_search_ignores_bible_references`,
-  `test_search_ignores_service_dates_and_section_labels`,
-  `test_search_ignores_non_text_entry_bodies`; planned positives
-  `test_search_matches_service_entry_titles_and_text`,
-  `test_search_lists_an_entry_only_service_by_its_name`; the existing song-hits grouping, short
-  queries, and deleted song/verse pins stay green, while
-  `test_search_page_resolves_bible_reference` flips to a no-row negative.
-- Matcher tests: `tests/test_web_search.py` — `test_bible_book_name_row` and
-  `test_song_reference_full_name_equals_abbreviation` flip to no-match negatives; the
-  `test_bible_reference_*` pins stay green, because they pin the row the Go To's lookup fallback
-  reads — the page drops it, the matcher keeps it (Out of scope).
+- Page matcher tests: `tests/test_web_search.py` — a new `search_page()` class: negatives
+  (`test_search_page_ignores_songbook_names_and_numbers`,
+  `test_search_page_ignores_bible_book_names`, `test_search_page_ignores_bible_references`,
+  `test_search_page_ignores_service_dates_and_section_labels`,
+  `test_search_page_ignores_non_text_entry_bodies`) and positives
+  (`test_search_page_matches_service_entry_titles_and_text`,
+  `test_search_page_lists_an_entry_only_service_by_its_name`); the legacy `search()` pins stay
+  green untouched — that function is the Go To's fallback.
+- App tests: `multimedia/web/tests.py` — the served page lists no reference/book/songbook row
+  (`test_search_page_resolves_bible_reference` flips to a no-row negative); the existing song-hits
+  grouping, short-query, and deleted song/verse pins stay green.
 - E2E: `tests/e2e/test_reading.py` — planned `test_search_matches_only_the_listed_fields`;
   `test_search_resolves_bible_reference` flips to a no-row walk and
   `test_bible_edition_preference_returns_after_unavailable_chapter` stops navigating by
   reference (panel clicks); `tests/e2e/test_offline_library.py` — planned
   `test_saved_copy_search_matches_the_same_fields`.
-- Go To: untouched — `tests/e2e/test_projector.py` and the projector-lookup tests in
-  `multimedia/web/tests.py` pass with no code or test change (the guard that the narrowing never
-  reaches that path).
+- Go To: untouched — `tests/e2e/test_projector.py`, the projector-lookup tests in
+  `multimedia/web/tests.py`, and the legacy `tests/test_web_search.py` pins pass with no code or
+  test change.
 - Home hint: the element and its CSS rule are removed; its six assertions —
   `multimedia/web/tests.py::test_home_is_search_first` and five `tests/e2e/test_reading.py` sites
   (229, 267, 285, 1651, 1657) — become `search-home__hint` absence checks.
-- Implementation: `multimedia/web/reading/search.py` (`_entry`, `_match_score`, `_bible_hits`,
-  `_song_hits`, `_tatib_hits`), `multimedia/web/reading/views.py` (`SearchView`'s reference-row
-  drop), `static/web/offline-render.js` (`searchPage()`),
+- Implementation: `multimedia/web/reading/search.py` (`search_page()` — new, with the six fields
+  and its own title/body scoring), `multimedia/web/reading/views.py` (`SearchView` calls it),
+  `static/web/offline-render.js` (`searchPage()`),
   `multimedia/web/templates/reading/base.html`, `static/styles/design/components.css`.
