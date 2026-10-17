@@ -1,6 +1,6 @@
 ---
 id: ITEM-104
-status: in_progress
+status: in_review
 title: 'Polish media picker layout and tab feedback'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: specs/104-media-picker-layout/spec.md
 branch: feat/104-media-picker-layout
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/354
 archived_at:
 archive_reason:
 bump: patch
@@ -28,6 +28,7 @@ Keep the New media modal at its tall layout when the connected Media Library is 
 - The owner requested the empty-library preview retain the taller New media modal size and the Upload tab's supported-files label match the adjacent text size.
 - The owner requested the inactive Upload/Media Library tab get hover feedback matching other app switches.
 - The owner accepted Spec 104 on 2026-10-17; implementation is on `feat/104-media-picker-layout`, stacked on Spec 103 while its media-picker implementation is under review.
+- Draft PR [#354](https://github.com/rsmbyk/multimedia-gkps-klender/pull/354) targets `feat/103-local-media-library`; retarget it to `develop` after PR #353 merges.
 - The connected-empty preview is [preview.png](../../specs/104-media-picker-layout/preview.png); the upload typography preview is [upload-typography-preview.png](../../specs/104-media-picker-layout/upload-typography-preview.png); the tab-hover preview is [tab-hover-preview.png](../../specs/104-media-picker-layout/tab-hover-preview.png).
 - The change is limited to the New media modal's connected-empty state, supported-files typography, and source-tab hover state.
 
