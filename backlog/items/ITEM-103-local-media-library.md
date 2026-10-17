@@ -28,7 +28,7 @@ Keep media bytes in a shared local computer folder rather than browser storage o
 - The owner accepted Spec 103 on 2026-10-17.
 - A separate local companion is needed so Chrome and the OBS dock can use the same folder.
 - Files are limited to 200 MB; content inspection determines type, and SHA-256 determines identity.
-- Spec/ITEM 102 is allocated on a parallel branch. Recheck integration order before opening the implementation PR.
+- Integration order assumes spec/ITEM 102 merges into `develop` before this item. Keep ID 103, then rebase before the implementation PR.
 
 ## Acceptance sketch
 

@@ -7,7 +7,7 @@
 ## Checklist
 
 - [x] Owner accepts this Draft; implementation authorized on 2026-10-17.
-- [ ] Reconcile spec/ITEM 103 with current `develop` and the parallel spec/ITEM 102 branch before opening a PR; update `feat/103-local-media-library` onto the integration base after 102 lands.
+- [ ] After spec/ITEM 102 lands on `develop`, rebase `feat/103-local-media-library` onto that integration base and check its references before opening the implementation PR. Keep spec/ITEM ID 103.
 - [ ] Document the decided per-user OS data folder, companion packaging, loopback pairing/origin rules, local index, and Windows/macOS/Linux startup path; update `docs/ARCHITECTURE.md` and an ADR when chosen.
 - [ ] Red: focused domain/application tests for media identity, immutable entry reference, import validation, local deduplication, missing state, and cleanup (`multimedia/tatib/tests.py`, `multimedia/web/tests.py`, new companion tests).
 - [ ] Green: server metadata/reference migration, service-entry forms/endpoints, and local companion. Keep all large file bodies off Vercel.
