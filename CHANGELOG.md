@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.13.4] - 2026-10-17
+
+### Fixed
+
+- A dated Tata Ibadah opened from the sidebar keeps the date above its title; the saved-copy
+  header previously read Tata Ibadah until a full page refresh.
+
 ## [1.13.3] - 2026-10-16
 
 ### Fixed
