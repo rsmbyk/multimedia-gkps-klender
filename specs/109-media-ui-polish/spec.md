@@ -1,8 +1,8 @@
 # Spec: Clarify Media Library controls and align media entry labels
 
-- **ID:** 107
+- **ID:** 109
 - **Status:** Accepted (2026-10-17)
-- **Item:** ITEM-107
+- **Item:** ITEM-109
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch

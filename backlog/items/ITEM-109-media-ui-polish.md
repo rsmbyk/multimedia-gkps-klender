@@ -1,22 +1,22 @@
 ---
-id: ITEM-107
-status: in_progress
+id: ITEM-109
+status: in_review
 title: 'Clarify Media Library controls and align media entry labels'
 type: fix
 priority: P2
 effort: S
 created: 2026-10-17
 updated: 2026-10-17
-spec: 107
+spec: specs/109-media-ui-polish/spec.md
 branch: fix/107-media-ui-polish
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/359
 archived_at:
 archive_reason:
 bump: patch
 release_version: 1.14.4
 ---
 
-# ITEM-107: Clarify Media Library controls and align media entry labels
+# ITEM-109: Clarify Media Library controls and align media entry labels
 
 ## Summary
 
@@ -35,5 +35,5 @@ The owner accepted the preview and Draft on 2026-10-17. The service entry title 
 
 ## Links
 
-- Spec: [107](../../specs/107-media-ui-polish/spec.md)
-- Related items: [ITEM-103](./ITEM-103-local-media-library.md), [ITEM-104](./ITEM-104-media-picker-layout.md), [ITEM-105](./ITEM-105-media-navigation-feedback.md)
+- Spec: [109](../../specs/109-media-ui-polish/spec.md)
+- Related items: [ITEM-103](./ITEM-103-local-media-library.md), [ITEM-107](./ITEM-107-media-picker-layout.md), [ITEM-108](./ITEM-108-media-navigation-feedback.md)

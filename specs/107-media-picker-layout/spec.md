@@ -1,8 +1,8 @@
 # Spec: Polish media picker layout and tab feedback
 
-- **ID:** 104
+- **ID:** 107
 - **Status:** Accepted (2026-10-17)
-- **Item:** ITEM-104
+- **Item:** ITEM-107
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch

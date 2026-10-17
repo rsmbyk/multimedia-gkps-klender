@@ -1,5 +1,5 @@
 ---
-id: ITEM-109
+id: ITEM-111
 status: in_review
 title: 'Show distinct connection icons in the Media Library status row'
 type: fix
@@ -7,7 +7,7 @@ priority: P2
 effort: S
 created: 2026-10-17
 updated: 2026-10-17
-spec: 109
+spec: specs/111-media-connection-status-icons/spec.md
 branch: fix/109-media-connection-status-icons
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/359
 archived_at:
@@ -16,7 +16,7 @@ bump: patch
 release_version: 1.14.6
 ---
 
-# ITEM-109: Show distinct connection icons in the Media Library status row
+# ITEM-111: Show distinct connection icons in the Media Library status row
 
 ## Summary
 
@@ -24,7 +24,7 @@ Add a small visual cue to the Media Library status popover's Connection row so C
 
 ## Notes
 
-The owner accepted the connection-row icon treatment in the [Media Library preview](../../specs/109-media-connection-status-icons/preview.html) on 2026-10-17. The status text stays visible and authoritative; the icon is decorative.
+The owner accepted the connection-row icon treatment in the [Media Library preview](../../specs/111-media-connection-status-icons/preview.html) on 2026-10-17. The status text stays visible and authoritative; the icon is decorative.
 
 ## Acceptance sketch
 
@@ -34,5 +34,5 @@ The owner accepted the connection-row icon treatment in the [Media Library previ
 
 ## Links
 
-- Spec: [109](../../specs/109-media-connection-status-icons/spec.md)
+- Spec: [111](../../specs/111-media-connection-status-icons/spec.md)
 - Related items: [ITEM-103](./ITEM-103-local-media-library.md)

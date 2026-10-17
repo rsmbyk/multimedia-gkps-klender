@@ -1,9 +1,9 @@
-# Plan 105: Keep media navigation selection feedback in sync
+# Plan 108: Keep media navigation selection feedback in sync
 
 - **Status:** Accepted (2026-10-17)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
-- **Item:** ITEM-105
+- **Item:** ITEM-108
 - **Bump:** patch
 
 ## Why

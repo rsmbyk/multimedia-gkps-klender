@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: specs/103-local-media-library/spec.md
 branch: feat/103-local-media-library
-pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/353
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/359
 archived_at:
 archive_reason:
 bump: minor
@@ -32,7 +32,7 @@ Keep media bytes in a Docker-managed volume on the local computer rather than br
 - The companion allowlist includes the production origin and both local web origins (`http://localhost:<WEB_PORT>` and `http://127.0.0.1:<WEB_PORT>`, default port `63404`).
 - Set `GKPS_MEDIA_PRODUCTION_ORIGIN` in the project-root `.env`; Compose combines it with those two local origins and passes the full allowlist as `GKPS_MEDIA_ALLOWED_ORIGINS` to the companion. This is local Compose configuration, not a Vercel variable.
 - Files are limited to 200 MB; content inspection determines type, and SHA-256 determines identity.
-- Integration order assumes spec/ITEM 102 merges into `develop` before this item. Keep ID 103, then rebase before the implementation PR.
+- Integration order was satisfied before the media implementation; the consolidated PR includes this item with accepted follow-up media slices and the saved-page renderer fix.
 
 ## Acceptance sketch
 

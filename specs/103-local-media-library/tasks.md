@@ -1,6 +1,6 @@
 # Tasks 103: Local Media Library and service media entries
 
-- **Status:** Accepted amendment implemented; full CI passed at `e7e26ac` (2026-10-17); PR remains open
+- **Status:** Accepted implementation and Compose amendment included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -14,15 +14,16 @@
 - [x] Focused browser E2E for entry Create/Edit, library controls, disconnected/missing state, and blank media projector navigation.
 - [x] Review the live Library view against the approved preview in disconnected and connected states, and check small-screen and reduced-motion behavior. Both Chrome and OBS dock use the same loopback companion and Docker-managed volume.
 - [x] Run 53 targeted local tests and push the implementation; full CI fast checks and all Browser E2E shards passed at implementation commit [`e7e26ac`](https://github.com/rsmbyk/multimedia-gkps-klender/commit/e7e26ac).
+- [x] Re-run the consolidated media, saved-renderer, Compose, and projector Django modules after integrating Spec 106: 148 tests passed.
 - [x] Fill Traceability in `./spec.md`; complete final acceptance review before marking Done.
-- [x] Keep ITEM-103 and `backlog/board.md` in the same PR; mark In review with [#353](https://github.com/rsmbyk/multimedia-gkps-klender/pull/353). Mark Done before merge.
+- [ ] Keep ITEM-103 and `backlog/board.md` in consolidated PR [#359](https://github.com/rsmbyk/multimedia-gkps-klender/pull/359); mark Done before merge.
 - [x] Apply `bump: minor` in this PR: `VERSION` and changelog 1.14.0, matching the current `develop` 1.13.4 line.
-- [x] Conventional Commit with Codex trailer and PR [#353](https://github.com/rsmbyk/multimedia-gkps-klender/pull/353) to `develop` using the repository PR template.
+- [x] Conventional Commits with Codex trailers and consolidated PR [#359](https://github.com/rsmbyk/multimedia-gkps-klender/pull/359) to `develop` using the repository PR template.
 
 ## Done when
 
 - [x] All acceptance scenarios in `spec.md` hold, including blank media Preview/projector behavior.
-- [x] The full PR, tests, board, tasks, and version records are complete before merge.
+- [ ] The full consolidated PR checks, board, tasks, and version records are complete before merge.
 
 ## Accepted Compose amendment — 2026-10-17
 

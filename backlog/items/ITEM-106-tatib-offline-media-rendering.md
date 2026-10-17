@@ -1,6 +1,6 @@
 ---
 id: ITEM-106
-status: in_progress
+status: in_review
 title: 'Keep media entries visible in saved Tata Ibadah pages'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: specs/106-tatib-offline-media-rendering/spec.md
 branch: fix/106-tatib-offline-media-rendering
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/359
 archived_at:
 archive_reason:
 bump: patch
@@ -30,7 +30,7 @@ and media add actions. Keep saved and server-rendered Tata Ibadah pages consiste
   those fields out of the saved service chunk.
 - The current server-rendered page already defines the intended appearance and behavior.
 - Related accepted media slices: [Spec 103](../../specs/103-local-media-library/spec.md),
-  [Spec 105](../../specs/105-media-navigation-feedback/spec.md).
+  [Spec 108](../../specs/108-media-navigation-feedback/spec.md).
 
 ## Acceptance sketch
 
@@ -43,4 +43,4 @@ and media add actions. Keep saved and server-rendered Tata Ibadah pages consiste
 
 - Spec: [106](../../specs/106-tatib-offline-media-rendering/spec.md)
 - Related items: [ITEM-103](./ITEM-103-local-media-library.md),
-  [ITEM-105](./ITEM-105-media-navigation-feedback.md)
+  [ITEM-108](./ITEM-108-media-navigation-feedback.md)

@@ -1,5 +1,5 @@
 ---
-id: ITEM-105
+id: ITEM-108
 status: in_review
 title: 'Keep media navigation selection feedback in sync'
 type: fix
@@ -7,16 +7,16 @@ priority: P2
 effort: S
 created: 2026-10-17
 updated: 2026-10-17
-spec: specs/105-media-navigation-feedback/spec.md
+spec: specs/108-media-navigation-feedback/spec.md
 branch: feat/105-media-navigation-feedback
-pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/356
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/359
 archived_at:
 archive_reason:
 bump: patch
 release_version: 1.14.2
 ---
 
-# ITEM-105: Keep media navigation selection feedback in sync
+# ITEM-108: Keep media navigation selection feedback in sync
 
 ## Summary
 
@@ -26,16 +26,16 @@ destination.
 
 ## Notes
 
-- The owner accepted the interactive UI preview and Spec 105 Draft on 2026-10-17.
+- The owner accepted the interactive UI preview and Spec 108 Draft on 2026-10-17.
 - The selected media-source tab uses the existing switch easing and theme tokens; the approved
-  screenshot is [preview.png](../../specs/105-media-navigation-feedback/preview.png).
+  screenshot is [preview.png](../../specs/108-media-navigation-feedback/preview.png).
 - The Media Library link must remain selected on direct loads and when browser history returns
   to that page. Other rail-menu `aria-expanded` and panel behavior remains unchanged.
-- Implementation is on `feat/105-media-navigation-feedback`, based on the current Spec 104 media
+- Implementation is on `feat/105-media-navigation-feedback`, based on the current Spec 107 media
   feature stack; `develop` is an ancestor of this branch.
 - Targeted verification passed: all 16 tests in `tests.e2e.test_media_library`.
-- Draft implementation PR [#356](https://github.com/rsmbyk/multimedia-gkps-klender/pull/356)
-  targets the open Spec 104 feature branch and will be retargeted after its parent merges.
+- The implementation is included in consolidated PR [#359](https://github.com/rsmbyk/multimedia-gkps-klender/pull/359)
+  to `develop` with the rest of the accepted media work.
 
 ## Acceptance sketch
 
@@ -47,6 +47,6 @@ destination.
 
 ## Links
 
-- Spec: [105](../../specs/105-media-navigation-feedback/spec.md)
+- Spec: [108](../../specs/108-media-navigation-feedback/spec.md)
 - Related items: [ITEM-103](./ITEM-103-local-media-library.md),
-  [ITEM-104](./ITEM-104-media-picker-layout.md)
+  [ITEM-107](./ITEM-107-media-picker-layout.md)

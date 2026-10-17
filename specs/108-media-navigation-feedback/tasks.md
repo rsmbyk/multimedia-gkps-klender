@@ -1,6 +1,6 @@
-# Tasks 105: Keep media navigation selection feedback in sync
+# Tasks 108: Keep media navigation selection feedback in sync
 
-- **Status:** Accepted (2026-10-17)
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -59,15 +59,15 @@ new page.
 
 ## Delivery checklist
 
-- [x] Confirm `feat/105-media-navigation-feedback` is based on the current Spec 104 feature stack;
-      `develop` is an ancestor of the branch
-- [x] Verify the stacked PR path: Spec 104 targets Spec 103, Spec 103 targets `develop`, and this
-      implementation PR targets Spec 104 until its parent merges
+- [x] Reconcile the accepted media work with the current `develop` line and renumber media specs
+      after the search specs already using IDs 104 and 105.
+- [x] Include the accepted saved-page media dependency (Spec 106) and target consolidated PR #359
+      directly at `develop`.
 - [x] Set `bump: patch` on the ITEM and spec header
 - [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in the implementation PR
 - [x] Add `VERSION` / changelog patch entry and set `release_version` in the ITEM in the same PR
-- [x] Conventional Commit `34ca879` and draft PR [#356](https://github.com/rsmbyk/multimedia-gkps-klender/pull/356)
-      linking `./spec.md`
+- [x] Conventional Commit with Codex trailer and consolidated PR [#359](https://github.com/rsmbyk/multimedia-gkps-klender/pull/359)
+      to `develop`, linking `./spec.md`
 
 ## Done when
 

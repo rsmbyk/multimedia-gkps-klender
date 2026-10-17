@@ -1,8 +1,8 @@
 # Spec: Give Tata Ibadah media entries more breathing room
 
-- **ID:** 108
+- **ID:** 110
 - **Status:** Accepted (2026-10-17)
-- **Item:** ITEM-108
+- **Item:** ITEM-110
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch

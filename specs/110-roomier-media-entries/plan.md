@@ -1,9 +1,9 @@
-# Plan 108: Give Tata Ibadah media entries more breathing room
+# Plan 110: Give Tata Ibadah media entries more breathing room
 
 - **Status:** Accepted (2026-10-17)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
-- **Item:** ITEM-108
+- **Item:** ITEM-110
 - **Bump:** patch
 
 ## Why

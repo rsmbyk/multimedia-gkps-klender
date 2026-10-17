@@ -1,6 +1,6 @@
-# Tasks 104: Polish media picker layout and tab feedback
+# Tasks 107: Polish media picker layout and tab feedback
 
-- **Status:** Implemented; draft PR #354 open
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -17,7 +17,7 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch`; update `VERSION` to 1.14.1, add the changelog entry, and set `release_version: 1.14.1`
 - [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md)
-- [x] Conventional Commit and draft PR #354 linking `./spec.md`
+- [x] Conventional Commit with Codex trailer and consolidated PR #359 to `develop` linking `./spec.md`
 
 ## Done when
 

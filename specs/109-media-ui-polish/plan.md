@@ -1,9 +1,9 @@
-# Plan 107: Clarify Media Library controls and align media entry labels
+# Plan 109: Clarify Media Library controls and align media entry labels
 
 - **Status:** Accepted (2026-10-17)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
-- **Item:** ITEM-107
+- **Item:** ITEM-109
 - **Bump:** patch
 
 ## Why

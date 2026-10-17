@@ -1,9 +1,9 @@
-# Plan 109: Show distinct connection icons in the Media Library status row
+# Plan 111: Show distinct connection icons in the Media Library status row
 
 - **Status:** Accepted (2026-10-17)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
-- **Item:** ITEM-109
+- **Item:** ITEM-111
 - **Bump:** patch
 
 ## Why

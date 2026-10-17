@@ -1,6 +1,6 @@
-# Tasks 109: Show distinct connection icons in the Media Library status row
+# Tasks 111: Show distinct connection icons in the Media Library status row
 
-- **Status:** Accepted (2026-10-17)
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -16,8 +16,8 @@
 - [x] Run the targeted Media Library E2E module (19 passing) and `git diff --check`
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` and release version 1.14.6 on the ITEM and spec; update `VERSION` and `CHANGELOG.md`
-- [x] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in PR #359 (In review while open; Done before merge)
-- [x] Conventional Commit + draft PR #359 linking `./spec.md` (same PR; extra commits fine)
+- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in PR #359 (Done before merge)
+- [x] Conventional Commit with Codex trailer and consolidated PR #359 to `develop` linking `./spec.md`
 
 ## Done when
 

@@ -1,8 +1,8 @@
 # Spec: Keep media navigation selection feedback in sync
 
-- **ID:** 105
+- **ID:** 108
 - **Status:** Accepted (2026-10-17)
-- **Item:** ITEM-105
+- **Item:** ITEM-108
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch

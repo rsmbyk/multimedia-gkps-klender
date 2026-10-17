@@ -1,9 +1,9 @@
-# Plan 104: Polish media picker layout and tab feedback
+# Plan 107: Polish media picker layout and tab feedback
 
 - **Status:** Accepted (2026-10-17)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
-- **Item:** ITEM-104
+- **Item:** ITEM-107
 - **Bump:** patch
 
 ## Why

@@ -1,6 +1,6 @@
 # Tasks 106: Keep media entries visible in saved Tata Ibadah pages
 
-- **Status:** In progress
+- **Status:** Implemented and included in consolidated PR #359; 148 targeted tests passed, exact-head GitHub CI pending
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -18,14 +18,14 @@
 - [x] Fill Traceability in `./spec.md`
 - [x] Set `bump: patch` on the ITEM and spec header
 - [x] Add `VERSION`, changelog `## [1.14.3]`, and `release_version: 1.14.3`
-- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in **this PR** (In review while open; Done before merge)
-- [ ] Conventional Commit + draft PR linking `./spec.md` (same PR; extra commits fine)
+- [ ] Update ITEM + [`backlog/board.md`](../../backlog/board.md) in consolidated PR #359 (Done before merge)
+- [x] Conventional Commit with Codex trailer; include `./spec.md` in PR #359 to `develop`
 
 ## Done when
 
 - [x] All covered acceptance scenarios in `spec.md` hold
 - [x] Named targeted tests are green
-- [ ] Board, tasks, and version metadata are complete in the implementation PR
+- [x] Board, tasks, and version metadata are complete in consolidated PR #359
 
 The offline chunk test showed the expected failure first. The E2E tests were written before the
 renderer change; their first run could not start Chromium because the slim test image lacked

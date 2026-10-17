@@ -1,8 +1,8 @@
 # Spec: Show distinct connection icons in the Media Library status row
 
-- **ID:** 109
+- **ID:** 111
 - **Status:** Accepted (2026-10-17)
-- **Item:** ITEM-109
+- **Item:** ITEM-111
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch
