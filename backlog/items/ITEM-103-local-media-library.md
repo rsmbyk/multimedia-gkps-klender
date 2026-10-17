@@ -1,6 +1,6 @@
 ---
 id: ITEM-103
-status: in_progress
+status: in_review
 title: 'Local Media Library and service media entries'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-17
 updated: 2026-10-17
 spec: specs/103-local-media-library/spec.md
 branch: feat/103-local-media-library
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/353
 archived_at:
 archive_reason:
 bump: minor

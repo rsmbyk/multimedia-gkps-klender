@@ -13,11 +13,11 @@
 - [x] Server metadata/reference migration, service-entry forms/endpoints, and local companion. Large file bodies bypass Vercel.
 - [x] Focused browser E2E for entry Create/Edit, library controls, disconnected/missing state, and blank media projector navigation.
 - [x] Review the live Library view against the approved preview in disconnected and connected states, and check small-screen and reduced-motion behavior. Both Chrome and OBS dock use the same loopback companion and OS-user folder.
-- [ ] Run targeted local tests only, then push for full CI and browser E2E at the exact head.
+- [x] Run 53 targeted local tests and push the implementation; full CI at the final head remains to be checked.
 - [x] Fill Traceability in `./spec.md`; complete final acceptance review before marking Done.
-- [ ] Keep ITEM-103 and `backlog/board.md` in the same PR; mark In review with PR link, then Done before merge.
-- [ ] Apply `bump: minor` in that PR: update `VERSION`, changelog version section, and ITEM `release_version` based on the then-current integration line.
-- [ ] Conventional Commit with Codex trailer and a draft PR to `develop` using the repository PR template.
+- [x] Keep ITEM-103 and `backlog/board.md` in the same PR; mark In review with [#353](https://github.com/rsmbyk/multimedia-gkps-klender/pull/353). Mark Done before merge.
+- [x] Apply `bump: minor` in this PR: `VERSION` and changelog 1.14.0, matching the current `develop` 1.13.4 line.
+- [x] Conventional Commit with Codex trailer and draft PR [#353](https://github.com/rsmbyk/multimedia-gkps-klender/pull/353) to `develop` using the repository PR template.
 
 ## Done when
 
