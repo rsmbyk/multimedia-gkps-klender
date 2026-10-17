@@ -1,17 +1,14 @@
 """Cross-corpus public search (spec 004).
 
-Searches the whole reading corpus in one query:
+Two matchers live here, deliberately apart:
 
-- Bible - book names and aliases, ``Book chapter:verse`` references, and
-  verse text (both translations, one hit per verse).
-- Kidung - songbook names and abbreviations, song titles, and lyrics.
-- Tata Ibadah - service names and public contents. End-of-section notes are
-  never indexed.
-
-Semantics mirror the accepted mockup: normalized (case- and diacritic-folded)
-phrase matching, the same ranking ladder, and the same reference resolution -
-``Kidung Jemaat 120`` and ``KJ 120`` resolve to the same song at the same
-rank.
+- ``search_page()`` serves the public search page (spec 104). It matches only the
+  listed content fields: a verse's text or title, a song's title or lyrics, a
+  service's name, a row's title, and a text entry's body. Book rows, songbook
+  rows, references, dates, and section labels never match.
+- ``search()`` is the projector Go To's free-text fallback. It keeps the original
+  behaviour -- book names and references, songbook references, meta scores -- and
+  must not change with the page (owner: "do not touch anything on goto").
 
 ``search()`` returns a :class:`SearchResults`; each row is a plain dict with
 ``kind``, ``title``, ``meta``, ``excerpt``, ``target``, and ``score``. Views
@@ -378,4 +375,191 @@ def search(query):
     result.groups['bible'] = _bible_hits(phrase, words, raw, books)
     result.groups['songs'] = _song_hits(phrase, words, raw, songbooks)
     result.groups['tatib'] = _tatib_hits(phrase, words, raw)
+    return result
+
+
+# --- The public search page (spec 104) -------------------------------------------------
+#
+# Built beside ``search()`` rather than inside it: the projector Go To reads
+# ``search()``'s reference rows and meta scores, and the owner froze that path.
+# These helpers therefore never touch the legacy functions above.
+
+
+def _page_score(entry, phrase, words):
+    """The page's ladder over the listed fields only: title first, then body.
+
+    Meta strings (translation code, citation, date, section label) never score;
+    they are display only.
+    """
+    title = entry['lookup_title']
+    body = entry['lookup_body']
+    if title == phrase:
+        return 200
+    if title.startswith(phrase):
+        return 120
+    if phrase in title:
+        return 95
+    if phrase in body:
+        return 35
+    if len(words) > 1:
+        combined = f'{title} {body}'
+        if all(word in combined for word in words):
+            return 16
+    return 0
+
+
+def _page_bible_hits(phrase, words, raw, books):
+    """Verse text and title only (spec 104); never a book or reference row."""
+    criteria = Q(text__icontains=raw) | Q(title__icontains=raw)
+    if len(words) > 1:
+        all_words = Q()
+        for word in words:
+            all_words &= (Q(text__icontains=word) | Q(title__icontains=word))
+        criteria |= all_words
+    seen = {}
+    candidates = (bible_models.Verse.objects.filter(criteria)
+                  .select_related('book_translation__version', 'book_translation__book'))
+    for verse in candidates:
+        info = books[verse.book_translation.book_id]
+        abbreviation = (verse.book_translation.version.abbreviation or '').upper()
+        entry = _entry(
+            kind='verse',
+            title=f"{info['display']} {verse.chapter}:{verse.verse}",
+            lookup_title=verse.title or '',
+            meta=abbreviation + (f' \u00b7 {verse.title}' if verse.title else ''),
+            body=verse.text,
+            target={'book_id': info['book'].pk, 'chapter': verse.chapter,
+                    'verse': verse.verse, 'end_verse': verse.verse})
+        score = _page_score(entry, phrase, words)
+        if not score:
+            continue
+        entry['score'] = score
+        key = (verse.book_translation.book_id, verse.chapter, verse.verse)
+        prior = seen.get(key)
+        if (prior is None or score > prior['score']
+                or (score == prior['score'] and abbreviation == info['version'])):
+            seen[key] = entry
+    return _ranked_rows(list(seen.values()), phrase)
+
+
+def _page_song_hits(phrase, words, raw):
+    """Song title and live lyrics only (spec 104); never a songbook or number row."""
+    criteria = (Q(title__icontains=raw)
+                | Q(verse__is_deleted=False, verse__lyric__icontains=raw))
+    if len(words) > 1:
+        all_words = Q()
+        for word in words:
+            all_words &= (Q(title__icontains=word)
+                          | Q(verse__is_deleted=False, verse__lyric__icontains=word))
+        criteria |= all_words
+    active_songs = song_models.Song.objects.active().filter(book__is_deleted=False)
+    ids = set(active_songs.filter(criteria).values_list('id', flat=True))
+    if not ids:
+        return []
+    queryset = (active_songs.filter(pk__in=ids).select_related('book')
+                .prefetch_related(Prefetch(
+                    'verse_set',
+                    queryset=song_models.Verse.objects.active().order_by('number'))))
+    hits = []
+    for song in queryset:
+        citation = song.book_number if song.number else song.book.name
+        entry = _entry(
+            kind='song',
+            title=song.title or citation,
+            lookup_title=song.title or '',
+            meta=citation,
+            body='\n'.join(verse.lyric for verse in song.verse_set.all()),
+            target={'song_id': song.pk})
+        score = _page_score(entry, phrase, words)
+        if score:
+            entry['score'] = score
+            hits.append(entry)
+    return _ranked_rows(hits, phrase)
+
+
+def _page_service_public_rows(service):
+    """The service's public rows: legacy text rows and non-break entries."""
+    legacy = [row for row in service.tataibadahitem_set.all()
+              if row.item_type == tatib_models.TataIbadahItemType.TEXT]
+    entries = [entry for entry in service.service_entries.all()
+               if entry.kind != tatib_models.ServiceEntryKind.SECTION_BREAK]
+    return legacy, entries
+
+
+def _page_tatib_rows(service):
+    """The matchable rows in the service's shared order.
+
+    Legacy rows and entries interleave by ``order_number`` (legacy first on a tie),
+    exactly as the contents pane orders them. Only legacy text rows and text entries
+    carry a matchable title or body.
+    """
+    legacy, entries = _page_service_public_rows(service)
+    rows = [(row.order_number, 0, row.pk, 'legacy', row) for row in legacy]
+    rows += [(entry.order_number, 1, entry.pk, 'entry', entry) for entry in entries
+             if entry.kind == tatib_models.ServiceEntryKind.TEXT]
+    return [(kind, row) for _number, _kind, _pk, kind, row in sorted(rows)]
+
+
+def _page_tatib_hits(phrase, words, raw):
+    """Service name, legacy text-row title/body, entry title, text-entry body."""
+    text_item = Q(tataibadahitem__item_type=tatib_models.TataIbadahItemType.TEXT)
+    text_entry = Q(service_entries__kind=tatib_models.ServiceEntryKind.TEXT)
+    item_match = (Q(text_item, tataibadahitem__title__icontains=raw)
+                  | Q(text_item, tataibadahitem__text__icontains=raw)
+                  | Q(service_entries__title__icontains=raw)
+                  | Q(text_entry, service_entries__text__icontains=raw))
+    criteria = Q(name__icontains=raw) | item_match
+    if len(words) > 1:
+        all_words = Q()
+        for word in words:
+            all_words &= (
+                Q(name__icontains=word)
+                | Q(text_item, tataibadahitem__title__icontains=word)
+                | Q(text_item, tataibadahitem__text__icontains=word)
+                | Q(service_entries__title__icontains=word)
+                | Q(text_entry, service_entries__text__icontains=word))
+        criteria |= all_words
+    services = (tatib_models.TataIbadah.objects.filter(is_active=True)
+                .filter(criteria)
+                .prefetch_related('tataibadahitem_set', 'service_entries')
+                .distinct())
+    hits = []
+    for service in services:
+        legacy, entries = _page_service_public_rows(service)
+        if not legacy and not entries:
+            continue
+        meta = format_date_short(service.date) if service.date else 'Template'
+        entry = _entry(kind='service', title=service.name, meta=meta,
+                       target={'tatib_id': service.pk, 'item_order': None})
+        score = _page_score(entry, phrase, words)
+        if score:
+            entry['score'] = score
+            hits.append(entry)
+        for number, (kind, row) in enumerate(_page_tatib_rows(service), start=1):
+            section = f'{service.name} \u00b7 Section {number}'
+            item_entry = _entry(
+                kind='item', title=row.title or section, lookup_title=row.title or '',
+                meta=section, body=row.text,
+                target={'tatib_id': service.pk,
+                        'item_order': row.order_number if kind == 'legacy' else f'e{row.pk}'})
+            item_score = _page_score(item_entry, phrase, words)
+            if item_score:
+                item_entry['score'] = item_score
+                hits.append(item_entry)
+    return _ranked_rows(hits, phrase)
+
+
+def search_page(query):
+    """The public search page's matcher (spec 104); see the module docstring."""
+    raw = str(query or '').strip()
+    result = SearchResults(query=raw)
+    phrase = normalize(raw)
+    if not phrase:
+        result.valid = False
+        return result
+    words = phrase.split(' ')
+    books = bible_book_index()
+    result.groups['bible'] = _page_bible_hits(phrase, words, raw, books)
+    result.groups['songs'] = _page_song_hits(phrase, words, raw)
+    result.groups['tatib'] = _page_tatib_hits(phrase, words, raw)
     return result

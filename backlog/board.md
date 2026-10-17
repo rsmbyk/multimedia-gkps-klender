@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-105](./items/ITEM-105-search-query-grammar.md) | Search query grammar and token ranking | Tokens, quoted phrases, `-` exclusions, soft-AND coverage and order ranking, and the purged-query status line | feat | P1 | L | [105](../specs/105-search-query-grammar/spec.md) | 2026-10-17 |
 
 ## Ready
 
@@ -50,6 +51,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-104](./items/ITEM-104-search-field-scope.md) | Restrict the search page to the listed content fields | Only verse text/title, song title/lyrics, service name, row title, and text-entry body match; no reference, book, songbook, date, or label rows | fix | P1 | M | [104](../specs/104-search-field-scope/spec.md) | develop via [#355](https://github.com/rsmbyk/multimedia-gkps-klender/pull/355) | 2026-10-17 |
 | [ITEM-102](./items/ITEM-102-saved-tatib-date-header.md) | Show the Tata Ibadah date header in the saved-copy reading path | The in-place navigation's renderer keeps the date above a dated service title | fix | P2 | S | [102](../specs/102-saved-tatib-date-header/spec.md) | develop via [#352](https://github.com/rsmbyk/multimedia-gkps-klender/pull/352) | 2026-10-17 |
 | [ITEM-101](./items/ITEM-101-goto-translation-flash.md) | Brighten the translation label after flipping a Go To passage | The Go To passage cue keeps the translation flip's brighten for about one second, like a service passage | fix | P2 | S | [101](../specs/101-goto-translation-flash/spec.md) | develop via [#351](https://github.com/rsmbyk/multimedia-gkps-klender/pull/351) | 2026-10-16 |
 | [ITEM-100](./items/ITEM-100-sim-translation-abbreviations.md) | Use the requested SIM book abbreviations | Store 66 SIM short codes and use the active edition across Bible labels and book searches | fix | P2 | L | [100](../specs/100-sim-translation-abbreviations/spec.md) | develop via [#350](https://github.com/rsmbyk/multimedia-gkps-klender/pull/350) | 2026-10-16 |

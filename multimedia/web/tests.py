@@ -63,7 +63,7 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'name="q"')
         self.assertContains(response, 'class="field-clear"')          # the clear control
         self.assertContains(response, 'Search Alkitab, Kidung, and Tata Ibadah')
-        self.assertContains(response, 'Try Yoh 3:16 or HAL 411')
+        self.assertNotContains(response, 'search-home__hint')
         self.assertContains(response, 'data-tip="Alkitab"')
         self.assertContains(response, 'id="railSearch"')
         self.assertContains(response, 'aria-current="page"')
@@ -81,11 +81,11 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'result-group__title')
         self.assertContains(response, reverse('web-song', args=[self.song.id]))
 
-    def test_search_page_resolves_bible_reference(self):
+    def test_search_page_lists_no_bible_reference(self):
         response = self.client.get(reverse('web-search'), {'q': 'Matius 5:13'})
-        target = reverse('web-bible-chapter', args=[self.mat.id, 5]) + '?v=13&amp;to=13'
-        self.assertContains(response, target)
-        self.assertContains(response, 'Kamu adalah garam dunia.')
+        self.assertContains(response, 'No results for')
+        self.assertNotContains(response, 'Kamu adalah garam dunia.')
+        self.assertNotContains(response, '?v=13')
 
     def test_search_field_has_a_clear_control(self):
         response = self.client.get(reverse('web-search'), {'q': 'kasih'})

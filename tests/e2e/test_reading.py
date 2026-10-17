@@ -226,7 +226,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         expect(page.locator('#homeLogo')).to_be_visible()
         expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_be_visible()
-        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
+        expect(page.locator('.search-home__hint')).to_have_count(0)
         expect(page.locator('#railSearch[aria-current="page"]')).to_have_count(1)
 
     def test_search_finds_a_song(self):
@@ -237,19 +237,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.result-group__title').filter(has_text='Kidung')).to_be_visible()
         self.assertEqual(page.url, self.live_server_url + reverse('web-search') + '?q=waktu%20pagi')
 
-    def test_search_resolves_bible_reference(self):
+    def test_search_lists_no_bible_reference(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         self._search(page, 'Matius 5:13')
-        first = page.locator('.result-group[data-kind="bible"] .result-row').first
-        expect(first).to_contain_text('Matius 5:13')
-        first.click()
-        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
-        expect(page.locator('[data-search-target="true"]')).to_have_count(1)
-        expect(page.locator('html')).to_have_attribute('data-read', 'on')
-        self.assertEqual(page.url, self.live_server_url
-                         + reverse('web-bible-chapter', args=[self.mat.pk, 5])
-                         + '?v=13&to=13')
+        expect(page.locator('.result-group[data-kind="bible"]')).to_have_count(0)
+        expect(page.get_by_text('No results for')).to_be_visible()
 
     def test_short_query_searches_and_empty_submit_returns_to_index(self):
         page = self._page()
@@ -264,7 +257,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         field.press('Enter')
         expect(page).to_have_url(self.live_server_url + '/')
         expect(field).to_have_value('')
-        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
+        expect(page.locator('.search-home__hint')).to_have_count(0)
         page.locator('#railSearch').click()
         expect(page.get_by_text('Results for').first).to_be_visible()
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
@@ -282,7 +275,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('.rail__logo').click()
         expect(page).to_have_url(self.live_server_url + '/')
         expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_have_value('')
-        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
+        expect(page.locator('.search-home__hint')).to_have_count(0)
         page.locator('#railSearch').click()
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
         expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_have_value(
@@ -907,14 +900,14 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
 
         page.locator('#railSearch').click()
-        self._search(page, 'Matius 20:1')
+        self._search(page, 'kuatir')
         page.locator('.result-group[data-kind="bible"] .result-row').first.click()
         expect(page.get_by_text('Janganlah kamu kuatir akan hidupmu.')).to_be_visible()
         expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
         expect(page.locator('#langSim')).to_have_attribute('aria-disabled', 'true')
 
         page.locator('#railSearch').click()
-        self._search(page, 'Matius 5:13')
+        self._search(page, 'garam dunia')
         page.locator('.result-group[data-kind="bible"] .result-row').first.click()
         expect(page.get_by_text('Garam ni dunia.')).to_be_visible()
         expect(page.locator('#langSim')).to_have_attribute('aria-pressed', 'true')
@@ -1648,13 +1641,13 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("document.documentElement.dataset.home === 'landing'")
         expect(page).to_have_url(self.live_server_url + '/')
         expect(page.locator('html')).to_have_attribute('data-section', 'alkitab')
-        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
+        expect(page.locator('.search-home__hint')).to_have_count(0)
         self.assertEqual(page.evaluate("localStorage.getItem('gkps-search')"), '/tatib/1/')
         # The logo opens a blank index; legacy shared state stays present but ignored.
         page.locator('.rail__logo').click()
         page.wait_for_function("document.documentElement.dataset.home === 'landing'")
         expect(page).to_have_url(self.live_server_url + '/')
-        expect(page.get_by_text('Try Yoh 3:16 or HAL 411')).to_be_visible()
+        expect(page.locator('.search-home__hint')).to_have_count(0)
 
     def test_index_is_empty_but_search_restores_tab_local_state(self):
         page = self._page()

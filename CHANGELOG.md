@@ -10,6 +10,25 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.13.5] - 2026-10-17
+
+### Added
+
+- Service entries are searchable: an entry-only Tata Ibadah is found by its own name, and each
+  text entry by its title or body.
+
+### Changed
+
+- The public search page matches only the six listed fields — verse text and title, song title
+  and lyrics, service name, row title, and text-entry body. Book and songbook names, Bible and
+  songbook references, bare song numbers, dates, and row section labels no longer list anything;
+  the saved copy follows the same field set. The page has its own matcher, so the projector Go To
+  is untouched.
+
+### Removed
+
+- The home search hint line (`Try Yoh 3:16 or HAL 411`).
+
 ## [1.13.4] - 2026-10-17
 
 ### Fixed

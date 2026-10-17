@@ -511,13 +511,16 @@
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/\s+/g, ' ').trim().toLowerCase();
   }
-  function score(title, meta, body, query) {
-    var a = normalized(title), b = normalized(meta), c = normalized(body);
-    if (a === query || b === query) return 200;
+  function score(title, body, query) {
+    var a = normalized(title), c = normalized(body);
+    if (a === query) return 200;
     if (a.startsWith(query)) return 120;
     if (a.includes(query)) return 95;
-    if (b.includes(query)) return 70;
     if (c.includes(query)) return 35;
+    if (query.indexOf(' ') !== -1) {
+      var combined = a + ' ' + c;
+      if (query.split(' ').every(function (word) { return combined.includes(word); })) return 16;
+    }
     return 0;
   }
   function searchPage(doc, target, bible, books, services) {
@@ -525,31 +528,24 @@
     if (!query) return homePage(doc, bible);
     var phrase = normalized(query);
     var rows = {bible: [], songs: [], tatib: []};
-    function add(kind, title, meta, body, url, priority) {
-      var rank = score(title, meta, body, phrase);
-      if (rank || priority) rows[kind].push({title: title, meta: meta, body: body,
-        url: url, score: priority || rank});
+    function add(kind, title, meta, body, url, rank) {
+      if (!rank) return;
+      rows[kind].push({title: title, meta: meta, body: body, url: url, score: rank});
     }
     bible.forEach(function (book) {
       var tb = book.translations.find(function (item) { return item.version.toUpperCase() === 'TB'; });
       var preferred = tb || book.translations[0];
       var name = preferred ? preferred.name : book.name;
-      add('bible', name, book.name + ' ' + book.translations.map(function (item) {
-        return item.name;
-      }).join(' '), '', '/bible/' + book.id + '/');
       book.translations.forEach(function (translation) {
         translation.verses.forEach(function (verse) {
           var label = name + ' ' + verse.chapter + ':' + verse.verse;
-          var alias = book.name + ' ' + verse.chapter + ':' + verse.verse;
-          var exact = phrase === normalized(label) || phrase === normalized(alias) ? 1000 : 0;
           add('bible', label, translation.version + ' · ' + (verse.title || ''),
               verse.text, '/bible/' + book.id + '/' + verse.chapter + '/?v=' + verse.verse,
-              exact);
+              score(verse.title || '', verse.text, phrase));
         });
       });
     });
     books.forEach(function (book) {
-      add('songs', book.name, 'Songbook · ' + book.short_name, '', '/songs/book/' + book.id + '/');
       book.songs.forEach(function (song) {
         var reference = song.number == null ? '' : book.short_name + ' ' + song.number
           + (song.sub_number || '').toUpperCase();
@@ -557,8 +553,7 @@
           + (song.sub_number || '').toUpperCase();
         var lyric = song.verses.map(function (verse) { return verse.lyric; }).join(' ');
         add('songs', song.title, reference + ' ' + longRef + ' ' + book.name,
-            lyric, '/songs/' + song.id + '/', phrase === normalized(reference)
-            || phrase === normalized(longRef) ? 1000 : 0);
+            lyric, '/songs/' + song.id + '/', score(song.title || '', lyric, phrase));
       });
     });
     services.forEach(function (service) {
@@ -567,7 +562,7 @@
           && !(row.kind === 'entry' && row.entry_kind === 3);
       }).map(function (row) { return row.title + ' ' + row.text; }).join(' ');
       add('tatib', service.name, service.date || 'Tata Ibadah', body,
-          '/tatib/' + service.id + '/');
+          '/tatib/' + service.id + '/', score(service.name, body, phrase));
     });
     var names = {bible: 'Alkitab', songs: 'Kidung', tatib: 'Tata Ibadah'};
     var html = '';
