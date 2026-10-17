@@ -96,10 +96,38 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + path)
         return page
 
+    def connection_drops_after_settings_save_page(self, path):
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        status_requests = {'count': 0}
+        def companion(route):
+            url = route.request.url
+            if url.endswith('/status'):
+                status_requests['count'] += 1
+                if status_requests['count'] == 2:
+                    route.abort()
+                    return
+                payload = {'connection': 'connected', 'file_count': 0, 'total_size': 0,
+                           'retention': '30', 'write_token': 'test-token'}
+            elif url.endswith('/files') or url.endswith('/references'):
+                payload = {'files': []}
+            elif url.endswith('/settings'):
+                payload = {'retention': '30'}
+            else:
+                payload = {'error': 'Not found'}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers={'Access-Control-Allow-Origin': self.live_server_url})
+        page.route('http://127.0.0.1:63174/**', companion)
+        page.goto(self.live_server_url + path)
+        return page
+
     def test_disconnected_library_hides_local_inventory_details(self):
         page = self.page(reverse('web-media-library'))
         page.locator('#mediaStatusButton').click()
         expect(page.locator('#mediaConnection')).to_have_text('Unavailable')
+        expect(page.locator('#mediaConnection')).to_have_attribute('data-state', 'unavailable')
+        expect(page.locator('#mediaConnection .media-library__connection-icon--unavailable')).to_be_visible()
+        expect(page.locator('#mediaConnection .media-library__connection-icon--unavailable')).to_have_attribute('aria-hidden', 'true')
+        expect(page.locator('#mediaConnection .media-library__connection-icon--connected')).not_to_be_visible()
         expect(page.locator('#mediaStatusPopup')).not_to_contain_text('Folder')
         expect(page.locator('#mediaCount')).not_to_be_visible()
         expect(page.locator('#mediaTotalSize')).not_to_be_visible()
@@ -281,9 +309,32 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.media-library__filename')).to_have_text('notes.pdf')
         page.locator('#mediaStatusButton').click()
         expect(page.locator('#mediaConnection')).to_have_text('Connected')
+        expect(page.locator('#mediaConnection')).to_have_attribute('data-state', 'connected')
+        expect(page.locator('#mediaConnection .media-library__connection-icon--connected')).to_be_visible()
+        expect(page.locator('#mediaConnection .media-library__connection-icon--connected')).to_have_attribute('aria-hidden', 'true')
+        expect(page.locator('#mediaConnection .media-library__connection-icon--unavailable')).not_to_be_visible()
+        expect(page.locator('#mediaConnection')).to_have_css('gap', '7px')
+        expect(page.locator('#mediaConnection .media-library__connection-icon--connected')).to_have_css('width', '17px')
         expect(page.locator('#mediaStatusPopup')).not_to_contain_text('Folder')
         expect(page.locator('#mediaCount')).to_have_text('1')
         expect(page.locator('#mediaTotalSize')).to_have_text('2 KB')
+
+    def test_connection_icon_tracks_status_refresh(self):
+        page = self.connection_drops_after_settings_save_page(reverse('web-media-library'))
+        page.locator('#mediaSettingsButton').click()
+        page.locator('#mediaSaveSettings').click()
+        expect(page.locator('#mediaSettingsDialog')).not_to_be_visible()
+        page.locator('#mediaStatusButton').click()
+        expect(page.locator('#mediaConnection')).to_have_text('Unavailable')
+        expect(page.locator('#mediaConnection')).to_have_attribute('data-state', 'unavailable')
+        expect(page.locator('#mediaConnection .media-library__connection-icon--unavailable')).to_be_visible()
+        expect(page.locator('#mediaConnection .media-library__connection-icon--connected')).not_to_be_visible()
+        page.reload()
+        page.locator('#mediaStatusButton').click()
+        expect(page.locator('#mediaConnection')).to_have_text('Connected')
+        expect(page.locator('#mediaConnection')).to_have_attribute('data-state', 'connected')
+        expect(page.locator('#mediaConnection .media-library__connection-icon--connected')).to_be_visible()
+        expect(page.locator('#mediaConnection .media-library__connection-icon--unavailable')).not_to_be_visible()
 
     def test_library_filter_sort_and_dialogs(self):
         page = self.connected_page(reverse('web-media-library'))

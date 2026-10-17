@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.14.6] - 2026-10-17
+
+### Changed
+
+- The Media Library connection row pairs Connected with a green check-circle and Unavailable with a neutral theme-muted minus icon.
+
 ## [1.14.5] - 2026-10-17
 
 ### Changed

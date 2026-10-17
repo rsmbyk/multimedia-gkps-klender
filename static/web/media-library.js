@@ -27,7 +27,8 @@
     $('mediaSettingsButton').disabled = !connected;
     $('mediaStatusDot').classList.toggle('is-connected', connected);
     $('mediaStatusPopup').classList.toggle('is-unavailable', !connected);
-    $('mediaConnection').textContent = connected ? 'Connected' : 'Unavailable';
+    $('mediaConnection').dataset.state = connected ? 'connected' : 'unavailable';
+    $('mediaConnectionLabel').textContent = connected ? 'Connected' : 'Unavailable';
     document.querySelectorAll('[data-media-connected]').forEach(function (el) { el.hidden = !connected; });
     if (connected) {
       token = status.write_token; retention = status.retention;
