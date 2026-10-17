@@ -1,6 +1,6 @@
 {% comment %}One kind's fields (spec 006, slice 2). The modal posts this fragment back.{% endcomment %}
 <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
-<form class="editor__form" data-entry-form="{{ kind }}" action="{{ save_url }}" method="post">
+<form class="editor__form" data-entry-form="{{ kind }}"{% if kind == 'media' and not entry %} data-media-create data-media-register-url="{% url 'web-media-register' %}"{% endif %} action="{{ save_url }}" method="post">
   {% csrf_token %}
   {% if not entry and after %}<input type="hidden" name="after" value="{{ after }}">{% endif %}
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}
@@ -20,7 +20,32 @@
   </div>
   {% endif %}
 
-  {% if kind == 'scripture' %}
+  {% if kind == 'media' %}
+  {% if not entry %}
+  <div class="media-entry__tabs" role="tablist" aria-label="Choose media source" data-media-tab="upload">
+    <span class="media-entry__tab-thumb" aria-hidden="true"></span>
+    <button type="button" role="tab" data-media-tab-button="upload" aria-selected="true">Upload</button>
+    <button type="button" role="tab" data-media-tab-button="library" aria-selected="false">Media Library</button>
+  </div>
+  <div class="media-entry__panel" data-media-panel="upload" role="tabpanel">
+    <div class="media-entry__drop" data-media-drop>
+      <div data-media-prompt><span class="media-entry__upload-icon" aria-hidden="true">⇧</span><strong>Drop a file here</strong><span>or</span><button type="button" class="media-entry__upload-btn" data-media-choose>Choose file to upload</button><p><strong>Supported files:</strong> images, audio, video, PDF, and PPT/PPTX<br><strong>Maximum 200 MB</strong> per file</p></div>
+      <div data-media-selected hidden><span class="media-entry__file-icon" data-media-selected-icon aria-hidden="true"></span><strong data-media-selected-name></strong><p data-media-selected-meta></p><p class="media-entry__existing" data-media-existing hidden>Already in Media Library</p><p data-media-library-name hidden></p><button type="button" class="media-entry__upload-btn" data-media-choose>Choose another file</button></div>
+    </div>
+    <p class="media-entry__note" data-media-note>The file will be copied to this computer's Media Library when the entry is saved.</p>
+    <input type="file" data-media-file accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.tif,.tiff,.avif,.heic,.mp3,.flac,.ogg,.oga,.wav,.m4a,.mp4,.webm,.ogv,.avi,.mpeg,.mpg,.mov,.pdf,.ppt,.pptx" hidden>
+  </div>
+  <div class="media-entry__panel media-entry__panel--library" data-media-panel="library" role="tabpanel" hidden><div data-media-library-list></div></div>
+  {% else %}
+  <div class="editor__field"><label>File</label><div class="media-entry__readonly" data-media-edit-hash="{{ entry.media_id }}"><strong>{{ entry.media_filename }}</strong><p>{{ entry.media.get_family_display }} · <span data-media-edit-availability>Checking this computer…</span></p></div><p class="editor__hint">The file reference cannot be changed after this entry is created.</p></div>
+  {% endif %}
+  <input type="hidden" name="media" value="{{ form.media.value|default:'' }}">
+  <input type="hidden" name="media_filename" value="{{ form.media_filename.value|default:'' }}">
+  {% for error in form.media.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  {% for error in form.media_filename.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}"><label for="id_title">Entry title <span class="editor__hint">(optional)</span></label><input type="text" name="title" id="id_title" maxlength="64" placeholder="If blank, the file name is shown" value="{{ form.title.value|default:'' }}">{% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}</div>
+
+  {% elif kind == 'scripture' %}
   <div class="editor__field{% if form.book_translation.errors %} is-invalid{% endif %}">
     <div class="editor__translation-row">
       <div class="read__lang editor__translation-toggle" role="group"
@@ -210,7 +235,7 @@
   {% for error in form.non_field_errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
 
   <div class="editor__actions">
-    <button class="editor__save" type="submit"{% if kind == 'text' %}{% if not form.text.value %} disabled{% endif %}{% endif %}>Save</button>
+    <button class="editor__save" type="submit"{% if kind == 'text' %}{% if not form.text.value %} disabled{% endif %}{% endif %}{% if kind == 'media' and not entry %} disabled{% endif %}>Save</button>
     <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
   </div>
 </form>

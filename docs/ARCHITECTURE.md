@@ -77,6 +77,30 @@ Public reading pages use the project's own design language (`static/styles/desig
 
 ## Boundaries
 
+### Computer-level Media Library
+
+`multimedia/local_media.py` runs as the `media` service in the projector
+computer's Docker Compose stack. The `media_library_data` named volume stores
+file bytes and the SQLite index at `/var/lib/gkps-media`; its `files/` directory
+uses SHA-256 names, and its index holds the displayed filename, detected family,
+upload date, usage state, and local retention setting. The volume is local to
+that Docker host and is shared by Chrome and the OBS browser dock through
+`127.0.0.1:63174`. It is not mounted into the host filesystem. See
+[`docs/local-media-companion.md`](local-media-companion.md) for first-time setup
+and volume lifecycle.
+
+Compose publishes the companion only on host loopback and configures its exact
+origin allowlist from the required `GKPS_MEDIA_PRODUCTION_ORIGIN` in the project
+`.env`, plus `http://localhost:<WEB_PORT>` and
+`http://127.0.0.1:<WEB_PORT>`. Selection sends bytes to a temporary inspection
+endpoint; Save sends them to the import endpoint for the verified atomic copy.
+Both return the hash and metadata. Django stores only that identity and an
+immutable service-entry reference. The Media Library page fetches service
+references from Django, then sends a complete reference inventory to the
+companion before unused-file cleanup. Neither browser profile nor Vercel stores
+these file bytes. `docker compose down` preserves the named volume;
+`docker compose down -v` removes it along with the Compose database volume.
+
 - Content domains (`bible`, `songs`, `tatib`, `bookmarks`) own their models and rules.
 - `api` exposes the domains over REST; `obs` and `web` are presentation surfaces.
 - Process and product docs live under `docs/`; they are not runtime code.

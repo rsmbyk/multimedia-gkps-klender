@@ -10,6 +10,52 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.14.6] - 2026-10-17
+
+### Changed
+
+- The Media Library connection row pairs Connected with a green check-circle and Unavailable with a neutral theme-muted minus icon.
+
+## [1.14.5] - 2026-10-17
+
+### Changed
+
+- Tata Ibadah media entries have more vertical breathing room, with compact insets on narrow screens and long filenames wrapping within the row.
+
+## [1.14.4] - 2026-10-17
+
+### Fixed
+
+- The Media Library sort control keeps its order icon when the selection changes, and the main sidebar uses a folder icon for mixed media. Tata Ibadah media titles align beside their file icons, while the upload hint separates supported formats from the emphasized 200 MB limit and groups PPT/PPTX.
+
+## [1.14.3] - 2026-10-17
+
+### Fixed
+
+- Tata Ibadah media entries and add-media actions remain visible when a saved service opens
+  through in-place navigation.
+
+## [1.14.2] - 2026-10-17
+
+### Fixed
+
+- The New media source tabs use a sliding selection surface with reduced-motion support, and the
+  Media Library sidebar highlight now follows main-menu selection and in-place page history.
+
+## [1.14.1] - 2026-10-17
+
+### Changed
+
+- The Tata Ibadah New media modal keeps a consistent tall layout across its source tabs, presents a spacious empty Media Library state, and gives the inactive tab the same hover feedback as the app's other switches. The supported-files label now matches the size of its descriptive text.
+
+## [1.14.0] - 2026-10-17
+
+### Added
+
+- A Docker Compose Media Library companion stores verified image, audio, video, PDF, and PowerPoint files in a named volume, shared by Chrome and the OBS dock on that computer.
+- Tata Ibadah media entries keep immutable fingerprint references with optional titles. The service page shows a missing-file state, while media Preview and projector content remain blank in this first slice.
+- The Media Library page lists local files and their service uses, offers type and unused filters, date and size sorting, local removal, and per-computer unused-file retention.
+
 ## [1.13.6] - 2026-10-17
 
 ### Changed
