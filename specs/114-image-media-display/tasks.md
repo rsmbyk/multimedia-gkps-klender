@@ -1,6 +1,6 @@
 # Tasks 114: Display image media entries
 
-- **Status:** In review
+- **Status:** Complete — exact-head CI passed and owner authorized the merge
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 

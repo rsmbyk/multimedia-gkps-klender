@@ -1,6 +1,6 @@
 ---
 id: ITEM-114
-status: in_review
+status: done
 title: 'Display Image entries in Preview and projector'
 type: feat
 priority: P1
@@ -24,7 +24,7 @@ Show a locally verified Image service entry in the existing Preview dialog and d
 
 ## Notes
 
-The owner accepted the interactive visual preview and Draft spec on 2026-10-18. The implementation is under review.
+The owner accepted the interactive visual preview and Draft spec on 2026-10-18. The implementation and exact-head CI are complete; the owner authorized the merge.
 
 ## Acceptance sketch
 
