@@ -9,7 +9,7 @@ created: 2026-10-18
 updated: 2026-10-18
 spec: specs/114-image-media-display/spec.md
 branch: feat/114-image-media-display
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/362
 archived_at:
 archive_reason:
 bump: minor

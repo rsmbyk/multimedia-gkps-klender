@@ -15,10 +15,10 @@
 - [x] Verify targeted Django tests and single E2E class locally, including light/dark and narrow view; let CI run the full suite after push.
 - [x] Fill traceability with final test paths and implementation files.
 - [x] In the same implementation PR, update ITEM-114 and the board to In review, set the minor version bump and changelog/release_version, and check completed tasks before merge.
-- [ ] Conventional Commit and draft PR to `develop` linking this spec.
+- [x] Conventional Commit and [draft PR #362](https://github.com/rsmbyk/multimedia-gkps-klender/pull/362) to `develop` linking this spec.
 
 ## Done when
 
 - [x] All acceptance scenarios in [spec.md](./spec.md) hold.
 - [x] The owner has Accepted this Draft before implementation.
-- [ ] Tests, board/ITEM, version, changelog, and PR evidence land together.
+- [x] Tests, board/ITEM, version, changelog, and PR evidence land together.
