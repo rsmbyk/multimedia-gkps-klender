@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.15.1] - 2026-10-18
+
+### Fixed
+
+- Direct visits to Media Library now set the CSRF cookie required to share files online.
+
 ## [1.15.0] - 2026-10-18
 
 ### Added

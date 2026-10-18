@@ -6,7 +6,7 @@ from unittest.mock import patch, Mock
 
 from django.utils import timezone
 
-from django.test import TestCase, override_settings
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from multimedia.tatib.models import MediaIdentity
@@ -104,6 +104,36 @@ class MediaEntryFlowTests(TestCase):
         self.assertEqual([use['filename'] for use in payload['uses'][media.sha256]],
                          ['first.pdf', 'second.pdf', 'template.pdf'])
         self.assertEqual(payload['protected'], [media.sha256])
+
+
+class MediaLibraryCsrfTests(TestCase):
+    def setUp(self):
+        self.media = MediaIdentity.objects.create(sha256='f' * 64, byte_count=20,
+                                                  family='pdf', display_filename='share.pdf')
+
+    @patch('multimedia.web.reading.views.media_handoff.begin_share',
+           return_value=('https://r2.example/upload', None, 'completion-token'))
+    @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+    def test_fresh_library_visit_supplies_csrf_token_for_share(self, begin_share):
+        client = Client(enforce_csrf_checks=True)
+        page = client.get(reverse('web-media-library'))
+        self.assertIn('csrftoken', page.cookies)
+
+        response = client.post(reverse('web-media-share', args=[self.media.pk, 'begin']),
+                               HTTP_X_CSRFTOKEN=page.cookies['csrftoken'].value)
+
+        self.assertEqual(response.status_code, 200, response.content[:400])
+        self.assertEqual(response.json()['sha256'], self.media.pk)
+        begin_share.assert_called_once()
+
+    def test_share_still_rejects_requests_without_valid_csrf(self):
+        from multimedia.tatib.models import MediaShare
+
+        client = Client(enforce_csrf_checks=True)
+        response = client.post(reverse('web-media-share', args=[self.media.pk, 'begin']))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(MediaShare.objects.exists())
 
 
 class MediaHandoffTests(TestCase):

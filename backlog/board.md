@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-113](./items/ITEM-113-media-library-share-csrf.md) | Allow Share online from a fresh Media Library session | Set a CSRF cookie on direct page visits so Share online can request upload permission | fix | P1 | S | [113](../specs/113-media-library-share-csrf/spec.md) | `fix/113-media-library-share-csrf` | 2026-10-18 |
 
 ## In review
 
