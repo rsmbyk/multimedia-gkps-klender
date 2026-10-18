@@ -116,7 +116,7 @@ class ServiceEntryTests(TestCase):
         with self.assertRaises(ValidationError):
             entry.full_clean()
 
-    def test_media_projection_is_one_blank_screen(self):
+    def test_image_projection_is_one_image_screen(self):
         from multimedia.web.reading.views import _projector_data
         media = tatib.MediaIdentity.objects.create(
             sha256='c' * 64, byte_count=42, family='image', display_filename='photo.png')
@@ -125,7 +125,8 @@ class ServiceEntryTests(TestCase):
         projector = _projector_data(self.tatib)
         screens, entries = projector['screens'], projector['entries']
         self.assertEqual(len(screens), 1)
-        self.assertTrue(screens[0]['blank'])
+        self.assertFalse(screens[0]['blank'])
+        self.assertEqual(screens[0]['image_sha256'], media.sha256)
         self.assertEqual(entries[0]['type'], 'media')
 
     def test_media_edit_form_ignores_replacement_file(self):
