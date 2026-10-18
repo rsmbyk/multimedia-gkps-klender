@@ -11,7 +11,7 @@
 - [x] Spec Accepted by the project owner, including its owner review points
 - [x] Rebase the existing `feat/112-temporary-media-handoff` worktree onto current `develop` and resolve conflicts before implementation
 - [x] Red — domain tests for cloud identity, verified upload/expiry, download authorization, and date eligibility
-- [ ] Provision private R2 Standard bucket and bucket-scoped Object Read & Write token; configure secret values in Vercel and local Django Compose without committing them (credentials and bucket access verified; eight-day lifecycle rule still needs dashboard confirmation)
+- [x] Provision private R2 Standard bucket and bucket-scoped Object Read & Write token; configure secret values in Vercel and local Django Compose without committing them (bucket smoke passed and the scoped eight-day production lifecycle rule was verified on 18 October 2026)
 - [x] Green — server cloud metadata, narrowly scoped R2 presigned operations, expiry/cleanup command and schedule, lifecycle backstop, and relevant migrations/configuration
 - [x] Add R2 health/configuration check and a temporary-object upload/GET/delete smoke test; confirm failed/missing configuration leaves local library usable (live bucket smoke passed on 18 October 2026)
 - [x] Red — companion tests for durable jobs, cancellation, browser-close survival, restart failure, deduplication, protected deletion/cleanup, persistent bounded retry, and atomic hash-verified download
