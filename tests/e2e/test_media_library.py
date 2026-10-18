@@ -1,7 +1,9 @@
 """Browser acceptance for the local Media Library shell and media entry picker."""
-from datetime import date
+from datetime import date, datetime, timezone
 import json
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
@@ -42,6 +44,9 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
                                             kind=ServiceEntryKind.TEXT, text='Opening words')
                 ServiceEntry.objects.create(tatib=self.service, order_number=3,
                                             kind=ServiceEntryKind.SECTION_BREAK)
+        if self._testMethodName == 'test_share_online_from_fresh_library_page_sends_csrf_token':
+            self.share_media = MediaIdentity.objects.create(
+                sha256='a' * 64, byte_count=2048, family='pdf', display_filename='notes.pdf')
         self.playwright = sync_playwright().start()
         try:
             self.browser = self.playwright.chromium.launch()
@@ -321,6 +326,48 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#mediaStatusPopup')).not_to_contain_text('Folder')
         expect(page.locator('#mediaCount')).to_have_text('1')
         expect(page.locator('#mediaTotalSize')).to_have_text('2 KB')
+
+    def test_share_online_from_fresh_library_page_sends_csrf_token(self):
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        self.assertEqual(page.context.cookies(), [])
+        sample = {'sha256': 'a' * 64, 'name': 'notes.pdf', 'family': 'pdf', 'size': 2048,
+                  'uploaded_at': '2026-10-17T12:00:00+00:00', 'unused_since': None, 'delete_at': None}
+
+        def companion(route):
+            url = route.request.url
+            if url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': 1, 'total_size': 2048,
+                           'retention': '30', 'write_token': 'test-token'}
+            elif url.endswith('/files') or url.endswith('/references'):
+                payload = {'files': [sample]}
+            else:
+                payload = {'error': 'Not found'}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers={'Access-Control-Allow-Origin': self.live_server_url})
+
+        page.route('http://127.0.0.1:63174/**', companion)
+        page.goto(self.live_server_url + reverse('web-media-library'))
+        self.assertTrue(any(cookie['name'] == 'csrftoken'
+                            for cookie in page.context.cookies()))
+        share_url = self.live_server_url + reverse(
+            'web-media-share', args=[self.share_media.pk, 'begin'])
+        captured = {}
+        alerts = []
+        page.on('dialog', lambda dialog: (alerts.append(dialog.message), dialog.dismiss()))
+        share = page.locator('.media-library__cloud-button[title="Share online"]')
+        expect(share).to_be_visible()
+
+        with patch('multimedia.web.reading.views.media_handoff.begin_share',
+                   return_value=(None, SimpleNamespace(
+                       expires_at=datetime(2026, 10, 25, tzinfo=timezone.utc)))) as begin_share:
+            with page.expect_response(share_url) as response_info:
+                share.click()
+            captured.update(response_info.value.request.all_headers())
+
+        self.assertEqual(response_info.value.status, 200)
+        self.assertTrue(captured.get('x-csrftoken'))
+        self.assertEqual(alerts, [])
+        begin_share.assert_called_once()
 
     def test_service_media_status_dialog_has_ordered_availability(self):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))

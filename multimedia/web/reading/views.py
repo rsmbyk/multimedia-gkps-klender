@@ -330,6 +330,7 @@ def media_register(request):
                          'family': existing.family, 'size': existing.byte_count})
 
 
+@ensure_csrf_cookie
 def media_library(request):
     """The page shell; each computer supplies its own local file inventory."""
     return render(request, 'reading/media_library.html', {
