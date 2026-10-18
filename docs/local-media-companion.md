@@ -77,3 +77,63 @@ inventory is received.
 
 The first version stores images, audio, video, PDF, PPT, and PPTX files. It does
 not render file contents in Preview, the projector, or OBS.
+
+## Temporary online sharing with Cloudflare R2
+
+Create a private R2 Standard bucket and an R2 S3 API token restricted to that
+bucket with Object Read & Write. In Vercel Production set
+`GKPS_R2_ACCOUNT_ID`, `GKPS_R2_BUCKET`, `GKPS_R2_ACCESS_KEY_ID`, and
+`GKPS_R2_SECRET_ACCESS_KEY` on the Django deployment. Set the same variables in
+a computer's local `.env` only when its local Django server needs to share or
+retrieve files through R2. The companion never receives these credentials: it
+receives a signed URL for one file from Django and transfers bytes directly to
+R2. Keep the bucket private; do not enable a public `r2.dev` URL.
+
+Local Compose writes under `temporary-media/development/` in the configured
+bucket. Production uses `temporary-media/` unless `GKPS_R2_PREFIX` overrides
+it. For a shared bucket, set production to `temporary-media/production` so
+both deployments have separate cleanup scope. The SQLite companion volume
+keeps transfer history and unfinished retry plans when browsers close. A
+companion process restart marks interrupted transfers failed. On the next
+visit, the browser refreshes the list of eligible today/future files. Missing
+files still available online download automatically; past and undated services
+show a manual download action. An automatic failure retries with backoff from
+five seconds to five minutes until the file succeeds or online access expires.
+
+An upload has one attempt. When its one-hour signed URL expires or a network
+error occurs, the transfer is marked failed and the operator can share the
+file again. The server marks a file online only after R2 confirms the expected
+size. The receiving companion verifies the SHA-256 fingerprint before adding
+the file to its local library. Online availability expires seven days after a
+successful upload. Configure an R2 object lifecycle rule for the temporary
+prefix to delete objects after eight days as a backstop; ensure the rule is
+scoped to that prefix, since lifecycle configuration replaces bucket rules.
+Django's `/media-library/cloud/cleanup/` Vercel Cron endpoint removes expired
+objects and metadata daily. Set a random `CRON_SECRET` in Vercel Production;
+Vercel sends it as a bearer token when invoking the cron endpoint. If this is
+not set, the endpoint refuses cleanup and only the R2 lifecycle rule clears
+objects. Cloudflare's R2 free tier is not an unlimited budget: monitor stored
+GB, request counts, and egress policies in the R2 dashboard.
+
+For a credential rotation, create a new bucket-scoped R2 S3 API token, update
+the four Vercel values and any local `.env` values, deploy/restart Django, and
+then revoke the old token. Browser tabs and companions do not need the raw
+secret. For a smoke test, use a non-sensitive small file: share it from one
+computer, wait for the online indicator, open a today/future service using it
+on a second computer, confirm the downloaded fingerprint and transfer history,
+then run the cleanup command in a staging environment after advancing an
+expired test share. Keep the production cleanup job and bucket lifecycle rule
+pointing only at the intended prefix.
+
+Run `python manage.py check_media_r2` from the Django environment to check
+bucket access without printing credentials. Run `python manage.py check_media_r2
+--smoke` before enabling production sharing: it writes, reads, verifies, and
+deletes one small object under the configured prefix. The smoke test is
+opt-in because it mutates the bucket.
+
+In the Cloudflare dashboard, open R2 object storage → the private bucket →
+Settings → Object lifecycle rules, add an expiration rule for the exact
+`GKPS_R2_PREFIX` followed by `/`, and set deletion after eight days. Review
+existing rules before saving. Bucket lifecycle management needs Cloudflare
+bucket-management permission in addition to the bucket-scoped S3 object token;
+that object token alone is not a way to configure the rule.

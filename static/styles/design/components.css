@@ -2399,3 +2399,61 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 @media (prefers-reduced-motion: no-preference) {
    #chList.is-dragging li:not(.is-dragging) { transition: transform 60ms var(--ease-timing); }
 }
+/* Temporary media handoff */
+.media-library__file { grid-template-columns: 42px minmax(0, 1fr) 66px 42px; padding-inline: 12px; }
+.media-library__file.is-unused { padding-left: 9px; }
+.media-library__cloud { min-height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--head-ink); }
+.media-library__cloud small { font-size: 10px; white-space: nowrap; }
+.media-library__cloud-button, .media-handoff__action { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--divider); border-radius: 9px; color: var(--ink); background: var(--canvas); cursor: pointer; font-size: 21px; }
+.media-library__cloud-button:hover, .media-handoff__action:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.media-library__cloud-available { font-size: 22px; color: var(--focus); }
+.media-library__remove { border: 1px solid var(--divider); background: var(--canvas); }
+.media-library__remove:hover { border-color: var(--danger); }
+.media-library__uses a.is-past { color: var(--ink); }
+.media-handoff__ring { --progress: 0%; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: radial-gradient(closest-side, var(--canvas) 82%, transparent 85%), conic-gradient(var(--focus) var(--progress), var(--divider) var(--progress)); color: var(--ink); cursor: pointer; font-size: 19px; }
+.media-handoff__ring:hover { background: radial-gradient(closest-side, var(--icon-hover-bg) 82%, transparent 85%), conic-gradient(var(--focus) var(--progress), var(--divider) var(--progress)); }
+.media-transfer-rail { position: relative; font-size: 25px; line-height: 1; }
+.media-transfer-rail[hidden] { display: none; }
+.media-transfer-rail__dot { position: absolute; right: 4px; bottom: 3px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--canvas); background: #d7a833; }
+.media-transfer-rail__dot[data-state="completed"] { background: #17804d; }
+.media-transfer-rail__dot[data-state="failed"] { background: var(--danger); }
+.media-transfers__dialog { width: min(580px, calc(100vw - 32px)); }
+.media-transfers__row { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid var(--divider); }
+.media-transfers__mark { width: 32px; text-align: center; color: var(--focus); font-size: 22px; }
+.media-transfers__main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.media-transfers__main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-transfers__main span, .media-transfers__empty { color: var(--head-ink); font-size: 12px; }
+.media-transfers__divider { border: 0; border-top: 2px solid var(--divider); margin: 9px 0; }
+.service-media__dialog { width: min(680px, calc(100vw - 32px)); }
+.service-media__list { max-height: min(64dvh, 560px); overflow-y: auto; }
+.service-media__row { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--divider); }
+.service-media__icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--focus) 10%, transparent); color: var(--focus); font-size: 20px; }
+.service-media__main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.service-media__main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.service-media__main small { color: var(--head-ink); }
+.service-media__states { display: flex; align-items: center; gap: 11px; min-width: 116px; justify-content: flex-end; }
+.service-media__states > span { min-width: 22px; text-align: center; }
+.service-media__states [data-online-state] { color: var(--focus); }
+.service-media__states [data-local-state] { color: var(--focus); }
+.read__project { display: flex; align-items: center; gap: 8px; }
+@media (max-width: 600px) { .media-library__file { grid-template-columns: 40px minmax(0,1fr) 44px 38px; gap: 6px; } .media-library__cloud small { font-size: 9px; } }
+.media-handoff__ring { width: 40px; height: 40px; background: radial-gradient(closest-side, var(--canvas) 79%, transparent 81%), conic-gradient(var(--focus) var(--progress), var(--divider) var(--progress)); }
+.media-handoff__ring:hover { background: radial-gradient(closest-side, var(--icon-hover-bg) 79%, transparent 81%), conic-gradient(var(--focus) var(--progress), var(--divider) var(--progress)); }
+.media-handoff__retry { color: var(--head-ink); font-size: 22px; }
+.read[data-kind="tatib"] .read__project { flex-wrap: nowrap; flex: none; }
+.read[data-kind="tatib"] .read__project-btn { white-space: nowrap; }
+.read[data-kind="tatib"] .read__head-top .read__eyebrow { font-size: 11px; letter-spacing: .08em; white-space: nowrap; }
+.read[data-kind="tatib"] .read__project-btn { padding-inline: 10px; }
+@media (max-width: 600px) {
+  .read[data-kind="tatib"] .read__head-top { flex-wrap: wrap; }
+  .read[data-kind="tatib"] .read__project { max-width: 100%; }
+}
+.media-transfer-rail #mediaTransferRailIcon svg { width: 22px; height: 22px; display: block; }
+.media-transfers__mark svg { width: 21px; height: 21px; }
+.service-media__states svg { width: 20px; height: 20px; display: block; }
+.service-media__states [data-online-state]:has(svg), .service-media__states [data-local-state]:has(svg) { display: grid; place-items: center; }
+.media-handoff__action svg { width: 19px; height: 19px; }
+.service-media__icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.media-library__cloud-button svg, .media-library__cloud-available svg { width: 21px; height: 21px; display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.service-media__states [data-local-state].is-missing { color: var(--danger); }
+.service-media__states [data-local-state].is-unavailable, .service-media__states [data-online-state].is-offline { color: var(--head-ink); }

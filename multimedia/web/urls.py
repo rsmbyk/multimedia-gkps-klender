@@ -26,6 +26,12 @@ urlpatterns = [
     path('tatib/<int:service_id>/', reading_views.TatibView.as_view(), name='web-tatib-service'),
     path('media-library/', reading_views.media_library, name='web-media-library'),
     path('media-library/references/', reading_views.media_references, name='web-media-references'),
+    path('media-library/cloud/status/', reading_views.media_cloud_status, name='web-media-cloud-status'),
+    path('media-library/cloud/manifest/', reading_views.media_manifest, name='web-media-manifest'),
+    path('media-library/cloud/cleanup/', reading_views.media_cleanup, name='web-media-cleanup'),
+    path('media-library/cloud/<str:sha>/download/', reading_views.media_download, name='web-media-download'),
+    path('media-library/cloud/<str:sha>/complete/', reading_views.media_complete, name='web-media-complete'),
+    path('media-library/cloud/<str:sha>/<str:operation>/', reading_views.media_share, name='web-media-share'),
 
     # Service entries (spec 006, slice 2): the content pane's own editor. These come
     # BEFORE the generic editor patterns below: 'editor/<str:kind>/new/' would otherwise

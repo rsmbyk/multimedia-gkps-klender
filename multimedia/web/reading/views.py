@@ -16,11 +16,14 @@ URL map:
 
 import json
 import hashlib
+import os
 import re
+import secrets
+from zoneinfo import ZoneInfo
 from urllib.parse import quote
 
 from django.db import connection, transaction
-from django.db.models import Case, CharField, Count, F, IntegerField, Q, Value, When
+from django.db.models import Case, CharField, Count, F, IntegerField, Max, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
                          JsonResponse)
@@ -29,10 +32,13 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 
 from multimedia.bible import models as bible_models
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
+from multimedia import media_handoff
 from multimedia.tatib.screen_breaks import eligible_boundaries, single_screen_boundaries, valid_breaks
 from multimedia.web.reading import editors
 from multimedia.web.reading import entries as entry_forms
@@ -336,15 +342,118 @@ def media_library(request):
 def media_references(request):
     """Current service uses, for local-library display and safe cleanup."""
     rows = (tatib_models.ServiceEntry.objects
-            .filter(kind=tatib_models.ServiceEntryKind.MEDIA, media__isnull=False)
-            .select_related('tatib').order_by('-tatib__date', '-tatib__created_at', 'pk'))
+            .filter(kind=tatib_models.ServiceEntryKind.MEDIA, media__isnull=False,
+                    tatib__is_active=True)
+            .select_related('tatib', 'media'))
+    rows = sorted(rows, key=lambda entry: (
+        entry.tatib.date is None,
+        -(entry.tatib.date.toordinal()) if entry.tatib.date else 0,
+        entry.tatib.name.casefold(), entry.tatib_id,
+        entry.order_number, entry.pk))
     uses = {}
     for entry in rows:
         uses.setdefault(entry.media_id, []).append({
             'service': entry.tatib.name, 'date': entry.tatib.date.isoformat() if entry.tatib.date else None,
-            'title': entry.title, 'url': reverse('web-tatib-service', args=[entry.tatib_id]) + f'#ti-e{entry.pk}',
+            'title': entry.title, 'filename': entry.media_filename,
+            'size': entry.media.byte_count, 'family': entry.media.family,
+            'order': entry.order_number,
+            'url': reverse('web-tatib-service', args=[entry.tatib_id]) + f'#ti-e{entry.pk}',
         })
-    return JsonResponse({'uses': uses})
+    today = timezone.now().astimezone(ZoneInfo('Asia/Jakarta')).date()
+    protected = [sha for sha, refs in uses.items() if any(
+        ref['date'] and ref['date'] >= today.isoformat() for ref in refs)]
+    return JsonResponse({'uses': uses, 'protected': protected,
+                         'inventory_at': timezone.now().isoformat()})
+
+
+def media_cloud_status(request):
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    shares = (tatib_models.MediaShare.objects.filter(status='available',
+                                                    expires_at__gt=timezone.now())
+              .values('media_id', 'expires_at'))
+    return JsonResponse({'online': {row['media_id']: row['expires_at'].isoformat()
+                                    for row in shares}})
+
+
+def media_manifest(request):
+    """Missing online identities needed by a service today or later."""
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    today = timezone.now().astimezone(ZoneInfo('Asia/Jakarta')).date()
+    identities = tatib_models.MediaIdentity.objects.filter(
+        serviceentry__kind=tatib_models.ServiceEntryKind.MEDIA,
+        serviceentry__tatib__is_active=True,
+        serviceentry__tatib__date__gte=today).annotate(
+            eligible_until=Max('serviceentry__tatib__date')).distinct()
+    online = media_handoff.status_for(identities.values_list('sha256', flat=True))
+    return JsonResponse({'files': [
+        {'sha256': media.sha256, 'name': media.display_filename,
+         'family': media.family, 'size': media.byte_count, 'expires_at': online[media.sha256],
+         'eligible_until': media.eligible_until.isoformat()}
+        for media in identities if media.sha256 in online]})
+
+
+def media_share(request, sha, operation):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    media = get_object_or_404(tatib_models.MediaIdentity, pk=sha)
+    try:
+        if operation == 'begin':
+            result = media_handoff.begin_share(media)
+            if len(result) == 2:
+                url, share = result
+            else:
+                url, share, token = result
+            if url is None:
+                return JsonResponse({'online': True, 'expires_at': share.expires_at.isoformat()})
+            return JsonResponse({'url': url, 'sha256': sha, 'size': media.byte_count,
+                                 'complete_url': request.build_absolute_uri(reverse(
+                                     'web-media-complete', args=[sha])),
+                                 'completion_token': token})
+    except media_handoff.CloudUnavailable as exc:
+        return JsonResponse({'error': str(exc)}, status=503)
+    raise Http404('Unknown operation.')
+
+
+@csrf_exempt
+def media_complete(request, sha):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    media = get_object_or_404(tatib_models.MediaIdentity, pk=sha)
+    bearer = request.headers.get('Authorization', '')
+    if not bearer.startswith('Bearer '):
+        return HttpResponseForbidden('Not authorized.')
+    try:
+        share = media_handoff.complete_share(media, bearer[7:])
+    except media_handoff.CloudUnavailable as exc:
+        return JsonResponse({'error': str(exc)}, status=409)
+    return JsonResponse({'online': True, 'expires_at': share.expires_at.isoformat()})
+
+
+def media_download(request, sha):
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    media = get_object_or_404(tatib_models.MediaIdentity, pk=sha)
+    try:
+        url, expires = media_handoff.download_url(media)
+    except media_handoff.CloudUnavailable as exc:
+        return JsonResponse({'error': str(exc)}, status=404)
+    return JsonResponse({'url': url, 'sha256': sha, 'name': media.display_filename,
+                         'size': media.byte_count, 'family': media.family,
+                         'expires_at': expires.isoformat()})
+
+
+def media_cleanup(request):
+    secret = os.environ.get('CRON_SECRET', '')
+    if not secret or not secrets.compare_digest(
+            request.headers.get('Authorization', ''), 'Bearer ' + secret):
+        return HttpResponseForbidden('Not authorized.')
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    return JsonResponse({'deleted': media_handoff.cleanup_expired()})
 
 
 def entry_save(request, pk=None):
@@ -1690,4 +1799,9 @@ class TatibView(TemplateView):
         if service is not None:
             context['read_eyebrow'] = (search_lib.format_date_long(service.date)
                                        if service.date else 'Tata Ibadah')
+            today = timezone.now().astimezone(ZoneInfo('Asia/Jakarta')).date()
+            context['service_media'] = (tatib_models.ServiceEntry.objects
+                .filter(tatib=service, kind=tatib_models.ServiceEntryKind.MEDIA, media__isnull=False)
+                .select_related('media').order_by('order_number', 'pk'))
+            context['service_media_past'] = not service.date or service.date < today
         return context

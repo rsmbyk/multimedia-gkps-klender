@@ -9,6 +9,7 @@
 {% comment %}The project button rides with the date, at the top right of the page.{% endcomment %}
 {% block read_actions %}{% if service_id %}
 <div class="read__project" data-project-group data-display-channel="gkps-service-display">
+  {% if service_media %}<button type="button" class="read__project-btn" id="serviceMediaButton" aria-label="Media files">Media files</button>{% endif %}
   <button type="button" class="read__project-btn" data-project-open
           data-projector-url="{{ projector_url }}" data-project-service="{{ service_id }}"
           data-label-project="Project" data-label-stop="Stop projecting"
@@ -22,6 +23,7 @@
     <span data-project-label>Project</span>
   </button>
 </div>
+{% if service_media %}<dialog class="media-library__dialog service-media__dialog" id="serviceMediaDialog" aria-label="Media files"><h2>Media files</h2><div class="service-media__list">{% for entry in service_media %}<div class="service-media__row" data-media-sha="{{ entry.media_id }}" data-media-family="{{ entry.media.family }}" data-media-past="{% if service_media_past %}true{% else %}false{% endif %}"><div class="service-media__icon"></div><div class="service-media__main"><strong>{{ entry.title|default:entry.media_filename }}</strong><small>{{ entry.media.family|title }} · {{ entry.media.byte_count|filesizeformat }}</small></div><div class="service-media__states"><span data-download-action></span><span data-online-state title="Checking online availability">−</span><span data-local-state title="Checking this computer">−</span></div></div>{% endfor %}</div><div class="media-library__dialog-actions"><button type="button" data-transfer-close>Close</button></div></dialog>{% endif %}
 {% endif %}
 {% for item in items %}{% if item.preview %}<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">{% if item.preview.kind == 'editable_text' %}
 <div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-default-screen-mode="{{ item.preview.default_screen_mode }}" data-screen-state-signature="{{ item.preview.screen_state_signature }}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">

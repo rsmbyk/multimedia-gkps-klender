@@ -102,6 +102,7 @@
   </ul>
 
   <div class="rail__foot">
+    <button class="rail__btn media-transfer-rail" type="button" id="mediaTransferRail" data-tip="Transfer progress" aria-label="Transfer progress" hidden><span id="mediaTransferRailIcon" aria-hidden="true">⇄</span><span class="media-transfer-rail__dot" id="mediaTransferRailDot" data-state="active"></span></button>
     <button class="rail__btn offline-sync-btn" type="button" id="offlineSyncButton"
             data-tip="Offline library" aria-label="Offline library status"
             aria-expanded="false" aria-controls="offlineSyncPanel">
@@ -372,6 +373,7 @@
 {% include 'reading/_editor_modal.html' %}
 <dialog class="media-error-dialog" id="mediaErrorDialog" aria-labelledby="mediaErrorTitle"><h2 id="mediaErrorTitle">File not supported</h2><p id="mediaErrorMessage"></p><button type="button" id="mediaErrorClose">OK</button></dialog>
 {% include 'reading/_preview_modal.html' %}
+<dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList"></div></dialog>
 <div class="edit-toasts" id="editToastHost" popover="manual"
      aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
 <script src="{% static 'web/offline-library.js' %}"></script>
@@ -387,6 +389,7 @@
 <script src="{% static 'web/media-entry.js' %}"></script>
 <script src="{% static 'web/entries.js' %}"></script>
 <script src="{% static 'web/media-library.js' %}"></script>
+<script src="{% static 'web/media-handoff.js' %}"></script>
 <script src="{% static 'web/reorder.js' %}"></script>
 <script src="{% static 'web/preview.js' %}"></script>
 </body>

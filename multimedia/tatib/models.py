@@ -68,6 +68,24 @@ class MediaIdentity(models.Model):
             raise ValidationError(errors)
 
 
+class MediaShare(models.Model):
+    """Temporary R2 copy of one immutable media identity."""
+
+    media = models.OneToOneField(MediaIdentity, models.CASCADE, primary_key=True,
+                                 related_name='share')
+    object_key = models.CharField(max_length=255)
+    status = models.CharField(max_length=10, default='pending')
+    completion_token_hash = models.CharField(max_length=64, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    uploaded_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.CheckConstraint(
+            check=models.Q(status__in=['pending', 'available']),
+            name='media_share_valid_status')]
+
+
 class ServiceEntryKind(models.IntegerChoices):
     TEXT = 0
     SCRIPTURE = 1

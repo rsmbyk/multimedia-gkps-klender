@@ -18,6 +18,8 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-insecure-local-only-change-me}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-127.0.0.1,localhost,0.0.0.0,web}
       RUN_MIGRATIONS: "true"
+      # Local objects stay separate from the production prefix in a shared bucket.
+      GKPS_R2_PREFIX: temporary-media/development
     volumes:
       # Bind-mount the repo so Django autoreloads on host edits.
       - .:/app
@@ -51,6 +53,7 @@ services:
       - "127.0.0.1:63174:63174"
     environment:
       GKPS_MEDIA_LIBRARY_ROOT: /var/lib/gkps-media
+      GKPS_MEDIA_SERVER_ORIGIN: http://web:8000
       GKPS_MEDIA_ALLOWED_ORIGINS: "${GKPS_MEDIA_PRODUCTION_ORIGIN:?Set GKPS_MEDIA_PRODUCTION_ORIGIN in the project .env},http://localhost:${WEB_PORT:-63404},http://127.0.0.1:${WEB_PORT:-63404}"
     volumes:
       - media_library_data:/var/lib/gkps-media

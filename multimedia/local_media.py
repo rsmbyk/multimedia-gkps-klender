@@ -12,6 +12,9 @@ import secrets
 import sqlite3
 import sys
 import tempfile
+import threading
+import time
+import urllib.request
 import zipfile
 from xml.etree import ElementTree
 from contextlib import contextmanager
@@ -146,6 +149,33 @@ class LocalLibrary:
                 unused_since TEXT, delete_at TEXT)''')
             db.execute('''CREATE TABLE IF NOT EXISTS settings (
                 key TEXT PRIMARY KEY, value TEXT NOT NULL)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS transfers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, direction TEXT NOT NULL,
+                sha256 TEXT NOT NULL, name TEXT NOT NULL, size INTEGER NOT NULL,
+                bytes_done INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL,
+                automatic INTEGER NOT NULL DEFAULT 0, started_at TEXT NOT NULL,
+                ended_at TEXT, error TEXT)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS auto_downloads (
+                sha256 TEXT PRIMARY KEY, name TEXT NOT NULL, family TEXT NOT NULL,
+                size INTEGER NOT NULL, url TEXT NOT NULL, expires_at TEXT NOT NULL,
+                attempts INTEGER NOT NULL DEFAULT 0, next_attempt TEXT NOT NULL,
+                eligible_until TEXT)''')
+            if 'eligible_until' not in {row[1] for row in db.execute('PRAGMA table_info(auto_downloads)')}:
+                db.execute('ALTER TABLE auto_downloads ADD COLUMN eligible_until TEXT')
+            restarted_at = datetime.now(timezone.utc)
+            interrupted_auto = [row['sha256'] for row in db.execute(
+                "SELECT sha256 FROM transfers WHERE status='active' AND automatic=1")]
+            db.execute("UPDATE transfers SET status='failed', ended_at=?, error='Companion restarted' WHERE status='active'",
+                       (restarted_at.isoformat(),))
+            for sha in interrupted_auto:
+                row = db.execute('SELECT attempts FROM auto_downloads WHERE sha256=?', (sha,)).fetchone()
+                if row:
+                    attempts = row['attempts'] + 1
+                    delay = min(300, 5 * (2 ** min(attempts - 1, 6))) + int(sha[:2], 16) % 5
+                    db.execute('UPDATE auto_downloads SET attempts=?, next_attempt=? WHERE sha256=?',
+                               (attempts, (restarted_at + timedelta(seconds=delay)).isoformat(), sha))
+            db.execute('''CREATE TABLE IF NOT EXISTS reference_inventory (
+                sha256 TEXT PRIMARY KEY, protected INTEGER NOT NULL)''')
 
     @contextmanager
     def _db(self):
@@ -190,14 +220,21 @@ class LocalLibrary:
             else:
                 db.execute('UPDATE files SET delete_at=NULL WHERE unused_since IS NOT NULL')
 
-    def sync_references(self, used_hashes):
+    def sync_references(self, used_hashes, protected_hashes=()):
         """Only a fresh complete server inventory authorizes automatic deletion."""
         used = set(used_hashes)
         if any(len(sha) != 64 or any(c not in '0123456789abcdef' for c in sha) for sha in used):
             raise ValueError('Invalid reference inventory.')
+        protected = set(protected_hashes)
+        if not protected.issubset(used):
+            raise ValueError('Protected files must be in the reference inventory.')
         now = datetime.now(timezone.utc)
         retention = self.retention()
         with self._db() as db:
+            db.execute('DELETE FROM reference_inventory')
+            db.executemany('INSERT INTO reference_inventory VALUES (?, ?)',
+                           [(sha, int(sha in protected)) for sha in used])
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('inventory_at', ?)", (now.isoformat(),))
             for row in list(db.execute('SELECT * FROM files')):
                 sha = row['sha256']
                 if sha in used:
@@ -278,6 +315,12 @@ class LocalLibrary:
 
     def remove(self, sha):
         with self._db() as db:
+            fresh = db.execute("SELECT value FROM settings WHERE key='inventory_at'").fetchone()
+            if not fresh or datetime.now(timezone.utc) - datetime.fromisoformat(fresh['value']) > timedelta(minutes=5):
+                raise ValueError('Service references must be refreshed before removing a file.')
+            protected = db.execute('SELECT protected FROM reference_inventory WHERE sha256=?', (sha,)).fetchone()
+            if protected and protected['protected']:
+                raise ValueError('A Tata Ibadah today or later still uses this file.')
             row = db.execute('SELECT sha256 FROM files WHERE sha256=?', (sha,)).fetchone()
             if not row:
                 return False
@@ -303,6 +346,7 @@ class LocalLibrary:
 
 class MediaHandler(BaseHTTPRequestHandler):
     library = None
+    transfers = None
     origins = frozenset()
     token = ''
 
@@ -342,6 +386,8 @@ class MediaHandler(BaseHTTPRequestHandler):
             return self._reply(200, status_payload(self.library, self.token))
         if path == '/v1/files':
             return self._reply(200, {'files': self.library.list_files()})
+        if path == '/v1/transfers':
+            return self._reply(200, self.transfers.list())
         if path.startswith('/v1/files/'):
             file = self.library.verified_file(path.removeprefix('/v1/files/'))
             if file is None:
@@ -365,7 +411,7 @@ class MediaHandler(BaseHTTPRequestHandler):
                 self.headers.get('X-GKPS-Media-Token', ''), self.token):
             return self._reply(403, {'error': 'Not authorized.'})
         path = urlparse(self.path).path
-        if path == '/v1/settings' or path == '/v1/references':
+        if path in ('/v1/settings', '/v1/references', '/v1/transfers', '/v1/auto-downloads/sync'):
             try:
                 length = int(self.headers.get('Content-Length', '0'))
                 if not 0 < length <= 1000000:
@@ -374,8 +420,30 @@ class MediaHandler(BaseHTTPRequestHandler):
                 if path == '/v1/settings':
                     self.library.set_retention(str(payload['retention']))
                     return self._reply(200, {'retention': self.library.retention()})
-                self.library.sync_references(payload['hashes'])
-                return self._reply(200, {'files': self.library.list_files()})
+                if path == '/v1/references':
+                    self.library.sync_references(payload['hashes'], payload.get('protected', []))
+                    return self._reply(200, {'files': self.library.list_files()})
+                if path == '/v1/auto-downloads/sync':
+                    hashes = set(payload['hashes'])
+                    if any(len(sha) != 64 or any(c not in '0123456789abcdef' for c in sha) for sha in hashes):
+                        raise ValueError('Invalid automatic download inventory.')
+                    with self.library._db() as db:
+                        for row in db.execute('SELECT sha256 FROM auto_downloads'):
+                            if row['sha256'] not in hashes:
+                                db.execute('DELETE FROM auto_downloads WHERE sha256=?', (row['sha256'],))
+                    return self._reply(200, {'synced': True})
+                if payload.get('direction') == 'upload':
+                    job = self.transfers.start_upload(payload['sha256'], payload['url'],
+                                                      payload['complete_url'],
+                                                      payload['completion_token'])
+                elif payload.get('direction') == 'download':
+                    job = self.transfers.start_download(
+                        payload['sha256'], payload['name'], payload['family'], int(payload['size']),
+                        payload['url'], payload['expires_at'], bool(payload.get('automatic')),
+                        payload.get('eligible_until'))
+                else:
+                    raise ValueError('Choose upload or download.')
+                return self._reply(200, {'job_id': job})
             except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
                 return self._reply(400, {'error': str(exc)})
         if path not in ('/v1/import', '/v1/inspect'):
@@ -393,12 +461,20 @@ class MediaHandler(BaseHTTPRequestHandler):
                 self.headers.get('X-GKPS-Media-Token', ''), self.token):
             return self._reply(403, {'error': 'Not authorized.'})
         path = urlparse(self.path).path
+        if path.startswith('/v1/transfers/'):
+            try:
+                return self._reply(200, {'cancelled': self.transfers.cancel(int(path.rsplit('/', 1)[-1]))})
+            except ValueError as exc:
+                return self._reply(400, {'error': str(exc)})
         if not path.startswith('/v1/files/'):
             return self._reply(404, {'error': 'Not found.'})
         sha = path.removeprefix('/v1/files/')
         if len(sha) != 64 or any(c not in '0123456789abcdef' for c in sha):
             return self._reply(400, {'error': 'Invalid fingerprint.'})
-        return self._reply(200, {'removed': self.library.remove(sha)})
+        try:
+            return self._reply(200, {'removed': self.library.remove(sha)})
+        except ValueError as exc:
+            return self._reply(409, {'error': str(exc)})
 
 
 def status_payload(library, token):
@@ -412,9 +488,12 @@ def main():
     try:
         origins = parse_allowed_origins(os.environ.get('GKPS_MEDIA_ALLOWED_ORIGINS', ''))
         library = LocalLibrary()
+        from multimedia.local_transfers import TransferManager
+        transfers = TransferManager(library, origins)
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     MediaHandler.library = library
+    MediaHandler.transfers = transfers
     MediaHandler.origins = origins
     MediaHandler.token = secrets.token_urlsafe(32)
     server = ThreadingHTTPServer(('0.0.0.0', PORT), MediaHandler)
