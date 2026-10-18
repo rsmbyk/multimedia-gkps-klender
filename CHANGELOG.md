@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-10-18
+
+### Added
+
+- Image entries can be previewed from Tata Ibadah and displayed directly on the projector from verified local Media Library bytes. Images fit without cropping; missing files have an operator message and a quiet projector icon.
+
 ## [1.15.1] - 2026-10-18
 
 ### Fixed

@@ -32,6 +32,48 @@
 
   var current = Number(body.dataset.currentScreen || 0);
   var showing = body.dataset.showing === 'true';
+  var imageHost = null;
+  var imageController = null;
+  var imageUrl = null;
+  var imageToken = 0;
+
+  function clearImageScreen() {
+    imageToken++;
+    if (imageController) imageController.abort();
+    imageController = null;
+    if (imageUrl) URL.revokeObjectURL(imageUrl);
+    imageUrl = null;
+    if (imageHost) {
+      var image = imageHost.querySelector('.screen__image');
+      if (image) { image.hidden = true; image.removeAttribute('src'); }
+    }
+    imageHost = null;
+  }
+
+  function renderImageScreen(active) {
+    var host = showing && !detour && active && active.querySelector('[data-media-image]');
+    if (host === imageHost) return;
+    clearImageScreen();
+    if (!host) return;
+    imageHost = host;
+    var image = host.querySelector('.screen__image');
+    var missing = host.querySelector('.screen__image-missing');
+    image.hidden = true;
+    missing.hidden = true;
+    imageController = new AbortController();
+    var token = ++imageToken;
+    window.GKPSMediaImage.load(host.dataset.mediaImage, imageController.signal)
+      .then(function (result) {
+        if (token !== imageToken || host !== imageHost) {
+          URL.revokeObjectURL(result.url); return;
+        }
+        imageUrl = result.url;
+        image.src = imageUrl;
+        image.hidden = false;
+      }).catch(function () {
+        if (token === imageToken && host === imageHost) missing.hidden = false;
+      });
+  }
 
   function screens() {
     return [].slice.call(stage.querySelectorAll('.screen[data-screen]'));
@@ -145,6 +187,7 @@
       applyPassageTranslation(active);
       fit(active);
     }
+    renderImageScreen(active);
     renderCue();
     if (!silent) {
       write({service: service, screen: current, on: showing});
@@ -1030,6 +1073,17 @@
         });
         section.appendChild(lines);
       }
+      if (item.image_sha256) {
+        var imageBox = document.createElement('div');
+        imageBox.className = 'screen__image-box';
+        imageBox.dataset.mediaImage = item.image_sha256;
+        imageBox.innerHTML = '<img class="screen__image" alt="" hidden>'
+          + '<svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true">'
+          + '<rect x="7" y="9" width="34" height="29" rx="3"/>'
+          + '<circle cx="17" cy="19" r="2.5"/>'
+          + '<path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>';
+        section.appendChild(imageBox);
+      }
       fragment.appendChild(section);
     });
     stage.replaceChildren(fragment);
@@ -1067,6 +1121,7 @@
     }).catch(function () {});
   });
   window.addEventListener('resize', function () { render(true); });
+  window.addEventListener('pagehide', clearImageScreen);
   /* The sign of life, and the reason a shell can tell that this window has gone: while it
      is open it shows up every couple of seconds, and when it closes the stamps stop. */
   window.setInterval(beat, 2000);

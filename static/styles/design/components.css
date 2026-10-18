@@ -1912,6 +1912,21 @@ kbd {
 .preview__body { padding: 22px; overflow-y: auto; min-height: 0; }
 .preview__body:focus { outline: none; }
 .preview__body:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.preview.is-image-preview { max-width: calc(100vw - 32px); }
+.preview__image { display: flex; align-items: center; justify-content: center; min-height: 280px; }
+.preview__image img { display: block; max-width: 100%; max-height: calc(100vh - 145px); object-fit: contain; }
+.preview__image img[hidden], .preview__image-unavailable[hidden] { display: none; }
+.preview__image-unavailable { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; min-height: 280px; color: var(--head-ink); font-size: 13px; }
+.preview__image-unavailable svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes image-preview-in { from { opacity: 0; transform: translateY(7px) scale(.965); } to { opacity: 1; transform: none; } }
+@keyframes image-preview-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(5px) scale(.975); } }
+.preview.is-image-preview[open] { animation: image-preview-in 210ms cubic-bezier(.2,.8,.2,1) both; }
+.preview.is-image-preview.is-closing[open] { animation: image-preview-out 170ms ease-in both; }
+@keyframes image-preview-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes image-preview-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+.preview.is-image-preview[open]::backdrop { animation: image-preview-backdrop-in 210ms ease both; }
+.preview.is-image-preview.is-closing[open]::backdrop { animation: image-preview-backdrop-out 170ms ease both; }
+@media (prefers-reduced-motion: reduce) { .preview.is-image-preview[open], .preview.is-image-preview.is-closing[open], .preview.is-image-preview[open]::backdrop, .preview.is-image-preview.is-closing[open]::backdrop { animation: none; } }
 .preview__foot {
   position: sticky; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 12px;
   padding: 12px 22px; border-top: 1px solid var(--divider); background: var(--canvas);
