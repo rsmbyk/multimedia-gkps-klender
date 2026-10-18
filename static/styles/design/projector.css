@@ -73,6 +73,10 @@ body.projector {
 
 /* A section break shows nothing at all -- it is the operator's own note. */
 .screen.is-blank.is-active { opacity: 1; visibility: visible; }
+.screen__image-box { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.screen__image { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+.screen__image[hidden], .screen__image-missing[hidden] { display: none; }
+.screen__image-missing { width: 80px; height: 80px; color: #3b3933; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Space turns the display off: the screen goes quiet and keeps the operator's place.
    The words fade rather than vanish, and fade back in on the way on. The transition

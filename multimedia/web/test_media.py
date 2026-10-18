@@ -106,6 +106,51 @@ class MediaEntryFlowTests(TestCase):
         self.assertEqual(payload['protected'], [media.sha256])
 
 
+class ImageDisplayContractTests(TestCase):
+    @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+    def test_only_image_entries_get_preview_payload(self):
+        from multimedia.web.reading.views import _tatib_stage
+        service = TataIbadah.objects.create(name='Image service')
+        image = MediaIdentity.objects.create(sha256='1' * 64, byte_count=120,
+                                             family='image', display_filename='picture.png')
+        pdf = MediaIdentity.objects.create(sha256='2' * 64, byte_count=120,
+                                           family='pdf', display_filename='notes.pdf')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=image,
+                                    media_filename='picture.png', title='Opening image')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=2, media=pdf,
+                                    media_filename='notes.pdf')
+
+        items, _toc = _tatib_stage(service)
+        self.assertEqual(items[0]['preview']['kind'], 'image')
+        self.assertEqual(items[0]['preview']['sha256'], image.sha256)
+        self.assertEqual(items[0]['preview']['title'], 'Opening image')
+        self.assertIsNone(items[1]['preview'])
+
+        response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
+        self.assertContains(response, f'data-preview-image="{image.sha256}"')
+
+    def test_image_has_one_projector_screen_while_pdf_remains_blank(self):
+        from multimedia.web.reading.views import _projector_data
+        service = TataIbadah.objects.create(name='Image service')
+        image = MediaIdentity.objects.create(sha256='3' * 64, byte_count=120,
+                                             family='image', display_filename='picture.png')
+        pdf = MediaIdentity.objects.create(sha256='4' * 64, byte_count=120,
+                                           family='pdf', display_filename='notes.pdf')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=image,
+                                    media_filename='picture.png')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=2, media=pdf,
+                                    media_filename='notes.pdf')
+
+        data = _projector_data(service)
+        screens, entries = data['screens'], data['entries']
+        image_entry, pdf_entry = entries[-2:]
+        self.assertEqual([image_entry['type'], pdf_entry['type']], ['media', 'media'])
+        self.assertEqual(image_entry['start'], image_entry['end'])
+        self.assertEqual(screens[image_entry['start']]['image_sha256'], image.sha256)
+        self.assertFalse(screens[image_entry['start']]['blank'])
+        self.assertTrue(screens[pdf_entry['start']]['blank'])
+
+
 class MediaLibraryCsrfTests(TestCase):
     def setUp(self):
         self.media = MediaIdentity.objects.create(sha256='f' * 64, byte_count=20,

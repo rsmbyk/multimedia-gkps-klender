@@ -1016,6 +1016,8 @@ def _tatib_stage(service):
                 preview = _entry_preview(row, kind_key)
             elif kind_key == 'text':
                 preview = _text_preview(row)
+            elif kind_key == 'media' and row.media_id and row.media.family == 'image':
+                preview = {'kind': 'image', 'title': title, 'sha256': row.media_id}
             elif clipped:
                 preview = {'kind': 'text', 'title': title, 'paras': _paragraphs(body)}
         block['preview'] = preview
@@ -1163,7 +1165,11 @@ def _projector_data(service):
             group = [_blank_screen()]
             entry_type, label, untitled = 'break', row.title or '', False
         elif row.kind == tatib_models.ServiceEntryKind.MEDIA:
-            group = [_blank_screen()]
+            if row.media_id and row.media.family == 'image':
+                group = [{'blank': False, 'header': '', 'lines': [],
+                          'image_sha256': row.media_id}]
+            else:
+                group = [_blank_screen()]
             entry_type, label, untitled = 'media', row.citation(), not bool(row.title)
         elif row.kind == tatib_models.ServiceEntryKind.SCRIPTURE:
             group = _scripture_screens(row) + [_blank_screen()]

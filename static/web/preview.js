@@ -34,11 +34,103 @@
   var pendingMode = null;
   var pendingButton = null;
   var saving = false;
+  var imageController = null;
+  var imageUrl = null;
+  var imageToken = 0;
+  var imageSize = null;
+  var imageCloseTimer = null;
+  var imageStatusAvailable = null;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
       if (target) target.focus({ preventScroll: true });
     }
   };
+
+  function sizeImagePreview() {
+    if (!imageSize || !modal.open) return;
+    var width = Math.max(1, window.innerWidth - 32 - 44);
+    var height = Math.max(1, window.innerHeight - 48 - 52 - 44);
+    var scale = Math.min(width / imageSize.width, height / imageSize.height);
+    var image = content.querySelector('.preview__image img');
+    if (!image) return;
+    image.style.width = Math.floor(imageSize.width * scale) + 'px';
+    image.style.height = Math.floor(imageSize.height * scale) + 'px';
+    modal.style.width = Math.ceil(imageSize.width * scale + 44) + 'px';
+  }
+  window.addEventListener('resize', sizeImagePreview);
+
+  function clearImagePreview() {
+    imageToken++;
+    if (imageController) imageController.abort();
+    imageController = null;
+    if (imageUrl) URL.revokeObjectURL(imageUrl);
+    imageUrl = null;
+    imageSize = null;
+    imageStatusAvailable = null;
+    modal.style.width = '';
+    modal.classList.remove('is-image-preview', 'is-closing');
+    clearTimeout(imageCloseTimer);
+  }
+
+  function loadImagePreview() {
+    var host = content.querySelector('[data-preview-image]');
+    if (!host) return;
+    var image = host.querySelector('img');
+    var unavailable = host.querySelector('.preview__image-unavailable');
+    unavailable.hidden = true;
+    image.hidden = true;
+    imageController = new AbortController();
+    var token = ++imageToken;
+    window.GKPSMediaImage.load(host.dataset.previewImage, imageController.signal)
+      .then(function (result) {
+        if (token !== imageToken || !modal.open) { URL.revokeObjectURL(result.url); return; }
+        imageController = null;
+        imageUrl = result.url;
+        imageSize = result;
+        image.src = imageUrl;
+        image.hidden = false;
+        sizeImagePreview();
+      }).catch(function () {
+        if (token === imageToken && modal.open) {
+          imageController = null;
+          unavailable.hidden = false;
+        }
+      });
+  }
+
+  document.addEventListener('media:status', function (event) {
+    if (!modal.open || !modal.classList.contains('is-image-preview')) return;
+    var host = content.querySelector('[data-preview-image]');
+    if (!host) return;
+    var available = (event.detail.files || []).some(function (file) {
+      return file.sha256 === host.dataset.previewImage;
+    });
+    if (available && imageStatusAvailable === false && !imageUrl && !imageController) loadImagePreview();
+    imageStatusAvailable = available;
+    if (!available && imageUrl) {
+      imageToken++;
+      URL.revokeObjectURL(imageUrl);
+      imageUrl = null;
+      imageSize = null;
+      modal.style.width = '';
+      var image = host.querySelector('img');
+      image.hidden = true;
+      image.removeAttribute('src');
+      host.querySelector('.preview__image-unavailable').hidden = false;
+    }
+  });
+
+  function closePreview() {
+    if (!modal.open || modal.classList.contains('is-closing')) return;
+    if (!modal.classList.contains('is-image-preview')
+        || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      modal.close(); return;
+    }
+    imageToken++;
+    if (imageController) imageController.abort();
+    modal.classList.add('is-closing');
+    imageCloseTimer = setTimeout(function () { modal.close(); }, 170);
+  }
 
   function wireTabs(scope) {
     var tabs = [].slice.call(scope.querySelectorAll('.preview__tab'));
@@ -224,12 +316,14 @@
     var opener = event.target.closest('[data-preview-open]');
     if (opener) {
       event.preventDefault();
+      clearImagePreview();
       trigger = opener;
       keyboardOpened = event.detail === 0;
       var anchor = opener.dataset.previewFor;
       var data = anchor && document.querySelector(
         '.entry__preview-src[data-preview-for="' + anchor + '"]');
       content.innerHTML = data ? data.textContent : '';
+      modal.classList.toggle('is-image-preview', Boolean(content.querySelector('[data-preview-image]')));
       liftIdentity();
       /* the scope is the whole dialog: a song's tabs live in the header, its panels in the body */
       wireTabs(modal);
@@ -239,6 +333,7 @@
         origin = opener.closest('.tatib__item, .tatib__eos');
         if (origin) origin.classList.add('is-modal-origin');
       }
+      if (modal.classList.contains('is-image-preview')) loadImagePreview();
       return;
     }
     var gap = event.target.closest('[data-break-after]');
@@ -309,13 +404,15 @@
   });
   modal.addEventListener('cancel', function (event) {
     if (!confirmLayer.hidden) { event.preventDefault(); cancelConfirmation(); }
+    else if (modal.classList.contains('is-image-preview')) { event.preventDefault(); closePreview(); }
   });
 
   modal.addEventListener('click', function (event) {
-    if (event.target === modal && confirmLayer.hidden && !saving) modal.close();
+    if (event.target === modal && confirmLayer.hidden && !saving) closePreview();
   });
 
   modal.addEventListener('close', function () {
+    clearImagePreview();
     content.innerHTML = '';
     head.hidden = true;
     headTitle.textContent = '';
