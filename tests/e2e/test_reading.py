@@ -476,7 +476,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
-        expect(page.locator('.rail__foot button')).to_have_count(2)
+        expect(page.locator('.rail__foot button:visible')).to_have_count(2)
         expect(page.locator('#themeBtn')).to_have_attribute('aria-label', 'System mode')
         expect(page.locator('#themeBtn')).to_have_attribute('data-tip', 'System mode')
         expect(page.locator('#themeBtn .system')).to_have_css('opacity', '1')
