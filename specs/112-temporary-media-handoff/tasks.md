@@ -1,6 +1,6 @@
 # Tasks 112: Temporary media handoff
 
-- **Status:** In progress
+- **Status:** Implemented; production R2 smoke and lifecycle verified; full ready-PR CI passed on code head `747c5db`
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -28,6 +28,6 @@
 
 ## Done when
 
-- [ ] All acceptance scenarios in spec.md hold
-- [ ] Tests named above are green
-- [ ] Board, tasks, and version (if any) are complete in this PR
+- [x] All acceptance scenarios in spec.md hold
+- [x] Tests named above are green
+- [x] Board, tasks, and version (if any) are complete in this PR

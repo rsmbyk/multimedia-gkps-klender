@@ -1,6 +1,6 @@
 ---
 id: ITEM-112
-status: in_review
+status: done
 title: 'Temporarily share and acquire Media Library files'
 type: feat
 priority: P1
