@@ -215,11 +215,12 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.locator('[data-entry-open="media"]').first.dispatch_event('click')
         upload = page.locator('[data-media-tab-button="upload"]')
         library = page.locator('[data-media-tab-button="library"]')
+        tabs = page.locator('.media-entry__tabs')
         thumb = page.locator('.media-entry__tab-thumb')
         expect(thumb).to_have_count(1)
         expect(thumb).to_have_attribute('aria-hidden', 'true')
         self.assertEqual(upload.get_attribute('aria-selected'), 'true')
-        start_x = thumb.bounding_box()['x']
+        start_x = thumb.bounding_box()['x'] - tabs.bounding_box()['x']
 
         thumb.evaluate('el => { el.style.transitionDuration = "3s"; }')
         library.click()
@@ -229,7 +230,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
             'el => el.getAnimations().some(animation => animation.playState === "running")',
             arg=thumb.element_handle())
         thumb.evaluate('el => el.getAnimations().forEach(animation => animation.finish())')
-        library_x = thumb.bounding_box()['x']
+        library_x = thumb.bounding_box()['x'] - tabs.bounding_box()['x']
         self.assertGreater(library_x, start_x)
 
         upload.focus()
@@ -240,7 +241,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
             'el => el.getAnimations().some(animation => animation.playState === "running")',
             arg=thumb.element_handle())
         thumb.evaluate('el => el.getAnimations().forEach(animation => animation.finish())')
-        self.assertAlmostEqual(thumb.bounding_box()['x'], start_x, delta=2)
+        self.assertAlmostEqual(thumb.bounding_box()['x'] - tabs.bounding_box()['x'], start_x, delta=2)
 
     def test_media_source_thumb_respects_reduced_motion(self):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
