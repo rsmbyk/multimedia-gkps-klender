@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-117](./items/ITEM-117-pdf-media-display.md) | Display PDF pages in Preview and projector | Show verified local PDF pages within their service position | feat | P1 | L | [117](../specs/117-pdf-media-display/spec.md) | 2026-10-19 |
 
 ## Ready
 

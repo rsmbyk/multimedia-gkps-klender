@@ -1,0 +1,102 @@
+<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Image media in Tata Ibadah · layout preview</title><style>
+:root{--canvas:#f7f5f1;--rail:#edeae3;--ink:#25241f;--muted:#6e6a62;--line:#d9d6cd;--card:#f7f5f1;--accent:#1c5c3c;--accent-text:#fff;--backdrop:#0009;font:14px system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--canvas)}:root[data-theme=dark]{--canvas:#171613;--rail:#232019;--ink:#e8e4dc;--muted:#989388;--line:#3a362f;--card:#211f1a;--accent:#7c9cf0;--accent-text:#10192d;--backdrop:#000b}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;min-height:100vh}button{font:inherit;cursor:pointer}.demo-controls{position:fixed;z-index:10;top:14px;right:14px;display:flex;gap:6px;padding:5px;border:1px solid var(--line);border-radius:9px;background:var(--canvas);box-shadow:0 7px 23px #0003}.demo-controls button{border:0;background:transparent;color:var(--muted);border-radius:6px;padding:7px 10px;font-size:12px}.demo-controls button:hover{background:var(--rail);color:var(--ink)}.demo-controls button.active{background:var(--accent);color:var(--accent-text)}.app{height:100vh;display:flex;overflow:hidden}.rail{width:80px;flex:none;background:var(--rail);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:14px}.rail img{width:40px;height:40px;object-fit:contain;margin-bottom:148px}.rail-button{width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:22px;display:grid;place-items:center}.rail-button.selected{background:var(--accent);color:var(--accent-text)}.rail-spacer{flex:1}.panel{width:350px;flex:none;background:var(--canvas);border-right:1px solid var(--line);padding:22px 14px;overflow:auto}.search{height:38px;border:1px solid var(--line);border-radius:8px;background:var(--rail);color:var(--muted);padding:9px 14px;margin-bottom:24px}.add-service{width:100%;height:38px;background:var(--accent);color:var(--accent-text);border:0;border-radius:7px;font-weight:650}.group-label{font-size:11px;letter-spacing:.13em;font-weight:700;color:var(--muted);margin:28px 0 8px}.service{padding:10px;border-radius:7px;margin:2px 0}.service.current{background:color-mix(in srgb,var(--accent) 22%,var(--canvas))}.chapters{width:300px;flex:none;background:var(--rail);border-right:1px solid var(--line);padding:22px 12px}.chapters .search{background:var(--canvas)}.chapter{display:flex;gap:20px;padding:12px 10px}.chapter span:first-child{font-size:12px;font-weight:650}.stage{flex:1;min-width:0;overflow:auto;padding:46px clamp(24px,5vw,70px)}.read{max-width:700px;margin:auto}.read-head{display:flex;justify-content:space-between;align-items:start;gap:20px}.date{color:var(--muted);font-size:13px;letter-spacing:.14em;font-weight:700}.read h1{font:700 42px/1.08 Georgia,serif;margin:12px 0 30px}.project-button{background:var(--accent);border:0;color:var(--accent-text);font-size:12px;font-weight:700;border-radius:7px;padding:10px 16px}.entry{position:relative;border:1px solid var(--line);border-radius:9px;padding:22px 20px;background:var(--card);display:flex;align-items:center;gap:14px}.entry+.entry{margin-top:18px}.file-icon{flex:none;width:43px;height:43px;border-radius:8px;background:color-mix(in srgb,var(--accent) 13%,var(--card));color:var(--accent);display:grid;place-items:center}.file-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.entry strong{font-size:17px;display:block}.entry small{font-size:12px;color:var(--muted);font-weight:650;display:block;margin-top:4px}.entry-actions{margin-left:auto;display:flex;align-items:center;gap:5px}.entry-actions button{background:var(--canvas);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 10px;font-size:12px}.entry-actions button:hover{background:var(--rail)}.entry-actions .danger{color:#bc5c58}.add-row{margin:10px 0 17px;display:flex;gap:6px}.add-row button{background:transparent;color:var(--muted);border:1px dashed var(--line);border-radius:7px;font-size:12px;padding:6px 9px}.preview-backdrop{position:fixed;inset:0;background:var(--backdrop);z-index:6;display:grid;place-items:center}.preview-dialog{width:min(calc((100vh - 150px) * 1.6 + 44px),calc(100vw - 32px));max-height:calc(100vh - 48px);border:1px solid var(--line);border-radius:14px;background:var(--canvas);color:var(--ink);box-shadow:0 24px 55px #0006;overflow:hidden;display:flex;flex-direction:column}.preview-title{flex:none;min-height:52px;padding:14px 22px;border-bottom:1px solid var(--line);font:640 16px/1.3 system-ui,sans-serif}.preview-body{padding:22px;overflow:auto}.preview-image{display:block;width:100%;height:auto;max-height:calc(100vh - 145px);margin:auto;object-fit:contain}.preview-unavailable{min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;color:var(--muted);font-size:13px}.missing-icon{width:48px;height:48px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.preview-unavailable .missing-icon{width:38px;height:38px}.projector-missing{display:grid;place-items:center;width:100%;height:100%;color:#3b3933}.projector-missing .missing-icon{width:80px;height:80px;stroke-width:1.35}.projector{height:100vh;background:#171613;color:#e8e4dc;position:relative;overflow:hidden}.projector-image-area{position:absolute;inset:32px 32px 64px;display:flex;align-items:center;justify-content:center}.projector-image{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}.cue{position:absolute;left:32px;bottom:15px;right:32px;color:#827c72;font:italic 600 14px system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cue strong{font-style:normal;color:#e8e4dc}.projector .blank{height:100%;width:100%}.illustration{display:none}@media(max-width:1050px){.panel{width:270px}.chapters{width:220px}.stage{padding:35px 24px}}@media(max-width:750px){.panel,.chapters{display:none}.rail{width:60px}.stage{padding:36px 18px}.entry{flex-wrap:wrap}.entry-actions{width:100%;justify-content:flex-end}}
+@keyframes preview-backdrop-in{from{opacity:0}to{opacity:1}}@keyframes preview-backdrop-out{from{opacity:1}to{opacity:0}}@keyframes preview-morph-in{from{opacity:0;transform:scale(.965) translateY(7px)}to{opacity:1;transform:scale(1) translateY(0)}}@keyframes preview-morph-out{from{opacity:1;transform:scale(1) translateY(0)}to{opacity:0;transform:scale(.975) translateY(5px)}}.preview-backdrop.opening{animation:preview-backdrop-in 210ms ease-out both}.preview-backdrop.opening .preview-dialog{animation:preview-morph-in 210ms cubic-bezier(.2,.8,.2,1) both}.preview-backdrop.closing{animation:preview-backdrop-out 170ms ease-in both}.preview-backdrop.closing .preview-dialog{animation:preview-morph-out 170ms ease-in both}@media(prefers-reduced-motion:reduce){.preview-backdrop.opening,.preview-backdrop.opening .preview-dialog,.preview-backdrop.closing,.preview-backdrop.closing .preview-dialog{animation:none}}
+.pdf-page{width:430px;height:556px;background:#fffefa;color:#282720;box-shadow:0 3px 16px #0003;padding:38px 36px;flex:none;font-family:Georgia,serif}.pdf-page h2{font-size:28px;margin:0 0 12px;color:#20543b}.pdf-page p{font-size:17px;line-height:1.55;margin:0 0 16px}.pdf-page small{display:block;letter-spacing:.12em;font:11px system-ui,sans-serif;color:#7b756b;text-transform:uppercase;margin-bottom:18px}.pdf-page hr{border:0;border-top:1px solid #c9c2b6;margin:22px 0}.pdf-page footer{text-align:right;color:#9c958a;margin-top:28px}.pdf-wrap{height:100%;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#e1ddd5}.pdf-wrap.scroll{overflow-y:auto;display:block;text-align:center;padding:16px}.pdf-wrap.scroll .pdf-page{display:block;margin:0 auto 18px;text-align:left}.pdf-toolbar{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px}.pdf-toolbar button{border:1px solid var(--line);border-radius:6px;background:var(--canvas);color:var(--ink);height:32px;min-width:32px}.pdf-toolbar button:hover{background:var(--rail)}.pdf-toolbar span{font-size:12px;color:var(--muted)}.preview-body{min-height:0;flex:1;display:flex;flex-direction:column}.preview-dialog{height:min(780px,calc(100vh - 48px));width:min(900px,calc(100vw - 32px))}.preview-body .pdf-wrap{min-height:0;flex:1}.projector-image-area .pdf-wrap{background:transparent}.projector .pdf-page{width:min(700px,calc((100vh - 120px)*.775));height:min(904px,calc(100vh - 120px));padding:6%}.projector .pdf-page h2{font-size:clamp(25px,3vw,40px)}.projector .pdf-page p{font-size:clamp(18px,2vw,26px)}.projector .pdf-wrap.scroll .pdf-page{margin:0 auto 22px}.pdf-step{position:absolute;top:35%;bottom:35%;width:7%;border:0;background:transparent;color:#aaa;font-size:36px;opacity:0}.pdf-step:hover{opacity:1;background:#ffffff0b}.pdf-step.prev{left:0}.pdf-step.next{right:0}.mode-note{font-size:12px;color:var(--muted);text-align:center;margin-top:7px}@media(max-width:600px){.pdf-page{width:320px;height:415px;padding:24px}.pdf-page h2{font-size:23px}.pdf-page p{font-size:13px}}
+</style></head><body>
+<svg class="illustration" xmlns="http://www.w3.org/2000/svg"><symbol id="sample" viewBox="0 0 1200 750"><rect width="1200" height="750" fill="#e5d5b5"/><circle cx="969" cy="144" r="68" fill="#f8de99"/><path d="M0 457Q230 389 448 470T901 439T1200 441V750H0Z" fill="#a0af98"/><path d="M0 581Q268 498 506 578T1200 542V750H0Z" fill="#728b74"/><path d="M331 650V284L599 125l270 159v366" fill="#d9b48c" stroke="#764d38" stroke-width="18"/><path d="M599 125V60m-34 28h68" stroke="#75432d" stroke-width="20" stroke-linecap="round"/><path d="M382 338h434M381 403h434" stroke="#b78461" stroke-width="8"/><path d="M518 650V435a82 82 0 0 1 164 0v215" fill="#4b6b69" stroke="#704637" stroke-width="15"/><path d="M426 361v-91a41 41 0 0 1 82 0v91m182 0v-91a41 41 0 0 1 82 0v91" fill="#f0d58a" stroke="#754d39" stroke-width="12"/><path d="M0 680Q270 616 517 680T1200 673V750H0Z" fill="#627960"/></symbol></svg>
+<div class="app" id="app"><aside class="rail"><img src="../../static/assets/gkps.png" alt="GKPS"><button class="rail-button" title="Search">⌕</button><button class="rail-button" title="Alkitab">▢</button><button class="rail-button" title="Kidung">♫</button><button class="rail-button selected" title="Tata Ibadah">▤</button><button class="rail-button" title="Media Library">▱</button><div class="rail-spacer"></div><button class="rail-button">⟳</button><button class="rail-button">▣</button></aside><aside class="panel"><div class="search">⌕ &nbsp; Filter Tata Ibadah...</div><button class="add-service">＋ &nbsp; Add Tata Ibadah</button><div class="group-label">OKTOBER 2026</div><div class="service current">Ibadah Minggu <small style="float:right">18 Okt 2026</small></div><div class="service">11 Oktober 2026</div><div class="service">Ibadah Minggu <small style="float:right">4 Okt 2026</small></div><div class="group-label">AGUSTUS 2026</div><div class="service">30 Agustus 2026</div></aside><aside class="chapters"><div class="search">⌕ &nbsp; Filter sections...</div><div class="chapter"><span>1</span><span>VOTUM, INTROITUS, DOA</span></div><div class="chapter"><span>2</span><span>Gereja dan halaman</span></div><div class="chapter"><span>3</span><span>DOA SYAFAAT</span></div></aside><main class="stage"><div class="read"><div class="read-head"><div><div class="date">18 OKTOBER 2026</div><h1>Ibadah Minggu</h1></div><button class="project-button" id="projectAction">⚑ &nbsp; Project</button></div><section class="entry"><div><strong>VOTUM, INTROITUS, DOA</strong><small>L. Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus...</small></div></section><div class="add-row"><button>+ Passage</button><button>+ Song</button><button>+ Text</button><button>+ Break</button><button>+ Media</button></div><section class="entry"><span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3.5 3.5 2.5-2.5 5 5"/></svg></span><div><strong>Gereja dan halaman</strong><small>Image · gereja.jpg</small></div><div class="entry-actions"><button id="previewAction">Preview</button><button>Edit</button><button class="danger">Delete</button></div></section><div class="add-row"><button>+ Passage</button><button>+ Song</button><button>+ Text</button><button>+ Break</button><button>+ Media</button></div></div></main></div>
+<div class="preview-backdrop" id="previewLayer"><div class="preview-dialog"><div class="preview-title">Gereja dan halaman</div><div class="preview-body" id="previewBody"></div></div></div><div class="projector" id="projector" hidden><div class="projector-image-area" id="projectorBody"></div><div class="cue">☷ &nbsp; · &nbsp; <em>Gereja dan halaman</em> &nbsp;·&nbsp; <strong>2/3</strong> → DOA SYAFAAT</div></div><div class="demo-controls" aria-label="Preview controls"><button data-surface="preview" class="active">Preview</button><button data-surface="entry">Entry</button><button data-surface="projector">Projector</button><button data-state="available" class="active">Available</button><button data-state="missing">Missing</button><button id="theme">Dark</button></div>
+<script>
+const model={surface:'preview',state:'available',dark:false};
+const missingIcon='<svg class="missing-icon" viewBox="0 0 48 48" role="img" aria-label="Image missing"><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>';
+const art='<svg class="preview-image" role="img" aria-label="Example church image" viewBox="0 0 1200 750"><use href="#sample"/></svg>';
+const layer=document.getElementById('previewLayer');
+let closeTimer=null;
+function render(){
+  document.documentElement.dataset.theme=model.dark?'dark':'light';
+  document.getElementById('theme').textContent=model.dark?'Light':'Dark';
+  document.getElementById('app').hidden=model.surface==='projector';
+  layer.hidden=model.surface!=='preview'&&!layer.classList.contains('closing');
+  document.getElementById('projector').hidden=model.surface!=='projector';
+  document.getElementById('previewBody').innerHTML=model.state==='available'?art:'<div class="preview-unavailable">'+missingIcon+'<span>Image unavailable on this computer</span></div>';
+  document.getElementById('projectorBody').innerHTML=model.state==='available'?art.replace('preview-image','projector-image'):'<div class="projector-missing">'+missingIcon+'</div>';
+  document.querySelectorAll('[data-surface]').forEach(b=>b.classList.toggle('active',b.dataset.surface===model.surface));
+  document.querySelectorAll('[data-state]').forEach(b=>b.classList.toggle('active',b.dataset.state===model.state));
+}
+function showSurface(next){
+  clearTimeout(closeTimer);
+  if(model.surface==='preview'&&next!=='preview'){
+    model.surface=next;
+    layer.classList.remove('opening');
+    layer.classList.add('closing');
+    render();
+    closeTimer=setTimeout(()=>{layer.classList.remove('closing');layer.hidden=true;},170);
+    return;
+  }
+  const opening=next==='preview'&&(model.surface!=='preview'||layer.classList.contains('closing'));
+  layer.classList.remove('closing','opening');
+  model.surface=next;
+  render();
+  if(opening){layer.classList.add('opening');setTimeout(()=>layer.classList.remove('opening'),210)}
+}
+document.querySelectorAll('[data-surface]').forEach(b=>b.onclick=()=>showSurface(b.dataset.surface));
+document.querySelectorAll('[data-state]').forEach(b=>b.onclick=()=>{model.state=b.dataset.state;render()});
+document.getElementById('theme').onclick=()=>{model.dark=!model.dark;render()};
+document.getElementById('previewAction').onclick=()=>showSurface('preview');
+document.getElementById('projectAction').onclick=()=>showSurface('projector');
+layer.onclick=e=>{if(e.target===layer)showSurface('entry')};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&model.surface==='preview'){e.preventDefault();showSurface('entry')}});
+render();layer.classList.add('opening');setTimeout(()=>layer.classList.remove('opening'),210);
+</script>
+<script>
+/* Interactive comparison only. These pages are sample content, not a PDF renderer. */
+const pdfPages=[
+  ['Order of Service','Opening prayer','We gather together for worship and thanksgiving. Let us prepare our hearts and minds.','The Lord is our light and our salvation.'],
+  ['Scripture Reading','Psalm 23','The Lord is my shepherd; I shall not want. He makes me lie down in green pastures.','Surely goodness and mercy shall follow me.'],
+  ['Closing','Blessing','May the peace of God be with you and remain with you, now and always.','Go in peace to love and serve.']
+];
+let pdfMode='pages', pdfPage=0;
+const priorRender=render;
+const controls=document.querySelector('.demo-controls');
+controls.querySelectorAll('[data-state]').forEach(button=>button.remove());
+controls.insertAdjacentHTML('afterbegin','<button data-pdf-mode="pages" class="active">Page by page</button><button data-pdf-mode="scroll">Scrollable</button>');
+document.querySelector('.preview-title').textContent='Tata ibadah Minggu';
+document.querySelector('.entry .file-icon').innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v15H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v5h5M8 16h8M8 19h6"/></svg>';
+document.querySelector('.entry strong') && (document.querySelectorAll('.entry strong')[1].textContent='Tata ibadah Minggu');
+document.querySelectorAll('.entry small')[1].textContent='PDF · tata-ibadah.pdf';
+document.querySelector('title').textContent='PDF projection approaches · preview';
+function pdfPageMarkup(index){
+  const row=pdfPages[index];
+  return '<article class="pdf-page"><small>Ibadah Minggu · 18 Oktober 2026</small><h2>'+row[0]+'</h2><hr><p>'+row[1]+'</p><p>'+row[2]+'</p><p><em>'+row[3]+'</em></p><footer>'+(index+1)+'</footer></article>';
+}
+function pdfMove(delta){
+  if(pdfMode==='scroll'){
+    const viewport=document.querySelector(model.surface==='projector'?'#projectorBody .pdf-wrap':'#previewBody .pdf-wrap');
+    viewport.scrollBy({top:delta*viewport.clientHeight*.8,behavior:'smooth'});
+  }else{
+    pdfPage=Math.max(0,Math.min(pdfPages.length-1,pdfPage+delta));
+    render();
+  }
+}
+render=function(){
+  priorRender();
+  const all=pdfPages.map((_,index)=>pdfPageMarkup(index)).join('');
+  const content=pdfMode==='scroll'?all:pdfPageMarkup(pdfPage);
+  document.getElementById('previewBody').innerHTML='<div class="pdf-wrap '+(pdfMode==='scroll'?'scroll':'')+'">'+content+'</div>'+(pdfMode==='pages'?'<div class="pdf-toolbar"><button id="pdfPrev" aria-label="Previous PDF page">←</button><span>'+(pdfPage+1)+' / '+pdfPages.length+'</span><button id="pdfNext" aria-label="Next PDF page">→</button></div>':'<div class="mode-note">Scroll through all three pages</div>');
+  document.getElementById('projectorBody').innerHTML='<div class="pdf-wrap '+(pdfMode==='scroll'?'scroll':'')+'">'+content+'</div>';
+  document.querySelector('.cue').innerHTML='☷ &nbsp; · &nbsp; <em>Tata ibadah Minggu</em> &nbsp;·&nbsp; <strong>'+(pdfMode==='pages'?'page '+(pdfPage+1)+'/'+pdfPages.length:'PDF document')+'</strong> → DOA SYAFAAT';
+  if(pdfMode==='pages'){
+    document.getElementById('pdfPrev').onclick=()=>pdfMove(-1);
+    document.getElementById('pdfNext').onclick=()=>pdfMove(1);
+    document.getElementById('pdfPrev').disabled=pdfPage===0;
+    document.getElementById('pdfNext').disabled=pdfPage===pdfPages.length-1;
+  }
+  document.querySelectorAll('[data-pdf-mode]').forEach(button=>button.classList.toggle('active',button.dataset.pdfMode===pdfMode));
+};
+document.querySelectorAll('[data-pdf-mode]').forEach(button=>button.onclick=()=>{pdfMode=button.dataset.pdfMode;pdfPage=0;render()});
+document.getElementById('projector').insertAdjacentHTML('beforeend','<button class="pdf-step prev" aria-label="Previous PDF page">‹</button><button class="pdf-step next" aria-label="Next PDF page">›</button>');
+document.querySelector('.pdf-step.prev').onclick=()=>pdfMove(-1);
+document.querySelector('.pdf-step.next').onclick=()=>pdfMove(1);
+document.addEventListener('keydown',event=>{if(model.surface==='entry')return;if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();pdfMove(event.key==='ArrowRight'?1:-1)}});
+render();
+</script></body></html>
