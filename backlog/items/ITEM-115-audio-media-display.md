@@ -1,6 +1,6 @@
 ---
 id: ITEM-115
-status: in_progress
+status: in_review
 title: 'Play Audio entries in Preview and projector'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-19
 updated: 2026-10-19
 spec: specs/115-audio-media-display/spec.md
 branch: feat/115-audio-media-display
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/363
 archived_at:
 archive_reason:
 bump: minor

@@ -17,11 +17,11 @@
 - [x] Update the projector shortcuts sheet with contextual Audio Space, preserving the existing Display row and overlay key precedence.
 - [x] Run targeted Django tests and the focused browser E2E class locally; CI runs the full suite after push.
 - [x] Fill Traceability in `./spec.md` with final paths.
-- [ ] In the same implementation PR, update ITEM-115 and the board to In review, set the minor version bump and changelog/release_version, and check completed tasks before merge.
-- [ ] Conventional Commit and draft PR to `develop` linking `./spec.md`.
+- [x] In the same implementation PR, update ITEM-115 and the board to In review, set the minor version bump and changelog/release_version, and check completed tasks before merge.
+- [x] Conventional Commit and draft PR to `develop` linking `./spec.md`.
 
 ## Done when
 
 - [x] All acceptance scenarios in [spec.md](./spec.md) hold.
 - [x] The owner has Accepted this Draft before implementation.
-- [ ] Tests, board/ITEM, version, changelog, and PR evidence land together.
+- [x] Tests, board/ITEM, version, changelog, and PR evidence land together.
