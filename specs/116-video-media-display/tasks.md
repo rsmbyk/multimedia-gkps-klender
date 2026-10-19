@@ -16,7 +16,7 @@
 - [x] Green — implement Video Preview and projector transport, fullscreen transitions, keyboard behavior, and Video-specific unavailable icons.
 - [x] Update the projector shortcuts sheet from `Audio Play/Pause` to contextual `Audio/Video Play/Pause`; retain `Show or Hide Words` for other entries and preserve overlay/key precedence.
 - [x] Run the targeted Django tests and focused Video E2E class plus Audio/Image browser regressions.
-- [ ] Confirm full PR CI is green at the updated head.
+- [x] Run full browser CI for the implementation commit ([successful run](https://github.com/rsmbyk/multimedia-gkps-klender/actions/runs/39218685707)).
 - [x] Fill Traceability in `./spec.md` with final implementation paths.
 - [x] Move ITEM-116 from Speccing into In progress after Draft acceptance.
 - [x] Include final Video changelog text and version `1.17.0` in the shared PR with ITEM-115; do not increment the version a second time for this same PR.
@@ -25,5 +25,5 @@
 ## Done when
 
 - [x] All acceptance scenarios in [spec.md](./spec.md) hold.
-- [ ] Targeted tests are green and CI evidence is recorded on the PR head.
+- [x] Targeted tests are green and full browser CI passed for the implementation code.
 - [x] Board, tasks, changelog, ITEM, and PR references are complete in the same PR.
