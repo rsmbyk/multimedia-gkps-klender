@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-115](./items/ITEM-115-audio-media-display.md) | Play Audio entries in Preview and projector | Play locally verified audio at its service position with quiet idle and unavailable states | feat | P1 | M | [115](../specs/115-audio-media-display/spec.md) | `feat/115-audio-media-display` | 2026-10-19 |
 
 ## In review
 

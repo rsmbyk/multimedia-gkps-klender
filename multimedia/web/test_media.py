@@ -151,6 +151,52 @@ class ImageDisplayContractTests(TestCase):
         self.assertTrue(screens[pdf_entry['start']]['blank'])
 
 
+class AudioDisplayContractTests(TestCase):
+    @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+    def test_audio_preview_uses_immutable_identity_and_saved_filename(self):
+        from multimedia.web.reading.views import _tatib_stage
+        service = TataIbadah.objects.create(name='Audio service')
+        audio = MediaIdentity.objects.create(sha256='5' * 64, byte_count=120,
+                                             family='audio', display_filename='library.mp3')
+        pdf = MediaIdentity.objects.create(sha256='6' * 64, byte_count=120,
+                                           family='pdf', display_filename='notes.pdf')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=audio,
+                                    media_filename='service.mp3', title='Offering music')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=2, media=audio,
+                                    media_filename='untitled.mp3')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=3, media=pdf,
+                                    media_filename='notes.pdf')
+
+        items, _toc = _tatib_stage(service)
+        self.assertEqual(items[0]['preview'], {'kind': 'audio', 'title': 'Offering music',
+                                                'filename': 'service.mp3', 'sha256': audio.sha256})
+        self.assertEqual(items[1]['preview'], {'kind': 'audio', 'title': '',
+                                                'filename': 'untitled.mp3', 'sha256': audio.sha256})
+        self.assertIsNone(items[2]['preview'])
+        response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
+        self.assertContains(response, f'data-preview-audio="{audio.sha256}"')
+
+    def test_audio_has_one_projector_screen_in_order(self):
+        from multimedia.web.reading.views import _projector_data
+        service = TataIbadah.objects.create(name='Audio service')
+        audio = MediaIdentity.objects.create(sha256='7' * 64, byte_count=120,
+                                             family='audio', display_filename='service.mp3')
+        pdf = MediaIdentity.objects.create(sha256='8' * 64, byte_count=120,
+                                           family='pdf', display_filename='notes.pdf')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=audio,
+                                    media_filename='service.mp3')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=2, media=pdf,
+                                    media_filename='notes.pdf')
+
+        data = _projector_data(service)
+        screens, entries = data['screens'], data['entries']
+        audio_entry, pdf_entry = entries[-2:]
+        self.assertEqual(audio_entry['start'], audio_entry['end'])
+        self.assertEqual(screens[audio_entry['start']]['audio_sha256'], audio.sha256)
+        self.assertFalse(screens[audio_entry['start']]['blank'])
+        self.assertTrue(screens[pdf_entry['start']]['blank'])
+
+
 class MediaLibraryCsrfTests(TestCase):
     def setUp(self):
         self.media = MediaIdentity.objects.create(sha256='f' * 64, byte_count=20,

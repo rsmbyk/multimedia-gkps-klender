@@ -77,6 +77,20 @@ body.projector {
 .screen__image { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
 .screen__image[hidden], .screen__image-missing[hidden] { display: none; }
 .screen__image-missing { width: 80px; height: 80px; color: #3b3933; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+.screen__audio-box { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.screen__audio-player { width: min(500px, 60vw); display: flex; flex-direction: column; align-items: center; }
+.screen__audio-player[hidden] { display: none; }
+.screen__audio-play { display: block; background: #514f48; color: #ddd8cd; transition: opacity 260ms ease; }
+.screen__audio-play:hover { background: #656158; }
+.screen__audio-seek { position: relative; width: 100%; height: 6px; margin-top: 30px; border-radius: 8px; background: #34312b; cursor: pointer; touch-action: none; transition: opacity 260ms ease; }
+.screen__audio-fill { display: block; width: var(--progress, 0%); height: 100%; border-radius: inherit; background: #8e887b; }
+.screen__audio-fill::after { content: ''; position: absolute; left: var(--progress, 0%); top: -2px; width: 10px; height: 10px; transform: translateX(-50%); border-radius: 50%; background: #8e887b; opacity: 0; }
+.screen__audio-seek:hover .screen__audio-fill::after { opacity: 1; }
+.screen__audio-times { margin-top: 12px; font-size: 16px; color: #8e887b; transition: opacity 260ms ease; }
+.screen__audio-box.is-idle .screen__audio-play { opacity: 0; pointer-events: none; }
+.screen__audio-box.is-idle .screen__audio-seek { opacity: .52; }
+.screen__audio-box.is-idle .screen__audio-times { opacity: .4; }
+@media (prefers-reduced-motion: reduce) { .screen__audio-play, .screen__audio-seek, .screen__audio-times { transition: none; } }
 
 /* Space turns the display off: the screen goes quiet and keeps the operator's place.
    The words fade rather than vanish, and fade back in on the way on. The transition

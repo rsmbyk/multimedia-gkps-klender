@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-10-19
+
+### Added
+
+- Audio entries play from verified local Media Library bytes in Tata Ibadah Preview and on the projector. The projector starts paused, supports Space to play or pause, and stops audio on navigation or display-off; unavailable files show a quiet missing state.
+
 ## [1.16.0] - 2026-10-18
 
 ### Added

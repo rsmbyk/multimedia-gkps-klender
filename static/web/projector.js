@@ -36,6 +36,64 @@
   var imageController = null;
   var imageUrl = null;
   var imageToken = 0;
+  var audioHost = null;
+  var audioController = null;
+  var audioPlayer = null;
+  var audioUrl = null;
+  var audioToken = 0;
+  var audioIdleTimer = null;
+
+  function audioActivity() {
+    if (!audioHost) return;
+    audioHost.classList.remove('is-idle');
+    clearTimeout(audioIdleTimer);
+    if (audioPlayer && !audioPlayer.audio.paused) {
+      audioIdleTimer = setTimeout(function () {
+        if (audioHost && audioPlayer && !audioPlayer.audio.paused) audioHost.classList.add('is-idle');
+      }, 3500);
+    }
+  }
+  document.addEventListener('pointermove', audioActivity);
+  document.addEventListener('pointerdown', audioActivity);
+  document.addEventListener('keydown', audioActivity);
+
+  function clearAudioScreen() {
+    audioToken++;
+    clearTimeout(audioIdleTimer);
+    if (audioController) audioController.abort();
+    audioController = null;
+    if (audioPlayer) audioPlayer.stop();
+    audioPlayer = null;
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    audioUrl = null;
+    if (audioHost) audioHost.classList.remove('is-idle');
+    audioHost = null;
+  }
+  function renderAudioScreen(active) {
+    var host = showing && !detour && active && active.querySelector('[data-media-audio]');
+    if (host === audioHost) return;
+    clearAudioScreen();
+    if (!host) return;
+    audioHost = host;
+    var player = host.querySelector('.screen__audio-player');
+    var missing = host.querySelector('.screen__image-missing');
+    player.hidden = true;
+    missing.setAttribute('hidden', '');
+    audioController = new AbortController();
+    var token = ++audioToken;
+    window.GKPSMediaAudio.load(host.dataset.mediaAudio, audioController.signal).then(function (url) {
+      if (token !== audioToken || host !== audioHost) { URL.revokeObjectURL(url); return; }
+      audioUrl = url;
+      audioPlayer = window.GKPSMediaAudio.attach(host, {
+        onReady: function () { if (token === audioToken) player.hidden = false; },
+        onError: function () { if (token === audioToken) { clearAudioScreen(); missing.removeAttribute('hidden'); } },
+        onPlayback: audioActivity
+      });
+      audioPlayer.setUrl(url);
+    }).catch(function () {
+      if (token === audioToken && host === audioHost) missing.removeAttribute('hidden');
+    }).finally(function () { if (token === audioToken) audioController = null; });
+  }
 
   function clearImageScreen() {
     imageToken++;
@@ -188,6 +246,7 @@
       fit(active);
     }
     renderImageScreen(active);
+    renderAudioScreen(active);
     renderCue();
     if (!silent) {
       write({service: service, screen: current, on: showing});
@@ -934,7 +993,12 @@
       return;
     }
     if (!event.ctrlKey && !event.shiftKey && key === 't') { event.preventDefault(); flipTranslation(); return; }
-    if (!event.ctrlKey && event.key === ' ') { event.preventDefault(); toggleWords(); return; }
+    if (!event.ctrlKey && event.key === ' ') {
+      event.preventDefault();
+      if (audioHost && audioPlayer) { if (!event.repeat) audioPlayer.toggle(); }
+      else if (!event.repeat) toggleWords();
+      return;
+    }
     var forward = ['ArrowRight', 'ArrowDown', 'PageDown'].includes(event.key);
     var backward = ['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key);
     if (forward || backward) {
@@ -1083,6 +1147,18 @@
           + '<circle cx="17" cy="19" r="2.5"/>'
           + '<path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>';
         section.appendChild(imageBox);
+      }
+      if (item.audio_sha256) {
+        var audioBox = document.createElement('div');
+        audioBox.className = 'screen__audio-box';
+        audioBox.dataset.mediaAudio = item.audio_sha256;
+        audioBox.innerHTML = '<div class="screen__audio-player" hidden>'
+          + '<span class="screen__audio-play" data-audio-play aria-label="Play audio"></span>'
+          + '<div class="screen__audio-seek" data-audio-seek><span class="screen__audio-fill"></span></div>'
+          + '<div class="screen__audio-times"><span data-audio-elapsed>0:00</span> / <span data-audio-total>0:00</span></div></div>'
+          + '<svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden>'
+          + '<rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg>';
+        section.appendChild(audioBox);
       }
       fragment.appendChild(section);
     });
