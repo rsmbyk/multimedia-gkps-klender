@@ -1,10 +1,8 @@
 # Tasks 117: Display PDF pages in Preview and projector
 
-- **Status:** In progress
+- **Status:** In review
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
-
-<!-- Stop here until the owner explicitly Accepts this Draft. -->
 
 ## Checklist
 
@@ -18,7 +16,8 @@
 - [x] Run targeted Django tests and one focused browser E2E class locally; full suite and browser matrix run in CI after push.
 - [x] Fill Traceability in spec.md with final paths.
 - [ ] In the same implementation PR, move ITEM-117 and board through review to Done, bump VERSION once, add changelog, and fill release_version.
-- [ ] Conventional Commit and draft PR to develop linking this spec; verify exact-head CI before merge.
+- [x] Conventional Commit and draft PR to develop linking this spec.
+- [ ] Verify exact-head CI before merge.
 
 ## Done when
 
