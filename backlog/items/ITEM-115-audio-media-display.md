@@ -8,8 +8,8 @@ effort: M
 created: 2026-10-19
 updated: 2026-10-19
 spec: specs/115-audio-media-display/spec.md
-branch: feat/115-audio-media-display
-pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/363
+branch: feat/115-116-audio-video-display
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/364
 archived_at:
 archive_reason:
 bump: minor

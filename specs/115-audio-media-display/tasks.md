@@ -9,7 +9,7 @@
 ## Checklist
 
 - [x] Draft explicitly Accepted by the project owner.
-- [x] Recheck the `feat/115-audio-media-display` branch against current `develop` before implementation.
+- [x] Recheck the `feat/115-116-audio-video-display` branch against current `develop` before implementation.
 - [x] Red — targeted Django tests in `multimedia/web/test_media.py` for Audio-only Preview metadata, exactly one projector screen, and preserved ordering/other-media behavior.
 - [x] Green — emit safe Audio metadata from `multimedia/web/reading/views.py` and existing reading/projector templates without sending bytes through Django.
 - [x] Focused browser E2E class under `tests/e2e/` for real local Audio playback, titled/untitled Preview, seek and Space, projector navigation/reset, idle/paused states, missing/decode failure, and display-off.
