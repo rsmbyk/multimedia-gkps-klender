@@ -1918,6 +1918,17 @@ kbd {
 .preview__image img[hidden], .preview__image-unavailable[hidden] { display: none; }
 .preview__image-unavailable { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; min-height: 280px; color: var(--head-ink); font-size: 13px; }
 .preview__image-unavailable svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.preview.is-pdf-preview { max-width: calc(100vw - 32px); transition: width 180ms ease; }
+.preview.is-pdf-preview .preview__body { overflow: hidden; padding-bottom: 0; }
+.preview__pdf-page { display: flex; justify-content: center; }
+.preview__pdf-page[hidden], .preview__pdf-controls[hidden], .preview__pdf-unavailable[hidden] { display: none; }
+.preview__pdf-page canvas { display: block; max-width: 100%; background: #fff; box-shadow: 0 3px 16px #0003; }
+.preview__pdf-controls { min-height: 74px; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--head-ink); font-size: 12px; }
+.preview__pdf-controls button { height: 32px; min-width: 32px; border: 1px solid var(--divider); border-radius: 6px; background: var(--canvas); color: var(--ink); }
+.preview__pdf-controls button:hover:not(:disabled) { background: var(--rail-bg); }
+.preview__pdf-controls button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.preview__pdf-unavailable { min-height: 270px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; color: var(--head-ink); font-size: 13px; }
+.preview__pdf-unavailable svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .preview.is-audio-preview { width: min(620px, calc(100vw - 32px)); }
 .preview.is-audio-preview .preview__body { padding: 28px 26px; }
 .preview__audio { min-height: 48px; display: flex; align-items: center; }
@@ -1994,12 +2005,12 @@ kbd {
 }
 @keyframes image-preview-in { from { opacity: 0; transform: translateY(7px) scale(.965); } to { opacity: 1; transform: none; } }
 @keyframes image-preview-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(5px) scale(.975); } }
-.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview)[open] { animation: image-preview-in 210ms cubic-bezier(.2,.8,.2,1) both; }
-.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview).is-closing[open] { animation: image-preview-out 170ms ease-in both; }
+.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview,.is-pdf-preview)[open] { animation: image-preview-in 210ms cubic-bezier(.2,.8,.2,1) both; }
+.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview,.is-pdf-preview).is-closing[open] { animation: image-preview-out 170ms ease-in both; }
 @keyframes image-preview-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes image-preview-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
-.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview)[open]::backdrop { animation: image-preview-backdrop-in 210ms ease both; }
-.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview).is-closing[open]::backdrop { animation: image-preview-backdrop-out 170ms ease both; }
+.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview,.is-pdf-preview)[open]::backdrop { animation: image-preview-backdrop-in 210ms ease both; }
+.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview,.is-pdf-preview).is-closing[open]::backdrop { animation: image-preview-backdrop-out 170ms ease both; }
 @media (prefers-reduced-motion: reduce) { .preview:is(.is-image-preview,.is-audio-preview,.is-video-preview)[open], .preview:is(.is-image-preview,.is-audio-preview,.is-video-preview).is-closing[open], .preview:is(.is-image-preview,.is-audio-preview,.is-video-preview)[open]::backdrop, .preview:is(.is-image-preview,.is-audio-preview,.is-video-preview).is-closing[open]::backdrop { animation: none; } }
 .preview__foot {
   position: sticky; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 12px;

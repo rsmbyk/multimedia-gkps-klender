@@ -247,7 +247,8 @@
       '/static/web/projector.js', '/static/web/projector-library.js',
       '/static/web/display.js', '/static/web/focus.js', '/static/web/editors.js',
       '/static/web/date-picker.js', '/static/web/entries.js', '/static/web/reorder.js',
-      '/static/web/preview.js'];
+      '/static/web/preview.js', '/static/web/media-pdf.js',
+      '/static/vendor/pdfjs/pdf.min.mjs', '/static/vendor/pdfjs/pdf.worker.min.mjs'];
     return Promise.all(required.map(function (url) {
       return caches.match(url).then(Boolean);
     })).then(function (checks) { return checks.every(Boolean); });

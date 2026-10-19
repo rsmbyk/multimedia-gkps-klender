@@ -1,6 +1,6 @@
 ---
 id: ITEM-117
-status: speccing
+status: in_progress
 title: 'Display PDF pages in Preview and projector'
 type: feat
 priority: P1
@@ -13,7 +13,7 @@ pr:
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.18.0
 ---
 
 # ITEM-117: Display PDF pages in Preview and projector

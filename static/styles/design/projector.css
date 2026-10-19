@@ -77,6 +77,11 @@ body.projector {
 .screen__image { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
 .screen__image[hidden], .screen__image-missing[hidden] { display: none; }
 .screen__image-missing { width: 80px; height: 80px; color: #3b3933; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+.screen__pdf-box { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.screen__pdf-page { display: block; max-width: 100%; max-height: 100%; background: #fff; box-shadow: 0 3px 16px #0003; }
+.screen__pdf-page[hidden], .screen__pdf-missing[hidden] { display: none; }
+.screen__pdf-missing { width: 80px; height: 80px; color: #3b3933; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+body.pdf-unavailable #corner-cue { visibility: hidden; }
 .screen__audio-box { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
 .screen__audio-player { width: min(500px, 60vw); display: flex; flex-direction: column; align-items: center; }
 .screen__audio-player[hidden] { display: none; }

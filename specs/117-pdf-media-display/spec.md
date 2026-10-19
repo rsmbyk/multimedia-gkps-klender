@@ -1,7 +1,7 @@
 # Spec: Display PDF pages in Preview and projector
 
 - **ID:** 117
-- **Status:** Draft
+- **Status:** Accepted (2026-10-19)
 - **Item:** ITEM-117
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -30,6 +30,7 @@ An operator can inspect the exact PDF referenced by a Tata Ibadah entry and proj
 - The authoritative media family must be PDF. A PDF gains Preview and one server-side projector screen at its current entry position. Its title, filename, order, and SHA-256 remain unchanged. Other media families receive no PDF controls.
 - The browser fetches only this SHA-256 from the companion's verified local file endpoint. It never uses a filename path, a same-name fallback, Django/Vercel proxying, or a new R2 download merely because Preview or projector opened.
 - Locally bundled PDF.js decodes the verified bytes and renders one selected page to canvas. Honor each page's own aspect ratio and rotation; fit the whole page without cropping. Do not activate PDF links, forms, scripts, or other interactive content.
+- Bundle the PDF.js 4.10.38 browser build and worker under `static/vendor/pdfjs/` with its upstream license. This version renders in the browser versions covered by the repository's Playwright checks; the 6.4.299 build requires `Uint8Array.toHex`, which that browser lacks.
 - Preview starts on page one, has Previous/Next bounded to the document, and has a page count. Closing and reopening resets it. Preview's page index is independent from the projector.
 - Projector plain Previous/Next and equivalent pointer/keyboard controls step within the PDF while another page exists. Next from the final page enters the following service screen; Previous from page one enters the preceding screen. Entering the PDF from before starts on page one; entering by stepping backward from after starts on the final page once loaded. A direct service-entry jump starts on page one. Existing Shift/Ctrl entry/bait navigation bypasses intermediate pages.
 - The PDF remains one service entry and one global screen identity. Its inner page index is browser-local and transient; the corner cue shows the entry and page N/M. The service-entry list contains one PDF row.
@@ -94,9 +95,9 @@ The Page by page mode of [the comparison preview](./preview.html) is the visual 
 
 ## Traceability
 
-- Domain/app tests: multimedia/web/test_media.py and focused projector tests.
-- Browser E2E: tests/e2e/test_pdf_display.py.
-- Implementation candidates: multimedia/web/reading/views.py, reading/projector templates, static/web/preview.js, static/web/projector.js, static/web/offline-render.js, a focused PDF renderer, local PDF.js assets, and focused styles.
+- Domain/app tests: `multimedia/web/test_media.py`.
+- Browser E2E: `tests/e2e/test_pdf_display.py` (page rendering, navigation, missing/corrupt bytes, and offline projector).
+- Implementation: `multimedia/web/reading/views.py`, `multimedia/web/templates/reading/{tatib,projector,base}.html`, `static/web/{media-pdf,preview,projector,offline-render,offline-library,service-worker}.js`, `static/vendor/pdfjs/`, and the focused component/projector styles.
 
 ## Owner review points
 

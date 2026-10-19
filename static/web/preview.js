@@ -48,6 +48,10 @@
   var videoPlayer = null;
   var videoUrl = null;
   var videoToken = 0;
+  var pdfController = null;
+  var pdfDocument = null;
+  var pdfToken = 0;
+  var pdfPage = 1;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
       if (target) target.focus({ preventScroll: true });
@@ -181,6 +185,75 @@
     }).finally(function () { if (token === videoToken) videoController = null; });
   }
 
+  function clearPDFPreview() {
+    pdfToken++;
+    if (pdfController) pdfController.abort();
+    pdfController = null;
+    if (pdfDocument) pdfDocument.destroy();
+    pdfDocument = null;
+    pdfPage = 1;
+    modal.style.width = '';
+    modal.classList.remove('is-pdf-preview');
+  }
+
+  async function drawPDFPreview() {
+    if (!pdfDocument || !modal.open) return;
+    var host = content.querySelector('[data-preview-pdf]');
+    if (!host) return;
+    if (pdfController) pdfController.abort();
+    pdfController = new AbortController();
+    var signal = pdfController.signal;
+    var token = ++pdfToken;
+    var previous = host.querySelector('canvas');
+    var canvas = previous.cloneNode(false);
+    previous.replaceWith(canvas);
+    var width = Math.max(1, window.innerWidth - 32 - 44);
+    var height = Math.max(1, window.innerHeight - 48 - 52 - 44 - 74);
+    try {
+      var size = await window.GKPSMediaPDF.paint(pdfDocument, pdfPage, canvas, width, height, signal);
+      if (signal.aborted || token !== pdfToken || !modal.open) return;
+      host.querySelector('.preview__pdf-page').hidden = false;
+      host.querySelector('.preview__pdf-controls').hidden = false;
+      host.querySelector('.preview__pdf-unavailable').hidden = true;
+      host.querySelector('[data-pdf-count]').textContent = pdfPage + ' / ' + pdfDocument.numPages;
+      host.querySelector('[data-pdf-prev]').disabled = pdfPage === 1;
+      host.querySelector('[data-pdf-next]').disabled = pdfPage === pdfDocument.numPages;
+      modal.style.width = Math.ceil(size.width + 44) + 'px';
+    } catch (error) {
+      if (signal.aborted || token !== pdfToken) return;
+      host.querySelector('.preview__pdf-page').hidden = true;
+      host.querySelector('.preview__pdf-controls').hidden = true;
+      host.querySelector('.preview__pdf-unavailable').hidden = false;
+      modal.style.width = '';
+    }
+  }
+
+  function loadPDFPreview() {
+    var host = content.querySelector('[data-preview-pdf]');
+    if (!host) return;
+    host.querySelector('.preview__pdf-page').hidden = true;
+    pdfController = new AbortController();
+    var signal = pdfController.signal;
+    var token = ++pdfToken;
+    window.GKPSMediaPDF.load(host.dataset.previewPdf, signal).then(function (document) {
+      if (signal.aborted || token !== pdfToken || !modal.open) { document.destroy(); return; }
+      pdfDocument = document;
+      drawPDFPreview();
+    }).catch(function () {
+      if (signal.aborted || token !== pdfToken || !modal.open) return;
+      host.querySelector('.preview__pdf-page').hidden = true;
+      host.querySelector('.preview__pdf-unavailable').hidden = false;
+    });
+  }
+  window.addEventListener('resize', function () { if (modal.open && pdfDocument) drawPDFPreview(); });
+  content.addEventListener('click', function (event) {
+    if (!pdfDocument) return;
+    var button = event.target.closest('[data-pdf-prev], [data-pdf-next]');
+    if (!button) return;
+    pdfPage += button.hasAttribute('data-pdf-next') ? 1 : -1;
+    drawPDFPreview();
+  });
+
   document.addEventListener('media:status', function (event) {
     if (!modal.open || !modal.classList.contains('is-image-preview')) return;
     var host = content.querySelector('[data-preview-image]');
@@ -206,7 +279,7 @@
   function closePreview() {
     if (!modal.open || modal.classList.contains('is-closing')) return;
     if (!(modal.classList.contains('is-image-preview') || modal.classList.contains('is-audio-preview')
-        || modal.classList.contains('is-video-preview'))
+        || modal.classList.contains('is-video-preview') || modal.classList.contains('is-pdf-preview'))
         || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       modal.close(); return;
     }
@@ -218,6 +291,7 @@
     if (videoPlayer) videoPlayer.pause();
     videoToken++;
     if (videoController) videoController.abort();
+    if (pdfController) pdfController.abort();
     modal.classList.add('is-closing');
     imageCloseTimer = setTimeout(function () { modal.close(); }, 170);
   }
@@ -409,6 +483,7 @@
       clearImagePreview();
       clearAudioPreview();
       clearVideoPreview();
+      clearPDFPreview();
       trigger = opener;
       keyboardOpened = event.detail === 0;
       var anchor = opener.dataset.previewFor;
@@ -418,6 +493,7 @@
       modal.classList.toggle('is-image-preview', Boolean(content.querySelector('[data-preview-image]')));
       modal.classList.toggle('is-audio-preview', Boolean(content.querySelector('[data-preview-audio]')));
       modal.classList.toggle('is-video-preview', Boolean(content.querySelector('[data-preview-video]')));
+      modal.classList.toggle('is-pdf-preview', Boolean(content.querySelector('[data-preview-pdf]')));
       liftIdentity();
       /* the scope is the whole dialog: a song's tabs live in the header, its panels in the body */
       wireTabs(modal);
@@ -430,6 +506,7 @@
       if (modal.classList.contains('is-image-preview')) loadImagePreview();
       if (modal.classList.contains('is-audio-preview')) loadAudioPreview();
       if (modal.classList.contains('is-video-preview')) loadVideoPreview();
+      if (modal.classList.contains('is-pdf-preview')) loadPDFPreview();
       return;
     }
     var gap = event.target.closest('[data-break-after]');
@@ -485,6 +562,13 @@
     if (nextMode) saveBreaks(null, nextMode);
   });
   modal.addEventListener('keydown', function (event) {
+    if (confirmLayer.hidden && modal.classList.contains('is-pdf-preview') && pdfDocument
+        && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      event.preventDefault();
+      var target = pdfPage + (event.key === 'ArrowRight' ? 1 : -1);
+      if (target >= 1 && target <= pdfDocument.numPages) { pdfPage = target; drawPDFPreview(); }
+      return;
+    }
     if (confirmLayer.hidden && modal.classList.contains('is-audio-preview') && event.key === ' '
         && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey
         && event.target !== content.querySelector('[data-audio-seek]')) {
@@ -515,7 +599,7 @@
   modal.addEventListener('cancel', function (event) {
     if (!confirmLayer.hidden) { event.preventDefault(); cancelConfirmation(); }
     else if (modal.classList.contains('is-image-preview') || modal.classList.contains('is-audio-preview')
-        || modal.classList.contains('is-video-preview')) { event.preventDefault(); closePreview(); }
+        || modal.classList.contains('is-video-preview') || modal.classList.contains('is-pdf-preview')) { event.preventDefault(); closePreview(); }
   });
 
   modal.addEventListener('click', function (event) {
@@ -526,6 +610,7 @@
     clearImagePreview();
     clearAudioPreview();
     clearVideoPreview();
+    clearPDFPreview();
     content.innerHTML = '';
     head.hidden = true;
     headTitle.textContent = '';
