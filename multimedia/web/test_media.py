@@ -108,7 +108,7 @@ class MediaEntryFlowTests(TestCase):
 
 class ImageDisplayContractTests(TestCase):
     @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-    def test_only_image_entries_get_preview_payload(self):
+    def test_image_and_pdf_entries_keep_distinct_preview_payloads(self):
         from multimedia.web.reading.views import _tatib_stage
         service = TataIbadah.objects.create(name='Image service')
         image = MediaIdentity.objects.create(sha256='1' * 64, byte_count=120,
@@ -124,12 +124,14 @@ class ImageDisplayContractTests(TestCase):
         self.assertEqual(items[0]['preview']['kind'], 'image')
         self.assertEqual(items[0]['preview']['sha256'], image.sha256)
         self.assertEqual(items[0]['preview']['title'], 'Opening image')
-        self.assertIsNone(items[1]['preview'])
+        self.assertEqual(items[1]['preview'], {'kind': 'pdf', 'title': 'notes.pdf',
+                                               'sha256': pdf.sha256})
 
         response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
         self.assertContains(response, f'data-preview-image="{image.sha256}"')
+        self.assertContains(response, f'data-preview-pdf="{pdf.sha256}"')
 
-    def test_image_has_one_projector_screen_while_pdf_remains_blank(self):
+    def test_image_and_pdf_each_have_one_projector_screen(self):
         from multimedia.web.reading.views import _projector_data
         service = TataIbadah.objects.create(name='Image service')
         image = MediaIdentity.objects.create(sha256='3' * 64, byte_count=120,
@@ -148,7 +150,8 @@ class ImageDisplayContractTests(TestCase):
         self.assertEqual(image_entry['start'], image_entry['end'])
         self.assertEqual(screens[image_entry['start']]['image_sha256'], image.sha256)
         self.assertFalse(screens[image_entry['start']]['blank'])
-        self.assertTrue(screens[pdf_entry['start']]['blank'])
+        self.assertEqual(screens[pdf_entry['start']]['pdf_sha256'], pdf.sha256)
+        self.assertFalse(screens[pdf_entry['start']]['blank'])
 
 
 class AudioDisplayContractTests(TestCase):
@@ -172,7 +175,7 @@ class AudioDisplayContractTests(TestCase):
                                                 'filename': 'service.mp3', 'sha256': audio.sha256})
         self.assertEqual(items[1]['preview'], {'kind': 'audio', 'title': '',
                                                 'filename': 'untitled.mp3', 'sha256': audio.sha256})
-        self.assertIsNone(items[2]['preview'])
+        self.assertEqual(items[2]['preview']['kind'], 'pdf')
         response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
         self.assertContains(response, f'data-preview-audio="{audio.sha256}"')
 
@@ -194,7 +197,7 @@ class AudioDisplayContractTests(TestCase):
         self.assertEqual(audio_entry['start'], audio_entry['end'])
         self.assertEqual(screens[audio_entry['start']]['audio_sha256'], audio.sha256)
         self.assertFalse(screens[audio_entry['start']]['blank'])
-        self.assertTrue(screens[pdf_entry['start']]['blank'])
+        self.assertEqual(screens[pdf_entry['start']]['pdf_sha256'], pdf.sha256)
 
 
 class VideoDisplayContractTests(TestCase):
@@ -221,7 +224,7 @@ class VideoDisplayContractTests(TestCase):
                                                 'filename': 'service-recording.webm',
                                                 'sha256': video.sha256})
         self.assertEqual(items[1]['preview']['kind'], 'audio')
-        self.assertIsNone(items[2]['preview'])
+        self.assertEqual(items[2]['preview']['kind'], 'pdf')
         response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
         self.assertContains(response, f'data-preview-video="{video.sha256}"')
 

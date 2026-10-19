@@ -187,7 +187,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 tatib=self.untitled_service, order_number=order,
                 kind=tatib.ServiceEntryKind.TEXT, title='', text=self.untitled_text_line)
 
-        if self._testMethodName == 'test_media_navigation_clears_projector_then_text_resumes':
+        if self._testMethodName == 'test_missing_pdf_shows_quiet_icon_then_text_resumes':
             media = tatib.MediaIdentity.objects.create(
                 sha256='d' * 64, byte_count=1024, family='pdf', display_filename='notes.pdf')
             tatib.ServiceEntry.objects.create(
@@ -233,13 +233,13 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                      ' active: e.classList.contains("is-active"),'
                      ' hidden: e.getAttribute("aria-hidden")}))')
 
-    def test_media_navigation_clears_projector_then_text_resumes(self):
+    def test_missing_pdf_shows_quiet_icon_then_text_resumes(self):
         page = self._page(self._projector_url())
         for _ in range(5):
             page.keyboard.press('Control+ArrowRight')
         page.wait_for_function("document.querySelector('.screen.is-active').dataset.entry === '5'")
         media = page.locator('.screen.is-active')
-        self.assertIn('is-blank', media.get_attribute('class'))
+        media.locator('.screen__pdf-missing').wait_for(state='visible')
         self.assertEqual(media.inner_text().strip(), '')
         page.keyboard.press('Control+ArrowRight')
         page.wait_for_function("document.querySelector('.screen.is-active').dataset.entry === '6'")

@@ -50,6 +50,13 @@
   var videoIdleTimer = null;
   var videoWasFullscreen = false;
   var videoFullscreenToken = 0;
+  var pdfHost = null;
+  var pdfDocument = null;
+  var pdfController = null;
+  var pdfPaintController = null;
+  var pdfToken = 0;
+  var pdfPage = 1;
+  var pdfEnterFromEnd = false;
 
   function audioActivity() {
     if (!audioHost) return;
@@ -225,6 +232,74 @@
       });
   }
 
+  function clearPDFScreen() {
+    body.classList.remove('pdf-unavailable');
+    pdfToken++;
+    if (pdfController) pdfController.abort();
+    if (pdfPaintController) pdfPaintController.abort();
+    pdfController = pdfPaintController = null;
+    if (pdfDocument) pdfDocument.destroy();
+    pdfDocument = null;
+    if (pdfHost) {
+      var canvas = pdfHost.querySelector('canvas');
+      canvas.hidden = true;
+      canvas.width = canvas.height = 0;
+    }
+    pdfHost = null;
+    pdfPage = 1;
+  }
+
+  function paintPDFScreen() {
+    if (!pdfDocument || !pdfHost) return;
+    if (pdfPaintController) pdfPaintController.abort();
+    pdfPaintController = new AbortController();
+    var signal = pdfPaintController.signal;
+    var token = ++pdfToken;
+    var previous = pdfHost.querySelector('canvas');
+    var canvas = previous.cloneNode(false);
+    previous.replaceWith(canvas);
+    var missing = pdfHost.querySelector('.screen__pdf-missing');
+    var bounds = pdfHost.getBoundingClientRect();
+    window.GKPSMediaPDF.paint(pdfDocument, pdfPage, canvas, bounds.width, bounds.height, signal)
+      .then(function () {
+        if (signal.aborted || token !== pdfToken) return;
+        canvas.hidden = false;
+        missing.setAttribute('hidden', '');
+        body.classList.remove('pdf-unavailable');
+        renderCue();
+      }).catch(function () {
+        if (signal.aborted || token !== pdfToken) return;
+        canvas.hidden = true;
+        missing.removeAttribute('hidden');
+        body.classList.add('pdf-unavailable');
+      });
+  }
+
+  function renderPDFScreen(active) {
+    var host = showing && !detour && active && active.querySelector('[data-media-pdf]');
+    if (host === pdfHost) return;
+    clearPDFScreen();
+    if (!host) return;
+    pdfHost = host;
+    host.querySelector('canvas').hidden = true;
+    host.querySelector('.screen__pdf-missing').setAttribute('hidden', '');
+    pdfController = new AbortController();
+    var signal = pdfController.signal;
+    var token = ++pdfToken;
+    window.GKPSMediaPDF.load(host.dataset.mediaPdf, signal).then(function (document) {
+      if (signal.aborted || token !== pdfToken || host !== pdfHost) { document.destroy(); return; }
+      pdfDocument = document;
+      pdfPage = pdfEnterFromEnd ? document.numPages : 1;
+      pdfEnterFromEnd = false;
+      paintPDFScreen();
+    }).catch(function () {
+      if (signal.aborted || token !== pdfToken || host !== pdfHost) return;
+      host.querySelector('.screen__pdf-missing').removeAttribute('hidden');
+      body.classList.add('pdf-unavailable');
+    });
+  }
+  window.addEventListener('resize', function () { if (pdfDocument && pdfHost) paintPDFScreen(); });
+
   function screens() {
     return [].slice.call(stage.querySelectorAll('.screen[data-screen]'));
   }
@@ -340,6 +415,7 @@
     renderImageScreen(active);
     renderAudioScreen(active);
     renderVideoScreen(active);
+    renderPDFScreen(active);
     renderCue();
     if (!silent) {
       write({service: service, screen: current, on: showing});
@@ -353,8 +429,15 @@
 
   function move(step) {
     if (detour) { detourStep(step, 'plain'); return; }
+    if (pdfHost && pdfDocument && pdfPage + step >= 1 && pdfPage + step <= pdfDocument.numPages) {
+      pdfPage += step;
+      paintPDFScreen();
+      renderCue();
+      return;
+    }
     var next = current + step;
     if (next < 0 || next > screens().length - 1) return;
+    pdfEnterFromEnd = step < 0 && Boolean(screens()[next].querySelector('[data-media-pdf]'));
     direction = step;
     if (entryAt(next) !== entryAt(current)) translation = '';
     current = next;
@@ -486,6 +569,7 @@
   }
   function moveTo(index) {
     if (index < 0 || index >= screens().length) return;
+    pdfEnterFromEnd = false;
     direction = index >= current ? 1 : -1;
     if (entryAt(index) !== entryAt(current)) translation = '';
     current = index;
@@ -573,7 +657,9 @@
       cuePrefix.appendChild(document.createTextNode(' '));
       cuePrefix.appendChild(flip);
     }
-    cueProgress.textContent = !isRest && data.split_total ? data.split + '/' + data.split_total : '';
+    cueProgress.textContent = pdfHost && pdfDocument && !isRest
+      ? pdfPage + '/' + pdfDocument.numPages
+      : (!isRest && data.split_total ? data.split + '/' + data.split_total : '');
     cueNext.classList.toggle('on', entry.type === 'break' || (isRest && (entry.type !== 'song' || lastBaitRest)));
     cueArrow.classList.toggle('on', entry.type === 'break' || (isRest && (entry.type !== 'song' || lastBaitRest)));
     var next = entries[entryIndex() + 1];
@@ -1277,6 +1363,15 @@
           + '<circle cx="17" cy="19" r="2.5"/>'
           + '<path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>';
         section.appendChild(imageBox);
+      }
+      if (item.pdf_sha256) {
+        var pdfBox = document.createElement('div');
+        pdfBox.className = 'screen__pdf-box';
+        pdfBox.dataset.mediaPdf = item.pdf_sha256;
+        pdfBox.innerHTML = '<canvas class="screen__pdf-page" hidden></canvas>'
+          + '<svg class="screen__pdf-missing" viewBox="0 0 48 48" aria-hidden="true" hidden>'
+          + '<path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg>';
+        section.appendChild(pdfBox);
       }
       if (item.audio_sha256) {
         var audioBox = document.createElement('div');

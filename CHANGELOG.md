@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-10-19
+
+### Added
+
+- PDF entries can be previewed and projected one page at a time from verified local Media Library bytes. The dialog follows each page's size, projector navigation crosses PDF page boundaries within the service, and missing or unreadable files show a quiet unavailable state.
+
 ## [1.17.0] - 2026-10-19
 
 ### Added
