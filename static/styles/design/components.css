@@ -1951,7 +1951,7 @@ kbd {
 @keyframes image-preview-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
 .preview:is(.is-image-preview,.is-audio-preview)[open]::backdrop { animation: image-preview-backdrop-in 210ms ease both; }
 .preview:is(.is-image-preview,.is-audio-preview).is-closing[open]::backdrop { animation: image-preview-backdrop-out 170ms ease both; }
-@media (prefers-reduced-motion: reduce) { .preview.is-image-preview[open], .preview.is-image-preview.is-closing[open], .preview.is-image-preview[open]::backdrop, .preview.is-image-preview.is-closing[open]::backdrop { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .preview:is(.is-image-preview,.is-audio-preview)[open], .preview:is(.is-image-preview,.is-audio-preview).is-closing[open], .preview:is(.is-image-preview,.is-audio-preview)[open]::backdrop, .preview:is(.is-image-preview,.is-audio-preview).is-closing[open]::backdrop { animation: none; } }
 .preview__foot {
   position: sticky; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 12px;
   padding: 12px 22px; border-top: 1px solid var(--divider); background: var(--canvas);

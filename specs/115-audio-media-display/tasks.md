@@ -12,7 +12,7 @@
 - [x] Recheck the `feat/115-audio-media-display` branch against current `develop` before implementation.
 - [x] Red — targeted Django tests in `multimedia/web/test_media.py` for Audio-only Preview metadata, exactly one projector screen, and preserved ordering/other-media behavior.
 - [x] Green — emit safe Audio metadata from `multimedia/web/reading/views.py` and existing reading/projector templates without sending bytes through Django.
-- [x] Red — focused browser E2E class under `tests/e2e/` for real local Audio playback, titled/untitled Preview, seek and Space, projector navigation/reset, idle/paused states, missing/decode failure, and display-off.
+- [x] Focused browser E2E class under `tests/e2e/` for real local Audio playback, titled/untitled Preview, seek and Space, projector navigation/reset, idle/paused states, missing/decode failure, and display-off.
 - [x] Green — load verified local audio through the companion; implement the approved Preview and projector transports, URL cleanup, and stale-request guards in focused browser JS/CSS.
 - [x] Update the projector shortcuts sheet with contextual Audio Space, preserving the existing Display row and overlay key precedence.
 - [x] Run targeted Django tests and the focused browser E2E class locally; CI runs the full suite after push.
