@@ -9,7 +9,7 @@ created: 2026-10-19
 updated: 2026-10-20
 spec: specs/118-powerpoint-media-display/spec.md
 branch: feat/118-powerpoint-media-display
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/366
 archived_at:
 archive_reason:
 bump: minor
