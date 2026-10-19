@@ -22,7 +22,7 @@ Keep the original PowerPoint bytes and SHA-256 as the only Media Library identit
 
 Reuse the locally bundled PDF.js rendering and page-navigation rules from Spec 117, but label the pages as slides. The conversion is static: no PowerPoint animation, transitions, or embedded playback. A neutral preparing state appears while conversion runs. Conversion errors and unavailable originals use the approved quiet missing-content UI, with a fresh attempt possible after the source or environment is corrected.
 
-The branch is based on the accepted Spec 117 implementation because slide rendering depends on its PDF viewer. Its review PR is stacked on Spec 117 until that PR lands, then will be retargeted to `develop`.
+The branch was based on the accepted Spec 117 implementation because slide rendering depends on its PDF viewer. After PR #365 merged into `develop`, this branch was rebased onto the updated `develop`; PR #366 now contains only Spec 118 changes.
 
 ## TDD
 

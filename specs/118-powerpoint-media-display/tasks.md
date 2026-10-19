@@ -7,7 +7,7 @@
 ## Checklist
 
 - [x] Owner explicitly accepts this Draft.
-- [ ] Reconcile this branch with `develop` after Spec 117 lands; retain the approved preview and Draft.
+- [x] Reconcile this branch with `develop` after Spec 117 lands; retain the approved preview and Draft.
 - [x] Red — targeted tests in `multimedia/test_local_media.py` for verified-source conversion, cache identity, concurrency, invalidation, and failure cleanup.
 - [x] Green — add the local companion's converter and private derived-cache endpoint; keep original Media Library identity unchanged.
 - [x] Red — targeted `multimedia/web/test_media.py` tests for PowerPoint Preview metadata and one stable projector screen.
@@ -17,7 +17,7 @@
 - [x] Run targeted local tests; full suite/browser matrix remains for CI after push.
 - [x] Fill final implementation paths in `spec.md` Traceability.
 - [x] Move ITEM-118 and board into review; bump VERSION, add changelog, and fill release_version in the implementation branch. Move to Done after merge.
-- [x] Conventional Commit and PR [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) stacked on Spec 117, ready for review. Retarget `develop` after Spec 117 lands.
+- [x] Conventional Commit and PR [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) ready for review and retargeted to `develop` after Spec 117 landed.
 - [ ] Verify exact-head CI before merge.
 
 ## Done when
