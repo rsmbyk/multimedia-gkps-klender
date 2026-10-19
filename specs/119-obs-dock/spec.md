@@ -37,6 +37,8 @@ what is on air — including after every surface has been closed.
 - Server-side display state, accounts, or cross-machine control.
 - New media behaviour: media entries keep their current preview/projector handling;
   the dock only lists them.
+- Overlay output for media screens: the overlay renders text only in this slice; media
+  (image, audio, video, PDF, PPTX) shows nothing there until a later slice.
 - Reworking the reading pane beyond the project button's behaviour.
 
 ## Domain rules
@@ -108,6 +110,9 @@ what is on air — including after every surface has been closed.
 - A listen-only browser source: no controls, no inputs, no header, transparent
   background. It renders the current screen's text lines as captions; a blank screen,
   `hide`, `release`, or any non-text screen shows no caption.
+- Media screens (image, audio, video, PDF, PPTX) render **no caption at all** in this
+  slice — media on the overlay is a later slice. Only text-bearing screens reach the
+  caption.
 - The caption shows the screen's lines, not the reference header. The TB/SIM choice in
   the state is worn (the same lines the projector shows).
 
@@ -281,7 +286,8 @@ from 320 px to 560 px without horizontal scrolling.
 - **Then** it renders the caption lines with the specified typography, no reference
   header, no chrome, and no focusable elements.
 - **When** the screen is blank, hidden, released, or a media screen
-- **Then** the overlay shows nothing.
+- **Then** the overlay shows nothing — media entries are deliberately not displayed in
+  the overlay in this slice.
 
 ### Fonts and wrapping
 
@@ -319,8 +325,6 @@ from 320 px to 560 px without horizontal scrolling.
 - The spec-091 corner controls stay on `/projector` (hover-quiet page chrome; the screen
   itself stays control-free) — confirm, or say they should go.
 - Old `/obs/service/*` routes disappear outright (no redirects).
-- The overlay shows no caption for media screens (an image or video needs no
-  subtitles) — confirm.
 - Media entries appear in the dock list with their normal labels; the dock adds no
   media-specific UI beyond that.
 - A closed projector window no longer ends the display (the beat reaper goes); only

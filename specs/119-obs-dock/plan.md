@@ -47,6 +47,7 @@ the font choices, and the appearance control.
 - Any server-side display state; any cross-machine control (state stays within one
   browser, as today).
 - New media behaviour; media entries only need to appear in the dock's entry list.
+  Overlay output for media screens is a later slice — the overlay is text-only here.
 - Other modules' future undocking; this spec covers Service Entries.
 
 ## Approach
