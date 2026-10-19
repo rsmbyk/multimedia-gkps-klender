@@ -16,6 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-118](./items/ITEM-118-powerpoint-media-display.md) | Display PowerPoint slides in Preview and projector | Keep the original PPT/PPTX; present static slides through a local display copy | feat | P1 | L | [118](../specs/118-powerpoint-media-display/spec.md) | 2026-10-19 |
 
 ## Ready
 
