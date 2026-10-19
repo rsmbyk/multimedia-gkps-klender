@@ -13,9 +13,9 @@
     return library;
   }
   function aborted() { return new DOMException('PDF request cancelled', 'AbortError'); }
-  async function load(sha, signal) {
+  async function loadFrom(path, sha, signal) {
     if (!/^[a-f0-9]{64}$/.test(sha)) throw new Error('Invalid PDF identity');
-    var response = await fetch(base + sha, {mode: 'cors', cache: 'no-store', signal: signal});
+    var response = await fetch(path + sha, {mode: 'cors', cache: 'no-store', signal: signal});
     if (!response.ok) throw new Error('PDF unavailable on this computer');
     var bytes = new Uint8Array(await response.arrayBuffer());
     if (signal && signal.aborted) throw aborted();
@@ -34,6 +34,10 @@
       await task.destroy();
       throw error;
     }
+  }
+  function load(sha, signal) { return loadFrom(base, sha, signal); }
+  function loadSlides(sha, signal) {
+    return loadFrom('http://127.0.0.1:63174/v1/slides/', sha, signal);
   }
   async function paint(document, number, canvas, availableWidth, availableHeight, signal) {
     if (signal && signal.aborted) throw aborted();
@@ -59,5 +63,5 @@
       page.cleanup();
     }
   }
-  window.GKPSMediaPDF = {load: load, paint: paint};
+  window.GKPSMediaPDF = {load: load, loadSlides: loadSlides, paint: paint};
 })();

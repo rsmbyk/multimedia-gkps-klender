@@ -276,7 +276,7 @@
   }
 
   function renderPDFScreen(active) {
-    var host = showing && !detour && active && active.querySelector('[data-media-pdf]');
+    var host = showing && !detour && active && active.querySelector('[data-media-pdf], [data-media-slides]');
     if (host === pdfHost) return;
     clearPDFScreen();
     if (!host) return;
@@ -286,7 +286,10 @@
     pdfController = new AbortController();
     var signal = pdfController.signal;
     var token = ++pdfToken;
-    window.GKPSMediaPDF.load(host.dataset.mediaPdf, signal).then(function (document) {
+    var loading = host.dataset.mediaSlides
+      ? window.GKPSMediaPDF.loadSlides(host.dataset.mediaSlides, signal)
+      : window.GKPSMediaPDF.load(host.dataset.mediaPdf, signal);
+    loading.then(function (document) {
       if (signal.aborted || token !== pdfToken || host !== pdfHost) { document.destroy(); return; }
       pdfDocument = document;
       pdfPage = pdfEnterFromEnd ? document.numPages : 1;
@@ -437,7 +440,7 @@
     }
     var next = current + step;
     if (next < 0 || next > screens().length - 1) return;
-    pdfEnterFromEnd = step < 0 && Boolean(screens()[next].querySelector('[data-media-pdf]'));
+    pdfEnterFromEnd = step < 0 && Boolean(screens()[next].querySelector('[data-media-pdf], [data-media-slides]'));
     direction = step;
     if (entryAt(next) !== entryAt(current)) translation = '';
     current = next;
@@ -1364,13 +1367,16 @@
           + '<path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>';
         section.appendChild(imageBox);
       }
-      if (item.pdf_sha256) {
+      if (item.pdf_sha256 || item.slides_sha256) {
         var pdfBox = document.createElement('div');
         pdfBox.className = 'screen__pdf-box';
-        pdfBox.dataset.mediaPdf = item.pdf_sha256;
+        if (item.slides_sha256) pdfBox.dataset.mediaSlides = item.slides_sha256;
+        else pdfBox.dataset.mediaPdf = item.pdf_sha256;
         pdfBox.innerHTML = '<canvas class="screen__pdf-page" hidden></canvas>'
           + '<svg class="screen__pdf-missing" viewBox="0 0 48 48" aria-hidden="true" hidden>'
-          + '<path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg>';
+          + (item.slides_sha256
+            ? '<rect x="7" y="7" width="34" height="34" rx="3"/><path d="M13 15h22M13 33h22M17 25l5-5 4 4 5-5M12 5l27 38"/>'
+            : '<path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/>') + '</svg>';
         section.appendChild(pdfBox);
       }
       if (item.audio_sha256) {

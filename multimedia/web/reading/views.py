@@ -1026,6 +1026,8 @@ def _tatib_stage(service):
                            'filename': row.media_filename, 'sha256': row.media_id}
             elif kind_key == 'media' and row.media_id and row.media.family == 'pdf':
                 preview = {'kind': 'pdf', 'title': title, 'sha256': row.media_id}
+            elif kind_key == 'media' and row.media_id and row.media.family == 'slides':
+                preview = {'kind': 'slides', 'title': title, 'sha256': row.media_id}
             elif clipped:
                 preview = {'kind': 'text', 'title': title, 'paras': _paragraphs(body)}
         block['preview'] = preview
@@ -1185,6 +1187,9 @@ def _projector_data(service):
             elif row.media_id and row.media.family == 'pdf':
                 group = [{'blank': False, 'header': '', 'lines': [],
                           'pdf_sha256': row.media_id}]
+            elif row.media_id and row.media.family == 'slides':
+                group = [{'blank': False, 'header': '', 'lines': [],
+                          'slides_sha256': row.media_id}]
             else:
                 group = [_blank_screen()]
             entry_type, label, untitled = 'media', row.citation(), not bool(row.title)

@@ -3,15 +3,24 @@
 import hashlib
 import io
 import os
+import shutil
+import subprocess
 import zipfile
 import tempfile
+import threading
+import urllib.error
+import urllib.request
 from datetime import datetime, timedelta, timezone
+from http.server import ThreadingHTTPServer
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 
+from pypdf import PdfReader
+
 from multimedia.local_media import (
     LocalLibrary,
+    MediaHandler,
     InvalidMedia,
     parse_allowed_origins,
     status_payload,
@@ -98,6 +107,105 @@ class LocalLibraryTests(TestCase):
         with self.assertRaises(InvalidMedia):
             self.library.import_bytes('fake.pptx', archive('application/xml'))
 
+    def test_slide_display_keeps_original_identity_and_reuses_private_pdf(self):
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, 'w') as archive:
+            archive.writestr('[Content_Types].xml',
+                '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                '<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/></Types>')
+            archive.writestr('ppt/presentation.xml',
+                '<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>')
+        source = self.library.import_bytes('misnamed.png', output.getvalue())
+        self.assertEqual(source['family'], 'slides')
+        conversions = []
+        def convert(input_path, output_path):
+            conversions.append(input_path.suffix)
+            output_path.write_bytes((Path(__file__).resolve().parents[1] / 'tests/fixtures/slides/three-slides.pdf').read_bytes())
+        first = self.library.slide_pdf(source['sha256'], convert=convert)
+        second = self.library.slide_pdf(source['sha256'], convert=convert)
+        self.assertEqual(first.read_bytes(), second.read_bytes())
+        self.assertEqual(conversions, ['.pptx'])
+        self.assertEqual(len(self.library.list_files()), 1)
+        self.assertEqual(self.library.list_files()[0]['name'], 'misnamed.png')
+        self.library.sync_references([], [])
+        self.library.remove(source['sha256'])
+        self.assertFalse(first.exists())
+
+    def test_slide_conversion_failure_leaves_no_cache_and_can_retry(self):
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, 'w') as archive:
+            archive.writestr('[Content_Types].xml',
+                '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                '<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/></Types>')
+            archive.writestr('ppt/presentation.xml', '<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>')
+        sha = self.library.import_bytes('source.pptx', output.getvalue())['sha256']
+        def incomplete(input_path, output_path):
+            output_path.write_bytes(b'%PDF-corrupt')
+        with self.assertRaises(InvalidMedia):
+            self.library.slide_pdf(sha, convert=incomplete)
+        self.assertEqual(list(self.library.derived_dir.glob('*.pdf')), [])
+        def complete(input_path, output_path):
+            output_path.write_bytes((Path(__file__).resolve().parents[1] / 'tests/fixtures/slides/three-slides.pdf').read_bytes())
+        self.assertTrue(self.library.slide_pdf(sha, convert=complete).exists())
+
+    def test_concurrent_slide_requests_share_one_conversion(self):
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, 'w') as archive:
+            archive.writestr('[Content_Types].xml',
+                '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                '<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/></Types>')
+            archive.writestr('ppt/presentation.xml', '<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>')
+        sha = self.library.import_bytes('source.pptx', output.getvalue())['sha256']
+        calls = []
+        def convert(input_path, output_path):
+            calls.append(1)
+            output_path.write_bytes((Path(__file__).resolve().parents[1] / 'tests/fixtures/slides/three-slides.pdf').read_bytes())
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            paths = list(executor.map(lambda _: self.library.slide_pdf(sha, convert=convert), range(2)))
+        self.assertEqual(paths[0], paths[1])
+        self.assertEqual(len(calls), 1)
+
+    def test_real_impress_converts_verified_pptx_when_installed(self):
+        if shutil.which('libreoffice') is None:
+            self.skipTest('LibreOffice Impress is not installed on this test host')
+        sample = Path(__file__).resolve().parents[1] / 'tests/fixtures/slides/three-slides.pptx'
+        saved = self.library.import_bytes('misleading.png', sample.read_bytes())
+        result = self.library.slide_pdf(saved['sha256'])
+        self.assertEqual(result.read_bytes()[:5], b'%PDF-')
+        self.assertEqual(len(PdfReader(result).pages), 3)
+        self.assertEqual(self.library.list_files()[0]['family'], 'slides')
+        self.assertEqual(len(self.library.list_files()), 1)
+
+        with tempfile.TemporaryDirectory() as directory:
+            subprocess.run(['libreoffice', '-env:UserInstallation=' + (Path(directory) / 'profile').as_uri(),
+                            '--headless', '--convert-to', 'ppt', '--outdir', directory, str(sample)],
+                           capture_output=True, timeout=30, check=True)
+            legacy = Path(directory) / 'three-slides.ppt'
+            saved_legacy = self.library.import_bytes('also-misleading.png', legacy.read_bytes())
+            legacy_pdf = self.library.slide_pdf(saved_legacy['sha256'])
+            self.assertEqual(legacy_pdf.read_bytes()[:5], b'%PDF-')
+            self.assertEqual(len(PdfReader(legacy_pdf).pages), 3)
+            self.assertEqual(len(self.library.list_files()), 2)
+
+    def test_converter_version_changes_cache_key(self):
+        sample = Path(__file__).resolve().parents[1] / 'tests/fixtures/slides/three-slides.pptx'
+        saved = self.library.import_bytes('deck.pptx', sample.read_bytes())
+        pdf = sample.with_suffix('.pdf').read_bytes()
+        conversions = []
+        def convert(input_path, output_path):
+            conversions.append(1)
+            output_path.write_bytes(pdf)
+        with patch('multimedia.local_media.convert_slides', side_effect=convert), \
+             patch('multimedia.local_media.subprocess.run') as version:
+            version.return_value.stdout = 'LibreOffice 1.0'
+            first = self.library.slide_pdf(saved['sha256'])
+            version.return_value.stdout = 'LibreOffice 2.0'
+            second = self.library.slide_pdf(saved['sha256'])
+        self.assertNotEqual(first, second)
+        self.assertEqual(conversions, [1, 1])
+        self.assertEqual(len(self.library.list_files()), 1)
+
     def test_used_file_is_kept_and_unused_file_gets_deadline(self):
         pdf = b'%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n'
         file = self.library.import_bytes('notes.pdf', pdf)
@@ -144,6 +252,31 @@ class LocalLibraryTests(TestCase):
         self.assertIsNone(self.library.verified_file(file['sha256']))
         self.assertEqual(self.library.list_files(), [])
         self.assertIsNone(self.library.verified_file('../index.sqlite3'))
+
+
+class SlideEndpointTests(TestCase):
+    def test_allowed_origin_reads_derived_pdf_and_other_origin_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'slide.pdf'
+            output.write_bytes(b'%PDF-1.7\n%%EOF\n')
+            class Handler(MediaHandler):
+                origins = frozenset({'https://example.org'})
+                library = type('Library', (), {'slide_pdf': lambda self, sha: output})()
+            server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            self.addCleanup(server.server_close)
+            self.addCleanup(server.shutdown)
+            url = f'http://127.0.0.1:{server.server_port}/v1/slides/' + 'a' * 64
+            def request(origin):
+                return urllib.request.Request(url, headers={
+                    'Host': '127.0.0.1:63174', 'Origin': origin})
+            with urllib.request.urlopen(request('https://example.org')) as response:
+                self.assertEqual(response.headers['Content-Type'], 'application/pdf')
+                self.assertEqual(response.read(), output.read_bytes())
+            with self.assertRaises(urllib.error.HTTPError) as forbidden:
+                urllib.request.urlopen(request('https://wrong.example'))
+            self.assertEqual(forbidden.exception.code, 403)
 
 class TransferPlanTests(TestCase):
     def setUp(self):

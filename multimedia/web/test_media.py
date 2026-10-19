@@ -108,6 +108,23 @@ class MediaEntryFlowTests(TestCase):
 
 class ImageDisplayContractTests(TestCase):
     @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+    def test_powerpoint_entry_has_slide_preview_and_projector_screen(self):
+        from multimedia.web.reading.views import _tatib_stage, _projector_data
+        service = TataIbadah.objects.create(name='Slides service')
+        media = MediaIdentity.objects.create(sha256='f' * 64, byte_count=120,
+                                             family='slides', display_filename='deck.pptx')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=media,
+                                    media_filename='service.pptx', title='Teaching slides')
+        items, _ = _tatib_stage(service)
+        self.assertEqual(items[0]['preview'], {'kind': 'slides', 'title': 'Teaching slides',
+                                               'sha256': media.sha256})
+        screens = _projector_data(service)['screens']
+        self.assertEqual(screens[-1]['slides_sha256'], media.sha256)
+        self.assertFalse(screens[-1]['blank'])
+        response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
+        self.assertContains(response, f'data-preview-slides="{media.sha256}"')
+
+    @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
     def test_image_and_pdf_entries_keep_distinct_preview_payloads(self):
         from multimedia.web.reading.views import _tatib_stage
         service = TataIbadah.objects.create(name='Image service')

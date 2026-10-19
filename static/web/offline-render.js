@@ -169,15 +169,19 @@
         + '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/>'
         + '<path d="m20 17 12 7-12 7zM12 5l24 38"/></svg>'
         + '<span>Video unavailable on this computer</span></div>';
-    } else if (preview.kind === 'pdf') {
+    } else if (preview.kind === 'pdf' || preview.kind === 'slides') {
+      var slides = preview.kind === 'slides';
       html = '<p class="preview__ref">' + escape(preview.title) + '</p>'
-        + '<div class="preview__pdf" data-preview-pdf="' + escape(preview.sha256) + '">'
-        + '<div class="preview__pdf-page"><canvas aria-label="PDF page"></canvas></div>'
-        + '<div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous PDF page">←</button>'
-        + '<span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next PDF page">→</button></div>'
+        + '<div class="preview__pdf" ' + (slides ? 'data-preview-slides' : 'data-preview-pdf') + '="' + escape(preview.sha256) + '">'
+        + (slides ? '<div class="preview__pdf-preparing" role="status">Preparing slides…</div>' : '')
+        + '<div class="preview__pdf-page"><canvas aria-label="' + (slides ? 'PowerPoint slide' : 'PDF page') + '"></canvas></div>'
+        + '<div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous ' + (slides ? 'slide' : 'PDF page') + '">←</button>'
+        + '<span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next ' + (slides ? 'slide' : 'PDF page') + '">→</button></div>'
         + '<div class="preview__pdf-unavailable" role="status" hidden>'
-        + '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg>'
-        + '<span>PDF unavailable on this computer</span></div></div>';
+        + '<svg viewBox="0 0 48 48" aria-hidden="true">'
+        + (slides ? '<rect x="7" y="7" width="34" height="34" rx="3"/><path d="M13 15h22M13 33h22M17 25l5-5 4 4 5-5M12 5l27 38"/>'
+          : '<path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/>') + '</svg>'
+        + '<span>' + (slides ? 'PowerPoint' : 'PDF') + ' unavailable on this computer</span></div></div>';
     } else {
       html = (preview.reference ? '<p class="preview__ref">' + escape(preview.reference) + '</p>' : '')
         + (preview.paras || []).map(function (para) {
