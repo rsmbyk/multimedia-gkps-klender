@@ -1,6 +1,6 @@
 # Plan 118: Display PowerPoint slides in Preview and projector
 
-- **Status:** Draft
+- **Status:** In review
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-118
@@ -22,7 +22,7 @@ Keep the original PowerPoint bytes and SHA-256 as the only Media Library identit
 
 Reuse the locally bundled PDF.js rendering and page-navigation rules from Spec 117, but label the pages as slides. The conversion is static: no PowerPoint animation, transitions, or embedded playback. A neutral preparing state appears while conversion runs. Conversion errors and unavailable originals use the approved quiet missing-content UI, with a fresh attempt possible after the source or environment is corrected.
 
-The branch is based on the accepted Spec 117 implementation because slide rendering depends on its PDF viewer. Before the implementation PR, reconcile it with current `develop` after the PDF PR lands.
+The branch is based on the accepted Spec 117 implementation because slide rendering depends on its PDF viewer. Its review PR is stacked on Spec 117 until that PR lands, then will be retargeted to `develop`.
 
 ## TDD
 
@@ -35,4 +35,3 @@ The branch is based on the accepted Spec 117 implementation because slide render
 - LibreOffice can render fonts or advanced Office features differently. Document this limit and preserve the original for re-export outside the app.
 - Conversion can consume CPU, memory, and temporary disk. Use bounded work, one conversion per source at a time, atomic cache publication, and cleanup of failed output.
 - Companions may run different converter versions. Key the derivative by source identity and converter version; never assume a display cache can be transferred with the original.
-

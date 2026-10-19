@@ -1,7 +1,7 @@
 # Spec: Display PowerPoint slides in Preview and projector
 
 - **ID:** 118
-- **Status:** Draft
+- **Status:** In review
 - **Item:** ITEM-118
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -100,11 +100,11 @@ The [approved preview](./preview.html) is the visual reference. Its top-right su
 
 - Domain/app tests: `multimedia/test_local_media.py`, `multimedia/web/test_media.py`.
 - Browser E2E: new focused `tests/e2e/test_powerpoint_display.py`.
-- Likely implementation: `multimedia/local_media.py`, local Docker image/dependencies, `multimedia/web/reading/views.py`, relevant reading templates, `static/web/{media-pdf,preview,projector,offline-render,offline-library,service-worker}.js`, and component/projector styles. Final paths are recorded during implementation.
+- Implementation: `multimedia/local_media.py` (verified-source conversion, private cache, same-origin endpoint), `Dockerfile` (Impress and limits), `requirements.txt` (PDF validation), `multimedia/web/reading/views.py`, `multimedia/web/templates/reading/{tatib,projector}.html`, `static/web/{media-pdf,preview,projector,offline-render}.js`, and `static/styles/design/components.css`.
+- Limits: source files are at most 200 MB under the Media Library rule; conversion has a 120-second deadline, a 2 GiB process address-space limit, and a 400 MiB per-output-file limit. The completed PDF is validated for at least one readable page before publishing. Temporary output is removed on failure or cancellation; source deletion and retention cleanup remove derived PDFs.
 
 ## Owner review points
 
 - Slides are static. Animation, transitions, and embedded audio/video will not play.
 - The original PPT/PPTX is kept; the local display copy is disposable and never shared online.
 - The companion image grows because it must include a presentation converter.
-

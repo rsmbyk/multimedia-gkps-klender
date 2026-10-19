@@ -1,19 +1,19 @@
 ---
 id: ITEM-118
-status: speccing
+status: in_review
 title: 'Display PowerPoint slides in Preview and projector'
 type: feat
 priority: P1
 effort: L
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-20
 spec: specs/118-powerpoint-media-display/spec.md
 branch: feat/118-powerpoint-media-display
 pr:
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.19.0
 ---
 
 # ITEM-118: Display PowerPoint slides in Preview and projector
@@ -24,7 +24,7 @@ Let operators inspect and project locally available PPT/PPTX entries slide by sl
 
 ## Notes
 
-The owner approved the static-slide visual preview on 2026-10-19. Conversion and UI behavior remain Draft until the owner explicitly accepts Spec 118.
+The owner accepted Spec 118. Implementation is in review, stacked on the PDF display branch until its PR merges into develop.
 
 ## Acceptance sketch
 

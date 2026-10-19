@@ -76,6 +76,14 @@
   <div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous PDF page">←</button><span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next PDF page">→</button></div>
   <div class="preview__pdf-unavailable" role="status" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg><span>PDF unavailable on this computer</span></div>
 </div>
+{% elif item.preview.kind == 'slides' %}
+<p class="preview__ref">{{ item.preview.title }}</p>
+<div class="preview__pdf" data-preview-slides="{{ item.preview.sha256 }}">
+  <div class="preview__pdf-preparing" role="status">Preparing slides…</div>
+  <div class="preview__pdf-page"><canvas aria-label="PowerPoint slide"></canvas></div>
+  <div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous slide">←</button><span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next slide">→</button></div>
+  <div class="preview__pdf-unavailable" role="status" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="3"/><path d="M13 15h22M13 33h22M17 25l5-5 4 4 5-5M12 5l27 38"/></svg><span>PowerPoint unavailable on this computer</span></div>
+</div>
 {% elif item.preview.kind == 'editable_text' %}
 <div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-default-screen-mode="{{ item.preview.default_screen_mode }}" data-screen-state-signature="{{ item.preview.screen_state_signature }}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">
   {% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}

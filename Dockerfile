@@ -8,6 +8,9 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libpq5 \
+        libreoffice-impress \
+        fonts-liberation \
+        util-linux \
     && rm -rf /var/lib/apt/lists/*
 
 # requirements-dev.txt starts with `-r requirements.txt`; the image is a local

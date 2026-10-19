@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.19.0] - 2026-10-20
+
+### Added
+
+- PowerPoint PPT and PPTX entries can be previewed and projected one static slide at a time. The local companion verifies the original file, converts it with LibreOffice Impress into a private disposable PDF, and keeps the original file as the only Media Library identity. Missing or unreadable slides show a quiet unavailable state.
+
 ## [1.18.0] - 2026-10-19
 
 ### Added

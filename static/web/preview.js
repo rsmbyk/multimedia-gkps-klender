@@ -198,7 +198,7 @@
 
   async function drawPDFPreview() {
     if (!pdfDocument || !modal.open) return;
-    var host = content.querySelector('[data-preview-pdf]');
+    var host = content.querySelector('[data-preview-pdf], [data-preview-slides]');
     if (!host) return;
     if (pdfController) pdfController.abort();
     pdfController = new AbortController();
@@ -213,6 +213,7 @@
       var size = await window.GKPSMediaPDF.paint(pdfDocument, pdfPage, canvas, width, height, signal);
       if (signal.aborted || token !== pdfToken || !modal.open) return;
       host.querySelector('.preview__pdf-page').hidden = false;
+      if (host.querySelector('.preview__pdf-preparing')) host.querySelector('.preview__pdf-preparing').hidden = true;
       host.querySelector('.preview__pdf-controls').hidden = false;
       host.querySelector('.preview__pdf-unavailable').hidden = true;
       host.querySelector('[data-pdf-count]').textContent = pdfPage + ' / ' + pdfDocument.numPages;
@@ -222,6 +223,7 @@
     } catch (error) {
       if (signal.aborted || token !== pdfToken) return;
       host.querySelector('.preview__pdf-page').hidden = true;
+      if (host.querySelector('.preview__pdf-preparing')) host.querySelector('.preview__pdf-preparing').hidden = true;
       host.querySelector('.preview__pdf-controls').hidden = true;
       host.querySelector('.preview__pdf-unavailable').hidden = false;
       modal.style.width = '';
@@ -229,19 +231,24 @@
   }
 
   function loadPDFPreview() {
-    var host = content.querySelector('[data-preview-pdf]');
+    var host = content.querySelector('[data-preview-pdf], [data-preview-slides]');
     if (!host) return;
     host.querySelector('.preview__pdf-page').hidden = true;
+    if (host.querySelector('.preview__pdf-preparing')) host.querySelector('.preview__pdf-preparing').hidden = false;
     pdfController = new AbortController();
     var signal = pdfController.signal;
     var token = ++pdfToken;
-    window.GKPSMediaPDF.load(host.dataset.previewPdf, signal).then(function (document) {
+    var loading = host.dataset.previewSlides
+      ? window.GKPSMediaPDF.loadSlides(host.dataset.previewSlides, signal)
+      : window.GKPSMediaPDF.load(host.dataset.previewPdf, signal);
+    loading.then(function (document) {
       if (signal.aborted || token !== pdfToken || !modal.open) { document.destroy(); return; }
       pdfDocument = document;
       drawPDFPreview();
     }).catch(function () {
       if (signal.aborted || token !== pdfToken || !modal.open) return;
       host.querySelector('.preview__pdf-page').hidden = true;
+      if (host.querySelector('.preview__pdf-preparing')) host.querySelector('.preview__pdf-preparing').hidden = true;
       host.querySelector('.preview__pdf-unavailable').hidden = false;
     });
   }
@@ -493,7 +500,7 @@
       modal.classList.toggle('is-image-preview', Boolean(content.querySelector('[data-preview-image]')));
       modal.classList.toggle('is-audio-preview', Boolean(content.querySelector('[data-preview-audio]')));
       modal.classList.toggle('is-video-preview', Boolean(content.querySelector('[data-preview-video]')));
-      modal.classList.toggle('is-pdf-preview', Boolean(content.querySelector('[data-preview-pdf]')));
+      modal.classList.toggle('is-pdf-preview', Boolean(content.querySelector('[data-preview-pdf], [data-preview-slides]')));
       liftIdentity();
       /* the scope is the whole dialog: a song's tabs live in the header, its panels in the body */
       wireTabs(modal);

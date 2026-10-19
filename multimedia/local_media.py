@@ -8,8 +8,11 @@ import hashlib
 import io
 import json
 import os
+import shutil
 import secrets
+import signal
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import threading
@@ -22,6 +25,8 @@ from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, urlsplit
+
+from pypdf import PdfReader
 
 MAX_BYTES = 200_000_000
 PORT = 63174
@@ -141,6 +146,9 @@ class LocalLibrary:
         self.root = Path(root or default_root()).expanduser().resolve()
         self.files_dir = self.root / 'files'
         self.files_dir.mkdir(parents=True, exist_ok=True)
+        self.derived_dir = self.root / 'derived-slides'
+        self.derived_dir.mkdir(parents=True, exist_ok=True)
+        self._slide_lock = threading.RLock()
         self.db_path = self.root / 'index.sqlite3'
         with self._db() as db:
             db.execute('''CREATE TABLE IF NOT EXISTS files (
@@ -230,7 +238,7 @@ class LocalLibrary:
             raise ValueError('Protected files must be in the reference inventory.')
         now = datetime.now(timezone.utc)
         retention = self.retention()
-        with self._db() as db:
+        with self._slide_lock, self._db() as db:
             db.execute('DELETE FROM reference_inventory')
             db.executemany('INSERT INTO reference_inventory VALUES (?, ?)',
                            [(sha, int(sha in protected)) for sha in used])
@@ -246,6 +254,7 @@ class LocalLibrary:
                 if deadline and deadline <= now:
                     (self.files_dir / sha).unlink(missing_ok=True)
                     db.execute('DELETE FROM files WHERE sha256=?', (sha,))
+                    self._purge_slides(sha)
                 else:
                     db.execute('UPDATE files SET unused_since=?, delete_at=? WHERE sha256=?',
                                (since.isoformat(), deadline.isoformat() if deadline else None, sha))
@@ -314,7 +323,7 @@ class LocalLibrary:
                 temp_path.unlink(missing_ok=True)
 
     def remove(self, sha):
-        with self._db() as db:
+        with self._slide_lock, self._db() as db:
             fresh = db.execute("SELECT value FROM settings WHERE key='inventory_at'").fetchone()
             if not fresh or datetime.now(timezone.utc) - datetime.fromisoformat(fresh['value']) > timedelta(minutes=5):
                 raise ValueError('Service references must be refreshed before removing a file.')
@@ -326,7 +335,51 @@ class LocalLibrary:
                 return False
             (self.files_dir / sha).unlink(missing_ok=True)
             db.execute('DELETE FROM files WHERE sha256=?', (sha,))
+            self._purge_slides(sha)
             return True
+
+    def _purge_slides(self, sha):
+        for derivative in self.derived_dir.glob(sha + '-*.pdf'):
+            derivative.unlink(missing_ok=True)
+
+    def slide_pdf(self, sha, convert=None):
+        """Prepare a disposable PDF from an indexed, verified PowerPoint source."""
+        with self._slide_lock:
+            with self._db() as db:
+                row = db.execute('SELECT family FROM files WHERE sha256=?', (sha,)).fetchone()
+            source = self.verified_file(sha)
+            if not row or row['family'] != 'slides' or source is None:
+                raise InvalidMedia('PowerPoint unavailable on this computer.')
+            if convert is None:
+                convert = convert_slides
+                try:
+                    version = subprocess.run(['libreoffice', '--version'], capture_output=True,
+                                             text=True, timeout=10, check=True).stdout.strip()
+                except (OSError, subprocess.SubprocessError) as exc:
+                    raise InvalidMedia('PowerPoint conversion is unavailable.') from exc
+            else:
+                version = 'test-converter'
+            key = hashlib.sha256(version.encode()).hexdigest()[:16]
+            target = self.derived_dir / f'{sha}-{key}.pdf'
+            if target.is_file() and _valid_display_pdf(target):
+                return target
+            target.unlink(missing_ok=True)
+            # Signature, not the user's filename, selects the input format.
+            with source.open('rb') as stream:
+                suffix = '.pptx' if stream.read(4) == b'PK\x03\x04' else '.ppt'
+            with tempfile.TemporaryDirectory(dir=self.derived_dir) as temporary:
+                temporary = Path(temporary)
+                input_path = temporary / ('presentation' + suffix)
+                output_path = temporary / 'presentation.pdf'
+                shutil.copyfile(source, input_path)
+                try:
+                    convert(input_path, output_path)
+                    if not _valid_display_pdf(output_path):
+                        raise InvalidMedia('PowerPoint conversion did not produce a PDF.')
+                    os.replace(output_path, target)
+                except (OSError, subprocess.SubprocessError) as exc:
+                    raise InvalidMedia('PowerPoint conversion failed.') from exc
+            return target
 
     def verified_file(self, sha):
         """Return only indexed bytes that still match their saved identity."""
@@ -342,6 +395,44 @@ class LocalLibrary:
             for block in iter(lambda: stream.read(1024 * 1024), b''):
                 digest.update(block)
         return path if digest.hexdigest() == sha else None
+
+
+def _valid_display_pdf(path):
+    if not path.is_file() or not 8 <= path.stat().st_size <= 400_000_000:
+        return False
+    with path.open('rb') as stream:
+        if stream.read(5) != b'%PDF-':
+            return False
+        stream.seek(max(0, path.stat().st_size - 4096))
+        if b'%%EOF' not in stream.read():
+            return False
+    try:
+        reader = PdfReader(path, strict=True)
+        return len(reader.pages) > 0
+    except Exception:
+        return False
+
+
+def convert_slides(input_path, output_path):
+    """Run Impress with a private profile and a bounded conversion time."""
+    profile = input_path.parent / 'profile'
+    command = ['prlimit', '--as=2147483648', '--fsize=419430400', '--',
+               'libreoffice', f'-env:UserInstallation={profile.as_uri()}',
+               '--headless', '--convert-to', 'pdf:impress_pdf_Export',
+               '--outdir', str(output_path.parent), str(input_path)]
+    process = subprocess.Popen(command, cwd=input_path.parent, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, start_new_session=True)
+    try:
+        stdout, stderr = process.communicate(timeout=120)
+    except subprocess.TimeoutExpired as exc:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.communicate()
+        raise InvalidMedia('PowerPoint conversion timed out.') from exc
+    if process.returncode:
+        raise subprocess.CalledProcessError(process.returncode, command, stdout, stderr)
 
 
 class MediaHandler(BaseHTTPRequestHandler):
@@ -388,23 +479,35 @@ class MediaHandler(BaseHTTPRequestHandler):
             return self._reply(200, {'files': self.library.list_files()})
         if path == '/v1/transfers':
             return self._reply(200, self.transfers.list())
+        if path.startswith('/v1/slides/'):
+            try:
+                file = self.library.slide_pdf(path.removeprefix('/v1/slides/'))
+            except InvalidMedia as exc:
+                return self._reply(404, {'error': str(exc)})
+            return self._send_file(file, 'application/pdf')
         if path.startswith('/v1/files/'):
             file = self.library.verified_file(path.removeprefix('/v1/files/'))
             if file is None:
                 return self._reply(404, {'error': 'File not available.'})
+            return self._send_file(file, 'application/octet-stream')
+        return self._reply(404, {'error': 'Not found.'})
+
+    def _send_file(self, file, content_type):
+        try:
+            stream = file.open('rb')
+        except FileNotFoundError:
+            return self._reply(404, {'error': 'File not available.'})
+        with stream:
             self.send_response(200)
-            self.send_header('Content-Type', 'application/octet-stream')
-            self.send_header('Content-Length', str(file.stat().st_size))
+            self.send_header('Content-Type', content_type)
+            self.send_header('Content-Length', str(os.fstat(stream.fileno()).st_size))
             self.send_header('Cache-Control', 'no-store')
             self.send_header('X-Content-Type-Options', 'nosniff')
             self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
             self.send_header('Vary', 'Origin')
             self.end_headers()
-            with file.open('rb') as stream:
-                for block in iter(lambda: stream.read(1024 * 1024), b''):
-                    self.wfile.write(block)
-            return
-        return self._reply(404, {'error': 'Not found.'})
+            for block in iter(lambda: stream.read(1024 * 1024), b''):
+                self.wfile.write(block)
 
     def do_POST(self):
         if not self._allowed() or not secrets.compare_digest(
