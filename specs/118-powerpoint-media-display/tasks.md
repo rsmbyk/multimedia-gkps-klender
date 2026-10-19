@@ -17,7 +17,7 @@
 - [x] Run targeted local tests; full suite/browser matrix remains for CI after push.
 - [x] Fill final implementation paths in `spec.md` Traceability.
 - [x] Move ITEM-118 and board into review; bump VERSION, add changelog, and fill release_version in the implementation branch. Move to Done after merge.
-- [x] Conventional Commit and draft PR [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) stacked on Spec 117. Retarget `develop` after Spec 117 lands.
+- [x] Conventional Commit and PR [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) stacked on Spec 117, ready for review. Retarget `develop` after Spec 117 lands.
 - [ ] Verify exact-head CI before merge.
 
 ## Done when

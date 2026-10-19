@@ -24,7 +24,7 @@ Let operators inspect and project locally available PPT/PPTX entries slide by sl
 
 ## Notes
 
-The owner accepted Spec 118. Implementation is in review, stacked on the PDF display branch until its PR merges into develop.
+The owner accepted Spec 118. Implementation is in review in PR #366, stacked on the PDF display branch until its PR merges into develop.
 
 ## Acceptance sketch
 
