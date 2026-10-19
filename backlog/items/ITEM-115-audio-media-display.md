@@ -1,6 +1,6 @@
 ---
 id: ITEM-115
-status: in_review
+status: done
 title: 'Play Audio entries in Preview and projector'
 type: feat
 priority: P1

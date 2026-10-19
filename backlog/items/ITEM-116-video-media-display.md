@@ -1,6 +1,6 @@
 ---
 id: ITEM-116
-status: in_review
+status: done
 title: 'Display Video entries in Preview and projector'
 type: feat
 priority: P1
