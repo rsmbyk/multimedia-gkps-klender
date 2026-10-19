@@ -16,7 +16,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-116](./items/ITEM-116-video-media-display.md) | Display Video entries in Preview and projector | Preview and project verified local video in service order | feat | P1 | M | — | 2026-10-19 |
+| [ITEM-116](./items/ITEM-116-video-media-display.md) | Display Video entries in Preview and projector | Preview and project verified local video in service order | feat | P1 | M | [116](../specs/116-video-media-display/spec.md) | 2026-10-19 |
 
 ## Ready
 
