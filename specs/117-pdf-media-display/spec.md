@@ -43,7 +43,7 @@ An operator can inspect the exact PDF referenced by a Tata Ibadah entry and proj
 The Page by page mode of [the comparison preview](./preview.html) is the visual reference; its Scrollable toggle and sample pages are demonstration controls.
 
 - **Service entry:** Keep the PDF icon, title or filename, existing subtitle, spacing, and Edit/Delete actions. Add Preview with the established action button, hover, focus-visible, and pressed styles. Preview remains available when the local file is missing.
-- **Preview:** Reuse the 210 ms open/170 ms close morph, 14 px radius, and Escape/backdrop dismissal. The dialog follows the current PDF page's dimensions and aspect ratio, including portrait and landscape pages, while staying within the viewport with at least 16 px side margins and 24 px top/bottom margins. Changing to a differently sized page gently resizes the dialog. Show the 16 px semibold header only for a titled entry; an untitled entry uses the filename on its service row and has no modal header. Use 22 px body padding, reduced to 16 px on narrow screens. Center one complete page on a neutral canvas. Below it, use a 42 px control row with 32 px square Previous/Next buttons and a 12 px muted N / M label. Disable the appropriate button at each bound; modal Left/Right also turns pages.
+- **Preview:** Reuse the 210 ms open/170 ms close morph, 14 px radius, and Escape/backdrop dismissal. The dialog follows the current PDF page's dimensions and aspect ratio, including portrait and landscape pages, while staying within the viewport with at least 16 px side margins and 24 px top/bottom margins. Changing to a differently sized page gently resizes the dialog. Show the 16 px semibold header with the entry title, or the filename when the entry is untitled. Use 22 px body padding, reduced to 16 px on narrow screens. Center one complete page on a neutral canvas. Below it, use a 42 px control row with 32 px square Previous/Next buttons and a 12 px muted N / M label. Disable the appropriate button at each bound; modal Left/Right also turns pages.
 - **Projector:** Preserve the dark #171613 canvas and 32 px top/side, 64 px bottom safe inset. Center the entire PDF page, without congregation-facing filename or page buttons. Existing navigation controls turn pages. The corner cue shows page N/M beside the entry label. A page swap uses the existing quiet screen morph or a 160–260 ms fade.
 - **Unavailable:** Center a 38 × 38 px PDF-specific missing icon and 13 px muted message in a Preview body at least 270 px high. The projector uses an 80 × 80 px PDF-specific missing outline in #3b3933, without text.
 - **Responsive and accessible:** Shrink page and dialog to keep 16 px minimum viewport margins and no horizontal scroll. Announce page N of M and unavailability to assistive technology. Keep the projector icon decorative. Reduced-motion disables page transition animation.
@@ -60,7 +60,7 @@ The Page by page mode of [the comparison preview](./preview.html) is the visual 
 - **When** Preview closes and reopens
 - **Then** it starts on page one and prior asynchronous work cannot appear.
 - **When** a page has a different aspect ratio or the entry has no title
-- **Then** the dialog follows that page's fitted size, and the untitled entry shows its filename without a modal header.
+- **Then** the dialog follows that page's fitted size, and the untitled entry shows its filename in the preview header.
 
 ### Project through pages and adjacent entries
 

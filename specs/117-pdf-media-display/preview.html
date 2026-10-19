@@ -90,8 +90,8 @@ render=function(){
   heading.closest('.entry').classList.toggle('pdf-is-missing',missing);
   document.querySelector('.cue').hidden=missing;
   const header=document.querySelector('.preview-title');
-  header.hidden=!titled;
-  if(titled)header.textContent='Tata ibadah Minggu';
+  header.hidden=false;
+  header.textContent=heading.textContent;
   const missingGlyph='<svg class="pdf-missing-icon" viewBox="0 0 48 48" role="img" aria-label="PDF missing"><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M15 29h12M12 6l27 36"/></svg>';
   if(missing){
     document.getElementById('previewBody').innerHTML='<div class="preview-unavailable">'+missingGlyph+'<span>PDF unavailable on this computer</span></div>';
@@ -104,7 +104,7 @@ render=function(){
   document.querySelector('.cue').innerHTML='☷ &nbsp; · &nbsp; <em>Tata ibadah Minggu</em> &nbsp;·&nbsp; <strong>'+(pdfMode==='pages'?'page '+(pdfPage+1)+'/'+pdfPages.length:'PDF document')+'</strong> → DOA SYAFAAT';
   if(pdfMode==='pages'){
     const dimensions=pdfPage===1?[640,450]:[430,556];
-    const bodyPadding=44, pagerHeight=52, headerHeight=titled?52:0;
+    const bodyPadding=44, pagerHeight=52, headerHeight=52;
     const scale=Math.min(1,(window.innerWidth-32-bodyPadding-2)/dimensions[0],(window.innerHeight-48-bodyPadding-pagerHeight-headerHeight-2)/dimensions[1]);
     const width=Math.max(1,Math.floor(dimensions[0]*scale)),height=Math.max(1,Math.floor(dimensions[1]*scale));
     const dialog=document.querySelector('.preview-dialog');
