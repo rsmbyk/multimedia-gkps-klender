@@ -44,6 +44,10 @@
   var audioPlayer = null;
   var audioUrl = null;
   var audioToken = 0;
+  var videoController = null;
+  var videoPlayer = null;
+  var videoUrl = null;
+  var videoToken = 0;
   var focusTools = window.gkpsFocus || {
     restoreQuietly: function (target) {
       if (target) target.focus({ preventScroll: true });
@@ -135,6 +139,48 @@
     }).finally(function () { if (token === audioToken) audioController = null; });
   }
 
+  function clearVideoPreview() {
+    videoToken++;
+    if (videoController) videoController.abort();
+    videoController = null;
+    if (videoPlayer) videoPlayer.stop();
+    videoPlayer = null;
+    if (videoUrl) URL.revokeObjectURL(videoUrl);
+    videoUrl = null;
+    modal.classList.remove('is-video-preview');
+  }
+
+  function loadVideoPreview() {
+    var host = content.querySelector('[data-preview-video]');
+    if (!host) return;
+    var player = host.querySelector('video');
+    var unavailable = content.querySelector('.preview__video-unavailable');
+    player.hidden = true;
+    unavailable.hidden = true;
+    videoController = new AbortController();
+    var token = ++videoToken;
+    window.GKPSMediaVideo.load(host.dataset.previewVideo, videoController.signal).then(function (url) {
+      if (token !== videoToken || !modal.open) { URL.revokeObjectURL(url); return; }
+      videoUrl = url;
+      videoPlayer = window.GKPSMediaVideo.attach(host, {
+        onReady: function () { if (token === videoToken) player.hidden = false; },
+        onError: function () {
+          if (token === videoToken) {
+            if (videoPlayer) videoPlayer.stop();
+            videoPlayer = null;
+            if (videoUrl) URL.revokeObjectURL(videoUrl);
+            videoUrl = null;
+            player.hidden = true;
+            unavailable.hidden = false;
+          }
+        }
+      });
+      videoPlayer.setUrl(url);
+    }).catch(function () {
+      if (token === videoToken && modal.open) unavailable.hidden = false;
+    }).finally(function () { if (token === videoToken) videoController = null; });
+  }
+
   document.addEventListener('media:status', function (event) {
     if (!modal.open || !modal.classList.contains('is-image-preview')) return;
     var host = content.querySelector('[data-preview-image]');
@@ -159,7 +205,8 @@
 
   function closePreview() {
     if (!modal.open || modal.classList.contains('is-closing')) return;
-    if (!(modal.classList.contains('is-image-preview') || modal.classList.contains('is-audio-preview'))
+    if (!(modal.classList.contains('is-image-preview') || modal.classList.contains('is-audio-preview')
+        || modal.classList.contains('is-video-preview'))
         || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       modal.close(); return;
     }
@@ -168,6 +215,9 @@
     if (audioPlayer) audioPlayer.audio.pause();
     audioToken++;
     if (audioController) audioController.abort();
+    if (videoPlayer) videoPlayer.pause();
+    videoToken++;
+    if (videoController) videoController.abort();
     modal.classList.add('is-closing');
     imageCloseTimer = setTimeout(function () { modal.close(); }, 170);
   }
@@ -358,6 +408,7 @@
       event.preventDefault();
       clearImagePreview();
       clearAudioPreview();
+      clearVideoPreview();
       trigger = opener;
       keyboardOpened = event.detail === 0;
       var anchor = opener.dataset.previewFor;
@@ -366,6 +417,7 @@
       content.innerHTML = data ? data.textContent : '';
       modal.classList.toggle('is-image-preview', Boolean(content.querySelector('[data-preview-image]')));
       modal.classList.toggle('is-audio-preview', Boolean(content.querySelector('[data-preview-audio]')));
+      modal.classList.toggle('is-video-preview', Boolean(content.querySelector('[data-preview-video]')));
       liftIdentity();
       /* the scope is the whole dialog: a song's tabs live in the header, its panels in the body */
       wireTabs(modal);
@@ -377,6 +429,7 @@
       }
       if (modal.classList.contains('is-image-preview')) loadImagePreview();
       if (modal.classList.contains('is-audio-preview')) loadAudioPreview();
+      if (modal.classList.contains('is-video-preview')) loadVideoPreview();
       return;
     }
     var gap = event.target.closest('[data-break-after]');
@@ -439,6 +492,13 @@
       if (audioPlayer) audioPlayer.toggle();
       return;
     }
+    if (confirmLayer.hidden && modal.classList.contains('is-video-preview') && event.key === ' '
+        && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey
+        && !event.shiftKey && !event.target.closest('button, input, select, textarea, [contenteditable="true"]')) {
+      event.preventDefault();
+      if (videoPlayer) videoPlayer.toggle();
+      return;
+    }
     if (confirmLayer.hidden) return;
     if (event.key === 'Escape') {
       event.preventDefault();
@@ -454,7 +514,8 @@
   });
   modal.addEventListener('cancel', function (event) {
     if (!confirmLayer.hidden) { event.preventDefault(); cancelConfirmation(); }
-    else if (modal.classList.contains('is-image-preview') || modal.classList.contains('is-audio-preview')) { event.preventDefault(); closePreview(); }
+    else if (modal.classList.contains('is-image-preview') || modal.classList.contains('is-audio-preview')
+        || modal.classList.contains('is-video-preview')) { event.preventDefault(); closePreview(); }
   });
 
   modal.addEventListener('click', function (event) {
@@ -464,6 +525,7 @@
   modal.addEventListener('close', function () {
     clearImagePreview();
     clearAudioPreview();
+    clearVideoPreview();
     content.innerHTML = '';
     head.hidden = true;
     headTitle.textContent = '';

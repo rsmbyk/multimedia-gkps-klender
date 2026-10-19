@@ -16,7 +16,6 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-116](./items/ITEM-116-video-media-display.md) | Display Video entries in Preview and projector | Preview and project verified local video in service order | feat | P1 | M | [116](../specs/116-video-media-display/spec.md) | 2026-10-19 |
 
 ## Ready
 
@@ -32,6 +31,8 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-116](./items/ITEM-116-video-media-display.md) | Display Video entries in Preview and projector | Preview and project verified local video in service order | feat | P1 | M | [116](../specs/116-video-media-display/spec.md) | [#364](https://github.com/rsmbyk/multimedia-gkps-klender/pull/364) | 2026-10-19 |
+
 | [ITEM-115](./items/ITEM-115-audio-media-display.md) | Play Audio entries in Preview and projector | Play locally verified audio at its service position with quiet idle and unavailable states | feat | P1 | M | [115](../specs/115-audio-media-display/spec.md) | [#364](https://github.com/rsmbyk/multimedia-gkps-klender/pull/364) | 2026-10-19 |
 | [ITEM-113](./items/ITEM-113-media-library-share-csrf.md) | Allow Share online from a fresh Media Library session | Set a CSRF cookie on direct page visits so Share online can request upload permission | fix | P1 | S | [113](../specs/113-media-library-share-csrf/spec.md) | [#361](https://github.com/rsmbyk/multimedia-gkps-klender/pull/361) | 2026-10-18 |
 | [ITEM-071](./items/ITEM-071-tatib-entry-surface.md) | Subtle surface for Tata Ibadah entries | Quiet fill, outline, and padding for service entry boxes | chore | P2 | S | [068](../specs/068-tatib-entry-surface/spec.md) | [#322](https://github.com/rsmbyk/multimedia-gkps-klender/pull/322) | 2026-10-13 |

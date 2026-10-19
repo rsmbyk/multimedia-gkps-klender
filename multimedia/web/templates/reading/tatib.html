@@ -25,7 +25,51 @@
 </div>
 {% if service_media %}<dialog class="media-library__dialog service-media__dialog" id="serviceMediaDialog" aria-label="Media files"><h2>Media files</h2><div class="service-media__list">{% for entry in service_media %}<div class="service-media__row" data-media-sha="{{ entry.media_id }}" data-media-family="{{ entry.media.family }}" data-media-past="{% if service_media_past %}true{% else %}false{% endif %}"><div class="service-media__icon"></div><div class="service-media__main"><strong>{{ entry.title|default:entry.media_filename }}</strong><small>{{ entry.media.family|title }} · {{ entry.media.byte_count|filesizeformat }}</small></div><div class="service-media__states"><span data-download-action></span><span data-online-state title="Checking online availability">−</span><span data-local-state title="Checking this computer">−</span></div></div>{% endfor %}</div><div class="media-library__dialog-actions"><button type="button" data-transfer-close>Close</button></div></dialog>{% endif %}
 {% endif %}
-{% for item in items %}{% if item.preview %}<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">{% if item.preview.kind == 'image' %}<p class="preview__ref">{{ item.preview.title }}</p><div class="preview__image" data-preview-image="{{ item.preview.sha256 }}"><img alt="{{ item.preview.title }}" hidden><div class="preview__image-unavailable" role="status"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg><span>Image unavailable on this computer</span></div></div>{% elif item.preview.kind == 'audio' %}{% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}<div class="preview__audio" data-preview-audio="{{ item.preview.sha256 }}"><div class="audio-player" hidden><button type="button" class="audio-player__play" data-audio-play aria-label="Play audio"></button><div class="audio-player__timeline"><div class="audio-player__filename">{{ item.preview.filename }}</div><input class="audio-player__seek" data-audio-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek audio"><div class="audio-player__times"><span data-audio-elapsed>0:00</span><span data-audio-total>0:00</span></div></div></div><div class="preview__audio-unavailable" role="status" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg><span>Audio unavailable on this computer</span></div></div>{% elif item.preview.kind == 'editable_text' %}
+{% for item in items %}{% if item.preview %}
+<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">
+{% if item.preview.kind == 'image' %}
+<p class="preview__ref">{{ item.preview.title }}</p>
+<div class="preview__image" data-preview-image="{{ item.preview.sha256 }}">
+  <img alt="{{ item.preview.title }}" hidden>
+  <div class="preview__image-unavailable" role="status">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>
+    <span>Image unavailable on this computer</span>
+  </div>
+</div>
+{% elif item.preview.kind == 'audio' %}
+{% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
+<div class="preview__audio" data-preview-audio="{{ item.preview.sha256 }}">
+  <div class="audio-player" hidden>
+    <button type="button" class="audio-player__play" data-audio-play aria-label="Play audio"></button>
+    <div class="audio-player__timeline">
+      <div class="audio-player__filename">{{ item.preview.filename }}</div>
+      <input class="audio-player__seek" data-audio-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek audio">
+      <div class="audio-player__times"><span data-audio-elapsed>0:00</span><span data-audio-total>0:00</span></div>
+    </div>
+  </div>
+  <div class="preview__audio-unavailable" role="status" hidden>
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg>
+    <span>Audio unavailable on this computer</span>
+  </div>
+</div>
+{% elif item.preview.kind == 'video' %}
+{% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
+<div class="preview__video" data-preview-video="{{ item.preview.sha256 }}">
+  <div class="preview__video-frame">
+    <video class="preview__video-element" playsinline preload="metadata" hidden></video>
+    <button type="button" class="preview__video-overlay-play" data-video-play aria-label="Play video"></button>
+  </div>
+  <div class="preview__video-controls">
+    <button type="button" class="preview__video-play" data-video-play aria-label="Play video"></button>
+    <input class="preview__video-seek" data-video-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek video">
+  </div>
+  <div class="preview__video-meta"><span class="preview__video-filename">{{ item.preview.filename }}</span><span><span data-video-elapsed>0:00</span> / <span data-video-total>0:00</span></span></div>
+</div>
+<div class="preview__video-unavailable" role="status" hidden>
+  <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m20 17 12 7-12 7zM12 5l24 38"/></svg>
+  <span>Video unavailable on this computer</span>
+</div>
+{% elif item.preview.kind == 'editable_text' %}
 <div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-default-screen-mode="{{ item.preview.default_screen_mode }}" data-screen-state-signature="{{ item.preview.screen_state_signature }}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">
   {% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
   {% if item.preview.reset_notice %}<p class="preview__notice" role="status">Text lines changed, so the custom breaks were reset.</p>{% endif %}

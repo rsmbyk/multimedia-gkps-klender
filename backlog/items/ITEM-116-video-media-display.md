@@ -1,6 +1,6 @@
 ---
 id: ITEM-116
-status: speccing
+status: in_review
 title: 'Display Video entries in Preview and projector'
 type: feat
 priority: P1
@@ -24,7 +24,7 @@ Let operators inspect a locally available Video entry and show it directly at it
 
 ## Notes
 
-The owner approved the [interactive Video preview](../../specs/116-video-media-display/preview.html) on 2026-10-19. Its 12-second generated demo recording and sample Tata Ibadah entries are preview data; the product uses the entry's referenced local Media Library file.
+The owner approved the [interactive Video preview](../../specs/116-video-media-display/preview.html) and Accepted the Draft Spec 116 on 2026-10-19. Its 12-second generated demo recording and sample Tata Ibadah entries are preview data; the product uses the entry's referenced local Media Library file.
 
 The owner requested this slice on the same branch as Audio, so branch `feat/115-116-audio-video-display` carries both concerns in separate numbered specs.
 

@@ -197,6 +197,67 @@ class AudioDisplayContractTests(TestCase):
         self.assertTrue(screens[pdf_entry['start']]['blank'])
 
 
+class VideoDisplayContractTests(TestCase):
+    @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+    def test_video_preview_uses_immutable_identity_and_saved_filename(self):
+        from multimedia.web.reading.views import _tatib_stage
+        service = TataIbadah.objects.create(name='Video service')
+        video = MediaIdentity.objects.create(sha256='9' * 64, byte_count=240,
+                                             family='video', display_filename='library.webm')
+        audio = MediaIdentity.objects.create(sha256='a' * 64, byte_count=120,
+                                             family='audio', display_filename='sound.wav')
+        pdf = MediaIdentity.objects.create(sha256='b' * 64, byte_count=120,
+                                           family='pdf', display_filename='notes.pdf')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=video,
+                                    media_filename='service-recording.webm', title='Welcome video')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=2, media=audio,
+                                    media_filename='sound.wav', title='Music')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=3, media=pdf,
+                                    media_filename='notes.pdf')
+
+        items, _toc = _tatib_stage(service)
+
+        self.assertEqual(items[0]['preview'], {'kind': 'video', 'title': 'Welcome video',
+                                                'filename': 'service-recording.webm',
+                                                'sha256': video.sha256})
+        self.assertEqual(items[1]['preview']['kind'], 'audio')
+        self.assertIsNone(items[2]['preview'])
+        response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
+        self.assertContains(response, f'data-preview-video="{video.sha256}"')
+
+    @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+    def test_video_has_one_projector_screen_in_service_order(self):
+        from multimedia.web.reading.views import _projector_data
+        service = TataIbadah.objects.create(name='Video service')
+        image = MediaIdentity.objects.create(sha256='c' * 64, byte_count=120,
+                                             family='image', display_filename='picture.png')
+        video = MediaIdentity.objects.create(sha256='d' * 64, byte_count=240,
+                                             family='video', display_filename='recording.webm')
+        audio = MediaIdentity.objects.create(sha256='e' * 64, byte_count=120,
+                                             family='audio', display_filename='sound.wav')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=image,
+                                    media_filename='picture.png')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=2, media=video,
+                                    media_filename='recording.webm')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=3, media=audio,
+                                    media_filename='sound.wav')
+
+        data = _projector_data(service)
+        screens, entries = data['screens'], data['entries']
+        image_entry, video_entry, audio_entry = entries[-3:]
+
+        self.assertLess(image_entry['start'], video_entry['start'])
+        self.assertLess(video_entry['start'], audio_entry['start'])
+        self.assertEqual(video_entry['start'], video_entry['end'])
+        self.assertEqual(screens[video_entry['start']]['video_sha256'], video.sha256)
+        self.assertFalse(screens[video_entry['start']]['blank'])
+        self.assertEqual(screens[image_entry['start']]['image_sha256'], image.sha256)
+        self.assertEqual(screens[audio_entry['start']]['audio_sha256'], audio.sha256)
+        response = self.client.get(reverse('web-service-projector', args=[service.pk]))
+        self.assertContains(response, f'data-media-video="{video.sha256}"')
+        self.assertContains(response, 'Audio/Video Play/Pause')
+
+
 class MediaLibraryCsrfTests(TestCase):
     def setUp(self):
         self.media = MediaIdentity.objects.create(sha256='f' * 64, byte_count=20,

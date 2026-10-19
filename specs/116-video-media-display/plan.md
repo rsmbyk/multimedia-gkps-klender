@@ -1,6 +1,6 @@
 # Plan 116: Play Video media entries
 
-- **Status:** Draft
+- **Status:** Accepted (owner, 2026-10-19)
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-116

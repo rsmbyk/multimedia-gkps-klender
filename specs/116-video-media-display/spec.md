@@ -1,7 +1,7 @@
 # Spec: Display Video media entries
 
 - **ID:** 116
-- **Status:** Draft
+- **Status:** Accepted (owner, 2026-10-19)
 - **Item:** ITEM-116
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
@@ -133,7 +133,7 @@ The owner-approved [interactive preview](./preview.html) is the visual reference
 
 - **Domain/app tests:** `multimedia/web/test_media.py::VideoDisplayContractTests` — Video-only Preview metadata, screen identity/order, and unchanged other-family behavior.
 - **Browser E2E:** `tests/e2e/test_video_display.py::VideoDisplayE2ETests` — local decode/playback, seek, title/untitled state, Space, fullscreen transitions, idle state, arrow-navigation guard, fullscreen fallback, missing/decode failure, and resource cleanup.
-- **Implementation targets:** `multimedia/web/reading/views.py`, Tata Ibadah Preview/projector templates, `static/web/preview.js`, `static/web/projector.js`, a focused `static/web/media-video.js`, and design tokens/styles for Preview and projector media.
+- **Implementation:** `multimedia/web/reading/views.py`; `multimedia/web/templates/reading/tatib.html`, `projector.html`, and `projector_controls.html`; `static/web/media-video.js`, `preview.js`, `projector.js`, and `offline-render.js`; `static/styles/design/components.css` and `projector.css`.
 
 ## Owner review points
 
