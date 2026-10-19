@@ -9,7 +9,7 @@ created: 2026-10-19
 updated: 2026-10-19
 spec: specs/119-obs-dock/spec.md
 branch: feat/obs-dock
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/367
 archived_at:
 archive_reason:
 bump: minor
