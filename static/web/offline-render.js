@@ -156,6 +156,19 @@
               return '<p class="preview__line">' + escape(line) + '</p>';
             }).join('') + '</div>';
         }).join('') + '</div>';
+    } else if (preview.kind === 'video') {
+      html = (preview.title ? '<p class="preview__ref">' + escape(preview.title) + '</p>' : '')
+        + '<div class="preview__video" data-preview-video="' + escape(preview.sha256) + '">'
+        + '<div class="preview__video-frame"><video class="preview__video-element" playsinline preload="metadata" hidden></video>'
+        + '<button type="button" class="preview__video-overlay-play" data-video-play aria-label="Play video"></button></div>'
+        + '<div class="preview__video-controls"><button type="button" class="preview__video-play" data-video-play aria-label="Play video"></button>'
+        + '<input class="preview__video-seek" data-video-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek video"></div>'
+        + '<div class="preview__video-meta"><span class="preview__video-filename">' + escape(preview.filename)
+        + '</span><span><span data-video-elapsed>0:00</span> / <span data-video-total>0:00</span></span></div></div>'
+        + '<div class="preview__video-unavailable" role="status" hidden>'
+        + '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/>'
+        + '<path d="m20 17 12 7-12 7zM12 5l24 38"/></svg>'
+        + '<span>Video unavailable on this computer</span></div>';
     } else {
       html = (preview.reference ? '<p class="preview__ref">' + escape(preview.reference) + '</p>' : '')
         + (preview.paras || []).map(function (para) {

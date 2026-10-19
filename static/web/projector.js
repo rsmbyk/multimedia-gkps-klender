@@ -36,6 +36,156 @@
   var imageController = null;
   var imageUrl = null;
   var imageToken = 0;
+  var audioHost = null;
+  var audioController = null;
+  var audioPlayer = null;
+  var audioUrl = null;
+  var audioToken = 0;
+  var audioIdleTimer = null;
+  var videoHost = null;
+  var videoController = null;
+  var videoPlayer = null;
+  var videoUrl = null;
+  var videoToken = 0;
+  var videoIdleTimer = null;
+  var videoWasFullscreen = false;
+  var videoFullscreenToken = 0;
+
+  function audioActivity() {
+    if (!audioHost) return;
+    audioHost.classList.remove('is-idle');
+    clearTimeout(audioIdleTimer);
+    if (audioPlayer && !audioPlayer.audio.paused) {
+      audioIdleTimer = setTimeout(function () {
+        if (audioHost && audioPlayer && !audioPlayer.audio.paused) audioHost.classList.add('is-idle');
+      }, 3500);
+    }
+  }
+  document.addEventListener('pointermove', audioActivity);
+  document.addEventListener('pointerdown', audioActivity);
+  document.addEventListener('keydown', audioActivity);
+
+  function videoActivity() {
+    if (!videoHost) return;
+    videoHost.classList.remove('is-idle');
+    clearTimeout(videoIdleTimer);
+    if (videoPlayer && !videoPlayer.video.paused) {
+      videoIdleTimer = setTimeout(function () {
+        if (videoHost && videoPlayer && !videoPlayer.video.paused) videoHost.classList.add('is-idle');
+      }, 2000);
+    }
+  }
+  document.addEventListener('pointermove', videoActivity);
+  document.addEventListener('pointerdown', videoActivity);
+  document.addEventListener('keydown', videoActivity);
+
+  function clearAudioScreen() {
+    audioToken++;
+    clearTimeout(audioIdleTimer);
+    if (audioController) audioController.abort();
+    audioController = null;
+    if (audioPlayer) audioPlayer.stop();
+    audioPlayer = null;
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    audioUrl = null;
+    if (audioHost) audioHost.classList.remove('is-idle');
+    audioHost = null;
+  }
+  function renderAudioScreen(active) {
+    var host = showing && !detour && active && active.querySelector('[data-media-audio]');
+    if (host === audioHost) return;
+    clearAudioScreen();
+    if (!host) return;
+    audioHost = host;
+    var player = host.querySelector('.screen__audio-player');
+    var missing = host.querySelector('.screen__image-missing');
+    player.hidden = true;
+    missing.setAttribute('hidden', '');
+    audioController = new AbortController();
+    var token = ++audioToken;
+    window.GKPSMediaAudio.load(host.dataset.mediaAudio, audioController.signal).then(function (url) {
+      if (token !== audioToken || host !== audioHost) { URL.revokeObjectURL(url); return; }
+      audioUrl = url;
+      audioPlayer = window.GKPSMediaAudio.attach(host, {
+        onReady: function () { if (token === audioToken) player.hidden = false; },
+        onError: function () { if (token === audioToken) { clearAudioScreen(); missing.removeAttribute('hidden'); } },
+        onPlayback: audioActivity
+      });
+      audioPlayer.setUrl(url);
+    }).catch(function () {
+      if (token === audioToken && host === audioHost) missing.removeAttribute('hidden');
+    }).finally(function () { if (token === audioToken) audioController = null; });
+  }
+
+  function clearVideoScreen() {
+    videoToken++;
+    clearTimeout(videoIdleTimer);
+    if (videoController) videoController.abort();
+    videoController = null;
+    if (videoPlayer) videoPlayer.stop();
+    videoPlayer = null;
+    if (videoUrl) URL.revokeObjectURL(videoUrl);
+    videoUrl = null;
+    if (videoHost) {
+      videoHost.classList.remove('is-idle', 'is-fullscreen');
+      var video = videoHost.querySelector('video');
+      var missing = videoHost.querySelector('.screen__video-missing');
+      if (video) video.hidden = true;
+      if (missing) missing.setAttribute('hidden', '');
+    }
+    videoHost = null;
+    videoWasFullscreen = false;
+    exitVideoFullscreen();
+  }
+
+  function renderVideoScreen(active) {
+    var host = showing && !detour && active && active.querySelector('[data-media-video]');
+    if (host === videoHost) return;
+    clearVideoScreen();
+    if (!host) return;
+    videoHost = host;
+    var video = host.querySelector('video');
+    var play = host.querySelector('.screen__video-play');
+    var missing = host.querySelector('.screen__video-missing');
+    video.hidden = true;
+    missing.setAttribute('hidden', '');
+    play.dataset.playing = 'false';
+    play.setAttribute('aria-label', 'Play video');
+    videoController = new AbortController();
+    var token = ++videoToken;
+    window.GKPSMediaVideo.load(host.dataset.mediaVideo, videoController.signal).then(function (url) {
+      if (token !== videoToken || host !== videoHost) { URL.revokeObjectURL(url); return; }
+      videoUrl = url;
+      videoPlayer = window.GKPSMediaVideo.attach(host, {
+        onReady: function () {
+          if (token !== videoToken) return;
+          video.hidden = false;
+        },
+        onPlayRequest: function () {
+          if (token === videoToken) {
+            videoActivity();
+            requestVideoFullscreen(host);
+          }
+        },
+        onPlayback: function (playing) {
+          if (token !== videoToken) return;
+          videoActivity();
+          if (!playing) exitVideoFullscreen(host);
+        },
+        onError: function () {
+          if (token !== videoToken) return;
+          video.hidden = true;
+          missing.removeAttribute('hidden');
+          clearVideoScreen();
+          missing.removeAttribute('hidden');
+        }
+      });
+      videoPlayer.setUrl(url);
+      videoController = null;
+    }).catch(function () {
+      if (token === videoToken && host === videoHost) missing.removeAttribute('hidden');
+    }).finally(function () { if (token === videoToken) videoController = null; });
+  }
 
   function clearImageScreen() {
     imageToken++;
@@ -188,6 +338,8 @@
       fit(active);
     }
     renderImageScreen(active);
+    renderAudioScreen(active);
+    renderVideoScreen(active);
     renderCue();
     if (!silent) {
       write({service: service, screen: current, on: showing});
@@ -908,6 +1060,14 @@
       event.preventDefault(); openFind('g'); return;
     }
     if (!findPanel.hidden) return;
+    var videoFullscreenPlaying = videoHost && document.fullscreenElement === videoHost
+      && videoPlayer && !videoPlayer.video.paused;
+    if (videoFullscreenPlaying && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+      'PageUp', 'PageDown', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
     if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.repeat) {
       if (event.key.toLowerCase() === 'k') {
         event.preventDefault(); setKeysOpen(!body.classList.contains('keys-open')); return;
@@ -934,7 +1094,13 @@
       return;
     }
     if (!event.ctrlKey && !event.shiftKey && key === 't') { event.preventDefault(); flipTranslation(); return; }
-    if (!event.ctrlKey && event.key === ' ') { event.preventDefault(); toggleWords(); return; }
+    if (!event.ctrlKey && event.key === ' ') {
+      event.preventDefault();
+      if (audioHost && audioPlayer) { if (!event.repeat) audioPlayer.toggle(); }
+      else if (videoHost && videoPlayer) { if (!event.repeat) videoPlayer.toggle(); }
+      else if (!event.repeat) toggleWords();
+      return;
+    }
     var forward = ['ArrowRight', 'ArrowDown', 'PageDown'].includes(event.key);
     var backward = ['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key);
     if (forward || backward) {
@@ -961,6 +1127,33 @@
       syncFullscreenCursor();
     });
   }
+  function requestVideoFullscreen(host) {
+    if (!host || !host.requestFullscreen) return;
+    var token = ++videoFullscreenToken;
+    var request;
+    try { request = host.requestFullscreen(); }
+    catch (error) { return; }
+    Promise.resolve(request).then(function () {
+      if (token !== videoFullscreenToken || host !== videoHost
+          || !videoPlayer || videoPlayer.video.paused) exitVideoFullscreen(host);
+    }).catch(function () { /* The video remains playable in the normal projector area. */ });
+  }
+  function exitVideoFullscreen(host) {
+    videoFullscreenToken++;
+    var currentFullscreen = document.fullscreenElement;
+    if (currentFullscreen && (currentFullscreen === host
+        || currentFullscreen.classList.contains('screen__video-box'))) {
+      document.exitFullscreen().catch(function () {});
+    }
+  }
+  function syncVideoFullscreen() {
+    var isVideoFullscreen = Boolean(videoHost && document.fullscreenElement === videoHost);
+    if (videoHost) videoHost.classList.toggle('is-fullscreen', isVideoFullscreen);
+    if (videoWasFullscreen && !isVideoFullscreen && videoPlayer && !videoPlayer.video.paused)
+      videoPlayer.pause();
+    videoWasFullscreen = isVideoFullscreen;
+    if (isVideoFullscreen) videoActivity();
+  }
   var fullscreenDenied = false;
   function syncFullscreenCursor() {
     body.classList.toggle('is-fullscreen', Boolean(document.fullscreenElement));
@@ -968,6 +1161,7 @@
       !fullscreenDenied && document.fullscreenEnabled && document.documentElement.requestFullscreen));
   }
   document.addEventListener('fullscreenchange', syncFullscreenCursor);
+  document.addEventListener('fullscreenchange', syncVideoFullscreen);
   syncFullscreenCursor();
   var escapeHoldTimer;
   document.addEventListener('keydown', function (event) {
@@ -1084,6 +1278,33 @@
           + '<path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>';
         section.appendChild(imageBox);
       }
+      if (item.audio_sha256) {
+        var audioBox = document.createElement('div');
+        audioBox.className = 'screen__audio-box';
+        audioBox.dataset.mediaAudio = item.audio_sha256;
+        audioBox.innerHTML = '<div class="screen__audio-player" hidden>'
+          + '<span class="screen__audio-play" data-audio-play aria-label="Play audio"></span>'
+          + '<div class="screen__audio-seek" data-audio-seek><span class="screen__audio-fill"></span></div>'
+          + '<div class="screen__audio-times"><span data-audio-elapsed>0:00</span> / <span data-audio-total>0:00</span></div></div>'
+          + '<svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden>'
+          + '<rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg>';
+        section.appendChild(audioBox);
+      }
+      if (item.video_sha256) {
+        var videoBox = document.createElement('div');
+        videoBox.className = 'screen__video-box';
+        videoBox.dataset.mediaVideo = item.video_sha256;
+        videoBox.innerHTML = '<video class="screen__video" playsinline preload="metadata" hidden></video>'
+          + '<span class="screen__video-play" data-video-play aria-label="Play video"></span>'
+          + '<div class="screen__video-controls" data-video-controls>'
+          + '<div class="screen__video-seek" data-video-seek><span class="screen__video-fill"></span></div>'
+          + '<span class="screen__video-time"><span data-video-elapsed>0:00</span> / '
+          + '<span data-video-total>0:00</span></span></div>'
+          + '<svg class="screen__video-missing" viewBox="0 0 48 48" aria-hidden="true" hidden>'
+          + '<rect x="7" y="9" width="34" height="29" rx="3"/>'
+          + '<path d="m20 17 12 7-12 7zM12 5l24 38"/></svg>';
+        section.appendChild(videoBox);
+      }
       fragment.appendChild(section);
     });
     stage.replaceChildren(fragment);
@@ -1127,5 +1348,6 @@
   window.setInterval(beat, 2000);
   document.addEventListener('visibilitychange', beat);
   window.addEventListener('focus', beat);
+  window.addEventListener('pagehide', clearVideoScreen);
   post({type: 'state'});                 /* ask the other tabs what is on screen */
 })();
