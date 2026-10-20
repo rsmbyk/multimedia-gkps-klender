@@ -450,6 +450,14 @@ body.obs-dock {
   font-style: italic;
 }
 
+.screenerow--media .screenerow__media {
+  color: var(--head-ink);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
 .screenerow__v {
   margin-right: 6px;
   color: var(--head-ink);

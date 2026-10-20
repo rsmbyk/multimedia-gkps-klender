@@ -176,6 +176,23 @@
     return row;
   }
 
+  /* Media screens carry no words, only a payload — they still get an inner row so
+     navigation can land on (and centre) them like any other screen. */
+  var MEDIA_KINDS = [
+    ['image_sha256', 'Image'],
+    ['video_sha256', 'Video'],
+    ['audio_sha256', 'Audio'],
+    ['pdf_sha256', 'PDF'],
+    ['slides_sha256', 'Slides'],
+  ];
+
+  function mediaLabel(screen) {
+    for (var i = 0; i < MEDIA_KINDS.length; i++) {
+      if (screen[MEDIA_KINDS[i][0]]) return MEDIA_KINDS[i][1];
+    }
+    return '';
+  }
+
   function screenRow(index) {
     var screen = dock.screens[index];
     if (!screen) return null;
@@ -199,7 +216,11 @@
     } else if (screen.header) {
       wrap.appendChild(el('span', 'screenerow__line', String(screen.header)));
     } else {
-      return null;
+      var media = mediaLabel(screen);
+      if (!media) return null;
+      row.classList.add('screenerow--media');
+      row.appendChild(el('span', 'screenerow__media', media));
+      return row;
     }
     row.appendChild(wrap);
     return row;
