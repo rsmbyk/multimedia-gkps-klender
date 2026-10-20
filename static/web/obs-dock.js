@@ -863,8 +863,22 @@
   });
 
   /* A click must leave the focus where the keyboard lives, not on the clicked
-     button: otherwise Space would re-press the last thing clicked. */
+     button: otherwise Space would re-press the last thing clicked. The panel is the
+     only focusable thing here, so a click on the page AROUND it would leave focus on
+     <body> and kill every shortcut while the transport — which tracks the window's
+     focus — still reads armed. Park focus again for those too. */
   panel.addEventListener('pointerdown', focusPanel);
+
+  document.addEventListener('pointerdown', function (event) {
+    if (panel.contains(event.target)) return;
+    window.requestAnimationFrame(focusPanel);
+  }, true);
+
+  document.addEventListener('focusin', function (event) {
+    if (panel.contains(event.target)) return;
+    window.requestAnimationFrame(focusPanel);
+  });
+
 
   /* The transport arrows fill while this window holds the keyboard. */
   function markFocus() { root.classList.add('win-focus'); }
