@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.19.1] - 2026-10-20
+
+### Fixed
+
+- Online reading navigation now settles on current server rows and search results while retaining the saved fallback when the network fails. Saved Tata Ibadah services follow the server's same-day creation order.
+
 ## [1.19.0] - 2026-10-20
 
 ### Added

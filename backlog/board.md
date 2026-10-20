@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-119](./items/ITEM-119-consistent-reading-navigation.md) | Keep public reading navigation consistent with current and saved data | Online clicks settle on current data; saved views keep canonical order | fix | P1 | M | [119](../specs/119-consistent-reading-navigation/spec.md) | fix/119-online-navigation-freshness | 2026-10-20 |
 
 ## In review
 
