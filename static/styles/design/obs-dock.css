@@ -157,7 +157,19 @@ body.obs-dock {
 
 /* One display-state button (spec 119): the slashed eye while this service is not on
    screen ("Display this service"), the open eye while it is ("Hide words").
-   aria-pressed="true" means hidden. */
+   aria-pressed="true" means hidden. As the mockup draws it: FILLED while the words
+   are up (the active pair), muted while they are hidden. */
+#blankBtn[aria-pressed="false"] {
+  background: var(--active-bg);
+  border-color: var(--active-bg);
+  color: var(--active-ink);
+}
+
+#blankBtn[aria-pressed="false"]:hover {
+  background: var(--active-bg);
+  border-color: var(--active-bg);
+}
+
 #blankBtn[aria-pressed="true"] {
   color: var(--head-ink);
   opacity: .75;
