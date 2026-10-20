@@ -420,7 +420,7 @@ body.obs-dock {
 }
 
 .baithead {
-  margin: 5px 0 0;
+  margin: 8px 0 0;
   padding: 4px 10px 2px;
   color: color-mix(in srgb, var(--head-ink) 90%, transparent);
   font: 650 10px/1 var(--font-sans);
@@ -445,6 +445,10 @@ body.obs-dock {
 
 .screenerow:hover { background: var(--icon-hover-bg); }
 .screenerow + .screenerow { margin-top: 3px; }
+
+/* The body's own 2px top padding already spaces the first head from the label:
+   6 + 2 = the same 8px a bait keeps from the bait above it. */
+.entryinner__body > .baithead:first-child { margin-top: 6px; }
 
 .screenerow[aria-current="true"] {
   background: color-mix(in srgb, var(--sidebar-selected-bg) 55%, transparent);
