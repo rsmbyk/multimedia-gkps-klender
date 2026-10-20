@@ -674,9 +674,12 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         wait_for_offline_ready(page)
         with ThreadPoolExecutor(max_workers=1) as pool:
             def add_song():
-                book = songs.Book.objects.get(short_name='KJ')
-                song = songs.Song.objects.create(book=book, number=999, title='Fresh title')
-                songs.Verse.objects.create(song=song, number=1, lyric='Fresh lyric')
+                try:
+                    book = songs.Book.objects.get(short_name='KJ')
+                    song = songs.Song.objects.create(book=book, number=999, title='Fresh title')
+                    songs.Verse.objects.create(song=song, number=1, lyric='Fresh lyric')
+                finally:
+                    connections.close_all()
             pool.submit(add_song).result()
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('KJ 999')
@@ -687,9 +690,12 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         wait_for_offline_ready(page)
         with ThreadPoolExecutor(max_workers=1) as pool:
             def add_verse():
-                translation = bible.BookTranslation.objects.get(translation='Matius')
-                bible.Verse.objects.create(
-                    book_translation=translation, chapter=5, verse=4, text='Fresh verse')
+                try:
+                    translation = bible.BookTranslation.objects.get(translation='Matius')
+                    bible.Verse.objects.create(
+                        book_translation=translation, chapter=5, verse=4, text='Fresh verse')
+                finally:
+                    connections.close_all()
             pool.submit(add_verse).result()
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('Mat 5:4')
