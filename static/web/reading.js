@@ -1384,6 +1384,14 @@
         : Promise.resolve(false);
       ready.then(function (isReady) {
         if (!isReady) return fromServer();
+        if (navigator.onLine && opts.kind === 'results' && !opts.historyTraversal) {
+          return fromServer().catch(function () {
+            return renderer.render(url).then(function (doc) {
+              if (!doc) throw new Error('No saved search page');
+              applyFresh(doc);
+            });
+          }).catch(fail);
+        }
         renderer.render(url).then(function (doc) {
           if (!doc) return fromServer();
           if (!applyFresh(doc)) return;
