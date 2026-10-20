@@ -500,6 +500,11 @@
     outInner.classList.add('is-morph');
     inInner.classList.add('is-morph');
     inInner.classList.add('is-open');              /* pointer events; height is inline */
+    /* sync() skips both inners while the morph runs, so the arriving block's
+       inert/aria-hidden must be cleared HERE — otherwise the block opens visible
+       but unclickable. */
+    inInner.setAttribute('aria-hidden', 'false');
+    if ('inert' in inInner) inInner.inert = false;
     morphState = {out: outInner, inn: inInner, node: node};
     if (reduceMotion.matches) { finishMorph(); return; }
 
@@ -530,6 +535,10 @@
     inn.classList.remove('is-morph');
     out.classList.remove('is-open');
     inn.classList.add('is-open');
+    out.setAttribute('aria-hidden', 'true');
+    if ('inert' in out) out.inert = true;
+    inn.setAttribute('aria-hidden', 'false');
+    if ('inert' in inn) inn.inert = false;
     out.style.gridTemplateRows = '';
     inn.style.gridTemplateRows = '';
     if (node) centerRow(node);
