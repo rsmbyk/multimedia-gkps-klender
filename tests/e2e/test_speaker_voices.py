@@ -83,7 +83,7 @@ class SpeakerVoicesE2ETests(StaticLiveServerTestCase):
         expect(join).to_have_css('color', SCREEN_JOIN)
 
     def test_the_projector_quiets_the_leader_and_marks_the_joined_line(self):
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]))
+        page = self._page(f'/projector?service={self.service.pk}')
         screens = page.locator('.screen')
         expect(screens.nth(0).locator('.screen__head')).to_have_css('color', HEADER_GOLD)
         expect(screens.nth(0).locator('.screen__line.is-leader')).to_have_css('color',

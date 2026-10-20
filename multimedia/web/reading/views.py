@@ -1261,24 +1261,62 @@ def _projector_screens(service):
     return _projector_data(service)['screens']
 
 
-def service_projector(request, service_id):
-    """The new service projector: a page of its own, hand-written, showing one screen
-    at a time in white on black -- the way the current projector reads on a screen.
+def service_projector(request):
+    """The service projector (spec 119): a page of its own, hand-written, showing one
+    screen at a time in white on black -- the way the current projector reads on a
+    screen. It renders the browser-local display state, not a service pinned in the
+    URL: `?service=<id>` adopts that service on load (an act of projection), and a
+    page without a parameter (or after adoption) follows whatever the dock and the
+    other tabs publish.
 
-    It keeps no server record of what is on screen. Which screen is showing lives in
-    the operator's browser and is shared across that browser's tabs over the display
-    channel, so several laptops can drive different screens.
+    It keeps no server record of what is on screen: which service and screen are
+    showing lives in the operator's browser and is shared across that browser's tabs
+    over the display channel, so several laptops can drive different screens.
     """
-    service = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
-    projector = _projector_data(service)
+    service = None
+    adopt = request.GET.get('service')
+    if adopt:
+        service = get_object_or_404(tatib_models.TataIbadah, pk=adopt)
+    if service is not None:
+        projector = _projector_data(service)
+        page_title = f'{service.name} — display'
+    else:
+        projector = {'screens': [], 'entries': []}
+        page_title = 'Display'
     return render(request, 'reading/projector.html', {
         'service': service,
-        'service_id': service.pk,
+        'service_id': service.pk if service else 0,
+        'adopt_service': service.pk if service else '',
         'screens': projector['screens'],
         'projector_screens_data': projector['screens'],
         'projector_entries': projector['entries'],
-        'page_title': f'{service.name} — display',
+        'page_title': page_title,
     })
+
+
+def obs_dock(request):
+    """The operator dock (spec 119): pick a Tata Ibadah, browse it, and run it.
+
+    The page renders the service list; the runner and the transport are built in the
+    browser from the same per-service data the projector page carries. The display
+    state lives in this browser (web/display.js) and never reaches the server.
+    """
+    services = list(tatib_models.TataIbadah.objects.filter(is_active=True)
+                    .order_by('-date', '-id'))
+    return render(request, 'reading/obs_dock.html', {
+        'services': services,
+        'page_title': 'Dock — Service Entries',
+    })
+
+
+def obs_overlay(request):
+    """The OBS caption overlay (spec 119): a listen-only, state-driven renderer.
+
+    No parameters and no server data: the page subscribes to the browser-local
+    display state and captions whatever is on air. Media screens render nothing here
+    in this slice.
+    """
+    return render(request, 'reading/obs_overlay.html', {'page_title': 'Overlay'})
 
 
 def _projector_chapter_prefix(query):
@@ -1308,9 +1346,11 @@ def _projector_chapter_prefix(query):
     ]
 
 
-def projector_lookup(request, service_id):
+def projector_lookup(request, service_id=None):
     """The closest passage and song matches for the projector's quick Go To picker."""
-    get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    service_id = service_id or request.GET.get('service')
+    if service_id:
+        get_object_or_404(tatib_models.TataIbadah, pk=service_id)
     query = (request.GET.get('q') or '').strip()[:120]
     if not query:
         return JsonResponse({'results': []})
@@ -1378,9 +1418,11 @@ def projector_lookup(request, service_id):
     return JsonResponse({'results': rows[:12]})
 
 
-def projector_detour(request, service_id):
+def projector_detour(request, service_id=None):
     """Render an unplanned song or one freely navigable Bible verse on demand."""
-    get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    service_id = service_id or request.GET.get('service')
+    if service_id:
+        get_object_or_404(tatib_models.TataIbadah, pk=service_id)
     kind = request.GET.get('kind')
     if kind == 'song':
         song = get_object_or_404(song_models.Song.objects.filter(is_deleted=False),
@@ -1816,7 +1858,7 @@ class TatibView(TemplateView):
             'tatib_mode_label': ('Show dated Tata Ibadah' if mode == 'template'
                                  else 'Show Tata Ibadah templates'),
             'service_id': service.pk if service else None,
-            'projector_url': (reverse('web-service-projector', args=[service.pk])
+            'projector_url': (f'/projector?service={service.pk}'
                               if service else ''),
             'toc_items': toc,
             'items': items,

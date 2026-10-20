@@ -1,6 +1,6 @@
 # Plan 119: OBS dock — one state for the dock, the projector, and the overlay
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-119

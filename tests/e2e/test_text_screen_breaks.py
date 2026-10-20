@@ -66,7 +66,7 @@ class TextScreenBreakE2ETests(StaticLiveServerTestCase):
                 'preview__gap is-set')
         projector = context.new_page()
         projector.goto(self.live_server_url
-                       + reverse('web-service-projector', args=[self.service.pk]))
+                       + f'/projector?service={self.service.pk}')
         screens = projector.locator('#projectorScreens .screen[data-screen]')
         expect(screens).to_have_count(5)
         self.assertIn('one', screens.nth(0).text_content())

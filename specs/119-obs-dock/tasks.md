@@ -1,6 +1,6 @@
 # Tasks 119: OBS dock — one state for the dock, the projector, and the overlay
 
-- **Status:** Draft
+- **Status:** In progress
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
@@ -8,7 +8,7 @@
 
 ## Checklist
 
-- [ ] Spec Accepted by the project owner.
+- [x] Spec Accepted by the project owner.
 - [ ] Branch from the current base (`feat/obs-dock`).
 - [ ] Red — routes and template contexts (`multimedia/web/test_reading.py`):
       `/projector` renders with and without `?service`; `/obs/dock` lists services;

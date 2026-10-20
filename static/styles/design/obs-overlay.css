@@ -1,0 +1,47 @@
+/* The OBS caption overlay (spec 119).
+ *
+ * A transparent browser source: the words are the only ink, lower-centre, white
+ * with a fat dark outline that scales with the font. Proportions were measured off
+ * the church's stream samples: one line of ink is ~4% of the frame height (≈2.9cqw),
+ * a two-line lyric block stays in the lower fifth. text-wrap balances the rows.
+ *
+ * It carries no chrome: no plate, no header, no controls -- the dock is the only
+ * surface with controls.
+ */
+
+html, body.obs-overlay {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.obs-overlay__stage {
+  position: fixed;
+  inset: 0;
+  container-type: size;
+  pointer-events: none;
+}
+
+.obs-overlay__caption {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 6%;
+  margin: 0;
+  text-align: center;
+  color: #FFFFFF;
+  font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: clamp(9px, 2.9cqw, 32px);
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: .01em;
+  text-wrap: balance;
+  text-shadow:
+    0 .06em 0 #000, .06em 0 0 #000, -.06em 0 0 #000, 0 -.06em 0 #000,
+    .045em .045em 0 #000, -.045em -.045em 0 #000, .045em -.045em 0 #000, -.045em .045em 0 #000,
+    0 .12em .45em rgba(0, 0, 0, .75);
+}
+
+.obs-overlay__caption span {
+  display: block;
+}

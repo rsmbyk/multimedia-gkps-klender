@@ -225,7 +225,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         return reverse('web-tatib-service', args=[self.service.pk])
 
     def _projector_url(self):
-        return reverse('web-service-projector', args=[self.service.pk])
+        return f'/projector?service={self.service.pk}'
 
     def _slides(self, page):
         return page.eval_on_selector_all(
@@ -970,7 +970,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_adjacent_untitled_text_cues_share_fit_limit_and_run_only_on_hover(self):
         full = self.untitled_text_line
-        page = self._page(reverse('web-service-projector', args=[self.untitled_service.pk]))
+        page = self._page(f'/projector?service={self.untitled_service.pk}')
         current = page.locator('#cue-prefix .cue-running')
         following = page.locator('#cue-next-name.cue-running')
         self.assertEqual(current.count(), 1)
@@ -1023,7 +1023,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         context = self.browser.new_context(
             viewport={'width': 600, 'height': 700}, reduced_motion='reduce')
         page = self._page(
-            reverse('web-service-projector', args=[self.untitled_service.pk]),
+            f'/projector?service={self.untitled_service.pk}',
             context=context)
         current = page.locator('#cue-prefix .cue-running')
         current.hover()
@@ -1274,7 +1274,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(shape[10]['lines'], ['ayat 3'])
 
     def test_a_body_too_long_for_the_screen_comes_down_to_fit(self):
-        page = self._page(reverse('web-service-projector', args=[self.long_service.pk]))
+        page = self._page(f'/projector?service={self.long_service.pk}')
         fitted = page.evaluate("""() => {
           const stage = document.querySelector('#projectorScreens').getBoundingClientRect();
           const active = document.querySelector('.screen.is-active');
@@ -1400,7 +1400,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertTrue(measured['insideWindow'], measured)
 
     def test_a_single_screen_text_fits_its_whole_body_on_one_screen(self):
-        page = self._page(reverse('web-service-projector', args=[self.single_service.pk]))
+        page = self._page(f'/projector?service={self.single_service.pk}')
         page.keyboard.press('Space')                          # turn the display on
         page.wait_for_timeout(200)
         measured = page.evaluate("""() => {

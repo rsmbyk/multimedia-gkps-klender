@@ -1,0 +1,53 @@
+{% load static %}
+{% comment %}
+The operator dock (spec 119): pick a Tata Ibadah, browse it, and run it from inside
+OBS. The picker and the runner are two views of one panel; the display state lives in
+this browser (web/display.js) and never reaches the server.
+
+This is the route slice's scaffold: the head and the service list. The runner, the
+transport, and the state wiring land in the same pull request.
+{% endcomment %}
+<!doctype html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title }}</title>
+<link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+<link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'styles/design/obs-dock.css' %}">
+</head>
+<body class="obs-dock">
+
+<main class="dock" id="dockPanel" data-view="pick" aria-label="Operator dock">
+  <div class="dock__head">
+    <div class="dock__titlerow">
+      <img class="dock__logo" src="{% static 'assets/gkps.png' %}" alt="GKPS Klender" width="34" height="34">
+      <div class="dock__titles">
+        <h1 class="dock__title">Tata Ibadah</h1>
+      </div>
+      <span class="dock__tools">
+        <button type="button" class="iconbtn" id="reloadPickBtn" title="Reload services" aria-label="Reload services" tabindex="-1"></button>
+        <button type="button" class="iconbtn" id="themeBtn" title="Appearance: Dark" aria-label="Appearance: Dark" tabindex="-1"></button>
+      </span>
+    </div>
+  </div>
+
+  <div class="dock__body" id="dockBody">
+    <ul class="dock__services" id="dockServices" aria-label="Services">
+      {% for service in services %}
+      <li>
+        <button type="button" class="servicerow" data-service="{{ service.pk }}">
+          <span class="servicerow__name">{{ service.name }}</span>
+          <span class="servicerow__date">{% if service.date %}{{ service.date|date:"j M" }}{% endif %}</span>
+        </button>
+      </li>
+      {% empty %}
+      <li class="dock__empty">No services yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</main>
+
+</body>
+</html>

@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | `feat/obs-dock` | 2026-10-20 |
 
 ## In review
 

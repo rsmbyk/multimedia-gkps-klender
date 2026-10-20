@@ -514,7 +514,7 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
             page.get_by_role('link', name='Kasih').first.wait_for()
             page.goto(self.live_server_url + f'/tatib/{self.service_id}/')
             page.get_by_text('Tuhan dengar kami').wait_for()
-            page.goto(self.live_server_url + f'/obs/service/{self.service_id}/')
+            page.goto(self.live_server_url + f'/projector?service={self.service_id}')
             page.locator('#projectorScreens .screen[data-screen]').first.wait_for(state='attached')
             self.assertIn('Tuhan dengar kami', page.locator('#projectorScreens').text_content())
             page.keyboard.press('g')

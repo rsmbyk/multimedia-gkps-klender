@@ -16,8 +16,10 @@
   var channelName = body.dataset.displayChannel || 'gkps-service-display';
   var service = Number(body.dataset.service);
   if (!service) {
-    var offlinePath = window.location.pathname.match(/^\/obs\/service\/(\d+)\/$/);
-    if (offlinePath) service = Number(offlinePath[1]);
+    /* /projector?service=<id> — the adoption parameter is also the page's own
+       service before the state says otherwise (spec 119). */
+    var adoptParam = new URLSearchParams(window.location.search).get('service');
+    if (adoptParam) service = Number(adoptParam);
     body.dataset.service = String(service);
   }
   var screen = document.getElementById('projectorScreen');

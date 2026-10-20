@@ -1,0 +1,124 @@
+/* The operator dock (spec 119) — the route slice's base: the panel, its head, and the
+ * service rows. The runner, the transport, and the appearance control's full styling
+ * land with their markup; tokens come from tokens.css.
+ */
+
+html, body.obs-dock {
+  margin: 0;
+  min-height: 100%;
+  background: #14130F;
+}
+
+body.obs-dock {
+  color: #F5F3EE;
+  font-family: "CMG Sans", "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.dock {
+  display: flex;
+  flex-direction: column;
+  max-width: 560px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #232019;
+  border-left: 1px solid #37332A;
+  border-right: 1px solid #37332A;
+}
+
+.dock__head {
+  padding: 13px 14px 12px;
+  border-bottom: 1px solid #37332A;
+}
+
+.dock__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dock__logo {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 4px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  object-fit: contain;
+}
+
+.dock__titles { min-width: 0; }
+
+.dock__title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 650;
+}
+
+.dock__tools {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.iconbtn {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border: 1px solid #37332A;
+  border-radius: 9px;
+  background: none;
+  color: #A8A296;
+  cursor: pointer;
+}
+
+.dock__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 8px 12px;
+}
+
+.dock__services {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dock__services li + li { margin-top: 4px; }
+
+.servicerow {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: #F5F3EE;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.servicerow:hover { background: #2E2A21; }
+
+.servicerow__name {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.servicerow__date {
+  margin-left: auto;
+  color: #A8A296;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dock__empty {
+  padding: 12px 8px;
+  color: #A8A296;
+  font-size: 12px;
+}
