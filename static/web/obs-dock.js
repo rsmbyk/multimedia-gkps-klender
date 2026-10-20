@@ -495,11 +495,16 @@
     renderBaits(live, activeEntry);
     updateBand();
     if (live) {
-      var currentEntry = entryList.querySelector('.entryli[data-live="true"]');
-      if (currentEntry) {
-        centerRow(currentEntry);
+      /* The live ROW goes to the centre — the current screen (a song's bait row
+         included), not the entry block around it — on every move and click, and
+         again once the entry's expansion has settled (210 ms). */
+      var target = entryList.querySelector('.screenerow[aria-current="true"]') ||
+                   entryList.querySelector('.entryrow[aria-current="true"]');
+      if (target) {
+        centerRow(target);
         window.setTimeout(function () {
-          var again = entryList.querySelector('.entryli[data-live="true"]');
+          var again = entryList.querySelector('.screenerow[aria-current="true"]') ||
+                      entryList.querySelector('.entryrow[aria-current="true"]');
           if (again) centerRow(again);
         }, 210);
       }
