@@ -1385,7 +1385,7 @@
       ready.then(function (isReady) {
         if (!isReady) return fromServer();
         if (navigator.onLine && (opts.kind === 'results' || opts.kind === 'search')
-            && !opts.historyTraversal) {
+            && !opts.historyTraversal && !opts.restoreSearchId) {
           return fromServer().catch(function () {
             return renderer.render(url).then(function (doc) {
               if (!doc) throw new Error('No saved search page');
@@ -1397,7 +1397,7 @@
           if (!doc) return fromServer();
           if (!applyFresh(doc)) return;
           if (navigator.onLine && window.GKPSOffline && generation === navigationGeneration
-              && !(opts.historyTraversal && opts.restoreSearchId)) {
+              && !opts.restoreSearchId) {
             renderer.chunkFor(url).then(function (chunkUrl) {
               if (!chunkUrl) return refreshFullPage();
               return fetch(chunkUrl, {cache: 'no-store', credentials: 'same-origin'})
