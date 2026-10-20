@@ -2,10 +2,16 @@
 {% comment %}
 The operator dock (spec 119): pick a Tata Ibadah, browse it, and run it.
 
-Two views of one panel: the picker (server-rendered, grouped by month) and the
-runner (built in the browser from the same per-service data islands the projector
-page carries). The display state lives in this browser (web/display.js) and never
-reaches the server; the projector and the caption overlay follow it.
+Two views of one panel, built to the approved mockup (v70): the picker is a
+month-grouped list of services (flat rows — name, an "On screen" pill, a short date);
+the runner is a numbered list of entries — songs showing their reference beside the
+title with a "Bait …" line under it, untitled text in quiet italics, a section break
+as a hairline — with the current entry pinned, the next one named under it, and a
+transport row (edition chip, bait strip, two arrows) at the foot.
+
+The display state is browser-local (web/display.js): the picker says which service is
+on screen, the runner says which entry and screen, and the slashed-eye button in the
+runner's head is the whole display control ("Display this service" / "Hide words").
 
 The dock owns the transport keys and the focus: every control is tabindex="-1" and
 the panel itself is the focus target (tabindex="-1"), so keys never land on a button
@@ -43,127 +49,111 @@ and Space never presses whatever was last clicked.
 <main class="dock" id="dockPanel" data-view="pick" tabindex="-1" aria-label="Operator dock">
 
   <!-- ============================== picker ============================== -->
-  <section class="view" id="viewPick" aria-label="Services">
-    <header class="dock__head">
-      <img class="dock__logo" src="{% static 'assets/gkps.png' %}" alt="GKPS Klender" width="34" height="34">
-      <h1 class="dock__title">Tata Ibadah</h1>
-      <span class="dock__tools">
-        <button type="button" class="iconbtn" id="reloadPickBtn" title="Reload services"
-                aria-label="Reload services" tabindex="-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/>
-            <path d="M20.5 3.6V9H15"/>
-          </svg>
-        </button>
-        <button type="button" class="iconbtn iconbtn--theme" id="themeBtn"
-                title="System mode" aria-label="System mode" tabindex="-1">
-          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="4"/>
-            <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"/>
-          </svg>
-          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/>
-          </svg>
-          <svg class="system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="13" rx="2"/>
-            <path d="M8 21h8M12 17v4"/>
-          </svg>
-        </button>
-      </span>
-    </header>
-
-    <div class="dock__body">
-      <ul class="dock__services" id="dockServices">
-        {% for group in groups %}
-        <li class="dock__month" role="presentation">{{ group.label }}</li>
-        {% for service in group.services %}
-        <li>
-          <button type="button" class="servicerow" data-service="{{ service.pk }}"
-                  data-name="{{ service.name }}" data-date="{{ service.long_date }}"
-                  tabindex="-1">
-            <span class="servicerow__name">{{ service.name }}</span>
-            <span class="servicerow__date">{{ service.short_date }}</span>
-            <svg class="servicerow__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M9 6l6 6-6 6"/>
+  <section class="view is-active" id="viewPick" aria-label="Pick a service">
+    <div class="dock__head">
+      <div class="dock__titlerow">
+        <img class="dock__logo" src="{% static 'assets/gkps.png' %}" alt="GKPS Klender" width="34" height="34">
+        <div style="min-width:0">
+          <h2 class="dock__title">Tata Ibadah</h2>
+        </div>
+        <span class="dock__tools">
+          <button type="button" class="iconbtn" id="reloadPickBtn" title="Reload services"
+                  aria-label="Reload services" tabindex="-1">
+            <svg viewBox="0 0 20 20"><path d="M16.2 8.6a6.3 6.3 0 1 0 .3 3.1"></path><path d="M16.7 4.5v4.4h-4.4"></path></svg>
+          </button>
+          <button type="button" class="iconbtn iconbtn--theme" id="themeBtn"
+                  title="Appearance: Dark" aria-label="Appearance: Dark" tabindex="-1">
+            <svg class="sun" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"/>
+            </svg>
+            <svg class="moon" viewBox="0 0 24 24">
+              <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/>
+            </svg>
+            <svg class="system" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="13" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
             </svg>
           </button>
-        </li>
-        {% endfor %}
-        {% empty %}
-        <li class="dock__empty">Belum ada Tata Ibadah.</li>
-        {% endfor %}
-      </ul>
+        </span>
+      </div>
+    </div>
+
+    <div class="dock__body" id="pickBody">
+      {% for group in groups %}
+      <section>
+        <h3 class="group__head">{{ group.label }}</h3>
+        <ul>
+          {% for service in group.services %}
+          <li>
+            <button type="button" class="servicerow{% if service.is_today %} is-today{% elif service.is_upcoming %} is-upcoming{% endif %}"
+                    data-service="{{ service.pk }}" data-name="{{ service.name }}"
+                    data-date="{{ service.long_date }}" tabindex="-1">
+              <span class="servicerow__n">{{ service.name }}</span>
+              <span class="onscreen" data-onscreen-for="{{ service.pk }}" hidden>On screen</span>
+              <span class="servicerow__d">{{ service.short_date }}</span>
+            </button>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% empty %}
+      <p class="dock__note">Belum ada Tata Ibadah.</p>
+      {% endfor %}
     </div>
   </section>
 
   <!-- ============================== runner ============================== -->
-  <section class="view" id="viewRun" aria-label="Runner" hidden>
-    <header class="dock__head">
-      <button type="button" class="iconbtn" id="switchBtn" title="All services"
-              aria-label="All services" tabindex="-1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
-      <span class="dock__titles">
-        <span class="dock__service" id="runService"></span>
-        <span class="dock__date" id="runDate"></span>
-      </span>
-      <span class="dock__tools">
-        <button type="button" class="iconbtn iconbtn--blank" id="blankBtn" data-on="false"
-                title="Blank the screen" aria-label="Blank the screen" aria-pressed="false"
-                tabindex="-1">
-          <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
-            <circle cx="12" cy="12" r="2.6"/>
-            <path class="eye__slash" d="M4 20L20 4"/>
+  <section class="view" id="viewRun" aria-label="Runner">
+    <div class="dock__head">
+      <div class="dock__runheadrow">
+        <div class="dock__runtitles">
+          <p class="serviceline" id="runService"></p>
+          <p class="servicedate" id="runDate"></p>
+        </div>
+        <button type="button" class="iconbtn" id="switchBtn" title="Switch service"
+                aria-label="Switch service" tabindex="-1">
+          <svg viewBox="0 0 20 20"><path d="M6 4h10M6 10h10M6 16h10"></path><path d="M3 4h.01M3 10h.01M3 16h.01" stroke-width="2.4"></path></svg>
+        </button>
+        <button type="button" class="iconbtn" id="blankBtn" aria-pressed="true"
+                title="Display this service" aria-label="Display this service" tabindex="-1">
+          <svg class="glyph glyph--display" viewBox="0 0 20 20">
+            <path d="M3 3l14 14"></path>
+            <path d="M6.6 6.7C4.1 8.2 2.6 10 2.6 10s2.8 4.6 7.4 4.6c1.5 0 2.8-.4 3.9-1"></path>
+            <path d="M9 5.5c.3 0 .7-.1 1-.1 4.6 0 7.4 4.6 7.4 4.6s-.8 1.4-2.2 2.6"></path>
+          </svg>
+          <svg class="glyph glyph--onscreen" viewBox="0 0 20 20">
+            <path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"></path>
+            <circle cx="10" cy="10" r="2.6"></circle>
           </svg>
         </button>
-        <button type="button" class="livebtn" id="displayBtn" data-on="false" aria-pressed="false"
-                tabindex="-1">
-          <span class="livebtn__dot" aria-hidden="true"></span>
-          <span data-project-label>Project</span>
-        </button>
-      </span>
-    </header>
+      </div>
+    </div>
 
     <div class="dock__body" id="runBody">
-      <ul class="entries" id="entryList"></ul>
+      <ul id="entryList"></ul>
       <p class="dock__note" id="runNote" hidden></p>
     </div>
-    <div class="nextband" id="nextBand" hidden aria-hidden="true">
-      <span class="nextband__tag">NEXT</span>
-      <span class="nextband__label" id="nextBandLabel"></span>
-    </div>
 
-    <footer class="dock__foot">
-      <button type="button" class="transchip" id="transChip" aria-label="Edition" tabindex="-1"
-              hidden>TB</button>
-      <div class="chips" id="baitChips"></div>
-      <span class="stepper">
-        <button type="button" class="iconbtn" id="prevBtn" title="Previous screen"
-                aria-label="Previous screen" tabindex="-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M15 6l-6 6 6 6"/>
-          </svg>
-        </button>
-        <button type="button" class="iconbtn" id="nextBtn" title="Next screen"
-                aria-label="Next screen" tabindex="-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 6l6 6-6 6"/>
-          </svg>
-        </button>
-      </span>
-    </footer>
+    <div class="dock__transport">
+      <div class="transportrow">
+        <button type="button" class="transchip" id="transChip" hidden tabindex="-1"
+                aria-pressed="false" title="Flip TB / SIM (T)">TB</button>
+        <div class="baits" id="baitStrip" hidden>
+          <span class="baitstrip" id="baitChips"></span>
+        </div>
+        <span class="navpair">
+          <button type="button" class="navbtn" id="prevBtn" tabindex="-1"
+                  title="Previous screen" aria-label="Previous screen">
+            <svg viewBox="0 0 20 20"><path d="M12 4 6 10l6 6"></path></svg>
+          </button>
+          <button type="button" class="navbtn" id="nextBtn" tabindex="-1"
+                  title="Next screen" aria-label="Next screen">
+            <svg viewBox="0 0 20 20"><path d="M8 4l6 6-6 6"></path></svg>
+          </button>
+        </span>
+      </div>
+    </div>
   </section>
 </main>
 

@@ -87,10 +87,10 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
 
     def _open_service(self, dock, name):
         dock.locator(f'.servicerow[data-name="{name}"]').first.click()
-        dock.wait_for_selector('.entry__row')
+        dock.wait_for_selector('.entryrow')
 
     def _project_first_entry(self, dock):
-        dock.locator('.entry__row').first.click()
+        dock.locator('.entryrow').first.click()
 
     def _caption(self, overlay):
         overlay.wait_for_selector('.obs-overlay__caption')

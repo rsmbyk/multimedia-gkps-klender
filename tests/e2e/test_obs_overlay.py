@@ -50,8 +50,8 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         dock = context.new_page()
         dock.goto(self.live_server_url + '/obs/dock')
         dock.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
-        dock.wait_for_selector('.entry__row')
-        dock.locator('.entry__row').first.click()
+        dock.wait_for_selector('.entryrow')
+        dock.locator('.entryrow').first.click()
         dock.wait_for_function(
             "service => { const s = JSON.parse(localStorage.getItem('gkps-display') || 'null');"
             " return s && s.service === service && s.on === true; }", arg=self.service.pk)
@@ -80,8 +80,8 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         dock = context.new_page()
         dock.goto(self.live_server_url + '/obs/dock')
         dock.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
-        dock.wait_for_selector('.entry__row')
-        dock.locator('.entry__row').first.click()
+        dock.wait_for_selector('.entryrow')
+        dock.locator('.entryrow').first.click()
         dock.wait_for_function(
             "service => { const s = JSON.parse(localStorage.getItem('gkps-display') || 'null');"
             " return s && s.service === service && s.on === true; }", arg=self.service.pk)

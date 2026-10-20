@@ -29,6 +29,7 @@ from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
                          JsonResponse)
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView
@@ -1305,10 +1306,13 @@ def obs_dock(request):
                     .filter(is_active=True, date__isnull=False)
                     .order_by('-date', '-id'))
     groups = []
+    today = timezone.localdate()
     for service in services:
         # Indonesian month names (the template's |date filter speaks English here).
         service.short_date = search_lib.format_date_short(service.date)
         service.long_date = search_lib.format_date_long(service.date)
+        service.is_today = service.date == today
+        service.is_upcoming = service.date > today
         label = search_lib.format_month_long(service.date)
         if not groups or groups[-1]['label'] != label:
             groups.append({'label': label, 'services': []})

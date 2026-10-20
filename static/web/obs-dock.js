@@ -1,19 +1,25 @@
 /* The operator dock (spec 119): pick a Tata Ibadah, browse its entries, and run it.
  *
- * The dock is a WRITER of the browser-local display state (web/display.js): clicking an
- * entry or a screen projects exactly that screen, the display button toggles the
- * projection, and the blank button is the reversible pause. The projector and the
- * caption overlay are readers; nothing here talks to the server but the service data
- * (the projector page's data islands, one fetch per service).
+ * Built to the approved mockup (v70): the picker is a month-grouped list of service
+ * rows (name, "On screen" pill, short date); the runner is a numbered list of entries
+ * (songs: reference + title with a "Bait …" line; untitled text in quiet italics; a
+ * section break as a hairline), one inner row per projector screen, the current entry
+ * pinned with the next one named under it, and a transport row at the foot.
  *
- * Keyboard (spec 119): the dock owns the transport keys. The panel is the only focus
- * target — every control is tabindex="-1", and a pointerdown hands focus back to the
- * panel — so a key never lands on a button and Space never re-presses the last click.
+ * The dock is a WRITER of the browser-local display state (web/display.js). Its one
+ * display control is the slashed-eye button in the runner head: "Display this service"
+ * when the browsed service is not on screen, "Hide words" while it is. The projector
+ * and the caption overlay are readers.
+ *
+ * Keyboard (the dock owns it; every control is tabindex="-1" and the panel takes the
+ * focus back on pointerdown):
  *
  *     ArrowDown / ArrowRight / PageDown     next screen
  *     ArrowUp / ArrowLeft / PageUp          previous screen
- *     Home / End                            first / last screen
- *     Space                                 project / hide (this service)
+ *     Shift + the same                      next / previous bait
+ *     Ctrl/⌘ + the same                     next / previous entry
+ *     Home / End                            first / last of the same unit
+ *     Space                                 display / hide this service
  *     T                                     show the other edition (passages)
  *     Escape                                back to the picker
  */
@@ -23,47 +29,36 @@
   var panel = document.getElementById('dockPanel');
   var viewPick = document.getElementById('viewPick');
   var viewRun = document.getElementById('viewRun');
-  var pickList = document.getElementById('dockServices');
+  var pickBody = document.getElementById('pickBody');
   var entryList = document.getElementById('entryList');
   var runBody = document.getElementById('runBody');
   var runService = document.getElementById('runService');
   var runDate = document.getElementById('runDate');
   var runNote = document.getElementById('runNote');
-  var displayBtn = document.getElementById('displayBtn');
-  var displayLabel = displayBtn.querySelector('[data-project-label]');
   var blankBtn = document.getElementById('blankBtn');
   var prevBtn = document.getElementById('prevBtn');
   var nextBtn = document.getElementById('nextBtn');
   var transChip = document.getElementById('transChip');
+  var baitStrip = document.getElementById('baitStrip');
   var baitChips = document.getElementById('baitChips');
   var switchBtn = document.getElementById('switchBtn');
   var reloadBtn = document.getElementById('reloadPickBtn');
   var themeBtn = document.getElementById('themeBtn');
   var root = document.documentElement;
 
-  var SVG_NS = 'http://www.w3.org/2000/svg';
   var cache = {};                 /* service id -> {entries, screens} */
   var dock = {
     service: null, name: '', date: '',
     entries: [], screens: [],
-    openEntry: null,
     on: false, screen: 0, translation: null,
+    bandEntry: null,              /* the li that owns the NEXT band */
   };
 
-  function icon(path, cls) {
-    var svg = document.createElementNS(SVG_NS, 'svg');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    svg.setAttribute('fill', 'none');
-    svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '1.7');
-    svg.setAttribute('stroke-linecap', 'round');
-    svg.setAttribute('stroke-linejoin', 'round');
-    svg.setAttribute('aria-hidden', 'true');
-    if (cls) svg.setAttribute('class', cls);
-    var p = document.createElementNS(SVG_NS, 'path');
-    p.setAttribute('d', path);
-    svg.appendChild(p);
-    return svg;
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
   }
 
   /* ---------- the service's data (the projector page's islands) -------------- */
@@ -87,126 +82,179 @@
       .catch(function () { return null; });
   }
 
-  /* ---------- the runner's list --------------------------------------------- */
-
-  function firstLine(screen) {
-    var lines = (screen && screen.lines) || [];
-    for (var i = 0; i < lines.length; i++) {
-      var text = String(lines[i].text || '').trim();
-      if (text) return text;
-    }
-    return '';
-  }
+  /* ---------- reading the entry's own words ---------------------------------- */
 
   function entryLabel(entry) {
     var label = String(entry.label || '').trim();
     if (label) return label;
-    if (entry.type === 'break') return 'Istirahat';
+    if (entry.type === 'break') return 'Section break';
     if (entry.type === 'song') return 'Lagu';
     return 'Teks';
   }
 
-  function isQuiet(entry) {
-    return entry.type === 'break' || (!entry.label && entry.untitled);
+  function songParts(entry) {
+    var label = String(entry.label || '').trim();
+    /* "NKB 43 — Title", "NKB 43: Title", "NKB 43 Title" → reference + title. */
+    var match = label.match(/^([A-Za-z]{2,6}\s*\d+[A-Za-z]?)\s*(?:[:—–-]\s*|\s+)(.+)$/);
+    if (match) {
+      return {reference: match[1].trim(), title: match[2].trim()};
+    }
+    return {reference: '', title: label};
   }
 
-  function entryMeta(entry) {
-    var baits = entry.baits || [];
-    if (baits.length) return baits.length + ' bait';
-    var count = 0;
+  function screenLines(screen) {
+    var out = [];
+    ((screen && screen.lines) || []).forEach(function (line) {
+      var text = String(line.text || '').trim();
+      if (text) out.push(text);
+    });
+    return out;
+  }
+
+  function quietLines(entry) {
+    /* An untitled text entry is shown by its own first words (mockup: italic rows). */
     for (var i = entry.start; i <= entry.end; i++) {
-      if (dock.screens[i] && !dock.screens[i].blank) count++;
+      var screen = dock.screens[i];
+      if (!screen || screen.blank) continue;
+      var lines = screenLines(screen);
+      if (lines.length) return lines.slice(0, 2);
     }
-    return count ? count + ' layar' : '';
+    return [];
   }
 
-  function screenLabel(screen, entry) {
-    var line = firstLine(screen);
-    var header = String(screen.header || '').trim();
-    if (header && header !== entryLabel(entry)) {
-      return line ? header + ' — ' + line : header;
+  /* ---------- the runner's list --------------------------------------------- */
+
+  function entryRowContent(entry, index) {
+    var row = el('button', 'entryrow');
+    row.type = 'button';
+    row.tabIndex = -1;
+    row.dataset.index = String(index);
+    row.setAttribute('aria-current', 'false');
+
+    if (entry.type === 'break') {
+      row.setAttribute('aria-label', 'Section break');
+      var brk = el('span', 'entryrow__break');
+      brk.appendChild(el('span'));
+      row.appendChild(brk);
+      return row;
     }
-    return line || 'Kosong';
+
+    row.appendChild(el('span', 'entryrow__c', String(index + 1)));
+
+    if (entry.type === 'song') {
+      var parts = songParts(entry);
+      var t = el('span', 'entryrow__t entryrow__t--song');
+      var head = el('span', 'entryrow__heading');
+      if (parts.reference) head.appendChild(el('span', 'entryrow__reference', parts.reference));
+      head.appendChild(el('span', 'entryrow__title', parts.title || 'Lagu'));
+      t.appendChild(head);
+      var baits = entry.baits || [];
+      if (baits.length) {
+        t.appendChild(el('span', 'entryrow__verses',
+          'Bait ' + baits.map(function (bait) { return bait.number; }).join(', ')));
+      }
+      row.appendChild(t);
+      return row;
+    }
+
+    var label = String(entry.label || '').trim();
+    if (label) {
+      row.appendChild(el('span', 'entryrow__t', label));
+      return row;
+    }
+
+    var linesWrap = el('span', 'entryrow__t entryrow__t--lines');
+    var lines = quietLines(entry);
+    if (!lines.length) {
+      linesWrap.appendChild(el('span', 'entryrow__line--quiet', entryLabel(entry)));
+    } else {
+      lines.forEach(function (text) {
+        linesWrap.appendChild(el('span', 'entryrow__line--quiet', text));
+      });
+    }
+    row.appendChild(linesWrap);
+    return row;
+  }
+
+  function screenRow(index) {
+    var screen = dock.screens[index];
+    if (!screen) return null;
+    var row = el('button');
+    row.type = 'button';
+    row.tabIndex = -1;
+    row.dataset.screen = String(index);
+    row.setAttribute('aria-current', 'false');
+
+    if (screen.blank) {
+      row.className = 'screenerow screenerow--rest';
+      row.textContent = 'Rest';
+      return row;
+    }
+
+    var lines = screenLines(screen);
+    row.className = 'screenerow';
+    var wrap = el('span', 'screenerow__t--lines');
+    if (lines.length) {
+      lines.forEach(function (text) { wrap.appendChild(el('span', 'screenerow__line', text)); });
+    } else if (screen.header) {
+      wrap.appendChild(el('span', 'screenerow__line', String(screen.header)));
+    } else {
+      return null;
+    }
+    row.appendChild(wrap);
+    return row;
+  }
+
+  function buildInner(entry) {
+    var inner = el('div', 'entryinner');
+    inner.hidden = true;
+    var baits = entry.baits || [];
+    if (baits.length) {
+      baits.forEach(function (bait) {
+        inner.appendChild(el('div', 'baithead', 'Bait ' + bait.number));
+        for (var s = bait.start; s <= bait.end; s++) {
+          var row = screenRow(s);
+          if (row) inner.appendChild(row);
+        }
+      });
+    } else {
+      for (var i = entry.start; i <= entry.end; i++) {
+        var screen = screenRow(i);
+        if (screen) inner.appendChild(screen);
+      }
+    }
+    return inner.children.length ? inner : null;
+  }
+
+  function nextBandFor(index) {
+    var next = dock.entries[index + 1];
+    if (!next) return null;
+    var band = el('button', 'nextband');
+    band.type = 'button';
+    band.tabIndex = -1;
+    band.dataset.index = String(index + 1);
+    band.hidden = true;
+    band.appendChild(el('span', 'nextband__cap', 'Next'));
+    var parts = next.type === 'song' ? songParts(next) : null;
+    var label = parts
+      ? (parts.reference ? parts.reference + ' — ' + parts.title : parts.title)
+      : entryLabel(next);
+    band.appendChild(el('span', 'nextband__label', label || 'Next'));
+    return band;
   }
 
   function renderList() {
     entryList.replaceChildren();
     dock.entries.forEach(function (entry, index) {
-      var item = document.createElement('li');
-      item.className = 'entry';
-      item.dataset.entry = String(index);
-
-      var row = document.createElement('button');
-      row.type = 'button';
-      row.className = 'entry__row';
-      row.tabIndex = -1;
-      row.dataset.entry = String(index);
-      row.appendChild(icon('M9 6l6 6-6 6', 'entry__chev'));
-
-      var label = document.createElement('span');
-      label.className = 'entry__label' + (isQuiet(entry) ? ' entry__label--quiet' : '');
-      label.textContent = entryLabel(entry);
-      row.appendChild(label);
-
-      var meta = document.createElement('span');
-      meta.className = 'entry__meta';
-      meta.textContent = entryMeta(entry);
-      row.appendChild(meta);
-      item.appendChild(row);
-
-      var inner = document.createElement('div');
-      inner.className = 'entry__inner';
-      var ul = document.createElement('ul');
-      var baits = entry.baits || [];
-      if (baits.length) {
-        /* A song's screens group under their bait, so a number names its place. */
-        baits.forEach(function (bait) {
-          var head = document.createElement('li');
-          head.className = 'baithead';
-          head.textContent = 'Bait ' + bait.number;
-          ul.appendChild(head);
-          for (var s = bait.start; s <= bait.end; s++) appendScreenRow(ul, entry, s);
-        });
-      } else {
-        for (var i = entry.start; i <= entry.end; i++) appendScreenRow(ul, entry, i);
-      }
-      if (ul.children.length) {
-        inner.appendChild(ul);
-        item.appendChild(inner);
-      }
+      var item = el('li', 'entryli');
+      item.dataset.index = String(index);
+      item.appendChild(entryRowContent(entry, index));
+      var inner = buildInner(entry);
+      if (inner) item.appendChild(inner);
       entryList.appendChild(item);
     });
     runNote.hidden = dock.entries.length > 0;
     if (!dock.entries.length) runNote.textContent = 'Tata Ibadah ini belum punya isi.';
-    applyOpen();
-    updateStuck();
-  }
-
-  function appendScreenRow(ul, entry, index) {
-    var screen = dock.screens[index];
-    if (!screen || screen.blank) return;
-    var cell = document.createElement('li');
-    var button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'srow';
-    button.tabIndex = -1;
-    button.dataset.screen = String(index);
-    var no = document.createElement('span');
-    no.className = 'srow__no';
-    no.textContent = String(index - entry.start + 1);
-    var text = document.createElement('span');
-    text.className = 'srow__text';
-    text.textContent = screenLabel(screen, entry);
-    button.appendChild(no);
-    button.appendChild(text);
-    cell.appendChild(button);
-    ul.appendChild(cell);
-  }
-
-  function applyOpen() {
-    entryList.querySelectorAll('.entry').forEach(function (el) {
-      el.classList.toggle('is-open', Number(el.dataset.entry) === dock.openEntry);
-    });
   }
 
   /* ---------- views and focus ----------------------------------------------- */
@@ -215,10 +263,19 @@
     try { panel.focus({preventScroll: true}); } catch (e) { panel.focus(); }
   }
 
-  function setView(name) {
+  function setView(name, back) {
+    if (panel.dataset.view === name) return;
     panel.dataset.view = name;
-    viewPick.hidden = name !== 'pick';
-    viewRun.hidden = name !== 'run';
+    var incoming = name === 'run' ? viewRun : viewPick;
+    var outgoing = name === 'run' ? viewPick : viewRun;
+    outgoing.classList.remove('is-active', 'is-in-forward', 'is-in-back');
+    incoming.classList.add('is-active');
+    incoming.classList.remove('is-in-forward', 'is-in-back');
+    void incoming.offsetWidth;                       /* restart the animation */
+    incoming.classList.add(back ? 'is-in-back' : 'is-in-forward');
+    window.setTimeout(function () {
+      incoming.classList.remove('is-in-forward', 'is-in-back');
+    }, 220);
     focusPanel();
   }
 
@@ -228,12 +285,12 @@
     dock.date = date;
     dock.entries = [];
     dock.screens = [];
-    dock.openEntry = null;
+    dock.bandEntry = null;
     runService.textContent = name;
     runDate.textContent = date;
     entryList.replaceChildren();
     runNote.hidden = true;
-    setView('run');
+    setView('run', false);
     var wanted = id;
     fetchService(id).then(function (data) {
       if (dock.service !== wanted) return;
@@ -252,9 +309,8 @@
   /* ---------- projection (the state's verbs) -------------------------------- */
 
   function projectScreen(index) {
-    if (dock.service == null) return;
-    var size = dock.screens.length;
-    var target = Math.max(0, size ? Math.min(index, size - 1) : index);
+    if (dock.service == null || !dock.screens.length) return;
+    var target = Math.max(0, Math.min(index, dock.screens.length - 1));
     var state = gkpsDisplay.read();
     if (state.service === dock.service) gkpsDisplay.screen(target);
     else gkpsDisplay.show(dock.service, target);
@@ -265,49 +321,7 @@
     var state = gkpsDisplay.read();
     var base = state.service === dock.service ? state.screen : -1;
     if (delta < 0 && base <= 0) return;
-    projectScreen(Math.max(0, base + delta));
-  }
-
-  /* ---------- the state ------------------------------------------------------ */
-
-  var glideFrame = null;
-  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  /* One glide per move (spec 119): 190 ms ease-out, clamped at the ends, never a
-     bounce. Reduced motion jumps instead. */
-  function glideScroll(target) {
-    var max = runBody.scrollHeight - runBody.clientHeight;
-    var to = Math.max(0, Math.min(target, max));
-    var from = runBody.scrollTop;
-    if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
-    if (Math.abs(to - from) < 1) return;
-    if (reduceMotion.matches) { runBody.scrollTop = to; return; }
-    var started = performance.now();
-    var duration = 190;
-    function frame(now) {
-      var t = Math.min(1, (now - started) / duration);
-      var eased = 1 - Math.pow(1 - t, 3);
-      runBody.scrollTop = from + (to - from) * eased;
-      glideFrame = t < 1 ? window.requestAnimationFrame(frame) : null;
-    }
-    glideFrame = window.requestAnimationFrame(frame);
-  }
-
-  function centerRow(el) {
-    if (!el) return;
-    var box = runBody.getBoundingClientRect();
-    var rect = el.getBoundingClientRect();
-    glideScroll(runBody.scrollTop + (rect.top - box.top) - (box.height - rect.height) / 2);
-  }
-
-  function centerLive() {
-    var live = entryList.querySelector('.srow.is-live') ||
-               entryList.querySelector('.entry.is-live > .entry__row');
-    if (!live) return;
-    /* The entry's expansion animates 200 ms; the glide follows it, so a boundary
-       crossing reads as one motion rather than two. */
-    centerRow(live);
-    window.setTimeout(function () { centerRow(live); }, 210);
+    projectScreen(base + delta);
   }
 
   function entryOfScreen(index) {
@@ -318,41 +332,70 @@
     return -1;
   }
 
-  /* The pinned row, the dissolve under it, and the NEXT band (spec 119). */
-  function updateStuck() {
-    var row = entryList.querySelector('.entry.is-live > .entry__row');
-    var stuck = false;
-    if (row) {
-      var box = runBody.getBoundingClientRect();
-      /* A sticky row pins at the list's padding edge, so that edge is the line to
-         measure against — not the scrollport's own top. */
-      var edge = parseFloat(getComputedStyle(runBody).paddingTop) || 0;
-      stuck = row.getBoundingClientRect().top - box.top <= edge + 1;
-      row.classList.toggle('is-stuck', stuck);
+  /* ---------- glide and centring (190 ms ease-out, clamped) ------------------ */
+
+  var glideFrame = null;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function glideScroll(target) {
+    var max = runBody.scrollHeight - runBody.clientHeight;
+    var to = Math.max(0, Math.min(target, max));
+    var from = runBody.scrollTop;
+    if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
+    if (Math.abs(to - from) < 1) return;
+    if (reduceMotion.matches) { runBody.scrollTop = to; return; }
+    var started = performance.now();
+    function frame(now) {
+      var t = Math.min(1, (now - started) / 190);
+      runBody.scrollTop = from + (to - from) * (1 - Math.pow(1 - t, 3));
+      glideFrame = t < 1 ? window.requestAnimationFrame(frame) : null;
     }
-    runBody.dataset.stuck = stuck ? 'true' : 'false';
-    var nextBand = document.getElementById('nextBand');
-    var nextBandLabel = document.getElementById('nextBandLabel');
-    var activeEntry = dock.on ? entryOfScreen(dock.screen) : -1;
-    var next = activeEntry >= 0 ? dock.entries[activeEntry + 1] : null;
-    if (stuck && next) {
-      nextBandLabel.textContent = entryLabel(next);
-      nextBand.hidden = false;
-    } else {
-      nextBand.hidden = true;
+    glideFrame = window.requestAnimationFrame(frame);
+  }
+
+  function centerRow(node) {
+    if (!node) return;
+    var box = runBody.getBoundingClientRect();
+    var rect = node.getBoundingClientRect();
+    glideScroll(runBody.scrollTop + (rect.top - box.top) - (box.height - rect.height) / 2);
+  }
+
+  /* ---------- the pinned row and the NEXT band ------------------------------ */
+
+  function updateBand() {
+    var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
+    var band = dock.bandEntry;
+    if (band && band.parentElement !== liveEntry) {
+      band.remove();
+      dock.bandEntry = null;
+      band = null;
     }
-    runBody.dataset.band = nextBand.hidden ? 'false' : 'true';
+    if (liveEntry && !band) {
+      band = nextBandFor(Number(liveEntry.dataset.index));
+      if (band) {
+        liveEntry.appendChild(band);
+        dock.bandEntry = band;
+      }
+    }
+    if (!liveEntry || !band) {
+      if (band) band.hidden = true;
+      return;
+    }
+    var box = runBody.getBoundingClientRect();
+    /* The band yields the moment the entry's own end is in view. */
+    band.hidden = liveEntry.getBoundingClientRect().bottom <= box.bottom + 6;
+    var row = liveEntry.querySelector('.entryrow');
+    if (row) row.classList.toggle('is-stuck', row.getBoundingClientRect().top - box.top <= 0.5);
   }
 
   var scrollScheduled = false;
   runBody.addEventListener('scroll', function () {
     if (scrollScheduled) return;
     scrollScheduled = true;
-    window.requestAnimationFrame(function () {
-      scrollScheduled = false;
-      updateStuck();
-    });
+    window.requestAnimationFrame(function () { scrollScheduled = false; updateBand(); });
   }, {passive: true});
+
+  /* ---------- edition chip and bait strip ------------------------------------ */
 
   function translationOptions(screen) {
     var translations = (screen && screen.translations) || {};
@@ -366,7 +409,7 @@
     var options = translationOptions(screen);
     if (!live || !options.length) {
       transChip.hidden = true;
-      delete transChip.dataset.custom;
+      transChip.setAttribute('aria-pressed', 'false');
       return;
     }
     var entry = dock.entries[activeEntry] || {};
@@ -375,43 +418,43 @@
     transChip.hidden = false;
     transChip.textContent = shown;
     transChip.dataset.editions = options.join(',');
-    /* Filled only while the shown edition is not the entry's own (spec 119). */
-    if (shown !== own) transChip.dataset.custom = 'true';
-    else delete transChip.dataset.custom;
+    transChip.setAttribute('aria-pressed', shown !== own ? 'true' : 'false');
   }
 
-  function renderChips(live, activeEntry) {
+  function updateBaitFades() {
+    var max = baitChips.scrollWidth - baitChips.clientWidth;
+    baitChips.classList.toggle('is-left', baitChips.scrollLeft > 2);
+    baitChips.classList.toggle('is-right', max > 2 && baitChips.scrollLeft < max - 2);
+  }
+
+  function renderBaits(live, activeEntry) {
     baitChips.replaceChildren();
-    delete baitChips.dataset.overflow;
-    if (!live || activeEntry < 0) return;
-    var entry = dock.entries[activeEntry];
+    var entry = live && activeEntry >= 0 ? dock.entries[activeEntry] : null;
     var baits = (entry && entry.baits) || [];
+    baitStrip.hidden = !baits.length;
+    if (!baits.length) return;
     var liveChip = null;
     baits.forEach(function (bait) {
-      var chip = document.createElement('button');
+      var chip = el('button', 'bait', String(bait.number));
       chip.type = 'button';
-      chip.className = 'chip';
       chip.tabIndex = -1;
       chip.dataset.screen = String(bait.start);
-      chip.textContent = String(bait.number);
-      var isLive = dock.screen >= bait.start && dock.screen <= bait.end;
-      chip.classList.toggle('is-live', isLive);
-      if (isLive) liveChip = chip;
+      var current = dock.screen >= bait.start && dock.screen <= bait.end;
+      chip.setAttribute('aria-pressed', current ? 'true' : 'false');
+      if (current) liveChip = chip;
       baitChips.appendChild(chip);
     });
-    if (!baits.length) return;
-    /* The chip strip glides its current chip to the centre; fades only while it
-       overflows (spec 119). */
-    baitChips.dataset.overflow = baitChips.scrollWidth > baitChips.clientWidth + 1 ? 'true' : 'false';
+    updateBaitFades();
     if (liveChip) {
       var target = liveChip.offsetLeft - (baitChips.clientWidth - liveChip.offsetWidth) / 2;
-      try {
-        baitChips.scrollTo({left: target, behavior: reduceMotion.matches ? 'auto' : 'smooth'});
-      } catch (e) {
-        baitChips.scrollLeft = target;
-      }
+      try { baitChips.scrollTo({left: target, behavior: reduceMotion.matches ? 'auto' : 'smooth'}); }
+      catch (e) { baitChips.scrollLeft = target; }
     }
   }
+
+  baitChips.addEventListener('scroll', updateBaitFades, {passive: true});
+
+  /* ---------- the state ------------------------------------------------------ */
 
   function sync(state) {
     if (!state) state = gkpsDisplay.read();
@@ -420,118 +463,116 @@
     dock.screen = live ? state.screen : 0;
     dock.translation = live ? state.translation : null;
 
-    displayBtn.dataset.on = dock.on ? 'true' : 'false';
-    displayBtn.setAttribute('aria-pressed', dock.on ? 'true' : 'false');
-    displayLabel.textContent = dock.on ? 'Projecting' : 'Project';
-    displayBtn.title = dock.on ? 'Hide the words (space)' : 'Project this service (space)';
-    displayBtn.setAttribute('aria-label', displayBtn.title);
-
-    blankBtn.dataset.on = live && state.on !== true ? 'true' : 'false';
-    blankBtn.setAttribute('aria-pressed', blankBtn.dataset.on);
-    blankBtn.disabled = !live;
-    blankBtn.title = blankBtn.dataset.on === 'true'
-      ? 'Resume the words (space)' : 'Blank the screen (space)';
-    blankBtn.setAttribute('aria-label', blankBtn.title);
+    blankBtn.setAttribute('aria-pressed', dock.on ? 'false' : 'true');
+    var title = dock.on ? 'Hide words' : 'Display this service';
+    blankBtn.title = title;
+    blankBtn.setAttribute('aria-label', title);
 
     var activeEntry = live ? entryOfScreen(state.screen) : -1;
-    if (live && activeEntry !== -1) dock.openEntry = activeEntry;
+    entryList.querySelectorAll('.entryli').forEach(function (li) {
+      var index = Number(li.dataset.index);
+      var current = live && index === activeEntry;
+      li.dataset.live = current ? 'true' : 'false';
+      var row = li.querySelector('.entryrow');
+      if (row) row.setAttribute('aria-current', current ? 'true' : 'false');
+      var inner = li.querySelector('.entryinner');
+      if (inner) inner.hidden = !current;
+      li.querySelectorAll('.screenerow').forEach(function (screenRow) {
+        screenRow.setAttribute('aria-current',
+          current && Number(screenRow.dataset.screen) === state.screen ? 'true' : 'false');
+      });
+    });
 
-    entryList.querySelectorAll('.entry').forEach(function (el) {
-      var index = Number(el.dataset.entry);
-      el.classList.toggle('is-live', index === activeEntry);
-      el.classList.toggle('is-open', index === dock.openEntry);
+    pickBody.querySelectorAll('.onscreen').forEach(function (pill) {
+      pill.hidden = !(state.service != null && state.on === true &&
+                      Number(pill.dataset.onscreenFor) === state.service);
     });
-    entryList.querySelectorAll('.srow').forEach(function (el) {
-      el.classList.toggle('is-live', live && Number(el.dataset.screen) === state.screen);
-    });
+
+    prevBtn.disabled = !live || state.screen <= 0;
+    nextBtn.disabled = !live || state.screen >= dock.screens.length - 1;
 
     updateChip(live, activeEntry);
-    renderChips(live, activeEntry);
-    if (live) centerLive();
-    updateStuck();
+    renderBaits(live, activeEntry);
+    updateBand();
+    if (live) {
+      var currentEntry = entryList.querySelector('.entryli[data-live="true"]');
+      if (currentEntry) {
+        centerRow(currentEntry);
+        window.setTimeout(function () {
+          var again = entryList.querySelector('.entryli[data-live="true"]');
+          if (again) centerRow(again);
+        }, 210);
+      }
+    }
   }
 
-  /* ---------- the controls --------------------------------------------------- */
+  /* ---------- controls ------------------------------------------------------- */
 
-  pickList.addEventListener('click', function (event) {
+  pickBody.addEventListener('click', function (event) {
     var row = event.target.closest('.servicerow');
     if (!row) return;
     openService(Number(row.dataset.service), row.dataset.name, row.dataset.date);
   });
 
   entryList.addEventListener('click', function (event) {
-    var chevron = event.target.closest('.entry__chev');
-    var screenRow = event.target.closest('.srow');
-    var entryRow = event.target.closest('.entry__row');
+    var band = event.target.closest('.nextband');
+    if (band) {
+      var nextEntry = dock.entries[Number(band.dataset.index)];
+      if (nextEntry) {
+        projectScreen(nextEntry.start);
+        centerRow(entryList.querySelector('.entryli[data-index="' + band.dataset.index + '"]'));
+      }
+      focusPanel();
+      return;
+    }
+    var screenRow = event.target.closest('.screenerow');
     if (screenRow) {
       projectScreen(Number(screenRow.dataset.screen));
-      centerRow(screenRow);
       focusPanel();
       return;
     }
-    if (!entryRow) return;
-    var index = Number(entryRow.dataset.entry);
-    var entry = dock.entries[index];
+    var row = event.target.closest('.entryrow');
+    if (!row) return;
+    var entry = dock.entries[Number(row.dataset.index)];
     if (!entry) return;
-    if (chevron) {
-      dock.openEntry = dock.openEntry === index ? null : index;
-      applyOpen();
-      focusPanel();
-      return;
-    }
-    dock.openEntry = index;
-    applyOpen();
     projectScreen(entry.start);
-    centerRow(entryRow);
     focusPanel();
   });
 
   baitChips.addEventListener('click', function (event) {
-    var chip = event.target.closest('.chip');
+    var chip = event.target.closest('.bait');
     if (!chip) return;
     projectScreen(Number(chip.dataset.screen));
     focusPanel();
   });
 
-  displayBtn.addEventListener('click', function () {
-    if (dock.service == null) return;
-    var state = gkpsDisplay.read();
-    if (state.service === dock.service) {
-      if (state.on) gkpsDisplay.hide();
-      else gkpsDisplay.screen(state.screen);        /* resume where it was paused */
-    } else {
-      gkpsDisplay.show(dock.service, 0);            /* project from the start */
-    }
-    focusPanel();
-  });
-
-  blankBtn.addEventListener('click', function () {
-    if (dock.service == null) return;
-    var state = gkpsDisplay.read();
-    if (state.service !== dock.service) return;
-    if (state.on) gkpsDisplay.hide();
-    else gkpsDisplay.screen(state.screen);
-    focusPanel();
-  });
-
-  transChip.addEventListener('click', function () {
+  function flipEdition() {
     var editions = (transChip.dataset.editions || '').split(',').filter(Boolean);
     if (!editions.length) return;
     var index = editions.indexOf(transChip.textContent);
     gkpsDisplay.flip(editions[(index + 1) % editions.length] || null);
+  }
+
+  blankBtn.addEventListener('click', function () {
+    if (dock.service == null) return;
+    var state = gkpsDisplay.read();
+    if (state.service === dock.service) {
+      if (state.on) gkpsDisplay.hide();           /* Hide words: the place is kept */
+      else gkpsDisplay.screen(state.screen);      /* resume where it was paused */
+    } else {
+      gkpsDisplay.show(dock.service, 0);          /* display from the start */
+    }
     focusPanel();
   });
 
+  transChip.addEventListener('click', function () { flipEdition(); focusPanel(); });
   prevBtn.addEventListener('click', function () { step(-1); focusPanel(); });
   nextBtn.addEventListener('click', function () { step(1); focusPanel(); });
-  switchBtn.addEventListener('click', function () { setView('pick'); });
+  switchBtn.addEventListener('click', function () { setView('pick', true); });
   reloadBtn.addEventListener('click', function () { window.location.reload(); });
 
   /* ---------- keyboard (the dock owns it) ------------------------------------ */
 
-  /* The unit grammar (spec 119): a plain key moves a screen, Shift moves a bait,
-     Ctrl/⌘ moves an entry; Home and End take the same modifier. Ctrl/⌘+PgUp/PgDn
-     stay the browser's own tab keys. */
   function unitAt() {
     var state = gkpsDisplay.read();
     var live = state.service === dock.service;
@@ -585,7 +626,7 @@
     var shift = event.shiftKey;
     var ctrl = event.ctrlKey || event.metaKey;
     if (key === 'Escape') {
-      if (panel.dataset.view === 'run') setView('pick');
+      if (panel.dataset.view === 'run') setView('pick', true);
       return;
     }
     if (panel.dataset.view !== 'run') return;
@@ -599,14 +640,21 @@
     }
     if (key === 'Home') { event.preventDefault(); edgeOf(unit, false); return; }
     if (key === 'End') { event.preventDefault(); edgeOf(unit, true); return; }
-    if (ctrl) return;                                               /* leave other combos alone */
-    if (key === ' ') { event.preventDefault(); displayBtn.click(); return; }
-    if (key === 't' || key === 'T') { transChip.click(); }
+    if (ctrl) return;                                   /* leave other combos alone */
+    if (key === ' ') { event.preventDefault(); blankBtn.click(); return; }
+    if (key === 't' || key === 'T') flipEdition();
   });
 
   /* A click must leave the focus where the keyboard lives, not on the clicked
      button: otherwise Space would re-press the last thing clicked. */
   panel.addEventListener('pointerdown', focusPanel);
+
+  /* The transport arrows fill while this window holds the keyboard. */
+  function markFocus() { root.classList.add('win-focus'); }
+  function clearFocus() { root.classList.remove('win-focus'); }
+  window.addEventListener('focus', markFocus);
+  window.addEventListener('blur', clearFocus);
+  if (document.hasFocus()) markFocus(); else clearFocus();
 
   /* ---------- appearance (shared key and glyphs with the public site) -------- */
 
@@ -643,5 +691,5 @@
 
   applyTheme(root.dataset.themeMode || 'dark', false);
   gkpsDisplay.subscribe(sync);
-  setView('pick');
+  focusPanel();
 })();
