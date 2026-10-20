@@ -9,6 +9,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from pathlib import Path
+import re
 
 from multimedia.tatib.models import TataIbadah
 
@@ -82,3 +83,18 @@ class BundledTypefacesTest(TestCase):
         css = (Path(settings.BASE_DIR) / 'static' / 'styles' / 'design'
                / 'projector.css').read_text(encoding='utf-8')
         self.assertIn('text-wrap: balance', css)
+
+
+class SharedScrollbarTest(TestCase):
+    """Spec 087/119: the dock takes the app's scrollbar, not the platform's."""
+
+    def test_the_standard_properties_stay_out_of_blink(self):
+        css = (Path(settings.BASE_DIR) / 'static' / 'styles' / 'design'
+               / 'obs-dock.css').read_text(encoding='utf-8')
+        # In Blink `scrollbar-width` beats ::-webkit-scrollbar and paints the
+        # platform's 10px bar with steppers, so it may appear only inside the
+        # guard for engines that have no ::-webkit-scrollbar (spec 087).
+        without_guard = re.sub(
+            r'@supports not selector\(::-webkit-scrollbar\)\s*\{[^}]*\}\s*\}', '', css)
+        self.assertNotIn('scrollbar-width: thin', without_guard)
+        self.assertIn('.dock__body::-webkit-scrollbar { width: 5px', css)

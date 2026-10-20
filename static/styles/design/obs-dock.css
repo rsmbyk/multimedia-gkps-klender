@@ -211,11 +211,21 @@ body.obs-dock {
   padding: 4px 8px 10px;
   position: relative;                 /* rows' offsetTop is measured against this */
   overflow-anchor: none;              /* the dock owns the scroll; no browser anchoring */
-  scrollbar-width: thin;
-  scrollbar-color: var(--scroll-thumb) transparent;
 }
 
-.dock__body::-webkit-scrollbar { width: 5px; }
+/* The app's scrollbar (spec 087): 5px, bare, token-coloured. The standard
+   properties must NOT be set here — in Blink they win over ::-webkit-scrollbar and
+   paint the platform's 10px bar with steppers — so they are gated to engines that
+   have no ::-webkit-scrollbar at all. */
+@supports not selector(::-webkit-scrollbar) {
+  .dock__body { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+}
+
+.dock__body::-webkit-scrollbar { width: 5px; height: 5px; }
+.dock__body::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.dock__body::-webkit-scrollbar-track,
+.dock__body::-webkit-scrollbar-corner { background: transparent; }
+
 .dock__body::-webkit-scrollbar-thumb {
   background: var(--scroll-thumb);
   border-radius: 999px;
