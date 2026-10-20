@@ -322,20 +322,9 @@
     if (channel) channel.postMessage(message);
   }
 
-  /* ---------- the beat -------------------------------------------------------
-     A window can be closed while the app stays open, and the browser gives the opener
-     no "closed" event -- only the handle it holds. So this window keeps announcing
-     itself: a stamp in localStorage (which every tab of the browser shares) and a
-     message on the channel, every couple of seconds. A shell that sees the stamps stop
-     takes the display down. A hidden tab is throttled to roughly one timer a minute,
-     which is why the shell waits far longer than this interval before deciding the
-     window is gone. */
-  var BEAT_KEY = 'gkps-display-beat';
-
-  function beat() {
-    try { localStorage.setItem(BEAT_KEY, String(Date.now())); } catch (e) { /* private mode */ }
-    post({type: 'beat', service: service, on: showing});
-  }
+  /* ---------- the beat has gone (spec 119) ----------------------------------
+     The display no longer depends on any window staying open: closing every surface
+     changes nothing, and only `release` ends it. No stamps, no watchdogs. */
 
   /* ---------- fitting the words to the accepted projector stage ------------ */
   var GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
@@ -423,10 +412,10 @@
     renderPDFScreen(active);
     renderCue();
     if (!silent) {
-      write({service: service, screen: current, on: showing});
-      post(showing ? {type: 'show', service: service, screen: current} : {type: 'stop'});
+      write({service: service, screen: current, on: showing,
+             translation: translation || null, at: Date.now()});
+      post(showing ? {type: 'show', service: service, screen: current} : {type: 'hide'});
     }
-    beat();          /* every change is also a sign of life */
   }
 
   var direction = 1;
@@ -1276,23 +1265,32 @@
     channel.addEventListener('message', function (event) {
       var message = event.data || {};
       if (message.type === 'show') {
-        /* One Tata Ibadah at a time per browser: a different service takes the
-           screen over, so this window steps aside without arguing. */
-        if (Number(message.service) !== service) {
-          showing = false;
-          render(true);
+        var target = Number(message.service);
+        if (target && target !== service) {
+          /* Spec 119: the projector adopts the service the dock names — the same
+             page, a new service, no navigation and no step-aside. */
+          adoptService(target, Number(message.screen) || 0, function (index) {
+            current = index;
+            showing = true;
+            translation = '';
+            render(true);
+          });
           return;
         }
         current = Number(message.screen != null ? message.screen : current);
         showing = true;
         render(true);
-      } else if (message.type === 'stop') {
+      } else if (message.type === 'hide') {
         showing = false;
+        render(true);
+      } else if (message.type === 'release') {
+        showing = false;
+        render(true);
+      } else if (message.type === 'flip') {
+        translation = message.translation || '';
         render(true);
       } else if (message.type === 'update') {
         reflow();
-      } else if (message.type === 'state' && showing) {
-        post({type: 'show', service: service, screen: current});
       }
     });
   }
@@ -1325,6 +1323,45 @@
           screenData = JSON.parse(freshScreens.textContent);
         }
         render(true);
+      })
+      .catch(function () { /* keep showing what we have */ });
+  }
+
+  /* Spec 119: adopt another Tata Ibadah in place. The same fetch-and-swap as reflow()
+     (the data islands are the single contract), releasing the old service's media
+     exactly as a reuse swap does; no navigation, no reload flicker. */
+  function adoptService(id, screenIndex, done) {
+    var targetId = Number(id);
+    if (!targetId) { if (done) done(screenIndex); return; }
+    if (targetId === service) { if (done) done(screenIndex); return; }
+    fetch('/projector?service=' + encodeURIComponent(targetId),
+          {credentials: 'same-origin', cache: 'no-store'})
+      .then(function (response) { return response.ok ? response.text() : ''; })
+      .then(function (html) {
+        if (!html) return;
+        var parsed = new DOMParser().parseFromString(html, 'text/html');
+        var fresh = parsed.getElementById('projectorScreens');
+        var freshEntries = parsed.getElementById('projectorEntryData');
+        var freshScreens = parsed.getElementById('projectorScreenData');
+        if (!fresh || !freshEntries || !freshScreens) return;
+        /* Leaving the old service: release its media and drop its PDF document. */
+        if (pdfDocument && pdfDocument.destroy) { try { pdfDocument.destroy(); } catch (e) { } }
+        pdfDocument = null; pdfHost = null; pdfPage = 1;
+        clearImageScreen();
+        clearVideoScreen();
+        detour = null;
+        service = targetId;
+        body.dataset.service = String(service);
+        stage.innerHTML = fresh.innerHTML;
+        stage.appendChild(detourNode);
+        entries = JSON.parse(freshEntries.textContent) || [];
+        screenData = JSON.parse(freshScreens.textContent) || [];
+        savedScreensSignature = JSON.stringify(screenData);
+        current = Math.max(0, Number(screenIndex) || 0);
+        previousIndex = current;
+        var empty = screen.querySelector('.projector__empty');
+        if (empty) empty.hidden = screens().length > 0;
+        if (done) done(current);
       })
       .catch(function () { /* keep showing what we have */ });
   }
@@ -1423,15 +1460,41 @@
     render(true);
   }
 
-  /* A window opened for a service that is already displaying lands on its screen. */
+  /* Spec 119: the page renders the browser-local state. `?service=<id>` opens that
+     service (an act of projection — the adoption writes the state); without it the
+     page follows whatever is stored, adopting another service in place. */
   var stored = read();
-  if (stored && Number(stored.service) === service && stored.screen != null) {
-    current = Number(stored.screen);
-    showing = stored.on === true;
-  } else if (stored && stored.on && Number(stored.service) !== service) {
-    showing = false;
+  var adoptId = Number(body.dataset.adopt || 0);
+  function settle(screenIndex, on) {
+    current = Math.max(0, Number(screenIndex) || 0);
+    showing = on === true;
+    translation = '';
+    render(true);
   }
-  render(true);
+  if (adoptId) {
+    if (adoptId === service) {
+      write({service: adoptId, screen: 0, on: true, translation: null, at: Date.now()});
+      post({type: 'show', service: adoptId, screen: 0});
+      settle(0, true);
+    } else {
+      adoptService(adoptId, 0, function () {
+        write({service: adoptId, screen: 0, on: true, translation: null, at: Date.now()});
+        post({type: 'show', service: adoptId, screen: 0});
+        settle(0, true);
+      });
+    }
+  } else if (stored && stored.service && Number(stored.service) !== service) {
+    adoptService(Number(stored.service), stored.screen, function () {
+      settle(stored.screen, stored.on);
+      if (stored.translation) { translation = stored.translation; render(true); }
+    });
+  } else if (stored && Number(stored.service) === service) {
+    settle(stored.screen, stored.on);
+    if (stored.translation) { translation = stored.translation; render(true); }
+  } else {
+    showing = false;
+    render(true);
+  }
   if (!screens().length && service && window.GKPSOffline) {
     window.GKPSOffline.get('service', service).then(function (saved) {
       if (saved) drawSavedScreens(saved);
@@ -1450,11 +1513,5 @@
   });
   window.addEventListener('resize', function () { render(true); });
   window.addEventListener('pagehide', clearImageScreen);
-  /* The sign of life, and the reason a shell can tell that this window has gone: while it
-     is open it shows up every couple of seconds, and when it closes the stamps stop. */
-  window.setInterval(beat, 2000);
-  document.addEventListener('visibilitychange', beat);
-  window.addEventListener('focus', beat);
   window.addEventListener('pagehide', clearVideoScreen);
-  post({type: 'state'});                 /* ask the other tabs what is on screen */
 })();
