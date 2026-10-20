@@ -52,7 +52,6 @@
     entries: [], screens: [],
     on: false, screen: 0, translation: null,
     lastEntry: null,
-    centerUnit: 'screen',         /* what the last move stepped: 'entry' or 'screen' */
   };
 
   function el(tag, cls, text) {
@@ -293,7 +292,6 @@
     dock.entries = [];
     dock.screens = [];
     dock.lastEntry = null;
-    dock.centerUnit = 'screen';
     runService.textContent = name;
     runDate.textContent = date;
     entryList.replaceChildren();
@@ -316,9 +314,8 @@
 
   /* ---------- projection (the state's verbs) -------------------------------- */
 
-  function projectScreen(index, unit) {
+  function projectScreen(index) {
     if (dock.service == null || !dock.screens.length) return;
-    if (unit) dock.centerUnit = unit;
     var target = Math.max(0, Math.min(index, dock.screens.length - 1));
     var state = gkpsDisplay.read();
     if (state.service === dock.service) gkpsDisplay.screen(target);
@@ -330,7 +327,7 @@
     var state = gkpsDisplay.read();
     var base = state.service === dock.service ? state.screen : -1;
     if (delta < 0 && base <= 0) return;
-    projectScreen(base + delta, 'screen');
+    projectScreen(base + delta);
   }
 
   function entryOfScreen(index) {
@@ -380,13 +377,10 @@
     glideScroll(target);
   }
 
-  /* The centring target follows the navigation unit (spec 119): a move by entry
-     centres the ENTRY row, a move by screen centres the SCREEN row. */
+  /* The centring target is always the live INNER row (the current screen, or a
+     song's current bait row); the entry's label row only stands in when the screen
+     has no row of its own. */
   function liveNode() {
-    if (dock.centerUnit === 'entry') {
-      return entryList.querySelector('.entryrow[aria-current="true"]') ||
-             entryList.querySelector('.screenerow[aria-current="true"]');
-    }
     return entryList.querySelector('.screenerow[aria-current="true"]') ||
            entryList.querySelector('.entryrow[aria-current="true"]');
   }
@@ -573,16 +567,10 @@
     renderBaits(live, activeEntry);
     updateBand();
     if (live) {
-      /* A crossing always centres the arriving entry's block, even when the step
-         that crossed was a screen step (end of 8 → first of 9): the new entry's
-         expansion is what the eye is following. Within an entry, the move's own
-         unit decides (screen step → screen row, entry step → entry row). */
-      if (activeEntry !== dock.lastEntry) {
-        dock.centerUnit = 'entry';
-        followCenter(260);
-      } else {
-        scheduleCenter();
-      }
+      /* A crossing animates the layout, so the scroll follows the row instead of
+         gliding to a moving target; within an entry a single glide is enough. */
+      if (activeEntry !== dock.lastEntry) followCenter(260);
+      else scheduleCenter();
     }
     dock.lastEntry = live ? activeEntry : null;
   }
@@ -599,13 +587,13 @@
     var band = event.target.closest('.nextband');
     if (band) {
       var nextEntry = dock.entries[Number(band.dataset.index)];
-      if (nextEntry) projectScreen(nextEntry.start, 'entry');
+      if (nextEntry) projectScreen(nextEntry.start);
       focusPanel();
       return;
     }
     var screenRow = event.target.closest('.screenerow');
     if (screenRow) {
-      projectScreen(Number(screenRow.dataset.screen), 'screen');
+      projectScreen(Number(screenRow.dataset.screen));
       focusPanel();
       return;
     }
@@ -613,14 +601,14 @@
     if (!row) return;
     var entry = dock.entries[Number(row.dataset.index)];
     if (!entry) return;
-    projectScreen(entry.start, 'entry');
+    projectScreen(entry.start);
     focusPanel();
   });
 
   baitChips.addEventListener('click', function (event) {
     var chip = event.target.closest('.bait');
     if (!chip) return;
-    projectScreen(Number(chip.dataset.screen), 'screen');
+    projectScreen(Number(chip.dataset.screen));
     focusPanel();
   });
 
@@ -639,7 +627,6 @@
       else gkpsDisplay.screen(state.screen);      /* resume where it was paused */
     } else {
       gkpsDisplay.show(dock.service, 0);          /* display from the start */
-      dock.centerUnit = 'entry';
     }
     focusPanel();
   });
@@ -667,7 +654,7 @@
       if (!dock.entries.length) return;
       var index = Math.max(0, Math.min(dock.entries.length - 1,
                                        (at.entryIndex < 0 ? 0 : at.entryIndex) + delta));
-      projectScreen(dock.entries[index].start, 'entry');
+      projectScreen(dock.entries[index].start);
       return;
     }
     if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
@@ -677,7 +664,7 @@
         if (at.index >= baits[i].start) bait = i;
       }
       bait = Math.max(0, Math.min(baits.length - 1, bait + delta));
-      projectScreen(baits[bait].start, 'screen');
+      projectScreen(baits[bait].start);
       return;
     }
     step(delta);
@@ -687,16 +674,16 @@
     var at = unitAt();
     if (unit === 'entry') {
       if (!dock.entries.length) return;
-      projectScreen(end ? dock.entries[dock.entries.length - 1].start : 0, 'entry');
+      projectScreen(end ? dock.entries[dock.entries.length - 1].start : 0);
       return;
     }
     if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
       var baits = at.entry.baits;
-      projectScreen(end ? baits[baits.length - 1].start : baits[0].start, 'screen');
+      projectScreen(end ? baits[baits.length - 1].start : baits[0].start);
       return;
     }
     if (!dock.screens.length) return;
-    projectScreen(end ? dock.screens.length - 1 : 0, 'screen');
+    projectScreen(end ? dock.screens.length - 1 : 0);
   }
 
   panel.addEventListener('keydown', function (event) {
