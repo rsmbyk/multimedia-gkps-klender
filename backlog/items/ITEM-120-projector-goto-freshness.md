@@ -13,7 +13,7 @@ pr:
 archived_at:
 archive_reason:
 bump: patch
-release_version:
+release_version: 1.19.2
 ---
 
 # ITEM-120: Refresh projector Go To data while online
@@ -31,4 +31,4 @@ Go To reads the committed saved Bible/song library. A changed server song title 
 ## Links
 
 - Spec: [120](../../specs/120-projector-goto-freshness/spec.md)
-- Related: Draft Spec 119 (public reading navigation).
+- Related: Spec 119 (public reading navigation).

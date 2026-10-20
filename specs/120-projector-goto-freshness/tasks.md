@@ -10,9 +10,10 @@
 - [x] Reproduce stale online song-title lookup with saved generation, server change, and subsequent manual sync.
 - [x] Red: browser regression for a new song without reload; existing Go To tests cover Bible matching and query changes.
 - [x] Green: one freshness check when Go To opens and current-query-safe suggestion update.
-- [ ] Verify offline/failed check, keyboard/click detours, TB/SIM names/codes, and no per-keystroke full sync.
-- [ ] Complete traceability, ITEM/board, version/changelog and PR metadata in the implementation PR.
-- [ ] Open draft PR against `develop`; run required exact-head CI before merge.
+- [x] Verify offline/failed check, keyboard/click detours, TB/SIM names/codes, and no per-keystroke full sync.
+- [x] Complete traceability, version/changelog; ITEM/board PR metadata follows PR creation.
+- [ ] Open stacked draft PR against Spec 119 while its CI is blocked; retarget `develop` after Spec 119 merges.
+- [ ] Run required exact-head CI before merge.
 
 ## Done when
 
