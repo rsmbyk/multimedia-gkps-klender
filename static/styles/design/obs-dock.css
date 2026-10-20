@@ -238,7 +238,9 @@ body.obs-dock {
   gap: 10px;
   width: 100%;
   min-height: 40px;
-  padding: 8px 10px;
+  /* 10px either side of a 19.6px line box fills the 40px row, so the name and the
+     date sit in the middle; 8px top left them riding 4.4px high. */
+  padding: 10px;
   border: 0;
   border-radius: 9px;
   background: none;
