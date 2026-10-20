@@ -388,8 +388,31 @@ body.obs-dock {
   border-top: 1px solid var(--divider);
 }
 
-.entryinner { padding: 2px 8px 7px 2.75rem; }
-.entryinner[hidden] { display: none; }
+/* The entry's inner list opens and closes as one motion (spec 119): a clipped grid
+   track grows from 0fr to 1fr, so the rows are never stacked half-open. Collapsed
+   rows stay inert (no pointer, no focus) even though they are still laid out. */
+.entryinner {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms var(--ease-timing);
+  pointer-events: none;
+}
+
+.entryinner.is-open {
+  grid-template-rows: 1fr;
+  pointer-events: auto;
+}
+
+.entryinner__clip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.entryinner__body { padding: 2px 8px 7px 2.75rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .entryinner { transition: none; }
+}
 
 .baithead {
   margin: 5px 0 0;
@@ -499,11 +522,6 @@ body.obs-dock {
 
 .screenerow[aria-current="true"]:hover {
   background: color-mix(in srgb, var(--sidebar-selected-bg) 45%, var(--icon-hover-bg));
-}
-
-/* The live entry's whole block answers the pointer, not only its single rows. */
-.entryli[data-live="true"] .entryinner:hover {
-  background: color-mix(in srgb, var(--icon-hover-bg) 55%, transparent);
 }
 
 /* The next band is a control too. */

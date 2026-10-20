@@ -51,6 +51,7 @@
     service: null, name: '', date: '',
     entries: [], screens: [],
     on: false, screen: 0, translation: null,
+    lastEntry: null,
   };
 
   function el(tag, cls, text) {
@@ -206,23 +207,29 @@
 
   function buildInner(entry) {
     var inner = el('div', 'entryinner');
-    inner.hidden = true;
+    inner.setAttribute('aria-hidden', 'true');
+    if ('inert' in inner) inner.inert = true;
+    var clip = el('div', 'entryinner__clip');
+    var body = el('div', 'entryinner__body');
     var baits = entry.baits || [];
     if (baits.length) {
       baits.forEach(function (bait) {
-        inner.appendChild(el('div', 'baithead', 'Bait ' + bait.number));
+        body.appendChild(el('div', 'baithead', 'Bait ' + bait.number));
         for (var s = bait.start; s <= bait.end; s++) {
           var row = screenRow(s);
-          if (row) inner.appendChild(row);
+          if (row) body.appendChild(row);
         }
       });
     } else {
       for (var i = entry.start; i <= entry.end; i++) {
         var screen = screenRow(i);
-        if (screen) inner.appendChild(screen);
+        if (screen) body.appendChild(screen);
       }
     }
-    return inner.children.length ? inner : null;
+    if (!body.children.length) return null;
+    clip.appendChild(body);
+    inner.appendChild(clip);
+    return inner;
   }
 
   /* The band is the live entry's last child: in flow (so it can never cover a row
@@ -284,6 +291,7 @@
     dock.date = date;
     dock.entries = [];
     dock.screens = [];
+    dock.lastEntry = null;
     runService.textContent = name;
     runDate.textContent = date;
     entryList.replaceChildren();
@@ -372,6 +380,43 @@
       centerRow(node);
     });
   }
+
+  /* When the layout itself is animating (one entry collapsing, another growing),
+     a glide to a fixed point would aim at a spot the rows are moving away from.
+     Instead the scroll FOLLOWS the live row for the animation's duration, easing
+     toward the row's current position every frame: the motion comes from the
+     layout, so it reads as one movement, not two — and never snaps to a target
+     that is still moving. */
+  var followFrame = 0;
+
+  function followCenter(duration) {
+    if (followFrame) { window.cancelAnimationFrame(followFrame); followFrame = 0; }
+    if (reduceMotion.matches) { scheduleCenter(); return; }
+    var until = performance.now() + (duration || 260) + 200;
+    function step(now) {
+      followFrame = 0;
+      var node = entryList.querySelector('.screenerow[aria-current="true"]') ||
+                 document.querySelector('.entryrow[aria-current="true"]');
+      if (!node) return;
+      var max = runBody.scrollHeight - runBody.clientHeight;
+      var target = node.offsetTop - (runBody.clientHeight - node.offsetHeight) / 2;
+      target = Math.max(0, Math.min(target, max));
+      var delta = target - runBody.scrollTop;
+      if (Math.abs(delta) < 1) { runBody.scrollTop = target; return; }
+      if (now >= until) { runBody.scrollTop = target; return; }
+      runBody.scrollTop += delta * 0.25;          /* exponential ease, no overshoot */
+      followFrame = window.requestAnimationFrame(step);
+    }
+    followFrame = window.requestAnimationFrame(step);
+  }
+
+  /* A hand on the list wins over the follow loop. */
+  runBody.addEventListener('wheel', function () {
+    if (followFrame) { window.cancelAnimationFrame(followFrame); followFrame = 0; }
+  }, {passive: true});
+  runBody.addEventListener('pointerdown', function () {
+    if (followFrame) { window.cancelAnimationFrame(followFrame); followFrame = 0; }
+  });
 
   /* ---------- the pinned row and the NEXT band ------------------------------ */
 
@@ -485,7 +530,11 @@
       var row = li.querySelector('.entryrow');
       if (row) row.setAttribute('aria-current', current ? 'true' : 'false');
       var inner = li.querySelector('.entryinner');
-      if (inner) inner.hidden = !current;
+      if (inner) {
+        inner.classList.toggle('is-open', current);
+        inner.setAttribute('aria-hidden', current ? 'false' : 'true');
+        if ('inert' in inner) inner.inert = !current;
+      }
       li.querySelectorAll('.screenerow').forEach(function (screenRow) {
         screenRow.setAttribute('aria-current',
           current && Number(screenRow.dataset.screen) === state.screen ? 'true' : 'false');
@@ -503,7 +552,11 @@
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
     updateBand();
-    if (live) scheduleCenter();
+    if (live) {
+      if (activeEntry !== dock.lastEntry) followCenter(260);
+      else scheduleCenter();
+    }
+    dock.lastEntry = live ? activeEntry : null;
   }
 
   /* ---------- controls ------------------------------------------------------- */
