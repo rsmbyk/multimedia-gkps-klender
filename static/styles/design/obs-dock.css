@@ -451,7 +451,10 @@ body.obs-dock {
 }
 
 .screenerow--rest {
-  color: var(--head-ink);
+  /* Quieter than the BAIT head, which carries the same --head-ink: a quarter of
+     the ink is taken out so a rest never reads as a section label, while staying
+     above 3:1 on both themes. */
+  color: color-mix(in srgb, var(--head-ink) 74%, transparent);
   font-style: italic;
 }
 
