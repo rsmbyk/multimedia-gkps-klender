@@ -280,6 +280,9 @@ body.obs-dock {
   flex: none;
   display: inline-flex;
   align-items: center;
+  /* Baseline alignment (the row's default) hangs an 11px pill low beside a 14.5px
+     name — measured 1.5px under the row's middle; centre it on its own box. */
+  align-self: center;
   gap: 5px;
   color: var(--head-ink);
   font-size: 11px;
