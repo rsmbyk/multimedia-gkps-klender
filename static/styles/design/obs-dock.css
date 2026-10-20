@@ -198,6 +198,7 @@ body.obs-dock {
   overscroll-behavior: contain;
   padding: 4px 8px 10px;
   position: relative;                 /* rows' offsetTop is measured against this */
+  overflow-anchor: none;              /* the dock owns the scroll; no browser anchoring */
   scrollbar-width: thin;
   scrollbar-color: var(--scroll-thumb) transparent;
 }
@@ -403,9 +404,9 @@ body.obs-dock {
   pointer-events: auto;
 }
 
-/* A crossing closes the old block in one frame: the height is taken back out of
-   scrollTop in the same frame, so a transition here would fight that correction. */
-.entryinner.is-instant { transition: none; }
+/* During a crossing both blocks are animated by hand (one curve, with the scroll
+   riding the same curve), so the CSS transition must stay out of the way. */
+.entryinner.is-morph { transition: none; }
 
 .entryinner__clip {
   overflow: hidden;

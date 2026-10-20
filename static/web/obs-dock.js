@@ -401,15 +401,32 @@
   var glideFrame = null;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+  var glideTarget = null;
+
   function glideScroll(target) {
-    var max = runBody.scrollHeight - runBody.clientHeight;
-    var to = Math.max(0, Math.min(target, max));
-    var from = runBody.scrollTop;
+    /* Several notices can land for one move (the state echoes back to this tab).
+       Restarting the glide each time would hold it at its start, so a glide that
+       is already heading to this target is left alone. */
+    if (glideFrame && glideTarget !== null && Math.abs(target - glideTarget) < 2) return;
     if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
-    if (Math.abs(to - from) < 1) return;
-    if (reduceMotion.matches) { runBody.scrollTop = to; return; }
+    glideTarget = target;
+    if (reduceMotion.matches) { runBody.scrollTop = target; return; }
+    /* `from` is read on the first frame, not here: closing a block can shrink the
+       scroll range for a moment and the browser clamps scrollTop, so the position
+       this glide actually starts from may differ from the one at call time. */
+    var from = null;
     var started = performance.now();
     function frame(now) {
+      if (from === null) {
+        from = runBody.scrollTop;
+        started = now;
+        if (Math.abs(target - from) < 1) { glideFrame = null; return; }
+      }
+      /* The list may still be growing (the arriving block opening), so the
+         reachable end moves during the glide: clamp against it every frame rather
+         than freezing a target that was measured too early. */
+      var max = runBody.scrollHeight - runBody.clientHeight;
+      var to = Math.max(0, Math.min(target, max));
       var t = Math.min(1, (now - started) / 190);
       runBody.scrollTop = from + (to - from) * (1 - Math.pow(1 - t, 3));
       glideFrame = t < 1 ? window.requestAnimationFrame(frame) : null;
@@ -454,17 +471,74 @@
     });
   }
 
-  /* A crossing changes the layout, and the browser clamps scrollTop while it does,
-     which is what threw the row off screen and made the glide fight the animation.
-     The departing block is therefore closed in ONE frame with its height taken back
-     out of scrollTop in that same frame: the view never moves, nothing is left to
-     chase, and the arriving block then grows while the row it grew from stays put.
-     The glide that follows aims at settled positions only. */
-  var centerTimer = null;
+  /* One continuous crossing (mockup v14/v15): both inner heights are animated by
+     hand and, on the same curve, the arriving row's screen position blends from
+     where it is to the middle. Because scrollTop is derived from the row's live
+     layout position each frame, the collapsing block and the opening block cannot
+     tug the row around — expand, collapse and scroll are one transition. */
+  var morphFrame = 0;
+  var morphState = null;
+
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  function startMorph(outInner, inInner, node) {
+    cancelPendingCenter();
+    if (morphState) finishMorph();
+    var outBody = outInner.querySelector('.entryinner__body');
+    var inBody = inInner.querySelector('.entryinner__body');
+    var hOut = outBody ? outBody.offsetHeight : outInner.offsetHeight;
+    var hIn = inBody ? inBody.offsetHeight : 0;
+    var box = runBody.getBoundingClientRect();
+    var rect = node.getBoundingClientRect();
+    var startY = rect.top - box.top;
+    var centreY = (runBody.clientHeight - node.offsetHeight) / 2;
+    var started = performance.now();
+    var duration = 230;
+
+    outInner.classList.add('is-morph');
+    inInner.classList.add('is-morph');
+    inInner.classList.add('is-open');              /* pointer events; height is inline */
+    morphState = {out: outInner, inn: inInner, node: node};
+    if (reduceMotion.matches) { finishMorph(); return; }
+
+    function frame(now) {
+      var t = Math.min(1, (now - started) / duration);
+      var e = easeInOut(t);
+      outInner.style.gridTemplateRows = Math.max(0, hOut * (1 - e)) + 'px';
+      inInner.style.gridTemplateRows = Math.max(0, hIn * e) + 'px';
+      /* The row's layout position already includes both height changes, so this
+         puts it exactly where the curve says it should be on screen. */
+      var desired = startY + (centreY - startY) * e;
+      var max = runBody.scrollHeight - runBody.clientHeight;
+      runBody.scrollTop = Math.max(0, Math.min(layoutTop(node) - desired, max));
+      if (t < 1) morphFrame = window.requestAnimationFrame(frame);
+      else finishMorph();
+    }
+    morphFrame = window.requestAnimationFrame(frame);
+  }
+
+  function finishMorph() {
+    if (morphFrame) { window.cancelAnimationFrame(morphFrame); morphFrame = 0; }
+    if (!morphState) return;
+    var out = morphState.out;
+    var inn = morphState.inn;
+    var node = morphState.node;
+    morphState = null;
+    out.classList.remove('is-morph');
+    inn.classList.remove('is-morph');
+    out.classList.remove('is-open');
+    inn.classList.add('is-open');
+    out.style.gridTemplateRows = '';
+    inn.style.gridTemplateRows = '';
+    if (node) centerRow(node);
+  }
 
   function cancelPendingCenter() {
-    if (centerTimer) { window.clearTimeout(centerTimer); centerTimer = null; }
+    if (morphState) finishMorph();
     if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
+    glideTarget = null;
   }
 
   /* A hand on the list wins over any pending centring or glide. */
@@ -581,20 +655,21 @@
     var activeEntry = live ? entryOfScreen(state.screen) : -1;
     if (activeEntry >= 0 && isDivider(dock.entries[activeEntry])) activeEntry = -1;
 
-    /* A crossing closes the departing block in one frame and takes its height back
-       out of scrollTop in that same frame. The view therefore never moves, the
-       arriving block grows with its first row already still, and the glide that
-       follows aims at positions that are final. */
+    /* A crossing travels as ONE motion: the old block closes and the new one opens
+       on a single 230 ms curve, and the arriving row's place on screen rides that
+       same curve into the middle. No instant jump, no second phase to wait for. */
     var crossing = live && activeEntry >= 0 && activeEntry !== dock.lastEntry;
-    var departing = crossing ? entryList.querySelector('.entryli[data-live="true"]') : null;
-    var departingInner = departing ? departing.querySelector('.entryinner') : null;
-    var compensation = 0;
-    if (departingInner && departingInner.classList.contains('is-open')) {
-      if (Number(departing.dataset.index) < activeEntry) {
-        compensation = departingInner.getBoundingClientRect().height;
-      }
-      departingInner.classList.add('is-instant');
-    }
+    var departingLi = crossing ? entryList.querySelector('.entryli[data-live="true"]') : null;
+    var arrivingLi = crossing ? entryList.querySelector('.entryli[data-index="' + activeEntry + '"]') : null;
+    var departingInner = departingLi ? departingLi.querySelector('.entryinner') : null;
+    var arrivingInner = arrivingLi ? arrivingLi.querySelector('.entryinner') : null;
+    var arrivingRow = crossing
+      ? (entryList.querySelector('.screenerow[data-screen="' + state.screen + '"]') ||
+         (arrivingLi && arrivingLi.querySelector('.entryrow')))
+      : null;
+    var morphing = !!(departingInner && arrivingInner && arrivingInner !== departingInner &&
+                      arrivingRow && departingInner.classList.contains('is-open'));
+    if (morphing) startMorph(departingInner, arrivingInner, arrivingRow);
 
     entryList.querySelectorAll('.entryli').forEach(function (li) {
       var index = Number(li.dataset.index);
@@ -603,7 +678,7 @@
       var row = li.querySelector('.entryrow');
       if (row) row.setAttribute('aria-current', current ? 'true' : 'false');
       var inner = li.querySelector('.entryinner');
-      if (inner) {
+      if (inner && !(morphing && (inner === departingInner || inner === arrivingInner))) {
         inner.classList.toggle('is-open', current);
         inner.setAttribute('aria-hidden', current ? 'false' : 'true');
         if ('inert' in inner) inner.inert = !current;
@@ -623,27 +698,17 @@
     prevBtn.disabled = !live || at <= 0;
     nextBtn.disabled = !live || at < 0 || at >= dock.stops.length - 1;
 
-    if (compensation) runBody.scrollTop = Math.max(0, runBody.scrollTop - compensation);
-    if (departingInner) {
-      window.requestAnimationFrame(function () { departingInner.classList.remove('is-instant'); });
+    if (!morphing) {
+      /* Closing a block can shorten the list below the current position; clamp in
+         this same frame so a glide starts from a position that really exists. */
+      runBody.scrollTop = Math.min(runBody.scrollTop,
+                                   Math.max(0, runBody.scrollHeight - runBody.clientHeight));
     }
 
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
     updateBand();
-    if (live) {
-      if (crossing) {
-        /* The row itself no longer moves, but the list's scroll range is still
-           growing as the arriving block opens: measure after it has opened. */
-        if (centerTimer) window.clearTimeout(centerTimer);
-        centerTimer = window.setTimeout(function () {
-          centerTimer = null;
-          centerRow(liveNode());
-        }, 230);
-      } else {
-        scheduleCenter();
-      }
-    }
+    if (live && !morphing) scheduleCenter();       /* the morph brings its own curve */
     dock.lastEntry = live ? activeEntry : null;
   }
 
