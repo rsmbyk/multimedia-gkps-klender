@@ -1301,10 +1301,20 @@ def obs_dock(request):
     browser from the same per-service data the projector page carries. The display
     state lives in this browser (web/display.js) and never reaches the server.
     """
-    services = list(tatib_models.TataIbadah.objects.filter(is_active=True)
+    services = list(tatib_models.TataIbadah.objects
+                    .filter(is_active=True, date__isnull=False)
                     .order_by('-date', '-id'))
+    groups = []
+    for service in services:
+        # Indonesian month names (the template's |date filter speaks English here).
+        service.short_date = search_lib.format_date_short(service.date)
+        service.long_date = search_lib.format_date_long(service.date)
+        label = search_lib.format_month_long(service.date)
+        if not groups or groups[-1]['label'] != label:
+            groups.append({'label': label, 'services': []})
+        groups[-1]['services'].append(service)
     return render(request, 'reading/obs_dock.html', {
-        'services': services,
+        'groups': groups,
         'page_title': 'Dock — Service Entries',
     })
 

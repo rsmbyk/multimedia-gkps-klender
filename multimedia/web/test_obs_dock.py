@@ -34,6 +34,17 @@ class ObsSurfacesTest(TestCase):
         self.assertTemplateUsed(response, 'reading/obs_dock.html')
         self.assertContains(response, 'Ibadah Minggu')
 
+    def test_the_dock_groups_the_picker_by_month_in_indonesian(self):
+        response = self.client.get('/obs/dock')
+        # October 2026 in the product's own month names (not Django's English filter).
+        self.assertContains(response, 'Oktober 2026')
+        self.assertContains(response, '20 Okt 2026')
+
+    def test_the_dock_lists_only_dated_services(self):
+        TataIbadah.objects.create(name='Kerangka Kosong', date=None)
+        response = self.client.get('/obs/dock')
+        self.assertNotContains(response, 'Kerangka Kosong')
+
     def test_the_overlay_is_a_control_free_shell(self):
         response = self.client.get('/obs/source/overlay')
         self.assertEqual(response.status_code, 200)

@@ -1,54 +1,168 @@
 {% load static %}
 {% comment %}
-The operator dock (spec 119): pick a Tata Ibadah, browse it, and run it from inside
-OBS. The picker and the runner are two views of one panel; the display state lives in
-this browser (web/display.js) and never reaches the server.
+The operator dock (spec 119): pick a Tata Ibadah, browse it, and run it.
 
-This is the route slice's scaffold: the head and the service list. The runner, the
-transport, and the state wiring land in the same pull request.
+Two views of one panel: the picker (server-rendered, grouped by month) and the
+runner (built in the browser from the same per-service data islands the projector
+page carries). The display state lives in this browser (web/display.js) and never
+reaches the server; the projector and the caption overlay follow it.
+
+The dock owns the transport keys and the focus: every control is tabindex="-1" and
+the panel itself is the focus target (tabindex="-1"), so keys never land on a button
+and Space never presses whatever was last clicked.
 {% endcomment %}
 <!doctype html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ page_title }}</title>
+
+<!-- Resolve the saved appearance before first paint (same key as the public site). -->
+<script>
+(function () {
+  var mode = 'system';
+  try {
+    var saved = localStorage.getItem('gkps-theme');
+    if (saved === 'light' || saved === 'dark' || saved === 'system') mode = saved;
+  } catch (e) {}
+  document.documentElement.dataset.themeMode = mode;
+  document.documentElement.dataset.theme = mode === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : mode;
+})();
+</script>
+
 <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
 <link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
 <link rel="stylesheet" href="{% static 'styles/design/obs-dock.css' %}">
 </head>
 <body class="obs-dock">
 
-<main class="dock" id="dockPanel" data-view="pick" aria-label="Operator dock">
-  <div class="dock__head">
-    <div class="dock__titlerow">
-      <img class="dock__logo" src="{% static 'assets/gkps.png' %}" alt="GKPS Klender" width="34" height="34">
-      <div class="dock__titles">
-        <h1 class="dock__title">Tata Ibadah</h1>
-      </div>
-      <span class="dock__tools">
-        <button type="button" class="iconbtn" id="reloadPickBtn" title="Reload services" aria-label="Reload services" tabindex="-1"></button>
-        <button type="button" class="iconbtn" id="themeBtn" title="Appearance: Dark" aria-label="Appearance: Dark" tabindex="-1"></button>
-      </span>
-    </div>
-  </div>
+<main class="dock" id="dockPanel" data-view="pick" tabindex="-1" aria-label="Operator dock">
 
-  <div class="dock__body" id="dockBody">
-    <ul class="dock__services" id="dockServices" aria-label="Services">
-      {% for service in services %}
-      <li>
-        <button type="button" class="servicerow" data-service="{{ service.pk }}">
-          <span class="servicerow__name">{{ service.name }}</span>
-          <span class="servicerow__date">{% if service.date %}{{ service.date|date:"j M" }}{% endif %}</span>
+  <!-- ============================== picker ============================== -->
+  <section class="view" id="viewPick" aria-label="Services">
+    <header class="dock__head">
+      <img class="dock__logo" src="{% static 'assets/gkps.png' %}" alt="GKPS Klender" width="34" height="34">
+      <h1 class="dock__title">Tata Ibadah</h1>
+      <span class="dock__tools">
+        <button type="button" class="iconbtn" id="reloadPickBtn" title="Reload services"
+                aria-label="Reload services" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/>
+            <path d="M20.5 3.6V9H15"/>
+          </svg>
         </button>
-      </li>
-      {% empty %}
-      <li class="dock__empty">No services yet.</li>
-      {% endfor %}
-    </ul>
-  </div>
+        <button type="button" class="iconbtn iconbtn--theme" id="themeBtn"
+                title="System mode" aria-label="System mode" tabindex="-1">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"/>
+          </svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/>
+          </svg>
+          <svg class="system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="13" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+        </button>
+      </span>
+    </header>
+
+    <div class="dock__body">
+      <ul class="dock__services" id="dockServices">
+        {% for group in groups %}
+        <li class="dock__month" role="presentation">{{ group.label }}</li>
+        {% for service in group.services %}
+        <li>
+          <button type="button" class="servicerow" data-service="{{ service.pk }}"
+                  data-name="{{ service.name }}" data-date="{{ service.long_date }}"
+                  tabindex="-1">
+            <span class="servicerow__name">{{ service.name }}</span>
+            <span class="servicerow__date">{{ service.short_date }}</span>
+            <svg class="servicerow__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 6l6 6-6 6"/>
+            </svg>
+          </button>
+        </li>
+        {% endfor %}
+        {% empty %}
+        <li class="dock__empty">Belum ada Tata Ibadah.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================== runner ============================== -->
+  <section class="view" id="viewRun" aria-label="Runner" hidden>
+    <header class="dock__head">
+      <button type="button" class="iconbtn" id="switchBtn" title="All services"
+              aria-label="All services" tabindex="-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <span class="dock__titles">
+        <span class="dock__service" id="runService"></span>
+        <span class="dock__date" id="runDate"></span>
+      </span>
+      <span class="dock__tools">
+        <button type="button" class="iconbtn iconbtn--blank" id="blankBtn" data-on="false"
+                title="Blank the screen" aria-label="Blank the screen" aria-pressed="false"
+                tabindex="-1">
+          <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            <circle cx="12" cy="12" r="2.6"/>
+            <path class="eye__slash" d="M4 20L20 4"/>
+          </svg>
+        </button>
+        <button type="button" class="livebtn" id="displayBtn" data-on="false" aria-pressed="false"
+                tabindex="-1">
+          <span class="livebtn__dot" aria-hidden="true"></span>
+          <span data-project-label>Project</span>
+        </button>
+      </span>
+    </header>
+
+    <div class="dock__body" id="runBody">
+      <ul class="entries" id="entryList"></ul>
+      <p class="dock__note" id="runNote" hidden></p>
+    </div>
+
+    <footer class="dock__foot">
+      <button type="button" class="transchip" id="transChip" aria-label="Edition" tabindex="-1"
+              hidden>TB</button>
+      <div class="chips" id="baitChips"></div>
+      <span class="stepper">
+        <button type="button" class="iconbtn" id="prevBtn" title="Previous screen"
+                aria-label="Previous screen" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 6l-6 6 6 6"/>
+          </svg>
+        </button>
+        <button type="button" class="iconbtn" id="nextBtn" title="Next screen"
+                aria-label="Next screen" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 6l6 6-6 6"/>
+          </svg>
+        </button>
+      </span>
+    </footer>
+  </section>
 </main>
 
 <script src="{% static 'web/display.js' %}"></script>
+<script src="{% static 'web/obs-dock.js' %}"></script>
 </body>
 </html>
