@@ -536,9 +536,8 @@ body.obs-dock {
 
 /* The live row and the live screen keep their fill and answer the pointer on top of
    it: their state rules outrank :hover, so each needs its own hover tone. The live
-   ENTRY answers the pointer only while its row is pinned — in flow it already reads
-   as the current row, and a second shade there just looks hovered. */
-.entryrow[aria-current="true"].is-stuck:hover {
+   entry answers everywhere — in flow and while pinned. */
+.entryrow[aria-current="true"]:hover {
   background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
 }
 
