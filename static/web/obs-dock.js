@@ -573,8 +573,16 @@
     renderBaits(live, activeEntry);
     updateBand();
     if (live) {
-      if (activeEntry !== dock.lastEntry) followCenter(260);
-      else scheduleCenter();
+      /* A crossing always centres the arriving entry's block, even when the step
+         that crossed was a screen step (end of 8 → first of 9): the new entry's
+         expansion is what the eye is following. Within an entry, the move's own
+         unit decides (screen step → screen row, entry step → entry row). */
+      if (activeEntry !== dock.lastEntry) {
+        dock.centerUnit = 'entry';
+        followCenter(260);
+      } else {
+        scheduleCenter();
+      }
     }
     dock.lastEntry = live ? activeEntry : null;
   }
