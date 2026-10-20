@@ -225,8 +225,9 @@
     return inner.children.length ? inner : null;
   }
 
-  /* The band floats over the list's tail: it is never in flow, so showing it cannot
-     reflow the rows under a running glide (that reflow was half the old bounce). */
+  /* The band is the live entry's last child: in flow (so it can never cover a row
+     the way an overlay would) and sticky, so it pins over the list's foot while the
+     block runs past the fold. One element, moved to whichever entry is live. */
   var nextBand = el('button', 'nextband');
   nextBand.type = 'button';
   nextBand.tabIndex = -1;
@@ -234,7 +235,6 @@
   nextBand.appendChild(el('span', 'nextband__cap', 'Next'));
   var nextBandLabel = el('span', 'nextband__label', '');
   nextBand.appendChild(nextBandLabel);
-  runBody.appendChild(nextBand);
 
   function bandText(entry) {
     var parts = entry.type === 'song' ? songParts(entry) : null;
@@ -382,6 +382,7 @@
       return;
     }
     var index = Number(liveEntry.dataset.index);
+    if (nextBand.parentElement !== liveEntry) liveEntry.appendChild(nextBand);
     var box = runBody.getBoundingClientRect();
     var row = liveEntry.querySelector('.entryrow');
     if (row) row.classList.toggle('is-stuck', row.getBoundingClientRect().top - box.top <= 0.5);

@@ -451,20 +451,18 @@ body.obs-dock {
 /* ---------- the next entry, pinned under the current block ------------------ */
 
 .nextband {
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 10px;
-  z-index: 4;
+  position: sticky;
+  bottom: -10px;
+  z-index: 3;
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin: 0;
+  width: 100%;
+  margin: 6px 0 0;
   padding: 7px 10px 9px;
   border: 0;
   border-top: 1px solid var(--divider);
   background: var(--rail-bg);
-  box-shadow: var(--shadow);
   color: var(--ink);
   font: 400 13px/1.4 var(--font-sans);
   text-align: left;
