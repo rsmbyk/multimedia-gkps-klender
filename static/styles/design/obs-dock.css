@@ -422,7 +422,7 @@ body.obs-dock {
 .baithead {
   margin: 5px 0 0;
   padding: 4px 10px 2px;
-  color: var(--head-ink);
+  color: color-mix(in srgb, var(--head-ink) 90%, transparent);
   font: 650 10px/1 var(--font-sans);
   letter-spacing: .09em;
   text-transform: uppercase;
@@ -451,10 +451,10 @@ body.obs-dock {
 }
 
 .screenerow--rest {
-  /* Quieter than the BAIT head, which carries the same --head-ink: a quarter of
-     the ink is taken out so a rest never reads as a section label, while staying
-     above 3:1 on both themes. */
-  color: color-mix(in srgb, var(--head-ink) 74%, transparent);
+  /* Two steps below the BAIT head, which keeps the same --head-ink: the head is
+     slightly held back, the rest a third further, so a rest never reads as a
+     section label. */
+  color: color-mix(in srgb, var(--head-ink) 66%, transparent);
   font-style: italic;
 }
 
