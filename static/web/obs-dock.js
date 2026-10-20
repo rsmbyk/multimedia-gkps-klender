@@ -88,8 +88,8 @@
     var label = String(entry.label || '').trim();
     if (label) return label;
     if (entry.type === 'break') return 'Section break';
-    if (entry.type === 'song') return 'Lagu';
-    return 'Teks';
+    if (entry.type === 'song') return 'Song';
+    return 'Text';
   }
 
   function songParts(entry) {
@@ -146,7 +146,7 @@
       var t = el('span', 'entryrow__t entryrow__t--song');
       var head = el('span', 'entryrow__heading');
       if (parts.reference) head.appendChild(el('span', 'entryrow__reference', parts.reference));
-      head.appendChild(el('span', 'entryrow__title', parts.title || 'Lagu'));
+      head.appendChild(el('span', 'entryrow__title', parts.title || 'Song'));
       t.appendChild(head);
       var baits = entry.baits || [];
       if (baits.length) {
@@ -254,7 +254,7 @@
       entryList.appendChild(item);
     });
     runNote.hidden = dock.entries.length > 0;
-    if (!dock.entries.length) runNote.textContent = 'Tata Ibadah ini belum punya isi.';
+    if (!dock.entries.length) runNote.textContent = 'This Tata Ibadah has no entries yet.';
   }
 
   /* ---------- views and focus ----------------------------------------------- */
@@ -296,7 +296,7 @@
       if (dock.service !== wanted) return;
       if (!data) {
         runNote.hidden = false;
-        runNote.textContent = 'Data layanan tidak termuat.';
+        runNote.textContent = 'The service could not be loaded.';
         return;
       }
       dock.entries = data.entries;
