@@ -454,41 +454,22 @@
     });
   }
 
-  /* When the layout itself is animating (one entry collapsing, another growing),
-     a glide to a fixed point would aim at a spot the rows are moving away from.
-     Instead the scroll FOLLOWS the live row for the animation's duration, easing
-     toward the row's current position every frame: the motion comes from the
-     layout, so it reads as one movement, not two — and never snaps to a target
-     that is still moving. */
-  var followFrame = 0;
+  /* A crossing changes the layout, and the browser clamps scrollTop while it does,
+     which is what threw the row off screen and made the glide fight the animation.
+     The departing block is therefore closed in ONE frame with its height taken back
+     out of scrollTop in that same frame: the view never moves, nothing is left to
+     chase, and the arriving block then grows while the row it grew from stays put.
+     The glide that follows aims at settled positions only. */
+  var centerTimer = null;
 
-  function followCenter(duration) {
-    if (followFrame) { window.cancelAnimationFrame(followFrame); followFrame = 0; }
-    if (reduceMotion.matches) { scheduleCenter(); return; }
-    var until = performance.now() + (duration || 260) + 200;
-    function step(now) {
-      followFrame = 0;
-      var node = liveNode();
-      if (!node) return;
-      var max = runBody.scrollHeight - runBody.clientHeight;
-      var target = layoutTop(node) - (runBody.clientHeight - node.offsetHeight) / 2;
-      target = Math.max(0, Math.min(target, max));
-      var delta = target - runBody.scrollTop;
-      if (Math.abs(delta) < 1) { runBody.scrollTop = target; return; }
-      if (now >= until) { runBody.scrollTop = target; return; }
-      runBody.scrollTop += delta * 0.25;          /* exponential ease, no overshoot */
-      followFrame = window.requestAnimationFrame(step);
-    }
-    followFrame = window.requestAnimationFrame(step);
+  function cancelPendingCenter() {
+    if (centerTimer) { window.clearTimeout(centerTimer); centerTimer = null; }
+    if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
   }
 
-  /* A hand on the list wins over the follow loop. */
-  runBody.addEventListener('wheel', function () {
-    if (followFrame) { window.cancelAnimationFrame(followFrame); followFrame = 0; }
-  }, {passive: true});
-  runBody.addEventListener('pointerdown', function () {
-    if (followFrame) { window.cancelAnimationFrame(followFrame); followFrame = 0; }
-  });
+  /* A hand on the list wins over any pending centring or glide. */
+  runBody.addEventListener('wheel', cancelPendingCenter, {passive: true});
+  runBody.addEventListener('pointerdown', cancelPendingCenter);
 
   /* ---------- the pinned row and the NEXT band ------------------------------ */
 
@@ -599,6 +580,22 @@
 
     var activeEntry = live ? entryOfScreen(state.screen) : -1;
     if (activeEntry >= 0 && isDivider(dock.entries[activeEntry])) activeEntry = -1;
+
+    /* A crossing closes the departing block in one frame and takes its height back
+       out of scrollTop in that same frame. The view therefore never moves, the
+       arriving block grows with its first row already still, and the glide that
+       follows aims at positions that are final. */
+    var crossing = live && activeEntry >= 0 && activeEntry !== dock.lastEntry;
+    var departing = crossing ? entryList.querySelector('.entryli[data-live="true"]') : null;
+    var departingInner = departing ? departing.querySelector('.entryinner') : null;
+    var compensation = 0;
+    if (departingInner && departingInner.classList.contains('is-open')) {
+      if (Number(departing.dataset.index) < activeEntry) {
+        compensation = departingInner.getBoundingClientRect().height;
+      }
+      departingInner.classList.add('is-instant');
+    }
+
     entryList.querySelectorAll('.entryli').forEach(function (li) {
       var index = Number(li.dataset.index);
       var current = live && index === activeEntry;
@@ -626,14 +623,26 @@
     prevBtn.disabled = !live || at <= 0;
     nextBtn.disabled = !live || at < 0 || at >= dock.stops.length - 1;
 
+    if (compensation) runBody.scrollTop = Math.max(0, runBody.scrollTop - compensation);
+    if (departingInner) {
+      window.requestAnimationFrame(function () { departingInner.classList.remove('is-instant'); });
+    }
+
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
     updateBand();
     if (live) {
-      /* A crossing animates the layout, so the scroll follows the row instead of
-         gliding to a moving target; within an entry a single glide is enough. */
-      if (activeEntry !== dock.lastEntry) followCenter(260);
-      else scheduleCenter();
+      if (crossing) {
+        /* The row itself no longer moves, but the list's scroll range is still
+           growing as the arriving block opens: measure after it has opened. */
+        if (centerTimer) window.clearTimeout(centerTimer);
+        centerTimer = window.setTimeout(function () {
+          centerTimer = null;
+          centerRow(liveNode());
+        }, 230);
+      } else {
+        scheduleCenter();
+      }
     }
     dock.lastEntry = live ? activeEntry : null;
   }

@@ -403,6 +403,10 @@ body.obs-dock {
   pointer-events: auto;
 }
 
+/* A crossing closes the old block in one frame: the height is taken back out of
+   scrollTop in the same frame, so a transition here would fight that correction. */
+.entryinner.is-instant { transition: none; }
+
 .entryinner__clip {
   overflow: hidden;
   min-height: 0;
