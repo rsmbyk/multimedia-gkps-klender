@@ -951,6 +951,9 @@
     revealControls();
     refreshFind();
     findInput.focus();
+    if (navigator.onLine && window.GKPSOffline) {
+      window.GKPSOffline.sync().catch(function () { /* keep saved suggestions */ });
+    }
   }
   function closeFind() {
     if (!body.classList.contains('find-open')) return;
@@ -974,14 +977,15 @@
     event.stopPropagation(); closeFind();
   });
   var lookupSequence = 0;
+  var paintedFindQuery = '';
   function refreshFind() {
     ++lookupSequence;
     var query = normalize(findInput.value.trim());
-    findRows = []; findChoice = 0; paintFind();
-    if (query && window.GKPSProjectorLibrary) {
-      findRows = window.GKPSProjectorLibrary.lookup(findInput.value.trim());
-      paintFind();
-    }
+    var rows = query && window.GKPSProjectorLibrary
+      ? window.GKPSProjectorLibrary.lookup(findInput.value.trim()) : [];
+    if (query === paintedFindQuery && JSON.stringify(rows) === JSON.stringify(findRows)) return;
+    paintedFindQuery = query;
+    findRows = rows; findChoice = 0; paintFind();
   }
   function paintFind() {
     findResults.disabled = !findRows.length;
@@ -1009,7 +1013,7 @@
   }
   findInput.addEventListener('input', refreshFind);
   document.addEventListener('projector-library:ready', function () {
-    if (!findPanel.hidden && findInput.value.trim()) refreshFind();
+    if (body.classList.contains('find-open') && findInput.value.trim()) refreshFind();
   });
   findInput.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeFind(); }

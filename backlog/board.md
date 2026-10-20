@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-120](./items/ITEM-120-projector-goto-freshness.md) | Refresh projector Go To data while online | Current suggestions without reload; saved offline lookup remains | fix | P1 | M | [120](../specs/120-projector-goto-freshness/spec.md) | fix/120-projector-goto-freshness | 2026-10-20 |
 
 ## In review
 
