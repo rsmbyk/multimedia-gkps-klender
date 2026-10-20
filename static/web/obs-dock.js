@@ -362,12 +362,21 @@
     glideFrame = window.requestAnimationFrame(frame);
   }
 
+  /* A sticky row's offsetTop is its PINNED position (600 in the probe), not where
+     the row lives in the list (250) — aiming by it can never unpin the row, which is
+     why an entry near the fold would not centre. Measure the row's non-sticky parent
+     for entry rows; screen rows are not sticky themselves and are safe. */
+  function layoutTop(node) {
+    if (node.classList.contains('entryrow')) {
+      var li = node.closest('.entryli');
+      if (li) return li.offsetTop;
+    }
+    return node.offsetTop;
+  }
+
   function centerRow(node) {
     if (!node) return;
-    /* offsetTop is the row's LAYOUT position: a sticky row reports its pinned
-       position through getBoundingClientRect, which made the glide aim at a spot
-       that shifted under it as it stuck — the second half of the old bounce. */
-    var target = node.offsetTop - (runBody.clientHeight - node.offsetHeight) / 2;
+    var target = layoutTop(node) - (runBody.clientHeight - node.offsetHeight) / 2;
     glideScroll(target);
   }
 
@@ -410,7 +419,7 @@
       var node = liveNode();
       if (!node) return;
       var max = runBody.scrollHeight - runBody.clientHeight;
-      var target = node.offsetTop - (runBody.clientHeight - node.offsetHeight) / 2;
+      var target = layoutTop(node) - (runBody.clientHeight - node.offsetHeight) / 2;
       target = Math.max(0, Math.min(target, max));
       var delta = target - runBody.scrollTop;
       if (Math.abs(delta) < 1) { runBody.scrollTop = target; return; }
