@@ -49,7 +49,7 @@
   var cache = {};                 /* service id -> {entries, screens} */
   var dock = {
     service: null, name: '', date: '',
-    entries: [], screens: [],
+    entries: [], screens: [], stops: [],
     on: false, screen: 0, translation: null,
     lastEntry: null,
   };
@@ -227,6 +227,7 @@
   }
 
   function buildInner(entry) {
+    if (isDivider(entry)) return null;             /* a hairline has nothing to open */
     var inner = el('div', 'entryinner');
     inner.setAttribute('aria-hidden', 'true');
     if ('inert' in inner) inner.inert = true;
@@ -312,6 +313,7 @@
     dock.date = date;
     dock.entries = [];
     dock.screens = [];
+    dock.stops = [];
     dock.lastEntry = null;
     runService.textContent = name;
     runDate.textContent = date;
@@ -328,6 +330,7 @@
       }
       dock.entries = data.entries;
       dock.screens = data.screens;
+      buildStops();
       renderList();
       sync(gkpsDisplay.read());
     });
@@ -344,11 +347,26 @@
   }
 
   function step(delta) {
-    if (dock.service == null || !dock.screens.length) return;
+    if (dock.service == null || !dock.stops.length) return;
     var state = gkpsDisplay.read();
     var base = state.service === dock.service ? state.screen : -1;
-    if (delta < 0 && base <= 0) return;
-    projectScreen(base + delta);
+    var list = dock.stops;
+    var at = list.indexOf(base);
+    var target;
+    if (at >= 0) {
+      target = list[Math.max(0, Math.min(list.length - 1, at + delta))];
+    } else if (base < 0) {
+      target = list[0];
+    } else {
+      /* a divider screen left in stored state: snap to the nearest content screen */
+      var next = null;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i] > base) { next = list[i]; break; }
+      }
+      if (delta > 0) target = next == null ? list[list.length - 1] : next;
+      else target = next == null ? list[list.length - 1] : (list[list.indexOf(next) - 1] != null ? list[list.indexOf(next) - 1] : list[0]);
+    }
+    projectScreen(target);
   }
 
   function entryOfScreen(index) {
@@ -357,6 +375,25 @@
       if (index >= entry.start && index <= entry.end) return i;
     }
     return -1;
+  }
+
+  /* A section break is a hairline in the list, not a place the service stands:
+     it has no inner, is not clickable, and every step passes over its blank
+     screens (a Tata Ibadah can end in a run of unfilled section breaks). */
+  function isDivider(entry) {
+    return !!entry && entry.type === 'break';
+  }
+
+  function contentEntries() {
+    return dock.entries.filter(function (entry) { return !isDivider(entry); });
+  }
+
+  function buildStops() {
+    dock.stops = [];
+    dock.entries.forEach(function (entry) {
+      if (isDivider(entry)) return;
+      for (var i = entry.start; i <= entry.end; i++) dock.stops.push(i);
+    });
   }
 
   /* ---------- glide and centring (190 ms ease-out, clamped) ------------------ */
@@ -466,12 +503,15 @@
     var box = runBody.getBoundingClientRect();
     var row = liveEntry.querySelector('.entryrow');
     if (row) row.classList.toggle('is-stuck', row.getBoundingClientRect().top - box.top <= 0.5);
-    var next = dock.entries[index + 1];
+    var next = null;
+    for (var i = index + 1; i < dock.entries.length; i++) {
+      if (!isDivider(dock.entries[i])) { next = dock.entries[i]; break; }
+    }
     if (!next) {
       nextBand.hidden = true;
       return;
     }
-    nextBand.dataset.index = String(index + 1);
+    nextBand.dataset.screen = String(next.start);
     nextBandLabel.textContent = bandText(next);
     /* The band yields the moment the entry's own end is in view. */
     nextBand.hidden = liveEntry.getBoundingClientRect().bottom <= box.bottom + 6;
@@ -558,6 +598,7 @@
     blankBtn.setAttribute('aria-label', title);
 
     var activeEntry = live ? entryOfScreen(state.screen) : -1;
+    if (activeEntry >= 0 && isDivider(dock.entries[activeEntry])) activeEntry = -1;
     entryList.querySelectorAll('.entryli').forEach(function (li) {
       var index = Number(li.dataset.index);
       var current = live && index === activeEntry;
@@ -581,8 +622,9 @@
                       Number(pill.dataset.onscreenFor) === state.service);
     });
 
-    prevBtn.disabled = !live || state.screen <= 0;
-    nextBtn.disabled = !live || state.screen >= dock.screens.length - 1;
+    var at = dock.stops.indexOf(live ? state.screen : -1);
+    prevBtn.disabled = !live || at <= 0;
+    nextBtn.disabled = !live || at < 0 || at >= dock.stops.length - 1;
 
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
@@ -607,8 +649,7 @@
   entryList.addEventListener('click', function (event) {
     var band = event.target.closest('.nextband');
     if (band) {
-      var nextEntry = dock.entries[Number(band.dataset.index)];
-      if (nextEntry) projectScreen(nextEntry.start);
+      projectScreen(Number(band.dataset.screen));
       focusPanel();
       return;
     }
@@ -621,7 +662,7 @@
     var row = event.target.closest('.entryrow');
     if (!row) return;
     var entry = dock.entries[Number(row.dataset.index)];
-    if (!entry) return;
+    if (!entry || isDivider(entry)) return;
     projectScreen(entry.start);
     focusPanel();
   });
@@ -672,10 +713,15 @@
   function stepUnit(delta, unit) {
     var at = unitAt();
     if (unit === 'entry') {
-      if (!dock.entries.length) return;
-      var index = Math.max(0, Math.min(dock.entries.length - 1,
-                                       (at.entryIndex < 0 ? 0 : at.entryIndex) + delta));
-      projectScreen(dock.entries[index].start);
+      var entries = contentEntries();
+      if (!entries.length) return;
+      var here = -1;
+      for (var i = 0; i < entries.length; i++) {
+        if (at.index >= entries[i].start && at.index <= entries[i].end) here = i;
+      }
+      if (here < 0) here = 0;
+      var next = Math.max(0, Math.min(entries.length - 1, here + delta));
+      if (next !== here) projectScreen(entries[next].start);
       return;
     }
     if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
@@ -694,8 +740,9 @@
   function edgeOf(unit, end) {
     var at = unitAt();
     if (unit === 'entry') {
-      if (!dock.entries.length) return;
-      projectScreen(end ? dock.entries[dock.entries.length - 1].start : 0);
+      var entries = contentEntries();
+      if (!entries.length) return;
+      projectScreen(end ? entries[entries.length - 1].start : entries[0].start);
       return;
     }
     if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
@@ -703,8 +750,8 @@
       projectScreen(end ? baits[baits.length - 1].start : baits[0].start);
       return;
     }
-    if (!dock.screens.length) return;
-    projectScreen(end ? dock.screens.length - 1 : 0);
+    if (!dock.stops.length) return;
+    projectScreen(end ? dock.stops[dock.stops.length - 1] : dock.stops[0]);
   }
 
   panel.addEventListener('keydown', function (event) {
