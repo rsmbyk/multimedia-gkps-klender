@@ -482,7 +482,7 @@ body.obs-dock {
   gap: 5px;
   flex: 1;
   min-width: 0;
-  height: 30px;
+  height: 36px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -491,9 +491,9 @@ body.obs-dock {
 
 .chip {
   flex: none;
-  min-width: 27px;
-  height: 26px;
-  padding: 0 6px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 7px;
   border: 1px solid var(--divider);
   border-radius: 7px;
   background: none;
@@ -521,3 +521,130 @@ body.obs-dock {
 
 .stepper .iconbtn { width: 34px; height: 34px; }
 .stepper .iconbtn svg { width: 18px; height: 18px; }
+
+/* While the window holds the keyboard, the transport reads as armed (spec 119):
+   the chevrons take a quiet fill and full ink; unfocused they stay quiet. */
+.dock:focus-within .stepper .iconbtn {
+  background: var(--icon-hover-bg);
+  color: var(--ink);
+}
+
+/* The TB/SIM marker fills when the shown translation differs from the entry's own. */
+.transchip[data-custom="true"] {
+  background: var(--active-bg);
+  border-color: transparent;
+  color: var(--active-ink);
+}
+
+/* ---------- runner: NEXT band and the stuck row ----------------------------- */
+
+.view { position: relative; }
+
+.nextband {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 56px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--rail-bg) 92%, var(--ink));
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+
+.nextband[hidden] { display: none; }
+
+.nextband__tag {
+  flex: none;
+  color: var(--head-ink);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+.nextband__label {
+  min-width: 0;
+  flex: 1;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Rows passing under the pinned current row dissolve rather than stack (spec 119). */
+.dock__body::before {
+  content: "";
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: block;
+  height: 26px;
+  margin: -4px -10px 0;
+  background: linear-gradient(var(--rail-bg) 30%, transparent);
+  opacity: 0;
+  transition: opacity 140ms var(--ease-timing);
+  pointer-events: none;
+}
+
+.dock__body[data-stuck="true"]::before { opacity: 1; }
+
+/* Pinned flush: the row's fill runs to the list's edges and loses its radius. */
+.entry__row.is-stuck {
+  width: calc(100% + 20px);
+  margin-left: -10px;
+  padding-inline: 18px;
+  border-radius: 0;
+  background: var(--rail-bg);
+}
+
+.entry.is-live > .entry__row.is-stuck {
+  background: var(--sidebar-selected-bg);
+}
+
+/* The NEXT band floats over the list; reserve its strip so no row hides beneath it. */
+.dock__body[data-band="true"] { padding-bottom: 48px; }
+
+/* ---------- song baits ------------------------------------------------------ */
+
+.baithead {
+  padding: 9px 8px 2px 31px;
+  color: var(--head-ink);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.chips[data-overflow="true"] {
+  mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+}
+
+/* ---------- appearance morph (a user switch only; never at rest) ------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-morph,
+  html.theme-morph body.obs-dock,
+  html.theme-morph .dock,
+  html.theme-morph .dock__head,
+  html.theme-morph .dock__body,
+  html.theme-morph .dock__foot,
+  html.theme-morph .entry__row,
+  html.theme-morph .dock__month {
+    transition: background-color 380ms var(--ease-timing), color 380ms var(--ease-timing),
+                border-color 380ms var(--ease-timing);
+  }
+
+  html.theme-morph .iconbtn--theme svg {
+    transition: opacity 280ms cubic-bezier(.2, .7, .3, 1),
+                transform 280ms cubic-bezier(.2, .7, .3, 1);
+  }
+}

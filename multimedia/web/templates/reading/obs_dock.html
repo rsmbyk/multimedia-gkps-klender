@@ -18,10 +18,11 @@ and Space never presses whatever was last clicked.
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ page_title }}</title>
 
-<!-- Resolve the saved appearance before first paint (same key as the public site). -->
+<!-- Resolve the saved appearance before first paint (same key as the public site;
+     the dock's own default is dark). -->
 <script>
 (function () {
-  var mode = 'system';
+  var mode = 'dark';
   try {
     var saved = localStorage.getItem('gkps-theme');
     if (saved === 'light' || saved === 'dark' || saved === 'system') mode = saved;
@@ -136,6 +137,10 @@ and Space never presses whatever was last clicked.
     <div class="dock__body" id="runBody">
       <ul class="entries" id="entryList"></ul>
       <p class="dock__note" id="runNote" hidden></p>
+    </div>
+    <div class="nextband" id="nextBand" hidden aria-hidden="true">
+      <span class="nextband__tag">NEXT</span>
+      <span class="nextband__label" id="nextBandLabel"></span>
     </div>
 
     <footer class="dock__foot">

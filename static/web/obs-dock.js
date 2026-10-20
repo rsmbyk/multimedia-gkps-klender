@@ -157,25 +157,18 @@
       var inner = document.createElement('div');
       inner.className = 'entry__inner';
       var ul = document.createElement('ul');
-      for (var i = entry.start; i <= entry.end; i++) {
-        var screen = dock.screens[i];
-        if (!screen || screen.blank) continue;
-        var cell = document.createElement('li');
-        var button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'srow';
-        button.tabIndex = -1;
-        button.dataset.screen = String(i);
-        var no = document.createElement('span');
-        no.className = 'srow__no';
-        no.textContent = String(i - entry.start + 1);
-        var text = document.createElement('span');
-        text.className = 'srow__text';
-        text.textContent = screenLabel(screen, entry);
-        button.appendChild(no);
-        button.appendChild(text);
-        cell.appendChild(button);
-        ul.appendChild(cell);
+      var baits = entry.baits || [];
+      if (baits.length) {
+        /* A song's screens group under their bait, so a number names its place. */
+        baits.forEach(function (bait) {
+          var head = document.createElement('li');
+          head.className = 'baithead';
+          head.textContent = 'Bait ' + bait.number;
+          ul.appendChild(head);
+          for (var s = bait.start; s <= bait.end; s++) appendScreenRow(ul, entry, s);
+        });
+      } else {
+        for (var i = entry.start; i <= entry.end; i++) appendScreenRow(ul, entry, i);
       }
       if (ul.children.length) {
         inner.appendChild(ul);
@@ -186,6 +179,28 @@
     runNote.hidden = dock.entries.length > 0;
     if (!dock.entries.length) runNote.textContent = 'Tata Ibadah ini belum punya isi.';
     applyOpen();
+    updateStuck();
+  }
+
+  function appendScreenRow(ul, entry, index) {
+    var screen = dock.screens[index];
+    if (!screen || screen.blank) return;
+    var cell = document.createElement('li');
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'srow';
+    button.tabIndex = -1;
+    button.dataset.screen = String(index);
+    var no = document.createElement('span');
+    no.className = 'srow__no';
+    no.textContent = String(index - entry.start + 1);
+    var text = document.createElement('span');
+    text.className = 'srow__text';
+    text.textContent = screenLabel(screen, entry);
+    button.appendChild(no);
+    button.appendChild(text);
+    cell.appendChild(button);
+    ul.appendChild(cell);
   }
 
   function applyOpen() {
@@ -245,14 +260,6 @@
     else gkpsDisplay.show(dock.service, target);
   }
 
-  function entryOfScreen(index) {
-    for (var i = 0; i < dock.entries.length; i++) {
-      var entry = dock.entries[i];
-      if (index >= entry.start && index <= entry.end) return i;
-    }
-    return -1;
-  }
-
   function step(delta) {
     if (dock.service == null || !dock.screens.length) return;
     var state = gkpsDisplay.read();
@@ -263,21 +270,89 @@
 
   /* ---------- the state ------------------------------------------------------ */
 
+  var glideFrame = null;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* One glide per move (spec 119): 190 ms ease-out, clamped at the ends, never a
+     bounce. Reduced motion jumps instead. */
+  function glideScroll(target) {
+    var max = runBody.scrollHeight - runBody.clientHeight;
+    var to = Math.max(0, Math.min(target, max));
+    var from = runBody.scrollTop;
+    if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
+    if (Math.abs(to - from) < 1) return;
+    if (reduceMotion.matches) { runBody.scrollTop = to; return; }
+    var started = performance.now();
+    var duration = 190;
+    function frame(now) {
+      var t = Math.min(1, (now - started) / duration);
+      var eased = 1 - Math.pow(1 - t, 3);
+      runBody.scrollTop = from + (to - from) * eased;
+      glideFrame = t < 1 ? window.requestAnimationFrame(frame) : null;
+    }
+    glideFrame = window.requestAnimationFrame(frame);
+  }
+
   function centerRow(el) {
     if (!el) return;
     var box = runBody.getBoundingClientRect();
     var rect = el.getBoundingClientRect();
-    runBody.scrollTop += (rect.top - box.top) - (box.height - rect.height) / 2;
+    glideScroll(runBody.scrollTop + (rect.top - box.top) - (box.height - rect.height) / 2);
   }
 
   function centerLive() {
     var live = entryList.querySelector('.srow.is-live') ||
                entryList.querySelector('.entry.is-live > .entry__row');
     if (!live) return;
+    /* The entry's expansion animates 200 ms; the glide follows it, so a boundary
+       crossing reads as one motion rather than two. */
     centerRow(live);
-    /* The entry's expansion animates; centre again once it has settled. */
-    window.setTimeout(function () { centerRow(live); }, 220);
+    window.setTimeout(function () { centerRow(live); }, 210);
   }
+
+  function entryOfScreen(index) {
+    for (var i = 0; i < dock.entries.length; i++) {
+      var entry = dock.entries[i];
+      if (index >= entry.start && index <= entry.end) return i;
+    }
+    return -1;
+  }
+
+  /* The pinned row, the dissolve under it, and the NEXT band (spec 119). */
+  function updateStuck() {
+    var row = entryList.querySelector('.entry.is-live > .entry__row');
+    var stuck = false;
+    if (row) {
+      var box = runBody.getBoundingClientRect();
+      /* A sticky row pins at the list's padding edge, so that edge is the line to
+         measure against — not the scrollport's own top. */
+      var edge = parseFloat(getComputedStyle(runBody).paddingTop) || 0;
+      stuck = row.getBoundingClientRect().top - box.top <= edge + 1;
+      row.classList.toggle('is-stuck', stuck);
+    }
+    runBody.dataset.stuck = stuck ? 'true' : 'false';
+    var nextBand = document.getElementById('nextBand');
+    var nextBandLabel = document.getElementById('nextBandLabel');
+    var activeEntry = dock.on ? entryOfScreen(dock.screen) : -1;
+    var next = activeEntry >= 0 ? dock.entries[activeEntry + 1] : null;
+    if (stuck && next) {
+      nextBandLabel.textContent = entryLabel(next);
+      nextBand.hidden = false;
+    } else {
+      nextBand.hidden = true;
+    }
+    runBody.dataset.band = nextBand.hidden ? 'false' : 'true';
+  }
+
+  var scrollScheduled = false;
+  runBody.addEventListener('scroll', function () {
+    if (scrollScheduled) return;
+    scrollScheduled = true;
+    window.requestAnimationFrame(function () {
+      scrollScheduled = false;
+      updateStuck();
+    });
+  }, {passive: true});
 
   function translationOptions(screen) {
     var translations = (screen && screen.translations) || {};
@@ -291,20 +366,27 @@
     var options = translationOptions(screen);
     if (!live || !options.length) {
       transChip.hidden = true;
+      delete transChip.dataset.custom;
       return;
     }
     var entry = dock.entries[activeEntry] || {};
-    var edition = dock.translation || entry.translation || options[0];
+    var own = entry.translation || options[0];
+    var shown = dock.translation || own;
     transChip.hidden = false;
-    transChip.textContent = edition;
+    transChip.textContent = shown;
     transChip.dataset.editions = options.join(',');
+    /* Filled only while the shown edition is not the entry's own (spec 119). */
+    if (shown !== own) transChip.dataset.custom = 'true';
+    else delete transChip.dataset.custom;
   }
 
   function renderChips(live, activeEntry) {
     baitChips.replaceChildren();
+    delete baitChips.dataset.overflow;
     if (!live || activeEntry < 0) return;
     var entry = dock.entries[activeEntry];
     var baits = (entry && entry.baits) || [];
+    var liveChip = null;
     baits.forEach(function (bait) {
       var chip = document.createElement('button');
       chip.type = 'button';
@@ -312,9 +394,23 @@
       chip.tabIndex = -1;
       chip.dataset.screen = String(bait.start);
       chip.textContent = String(bait.number);
-      chip.classList.toggle('is-live', dock.screen >= bait.start && dock.screen <= bait.end);
+      var isLive = dock.screen >= bait.start && dock.screen <= bait.end;
+      chip.classList.toggle('is-live', isLive);
+      if (isLive) liveChip = chip;
       baitChips.appendChild(chip);
     });
+    if (!baits.length) return;
+    /* The chip strip glides its current chip to the centre; fades only while it
+       overflows (spec 119). */
+    baitChips.dataset.overflow = baitChips.scrollWidth > baitChips.clientWidth + 1 ? 'true' : 'false';
+    if (liveChip) {
+      var target = liveChip.offsetLeft - (baitChips.clientWidth - liveChip.offsetWidth) / 2;
+      try {
+        baitChips.scrollTo({left: target, behavior: reduceMotion.matches ? 'auto' : 'smooth'});
+      } catch (e) {
+        baitChips.scrollLeft = target;
+      }
+    }
   }
 
   function sync(state) {
@@ -352,6 +448,7 @@
     updateChip(live, activeEntry);
     renderChips(live, activeEntry);
     if (live) centerLive();
+    updateStuck();
   }
 
   /* ---------- the controls --------------------------------------------------- */
@@ -432,21 +529,77 @@
 
   /* ---------- keyboard (the dock owns it) ------------------------------------ */
 
+  /* The unit grammar (spec 119): a plain key moves a screen, Shift moves a bait,
+     Ctrl/⌘ moves an entry; Home and End take the same modifier. Ctrl/⌘+PgUp/PgDn
+     stay the browser's own tab keys. */
+  function unitAt() {
+    var state = gkpsDisplay.read();
+    var live = state.service === dock.service;
+    var index = live ? state.screen : 0;
+    var entryIndex = entryOfScreen(index);
+    return {index: index, entryIndex: entryIndex,
+            entry: entryIndex >= 0 ? dock.entries[entryIndex] : null};
+  }
+
+  function stepUnit(delta, unit) {
+    var at = unitAt();
+    if (unit === 'entry') {
+      if (!dock.entries.length) return;
+      var index = Math.max(0, Math.min(dock.entries.length - 1,
+                                       (at.entryIndex < 0 ? 0 : at.entryIndex) + delta));
+      projectScreen(dock.entries[index].start);
+      return;
+    }
+    if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
+      var baits = at.entry.baits;
+      var bait = 0;
+      for (var i = 0; i < baits.length; i++) {
+        if (at.index >= baits[i].start) bait = i;
+      }
+      bait = Math.max(0, Math.min(baits.length - 1, bait + delta));
+      projectScreen(baits[bait].start);
+      return;
+    }
+    step(delta);
+  }
+
+  function edgeOf(unit, end) {
+    var at = unitAt();
+    if (unit === 'entry') {
+      if (!dock.entries.length) return;
+      projectScreen(end ? dock.entries[dock.entries.length - 1].start : 0);
+      return;
+    }
+    if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
+      var baits = at.entry.baits;
+      projectScreen(end ? baits[baits.length - 1].start : baits[0].start);
+      return;
+    }
+    if (!dock.screens.length) return;
+    projectScreen(end ? dock.screens.length - 1 : 0);
+  }
+
   panel.addEventListener('keydown', function (event) {
-    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.altKey) return;
     var key = event.key;
+    var shift = event.shiftKey;
+    var ctrl = event.ctrlKey || event.metaKey;
     if (key === 'Escape') {
       if (panel.dataset.view === 'run') setView('pick');
       return;
     }
     if (panel.dataset.view !== 'run') return;
-    if (key === 'ArrowDown' || key === 'ArrowRight' || key === 'PageDown' || key === 'ArrowLeft' || key === 'ArrowUp' || key === 'PageUp') {
+    if (ctrl && (key === 'PageUp' || key === 'PageDown')) return;   /* the browser's tabs */
+    var unit = shift ? 'bait' : ctrl ? 'entry' : 'screen';
+    if (key === 'ArrowDown' || key === 'ArrowRight' || key === 'PageDown' ||
+        key === 'ArrowUp' || key === 'ArrowLeft' || key === 'PageUp') {
       event.preventDefault();
-      step(key === 'ArrowUp' || key === 'ArrowLeft' || key === 'PageUp' ? -1 : 1);
+      stepUnit(key === 'ArrowUp' || key === 'ArrowLeft' || key === 'PageUp' ? -1 : 1, unit);
       return;
     }
-    if (key === 'Home') { event.preventDefault(); projectScreen(0); return; }
-    if (key === 'End') { event.preventDefault(); projectScreen(dock.screens.length - 1); return; }
+    if (key === 'Home') { event.preventDefault(); edgeOf(unit, false); return; }
+    if (key === 'End') { event.preventDefault(); edgeOf(unit, true); return; }
+    if (ctrl) return;                                               /* leave other combos alone */
     if (key === ' ') { event.preventDefault(); displayBtn.click(); return; }
     if (key === 't' || key === 'T') { transChip.click(); }
   });
@@ -458,6 +611,7 @@
   /* ---------- appearance (shared key and glyphs with the public site) -------- */
 
   var systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+  var morphTimer = null;
 
   function applyTheme(mode, persist) {
     root.dataset.themeMode = mode;
@@ -466,7 +620,13 @@
     var label = 'Appearance: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
     themeBtn.setAttribute('aria-label', label);
     themeBtn.title = label;
-    if (persist) { try { localStorage.setItem('gkps-theme', mode); } catch (e) { /* private mode */ } }
+    if (persist) {
+      try { localStorage.setItem('gkps-theme', mode); } catch (e) { /* private mode */ }
+      /* A user switch morphs (colour sweep + icon pop); loading never does. */
+      root.classList.add('theme-morph');
+      window.clearTimeout(morphTimer);
+      morphTimer = window.setTimeout(function () { root.classList.remove('theme-morph'); }, 420);
+    }
   }
 
   themeBtn.addEventListener('click', function () {
@@ -481,7 +641,7 @@
 
   /* ---------- boot ----------------------------------------------------------- */
 
-  applyTheme(root.dataset.themeMode || 'system', false);
+  applyTheme(root.dataset.themeMode || 'dark', false);
   gkpsDisplay.subscribe(sync);
   setView('pick');
 })();
