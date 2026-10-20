@@ -52,6 +52,7 @@
     entries: [], screens: [],
     on: false, screen: 0, translation: null,
     lastEntry: null,
+    centerUnit: 'screen',         /* what the last move stepped: 'entry' or 'screen' */
   };
 
   function el(tag, cls, text) {
@@ -292,6 +293,7 @@
     dock.entries = [];
     dock.screens = [];
     dock.lastEntry = null;
+    dock.centerUnit = 'screen';
     runService.textContent = name;
     runDate.textContent = date;
     entryList.replaceChildren();
@@ -314,8 +316,9 @@
 
   /* ---------- projection (the state's verbs) -------------------------------- */
 
-  function projectScreen(index) {
+  function projectScreen(index, unit) {
     if (dock.service == null || !dock.screens.length) return;
+    if (unit) dock.centerUnit = unit;
     var target = Math.max(0, Math.min(index, dock.screens.length - 1));
     var state = gkpsDisplay.read();
     if (state.service === dock.service) gkpsDisplay.screen(target);
@@ -327,7 +330,7 @@
     var state = gkpsDisplay.read();
     var base = state.service === dock.service ? state.screen : -1;
     if (delta < 0 && base <= 0) return;
-    projectScreen(base + delta);
+    projectScreen(base + delta, 'screen');
   }
 
   function entryOfScreen(index) {
@@ -368,6 +371,17 @@
     glideScroll(target);
   }
 
+  /* The centring target follows the navigation unit (spec 119): a move by entry
+     centres the ENTRY row, a move by screen centres the SCREEN row. */
+  function liveNode() {
+    if (dock.centerUnit === 'entry') {
+      return entryList.querySelector('.entryrow[aria-current="true"]') ||
+             entryList.querySelector('.screenerow[aria-current="true"]');
+    }
+    return entryList.querySelector('.screenerow[aria-current="true"]') ||
+           entryList.querySelector('.entryrow[aria-current="true"]');
+  }
+
   /* One centring per frame, whatever number of state notices arrived. */
   var centerFrame = 0;
 
@@ -375,9 +389,7 @@
     if (centerFrame) return;
     centerFrame = window.requestAnimationFrame(function () {
       centerFrame = 0;
-      var node = entryList.querySelector('.screenerow[aria-current="true"]') ||
-                 entryList.querySelector('.entryrow[aria-current="true"]');
-      centerRow(node);
+      centerRow(liveNode());
     });
   }
 
@@ -395,8 +407,7 @@
     var until = performance.now() + (duration || 260) + 200;
     function step(now) {
       followFrame = 0;
-      var node = entryList.querySelector('.screenerow[aria-current="true"]') ||
-                 document.querySelector('.entryrow[aria-current="true"]');
+      var node = liveNode();
       if (!node) return;
       var max = runBody.scrollHeight - runBody.clientHeight;
       var target = node.offsetTop - (runBody.clientHeight - node.offsetHeight) / 2;
@@ -571,13 +582,13 @@
     var band = event.target.closest('.nextband');
     if (band) {
       var nextEntry = dock.entries[Number(band.dataset.index)];
-      if (nextEntry) projectScreen(nextEntry.start);
+      if (nextEntry) projectScreen(nextEntry.start, 'entry');
       focusPanel();
       return;
     }
     var screenRow = event.target.closest('.screenerow');
     if (screenRow) {
-      projectScreen(Number(screenRow.dataset.screen));
+      projectScreen(Number(screenRow.dataset.screen), 'screen');
       focusPanel();
       return;
     }
@@ -585,14 +596,14 @@
     if (!row) return;
     var entry = dock.entries[Number(row.dataset.index)];
     if (!entry) return;
-    projectScreen(entry.start);
+    projectScreen(entry.start, 'entry');
     focusPanel();
   });
 
   baitChips.addEventListener('click', function (event) {
     var chip = event.target.closest('.bait');
     if (!chip) return;
-    projectScreen(Number(chip.dataset.screen));
+    projectScreen(Number(chip.dataset.screen), 'screen');
     focusPanel();
   });
 
@@ -611,6 +622,7 @@
       else gkpsDisplay.screen(state.screen);      /* resume where it was paused */
     } else {
       gkpsDisplay.show(dock.service, 0);          /* display from the start */
+      dock.centerUnit = 'entry';
     }
     focusPanel();
   });
@@ -638,7 +650,7 @@
       if (!dock.entries.length) return;
       var index = Math.max(0, Math.min(dock.entries.length - 1,
                                        (at.entryIndex < 0 ? 0 : at.entryIndex) + delta));
-      projectScreen(dock.entries[index].start);
+      projectScreen(dock.entries[index].start, 'entry');
       return;
     }
     if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
@@ -648,7 +660,7 @@
         if (at.index >= baits[i].start) bait = i;
       }
       bait = Math.max(0, Math.min(baits.length - 1, bait + delta));
-      projectScreen(baits[bait].start);
+      projectScreen(baits[bait].start, 'screen');
       return;
     }
     step(delta);
@@ -658,16 +670,16 @@
     var at = unitAt();
     if (unit === 'entry') {
       if (!dock.entries.length) return;
-      projectScreen(end ? dock.entries[dock.entries.length - 1].start : 0);
+      projectScreen(end ? dock.entries[dock.entries.length - 1].start : 0, 'entry');
       return;
     }
     if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
       var baits = at.entry.baits;
-      projectScreen(end ? baits[baits.length - 1].start : baits[0].start);
+      projectScreen(end ? baits[baits.length - 1].start : baits[0].start, 'screen');
       return;
     }
     if (!dock.screens.length) return;
-    projectScreen(end ? dock.screens.length - 1 : 0);
+    projectScreen(end ? dock.screens.length - 1 : 0, 'screen');
   }
 
   panel.addEventListener('keydown', function (event) {
