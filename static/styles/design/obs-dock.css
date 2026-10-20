@@ -489,6 +489,28 @@ body.obs-dock {
   color: var(--head-ink);
 }
 
+/* ---------- hover feedback on the states that own a fill -------------------- */
+
+/* The live row and the live screen keep their fill and answer the pointer on top of
+   it: their state rules outrank :hover, so each needs its own hover tone. */
+.entryrow[aria-current="true"]:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+}
+
+.screenerow[aria-current="true"]:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 45%, var(--icon-hover-bg));
+}
+
+/* The live entry's whole block answers the pointer, not only its single rows. */
+.entryli[data-live="true"] .entryinner:hover {
+  background: color-mix(in srgb, var(--icon-hover-bg) 55%, transparent);
+}
+
+/* The next band is a control too. */
+.nextband:hover {
+  background: color-mix(in srgb, var(--rail-bg) 92%, var(--ink));
+}
+
 /* ---------- transport ------------------------------------------------------- */
 
 .dock__transport {
