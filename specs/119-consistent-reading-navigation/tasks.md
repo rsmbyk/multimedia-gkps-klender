@@ -18,7 +18,8 @@
 - [x] Green: make online reading routes settle on current data while preserving live UI state.
 - [x] Run targeted Django and browser checks; no styling changed.
 - [x] Complete traceability and version/changelog; ITEM/board PR metadata follows PR creation.
-- [ ] Open draft PR against `develop`; run required exact-head CI before merge.
+- [x] Open draft PR against `develop` ([#368](https://github.com/rsmbyk/multimedia-gkps-klender/pull/368)).
+- [ ] Run required exact-head CI before merge.
 
 ## Done when
 
