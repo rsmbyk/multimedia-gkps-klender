@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.db import connections
 from django.test import override_settings, tag
 from playwright.sync_api import expect, sync_playwright
 
@@ -10,6 +11,13 @@ from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 from tests.e2e.test_offline_library import wait_for_offline_ready
+
+
+def write_from_worker(operation, *args, **kwargs):
+    try:
+        return operation(*args, **kwargs)
+    finally:
+        connections.close_all()
 
 
 @override_settings(DEBUG=True, STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -39,9 +47,9 @@ class NavigationFreshnessTests(StaticLiveServerTestCase):
             wait_for_offline_ready(page)
             page.wait_for_function("async () => !!(await GKPSOfflineRender.render('/tatib/'))")
             with ThreadPoolExecutor(max_workers=1) as pool:
-                pool.submit(tatib.TataIbadah.objects.create,
+                pool.submit(write_from_worker, tatib.TataIbadah.objects.create,
                             name='Added service', date=date(2026, 10, 20), is_active=True).result()
-                pool.submit(tatib.TataIbadah.objects.filter(pk=self.service.pk).update,
+                pool.submit(write_from_worker, tatib.TataIbadah.objects.filter(pk=self.service.pk).update,
                             name='Current service').result()
             page.locator('.rail [data-panel="tatib"]').click()
             expect(page.locator('#panelBody .book__n')).to_contain_text(['Added service', 'Current service'])
@@ -58,7 +66,7 @@ class NavigationFreshnessTests(StaticLiveServerTestCase):
             wait_for_offline_ready(page)
             page.wait_for_function("async () => !!(await GKPSOfflineRender.render('/search?q=Current%20song'))")
             with ThreadPoolExecutor(max_workers=1) as pool:
-                pool.submit(songs.Song.objects.filter(pk=self.song.pk).update,
+                pool.submit(write_from_worker, songs.Song.objects.filter(pk=self.song.pk).update,
                             title='Current song').result()
             page.locator('#searchQuery').fill('Current song')
             page.locator('#globalSearch').evaluate('(form) => form.requestSubmit()')
