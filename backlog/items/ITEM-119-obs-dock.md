@@ -1,6 +1,6 @@
 ---
 id: ITEM-119
-status: in_progress
+status: in_review
 title: 'OBS dock: run Service Entries with one state for dock, projector, and overlay'
 type: feat
 priority: P1
@@ -13,7 +13,7 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/367
 archived_at:
 archive_reason:
 bump: minor
-release_version:
+release_version: 1.20.0
 ---
 
 # ITEM-119: OBS dock — one state for dock, projector, and overlay

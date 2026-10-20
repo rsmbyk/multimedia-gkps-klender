@@ -309,16 +309,18 @@ from 320 px to 560 px without horizontal scrolling.
 
 ## Traceability
 
-- Domain/app tests: `multimedia/web/test_reading.py` (routes, projector context,
-  removed routes), `multimedia/web/test_media.py` (media islands unchanged).
-- Browser E2E: `tests/e2e/test_obs_dock.py` (dock, state, adoption),
-  `tests/e2e/test_obs_overlay.py` (caption, blanking, listen-only),
-  `tests/e2e/test_projector_follows.py` (adoption, fonts, balance).
+- Domain/app tests: `multimedia/web/test_obs_dock.py` (routes, adoption parameter,
+  picker grouping in Indonesian, dated services only, bundled typefaces and the balance
+  rule), `multimedia/web/tests.py` (`ServiceProjectorTests`), `multimedia/web/test_media.py`
+  (media islands unchanged).
+- Browser E2E: `tests/e2e/test_obs_dock.py` (browse vs run, entry click, keyboard units,
+  hide/resume, catch-up with every tab closed, `?service` adoption in an open projector),
+  `tests/e2e/test_obs_overlay.py` (caption words and type, control-free page, hide empties).
 - Implementation: `multimedia/urls.py`, `multimedia/web/reading/views.py`,
   `multimedia/web/templates/reading/{projector,obs_dock,obs_overlay}.html`,
-  `static/web/{display,projector,obs-dock}.js`,
-  `static/styles/design/{projector,obs-overlay,obs-dock}.css`,
-  `static/fonts/` (+ licenses), `static/assets/gkps.png`.
+  `static/web/{display,projector,obs-dock,obs-overlay}.js`,
+  `static/styles/design/{fonts,projector,obs-overlay,obs-dock}.css`,
+  `static/assets/fonts/` (+ licences), `static/assets/gkps.png`.
 
 ## Owner review points
 
