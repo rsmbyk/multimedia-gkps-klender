@@ -12,7 +12,8 @@
 - [x] Green: one freshness check when Go To opens and current-query-safe suggestion update.
 - [x] Verify offline/failed check, keyboard/click detours, TB/SIM names/codes, and no per-keystroke full sync.
 - [x] Complete traceability, version/changelog; ITEM/board PR metadata follows PR creation.
-- [ ] Open stacked draft PR against Spec 119 while its CI is blocked; retarget `develop` after Spec 119 merges.
+- [x] Open stacked draft PR [#369](https://github.com/rsmbyk/multimedia-gkps-klender/pull/369) against Spec 119 while its CI is blocked.
+- [ ] Retarget `develop` after Spec 119 merges.
 - [ ] Run required exact-head CI before merge.
 
 ## Done when
