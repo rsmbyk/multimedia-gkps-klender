@@ -1,6 +1,6 @@
 ---
 id: ITEM-120
-status: in_progress
+status: in_review
 title: 'Refresh projector Go To data while online'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-20
 updated: 2026-10-20
 spec: specs/120-projector-goto-freshness/spec.md
 branch: fix/120-projector-goto-freshness
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/369
 archived_at:
 archive_reason:
 bump: patch
