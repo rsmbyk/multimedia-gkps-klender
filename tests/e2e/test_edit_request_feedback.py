@@ -250,9 +250,8 @@ class EditRequestFeedbackE2ETests(StaticLiveServerTestCase):
         self.assertLessEqual(float(pending_style['animation'].removesuffix('s')), 0.00002)
         self.assertLessEqual(float(pending_style['transition'].removesuffix('s')), 0.00002)
         page.evaluate('window.__feedbackAction.success()')
-        success_style = page.locator('.edit-toast[data-state="success"]').evaluate(
-            'node => getComputedStyle(node.querySelector(".edit-toast__mark")).color')
-        self.assertEqual(success_style, 'rgb(131, 197, 162)')
+        expect(page.locator('.edit-toast[data-state="success"] .edit-toast__mark')).to_have_css(
+            'color', 'rgb(131, 197, 162)')
         context.close()
 
 
