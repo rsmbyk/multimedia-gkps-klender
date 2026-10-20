@@ -51,7 +51,6 @@
     service: null, name: '', date: '',
     entries: [], screens: [],
     on: false, screen: 0, translation: null,
-    bandEntry: null,              /* the li that owns the NEXT band */
   };
 
   function el(tag, cls, text) {
@@ -226,21 +225,21 @@
     return inner.children.length ? inner : null;
   }
 
-  function nextBandFor(index) {
-    var next = dock.entries[index + 1];
-    if (!next) return null;
-    var band = el('button', 'nextband');
-    band.type = 'button';
-    band.tabIndex = -1;
-    band.dataset.index = String(index + 1);
-    band.hidden = true;
-    band.appendChild(el('span', 'nextband__cap', 'Next'));
-    var parts = next.type === 'song' ? songParts(next) : null;
-    var label = parts
-      ? (parts.reference ? parts.reference + ' — ' + parts.title : parts.title)
-      : entryLabel(next);
-    band.appendChild(el('span', 'nextband__label', label || 'Next'));
-    return band;
+  /* The band floats over the list's tail: it is never in flow, so showing it cannot
+     reflow the rows under a running glide (that reflow was half the old bounce). */
+  var nextBand = el('button', 'nextband');
+  nextBand.type = 'button';
+  nextBand.tabIndex = -1;
+  nextBand.hidden = true;
+  nextBand.appendChild(el('span', 'nextband__cap', 'Next'));
+  var nextBandLabel = el('span', 'nextband__label', '');
+  nextBand.appendChild(nextBandLabel);
+  runBody.appendChild(nextBand);
+
+  function bandText(entry) {
+    var parts = entry.type === 'song' ? songParts(entry) : null;
+    if (parts) return parts.reference ? parts.reference + ' — ' + parts.title : parts.title;
+    return entryLabel(entry);
   }
 
   function renderList() {
@@ -285,7 +284,6 @@
     dock.date = date;
     dock.entries = [];
     dock.screens = [];
-    dock.bandEntry = null;
     runService.textContent = name;
     runDate.textContent = date;
     entryList.replaceChildren();
@@ -355,37 +353,47 @@
 
   function centerRow(node) {
     if (!node) return;
-    var box = runBody.getBoundingClientRect();
-    var rect = node.getBoundingClientRect();
-    glideScroll(runBody.scrollTop + (rect.top - box.top) - (box.height - rect.height) / 2);
+    /* offsetTop is the row's LAYOUT position: a sticky row reports its pinned
+       position through getBoundingClientRect, which made the glide aim at a spot
+       that shifted under it as it stuck — the second half of the old bounce. */
+    var target = node.offsetTop - (runBody.clientHeight - node.offsetHeight) / 2;
+    glideScroll(target);
+  }
+
+  /* One centring per frame, whatever number of state notices arrived. */
+  var centerFrame = 0;
+
+  function scheduleCenter() {
+    if (centerFrame) return;
+    centerFrame = window.requestAnimationFrame(function () {
+      centerFrame = 0;
+      var node = entryList.querySelector('.screenerow[aria-current="true"]') ||
+                 entryList.querySelector('.entryrow[aria-current="true"]');
+      centerRow(node);
+    });
   }
 
   /* ---------- the pinned row and the NEXT band ------------------------------ */
 
   function updateBand() {
     var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
-    var band = dock.bandEntry;
-    if (band && band.parentElement !== liveEntry) {
-      band.remove();
-      dock.bandEntry = null;
-      band = null;
-    }
-    if (liveEntry && !band) {
-      band = nextBandFor(Number(liveEntry.dataset.index));
-      if (band) {
-        liveEntry.appendChild(band);
-        dock.bandEntry = band;
-      }
-    }
-    if (!liveEntry || !band) {
-      if (band) band.hidden = true;
+    if (!liveEntry) {
+      nextBand.hidden = true;
       return;
     }
+    var index = Number(liveEntry.dataset.index);
     var box = runBody.getBoundingClientRect();
-    /* The band yields the moment the entry's own end is in view. */
-    band.hidden = liveEntry.getBoundingClientRect().bottom <= box.bottom + 6;
     var row = liveEntry.querySelector('.entryrow');
     if (row) row.classList.toggle('is-stuck', row.getBoundingClientRect().top - box.top <= 0.5);
+    var next = dock.entries[index + 1];
+    if (!next) {
+      nextBand.hidden = true;
+      return;
+    }
+    nextBand.dataset.index = String(index + 1);
+    nextBandLabel.textContent = bandText(next);
+    /* The band yields the moment the entry's own end is in view. */
+    nextBand.hidden = liveEntry.getBoundingClientRect().bottom <= box.bottom + 6;
   }
 
   var scrollScheduled = false;
@@ -494,21 +502,7 @@
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
     updateBand();
-    if (live) {
-      /* The live ROW goes to the centre — the current screen (a song's bait row
-         included), not the entry block around it — on every move and click, and
-         again once the entry's expansion has settled (210 ms). */
-      var target = entryList.querySelector('.screenerow[aria-current="true"]') ||
-                   entryList.querySelector('.entryrow[aria-current="true"]');
-      if (target) {
-        centerRow(target);
-        window.setTimeout(function () {
-          var again = entryList.querySelector('.screenerow[aria-current="true"]') ||
-                      entryList.querySelector('.entryrow[aria-current="true"]');
-          if (again) centerRow(again);
-        }, 210);
-      }
-    }
+    if (live) scheduleCenter();
   }
 
   /* ---------- controls ------------------------------------------------------- */
@@ -523,10 +517,7 @@
     var band = event.target.closest('.nextband');
     if (band) {
       var nextEntry = dock.entries[Number(band.dataset.index)];
-      if (nextEntry) {
-        projectScreen(nextEntry.start);
-        centerRow(entryList.querySelector('.entryli[data-index="' + band.dataset.index + '"]'));
-      }
+      if (nextEntry) projectScreen(nextEntry.start);
       focusPanel();
       return;
     }
