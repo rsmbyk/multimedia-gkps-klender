@@ -39,7 +39,7 @@ html, body.obs-overlay {
   text-shadow:
     0 .03em 0 #000, .03em 0 0 #000, -.03em 0 0 #000, 0 -.03em 0 #000,
     .022em .022em 0 #000, -.022em -.022em 0 #000, .022em -.022em 0 #000, -.022em .022em 0 #000,
-    0 .04em .22em rgba(0, 0, 0, .5);
+    0 .025em .22em rgba(0, 0, 0, .62);
 }
 
 .obs-overlay__caption span {
