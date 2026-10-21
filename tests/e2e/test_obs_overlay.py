@@ -4,9 +4,12 @@ The overlay is a browser source for OBS: it renders the browser-local display st
 and carries no controls at all. Its type comes from the bundled Source Sans 3.
 """
 
+import re
 import unittest
 from datetime import date
+from pathlib import Path
 
+from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
 
@@ -72,7 +75,13 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         self.assertTrue(style['family'].startswith('"Source Sans 3"'), style['family'])
         self.assertEqual(style['weight'], '800')
         self.assertEqual(style['wrap'], 'balance')
-        self.assertEqual(style['size'], 32)      # clamp top at 1280 px wide
+        # At 1280 px wide the cqw term (37.1px) is above the cap, so the caption must
+        # render at exactly the cap the stylesheet declares — read it rather than
+        # repeating the number here, which would rot on the next type tweak.
+        css = (Path(settings.BASE_DIR) / 'static' / 'styles' / 'design'
+               / 'obs-overlay.css').read_text(encoding='utf-8')
+        cap = float(re.search(r'font-size: clamp\(9px, 2\.9cqw, (\d+)px\)', css).group(1))
+        self.assertEqual(style['size'], cap)
         context.close()
 
     def test_hide_empties_the_overlay_and_nothing_is_focusable(self):
