@@ -50,6 +50,7 @@
   var dock = {
     service: null, name: '', date: '',
     entries: [], screens: [], stops: [],
+    pickIndex: -1,
     on: false, screen: 0, translation: null,
     lastEntry: null,
   };
@@ -291,6 +292,39 @@
     try { panel.focus({preventScroll: true}); } catch (e) { panel.focus(); }
   }
 
+  /* ---------- the picker's cursor -------------------------------------------- */
+
+  function pickRows() {
+    return Array.prototype.slice.call(pickBody.querySelectorAll('.servicerow'));
+  }
+
+  /* An arrow-move cursor for the picker: the panel keeps the keyboard (every control
+     is tabindex="-1"), so this is a marked row, not a focused one. The last row the
+     operator touched stays marked when they come back from a service. */
+  function setPickCursor(index, scroll) {
+    var rows = pickRows();
+    if (!rows.length) { dock.pickIndex = -1; return; }
+    var i = Math.max(0, Math.min(index, rows.length - 1));
+    dock.pickIndex = i;
+    rows.forEach(function (row, n) {
+      var on = n === i;
+      row.classList.toggle('is-cursor', on);
+      if (on) row.setAttribute('aria-current', 'true');
+      else row.removeAttribute('aria-current');
+    });
+    if (scroll) {
+      try { rows[i].scrollIntoView({block: 'nearest'}); }
+      catch (e) { rows[i].scrollIntoView(); }
+    }
+  }
+
+  function openCursorRow() {
+    var rows = pickRows();
+    var row = rows[dock.pickIndex];
+    if (!row) return;
+    openService(Number(row.dataset.service), row.dataset.name, row.dataset.date);
+  }
+
   function setView(name, back) {
     if (panel.dataset.view === name) return;
     panel.dataset.view = name;
@@ -304,6 +338,11 @@
     window.setTimeout(function () {
       incoming.classList.remove('is-in-forward', 'is-in-back');
     }, 220);
+    if (name === 'pick') {
+      var rows = pickRows();
+      if (rows.length && dock.pickIndex < 0) setPickCursor(0, false);
+      else if (rows.length) setPickCursor(dock.pickIndex, true);
+    }
     focusPanel();
   }
 
@@ -726,6 +765,7 @@
   pickBody.addEventListener('click', function (event) {
     var row = event.target.closest('.servicerow');
     if (!row) return;
+    setPickCursor(pickRows().indexOf(row), false);
     openService(Number(row.dataset.service), row.dataset.name, row.dataset.date);
   });
 
@@ -846,6 +886,28 @@
       if (panel.dataset.view === 'run') setView('pick', true);
       return;
     }
+    if (panel.dataset.view === 'pick') {
+      var rows = pickRows();
+      if (!rows.length) return;
+      if (key === 'ArrowDown' || key === 'ArrowRight' || key === 'PageDown') {
+        event.preventDefault();
+        setPickCursor((dock.pickIndex < 0 ? -1 : dock.pickIndex) + 1, true);
+        return;
+      }
+      if (key === 'ArrowUp' || key === 'ArrowLeft' || key === 'PageUp') {
+        event.preventDefault();
+        setPickCursor((dock.pickIndex < 0 ? 0 : dock.pickIndex) - 1, true);
+        return;
+      }
+      if (key === 'Home') { event.preventDefault(); setPickCursor(0, true); return; }
+      if (key === 'End') { event.preventDefault(); setPickCursor(rows.length - 1, true); return; }
+      if (key === 'Enter' || key === ' ') {
+        event.preventDefault();
+        openCursorRow();
+        return;
+      }
+      return;                                    /* the picker has no other keys */
+    }
     if (panel.dataset.view !== 'run') return;
     if (ctrl && (key === 'PageUp' || key === 'PageDown')) return;   /* the browser's tabs */
     var unit = shift ? 'bait' : ctrl ? 'entry' : 'screen';
@@ -922,5 +984,6 @@
 
   applyTheme(root.dataset.themeMode || 'dark', false);
   gkpsDisplay.subscribe(sync);
+  if (pickRows().length) setPickCursor(0, false);
   focusPanel();
 })();

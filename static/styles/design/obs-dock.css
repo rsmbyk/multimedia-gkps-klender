@@ -275,6 +275,13 @@ body.obs-dock {
 
 .servicerow:hover { background: var(--icon-hover-bg); }
 
+/* The picker's arrow cursor: the panel keeps the keyboard, so this ring marks the
+   row Enter would open. Inset so it never changes the row's size. */
+.servicerow.is-cursor {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
 .servicerow__n {
   min-width: 0;
   flex: 1;

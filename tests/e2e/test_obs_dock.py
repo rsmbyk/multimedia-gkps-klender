@@ -122,6 +122,37 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
         self.assertIn('Kasih karunia', self._caption(overlay))
         context.close()
 
+    def test_the_picker_answers_the_arrows_and_enter(self):
+        context = self._context()
+        dock = self._open(context, '/obs/dock')
+
+        # Newest first: 25 Oct (Ibadah Sore), then 18 Oct (Ibadah Minggu). The
+        # first row is marked before a key is pressed, so Enter always has a target.
+        dock.wait_for_selector('.servicerow.is-cursor')
+        self.assertEqual(
+            dock.evaluate("document.querySelector('.servicerow.is-cursor').dataset.name"),
+            'Ibadah Sore')
+
+        dock.keyboard.press('ArrowDown')
+        self.assertEqual(
+            dock.evaluate("document.querySelector('.servicerow.is-cursor').dataset.name"),
+            'Ibadah Minggu')
+
+        dock.keyboard.press('Enter')
+        dock.wait_for_selector('.entryrow')
+        self.assertEqual(
+            dock.evaluate("document.getElementById('runService').textContent"),
+            'Ibadah Minggu')
+
+        # Back in the picker, the mark stays on the service just opened.
+        dock.keyboard.press('Escape')
+        dock.wait_for_function(
+            "() => document.getElementById('dockPanel').dataset.view === 'pick'")
+        self.assertEqual(
+            dock.evaluate("document.querySelector('.servicerow.is-cursor').dataset.name"),
+            'Ibadah Minggu')
+        context.close()
+
     def test_keyboard_steps_screens_and_space_pauses_and_resumes(self):
         context = self._context()
         dock = self._open(context, '/obs/dock')
