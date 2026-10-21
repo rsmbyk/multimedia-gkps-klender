@@ -31,15 +31,15 @@ html, body.obs-overlay {
   text-align: center;
   color: #FFFFFF;
   font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: clamp(9px, 2.9cqw, 32px);
+  font-size: clamp(11px, 3.4cqw, 64px);
   font-weight: 800;
   line-height: 1.4;
   letter-spacing: .01em;
   text-wrap: balance;
   text-shadow:
-    0 .06em 0 #000, .06em 0 0 #000, -.06em 0 0 #000, 0 -.06em 0 #000,
-    .045em .045em 0 #000, -.045em -.045em 0 #000, .045em -.045em 0 #000, -.045em .045em 0 #000,
-    0 .12em .45em rgba(0, 0, 0, .75);
+    0 .04em 0 #000, .04em 0 0 #000, -.04em 0 0 #000, 0 -.04em 0 #000,
+    .03em .03em 0 #000, -.03em -.03em 0 #000, .03em -.03em 0 #000, -.03em .03em 0 #000,
+    0 .07em .3em rgba(0, 0, 0, .55);
 }
 
 .obs-overlay__caption span {

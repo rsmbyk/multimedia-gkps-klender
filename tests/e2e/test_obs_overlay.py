@@ -75,13 +75,15 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         self.assertTrue(style['family'].startswith('"Source Sans 3"'), style['family'])
         self.assertEqual(style['weight'], '800')
         self.assertEqual(style['wrap'], 'balance')
-        # At 1280 px wide the cqw term (37.1px) is above the cap, so the caption must
-        # render at exactly the cap the stylesheet declares — read it rather than
-        # repeating the number here, which would rot on the next type tweak.
+        # The caption must render at exactly what the stylesheet's clamp resolves to
+        # at this width — parsed from obs-overlay.css so a type tweak cannot leave a
+        # stale literal behind (floor, cqw coefficient and cap all come from there).
         css = (Path(settings.BASE_DIR) / 'static' / 'styles' / 'design'
                / 'obs-overlay.css').read_text(encoding='utf-8')
-        cap = float(re.search(r'font-size: clamp\(9px, 2\.9cqw, (\d+)px\)', css).group(1))
-        self.assertEqual(style['size'], cap)
+        clamp = re.search(r'font-size: clamp\((\d+)px, ([\d.]+)cqw, (\d+)px\)', css)
+        floor, cqw, cap = (float(clamp.group(1)), float(clamp.group(2)), float(clamp.group(3)))
+        expected = min(max(floor, cqw * 1280 / 100), cap)
+        self.assertAlmostEqual(style['size'], expected, places=1)
         context.close()
 
     def test_hide_empties_the_overlay_and_nothing_is_focusable(self):
