@@ -63,7 +63,7 @@ def _songs_chunk(book):
         verses.sort(key=lambda row: row['number'])
         rows.append({'id': song.pk, 'number': song.number, 'sub_number': song.sub_number,
                      'title': song.title or '(untitled)', 'is_untitled': song.is_untitled,
-                     'sort_title': re.sub(r'^\s*\d+\s*[.\-)\u2013]?', '', song.title or '').lower(),
+                     'sort_title': re.sub(r'^\s*\d+\s*[.\-)\u2013]?\s*', '', song.title or '').lower(),
                      'modified_key': str(int(song.modified.timestamp() * 1000000))
                      if song.modified else '',
                      'verses': verses})

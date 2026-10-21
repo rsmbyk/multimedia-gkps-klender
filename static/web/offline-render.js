@@ -107,6 +107,32 @@
         + '" data-entry-tatib="' + serviceId + '">+ ' + names[kind] + '</button>';
     }).join('');
   }
+  function emptyAddButtons(serviceId) {
+    var icons = {
+      scripture: '<path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/>',
+      song: '<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>',
+      text: '<path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/>',
+      section_break: '<path d="M3.5 12h17M7 7.5l5 5 5-5M7 16.5l5-5 5 5" opacity=".45"/><path d="M3.5 12h17"/>'
+    };
+    var names = {scripture: 'Passage', song: 'Song', text: 'Text', section_break: 'Break', media: 'Media'};
+    return ['scripture', 'song', 'text', 'section_break', 'media'].map(function (kind) {
+      return '<button type="button" class="entry__empty-btn" data-entry-open="' + kind
+        + '" data-entry-tatib="' + serviceId + '">'
+        + (icons[kind] ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+          + ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"'
+          + ' aria-hidden="true">' + icons[kind] + '</svg>' : '')
+        + '<span>Add ' + names[kind] + '</span></button>';
+    }).join('');
+  }
+  function bibleSidebarTitle(book) {
+    var translations = (book.translations || []).slice().sort(function (a, b) {
+      var aTb = a.version.toUpperCase() === 'TB', bTb = b.version.toUpperCase() === 'TB';
+      return aTb === bTb ? a.id - b.id : aTb ? -1 : 1;
+    });
+    var display = translations.length ? translations[0].name : book.name;
+    return 'Chapters — ' + display
+      + (translations.length > 1 ? ' (' + translations[1].name + ')' : '');
+  }
   function editorButton(kind, id, label, danger) {
     var icon = danger
       ? '<path d="M3.6 5.4h12.8M8.2 5.4V3.8h3.6v1.6M5.4 5.4l.8 10.4h7.6l.8-10.4M8.6 8.6v4.4M11.4 8.6v4.4"/>'
@@ -284,12 +310,14 @@
       : section === 'kidung' ? 'Songbooks' : 'Tata Ibadah';
     doc.querySelector('label[for="bookFilter"]').textContent = section === 'alkitab'
       ? 'Filter books' : section === 'kidung' ? 'Filter songbooks' : 'Filter Tata Ibadah';
+    doc.querySelector('#bookFilter').placeholder = section === 'alkitab' ? 'Filter books...'
+      : section === 'kidung' ? 'Filter songbooks...' : 'Filter Tata Ibadah...';
     doc.querySelector('#panelBody').innerHTML = panel;
     doc.querySelector('#panelEmpty').textContent = section === 'alkitab' ? 'No matching books.'
       : section === 'kidung' ? 'No matching songbooks.' : 'No matching Tata Ibadah.';
     doc.querySelector('#chList').innerHTML = children;
     doc.querySelector('#chTitle').textContent = section === 'alkitab' ? 'Chapters — ' + name
-      : section === 'kidung' ? 'Song list' : 'Service contents';
+      : section === 'kidung' ? 'Song list' : 'Chapters';
     doc.querySelector('.ch__search').hidden = section === 'alkitab';
     doc.querySelector('label[for="songFilter"]').textContent = section === 'tatib'
       ? 'Filter sections' : 'Filter songs';
@@ -364,6 +392,7 @@
     var visibleName = (visible === 'sim' ? sim : tb || sim || {}).name || book.name;
     common(doc, 'alkitab', visibleName + ' ' + route.chapter, visibleName, route.chapter,
       body, panel, chapters, '[data-verse="' + (route.url.searchParams.get('v') || '') + '"]');
+    doc.querySelector('#chTitle').textContent = bibleSidebarTitle(book);
     doc.documentElement.dataset.bibleEdition = requested;
     doc.querySelector('#read').setAttribute('lang', visible === 'sim' ? 'sim' : 'id');
     var railLabels = requested === 'sim'
@@ -390,7 +419,7 @@
   }
   function songPage(doc, song, book, books) {
     var citation = book.is_hymn_book ? (book.name + ' ' + song.number
-      + (song.sub_number || '').toUpperCase()) : song.title;
+      + (song.sub_number || '').toUpperCase()) : book.name;
     if (!citation) citation = book.name;
     var panel = '<section class="group"><ul>' + sortedSongbooks(books).map(function (item) {
       return bookLink(item, item.id === book.id, 'songs', !!doc.querySelector('#editorModal'));
@@ -398,11 +427,11 @@
     var editor = !!doc.querySelector('#editorModal') && !book.is_hymn_book;
     var children = book.songs.map(function (item, index) {
       var number = book.is_hymn_book && item.number != null
-        ? item.number + (item.sub_number || '').toUpperCase() : '';
+        ? (book.short_name || '') + ' ' + item.number + (item.sub_number || '').toUpperCase() : '';
       return '<li><a class="songrow" href="/songs/' + item.id + '/" data-i="' + item.id
         + '" data-t="' + escape(item.sort_title || item.title.toLowerCase()) + '" data-o="' + index
         + '" data-m="' + escape(item.modified_key || '')
-        + '"' + (number ? ' data-num="' + escape(number.toLowerCase()) + '"' : '')
+        + '"' + (number ? ' data-num="' + escape(number) + '"' : '')
         + (item.id === song.id ? ' aria-current="true"' : '') + '>'
         + (number ? '<span class="songrow__c">' + escape(number) + '</span>' : '')
         + '<span class="songrow__t">' + escape(item.title)
@@ -418,6 +447,7 @@
     }).join('');
     common(doc, 'kidung', citation, song.title || citation, '',
       body, panel, children, null, true);
+    doc.querySelector('#chTitle').textContent = 'Song list — ' + book.name;
     doc.querySelector('#readEyebrow').textContent = citation;
     doc.querySelector('#readNo').textContent = '';
     if (editor) doc.querySelector('.ch__top').insertAdjacentHTML('afterend', songAddButton(book.id));
@@ -507,8 +537,7 @@
     if (editor && !(service.items || []).length) body = '<div class="entry__empty">'
       + '<p class="entry__empty-title">This Tata Ibadah is empty.</p>'
       + '<p class="entry__empty-hint">Add the first item to start preparing the service.</p>'
-      + '<div class="entry__empty-actions">' + addButtons(service.id)
-        .replace(/entry__add-btn/g, 'entry__empty-btn').replace(/\+ /g, 'Add ')
+      + '<div class="entry__empty-actions">' + emptyAddButtons(service.id)
       + '</div></div>';
     common(doc, 'tatib', service.name, service.name, '', body, panel, children);
     /* Same rule as the server's format_date_long: a dated service leads with its date. */
@@ -783,6 +812,8 @@
       : section === 'kidung' ? 'Songbooks' : 'Tata Ibadah';
     doc.querySelector('label[for="bookFilter"]').textContent = section === 'alkitab'
       ? 'Filter books' : section === 'kidung' ? 'Filter songbooks' : 'Filter Tata Ibadah';
+    doc.querySelector('#bookFilter').placeholder = section === 'alkitab' ? 'Filter books...'
+      : section === 'kidung' ? 'Filter songbooks...' : 'Filter Tata Ibadah...';
     var editor = !!doc.querySelector('#editorModal');
     var mode = target.url.searchParams.get('mode') === 'template' ? 'template' : 'dated';
     var panel = section === 'tatib' ? servicePanel(collection, null, mode, editor)
@@ -794,8 +825,8 @@
     doc.querySelector('#panelBody').innerHTML = panel;
     doc.querySelector('#panelEmpty').textContent = section === 'alkitab' ? 'No matching books.'
       : section === 'kidung' ? 'No matching songbooks.' : 'No matching Tata Ibadah.';
-    doc.querySelector('#chTitle').textContent = section === 'alkitab' ? 'Chapters'
-      : section === 'kidung' ? 'Song list' : 'Service contents';
+    doc.querySelector('#chTitle').textContent = section === 'kidung' && selected
+      ? 'Song list — ' + selected.name : 'Chapters';
     doc.querySelector('.ch__search').hidden = section === 'alkitab';
     doc.querySelector('label[for="songFilter"]').textContent = section === 'tatib'
       ? 'Filter sections' : 'Filter songs';
@@ -819,7 +850,7 @@
     var children = '';
     if (selected && section === 'alkitab') {
       var title = (selected.translations[0] || {}).name || selected.name;
-      doc.querySelector('#chTitle').textContent = 'Chapters — ' + title;
+      doc.querySelector('#chTitle').textContent = bibleSidebarTitle(selected);
       children = Array.from({length: selected.chapters}, function (_, index) {
         var n = index + 1;
         var tb = selected.translations.find(function (translation) {
@@ -839,11 +870,11 @@
     } else if (selected && section === 'kidung') {
       children = selected.songs.map(function (song, index) {
         var number = selected.is_hymn_book && song.number != null
-          ? song.number + (song.sub_number || '').toUpperCase() : '';
+          ? (selected.short_name || '') + ' ' + song.number + (song.sub_number || '').toUpperCase() : '';
         return '<li><a class="songrow" href="/songs/' + song.id + '/" data-i="' + song.id
           + '" data-t="' + escape(song.sort_title || song.title.toLowerCase()) + '" data-o="' + index
           + '" data-m="' + escape(song.modified_key || '')
-          + '"' + (number ? ' data-num="' + escape(number.toLowerCase()) + '"' : '') + '>'
+          + '"' + (number ? ' data-num="' + escape(number) + '"' : '') + '>'
           + (number ? '<span class="songrow__c">' + escape(number) + '</span>' : '')
           + '<span class="songrow__t">' + escape(song.title) + '</span></a>'
           + (editor && !selected.is_hymn_book ? '<button class="row-edit" type="button"'
