@@ -12,6 +12,7 @@ from pathlib import Path
 import re
 
 from multimedia.tatib.models import TataIbadah
+from multimedia.web.reading import search as search_lib
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -40,9 +41,13 @@ class ObsSurfacesTest(TestCase):
 
     def test_the_dock_groups_the_picker_by_month_in_indonesian(self):
         response = self.client.get('/obs/dock')
-        # October 2026 in the product's own month names (not Django's English filter).
-        self.assertContains(response, 'Oktober 2026')
-        self.assertContains(response, '20 Okt 2026')
+        # The product's own month names, not Django's English filter. Built from the
+        # fixture's date and the name tables — a literal date here rots at midnight.
+        date = self.service.date
+        self.assertContains(
+            response, f'{search_lib.MONTHS_LONG[date.month - 1]} {date.year}')
+        self.assertContains(
+            response, f'{date.day} {search_lib.MONTHS_SHORT[date.month - 1]} {date.year}')
 
     def test_the_dock_lists_only_dated_services(self):
         TataIbadah.objects.create(name='Kerangka Kosong', date=None)
