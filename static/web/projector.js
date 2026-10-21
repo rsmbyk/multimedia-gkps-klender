@@ -1512,6 +1512,17 @@
     }).catch(function () {});
   });
   window.addEventListener('resize', function () { render(true); });
+  /* The fit is measured in the face that is on screen. The bundled display faces
+     arrive a frame or two after first paint, and their metrics differ from the
+     fallback's, so a screen fitted against the fallback can overflow the frame once
+     the real face lands (measured 10px past its bottom edge). Re-fit when the fonts
+     are ready. */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      var active = screens()[current];
+      if (active) fit(active);
+    });
+  }
   window.addEventListener('pagehide', clearImageScreen);
   window.addEventListener('pagehide', clearVideoScreen);
 })();
