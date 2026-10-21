@@ -17,6 +17,7 @@
 - [x] Red: browser tests from `/home/` for stale rail rows and search results; existing tests cover failed online fetch and navigation state.
 - [x] Green: make online reading routes settle on current data while preserving live UI state.
 - [x] Run targeted Django and browser checks; no styling changed.
+- [x] Run the 24 focused navigation and offline browser tests against PostgreSQL; all passed, including database teardown.
 - [x] Complete traceability and version/changelog; ITEM/board PR metadata follows PR creation.
 - [x] Open draft PR against `develop` ([#368](https://github.com/rsmbyk/multimedia-gkps-klender/pull/368)).
 - [ ] Run required exact-head CI before merge.
