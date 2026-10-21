@@ -10,6 +10,13 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.19.3] - 2026-10-21
+
+### Fixed
+
+- Saved Bible, Kidung, and Tata Ibadah pages now show the same route-specific sidebar labels, songbook references, song headings, and empty-service action icons as a direct load, including while offline.
+- Saved song sort keys now trim the same leading number and spacing as the server's song list.
+
 ## [1.19.2] - 2026-10-20
 
 ### Fixed

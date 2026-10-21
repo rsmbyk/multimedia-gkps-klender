@@ -26,6 +26,7 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | `fix/122-saved-reading-parity` | 2026-10-21 |
 
 ## In review
 
