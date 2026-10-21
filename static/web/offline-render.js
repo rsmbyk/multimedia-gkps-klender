@@ -233,7 +233,9 @@
       groups.Templates = filtered;
     } else {
       filtered.sort(function (a, b) {
-        return String(b.date).localeCompare(String(a.date)) || b.id - a.id;
+        return String(b.date).localeCompare(String(a.date))
+          || String(b.created_at || '').localeCompare(String(a.created_at || ''))
+          || b.id - a.id;
       });
       filtered.forEach(function (service) {
         var parts = dateParts(service.date);

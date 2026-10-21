@@ -100,6 +100,7 @@ def _service_chunk(service):
                          'verses': row.verses})
     return {'kind': 'service', 'id': service.pk, 'name': service.name,
             'date': service.date.isoformat() if service.date else None,
+            'created_at': service.created_at.isoformat(),
             'rows': rows, 'items': public_items, 'toc': public_toc,
             'screens': projector['screens'], 'entries': projector['entries']}
 

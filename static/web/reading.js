@@ -1363,17 +1363,43 @@
     }
     var renderer = window.GKPSOfflineRender;
     if (renderer && renderer.route(url)) {
+      function refreshFullPage() {
+        var queryBeforeRequest = searchQuery && searchQuery.value;
+        return fetch(url, {cache: 'no-store', credentials: 'same-origin',
+          headers: {'X-Requested-With': 'fetch'}}).then(function (response) {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.text();
+        }).then(function (html) {
+          if (generation !== navigationGeneration || pendingNavigation || navBusy
+              || opts.kind === 'results' && searchQuery
+              && searchQuery.value !== queryBeforeRequest) return;
+          var doc = new window.DOMParser().parseFromString(html, 'text/html');
+          applyPage(doc, url, Object.assign({}, opts, {
+            skipHistory: true, backgroundRefresh: true
+          }));
+        });
+      }
       var ready = window.GKPSOffline && window.GKPSOffline.status
         ? window.GKPSOffline.status().then(function (state) { return state.ready; })
         : Promise.resolve(false);
       ready.then(function (isReady) {
         if (!isReady) return fromServer();
+        if (navigator.onLine && (opts.kind === 'results' || opts.kind === 'search')
+            && !opts.historyTraversal && !opts.restoreSearchId) {
+          return fromServer().catch(function () {
+            return renderer.render(url).then(function (doc) {
+              if (!doc) throw new Error('No saved search page');
+              applyFresh(doc);
+            });
+          }).catch(fail);
+        }
         renderer.render(url).then(function (doc) {
           if (!doc) return fromServer();
           if (!applyFresh(doc)) return;
-          if (navigator.onLine && window.GKPSOffline && generation === navigationGeneration) {
+          if (navigator.onLine && window.GKPSOffline && generation === navigationGeneration
+              && !opts.restoreSearchId) {
             renderer.chunkFor(url).then(function (chunkUrl) {
-              if (!chunkUrl) return;
+              if (!chunkUrl) return refreshFullPage();
               return fetch(chunkUrl, {cache: 'no-store', credentials: 'same-origin'})
                 .then(function (response) {
                   if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -1388,6 +1414,7 @@
                     updated.querySelector('#offlineSavedSource').hidden = true;
                     applyPage(updated, url, {kind: 'refresh', skipHistory: true});
                     window.GKPSOffline.sync().catch(function () {});
+                    return refreshFullPage();
                   });
                 });
             }).catch(function () { /* the saved copy stays visible */ });
@@ -1614,6 +1641,10 @@
       root.dataset.nav = fresh.nav || root.dataset.nav;
       root.dataset.ch = fresh.ch || root.dataset.ch;
     }
+    if (opts.backgroundRefresh) {
+      root.dataset.nav = bootNavState;
+      root.dataset.ch = bootChState;
+    }
 
     /* Sidebar add controls sit outside the scrollable row containers. Reconcile
        them in their fixed toolbars, inserting only when the destination adds one
@@ -1784,7 +1815,7 @@
     if (fresh.home === 'results') {
       var restoreId = opts.restoreSearchId || opts.skipHistory
         && history.state && history.state.searchId;
-      if (!restoreSearchSnapshot(restoreId)) {
+      if (!opts.backgroundRefresh && !restoreSearchSnapshot(restoreId)) {
         window.scrollTo({top: kind === 'more' ? window.scrollY : 0, behavior: 'auto'});
       }
       if (opts.directBoot && bootSearchValue !== null && searchQuery) {
