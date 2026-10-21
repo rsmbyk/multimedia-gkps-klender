@@ -211,6 +211,11 @@ body.obs-dock {
   padding: 4px 8px 10px;
   position: relative;                 /* rows' offsetTop is measured against this */
   overflow-anchor: none;              /* the dock owns the scroll; no browser anchoring */
+  /* The month head is sticky over the list's top (32.5px tall, 36.5px from the
+     scrollport's top with the body's 4px padding): reserve that strip so a row
+     scrolled into view — by the picker's cursor or by the browser — never parks
+     half-hidden underneath it. */
+  scroll-padding-top: 37px;
 }
 
 /* The app's scrollbar (spec 087): 5px, bare, token-coloured. The standard
