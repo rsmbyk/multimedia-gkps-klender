@@ -1,12 +1,12 @@
 ---
 id: ITEM-119
-status: in_review
+status: done
 title: 'Keep public reading navigation consistent with current and saved data'
 type: fix
 priority: P1
 effort: M
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 spec: specs/119-consistent-reading-navigation/spec.md
 branch: fix/119-online-navigation-freshness
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/368

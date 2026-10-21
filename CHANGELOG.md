@@ -10,6 +10,12 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
+## [1.19.2] - 2026-10-20
+
+### Fixed
+
+- Projector Go To checks the online Bible and song library when opened, so changed records appear in suggestions without a page reload while saved suggestions remain available on failed checks.
+
 ## [1.19.1] - 2026-10-20
 
 ### Fixed

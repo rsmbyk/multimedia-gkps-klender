@@ -669,6 +669,48 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.locator('#projectorFind').wait_for(state='hidden')
         page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
 
+    def test_online_goto_finds_song_added_after_saved_library_without_reload(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            def add_song():
+                try:
+                    book = songs.Book.objects.get(short_name='KJ')
+                    song = songs.Song.objects.create(book=book, number=999, title='Fresh title')
+                    songs.Verse.objects.create(song=song, number=1, lyric='Fresh lyric')
+                finally:
+                    connections.close_all()
+            pool.submit(add_song).result()
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('KJ 999')
+        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent.includes('KJ 999')")
+
+    def test_online_goto_finds_verse_added_after_saved_library_without_reload(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            def add_verse():
+                try:
+                    translation = bible.BookTranslation.objects.get(translation='Matius')
+                    bible.Verse.objects.create(
+                        book_translation=translation, chapter=5, verse=4, text='Fresh verse')
+                finally:
+                    connections.close_all()
+            pool.submit(add_verse).result()
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('Mat 5:4')
+        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent.includes('Matius 5:4')")
+
+    def test_goto_keeps_saved_suggestions_when_online_sync_fails(self):
+        page = self._page(self._projector_url())
+        wait_for_offline_ready(page)
+        page.route('**/offline/manifest/', lambda route: route.abort())
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('KJ 152')
+        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent.includes('KJ 152')")
+        page.wait_for_timeout(200)
+        self.assertIn('KJ 152', page.locator('.projector-find__suggestion').inner_text())
+
     def test_goto_chapter_suggestion_opens_first_available_verse_by_enter_and_click(self):
         page = self._page(self._projector_url())
         wait_for_offline_ready(page)
