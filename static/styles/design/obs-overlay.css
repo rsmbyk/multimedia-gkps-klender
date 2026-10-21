@@ -37,8 +37,8 @@ html, body.obs-overlay {
   letter-spacing: .01em;
   text-wrap: balance;
   text-shadow:
-    0 .03em 0 #000, .03em 0 0 #000, -.03em 0 0 #000, 0 -.03em 0 #000,
-    .022em .022em 0 #000, -.022em -.022em 0 #000, .022em -.022em 0 #000, -.022em .022em 0 #000,
+    0 .04em 0 #000, .04em 0 0 #000, -.04em 0 0 #000, 0 -.04em 0 #000,
+    .03em .03em 0 #000, -.03em -.03em 0 #000, .03em -.03em 0 #000, -.03em .03em 0 #000,
     0 .025em .22em rgba(0, 0, 0, .62);
 }
 
