@@ -12,4 +12,4 @@
 - [x] Align the saved renderer/reconciliation with the server page while preserving offline operation and live sidebar state.
 - [x] Verify saved first render, direct server load, and offline sidebar paths for each reading route family; run the focused browser modules against SQLite and PostgreSQL. The existing navigation/offline modules and the new parity module pass separately against PostgreSQL (3 + 21 + 3 tests). A combined PostgreSQL invocation hit a shared test-database lifecycle error, so the successful module runs are the validation evidence.
 - [x] Update ITEM-122, board, VERSION, and changelog on this branch.
-- [ ] Open a draft PR from `fix/122-saved-reading-parity` and record its URL on ITEM-122 and the board.
+- [x] Open draft [PR #370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) from `fix/122-saved-reading-parity` and record its URL on ITEM-122 and the board.

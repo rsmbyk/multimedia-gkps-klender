@@ -26,12 +26,12 @@ See [`README.md`](./README.md) for column meanings and owner phrases.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | `fix/122-saved-reading-parity` | 2026-10-21 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
 | [ITEM-118](./items/ITEM-118-powerpoint-media-display.md) | Display PowerPoint slides in Preview and projector | Keep the original PPT/PPTX; present static slides through a local display copy | feat | P1 | L | [118](../specs/118-powerpoint-media-display/spec.md) | [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) | 2026-10-20 |
 | [ITEM-117](./items/ITEM-117-pdf-media-display.md) | Display PDF pages in Preview and projector | Show verified local PDF pages within their service position | feat | P1 | L | [117](../specs/117-pdf-media-display/spec.md) | [#365](https://github.com/rsmbyk/multimedia-gkps-klender/pull/365) | 2026-10-19 |
 | [ITEM-113](./items/ITEM-113-media-library-share-csrf.md) | Allow Share online from a fresh Media Library session | Set a CSRF cookie on direct page visits so Share online can request upload permission | fix | P1 | S | [113](../specs/113-media-library-share-csrf/spec.md) | [#361](https://github.com/rsmbyk/multimedia-gkps-klender/pull/361) | 2026-10-18 |
