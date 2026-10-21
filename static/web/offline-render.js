@@ -530,7 +530,7 @@
     group.dataset.projectGroup = '';
     group.dataset.displayChannel = 'gkps-service-display';
     group.innerHTML = '<button type="button" class="read__project-btn" data-project-open'
-      + ' data-projector-url="/obs/service/' + service.id + '/" data-project-service="'
+      + ' data-projector-url="/projector?service=' + service.id + '" data-project-service="'
       + service.id + '" data-label-project="Project" data-label-stop="Stop projecting"'
       + ' aria-label="Project" title="Project"><svg viewBox="0 0 20 20" fill="none"'
       + ' stroke="currentColor" stroke-width="1.6" stroke-linecap="round"'

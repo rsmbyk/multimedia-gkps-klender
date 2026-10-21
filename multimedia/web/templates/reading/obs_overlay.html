@@ -1,0 +1,21 @@
+{% load static %}
+{% comment %}
+The OBS caption overlay (spec 119): a listen-only browser source. It holds no
+controls and no server data; the page subscribes to the browser-local display state
+and captions whatever is on air. Media screens render nothing here in this slice.
+{% endcomment %}
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title }}</title>
+<link rel="stylesheet" href="{% static 'styles/design/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'styles/design/obs-overlay.css' %}">
+</head>
+<body class="obs-overlay">
+<div class="obs-overlay__stage" id="overlayStage" aria-live="polite"></div>
+<script src="{% static 'web/obs-overlay.js' %}"></script>
+</body>
+</html>

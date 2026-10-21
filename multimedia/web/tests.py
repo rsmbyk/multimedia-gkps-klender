@@ -2184,7 +2184,7 @@ class ServiceProjectorTests(TestCase):
             songs.Verse.objects.create(song=cls.song, number=number, lyric=f'bait {number}')
 
     def projector_url(self):
-        return reverse('web-service-projector', args=[self.tatib.pk])
+        return f'/projector?service={self.tatib.pk}'
 
     def make(self, order, **fields):
         return tatib.ServiceEntry.objects.create(tatib=self.tatib, order_number=order, **fields)
@@ -2197,10 +2197,10 @@ class ServiceProjectorTests(TestCase):
     # --- the page and its path --------------------------------------------
 
     def test_the_projector_lives_on_a_path_of_its_own(self):
-        self.assertEqual(self.projector_url(), f'/obs/service/{self.tatib.pk}/')
+        self.assertEqual(self.projector_url(), f'/projector?service={self.tatib.pk}')
 
     def test_an_unknown_service_is_a_404(self):
-        response = self.client.get(reverse('web-service-projector', args=[99999]))
+        response = self.client.get(f'/projector?service={99999}')
         self.assertEqual(response.status_code, 404)
 
     def test_it_is_a_page_of_its_own_with_quiet_projector_controls(self):
@@ -2262,7 +2262,7 @@ class ServiceProjectorTests(TestCase):
         self.assertEqual(entry.book_translation_id, self.matius.pk)
 
     def test_library_detours_return_song_and_passage_without_changing_service(self):
-        song_url = reverse('web-service-projector-detour', args=[self.tatib.pk])
+        song_url = f'/projector/detour/?service={self.tatib.pk}'
         song = self.client.get(song_url, {'kind': 'song', 'song_id': self.song.pk})
         self.assertEqual(song.status_code, 200)
         self.assertEqual([bait['number'] for bait in song.json()['baits']], [1, 2])
@@ -2279,7 +2279,7 @@ class ServiceProjectorTests(TestCase):
         self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.tatib).count(), 0)
 
     def test_library_lookup_finds_a_passage_and_song(self):
-        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        url = f'/projector/lookup/?service={self.tatib.pk}'
         passage = self.client.get(url, {'q': 'Mat 5:2'})
         self.assertEqual(passage.status_code, 200)
         self.assertTrue(any(row['kind'] == 'passage' for row in passage.json()['results']))
@@ -2288,7 +2288,7 @@ class ServiceProjectorTests(TestCase):
         self.assertEqual(song.json()['results'][0]['label'], 'KJ 152 Ada Kuasa dalam DarahNya')
 
     def test_library_lookup_includes_hymn_sub_number_but_not_a_prefix_for_other_songs(self):
-        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        url = f'/projector/lookup/?service={self.tatib.pk}'
         hymn = songs.Song.objects.create(
             book=self.songbook, number=223, sub_number='a', title='Haleluya')
         other_book = songs.Book.objects.create(name='Lagu', short_name='LG', is_hymn_book=False)
@@ -2301,14 +2301,14 @@ class ServiceProjectorTests(TestCase):
         self.assertEqual(other_rows[0]['label'], 'Nyanyian Baru')
 
     def test_library_lookup_only_shows_strong_reference_title_or_number_matches(self):
-        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        url = f'/projector/lookup/?service={self.tatib.pk}'
         self.assertEqual(self.client.get(url, {'q': 'Kuasa'}).json()['results'][0]['kind'], 'song')
         self.assertEqual(self.client.get(url, {'q': 'KJ'}).json()['results'], [])
         self.assertEqual(self.client.get(url, {'q': 'ayat 2'}).json()['results'], [])
         self.assertEqual(self.client.get(url, {'q': 'bait 1'}).json()['results'], [])
 
     def test_library_lookup_prefers_exact_song_titles_over_prefix_book_and_lyric_hits(self):
-        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        url = f'/projector/lookup/?service={self.tatib.pk}'
         exact = songs.Song.objects.create(book=self.songbook, number=151, title='Haleluya')
         songs.Song.objects.create(book=self.songbook, number=153, title='Haleluya Besar')
         lyric_only = songs.Song.objects.create(book=self.songbook, number=154, title='Pujian Baru')
@@ -2320,7 +2320,7 @@ class ServiceProjectorTests(TestCase):
         self.assertEqual([row['target']['song_id'] for row in rows], [exact.pk])
 
     def test_library_lookup_keeps_exact_song_number_without_book_prefix(self):
-        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        url = f'/projector/lookup/?service={self.tatib.pk}'
         song = songs.Song.objects.create(book=self.songbook, number=1152, title='Another Song')
         rows = self.client.get(url, {'q': '152'}).json()['results']
         self.assertEqual([row['target']['song_id'] for row in rows], [self.song.pk, song.pk])
@@ -2338,7 +2338,7 @@ class ServiceProjectorTests(TestCase):
                   for index in range(14)]
         inactive = songs.Song.objects.create(
             book=other, number=12000, title='Deleted', is_deleted=True)
-        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        url = f'/projector/lookup/?service={self.tatib.pk}'
 
         rows = self.client.get(url, {'q': '012'}).json()['results']
         ids = [row['target']['song_id'] for row in rows]
@@ -2349,7 +2349,7 @@ class ServiceProjectorTests(TestCase):
         self.assertNotIn(inactive.pk, ids)
 
     def test_library_lookup_matches_hymn_book_and_number_prefix_without_truncating(self):
-        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        url = f'/projector/lookup/?service={self.tatib.pk}'
         book = songs.Book.objects.create(
             name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
         for number in range(200, 220):
@@ -2369,7 +2369,7 @@ class ServiceProjectorTests(TestCase):
         self.assertEqual([row['target']['song_id'] for row in exact_variant], [target.pk])
 
     def test_library_lookup_matches_bible_book_and_chapter_prefix(self):
-        url = reverse('web-service-projector-lookup', args=[self.tatib.pk])
+        url = f'/projector/lookup/?service={self.tatib.pk}'
         for chapter in (2, 20, 22):
             bible.Verse.objects.create(
                 book_translation=self.matius, chapter=chapter, verse=1, text='ayat')
@@ -2382,7 +2382,7 @@ class ServiceProjectorTests(TestCase):
         chapter_without_verse_one = self.client.get(url, {'q': 'Mat 5'}).json()['results'][0]
         self.assertEqual(chapter_without_verse_one['label'], 'Matius 5')
         self.assertEqual(chapter_without_verse_one['target']['verse'], 2)
-        detour = self.client.get(reverse('web-service-projector-detour', args=[self.tatib.pk]),
+        detour = self.client.get(f'/projector/detour/?service={self.tatib.pk}',
                                  {'kind': 'passage', 'book_id': self.matius.book_id,
                                   'chapter': 5, 'verse': chapter_without_verse_one['target']['verse']})
         self.assertEqual(detour.status_code, 200)
@@ -2562,7 +2562,7 @@ class ServiceProjectorTests(TestCase):
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
         self.assertIn('data-project-open', html)
-        self.assertIn(f'data-projector-url="/obs/service/{self.tatib.pk}/"', html)
+        self.assertIn(f'data-projector-url="/projector?service={self.tatib.pk}"', html)
         self.assertIn('data-project-service="', html)        # which service it would display
         self.assertIn('gkps-service-display', html)          # the same channel
         self.assertIn('data-project-label', html)            # the icon rides beside a label

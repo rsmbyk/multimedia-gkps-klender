@@ -14,11 +14,13 @@ that browser's tabs over the display channel (web/projector.js, web/display.js).
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ page_title }}</title>
 <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+<link rel="stylesheet" href="{% static 'styles/design/fonts.css' %}">
 <link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
 <link rel="stylesheet" href="{% static 'styles/design/projector.css' %}">
 </head>
 <body class="projector" data-display-channel="gkps-service-display"
-      data-service="{{ service_id }}" data-current-screen="0" data-showing="false">
+      data-service="{{ service_id }}" data-adopt="{{ adopt_service }}"
+      data-current-screen="0" data-showing="false">
 
 <div class="mouse-zones" aria-hidden="true">
   <div class="mouse-zone mouse-zone--previous" data-mouse-action="previous"></div>

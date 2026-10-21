@@ -127,7 +127,7 @@ class VideoDisplayE2ETests(StaticLiveServerTestCase):
         missing.close()
 
     def test_projector_fullscreen_play_pause_and_navigation_guard(self):
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]))
+        page = self._page(f'/projector?service={self.service.pk}')
         host = self._open_projector_video(page)
         video = host.locator('video')
         page.keyboard.press('Space')
@@ -152,7 +152,7 @@ class VideoDisplayE2ETests(StaticLiveServerTestCase):
         page.close()
 
     def test_fullscreen_idle_hides_controls_and_escape_pauses(self):
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]))
+        page = self._page(f'/projector?service={self.service.pk}')
         host = self._open_projector_video(page)
         page.keyboard.press('Space')
         page.wait_for_function('document.fullscreenElement !== null')
@@ -165,7 +165,7 @@ class VideoDisplayE2ETests(StaticLiveServerTestCase):
 
     def test_fullscreen_denial_keeps_normal_projector_playback(self):
         page = self._page(
-            reverse('web-service-projector', args=[self.service.pk]),
+            f'/projector?service={self.service.pk}',
             init_script="""Object.defineProperty(Element.prototype, 'requestFullscreen', {
               configurable: true, value: function () { return Promise.reject(new Error('denied')); }
             });""")
@@ -180,7 +180,7 @@ class VideoDisplayE2ETests(StaticLiveServerTestCase):
         page.close()
 
     def test_navigation_and_display_off_stop_and_reset_video(self):
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]))
+        page = self._page(f'/projector?service={self.service.pk}')
         self._open_projector_video(page)
         video = page.locator('[data-media-video] video').first
         video.evaluate('(element) => { element.currentTime = 2; }')
@@ -218,7 +218,7 @@ class VideoDisplayE2ETests(StaticLiveServerTestCase):
                 originalFetch(input, options).then(resolve, reject), 600))
             : originalFetch(input, options);
         }})();"""
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]),
+        page = self._page(f'/projector?service={self.service.pk}',
                           init_script=init_script)
         page.keyboard.press('Space')
         page.keyboard.press('Control+ArrowRight')
@@ -233,7 +233,7 @@ class VideoDisplayE2ETests(StaticLiveServerTestCase):
         page.close()
 
     def test_missing_and_unrecognized_video_bytes_use_video_missing_state(self):
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]), available=False)
+        page = self._page(f'/projector?service={self.service.pk}', available=False)
         host = self._open_projector_video(page, available=False)
         expect(host.locator('.screen__video-missing')).to_be_visible()
         page.close()

@@ -273,7 +273,7 @@ class VideoDisplayContractTests(TestCase):
         self.assertFalse(screens[video_entry['start']]['blank'])
         self.assertEqual(screens[image_entry['start']]['image_sha256'], image.sha256)
         self.assertEqual(screens[audio_entry['start']]['audio_sha256'], audio.sha256)
-        response = self.client.get(reverse('web-service-projector', args=[service.pk]))
+        response = self.client.get(f'/projector?service={service.pk}')
         self.assertContains(response, f'data-media-video="{video.sha256}"')
         self.assertContains(response, 'Audio/Video Play/Pause')
 
