@@ -31,7 +31,7 @@ html, body.obs-overlay {
   text-align: center;
   color: #FFFFFF;
   font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: clamp(9px, 2.9cqw, 36px);
+  font-size: clamp(9px, 2.9cqw, 32px);
   font-weight: 800;
   line-height: 1.4;
   letter-spacing: .01em;
