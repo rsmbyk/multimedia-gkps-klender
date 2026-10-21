@@ -261,8 +261,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         }""")
         self.assertEqual(styles['background'], 'rgb(20, 19, 15)')   # the dark canvas, not black
         self.assertEqual(styles['color'], 'rgb(245, 243, 238)')     # the warm off-white ink
-        self.assertIn('CMG Sans', styles['face'])          # the current projector's own face
-        self.assertIn('Source Sans Pro', styles['face'])   # and the rest of the OBS surfaces'
+        self.assertIn('CMG Sans', styles['face'])          # the projector's own bundled face
+        self.assertIn('Source Sans 3', styles['face'])     # then the display stack (spec 119)
         self.assertEqual(styles['weight'], '700')
         self.assertGreater(styles['buttons'], 0)            # quiet operator controls
         self.assertEqual(styles['head'], 'rgb(255, 209, 102)')      # the header, brighter still...
@@ -1400,8 +1400,10 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertTrue(measured['insideWindow'], measured)
 
     def test_a_single_screen_text_fits_its_whole_body_on_one_screen(self):
+        # Naming the service in the URL is an act of projection (spec 119): the
+        # page boots showing screen 1, so nothing has to be switched on.
         page = self._page(f'/projector?service={self.single_service.pk}')
-        page.keyboard.press('Space')                          # turn the display on
+        page.wait_for_selector('.screen.is-active')
         page.wait_for_timeout(200)
         measured = page.evaluate("""() => {
           const screens = document.querySelectorAll('.screen[data-screen]');
@@ -1560,12 +1562,11 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.get_attribute('[data-project-group]', 'data-displaying'), 'false')
         self.assertIn('Project', page.locator('[data-project-open]').inner_text())
 
-    def test_closing_the_projector_window_stops_the_display(self):
-        """Closing the window ends the display by itself, in every tab of the browser.
+    def test_closing_the_projector_window_leaves_the_display_alone(self):
+        """Spec 119: no beat and no reaper — a closed projector ends nothing.
 
-        A tab that did not open the window cannot watch the handle close, so the projector
-        also leaves a beat behind (web/projector.js); the opener knows at once, and the
-        other tab hears the stop it posts. Nobody presses Stop.
+        The display is browser-local state: closing one window, or every window, must
+        not touch it. Only the release verb ends a display.
         """
         context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
         page = self._page(self._service_url(), context)
@@ -1579,12 +1580,16 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                              'true')
 
         projector.close()
+        page.wait_for_timeout(1500)                            # well past any old reaper
 
         for other in (page, tab):
-            other.wait_for_function(
-                "document.querySelector('[data-project-group]').dataset.displaying === 'false'",
-                timeout=10000)
-            self.assertIn('Project', other.locator('[data-project-open]').inner_text())
+            self.assertEqual(other.get_attribute('[data-project-group]', 'data-displaying'),
+                             'true')
+            self.assertIn('Stop projecting', other.locator('[data-project-open]').inner_text())
+        state = page.evaluate(
+            "() => JSON.parse(localStorage.getItem('gkps-display') || 'null')")
+        self.assertIsNotNone(state)
+        self.assertTrue(state['on'])
 
         # editing is available with or without a window (spec 026)
         page.locator('.tatib__item').first.hover()
