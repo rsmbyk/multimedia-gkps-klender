@@ -899,9 +899,7 @@
         setPickCursor((dock.pickIndex < 0 ? 0 : dock.pickIndex) - 1, true);
         return;
       }
-      if (key === 'Home') { event.preventDefault(); setPickCursor(0, true); return; }
-      if (key === 'End') { event.preventDefault(); setPickCursor(rows.length - 1, true); return; }
-      if (key === 'Enter' || key === ' ') {
+      if (key === 'Enter') {
         event.preventDefault();
         openCursorRow();
         return;
