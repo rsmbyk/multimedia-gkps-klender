@@ -13,8 +13,8 @@
 - [x] Verify offline/failed check, keyboard/click detours, TB/SIM names/codes, and no per-keystroke full sync.
 - [x] Complete traceability, version/changelog; ITEM/board PR metadata follows PR creation.
 - [x] Open stacked draft PR [#369](https://github.com/rsmbyk/multimedia-gkps-klender/pull/369) against Spec 119 while its CI is blocked.
-- [ ] Retarget `develop` after Spec 119 merges.
-- [ ] Run required exact-head CI before merge.
+- [x] Retarget `develop` after Spec 119 merged via #368.
+- [x] Ronald explicitly waived remote CI for this merge because GitHub Actions locked the account before jobs could run; 47 projector browser tests passed locally against PostgreSQL.
 
 ## Done when
 

@@ -20,7 +20,7 @@
 - [x] Run the 24 focused navigation and offline browser tests against PostgreSQL; all passed, including database teardown.
 - [x] Complete traceability and version/changelog; ITEM/board PR metadata follows PR creation.
 - [x] Open draft PR against `develop` ([#368](https://github.com/rsmbyk/multimedia-gkps-klender/pull/368)).
-- [ ] Run required exact-head CI before merge.
+- [x] Ronald explicitly waived remote CI for this merge because GitHub Actions locked the account before jobs could run; local PostgreSQL browser verification is recorded above.
 
 ## Done when
 
