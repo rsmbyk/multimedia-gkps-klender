@@ -89,7 +89,7 @@ class AudioDisplayE2ETests(StaticLiveServerTestCase):
         page.close()
 
     def test_projector_space_navigation_and_reset(self):
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]))
+        page = self._page(f'/projector?service={self.service.pk}')
         page.keyboard.press('Space')
         page.keyboard.press('Control+ArrowRight')
         expect(page.locator('.screen.is-active .screen__audio-player')).to_be_visible()
@@ -109,7 +109,7 @@ class AudioDisplayE2ETests(StaticLiveServerTestCase):
         row.locator('[data-preview-open]').evaluate('(button) => button.click()')
         expect(page.locator('.preview__audio-unavailable')).to_be_visible()
         page.close()
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]), available=False)
+        page = self._page(f'/projector?service={self.service.pk}', available=False)
         page.keyboard.press('Space')
         page.keyboard.press('Control+ArrowRight')
         expect(page.locator('.screen.is-active .screen__image-missing')).to_be_visible()
@@ -124,7 +124,7 @@ class AudioDisplayE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.audio-player__filename')).to_have_text('recording.wav')
         page.close()
 
-        projector = self._page(reverse('web-service-projector', args=[self.service.pk]))
+        projector = self._page(f'/projector?service={self.service.pk}')
         projector.keyboard.press('Space')
         projector.keyboard.press('Control+ArrowRight')
         expect(projector.locator('.screen.is-active .screen__audio-player')).to_be_visible()

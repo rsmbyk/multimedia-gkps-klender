@@ -95,7 +95,7 @@ class ImageDisplayE2ETests(StaticLiveServerTestCase):
                       page.locator('.preview__image-unavailable').inner_text())
         page.close()
 
-        projector = self._page(reverse('web-service-projector', args=[self.service.pk]),
+        projector = self._page(f'/projector?service={self.service.pk}',
                                available=False)
         projector.keyboard.press('Space')
         projector.keyboard.press('Control+ArrowRight')
@@ -105,7 +105,7 @@ class ImageDisplayE2ETests(StaticLiveServerTestCase):
         projector.close()
 
     def test_projector_displays_image_only_on_its_screen(self):
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]))
+        page = self._page(f'/projector?service={self.service.pk}')
         page.keyboard.press('Space')
         page.keyboard.press('Control+ArrowRight')
         expect(page.locator('.screen.is-active .screen__image')).to_be_visible()

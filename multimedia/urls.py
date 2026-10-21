@@ -26,15 +26,18 @@ urlpatterns = [
     path('offline/projector-shell/', offline_views.projector_shell, name='offline-projector-shell'),
     path('admin/', admin.site.urls),
     path('api/', include('multimedia.api.urls')),
-    # The new service projector (spec 006, slice 4). A path of its own under /obs/,
-    # beside the OBS routes rather than inside them: the current dock, its sources
-    # and its pages keep serving the current data untouched.
-    path('obs/service/<int:service_id>/', reading_views.service_projector,
-         name='web-service-projector'),
-    path('obs/service/<int:service_id>/lookup/', reading_views.projector_lookup,
-         name='web-service-projector-lookup'),
-    path('obs/service/<int:service_id>/detour/', reading_views.projector_detour,
-         name='web-service-projector-detour'),
+    # The service projector (specs 006, 091, 119). One page, /projector, outside the
+    # legacy /obs/ routes: the dock and the overlay carry the state; ?service=<id>
+    # adopts that service on load as an act of projection.
+    path('projector', reading_views.service_projector,
+         name='web-projector'),
+    path('projector/lookup/', reading_views.projector_lookup,
+         name='web-projector-lookup'),
+    path('projector/detour/', reading_views.projector_detour,
+         name='web-projector-detour'),
+    # The operator dock and the OBS caption overlay (spec 119).
+    path('obs/dock', reading_views.obs_dock, name='web-obs-dock'),
+    path('obs/source/overlay', reading_views.obs_overlay, name='web-obs-overlay'),
     path('obs/', include('multimedia.obs.urls')),
     path('', include('multimedia.web.urls')),
 ]

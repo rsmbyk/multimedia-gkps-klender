@@ -7,7 +7,7 @@ so most of these tests need no database; the last class renders real pages.
 
 from datetime import date
 
-from django.test import SimpleTestCase, TestCase
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from multimedia.bible import models as bible
@@ -121,6 +121,7 @@ class VoiceLinesTests(SimpleTestCase):
                                                              'Marilah kita'))
 
 
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class RenderedVoicesTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -143,7 +144,7 @@ class RenderedVoicesTests(TestCase):
         return tatib.ServiceEntry.objects.create(tatib=self.service, order_number=order, **fields)
 
     def projector(self):
-        response = self.client.get(reverse('web-service-projector', args=[self.service.pk]))
+        response = self.client.get(f'/projector?service={self.service.pk}')
         self.assertEqual(response.status_code, 200)
         return response.content.decode()
 

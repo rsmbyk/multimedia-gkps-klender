@@ -13,7 +13,7 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/370
 archived_at:
 archive_reason:
 bump: patch
-release_version: 1.19.3
+release_version: 1.20.1
 ---
 
 # ITEM-122: Match saved reading views to refreshed pages

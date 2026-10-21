@@ -26,7 +26,7 @@ body.projector {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font-family: "CMG Sans", "Source Sans Pro", sans-serif;
+  font-family: "CMG Sans", "Source Sans 3", sans-serif;
   font-weight: 700;
   line-height: 1.37;
   overflow: hidden;                       /* a display does not scroll */
@@ -225,6 +225,8 @@ body.projector[data-showing="false"] .screen.is-active {
   white-space: pre-wrap;
   overflow-wrap: break-word;              /* a single long word breaks rather than
                                              running off the screen */
+  text-wrap: balance;                     /* rows of a wrapped passage read as a block
+                                             rather than as a ragged last line */
   font-size: inherit;
   font-weight: 700;
   line-height: 1.37;

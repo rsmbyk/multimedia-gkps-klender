@@ -10,12 +10,32 @@ Pre-adoption history in the legacy per-version format is archived in
 
 ## [Unreleased]
 
-## [1.19.3] - 2026-10-21
+## [1.20.1] - 2026-10-21
 
 ### Fixed
 
 - Saved Bible, Kidung, and Tata Ibadah pages now show the same route-specific sidebar labels, songbook references, song headings, and empty-service action icons as a direct load, including while offline.
 - Saved song sort keys now trim the same leading number and spacing as the server's song list.
+
+## [1.20.0] - 2026-10-20
+
+### Added
+
+- The operator dock at `/obs/dock`: pick a Tata Ibadah (grouped by month), browse its entries, and run it. Entry and screen rows project that screen, the keyboard steps screens, baits, or entries by unit, and the appearance control cycles dark, system, and light with the public site's own glyphs.
+- One browser-local display state (`gkps-display`, channel `gkps-service-display`) shared by the dock, the projector, and the caption overlay. Opening any surface catches up to what is on air, tabs agree, and closing every surface keeps the display until it is released.
+- The projector at `/projector` follows the dock and adopts `?service=<id>` in place — no navigation, no second window per service. Its screen lines balance their wrapped rows.
+- The caption overlay at `/obs/source/overlay`: a control-free OBS browser source that captions the state's current screen in the bundled Source Sans 3 at the measured broadcast proportions. Media screens stay blank there in this slice.
+- Bundled display typefaces: CMG Sans Bold and Source Sans 3 (with their licences) under `static/assets/fonts/`, so the surfaces no longer depend on machine installs.
+
+### Changed
+
+- The project button opens `/projector?service=<id>`; on a projecting service it becomes Stop project, which releases the display outright.
+- Hide and release are distinct: hiding keeps the service and screen for a resume in place, and nothing ends the display but release.
+
+### Removed
+
+- The projector's heartbeat ("beat") and the shell's reaper, along with the "one Tata Ibadah per browser" step-aside.
+- The per-service projector routes `/obs/service/<id>/`, `/lookup/`, and `/detour/` (no redirects; nothing was published to production on them).
 
 ## [1.19.2] - 2026-10-20
 

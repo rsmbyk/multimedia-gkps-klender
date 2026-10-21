@@ -107,7 +107,7 @@ class PowerPointDisplayE2ETests(StaticLiveServerTestCase):
         page.close()
 
     def test_projector_steps_within_slides_before_adjacent_entry(self):
-        page = self._page(reverse('web-service-projector', args=[self.service.pk]))
+        page = self._page(f'/projector?service={self.service.pk}')
         page.keyboard.press('Space')
         page.keyboard.press('Control+ArrowRight')
         expect(page.locator('.screen.is-active .screen__pdf-page')).to_be_visible()
@@ -129,7 +129,7 @@ class PowerPointDisplayE2ETests(StaticLiveServerTestCase):
         row.locator('[data-preview-open]').evaluate('(button) => button.click()')
         expect(page.locator('.preview__pdf-unavailable')).to_be_visible()
         page.close()
-        projector = self._page(reverse('web-service-projector', args=[self.service.pk]), available=False)
+        projector = self._page(f'/projector?service={self.service.pk}', available=False)
         projector.keyboard.press('Space')
         projector.keyboard.press('Control+ArrowRight')
         expect(projector.locator('.screen.is-active .screen__pdf-missing')).to_be_visible()
@@ -166,7 +166,7 @@ class PowerPointDisplayE2ETests(StaticLiveServerTestCase):
           throw new Error('Offline library was not ready');
         }""")
         page.context.set_offline(True)
-        page.goto(self.live_server_url + reverse('web-service-projector', args=[self.service.pk]))
+        page.goto(self.live_server_url + f'/projector?service={self.service.pk}')
         page.keyboard.press('Space')
         page.keyboard.press('Control+ArrowRight')
         expect(page.locator('.screen.is-active .screen__pdf-page')).to_be_visible()

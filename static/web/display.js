@@ -1,20 +1,28 @@
-/* The display state, in the browser that started it (spec 006, slice 4).
+/* The display state, in the browser that started it (specs 006 and 119).
  *
- * Which Tata Ibadah is on screen, and which of its entries, is the operator's
- * business and nobody else's: it never reaches the server, so several laptops can
- * drive different screens at once. Within one browser it is shared by two means --
+ * Which Tata Ibadah is on air, and which of its screens, is the operator's business
+ * and nobody else's: it never reaches the server, so several laptops can drive
+ * different screens at once. Within one browser it is shared by two means --
  * localStorage (so a tab opened later already knows) and the display channel (so
- * every tab hears about a change at once).
+ * every tab hears about a change at once). Any number of tabs of any surface is
+ * safe, and closing them all changes nothing (spec 119): the display ends only by
+ * `release`, never because a window went away.
  *
- * This file is the SHELL side: the project button, its Stop projecting state, and
- * the re-read it asks for after every saved change (spec 026). The projector window
- * has its own
- * script (web/projector.js); both speak the same messages:
+ * This file is the shared state module. The dock is the writer; the projector
+ * (web/projector.js) and the caption overlay (web/obs-overlay.js) render; the
+ * reading page's project button is a writer for one act (project / release).
  *
- *     {type: 'show', service: <id>, slide: <slide id>}   an entry is on screen
- *     {type: 'stop'}                                     nothing is on screen
- *     {type: 'update'}                                   re-read what is on screen
- *     {type: 'beat', service: <id>, on: <bool>}          the projector window is still open
+ * Messages, all on `gkps-service-display`:
+ *
+ *     {type: 'show', service: <id>, screen: <n>}   an entry screen is on air
+ *     {type: 'hide'}                               words off; the place is kept
+ *     {type: 'release'}                            no active service
+ *     {type: 'flip', translation: 'TB'|'SIM'|null} the shown translation changed
+ *     {type: 'update'}                             re-read what is on air
+ *     {type: 'state'}                              a newcomer asks to be brought up to date
+ *
+ * Stored shape (`gkps-display`):
+ *     {service, screen, on, translation, at}
  *
  * Everything here is DELEGATED and resolved from the document on each use. The
  * shell swaps the reading pane's contents in place (reading.js applyPage), which
@@ -22,30 +30,31 @@
  * nothing, and the button then works on a deep link and does nothing on the path a
  * person actually clicks through. Hence no held nodes, and a re-sync on
  * `shell:page`.
- *
- * Nothing here is a server rule: editing was never blocked by the API, and as of spec
- * 026 the shell does not block it either -- the operator keeps working while a Tata
- * Ibadah is on screen, and every saved change makes the display re-read itself.
  */
 (function () {
   'use strict';
 
   var KEY = 'gkps-display';
+  var DEFAULT_CHANNEL = 'gkps-service-display';
 
   function read() {
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (stored && typeof stored === 'object') {
-        return {service: stored.service, screen: stored.screen, on: stored.on === true,
+        return {service: stored.service == null ? null : Number(stored.service),
+                screen: Number(stored.screen) || 0,
+                on: stored.on === true,
+                translation: stored.translation || null,
                 at: Number(stored.at) || 0};
       }
     } catch (e) { /* a corrupt value is no value */ }
-    return {service: null, screen: 0, on: false, at: 0};
+    return {service: null, screen: 0, on: false, translation: null, at: 0};
   }
 
   var state = read();
+  var subscribers = [];
   var group = document.querySelector('[data-project-group]');
-  var channelName = (group && group.dataset.displayChannel) || 'gkps-service-display';
+  var channelName = (group && group.dataset.displayChannel) || DEFAULT_CHANNEL;
   var channel = null;
   try {
     channel = new BroadcastChannel(channelName);
@@ -53,15 +62,84 @@
     channel = null;                     /* no channel: the state still persists */
   }
 
+  function notify() {
+    subscribers.forEach(function (fn) {
+      try { fn(state); } catch (e) { /* a bad subscriber must not stop the others */ }
+    });
+  }
+
   function write(next) {
     next.at = Date.now();               /* when this browser last touched the display */
-    state = next;
-    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (e) { /* private mode */ }
+    state = {service: next.service == null ? null : Number(next.service),
+             screen: Number(next.screen) || 0,
+             on: next.on === true,
+             translation: next.translation || null,
+             at: next.at};
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+    notify();
   }
 
   function post(message) {
     if (channel) channel.postMessage(message);
   }
+
+  /* ---------- the verbs (spec 119) ------------------------------------------ */
+
+  /* Put a service's screen on air — from its start, or at the given screen. */
+  function show(service, screen) {
+    var id = Number(service);
+    if (!id) return;
+    write({service: id, screen: Number(screen) || 0, on: true,
+           translation: state.service === id ? state.translation : null});
+    post({type: 'show', service: state.service, screen: state.screen});
+  }
+
+  /* Move the live screen, keeping the service on air. */
+  function moveTo(screen) {
+    if (state.service == null) return;
+    write({service: state.service, screen: Number(screen) || 0, on: true,
+           translation: state.translation});
+    post({type: 'show', service: state.service, screen: state.screen});
+  }
+
+  /* Words off; the service and screen stay for a resume in place. */
+  function hide() {
+    if (state.service == null) return;
+    write({service: state.service, screen: state.screen, on: false,
+           translation: state.translation});
+    post({type: 'hide'});
+  }
+
+  /* Let go: no active service anywhere. */
+  function release() {
+    write({service: null, screen: 0, on: false, translation: null});
+    post({type: 'release'});
+  }
+
+  /* The shown translation of the live screen (null = the entry's own). */
+  function flip(translation) {
+    if (state.service == null) return;
+    write({service: state.service, screen: state.screen, on: state.on,
+           translation: translation || null});
+    post({type: 'flip', translation: state.translation});
+  }
+
+  /* Ask the surfaces to re-read what is on air (a saved change, spec 026). */
+  function update() {
+    post({type: 'update'});
+  }
+
+  function subscribe(fn) {
+    if (typeof fn !== 'function') return function () {};
+    subscribers.push(fn);
+    fn(state);
+    return function () {
+      var index = subscribers.indexOf(fn);
+      if (index !== -1) subscribers.splice(index, 1);
+    };
+  }
+
+  /* ---------- the project button's two states --------------------------------- */
 
   function nodes() {
     var container = document.querySelector('[data-project-group]');
@@ -71,8 +149,6 @@
     };
   }
 
-  /* ---------- the button's two states --------------------------------------- */
-
   /* Is THIS page's Tata Ibadah the one on screen in this browser? */
   function isHere() {
     var n = nodes();
@@ -80,7 +156,7 @@
     return state.on === true && state.service === Number(n.open.dataset.projectService);
   }
 
-  function sync() {
+  function syncButton() {
     var n = nodes();
     if (!n.group || !n.open) return;
     var here = isHere();
@@ -97,88 +173,46 @@
 
   document.addEventListener('click', function (event) {
     var open = event.target.closest('[data-project-open]');
-    if (open) {
-      event.preventDefault();
-      var service = Number(open.dataset.projectService);
-      if (state.on === true && state.service === service) {
-        write({service: service, screen: state.screen, on: false});   /* Stop projecting */
-        post({type: 'stop'});
-        sync();
-        return;
-      }
-      /* A window, not a page you navigate to: opened beside the app and sized for a
-         screen. Nothing grabs the screen -- the projector asks for full screen when
-         the operator clicks inside it. */
-      var projector = window.open(open.dataset.projectorUrl, 'gkps-projector',
-                                  'width=1280,height=800');
-      if (projector) projector.focus();
-      watch(projector);                                       /* and know when it goes */
-      write({service: service, screen: 0, on: true});          /* the display opens at its start */
-      post({type: 'show', service: service, screen: 0});
-      sync();
+    if (!open) return;
+    event.preventDefault();
+    var service = Number(open.dataset.projectService);
+    if (state.on === true && state.service === service) {
+      release();                                          /* Stop project: let go (spec 119) */
+      syncButton();
       return;
     }
+    /* A window, not a page you navigate to: opened beside the app and sized for a
+       screen. The dock drives what it renders from here on (spec 119). */
+    var projector = window.open(open.dataset.projectorUrl, 'gkps-projector',
+                                'width=1280,height=800');
+    if (projector) projector.focus();
+    show(service, 0);                                     /* the display opens at its start */
+    syncButton();
   });
 
-  /* ---------- a display whose window has gone --------------------------------
-     Closing the projector window has to end the display. Otherwise every tab of this
-     browser stays locked -- refusing entry writes, showing Stop projecting -- for a
-     screen nobody is driving, and the only way out is to press Stop on a display that
-     is not running.
-
-     Two signals, in order of speed. The window THIS tab opened: the browser tells the
-     opener the moment its handle is closed, so closing the window stops the display at
-     once. And the beat the projector leaves behind (web/projector.js), which covers the
-     tabs that did not open it, a shell reloaded since, and a window that died instead of
-     closing. The wait is long because a hidden tab's timers are throttled to about one a
-     minute: quiet for a minute and a half means gone. A state written just now counts as
-     alive by its own stamp, so the moment between pressing Project and the window's first
-     beat cannot stop the display it just started. */
-  var BEAT_KEY = 'gkps-display-beat';
-  var QUIET_AFTER = 90 * 1000;
-
-  function lastBeat() {
-    try { return Number(localStorage.getItem(BEAT_KEY)) || 0; } catch (e) { return 0; }
-  }
-
-  function gone() {
-    if (state.on !== true) return false;
-    var stamp = Math.max(lastBeat(), Number(state.at) || 0);
-    return Date.now() - stamp > QUIET_AFTER;
-  }
-
-  function stopBecauseGone() {
-    if (state.on !== true) return;
-    write({service: state.service, screen: state.screen, on: false});
-    post({type: 'stop'});
-    sync();
-  }
-
-  function watch(win) {
-    if (!win) return;
-    var timer = window.setInterval(function () {
-      if (!win.closed) return;
-      window.clearInterval(timer);
-      stopBecauseGone();
-    }, 700);
-  }
-
-  window.setInterval(function () { if (gone()) stopBecauseGone(); }, 5000);
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible' && gone()) stopBecauseGone();
-  });
-  if (gone()) stopBecauseGone();        /* a display left on from an earlier session */
-
-  /* Another tab changed the display: follow it. */
+  /* Another tab changed the display: follow it, and answer a newcomer. */
   if (channel) {
     channel.addEventListener('message', function (event) {
       var message = event.data || {};
-      if (message.type === 'show') write({service: message.service, screen: message.screen, on: true});
-      else if (message.type === 'stop') write({service: state.service, screen: state.screen, on: false});
-      else if (message.type === 'state' && state.on) {
-        post({type: 'show', service: state.service, screen: state.screen});
+      if (message.type === 'show') {
+        write({service: message.service, screen: message.screen, on: true,
+               translation: state.service === Number(message.service) ? state.translation : null});
+      } else if (message.type === 'hide') {
+        if (state.service != null) {
+          write({service: state.service, screen: state.screen, on: false,
+                 translation: state.translation});
+        }
+      } else if (message.type === 'release') {
+        write({service: null, screen: 0, on: false, translation: null});
+      } else if (message.type === 'flip') {
+        write({service: state.service, screen: state.screen, on: state.on,
+               translation: message.translation || null});
+      } else if (message.type === 'state') {
+        /* The store is authoritative; every write persists, so a new surface never
+           needs to be told. Kept tolerated for compatibility. */
+        return;
       }
-      sync();
+      syncButton();
     });
   }
 
@@ -186,25 +220,37 @@
   window.addEventListener('storage', function (event) {
     if (event.key !== KEY) return;
     state = read();
-    sync();
+    syncButton();
+    notify();
   });
 
   /* The reading pane was swapped in place: the arriving button knows nothing of
      this browser's display mode until it is told. */
-  document.addEventListener('shell:page', sync);
+  document.addEventListener('shell:page', syncButton);
 
   /* ---------- the re-read after a change (spec 026) -------------------------
      The display is given its truth by the server: every saved change here asks the
-     projector window to re-read the page. Only the service on screen needs it, so a
-     page showing another Tata Ibadah stays out of it. The Update button and this hook
+     projector to re-read the page. Only the service on air needs it, so a page
+     showing another Tata Ibadah stays out of it. The Update button and this hook
      are the same act. */
 
   function reflow() {
     if (!isHere()) return;
-    post({type: 'update'});
+    update();
   }
 
   window.gkpsDisplay = {
+    /* the state */
+    read: read,
+    state: read,
+    subscribe: subscribe,
+    /* the verbs */
+    show: show,
+    screen: moveTo,
+    hide: hide,
+    release: release,
+    flip: flip,
+    update: update,
     /* This page's Tata Ibadah is the one on screen in this browser. */
     live: isHere,
     /* Ask the display to re-read, when it is showing this page's Tata Ibadah. */
@@ -216,5 +262,5 @@
      save (editors.js), and a reorder write (reorder.js). One seam, every change. */
   document.addEventListener('editor:saved', reflow);
 
-  sync();
+  syncButton();
 })();
