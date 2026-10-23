@@ -25,7 +25,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-123](./items/ITEM-123-project-process.md) | Declare the project process and conventions | Write down what the repo uses and its one convention; retire the old process copies and add the process templates | chore | P1 | M | — | docs/project-process | 2026-10-23 |
 
 ## In review
 
@@ -50,6 +49,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-118](./items/ITEM-118-powerpoint-media-display.md) | Display PowerPoint slides in Preview and projector | Keep the original PPT/PPTX; present static slides through a local display copy | feat | P1 | L | [118](../specs/118-powerpoint-media-display/spec.md) | [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) | 2026-10-20 |
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
+| [ITEM-123](./items/ITEM-123-project-process.md) | Declare the project process and conventions | Write down what the repo uses and its one convention; retire the old process copies, add the process templates, and remove CI | chore | P1 | M | — | [#371](https://github.com/rsmbyk/multimedia-gkps-klender/pull/371) | 2026-10-23 |
 
 ## Done
 
