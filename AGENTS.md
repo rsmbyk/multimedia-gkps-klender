@@ -2,42 +2,25 @@
 
 Project conventions for humans and coding agents. Prefer these docs over guessing.
 
-This repository **adopts the vexbook process at `v0.4.0`** (see
-[`docs/adr/0001-adopt-vexbook-process.md`](docs/adr/0001-adopt-vexbook-process.md)).
-It is an **adopter**, not a greenfield spawn.
+This repository follows the process declared in [`docs/PROCESS.md`](docs/PROCESS.md)
+and [ADR 0001](docs/adr/0001-project-process.md).
 
-## Process (vexbook — binding)
+## Process (binding)
 
-- **Way of working:** [`docs/PROCESS.md`](docs/PROCESS.md)
-- **Must-apply gate:** [`docs/rules/SDD-GATE.md`](docs/rules/SDD-GATE.md) — plan stops at
-  Draft specs; do **not** implement until the owner Accepts the Draft. This is the
-  current must-apply shared doc listed by PROCESS.
-- **Existing repo / keep-up:** [`docs/ADOPT.md`](docs/ADOPT.md) — owner-triggered only; agents
-  never sync unprompted. The greenfield path is [`docs/KICKOFF.md`](docs/KICKOFF.md) (kept for
-  reference).
-- **Specs:** `specs/NNN-slug/{plan,spec,tasks}.md` from [`specs/_template/`](specs/_template/);
-  consecutive integers; **spec 000** is the whole scaffold and stays one spec; one concern per
-  spec. Backfill of as-built behavior is a separate, owner-accepted slice.
-- **Board:** [`backlog/board.md`](backlog/board.md) with `ITEM-XXX` files under
-  [`backlog/items/`](backlog/items/) from [`_template.md`](backlog/items/_template.md). Only the
-  **Backlog** column is sorted by priority (P0 first). Board, tasks, and version (when `bump` is
-  not `none`) land in **the same PR** as the work.
-- **Versioning:** SemVer is locked. Identity is repo-root [`VERSION`](VERSION) (one line, no `v`),
-  [`CHANGELOG.md`](CHANGELOG.md), and annotated tags `vX.Y.Z`. The ITEM/spec carries
-  `bump: major | minor | patch | none`. `VERSION` continues from the highest tag shared with the
-  parallel `develop` line (currently `0.5.2`); see ADR 0001.
-- **Git:** **Git Flow** — `main` is production, `develop` is integration (see
-  [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
-  [`docs/adr/0002-git-flow-merge-strategy.md`](docs/adr/0002-git-flow-merge-strategy.md)).
-  - Features (`feat/*`, `fix/*`, `chore/*`, `docs/*`) branch from `develop` and **squash-merge into
-    `develop`**.
-  - Releases (`release/*`) and hotfixes (`hotfix/*`) target `main` and use a **standard merge
-    commit**; every merge into `main` is a merge commit, never a squash.
-  - After a merge, **delete the remote branch only; keep the local branch intact**.
-  - Never create vendor/agent-named branches; never force-push `main` or `develop`.
-- **Commits:** Conventional Commits (`type(scope): imperative subject`). Agent commits end with a
-  `Co-authored-by` trailer for the vendor product that authored the commit — never another
-  vendor's trailer. Open **draft** PRs using the repository PR template.
+- **Specification-driven development with Spec Kit.**
+- **Board:** in-repo Kanban at [`backlog/board.md`](backlog/board.md), cards in
+  [`backlog/items/`](backlog/items/).
+- **Git:** Git Flow; the repository's deviations and additions are in
+  [ADR 0002](docs/adr/0002-git-flow-merge-strategy.md).
+- **Commits:** Conventional Commits.
+- **Versioning:** SemVer. Identity is repo-root [`VERSION`](VERSION),
+  [`CHANGELOG.md`](CHANGELOG.md), and annotated tags `vX.Y.Z`.
+- **Specs:** `specs/NNN-slug/`; templates in [`specs/_templates/`](specs/_templates/).
+- **Tests:** TDD for domain/application rules; Playwright (Python) E2E.
+
+## Repo conventions
+
+- **Docs-only changes** may skip the numbered spec with a short plan and owner approval.
 
 ## Product (this repo)
 
@@ -48,16 +31,11 @@ It is an **adopter**, not a greenfield spawn.
   Vercel (`@vercel/python`). Frontend is server-rendered templates with vanilla JS, jQuery, RxJS,
   and Fomantic UI.
 - **Tests:** Django test runner; coverage via `coverage`. E2E is Playwright (Python) via Django
-  `LiveServerTestCase`. TDD for domain/application rules. Locally run **targeted tests only** —
-  the touched modules, or a single E2E class — never the full suite; full-suite and browser E2E
-  runs are the push/CI step.
+  `LiveServerTestCase`.
 - **Vocabulary:** use the canonical terms and naming rules in
   [`docs/GLOSSARY.md`](docs/GLOSSARY.md) for all new work.
-- **Conventions:** Git Flow ([ADR 0002](docs/adr/0002-git-flow-merge-strategy.md)), Keep a
-  Changelog, `VERSION` (currently `0.6.0`).
 
 ## This agent's rules
 
-OpenCode reads this `AGENTS.md` as its project-rules file; it is the vendor loader for the binding
-docs above. When PROCESS adds a must-apply shared doc, update the process section here as well. Do
-not add or commit vendor agent directories.
+OpenCode reads this `AGENTS.md` as its project-rules file; it is the vendor loader for the
+process above. [`docs/PROCESS.md`](docs/PROCESS.md) is the declaration.

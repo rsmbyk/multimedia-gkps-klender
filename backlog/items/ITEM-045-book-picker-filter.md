@@ -1,17 +1,18 @@
 ---
 id: ITEM-045
-status: archived
+status: superseded
 title: 'Fix the passage modal book picker''s search filter'
 type: fix
 priority: P2
 effort: S
 created: 2026-10-08
 updated: 2026-10-09
-spec: specs/043-book-picker-filter/spec.md
+spec: 043-book-picker-filter
 branch:
 pr:
-archived_at: 2026-10-09
-archive_reason: >
+issue:
+closed_at: 2026-10-09
+closed_reason: >
   Superseded by Spec 041 / ITEM-043, which implemented TB/SIM search and non-match hiding; its
   targeted E2E test passes.
 bump: patch
