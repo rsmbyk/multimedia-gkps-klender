@@ -25,7 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-123](./items/ITEM-123-project-process.md) | Declare the project process and conventions | Write down what the repo uses and its conventions; retire the old process copies and template files | chore | P1 | M | — | docs/project-process | 2026-10-23 |
+| [ITEM-123](./items/ITEM-123-project-process.md) | Declare the project process and conventions | Write down what the repo uses and its one convention; retire the old process copies and add the process templates | chore | P1 | M | — | docs/project-process | 2026-10-23 |
 
 ## In review
 

@@ -21,21 +21,24 @@ release_version:
 
 ## Summary
 
-Write down what this project uses and the conventions that go with it, and retire the old
-process copies and template files. Docs-only; `bump: none`.
+Write down what this project uses and the convention that goes with it, retire the old process
+copies, and put the templates in the repo. Docs-only; `bump: none`.
 
 ## Notes
 
-- [`docs/PROCESS.md`](../../docs/PROCESS.md) lists the process and the repo conventions;
+- [`docs/PROCESS.md`](../../docs/PROCESS.md) lists the process and the only repo convention;
   [ADR 0001](../../docs/adr/0001-project-process.md) records the choice.
-- No template copies are kept in the repo.
+- Templates live in [`specs/_templates/`](../../specs/_templates/),
+  [`backlog/items/_template.md`](./_template.md),
+  [`.github/pull_request_template.md`](../../.github/pull_request_template.md) and
+  [`docs/adr/_template.md`](../../docs/adr/_template.md).
 - The board gains the `## Archive` table for cards that ended without shipping.
 
 ## Acceptance sketch
 
-- `docs/PROCESS.md` names what the repo uses and its conventions.
+- `docs/PROCESS.md` names what the repo uses and its convention.
 - ADR 0001 exists.
-- No process or spec template copies remain.
+- The templates are in the repo.
 - `AGENTS.md` points at PROCESS.
 - The board carries the `## Archive` table.
 
