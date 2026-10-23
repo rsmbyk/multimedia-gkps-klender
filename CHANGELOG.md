@@ -5,9 +5,6 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Pre-adoption history in the legacy per-version format is archived in
-[`docs/CHANGELOG-archive.md`](docs/CHANGELOG-archive.md).
-
 ## [Unreleased]
 
 ## [1.20.1] - 2026-10-21
