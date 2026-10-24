@@ -749,15 +749,36 @@ def _books_groups(selected_id=None, edition='tb'):
 _TITLE_NUMBER = re.compile(r'^\s*\d+\s*[.\-)\u2013]?\s*')
 
 
-def _songbooks(selected_id=None):
-    # Largest collections first: the accepted mockup's panel order (HAL, KJ,
-    # PKJ, NKB, HARIAN, ANTIFON, AJAR) is exactly descending song count.
-    books = (song_models.Book.objects.active()
-             .annotate(song_total=Count('song', filter=Q(song__is_deleted=False)))
-             .order_by('-song_total', 'name'))
-    return [{'id': book.pk, 'name': book.name, 'short': book.short_name or '',
-             'hymn': book.is_hymn_book, 'current': book.pk == selected_id}
-            for book in books]
+def _songbook_name_key(name):
+    """The panel's A-Z key: folded, then the original name as the tiebreak.
+
+    SQLite (tests) and PostgreSQL (production) collate differently, so the key
+    is built here and compared ordinally rather than in the database.
+    """
+    return (search_lib.normalize(name), name)
+
+
+def _songbook_groups(selected_id=None):
+    """The panel's two groups: hymn books, then the ordinary songbooks (spec 128).
+
+    Hymn books keep the accepted mockup's order -- the largest collection first.
+    Ordinary songbooks are alphabetical by their folded name. Neither group
+    carries a heading: the panel's own ``.group + .group`` rule is the separator.
+    """
+    books = list(song_models.Book.objects.active()
+                 .annotate(song_total=Count('song', filter=Q(song__is_deleted=False))))
+    hymns = sorted((book for book in books if book.is_hymn_book),
+                   key=lambda book: (-book.song_total, _songbook_name_key(book.name)))
+    ordinary = sorted((book for book in books if not book.is_hymn_book),
+                      key=lambda book: _songbook_name_key(book.name))
+    groups = []
+    for rows in (hymns, ordinary):
+        if not rows:
+            continue                    # an empty group draws no separator
+        groups.append([{'id': book.pk, 'name': book.name, 'short': book.short_name or '',
+                        'hymn': book.is_hymn_book, 'current': book.pk == selected_id}
+                       for book in rows])
+    return groups
 
 
 def _song_rows(book, current_id=None):
@@ -1764,7 +1785,7 @@ class BookIndexView(TemplateView):
         context.update(_shell('kidung', 'open', 'closed', False, 'landing', ch_mode='song'))
         context.update({
             'page_title': 'Kidung — Multimedia GKPS Klender',
-            'songbooks': _songbooks(),
+            'songbook_groups': _songbook_groups(),
         })
         return context
 
@@ -1782,7 +1803,7 @@ class BookDetailView(TemplateView):
         context.update(_shell('kidung', 'open', 'open', False, 'landing', ch_mode='song'))
         context.update({
             'page_title': f'{book.name} — Multimedia GKPS Klender',
-            'songbooks': _songbooks(book.pk),
+            'songbook_groups': _songbook_groups(book.pk),
             'songs': _song_rows(book),
             'show_song_sort': not book.is_hymn_book,
             'ch_title': f'Song list — {book.name}',
@@ -1820,7 +1841,7 @@ class SongDetailView(TemplateView):
         context.update({'editor_book_id': book.pk, 'book_is_hymn': book.is_hymn_book})
         context.update({
             'page_title': f'{citation} — Multimedia GKPS Klender',
-            'songbooks': _songbooks(book.pk),
+            'songbook_groups': _songbook_groups(book.pk),
             'songs': _song_rows(book, song.pk),
             'show_song_sort': not book.is_hymn_book,
             'ch_title': f'Song list — {book.name}',

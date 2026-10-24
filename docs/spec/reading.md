@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-24
-**slices**: `126-songbook-short-header`, `127-site-name-tab`
+**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
 in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
@@ -87,3 +87,41 @@ name, the logo's `alt` and the rail's labels keep the congregation name `GKPS Kl
 - WHEN the Bible edition changes without a navigation
 - THEN the title becomes `<book name> <chapter> — Multimedia GKPS Klender`, so the tab does not rename
   itself while the edition does
+
+### R4 — The Kidung panel puts hymn books first, then the ordinary songbooks A–Z, behind one separator
+
+The Kidung panel SHALL list hymn songbooks before ordinary songbooks. Hymn songbooks SHALL keep the accepted
+panel order — descending count of their non-deleted songs, the name breaking a tie. Ordinary songbooks SHALL
+be ordered by their case- and diacritic-folded name, compared ordinally, with the original name breaking an
+exact tie, so the order does not depend on the database's collation or the browser's locale data.
+
+One separator SHALL be drawn between the two groups, and it SHALL be the panel's own group rule
+(`2px solid var(--divider)`, `10px` margin and `10px` padding), not a new element. Neither group carries a
+heading, label or caption. A group with no rows — because no songbook of that kind exists, or because the
+panel filter emptied it — SHALL draw no separator.
+
+The grouping and order SHALL be the same on the Kidung index, a songbook page and a song page, and the
+current row and the per-row edit button SHALL stay on the rows they marked before.
+
+#### Scenario: the panel
+- WHEN `/songs/` opens
+- THEN every hymn songbook precedes every ordinary songbook, with one separator between them and no heading
+
+#### Scenario: the ordinary side
+- WHEN the ordinary songbooks are listed
+- THEN they read A–Z by their folded names, `Buku Ende HKBP` among the `b`s, a case-only pair broken by the
+  original name
+
+#### Scenario: an emptied group
+- WHEN the panel filter leaves one group with no rows
+- THEN no separator is drawn above the surviving group
+
+### R5 — A saved Kidung panel draws the same two groups
+
+A Kidung page rendered from the saved library by `static/web/offline-render.js` SHALL draw the same two groups,
+in the same order, as the server route it mirrors — the same hymn order and the same folded A–Z key — so the
+panel does not reorder itself when the online update arrives.
+
+#### Scenario: saved panel
+- WHEN a Kidung route is rendered from the saved library
+- THEN its panel's group count and row order equal the server page's

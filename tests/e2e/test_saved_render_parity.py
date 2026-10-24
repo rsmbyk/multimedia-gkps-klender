@@ -288,3 +288,26 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                     }""", url)
                     self.assertEqual(result['saved'], result['server'])
             browser.close()
+
+    def test_saved_songbook_panel_matches_the_server_grouping(self):
+        """Spec 128: the saved panel draws the same two groups, in the same order."""
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            urls = ['/songs/', f'/songs/book/{self.hymn_id}/', f'/songs/{self.hymn_song.pk}/']
+            for url in urls:
+                with self.subTest(url=url):
+                    result = page.evaluate("""async url => {
+                      const saved = await GKPSOfflineRender.render(url);
+                      const response = await fetch(url, {cache: 'no-store'});
+                      const server = new DOMParser().parseFromString(await response.text(), 'text/html');
+                      const shape = doc => Array.from(doc.querySelectorAll('#panelBody .group'))
+                        .map(group => Array.from(group.querySelectorAll('.book__n'))
+                          .map(name => name.textContent.trim()));
+                      return {saved: shape(saved), server: shape(server)};
+                    }""", url)
+                    self.assertEqual(result['saved'], result['server'])
+                    self.assertEqual(len(result['server']), 2)
+            browser.close()

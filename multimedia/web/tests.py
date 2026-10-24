@@ -40,6 +40,19 @@ class ReadingViewTests(TestCase):
         songs.Song.objects.create(book=cls.harian, title='Alpha')
         songs.Song.objects.create(book=cls.harian, title='Zebra')
 
+        # The Kidung panel's two groups (spec 128): a hymn book larger than NKB so the
+        # count order is visible, and ordinary names that separate folding from case.
+        cls.haleluya = songs.Book.objects.create(
+            name='Haleluya', short_name='HAL', is_hymn_book=True)
+        for number in (1, 2, 3):
+            songs.Song.objects.create(book=cls.haleluya, number=number,
+                                      title='Nyanyian %d' % number)
+        cls.buku_ende = songs.Book.objects.create(name='buku ende', is_hymn_book=False)
+        songs.Song.objects.create(book=cls.buku_ende, title='Ende Satu')
+        songs.Song.objects.create(book=cls.buku_ende, title='Ende Dua')
+        cls.zebra = songs.Book.objects.create(name='Zebra', is_hymn_book=False)
+        songs.Song.objects.create(book=cls.zebra, title='Zebra Satu')
+
         b_lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(lang=b_lang, name='Terjemahan Baru', abbreviation='TB')
         cls.mat = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
@@ -201,11 +214,63 @@ class ReadingViewTests(TestCase):
 
     # --- Kidung ---
 
+    def panel_groups(self, response):
+        """The panel's rows as ``[[hymn names], [ordinary names]]`` (spec 128)."""
+        return [[row['name'] for row in group]
+                for group in response.context['songbook_groups']]
+
     def test_book_index_lists_songbooks(self):
         response = self.client.get(reverse('web-books'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Nyanyikanlah Kidung Baru')
         self.assertContains(response, 'Kidung Harian')
+
+    def test_songbook_panel_puts_hymn_books_before_the_ordinary_ones(self):
+        groups = self.panel_groups(self.client.get(reverse('web-books')))
+
+        self.assertEqual(len(groups), 2)
+        self.assertEqual(set(groups[0]), {'Haleluya', 'Nyanyikanlah Kidung Baru'})
+        self.assertEqual(set(groups[1]), {'Kidung Harian', 'buku ende', 'Zebra'})
+
+    def test_songbook_panel_keeps_the_hymn_order_by_song_count(self):
+        groups = self.panel_groups(self.client.get(reverse('web-books')))
+
+        self.assertEqual(groups[0], ['Haleluya', 'Nyanyikanlah Kidung Baru'])
+
+    def test_songbook_panel_orders_ordinary_songbooks_by_folded_name(self):
+        groups = self.panel_groups(self.client.get(reverse('web-books')))
+
+        # folded, so the lowercase book sorts under "b"; case never decides the order.
+        self.assertEqual(groups[1], ['buku ende', 'Kidung Harian', 'Zebra'])
+
+    def test_songbook_panel_has_no_group_heading(self):
+        html = self.client.get(reverse('web-books')).content.decode()
+        panel = html.split('id="panelBody"')[1]
+
+        self.assertEqual(panel.count('<section class="group">'), 2)
+        self.assertNotIn('class="group__head"', panel)
+
+    def test_songbook_panel_omits_the_separator_when_only_one_group_has_rows(self):
+        songs.Book.objects.filter(is_hymn_book=True).update(is_deleted=True)
+
+        groups = self.panel_groups(self.client.get(reverse('web-books')))
+
+        self.assertEqual(groups, [['buku ende', 'Kidung Harian', 'Zebra']])
+
+    def test_songbook_panel_marks_the_current_row_in_either_group(self):
+        response = self.client.get(reverse('web-book', args=[self.harian.pk]))
+
+        current = [row['name'] for group in response.context['songbook_groups']
+                   for row in group if row['current']]
+        self.assertEqual(current, ['Kidung Harian'])
+
+    def test_song_detail_and_book_detail_panels_use_the_same_groups(self):
+        index = self.panel_groups(self.client.get(reverse('web-books')))
+        book = self.panel_groups(self.client.get(reverse('web-book', args=[self.harian.pk])))
+        song = self.panel_groups(self.client.get(reverse('web-song', args=[self.song.pk])))
+
+        self.assertEqual(book, index)
+        self.assertEqual(song, index)
 
     def test_book_detail_lists_its_songs(self):
         response = self.client.get(reverse('web-book', args=[self.nkb.id]))

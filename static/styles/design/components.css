@@ -904,6 +904,14 @@ li:hover > .row-edit,
   padding-top: 10px;
   border-top: 2px solid var(--divider);
 }
+/* A group the panel filter emptied takes its separator with it: otherwise the
+   next group's border floats above the list with nothing above it (spec 128).
+   The mini rail's 8px spacing loses to this rule's extra class. */
+.group.is-hidden + .group {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
 .group ul { margin: 0; padding: 0; list-style: none; }
 .group li + li { margin-top: 1px; }
 .book {

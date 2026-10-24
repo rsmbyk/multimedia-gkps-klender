@@ -1,5 +1,8 @@
+{% comment %}Hymn songbooks, then the ordinary ones; the panel's own group rule draws
+the separator between them, and neither group carries a heading (spec 128).{% endcomment %}
+{% for group in songbook_groups %}
 <section class="group"><ul>
-  {% for book in songbooks %}
+  {% for book in group %}
   <li><a class="book" href="{% url 'web-book' book.id %}"
          data-name="{{ book.id }}" data-sim="{{ book.short }}"
          aria-label="{{ book.name }}{% if book.short %} ({{ book.short }}){% endif %}"{% if book.current %} aria-current="true"{% endif %}>
@@ -13,3 +16,4 @@
     </button>{% endif %}</li>
   {% endfor %}
 </ul></section>
+{% endfor %}

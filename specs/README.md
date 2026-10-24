@@ -74,3 +74,4 @@ the templates are in [`_templates/`](./_templates/).
 | [125](125-saved-song-sort-parity/spec.md) | A saved hymn song page never shows the song sort control | Accepted |
 | [126](126-songbook-short-header/spec.md) | A song page cites its songbook by its short name | Accepted |
 | [127](127-site-name-tab/spec.md) | The tab names the site, and the index's tab stops at the name | Accepted |
+| [128](128-songbook-hymn-separator/spec.md) | Hymn songbooks above one separator, the rest A–Z | Accepted |

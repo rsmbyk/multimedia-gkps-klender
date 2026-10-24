@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-131](./items/ITEM-131-songbook-hymn-separator.md) | Separate the hymn songbooks from the rest of the Kidung panel | Hymn books first, one divider, the ordinary songbooks A–Z, no headings | feat | P2 | S | [128](../specs/128-songbook-hymn-separator/spec.md) | feat/128-songbook-hymn-separator | 2026-10-24 |
 
 ## In review
 
