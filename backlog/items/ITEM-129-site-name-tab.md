@@ -1,6 +1,6 @@
 ---
 id: ITEM-129
-status: in progress
+status: in review
 title: 'Name the site in the tab, and stop the index tab at the name'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-24
 updated: 2026-10-24
 spec: specs/127-site-name-tab/spec.md
 branch: fix/127-site-name-tab
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/378
 issue:
 closed_at:
 closed_reason:
