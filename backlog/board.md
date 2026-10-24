@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-125](./items/ITEM-125-bible-edition-block-identity.md) | Keep a chapter's verse text when both Bible editions share a book name | Key the reading stage's edition blocks by edition, not the shared book label | fix | P1 | S | [124](../specs/124-bible-edition-block-identity/spec.md) | `fix/124-bible-edition-block-identity` | 2026-10-24 |
 
 ## In review
 

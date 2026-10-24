@@ -8,7 +8,7 @@
 
 | ID | Severity | Kind | Artifact | Finding | Disposition |
 | --- | --- | --- | --- | --- | --- |
-| A1 | HIGH | traceability | `spec.md` § Requirements | The capability cells read `new: reading-navigation`, but this repo has no `docs/spec/` tree (checked 2026-10-24), so Fold has no delta target for the slice | escalated to gate 2: take the same disposition the date-header slice took — Fold records `n/a — no capability tree yet` and the tree starts as its own card |
+| A1 | HIGH | traceability | `spec.md` § Requirements | The capability cells read `new: reading-navigation`, but this repo has no `docs/spec/` tree (checked 2026-10-24), so Fold has no delta target for the slice | **decided at gate 2** (owner, 2026-10-24): Fold records `n/a — no capability tree yet` for this slice (`fold.md`), and the tree starts as its own card |
 | A2 | LOW | coverage | `spec.md` § US2/AC3 | The saved copy's only evidence is shared markup plus the re-run saved-parity class; no offline fixture exercises a same-name book | accepted — recorded as `inspection` in the plan, not claimed as a test |
 | A3 | LOW | consistency | `plan.md` § Traceability | `test_saved_render_parity` is a class, not a single test; the SC-003 row names it as a path, which is correct for a re-run but reads like one test | accepted — the task list names the class and its count |
 
@@ -38,8 +38,10 @@ No CRITICAL findings. No constitution findings: the repo has no `CONSTITUTION.md
 - Verification split counted from the plan's table (9 test · 1 inspection · 0 manual), not estimated.
 - No `[NEEDS CLARIFICATION]` markers remain (grep over the pack, 2026-10-24).
 - The planned item number is `ITEM-125`: `ITEM-124` is held by the date-header slice on its own branch.
+- Task bullets carry their `FR`/`SC` IDs, so the coverage table above is checkable by grep rather than by
+  reading.
 
 ## Escalated
 
-- **A1** — one decision for gate 2: does this slice start `docs/spec/`, or does Fold record `n/a` and the
-  tree wait for its own slice (the disposition the date-header slice took)?
+- **A1** — decided at gate 2 (owner, 2026-10-24): Fold records `n/a` for this slice and the capability tree
+  starts as its own card. No other finding needed the owner.
