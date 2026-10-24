@@ -1,6 +1,6 @@
 ---
 id: ITEM-126
-status: in_review
+status: done
 title: 'A saved hymn song page never shows the song sort control'
 type: fix
 priority: P2

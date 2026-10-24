@@ -49,8 +49,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-118](./items/ITEM-118-powerpoint-media-display.md) | Display PowerPoint slides in Preview and projector | Keep the original PPT/PPTX; present static slides through a local display copy | feat | P1 | L | [118](../specs/118-powerpoint-media-display/spec.md) | [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) | 2026-10-20 |
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
-| [ITEM-126](./items/ITEM-126-saved-song-sort-parity.md) | A saved hymn song page never shows the song sort control | Follow the server's hymn-book rule in the saved render so the control no longer flashes | fix | P2 | S | [125](../specs/125-saved-song-sort-parity/spec.md) | [#374](https://github.com/rsmbyk/multimedia-gkps-klender/pull/374) | 2026-10-24 |
-
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
@@ -159,6 +157,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-123](./items/ITEM-123-project-process.md) | Declare the project process and conventions | Write down what the repo uses and its one convention; retire the old process copies, add the process templates, and remove CI | chore | P1 | M | — | develop via [#371](https://github.com/rsmbyk/multimedia-gkps-klender/pull/371) | 2026-10-23 |
 | [ITEM-124](./items/ITEM-124-tatib-date-header-parity.md) | Match the Tata Ibadah date header to the songbook header | Restore the shared eyebrow style for a service date; let the row wrap instead of shrinking it | fix | P1 | S | [123](../specs/123-tatib-date-header-parity/spec.md) | develop via [#372](https://github.com/rsmbyk/multimedia-gkps-klender/pull/372) | 2026-10-24 |
 | [ITEM-125](./items/ITEM-125-bible-edition-block-identity.md) | Keep a chapter's verse text when both Bible editions share a book name | Key the reading stage's edition blocks by edition, not the shared book label | fix | P1 | S | [124](../specs/124-bible-edition-block-identity/spec.md) | develop via [#373](https://github.com/rsmbyk/multimedia-gkps-klender/pull/373) | 2026-10-24 |
+| [ITEM-126](./items/ITEM-126-saved-song-sort-parity.md) | A saved hymn song page never shows the song sort control | Follow the server's hymn-book rule in the saved render so the control no longer flashes | fix | P2 | S | [125](../specs/125-saved-song-sort-parity/spec.md) | develop via [#374](https://github.com/rsmbyk/multimedia-gkps-klender/pull/374) | 2026-10-24 |
 
 ## Archive
 
