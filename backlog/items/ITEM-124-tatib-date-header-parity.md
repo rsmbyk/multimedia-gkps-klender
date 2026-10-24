@@ -1,6 +1,6 @@
 ---
 id: ITEM-124
-status: in_progress
+status: in_review
 title: 'Match the Tata Ibadah date header to the songbook header'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-24
 updated: 2026-10-24
 spec: specs/123-tatib-date-header-parity/spec.md
 branch: fix/123-tatib-date-header-parity
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/372
 issue:
 closed_at:
 closed_reason:

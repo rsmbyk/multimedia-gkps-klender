@@ -57,7 +57,7 @@ shell) and re-run the offline eyebrow-text pins.
 
 - [x] T010 Write `backlog/items/ITEM-124-tatib-date-header-parity.md` and its `backlog/board.md` row.
 - [x] T011 Bump `VERSION` 1.20.1 → 1.20.2 and add the `[Unreleased]` changelog entry.
-- [ ] T012 Tick this list, fill `analysis.md`'s dispositions, and open the draft PR.
+- [x] T012 Tick this list, fill `analysis.md`'s dispositions, and open the draft PR.
 
 ## Phase N+1 — Convergence
 
