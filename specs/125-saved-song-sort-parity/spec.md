@@ -3,7 +3,7 @@
 **Slice**: `specs/125-saved-song-sort-parity`
 **Branch**: `fix/125-saved-song-sort-parity`
 **Created**: 2026-10-24
-**Status**: Draft
+**Status**: Accepted (owner, gate 1, 2026-10-24)
 **Input**: "when you open a hymn-book song from the sidebar, there is a brief moment the song filter button at the top of the sidebar appear and then disappear again" (sent with a screenshot of `/songs/139/`: the NKB song list, the song filter at the top of the second sidebar, and its sort button visible beside it)
 
 ## User Scenarios & Testing
