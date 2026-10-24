@@ -84,8 +84,10 @@ tab names it the same way.
       `R1` (the song header cites the short songbook name) and `R2` (a saved reading page matches its server
       route's header and title), its header recording `last folded`/`slices` and that earlier slices were
       never folded. Tick this list and fill `analysis.md`'s dispositions.
-- [ ] T021 Commit the slice. **Committed** as `b4641759` on `feat/126-songbook-short-header`; the draft PR
-      into `develop` is not open — it needs the push, which waits on the owner's word.
+- [x] T021 Commit the slice. **Committed** as `43102c3c` on `feat/126-songbook-short-header` (the board-row
+      follow-up is `0b7b8b3b`); draft PR [#375](https://github.com/rsmbyk/multimedia-gkps-klender/pull/375)
+      into `develop` is open, and review fixes land as further commits on the branch — squashed into one
+      commit at merge, per ADR 0002.
 
 ## Dependency graph
 

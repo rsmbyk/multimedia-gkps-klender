@@ -25,7 +25,8 @@ still found in the codebase.
 | **Book translation** | — | A `Book` as it appears in a specific `Version`. | `bible.BookTranslation` |
 | **Verse** (Bible) | — | One verse: chapter, verse number, optional title, text. | `bible.Verse` |
 | **Passage** | — | The Bible text currently being projected (book, chapter, verse, text). | OBS `passageSubject` |
-| **Hymn book** | Songbook, SongBook | A collection of songs/hymns (e.g. NKB). | `songs.Book` (`is_hymn_book`) |
+| **Songbook** | — | A collection of songs: a **Hymn book** when its songs carry numbers, an ordinary songbook when they do not. | `songs.Book` |
+| **Hymn book** | SongBook | A songbook whose songs carry numbers (`is_hymn_book`, e.g. NKB). | `songs.Book` (`is_hymn_book`) |
 | **Song** | — | A numbered song in a hymn book: number, sub-number, title, key. | `songs.Song` |
 | **Key** | — | The musical key of a song. | `songs.Key` |
 | **Lyric verse** | Song verse | A numbered lyric stanza of a song. | `songs.Verse` |
