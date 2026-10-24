@@ -68,3 +68,8 @@ the templates are in [`_templates/`](./_templates/).
 | [066](066-stage-song-verse-line/spec.md) | Always show a song entry's verses on the Tata Ibadah stage | Accepted |
 | [100](100-sim-translation-abbreviations/spec.md) | Use the requested SIM book abbreviations | Accepted; Go To amendment implemented |
 | [101](101-goto-translation-flash/spec.md) | Brighten the translation label after flipping a Go To passage | Accepted |
+| [122](122-saved-reading-parity/spec.md) | Saved reading page parity | Accepted |
+| [123](123-tatib-date-header-parity/spec.md) | Match the Tata Ibadah date header to the songbook header | Accepted |
+| [124](124-bible-edition-block-identity/spec.md) | Keep a chapter's verse text when the reading page updates in place | Accepted |
+| [125](125-saved-song-sort-parity/spec.md) | A saved hymn song page never shows the song sort control | Accepted |
+| [126](126-songbook-short-header/spec.md) | A song page cites its songbook by its short name | Accepted |

@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-127](./items/ITEM-127-songbook-short-header.md) | Cite a song page's songbook by its short name | Show `PKJ 4` in the song header and the tab, mirror it in the saved render, and start `docs/spec/reading.md` | fix | P2 | S | [126](../specs/126-songbook-short-header/spec.md) | feat/126-songbook-short-header | 2026-10-24 |
 
 ## In review
 

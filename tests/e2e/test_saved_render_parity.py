@@ -61,6 +61,7 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                 (f'/songs/{self.hymn_song.pk}/', 'first_song_number_data', 'HT 7'),
                 (f'/songs/{self.song.pk}/', 'first_song_sort', 'ordinary song'),
                 ('/tatib/', 'heading', 'Chapters'),
+                (f'/songs/{self.hymn_song.pk}/', 'eyebrow', 'HT 7'),
                 (f'/songs/{self.song.pk}/', 'eyebrow', 'Ordinary Test'),
                 (f'/songs/{self.song.pk}/', 'heading', 'Song list — Ordinary Test'),
                 (f'/tatib/{self.service.pk}/', 'icon_count', 4),
@@ -148,6 +149,33 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                       return {saved: sortState(saved), server: sortState(server)};
                     }""", url)
                     self.assertEqual(result['saved'], result['server'])
+
+    def test_header_and_title_agree_between_saved_and_server(self):
+        """Spec 126: the song header and the tab name the song the same way in both renders."""
+        routes = [
+            (f'/songs/{self.hymn_song.pk}/', 'HT 7'),
+            (f'/songs/{self.song.pk}/', 'Ordinary Test'),
+        ]
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            for url, expected in routes:
+                with self.subTest(url=url):
+                    result = page.evaluate("""async url => {
+                      const saved = await GKPSOfflineRender.render(url);
+                      const response = await fetch(url, {cache: 'no-store'});
+                      const server = new DOMParser().parseFromString(await response.text(), 'text/html');
+                      const eyebrow = doc => doc.querySelector('#readEyebrow').textContent.trim();
+                      return {saved: eyebrow(saved), server: eyebrow(server),
+                              savedTitle: saved.title, serverTitle: server.title};
+                    }""", url)
+                    self.assertEqual(result['saved'], expected)
+                    self.assertEqual(result['server'], expected)
+                    self.assertEqual(result['savedTitle'], expected + ' — GKPS Klender')
+                    self.assertEqual(result['savedTitle'], result['serverTitle'])
+            browser.close()
 
     def test_hymn_song_sidebar_open_never_paints_the_sort_control(self):
         with sync_playwright() as playwright:

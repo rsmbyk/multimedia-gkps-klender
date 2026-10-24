@@ -1805,8 +1805,13 @@ class SongDetailView(TemplateView):
             song_models.Song.objects.active().filter(book__is_deleted=False)
             .select_related('book'), pk=self.kwargs['song_id'])
         book = song.book
-        if book.is_hymn_book and song.number is not None:
-            citation = f'{book.name} {song.number}{song.sub_number.upper()}'
+        # The header cites the song the way the sidebar beside it already does:
+        # a hymn song is its songbook's short name plus its number (spec 126), and
+        # an ordinary songbook, whose songs carry no numbers, is its own name.
+        if book.is_hymn_book:
+            reference = book.short_name or book.name
+            citation = (f'{reference} {song.number}{song.sub_number.upper()}'
+                        if song.number is not None else reference)
         else:
             citation = book.name
         verses = [verse.lyric for verse in song.verse_set.filter(is_deleted=False)

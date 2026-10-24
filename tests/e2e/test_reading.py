@@ -1229,7 +1229,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('.result-group[data-kind="songs"] .result-row').first.click()
         expect(page.locator('#readEyebrow')).to_be_visible()
         songbook = self._eyebrow_style(page)
-        self.assertEqual(songbook['text'], 'Nyanyikanlah Kidung Baru 12')
+        # The song header's own reference, which spec 126 shortened to the songbook's
+        # short name; this pins the element under measurement, not the citation's wording.
+        self.assertEqual(songbook['text'], 'NKB 12')
 
         page.locator('.rail [data-panel="tatib"]').click()
         page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
