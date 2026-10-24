@@ -1,6 +1,6 @@
 ---
 id: ITEM-127
-status: in-review
+status: done
 title: 'Cite a song page''s songbook by its short name'
 type: fix
 priority: P2
