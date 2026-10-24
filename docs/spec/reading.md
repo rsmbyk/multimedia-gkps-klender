@@ -134,14 +134,14 @@ panel does not reorder itself when the online update arrives.
 - WHEN a Kidung route is rendered from the saved library
 - THEN its panel's group count and row order equal the server page's
 
-### R6 — An empty Tata Ibadah centres its five add tiles
+### R6 — An empty Tata Ibadah quarter-centres its five add tiles
 
 A service that holds no items and can be edited SHALL show its invitation — the heading, the hint and the five
-add actions — centred vertically in the reading area the header leaves, with equal space above and below. The
-five actions SHALL be one horizontal row of square, icon-only tiles: 52px at a full-width column, 10px apart,
-the glyph alone on the face, and the sentence `Add Passage`, `Add Song`, `Add Text`, `Add Break`, `Add Media`
-carried as the accessible name and the tooltip. A reading column narrower than 300px SHALL take them three and
-two at full size rather than shrinking them below 44px.
+add actions — with its centre a quarter of the way down the reading area the header leaves, not at its middle,
+and never overlapping the header. The five actions SHALL be one horizontal row of square, icon-only tiles:
+52px at a full-width column, 10px apart, the glyph alone on the face, and the sentence `Add Passage`,
+`Add Song`, `Add Text`, `Add Break`, `Add Media` carried as the accessible name and the tooltip. A reading
+column narrower than 300px SHALL take them three and two at full size rather than shrinking them below 44px.
 
 The server template, the saved renderer and the rebuild that follows deleting a service's last entry SHALL
 paint the same tiles. A service that holds items is outside this requirement: it keeps the header-to-body gap
@@ -149,7 +149,36 @@ and the top-aligned flow it has always had.
 
 #### Scenario: an empty service
 - WHEN a service with no items opens at any width
-- THEN the block sits in the middle of the reading area under the header, gaps above and below equal within 2px
+- THEN the block's centre sits a quarter of the way down the reading area under the header, never above it
+- AND its five actions stand in one row of 52px squares, or three and two when the column is under 300px
+
+#### Scenario: naming a tile
+- WHEN a tile is hovered, focused or read by a screen reader
+- THEN it is named `Add Passage`, `Add Song`, `Add Text`, `Add Break` or `Add Media`, in that order
+- AND no visible label text appears in the row
+
+#### Scenario: the last entry deleted in place
+- WHEN the only entry is deleted without a reload
+- THEN the rebuilt block is the same row of tiles, in the same place
+
+#### Scenario: the saved copy
+- WHEN an empty service is rendered from the saved library
+- THEN its tiles carry the same labels, one glyph each and the same square size as the server route
+
+A service that holds no items and can be edited SHALL show its invitation — the heading, the hint and the five
+add actions — with its centre a quarter of the way down the reading area the header leaves, not at its middle,
+and never overlapping the header. The five actions SHALL be one horizontal row of square, icon-only tiles:
+52px at a full-width column, 10px apart, the glyph alone on the face, and the sentence `Add Passage`,
+`Add Song`, `Add Text`, `Add Break`, `Add Media` carried as the accessible name and the tooltip. A reading
+column narrower than 300px SHALL take them three and two at full size rather than shrinking them below 44px.
+
+The server template, the saved renderer and the rebuild that follows deleting a service's last entry SHALL
+paint the same tiles. A service that holds items is outside this requirement: it keeps the header-to-body gap
+and the top-aligned flow it has always had.
+
+#### Scenario: an empty service
+- WHEN a service with no items opens at any width
+- THEN the block's centre sits a quarter of the way down the reading area under the header, never above it
 - AND its five actions stand in one row of 52px squares, or three and two when the column is under 300px
 
 #### Scenario: naming a tile

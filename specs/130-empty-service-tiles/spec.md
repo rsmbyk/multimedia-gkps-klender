@@ -12,22 +12,22 @@ the top of a page that is otherwise blank below).
 
 ## User Scenarios & Testing
 
-### US1 — An empty service is centred in the reading area (P1)
+### US1 — An empty service sits in the first quarter of the reading area (P1)
 
-**Why this priority**: the screenshot is the defect. The block is the only content on the page and it sits
-just under the date, leaving the bottom two thirds of the page blank, so the page reads as unfinished
-rather than as an invitation.
+**Why this priority**: the screenshot is the defect. The block is the only content on the page and it sat
+just under the date, leaving the bottom two thirds of the page blank, so the page read as unfinished rather
+than as an invitation. Halfway was the first answer; the owner moved it to the quarter mark.
 
-**Independent Test**: open a Tata Ibadah with no items; measure the whitespace between the header's bottom
-edge and the block, and between the block and the bottom of the window: the two are equal.
+**Independent Test**: open a Tata Ibadah with no items; the block's centre lies a quarter of the way down the
+reading area the header leaves — not half.
 
 **Acceptance scenarios**
 
-1. **Given** a service with no items and editing enabled, **When** its page opens at 1440×900, **Then**
-   the empty block (heading, hint, tile row) is centred vertically in the area under the header: the gap
-   above it equals the gap below it within 2px.
+1. **Given** a service with no items and editing enabled, **When** its page opens at 1440×900, **Then** the
+   empty block (heading, hint, tile row) has its centre on the quarter mark of the area under the header:
+   measured 26.2% of that area, its top 132.8px clear of the header.
 2. **Given** the same page at 1440×900, **When** the window is resized to 1280×800, 1024×700 or 390×844,
-   **Then** the block stays centred in that area at every size.
+   **Then** the block stays in that first quarter at every size and never overlaps the header.
 3. **Given** a service that holds at least one item, **When** its page opens, **Then** nothing moves: the
    stage keeps its header-to-body gap and its top-aligned flow.
 
@@ -82,7 +82,7 @@ the saved library: both show the same five tiles, with the same labels and glyph
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | An empty, editable service centres its empty block in the reading area between the header's bottom edge and the bottom of the window, with equal gaps above and below (within 2px). | new: `reading` |
+| FR-001 | An empty, editable service places its empty block so its centre sits a quarter of the way down the reading area between the header's bottom edge and the bottom of the window — within 12px of that mark, and never overlapping the header. | new: `reading` |
 | FR-002 | The empty block's five add actions are one horizontal row of square tiles, 52×52 at a full-width column, 10px apart, centred. | new: `reading` |
 | FR-003 | Each tile shows only a glyph; its accessible name and tooltip carry `Add Passage`, `Add Song`, `Add Text`, `Add Break`, `Add Media`, in that order. | new: `reading` |
 | FR-004 | `Add Media` shows a glyph in the same 24-unit, 1.6-stroke family as the other four. | new: `reading` |
@@ -98,18 +98,20 @@ None. The change is presentational; no model, view signature or stored value cha
 
 | ID | Criterion | How it is measured |
 | --- | --- | --- |
-| SC-001 | The empty block is optically centred under the header on every screen size | Gap above and gap below equal within 2px at 1440×900, 1280×800, 1024×700 and 390×844 |
+| SC-001 | The block reads as an upper-quarter invitation, not a floating centre | Block centre within 12px of the quarter mark of the reading area at 1440×900, 1280×800, 1024×700 and 390×844; top never above the header's bottom edge |
 | SC-002 | The five add actions read as one row | Five tiles, one row above 300px of column, square within 1px |
 | SC-003 | No tile drops below a comfortable target | Smallest tile measured at the four sizes ≥ 44px |
 | SC-004 | No renderer disagrees | Saved copy and server page give identical label, glyph count and size per tile |
 
 ## UI/UX
 
-- **Layout / position**: a flex column article filling the stage's content height (`min-height: 100%`);
-  its body takes the remainder (`flex: 1`) and centres the block (`align-items: center`). The header's
-  30px bottom margin (22px below tablet width) and the body's 8px top margin are dropped **only** in this
-  state, because both would bias the centre downwards. The block itself measures 142px at 1440×900:
-  title 26px, 10px gap, hint 24px, 20px gap, tile row 52px.
+- **Layout / position**: a flex column article filling the stage's content height (`min-height: 100%`); its
+  body takes the remainder (`flex: 1`) and is a grid whose **first row is half of the body**, so the block it
+  centres inside that row lands on the body's quarter mark — not its middle. The header's 30px bottom margin
+  (22px below tablet width) and the body's 8px top margin are dropped **only** in this state, because both
+  would bias the placement downwards; the body gains a 12px top pad as the floor for the case where the half
+  row collapses to the block's own height. The block itself measures 142px at 1440×900: title 26px, 10px gap,
+  hint 24px, 20px gap, tile row 52px.
 - **Size / spacing**: tiles 52×52, `border-radius: 12px`, gap 10px, row width 300px; glyph 22px capped at
   60% of the tile so a shrinking tile shrinks its glyph. Row to hint gap 20px; title to hint 10px.
 - **Colour / typography**: unchanged — `--canvas` fill, `--divider` border, `--head-ink` glyph, `--ink` on
@@ -118,13 +120,17 @@ None. The change is presentational; no model, view signature or stored value cha
   3px offset; the row has no disabled or loading state; empty is the state being specified.
 - **Motion**: none added; the tile's border/background transition is the existing `--ease` one.
 - **Responsive**: above 300px of reading column the row is five tiles that shrink together; at or below
-  300px it becomes three and two at full 52px. Measured: 1440×900 → 52px × 5 in one row, equal 318.6px
-  gaps; 1280×800 → 52px 3+2, equal gaps; 1024×700 → 52px 3+2, equal gaps; 390×844 → 52px 3+2, equal gaps.
+  300px it becomes three and two at full 52px. Measured at 1440×900: tiles 52px × 5 in one row, block centre
+  26.2% of the reading area, top 132.8px clear of the header; 1280×800: 52px 3+2, 26.5%, 31.4px clear;
+  1024×700: 52px 3+2, 29.9%, 12.0px clear (the half row collapses to the block); 390×844: 52px 3+2, 26.2%,
+  80.7px clear.
 
 ## Assumptions
 
-- *"Centred on the page"* means centred in the reading area the header leaves, not in the whole window —
-  the header is furniture at the top of the page, and centring through it would crowd the date.
+- *"First quarter of the height"* means the quarter mark of the reading area the header leaves, not of the
+  whole window — the header is furniture at the top of the page, and the same assumption the centring version
+  was accepted under. On a 1440×900 window that puts the block's top 253px down (28% of the window) and its
+  centre at 36% of the window.
 - The tile size is 52px, the same height as a service entry box in this pane, rather than a new number.
 - Five tiles at 52px need 300px of reading column; below that, three and two at full size is better than
   five that are too small to hit — hence the container query rather than shrink-only.
@@ -140,3 +146,27 @@ None. The change is presentational; no model, view signature or stored value cha
   numbers in `UI/UX` measure that area, so the other reading is one rule away if the owner prefers it.
 - Q: Does `Add Media` get a glyph, having never had one? → *Assumed* yes; an icon-only row cannot leave a
   blank tile.
+
+### Revision 1 — 2026-10-25, after gate 2
+
+The owner accepted the pack and then moved the placement: **from the middle of the reading area to its
+quarter mark.** What changed, and only this:
+
+| Artifact | Was | Now |
+| --- | --- | --- |
+| FR-001 | block centred, gaps above and below equal within 2px | block's centre a quarter of the way down the body, within 12px, never over the header |
+| SC-001 | equal gaps at four sizes | centre within 12px of the quarter mark at four sizes; header never overlapped |
+| US1 | "centred in the reading area" | "sits in the first quarter of the reading area" |
+| `components.css` | body was a flex box centring the block | body is a grid whose first row is half the body (capped at the block's own height), with a 12px top pad |
+| `tests/e2e/test_entries.py` | `…_centres_a_row_of_square_icon_buttons`, equal gaps ±2px | `…_places_its_tiles_a_quarter_of_the_way_down`, quarter mark ±12px and clear of the header |
+| `docs/spec/reading.md` R6 | "centred vertically … equal space above and below" | "its centre a quarter of the way down that area" |
+
+Unchanged: the five tiles, their size, order, names, the media glyph, the narrow-column 3+2 rule and every
+renderer rule.
+
+The requirement is **R6**, not R4: on rebasing onto `develop` the hymn-separator slice (128) had already taken
+`reading/R4` and `R5`, so this one moved down the list and every reference moved with it.
+
+The reason the half row is capped at the block's height: at 1024×700 the block is 278px tall
+and half the body is 252px, so an uncapped row pushed the block 12.7px back over the header; measured after
+the fix, that size clears the header by 12px.

@@ -30,3 +30,13 @@ recorded as an assumption in `spec.md`.
 No code changed in response to pass 1 except the test-side additions noted above (the rebuild assertions in
 `test_editing_an_entry_and_deleting_it_after_a_confirmation`); pass 2 re-read the table and found no new gap.
 Converged with G1 accepted as an open report, not a silent gap.
+
+## Pass 3 — after gate 2, the owner's revision
+
+The accepted placement (middle of the reading area, equal gaps) was replaced by the quarter mark: an
+`unrequested` change had it stayed unrecorded, so it is recorded instead. Code (`grid-template-rows:
+minmax(min-content, 50%)` with a 12px floor pad, replacing the flex centring), the E2E test, FR-001, SC-001,
+US1, §UI/UX, `quickstart.md`, R6 and the changelog line moved together; the spec carries the delta as
+Revision 1. Re-assessed after the change: no new gap, and the 1024×700 overlap that the first attempt
+introduced was found and fixed in the same pass (12px clear instead of 12.7px over). Still converged with G1
+accepted.

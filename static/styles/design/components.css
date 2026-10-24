@@ -2185,10 +2185,11 @@ kbd {
   text-align: center;
 }
 /* the article takes the stage's height and the body takes the rest of it, so
-   the empty block centres in the space the header left rather than in the
-   viewport (the header is furniture, not part of the invitation). Both margins
-   come off: they are the page's header-to-content gap, and here they would only
-   bias the centre downwards. */
+   the empty block has somewhere to sit that is not the top of the column (the
+   header is furniture, not part of the invitation). Its centre lands a quarter
+   of the way down that body, not halfway: the band it centres in is the body's
+   first half. Both margins come off — they are the page's header-to-content
+   gap, and here they would only bias the centre downwards. */
 .read[data-kind="tatib"]:has(.entry__empty) {
   display: flex;
   flex-direction: column;
@@ -2196,11 +2197,16 @@ kbd {
 }
 .read[data-kind="tatib"]:has(.entry__empty) .read__head { margin-bottom: 0; }
 .read[data-kind="tatib"] .read__body:has(> .entry__empty) {
-  display: flex;
-  flex: 1;
+  display: grid;
+  /* centred in here = the quarter mark; `min-content` keeps the band from being
+     shorter than the block, which at 1024×700 pushed it back over the header */
+  grid-template-rows: minmax(min-content, 50%);
+  align-content: start;
   align-items: center;
-  justify-content: center;
+  justify-items: center;
+  flex: 1;
   margin-top: 0;
+  padding-top: 12px;      /* a floor for the band's collapsed case: never flush */
   padding-bottom: 0;      /* nothing follows the empty block to hold a gap for */
   container-type: inline-size;   /* the tile row sizes against the column, not the window */
 }

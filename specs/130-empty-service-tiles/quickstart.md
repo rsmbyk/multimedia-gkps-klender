@@ -18,18 +18,21 @@ no-regression check: `/tatib/144/`.
 .venv/bin/python specs/130-empty-service-tiles/preview/probe_empty_stage.py http://127.0.0.1:8802/tatib/145/
 ```
 
-It opens 1440×900, 1280×800, 1024×700 and 390×844 and prints, per size: the gap between the header's bottom
-edge and the block, the gap between the block and the bottom of the window, whether the five tiles share one
-`y`, whether each is square, and the smallest tile's side.
+It opens 1440×900, 1280×800, 1024×700 and 390×844 and prints, per size: where the block's centre sits in the
+reading area, how far its top clears the header, whether the five tiles share one `y`, whether each is square,
+and the smallest tile's side.
 
 Expected on the branch:
 
-| Viewport | Gaps above / below | Tiles |
-| --- | --- | --- |
-| 1440×900 | 318.6 / 318.7 | 5 × 52px, one row |
-| 1280×800 | equal | 52px, 3 + 2 |
-| 1024×700 | equal | 52px, 3 + 2 |
-| 390×844 | equal | 52px, 3 + 2 |
+| Viewport | Block centre | Clear of header | Tiles |
+| --- | --- | --- | --- |
+| 1440×900 | 26.2% of the area | 132.8px | 5 × 52px, one row |
+| 1280×800 | 26.5% | 31.4px | 52px, 3 + 2 |
+| 1024×700 | 29.9% | 12.0px | 52px, 3 + 2 |
+| 390×844 | 26.2% | 80.7px | 52px, 3 + 2 |
+
+The quarter mark is 25%; the few points over are the 12px floor pad the body carries so the block never sits
+flush under the header when the half-height band collapses to the block's own size.
 
 ## Existing behaviour that must not move
 

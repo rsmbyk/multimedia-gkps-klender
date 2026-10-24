@@ -39,16 +39,17 @@ MEASURE = """
 def report(label, data, layout_only):
     header, body, empty, tiles = (data["header"], data["body"], data["empty"], data["tiles"])
     if not layout_only and empty:
-        above = empty["top"] - header["bottom"]
-        below = data["viewportHeight"] - empty["bottom"]
+        centre = (empty["top"] + empty["bottom"]) / 2
+        fraction = (centre - body["top"]) / body["height"] if body["height"] else 0
+        clear = empty["top"] - header["bottom"]
         rows = [round(tile["y"], 1) for tile in tiles]
         arrangement = "one row" if len(set(rows)) == 1 else (
             " + ".join(str(rows.count(y)) for y in dict.fromkeys(rows)))
         squares = all(abs(tile["width"] - tile["height"]) < 1 for tile in tiles)
         smallest = min(min(tile["width"], tile["height"]) for tile in tiles)
-        print(f'{label}: gap above {above:.1f}px / below {below:.1f}px '
-              f'(diff {abs(above - below):.1f}) · {len(tiles)} tiles · '
-              f'{arrangement} · square {squares} · smallest {smallest:.1f}px · '
+        print(f'{label}: centre {fraction * 100:.1f}% of the reading area (quarter = 25%) · '
+              f'clear of header {clear:.1f}px · {len(tiles)} tiles · {arrangement} · '
+              f'square {squares} · smallest {smallest:.1f}px · '
               f'labels {[tile["label"] for tile in tiles]}')
         return
     print(f'{label}: header {header["height"]:.1f}px mb={header["marginBottom"]} · '

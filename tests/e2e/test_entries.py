@@ -437,7 +437,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         self._close_browser()
         self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.empty).count(), 1)
 
-    def test_an_empty_service_centres_a_row_of_square_icon_buttons(self):
+    def test_an_empty_service_places_its_tiles_a_quarter_of_the_way_down(self):
         page = self._page(reverse('web-tatib-service', args=[self.empty.pk]))
 
         boxes = page.locator('.entry__empty-btn').evaluate_all(
@@ -463,12 +463,18 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
             self.assertLessEqual(button.locator('.sr').evaluate(
                 'span => span.getBoundingClientRect().width'), 1)
 
-        # centred in the reading area the header left, not stacked under it
+        # the block sits a quarter of the way down the reading area the header
+        # left — not the middle, and never back over the header
         geometry = page.evaluate(
             """() => {
               const box = (sel) => document.querySelector(sel).getBoundingClientRect();
-              return {above: box('.entry__empty').top - box('.read__head').bottom,
-                      below: innerHeight - box('.entry__empty').bottom};
+              const body = box('#readBody'), empty = box('.entry__empty');
+              return {clearOfHeader: empty.top - box('.read__head').bottom,
+                      centreIntoBody: (empty.top + empty.bottom) / 2 - body.top,
+                      bodyHeight: body.height};
             }""")
-        self.assertLessEqual(abs(geometry['above'] - geometry['below']), 2)
+        self.assertGreater(geometry['clearOfHeader'], 0, 'the block never overlaps the header')
+        self.assertLessEqual(
+            abs(geometry['centreIntoBody'] - geometry['bodyHeight'] / 4), 12,
+            'the block centres on the quarter mark of the reading area')
         self._close_browser()

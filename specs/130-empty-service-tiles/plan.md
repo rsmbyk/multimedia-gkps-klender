@@ -47,14 +47,14 @@ See `research.md`. **Unknowns remaining: 0.**
 
 | Requirement | Component / file | Verified by | Notes |
 | --- | --- | --- | --- |
-| FR-001 | `static/styles/design/components.css` (`.read[data-kind="tatib"]:has(.entry__empty)`) | `test` → `tests/e2e/test_entries.py::EntryModalE2ETests::test_an_empty_service_centres_a_row_of_square_icon_buttons` | equal gaps ±2px at 1440×900 |
+| FR-001 | `static/styles/design/components.css` (`.read[data-kind="tatib"]:has(.entry__empty)`) | `test` → `tests/e2e/test_entries.py::EntryModalE2ETests::test_an_empty_service_places_its_tiles_a_quarter_of_the_way_down` | block centre within 12px of the quarter mark at 1440×900 |
 | FR-002 | `static/styles/design/components.css` (`.entry__empty-actions`, `.entry__empty-btn`) | `test` → same test | five tiles, one row, square, ≥44px |
 | FR-003 | `multimedia/web/templates/reading/tatib.html` | `test` → same test | `title` + `.sr` span per tile |
 | FR-004 | `multimedia/web/templates/reading/tatib.html`, `static/web/*.js` | `test` → `tests/e2e/test_saved_render_parity.py` (`icon_count` 5) | media glyph added |
 | FR-005 | `static/styles/design/components.css` (`@container (max-width: 300px)`) | `inspection` — open at 1280×800 and 1024×700 | 3+2 at 52px |
 | FR-006 | `static/web/offline-render.js`, `static/web/entries.js` | `test` → `tests/e2e/test_saved_render_parity.py` | labels, glyphs and size compared |
 | FR-007 | the same stylesheet rules, all scoped | `inspection` — service 144 before/after | header 30px margin and body 8px margin unchanged |
-| US1/AC1–2 | measurement | `inspection` — `quickstart.md` probe at four viewports | gaps 318.6/318.7 etc. |
+| US1/AC1–2 | measurement | `inspection` — `quickstart.md` probe at four viewports | block centre 26.2% of the reading area at 1440×900, clear of the header at all four |
 | SC-003 | `.entry__empty-btn` width fallback | `test` → the 44px floor in the same test at 1440×900 | narrow case inspected |
 
 **Verification split**: 5 test · 4 inspection · 0 manual
@@ -85,7 +85,7 @@ static/web/entries.js                         emptyAddButton() — the post-dele
 static/styles/design/components.css           the centred block and the tile row
 tests/e2e/test_entries.py                     the block's geometry and the tile row
 tests/e2e/test_saved_render_parity.py         five glyphs, and tiles compared by content
-docs/spec/reading.md                          R4
+docs/spec/reading.md                          R6
 ```
 
 ### Structure Decision
