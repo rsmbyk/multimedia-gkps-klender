@@ -2012,6 +2012,9 @@
   scheduleIdleCollapse();
   decorateChapters();
   markRailTile();
+  /* The markup ships #panelEmpty hidden; run the filter once so a first load
+     with no visible rows shows the empty view (spec 128, FR-008). */
+  applyFilter('');
   revealCurrent(stageAnchor() || anchorFromUrl(window.location.hash));
   updateChInds();
   window.requestAnimationFrame(updateChInds);

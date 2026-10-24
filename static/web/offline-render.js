@@ -80,10 +80,30 @@
         + ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
         + '<path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg></button>' : '') + '</li>';
   }
-  function sortedSongbooks(books) {
-    return books.slice().sort(function (a, b) {
-      return b.songs.length - a.songs.length || a.name.localeCompare(b.name);
+  function songbookNameKey(name) {
+    return normalized(name);
+  }
+  function bySongbookName(a, b) {
+    var ka = songbookNameKey(a.name), kb = songbookNameKey(b.name);
+    if (ka < kb) return -1;
+    if (ka > kb) return 1;
+    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+  }
+  function songbookGroups(books) {
+    var hymns = books.filter(function (book) { return book.is_hymn_book; });
+    var ordinary = books.filter(function (book) { return !book.is_hymn_book; });
+    hymns.sort(function (a, b) {
+      return b.songs.length - a.songs.length || bySongbookName(a, b);
     });
+    ordinary.sort(bySongbookName);
+    return [hymns, ordinary].filter(function (group) { return group.length; });
+  }
+  function songbooksPanel(books, selectedId, editor) {
+    return songbookGroups(books).map(function (group) {
+      return '<section class="group"><ul>' + group.map(function (item) {
+        return bookLink(item, item.id === selectedId, 'songs', editor);
+      }).join('') + '</ul></section>';
+    }).join('');
   }
   function biblePanel(books, selectedId, edition) {
     edition = edition === 'sim' ? 'sim' : 'tb';
@@ -421,9 +441,7 @@
     var citation = book.is_hymn_book ? ((book.short_name || book.name)
       + (song.number != null ? ' ' + song.number + (song.sub_number || '').toUpperCase() : ''))
       : book.name;
-    var panel = '<section class="group"><ul>' + sortedSongbooks(books).map(function (item) {
-      return bookLink(item, item.id === book.id, 'songs', !!doc.querySelector('#editorModal'));
-    }).join('') + '</ul></section>';
+    var panel = songbooksPanel(books, book.id, !!doc.querySelector('#editorModal'));
     var editor = !!doc.querySelector('#editorModal') && !book.is_hymn_book;
     var children = book.songs.map(function (item, index) {
       var number = book.is_hymn_book && item.number != null
@@ -820,10 +838,7 @@
     var mode = target.url.searchParams.get('mode') === 'template' ? 'template' : 'dated';
     var panel = section === 'tatib' ? servicePanel(collection, null, mode, editor)
       : section === 'alkitab' ? biblePanel(collection, selected && selected.id)
-      : '<section class="group"><ul>' + sortedSongbooks(collection).map(function (item) {
-        return bookLink(item, selected && item.id === selected.id,
-          section === 'alkitab' ? 'bible' : 'songs', editor);
-      }).join('') + '</ul></section>';
+      : songbooksPanel(collection, selected && selected.id, editor);
     doc.querySelector('#panelBody').innerHTML = panel;
     doc.querySelector('#panelEmpty').textContent = section === 'alkitab' ? 'No matching books.'
       : section === 'kidung' ? 'No matching songbooks.' : 'No matching Tata Ibadah.';

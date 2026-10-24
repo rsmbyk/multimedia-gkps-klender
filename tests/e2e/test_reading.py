@@ -188,6 +188,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=4,
                 text='Keep this\n\nSkip this')
 
+        if self._testMethodName == 'test_the_panel_shows_its_empty_view_when_no_songbook_exists':
+            songs.Book.objects.all().update(is_deleted=True)
+
         if self._testMethodName == 'test_tatib_stage_entry_links_follow_the_theme':
             theme_song = songs.Song.objects.create(
                 book=self.book, number=99, title='Nyanyian Tema')
@@ -1886,6 +1889,59 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertGreater(resumed, 100, f'the result set was not resumed at an offset: {resumed}')
         self.assertLessEqual(resumed, offset)
         self.assertGreaterEqual(resumed, offset - 60, f'resumed far from the remembered offset: {resumed} vs {offset}')
+
+    def test_the_songbook_panel_draws_one_divider_between_the_groups(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-books'))
+
+        groups = page.locator('#panelBody .group')
+        expect(groups).to_have_count(2)
+        expect(page.locator('#panelBody .group__head')).to_have_count(0)
+        self.assertEqual(groups.nth(0).locator('a.book .book__n').first.text_content(),
+                         'Nyanyikanlah Kidung Baru')
+        self.assertEqual(groups.nth(1).locator('a.book .book__n').first.text_content(),
+                         'Kidung Harian')
+        open_box = groups.nth(1).evaluate(
+            "el => { const s = getComputedStyle(el);"
+            " return [s.borderTopWidth, s.marginTop, s.paddingTop]; }")
+        self.assertEqual(open_box, ['2px', '10px', '10px'])
+
+    def test_filtering_the_hymn_group_away_takes_the_divider(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-books'))
+
+        page.fill('#bookFilter', 'harian')
+        expect(page.locator('#panelBody .group:not(.is-hidden) li:not(.is-hidden) a.book')).to_have_count(1)
+        self.assertTrue(page.locator('#panelBody .group').first.evaluate(
+            "el => el.classList.contains('is-hidden')"))
+        surviving = page.locator('#panelBody .group:not(.is-hidden)')
+        expect(surviving).to_have_count(1)
+        box = surviving.evaluate(
+            "el => { const s = getComputedStyle(el);"
+            " return [s.borderTopWidth, s.marginTop, s.paddingTop]; }")
+        self.assertEqual(box, ['0px', '0px', '0px'])
+
+    def test_filtering_both_groups_keeps_the_divider_between_them(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-books'))
+
+        page.fill('#bookFilter', 'kidung')
+        expect(page.locator('#panelBody .group:not(.is-hidden) li:not(.is-hidden) a.book')).to_have_count(2)
+        surviving = page.locator('#panelBody .group:not(.is-hidden)')
+        expect(surviving).to_have_count(2)
+        box = surviving.nth(1).evaluate(
+            "el => { const s = getComputedStyle(el);"
+            " return [s.borderTopWidth, s.marginTop, s.paddingTop]; }")
+        self.assertEqual(box, ['2px', '10px', '10px'])
+
+    def test_the_panel_shows_its_empty_view_when_no_songbook_exists(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-books'))
+
+        expect(page.locator('#panelBody .group')).to_have_count(0)
+        expect(page.locator('#panelEmpty')).to_be_visible()
+        self.assertEqual(page.locator('#panelEmpty').text_content().strip(),
+                         'No matching songbooks.')
 
 
 @tag('e2e')

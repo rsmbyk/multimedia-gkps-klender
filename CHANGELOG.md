@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The Kidung sidebar now reads its hymn songbooks first — Haleluya, Kidung Jemaat, Pelengkap Kidung Jemaat, Nyanyikanlah Kidung Baru — then one divider, then the ordinary songbooks A–Z, with no heading on either side. A group the filter empties takes the divider with it, and a saved Kidung page draws the same two groups, so the list does not reorder when the online page arrives.
 - Every reading page's browser tab now names the site `Multimedia GKPS Klender`, the name the rest of the application already uses, and the index's tab stops there: the search-first landing's tab reads `Multimedia GKPS Klender` instead of trailing the tagline the tab strip truncated anyway. A reading page keeps its leading text — `1 Musa 1`, `PKJ 4`, a service's name, `Results for “…”`, `Media Library` — and appends the name; the saved copy and an in-place Bible edition switch write the same titles, so a tab never renames itself mid-session. The page's own heading, the search field's label and the logo's alt text keep the congregation name `GKPS Klender`.
 
 ### Fixed
