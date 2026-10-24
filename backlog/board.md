@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-124](./items/ITEM-124-tatib-date-header-parity.md) | Match the Tata Ibadah date header to the songbook header | Restore the shared eyebrow style for a service date; let the row wrap instead of shrinking it | fix | P1 | S | [123](../specs/123-tatib-date-header-parity/spec.md) | `fix/123-tatib-date-header-parity` | 2026-10-24 |
 
 ## In review
 

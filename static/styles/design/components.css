@@ -2544,10 +2544,10 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 .media-handoff__retry { color: var(--head-ink); font-size: 22px; }
 .read[data-kind="tatib"] .read__project { flex-wrap: nowrap; flex: none; }
 .read[data-kind="tatib"] .read__project-btn { white-space: nowrap; }
-.read[data-kind="tatib"] .read__head-top .read__eyebrow { font-size: 11px; letter-spacing: .08em; white-space: nowrap; }
+.read[data-kind="tatib"] .read__head-top .read__eyebrow { white-space: nowrap; }
+.read[data-kind="tatib"] .read__head-top { flex-wrap: wrap; row-gap: 8px; }
 .read[data-kind="tatib"] .read__project-btn { padding-inline: 10px; }
 @media (max-width: 600px) {
-  .read[data-kind="tatib"] .read__head-top { flex-wrap: wrap; }
   .read[data-kind="tatib"] .read__project { max-width: 100%; }
 }
 .media-transfer-rail #mediaTransferRailIcon svg { width: 22px; height: 22px; display: block; }
