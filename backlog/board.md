@@ -49,7 +49,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-118](./items/ITEM-118-powerpoint-media-display.md) | Display PowerPoint slides in Preview and projector | Keep the original PPT/PPTX; present static slides through a local display copy | feat | P1 | L | [118](../specs/118-powerpoint-media-display/spec.md) | [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) | 2026-10-20 |
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
-| [ITEM-123](./items/ITEM-123-project-process.md) | Declare the project process and conventions | Write down what the repo uses and its one convention; retire the old process copies, add the process templates, and remove CI | chore | P1 | M | — | [#371](https://github.com/rsmbyk/multimedia-gkps-klender/pull/371) | 2026-10-23 |
 
 ## Done
 
@@ -156,6 +155,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-116](./items/ITEM-116-video-media-display.md) | Display Video entries in Preview and projector | Preview and project verified local video in service order | feat | P1 | M | [116](../specs/116-video-media-display/spec.md) | develop via [#364](https://github.com/rsmbyk/multimedia-gkps-klender/pull/364) | 2026-10-19 |
 | [ITEM-119](./items/ITEM-119-consistent-reading-navigation.md) | Keep public reading navigation consistent with current and saved data | Online clicks settle on current data; saved views keep canonical order | fix | P1 | M | [119](../specs/119-consistent-reading-navigation/spec.md) | develop via [#368](https://github.com/rsmbyk/multimedia-gkps-klender/pull/368) | 2026-10-21 |
 | [ITEM-120](./items/ITEM-120-projector-goto-freshness.md) | Refresh projector Go To data while online | Current suggestions without reload; saved offline lookup remains | fix | P1 | M | [120](../specs/120-projector-goto-freshness/spec.md) | develop via [#369](https://github.com/rsmbyk/multimedia-gkps-klender/pull/369) | 2026-10-21 |
+| [ITEM-123](./items/ITEM-123-project-process.md) | Declare the project process and conventions | Write down what the repo uses and its one convention; retire the old process copies, add the process templates, and remove CI | chore | P1 | M | — | develop via [#371](https://github.com/rsmbyk/multimedia-gkps-klender/pull/371) | 2026-10-23 |
 
 ## Archive
 

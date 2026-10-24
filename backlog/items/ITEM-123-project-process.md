@@ -1,6 +1,6 @@
 ---
 id: ITEM-123
-status: in-review
+status: done
 title: Declare the project process and conventions
 type: chore
 priority: P1
