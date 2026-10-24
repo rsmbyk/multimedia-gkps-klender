@@ -3,7 +3,8 @@
 **Slice**: `specs/130-empty-service-tiles`
 **Branch**: `fix/130-empty-service-stage`
 **Created**: 2026-10-25
-**Status**: Draft — owner review at gate 1 awaited
+**Status**: Accepted (owner, gate 1, 2026-10-25; the spec, plan, tasks and analysis pack accepted at
+gate 2 the same day)
 **Input**: "center the empty tata ibadah view (and the buttons) vertically on the page. also replace the
 buttons to be a square icon-only without texts and arranged horizontally" (sent with a screenshot of an
 empty `25 OKTOBER 2026` service whose five add actions sit as a full-width column under the heading, near
