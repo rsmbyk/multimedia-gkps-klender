@@ -30,7 +30,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-131](./items/ITEM-131-songbook-hymn-separator.md) | Separate the hymn songbooks from the rest of the Kidung panel | Hymn books first, one divider, the ordinary songbooks A–Z, no headings | feat | P2 | S | [128](../specs/128-songbook-hymn-separator/spec.md) | [#380](https://github.com/rsmbyk/multimedia-gkps-klender/pull/380) | 2026-10-24 |
+
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-017](./items/ITEM-017-tatib-form-fields.md) | Remove first-section and active controls from Tata Ibadah forms | Create empty active services and preserve activation on edit | fix | P1 | S | [015](../specs/015-tatib-form-fields/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -163,6 +163,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-127](./items/ITEM-127-songbook-short-header.md) | Cite a song page's songbook by its short name | Show `PKJ 4` in the song header and the tab, mirror it in the saved render, and start `docs/spec/reading.md` | fix | P2 | S | [126](../specs/126-songbook-short-header/spec.md) | develop via [#375](https://github.com/rsmbyk/multimedia-gkps-klender/pull/375) | 2026-10-24 |
 | [ITEM-130](./items/ITEM-130-vex-process.md) | Follow the Vex process grammar from memory | Generate `docs/PROCESS.md` from the grammar's rule index; keep the repo's conventions in `repo:` blocks | chore | P2 | S | — | develop via [#379](https://github.com/rsmbyk/multimedia-gkps-klender/pull/379) | 2026-10-24 |
 | [ITEM-129](./items/ITEM-129-site-name-tab.md) | Name the site in the tab, and stop the index tab at the name | Reading tabs say `Multimedia GKPS Klender`; the index's tab is the name alone | fix | P2 | S | [127](../specs/127-site-name-tab/spec.md) | develop via [#378](https://github.com/rsmbyk/multimedia-gkps-klender/pull/378) | 2026-10-24 |
+| [ITEM-131](./items/ITEM-131-songbook-hymn-separator.md) | Separate the hymn songbooks from the rest of the Kidung panel | Hymn books first, one divider, the ordinary songbooks A–Z, no headings | feat | P2 | S | [128](../specs/128-songbook-hymn-separator/spec.md) | develop via [#380](https://github.com/rsmbyk/multimedia-gkps-klender/pull/380) | 2026-10-25 |
 
 ## Archive
 
