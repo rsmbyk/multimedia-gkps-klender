@@ -1,6 +1,6 @@
 ---
 id: ITEM-129
-status: in-progress
+status: in-review
 title: Follow the Vex process grammar from memory
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-24
 updated: 2026-10-24
 spec:
 branch: docs/vex-process
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/379
 issue:
 closed_at:
 closed_reason:
