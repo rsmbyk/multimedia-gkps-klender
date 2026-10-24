@@ -257,6 +257,13 @@ class ReadingViewTests(TestCase):
 
         self.assertEqual(groups, [['buku ende', 'Kidung Harian', 'Zebra']])
 
+    def test_songbook_panel_omits_the_separator_when_only_hymn_books_have_rows(self):
+        songs.Book.objects.filter(is_hymn_book=False).update(is_deleted=True)
+
+        groups = self.panel_groups(self.client.get(reverse('web-books')))
+
+        self.assertEqual(groups, [['Haleluya', 'Nyanyikanlah Kidung Baru']])
+
     def test_songbook_panel_marks_the_current_row_in_either_group(self):
         response = self.client.get(reverse('web-book', args=[self.harian.pk]))
 

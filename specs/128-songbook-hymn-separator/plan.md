@@ -45,20 +45,22 @@ See `research.md`. **Unknowns remaining: 0.**
 | FR-002 | `views.py` — `_songbook_name_key()`, the two sorts | `test` → `…::test_songbook_panel_orders_ordinary_songbooks_by_folded_name` and `…::test_songbook_panel_keeps_the_hymn_order_by_song_count` | folded key + original-name tiebreak |
 | FR-003 | `multimedia/web/templates/reading/_songbooks_panel.html` + `static/styles/design/components.css` (`.group + .group`) | `test` → `tests/e2e/test_reading.py::ReadingE2ETests::test_the_songbook_panel_draws_one_divider_between_the_groups` | measured `2px`, `10px`/`10px` |
 | FR-004 | `_songbooks_panel.html` | `test` → `multimedia/web/tests.py::ReadingViewTests::test_songbook_panel_has_no_group_heading` | no `group__head` in `#panelBody` |
-| FR-005 | `views.py` (empty group skipped) + `components.css` (`.group.is-hidden + .group`) | `test` → `…::test_songbook_panel_omits_the_separator_when_only_one_group_has_rows` · `tests/e2e/test_reading.py::ReadingE2ETests::test_filtering_the_hymn_group_away_takes_the_divider` | both sides |
+| FR-005 | `views.py` (empty group skipped) + `components.css` (`.group.is-hidden + .group`) | `test` → `…::test_songbook_panel_omits_the_separator_when_only_one_group_has_rows` · `…::test_songbook_panel_omits_the_separator_when_only_hymn_books_have_rows` · `tests/e2e/test_reading.py::ReadingE2ETests::test_filtering_the_hymn_group_away_takes_the_divider` · `…::test_filtering_both_groups_keeps_the_divider_between_them` | both groups, data and filter |
 | FR-006 | `views.py` three views · `_songbooks_panel.html` | `test` → `…::test_songbook_panel_marks_the_current_row_in_either_group` · `…::test_song_detail_and_book_detail_panels_use_the_same_groups` | `aria-current`, row-edit untouched |
 | FR-007 | `static/web/offline-render.js` — `songbookGroups()`, `songbooksPanel()` | `test` → `tests/e2e/test_saved_render_parity.py::SavedRenderParityTests::test_saved_songbook_panel_matches_the_server_grouping` | same keys, same order |
+| FR-008 | `static/web/reading.js` — `applyFilter('')` in init | `test` → `tests/e2e/test_reading.py::ReadingE2ETests::test_the_panel_shows_its_empty_view_when_no_songbook_exists` | the markup ships `#panelEmpty` hidden; init reconciles it |
 | SC-001 | the running panel | `manual` — open `/songs/` and read the column | preview screenshot in `preview/panel-open-1600x1000.png` |
 | SC-002 | `_songbooks_panel.html` | `test` → FR-004's assertion | markup inspection |
 | SC-003 | `components.css` | `test` → FR-003's E2E measurement | computed style, not declaration |
 | SC-004 | `views.py` sort | `test` → FR-002's fixture with mixed-case names | `Buku Ende HKBP` sorts under `b` |
 | SC-005 | `offline-render.js` + `tests/e2e/test_saved_render_parity.py` | `test` → FR-007's parity test | saved vs server |
 | SC-006 | `tests/e2e/test_reading.py`, `multimedia/web/tests.py` | `inspection` — the existing Kidung assertions re-run unchanged | row height `38px`, gap `1px` |
+| SC-007 | `reading.js` init | `test` → FR-008's assertion | `#panelEmpty` visible, zero `.group` |
 | US1/AC1–AC4 | panel markup + `components.css` | `test` → FR-001, FR-003, FR-004 rows | one rule, no heading, both modes |
 | US2/AC1–AC4 | `views.py` sorts + `components.css` | `test` → FR-002, FR-005 rows | includes the empty-group case |
 | US3/AC1–AC2 | three views + `offline-render.js` | `test` → FR-006, FR-007 rows | parity |
 
-**Verification split**: 12 test · 2 inspection · 1 manual
+**Verification split**: 16 test · 1 inspection · 1 manual
 
 ## Complexity Tracking
 
@@ -83,6 +85,7 @@ multimedia/web/reading/views.py                     _songbook_name_key, _songboo
 multimedia/web/templates/reading/_songbooks_panel.html   group loop
 static/web/offline-render.js                        songbookGroups, songbooksPanel, 2 call sites
 static/styles/design/components.css                 .group.is-hidden + .group
+static/web/reading.js                               applyFilter('') at init — the empty view on first load
 multimedia/web/tests.py                             ReadingViewTests
 tests/e2e/test_reading.py                           ReadingE2ETests
 tests/e2e/test_saved_render_parity.py               SavedRenderParityTests

@@ -1,7 +1,7 @@
 # Convergence: Hymn songbooks above a single separator, the rest A–Z
 
 **Spec**: `specs/128-songbook-hymn-separator/spec.md`
-**Passes**: 2 of 3
+**Passes**: 3 of 3
 
 ## Pass 1 — 2026-10-24
 
@@ -24,6 +24,17 @@ Re-ran the traceability rows against the code: every FR has its component and it
 two saved-render call sites share one builder on each side, and the existing reading assertions are unchanged.
 
 **Outcome**: Converged — nothing remains.
+
+## Pass 3 — 2026-10-25
+
+Review of PR #380 re-ran the edge rows against the code and the suite.
+
+| Gap | Type | Requirement | Evidence |
+| --- | --- | --- | --- |
+| FR-005's ordinary side (no ordinary songbook exists) and the both-groups-filtered edge case were implemented but carried no test — both held only by construction. | `partial` | FR-005 · Edge case (both groups matched) | `multimedia/web/tests.py::ReadingViewTests::test_songbook_panel_omits_the_separator_when_only_hymn_books_have_rows` · `tests/e2e/test_reading.py::ReadingE2ETests::test_filtering_both_groups_keeps_the_divider_between_them` |
+| The empty view stayed hidden on a first load with no songbooks — a blank panel where the owner requires the empty view. | `missing` | FR-008 (owner, in review) | `static/web/reading.js` init runs `applyFilter('')` · `tests/e2e/test_reading.py::ReadingE2ETests::test_the_panel_shows_its_empty_view_when_no_songbook_exists` |
+
+**Outcome**: Converged — both coverage gaps pinned by tests; the empty view fixed and recorded as FR-008 / SC-007.
 
 ## Accepted gaps
 

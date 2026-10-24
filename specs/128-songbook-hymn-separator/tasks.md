@@ -2,7 +2,7 @@
 
 **Spec**: `specs/128-songbook-hymn-separator/spec.md`
 **Plan**: `specs/128-songbook-hymn-separator/plan.md`
-**Verification split**: 12 test · 2 inspection · 1 manual
+**Verification split**: 16 test · 1 inspection · 1 manual
 
 ## Phase 1 — Setup
 
@@ -48,6 +48,12 @@
 - [X] T016 Create `backlog/items/ITEM-131-songbook-hymn-separator.md` from the card template and add its row to `backlog/board.md` (In review with the PR; Done before the merge).
 - [X] T017 Bump `VERSION` to `1.20.6` and add the `CHANGELOG.md` line under `## [Unreleased]`.
 - [X] T018 Re-run the three targeted modules over the unchanged existing assertions (`inspection` row SC-006).
+
+## Phase 6b — Review follow-up (PR #380, 2026-10-25)
+
+- [X] T019 [P] Write the failing E2E test `test_the_panel_shows_its_empty_view_when_no_songbook_exists` in `tests/e2e/test_reading.py` (red: `#panelEmpty` ships with `hidden` and init never runs the filter, so an empty database shows a blank panel).
+- [X] T020 Run `applyFilter('')` in `static/web/reading.js`'s init so the first load reconciles the empty view with the markup (green T019).
+- [X] T021 [P] Pin the two spec-owned cases the suite left uncovered: `test_songbook_panel_omits_the_separator_when_only_hymn_books_have_rows` in `multimedia/web/tests.py` (FR-005's ordinary side, data half) and `test_filtering_both_groups_keeps_the_divider_between_them` in `tests/e2e/test_reading.py` (the both-groups-filtered edge case).
 
 ## Phase 7 — Convergence
 

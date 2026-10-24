@@ -61,6 +61,8 @@ routes from the synced library: each shows the same two groups in the same order
 - **When** the filter leaves the hymn group with no rows **Then** the separator is not drawn.
 - **When** two names fold to the same key (`Lagu Setelah persembahan` / `Lagu setelah persembahan`) **Then** the tie is broken by the original name, ordinally, so the order is the same in SQLite and PostgreSQL.
 - **When** a songbook is deleted **Then** it leaves its group, and a group that empties out draws no separator.
+- **When** no songbook exists at all, or the filter matches no row in either group **Then** the panel shows its
+  empty view; if either group still has rows, only that group shows — no separator, no empty view.
 
 ## Requirements
 
@@ -75,6 +77,7 @@ routes from the synced library: each shows the same two groups in the same order
 | FR-005 | A group with no rows — because no songbook of that kind exists, or because the panel filter emptied it — draws no separator. | `new: reading/R4` |
 | FR-006 | The grouping and order are the same on the Kidung index, a songbook page and a song page, and `aria-current` and the per-row edit button are unchanged. | `new: reading/R4` |
 | FR-007 | A reading page rendered from the saved library draws the same two groups in the same order, using the same sort keys as the server. | `new: reading/R5` |
+| FR-008 | The panel shows its empty view whenever no row is visible — on a first load where no songbook exists, as well as after the filter empties both groups. While one group still has rows, only that group shows: no separator and no empty view. | `new: reading/R4` |
 
 ### Key Entities
 
@@ -92,6 +95,7 @@ routes from the synced library: each shows the same two groups in the same order
 | SC-004 | Ordinary songbooks read A–Z regardless of case | the ordinary group's rendered order equals the folded alphabetical order of the fixture names |
 | SC-005 | The saved copy agrees with the server | saved-versus-server parity check over the three routes: same group count and same row order |
 | SC-006 | Nothing else changed | the existing reading unit and browser assertions still pass; row height stays `38px` and the row gap `1px` |
+| SC-007 | An empty panel says so on first load | open `/songs/` with no songbook in the database: zero `.group` in `#panelBody` and `#panelEmpty` visible with "No matching songbooks." |
 
 ## UI/UX
 
@@ -101,7 +105,7 @@ folder). Measured values, not adjectives:
 - **Layout / position**: the panel body stacks two `section.group` blocks with no heading. The separator is the second block's top border, crossing the panel's content width (inside the panel's `10px` side padding).
 - **Size / spacing**: separator `border-top: 2px solid var(--divider)` — `rgb(217, 214, 205)` in the light theme; `margin-top: 10px` and `padding-top: 10px`, so the last hymn row's bottom to the first ordinary row's top is `22px`. Rows unchanged: `38px` tall, `1px` between rows.
 - **Colour / typography**: the divider uses the panel's existing `--divider` token; no text is added, so no type change.
-- **States**: filter with both groups matched (separator stays, both groups filtered) · filter that empties the hymn group (separator gone, ordinary group flush) · filter that empties the ordinary group (separator gone, hymn group alone) · no hymn books at all (single group, no separator) · `aria-current` row keeps its fill on either side.
+- **States**: filter with both groups matched (separator stays, both groups filtered) · filter that empties the hymn group (separator gone, ordinary group flush) · filter that empties the ordinary group (separator gone, hymn group alone) · no hymn books at all (single group, no separator) · no songbooks at all (the empty view, on first load) · `aria-current` row keeps its fill on either side.
 - **Motion**: none.
 - **Responsive**: none — the Kidung panel is one layout; the mini rail is Alkitab's, and the Kidung panel collapses to closed instead (see Clarifications).
 
@@ -120,3 +124,7 @@ folder). Measured values, not adjectives:
 - Q: none asked — the request names the separator, forbids headers, and fixes the ordinary side's order; the preview confirmed the reading before drafting.
 - Q: does the Kidung panel have a mini-rail state whose spacing needs a value? → A: no. `#panelCollapse` and the idle collapse send the Kidung panel to `closed`; `mini` is set only in the Alkitab branch (`static/web/reading.js:1155`, `:1125`). A first measurement of the mini spacing was removed from US1, FR-003, SC-003 and `## UI/UX` on 2026-10-24 — it described a state this panel never reaches.
 - Q: does the separator stay when the filter hides one side? → SKIPPED, assumed: it goes with the group it separated (FR-005), because a rule with nothing above it reads as a mistake.
+
+### Session 2026-10-25
+
+- Q (owner, reviewing PR #380): what should the panel display when either group is empty — no data, or no filter match? → A: remove the separator and show only the non-empty group; show the empty view only when both groups are empty. The filter half already behaved so; the first-load half did not — `#panelEmpty` shipped with `hidden` and nothing on init ran the filter, so an empty database showed a blank column. Recorded as FR-008 and SC-007, fixed in `static/web/reading.js` init, and pinned by `test_the_panel_shows_its_empty_view_when_no_songbook_exists`.

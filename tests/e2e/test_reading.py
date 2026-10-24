@@ -188,6 +188,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=4,
                 text='Keep this\n\nSkip this')
 
+        if self._testMethodName == 'test_the_panel_shows_its_empty_view_when_no_songbook_exists':
+            songs.Book.objects.all().update(is_deleted=True)
+
         if self._testMethodName == 'test_tatib_stage_entry_links_follow_the_theme':
             theme_song = songs.Song.objects.create(
                 book=self.book, number=99, title='Nyanyian Tema')
@@ -1917,6 +1920,28 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             "el => { const s = getComputedStyle(el);"
             " return [s.borderTopWidth, s.marginTop, s.paddingTop]; }")
         self.assertEqual(box, ['0px', '0px', '0px'])
+
+    def test_filtering_both_groups_keeps_the_divider_between_them(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-books'))
+
+        page.fill('#bookFilter', 'kidung')
+        expect(page.locator('#panelBody .group:not(.is-hidden) li:not(.is-hidden) a.book')).to_have_count(2)
+        surviving = page.locator('#panelBody .group:not(.is-hidden)')
+        expect(surviving).to_have_count(2)
+        box = surviving.nth(1).evaluate(
+            "el => { const s = getComputedStyle(el);"
+            " return [s.borderTopWidth, s.marginTop, s.paddingTop]; }")
+        self.assertEqual(box, ['2px', '10px', '10px'])
+
+    def test_the_panel_shows_its_empty_view_when_no_songbook_exists(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-books'))
+
+        expect(page.locator('#panelBody .group')).to_have_count(0)
+        expect(page.locator('#panelEmpty')).to_be_visible()
+        self.assertEqual(page.locator('#panelEmpty').text_content().strip(),
+                         'No matching songbooks.')
 
 
 @tag('e2e')

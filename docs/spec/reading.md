@@ -100,6 +100,10 @@ One separator SHALL be drawn between the two groups, and it SHALL be the panel's
 heading, label or caption. A group with no rows — because no songbook of that kind exists, or because the
 panel filter emptied it — SHALL draw no separator.
 
+An empty panel SHALL say so: when no group has rows — no songbook exists, or the filter matches neither —
+the panel shows its empty view, on first load as well as after filtering. While one group still has rows,
+only that group shows: no separator, no empty view.
+
 The grouping and order SHALL be the same on the Kidung index, a songbook page and a song page, and the
 current row and the per-row edit button SHALL stay on the rows they marked before.
 
@@ -115,6 +119,10 @@ current row and the per-row edit button SHALL stay on the rows they marked befor
 #### Scenario: an emptied group
 - WHEN the panel filter leaves one group with no rows
 - THEN no separator is drawn above the surviving group
+
+#### Scenario: an empty panel
+- WHEN `/songs/` opens with no active songbook, or the filter matches no row in either group
+- THEN the panel body holds no group and the empty view reads “No matching songbooks.”
 
 ### R5 — A saved Kidung panel draws the same two groups
 
