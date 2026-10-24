@@ -69,6 +69,18 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'id="railSearch"')
         self.assertContains(response, 'aria-current="page"')
 
+    def test_the_index_tab_names_the_site_and_stops_there(self):
+        """The tab is the site name alone: the search-first tagline it used to carry is
+        repeated by the page's own field, and it only spent the tab's width."""
+        response = self.client.get(reverse('web-index'))
+        self.assertEqual(response.context['page_title'], 'Multimedia GKPS Klender')
+        self.assertContains(response, '<title>Multimedia GKPS Klender</title>')
+
+    def test_a_section_landing_puts_the_site_name_last(self):
+        response = self.client.get(reverse('web-bible'))
+        self.assertEqual(response.context['page_title'],
+                         'Alkitab — Multimedia GKPS Klender')
+
     def test_reading_pages_do_not_use_fomantic(self):
         self.assertNotContains(self.client.get(reverse('web-home')), 'semantic.min.css')
 
@@ -164,7 +176,7 @@ class ReadingViewTests(TestCase):
         self.assertEqual(sim_response.context['bible_edition'], 'sim')
         self.assertEqual(sim_response.context['read_lang'], 'sim')
         self.assertEqual(sim_response.context['read_name'], '1 Musa')
-        self.assertEqual(sim_response.context['page_title'], '1 Musa 1 — GKPS Klender')
+        self.assertEqual(sim_response.context['page_title'], '1 Musa 1 — Multimedia GKPS Klender')
         self.assertContains(sim_response, 'data-bible-edition="sim"')
         self.assertContains(sim_response, 'data-tip="Bibel"')
         old_group = next(group for group in sim_response.context['books_groups']
@@ -180,7 +192,7 @@ class ReadingViewTests(TestCase):
         self.assertEqual(fallback.context['bible_edition'], 'sim')
         self.assertEqual(fallback.context['read_lang'], 'tb')
         self.assertEqual(fallback.context['read_name'], 'Kejadian')
-        self.assertEqual(fallback.context['page_title'], 'Kejadian 2 — GKPS Klender')
+        self.assertEqual(fallback.context['page_title'], 'Kejadian 2 — Multimedia GKPS Klender')
         fallback_group = next(group for group in fallback.context['books_groups']
                               if group['testament'] == 'old')
         self.assertEqual(fallback_group['label'], 'Padan na Basaia')
@@ -303,7 +315,7 @@ class ReadingViewTests(TestCase):
 
     def test_song_detail_tab_title_uses_the_short_reference(self):
         response = self.client.get(reverse('web-song', args=[self.song.id]))
-        self.assertEqual(response.context['page_title'], 'NKB 12 — GKPS Klender')
+        self.assertEqual(response.context['page_title'], 'NKB 12 — Multimedia GKPS Klender')
 
     def test_an_ordinary_songbook_header_keeps_its_full_name(self):
         ordinary_song = self.harian.song_set.order_by('title').first()

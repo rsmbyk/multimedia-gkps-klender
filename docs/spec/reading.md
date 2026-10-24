@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-24
-**slices**: `126-songbook-short-header`
+**slices**: `126-songbook-short-header`, `127-site-name-tab`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
 in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
@@ -41,7 +41,7 @@ the whole citation.
 
 #### Scenario: the tab follows the header
 - WHEN a song page opens
-- THEN the document title reads `<header> — GKPS Klender`
+- THEN the document title reads `<header> — Multimedia GKPS Klender`
 
 ### R2 — A saved reading page shows its server route's header and title
 
@@ -60,3 +60,30 @@ operator when the online update arrives.
 #### Scenario: offline
 - WHEN the saved render is the final page because the network is unavailable
 - THEN it carries the same header it would have shown online
+
+### R3 — The tab names the site, and the index's tab stops at the name
+
+Every reading page's document title SHALL name the site `Multimedia GKPS Klender` — the product name the
+rest of the application already uses. The index SHALL read that name alone: the site root, the temporary
+home, and the search route opened with no query, which all render the search-first landing. Every other
+reading page SHALL keep the leading text it carries today and append ` — Multimedia GKPS Klender`.
+
+The page's visible and assistive text is outside this requirement: headings, the search field's accessible
+name, the logo's `alt` and the rail's labels keep the congregation name `GKPS Klender`.
+
+#### Scenario: the index
+- WHEN `/`, `/home/`, or `/search` with no query opens
+- THEN the document title is exactly `Multimedia GKPS Klender`, with nothing after it
+
+#### Scenario: a reading page
+- WHEN a Bible chapter, song, Tata Ibadah service, section landing, results page or the Media Library opens
+- THEN the document title is its leading text followed by ` — Multimedia GKPS Klender`
+
+#### Scenario: the saved copy
+- WHEN a route is rendered from the saved library before the online update arrives
+- THEN its document title is the server page's own, name included
+
+#### Scenario: an in-place edition switch
+- WHEN the Bible edition changes without a navigation
+- THEN the title becomes `<book name> <chapter> — Multimedia GKPS Klender`, so the tab does not rename
+  itself while the edition does

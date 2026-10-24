@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Every reading page's browser tab now names the site `Multimedia GKPS Klender`, the name the rest of the application already uses, and the index's tab stops there: the search-first landing's tab reads `Multimedia GKPS Klender` instead of trailing the tagline the tab strip truncated anyway. A reading page keeps its leading text — `1 Musa 1`, `PKJ 4`, a service's name, `Results for “…”`, `Media Library` — and appends the name; the saved copy and an in-place Bible edition switch write the same titles, so a tab never renames itself mid-session. The page's own heading, the search field's label and the logo's alt text keep the congregation name `GKPS Klender`.
+
 ### Fixed
 
 - A song page's header now names its songbook the way the rest of the app does — `PKJ 4` instead of `Pelengkap Kidung Jemaat 4` — and the browser tab follows it, so the header and the sidebar row beside it agree. The saved copy writes the same header for the same route. An ordinary songbook's page keeps its full name, and a hymn songbook with no short name still falls back to it.

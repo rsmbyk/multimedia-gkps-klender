@@ -187,7 +187,7 @@ class OfflineLibraryE2ETests(LiveServerTestCase):
               };
             }""", self.kej_id)
             self.assertEqual(rendered, {
-                'title': '1 Musa 1 — GKPS Klender',
+                'title': '1 Musa 1 — Multimedia GKPS Klender',
                 'heading': '1 Musa',
                 'visibleName': '1 Musa',
                 'edition': 'sim',

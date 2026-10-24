@@ -337,7 +337,7 @@ def media_library(request):
     return render(request, 'reading/media_library.html', {
         'read_state': 'on', 'nav_state': 'closed', 'ch_state': 'closed',
         'read_kind': 'media-library', 'read_name': 'Media Library',
-        'page_title': 'Media Library — GKPS Klender',
+        'page_title': 'Media Library — Multimedia GKPS Klender',
     })
 
 
@@ -1601,7 +1601,7 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         context.update(_shell('alkitab', 'closed', 'closed', False, 'landing'))
         context.update({
-            'page_title': 'GKPS Klender — Search Alkitab, Kidung, and Tata Ibadah',
+            'page_title': 'Multimedia GKPS Klender',
             'books_groups': _books_groups(),
         })
         return context
@@ -1627,17 +1627,17 @@ class SearchView(TemplateView):
             'result_groups': [],
         })
         if not has_param:
-            context['page_title'] = 'GKPS Klender — Search Alkitab, Kidung, and Tata Ibadah'
+            context['page_title'] = 'Multimedia GKPS Klender'
             return context
         results = search_lib.search_page(query)
         if not results.valid:
             # An empty query keeps the landing.
-            context['page_title'] = 'Search — GKPS Klender'
+            context['page_title'] = 'Search — Multimedia GKPS Klender'
             return context
         context['home_state'] = 'results'
         context['canonical'] = results.canonical
         context['notice'] = results.notice
-        context['page_title'] = f'Results for “{results.canonical}” — GKPS Klender'
+        context['page_title'] = f'Results for “{results.canonical}” — Multimedia GKPS Klender'
         context['result_groups'] = _search_groups(results, _shown_counts(request), request.path)
         return context
 
@@ -1718,13 +1718,13 @@ class BibleView(TemplateView):
         if read_on:
             title_translation = editions[visible_edition]
             title_name = title_translation.translation if title_translation else info['display']
-            page_title = f"{title_name} {chapter} — GKPS Klender"
+            page_title = f"{title_name} {chapter} — Multimedia GKPS Klender"
         elif info:
             title_translation = editions[selected_edition]
             title_name = title_translation.translation if title_translation else info['display']
-            page_title = f"{title_name} — GKPS Klender"
+            page_title = f"{title_name} — Multimedia GKPS Klender"
         else:
-            page_title = 'Alkitab — GKPS Klender'
+            page_title = 'Alkitab — Multimedia GKPS Klender'
         context.update({
             'page_title': page_title,
             'books_groups': _books_groups(book_id, selected_edition),
@@ -1763,7 +1763,7 @@ class BookIndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         context.update(_shell('kidung', 'open', 'closed', False, 'landing', ch_mode='song'))
         context.update({
-            'page_title': 'Kidung — GKPS Klender',
+            'page_title': 'Kidung — Multimedia GKPS Klender',
             'songbooks': _songbooks(),
         })
         return context
@@ -1781,7 +1781,7 @@ class BookDetailView(TemplateView):
             song_models.Book.objects.active(), pk=self.kwargs['book_id'])
         context.update(_shell('kidung', 'open', 'open', False, 'landing', ch_mode='song'))
         context.update({
-            'page_title': f'{book.name} — GKPS Klender',
+            'page_title': f'{book.name} — Multimedia GKPS Klender',
             'songbooks': _songbooks(book.pk),
             'songs': _song_rows(book),
             'show_song_sort': not book.is_hymn_book,
@@ -1819,7 +1819,7 @@ class SongDetailView(TemplateView):
         context.update(_shell('kidung', 'open', 'open', True, 'reading', ch_mode='song'))
         context.update({'editor_book_id': book.pk, 'book_is_hymn': book.is_hymn_book})
         context.update({
-            'page_title': f'{citation} — GKPS Klender',
+            'page_title': f'{citation} — Multimedia GKPS Klender',
             'songbooks': _songbooks(book.pk),
             'songs': _song_rows(book, song.pk),
             'show_song_sort': not book.is_hymn_book,
@@ -1865,7 +1865,7 @@ class TatibView(TemplateView):
                               service is not None, 'reading' if service else 'landing',
                               ch_mode='song'))
         context.update({
-            'page_title': f'{service.name} — GKPS Klender' if service else 'Tata Ibadah — GKPS Klender',
+            'page_title': f'{service.name} — Multimedia GKPS Klender' if service else 'Tata Ibadah — Multimedia GKPS Klender',
             'tatib_groups': _tatib_groups(mode, service),
             'show_tatib_mode': True,
             # Absolute on purpose: the search-first home swaps this button into the live

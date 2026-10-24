@@ -173,7 +173,7 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                     }""", url)
                     self.assertEqual(result['saved'], expected)
                     self.assertEqual(result['server'], expected)
-                    self.assertEqual(result['savedTitle'], expected + ' — GKPS Klender')
+                    self.assertEqual(result['savedTitle'], expected + ' — Multimedia GKPS Klender')
                     self.assertEqual(result['savedTitle'], result['serverTitle'])
             browser.close()
 

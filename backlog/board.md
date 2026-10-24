@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-129](./items/ITEM-129-site-name-tab.md) | Name the site in the tab, and stop the index tab at the name | Reading tabs say `Multimedia GKPS Klender`; the index's tab is the name alone | fix | P2 | S | [127](../specs/127-site-name-tab/spec.md) | `fix/127-site-name-tab` | 2026-10-24 |
 
 ## In review
 
