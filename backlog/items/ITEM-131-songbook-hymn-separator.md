@@ -10,7 +10,7 @@ updated: 2026-10-24
 spec: specs/128-songbook-hymn-separator/spec.md
 branch: feat/128-songbook-hymn-separator
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/380
-issue:
+issue: 381
 closed_at:
 closed_reason:
 bump: patch
