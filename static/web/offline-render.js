@@ -305,7 +305,7 @@
     root.dataset.read = 'on';
     root.dataset.home = 'reading';
     root.dataset.chMode = section === 'alkitab' ? 'chapter' : 'song';
-    doc.title = title + ' — GKPS Klender';
+    doc.title = title + ' — Multimedia GKPS Klender';
     doc.querySelector('#panelTitle').textContent = section === 'alkitab' ? 'Books — Alkitab'
       : section === 'kidung' ? 'Songbooks' : 'Tata Ibadah';
     doc.querySelector('label[for="bookFilter"]').textContent = section === 'alkitab'
@@ -782,7 +782,7 @@
     doc.querySelector('#searchResults').innerHTML = '<p class="search-results__intro"'
       + ' id="searchStatus" role="status">' + status + '</p>' + html;
     doc.querySelector('#searchResults').hidden = false;
-    doc.title = 'Results for “' + parsed.canonical + '” — GKPS Klender';
+    doc.title = 'Results for “' + parsed.canonical + '” — Multimedia GKPS Klender';
     return doc;
   }
   function homePage(doc, bible) {
@@ -796,7 +796,7 @@
     doc.querySelector('#searchResults').innerHTML = '';
     doc.querySelector('#searchResults').hidden = true;
     doc.querySelector('#panelBody').innerHTML = biblePanel(bible, null);
-    doc.title = 'GKPS Klender — Search Alkitab, Kidung, and Tata Ibadah';
+    doc.title = 'Multimedia GKPS Klender';
     return doc;
   }
   function listPage(doc, target, bible, books, services) {
@@ -893,7 +893,7 @@
       doc.querySelector('.ch__top').insertAdjacentHTML('afterend', songAddButton(selected.id));
     }
     doc.title = (selected ? selected.name : doc.querySelector('#panelTitle').textContent)
-      + ' — GKPS Klender';
+      + ' — Multimedia GKPS Klender';
     return doc;
   }
   function chunkFor(url) {

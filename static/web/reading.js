@@ -511,7 +511,7 @@
     if (!name) return;
     var number = document.getElementById('readNo');
     document.title = name + (number && number.textContent ? ' ' + number.textContent : '')
-      + ' — GKPS Klender';
+      + ' — Multimedia GKPS Klender';
   }
   function decorateChapters() {
     if (activeSection !== 'alkitab') return;

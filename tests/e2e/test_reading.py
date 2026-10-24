@@ -345,7 +345,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_reader_can_browse_and_read_a_song(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-books'))
-        self.assertIn('GKPS Klender', page.title())
+        self.assertIn('Multimedia GKPS Klender', page.title())
         page.get_by_role('link', name='Nyanyikanlah Kidung Baru').first.click()
         expect(page.get_by_role('link', name='NKB 12').first).to_be_visible()
         page.get_by_role('link', name='NKB 12').first.click()
@@ -820,7 +820,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         no_js_page.goto(self.live_server_url + reverse(
             'web-bible-chapter', args=[self.kej.pk, 1]) + '?ed=sim')
         expect(no_js_page.locator('#readName')).to_have_text('1 Musa')
-        self.assertEqual(no_js_page.title(), '1 Musa 1 — GKPS Klender')
+        self.assertEqual(no_js_page.title(), '1 Musa 1 — Multimedia GKPS Klender')
         self.assertEqual(
             no_js_page.locator(f'#panelBody .book[href="/bible/{self.kej.pk}/"] .book__a').inner_text(),
             '1Mu')
@@ -832,7 +832,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse(
             'web-bible-chapter', args=[self.kej.pk, 1]) + '?ed=sim')
         expect(page.locator('#readName')).to_have_text('1 Musa')
-        self.assertEqual(page.title(), '1 Musa 1 — GKPS Klender')
+        self.assertEqual(page.title(), '1 Musa 1 — Multimedia GKPS Klender')
         self.assertEqual(page.locator('html').get_attribute('data-bible-edition'), 'sim')
         expect(page.get_by_text('SIM first chapter.')).to_be_visible()
 
@@ -847,7 +847,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
         page.locator('#langTb').click()
         expect(page.locator('#readName')).to_have_text('Kejadian')
-        self.assertEqual(page.title(), 'Kejadian 1 — GKPS Klender')
+        self.assertEqual(page.title(), 'Kejadian 1 — Multimedia GKPS Klender')
         for section, label in (('alkitab', 'Alkitab'), ('kidung', 'Kidung'),
                                ('tatib', 'Tata Ibadah')):
             button = page.locator(f'.rail [data-panel="{section}"]')
@@ -859,7 +859,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('#bookFilter').fill('')
         page.locator('#langSim').click()
         expect(page.locator('#readName')).to_have_text('1 Musa')
-        self.assertEqual(page.title(), '1 Musa 1 — GKPS Klender')
+        self.assertEqual(page.title(), '1 Musa 1 — Multimedia GKPS Klender')
 
         expected_sim_labels = {
             'alkitab': ('Bibel', 'Bibel'),
@@ -890,7 +890,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         row = page.locator(f'#panelBody .book[href="/bible/{self.kej.pk}/"]')
         expect(page.get_by_text('TB-only chapter.')).to_be_visible()
         expect(page.locator('#readName')).to_have_text('Kejadian')
-        self.assertEqual(page.title(), 'Kejadian 2 — GKPS Klender')
+        self.assertEqual(page.title(), 'Kejadian 2 — Multimedia GKPS Klender')
         self.assertEqual(page.locator('html').get_attribute('data-bible-edition'), 'sim')
         expect(row.locator('.book__a')).to_have_text('1Mu')
         expect(page.locator('#panelBody [data-testament="old"] .group__head')).to_have_text(
