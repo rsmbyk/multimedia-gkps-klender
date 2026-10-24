@@ -160,6 +160,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-125](./items/ITEM-125-bible-edition-block-identity.md) | Keep a chapter's verse text when both Bible editions share a book name | Key the reading stage's edition blocks by edition, not the shared book label | fix | P1 | S | [124](../specs/124-bible-edition-block-identity/spec.md) | develop via [#373](https://github.com/rsmbyk/multimedia-gkps-klender/pull/373) | 2026-10-24 |
 | [ITEM-126](./items/ITEM-126-saved-song-sort-parity.md) | A saved hymn song page never shows the song sort control | Follow the server's hymn-book rule in the saved render so the control no longer flashes | fix | P2 | S | [125](../specs/125-saved-song-sort-parity/spec.md) | develop via [#374](https://github.com/rsmbyk/multimedia-gkps-klender/pull/374) | 2026-10-24 |
 | [ITEM-127](./items/ITEM-127-songbook-short-header.md) | Cite a song page's songbook by its short name | Show `PKJ 4` in the song header and the tab, mirror it in the saved render, and start `docs/spec/reading.md` | fix | P2 | S | [126](../specs/126-songbook-short-header/spec.md) | develop via [#375](https://github.com/rsmbyk/multimedia-gkps-klender/pull/375) | 2026-10-24 |
+| [ITEM-129](./items/ITEM-129-vex-process.md) | Follow the Vex process grammar from memory | Generate `docs/PROCESS.md` from the grammar's rule index; keep the repo's conventions in `repo:` blocks | chore | P2 | S | — | develop via [#379](https://github.com/rsmbyk/multimedia-gkps-klender/pull/379) | 2026-10-24 |
 
 ## Archive
 
