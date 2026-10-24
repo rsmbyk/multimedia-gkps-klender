@@ -127,6 +127,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             'test_bible_language_highlight_starts_in_place_without_travel',
             'test_bible_language_links_keep_keyboard_and_no_js_navigation',
             'test_the_translation_switch_fills_the_hovered_option',
+            'test_same_name_edition_blocks_keep_the_verse_text',
         ):
             sim_lang = bible.Language.objects.create(name='Simalungun')
             sim_version = bible.Version.objects.create(lang=sim_lang, name='Simalungun', abbreviation='SIM')
@@ -154,6 +155,20 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             elif self._testMethodName == 'test_bible_edition_survives_menu_switches_and_history':
                 bible.Verse.objects.create(
                     book_translation=sim_book, chapter=6, verse=1, text='SIM-only chapter.')
+            if self._testMethodName == 'test_same_name_edition_blocks_keep_the_verse_text':
+                # The TB and SIM book translations of Rut share their name, so
+                # the stage's two edition blocks carry the same label and are
+                # told apart by their edition, not the label.
+                rut = bible.Book.objects.create(name='Rut', testament='old', number_of_chapters=2)
+                rut_tb = bible.BookTranslation.objects.create(
+                    version=version, book=rut, translation='Rut')
+                rut_sim = bible.BookTranslation.objects.create(
+                    version=sim_version, book=rut, translation='Rut', abbreviation='Rut')
+                self._verse(rut_tb, 1, 1, 'Pada zaman para hakim ada kelaparan di negeri itu.')
+                self._verse(rut_sim, 1, 1, 'Bani parhukum ma manggomgomi huta i.')
+                self._verse(rut_tb, 2, 1, 'Naomi mempunyai seorang sanak dari pihak suaminya.')
+                self._verse(rut_sim, 2, 1, 'Adong ma donganna si Naomi sada halak.')
+                self.rut = rut
 
         if self._testMethodName == 'test_hymn_song_order_is_visible_after_browsing_from_home':
             songs.Song.objects.create(book=self.book, number=10, title='Ten')
@@ -222,6 +237,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         field = page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')
         field.fill(query)
         field.press('Enter')
+
+    def _verse(self, book_translation, chapter, verse, text):
+        return bible.Verse.objects.create(
+            book_translation=book_translation, chapter=chapter, verse=verse, text=text)
 
     # --- shell ---
 
@@ -751,6 +770,48 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(row.locator('.book__n')).to_have_text('Matius')
         expect(row.locator('.book__s')).to_have_text('Mateus')
         expect(page.locator('#langTb')).to_have_attribute('aria-pressed', 'true')
+        page.close()
+
+    def test_same_name_edition_blocks_keep_the_verse_text(self):
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        page.locator('.rail [data-panel="alkitab"]').click()
+        page.locator('#panelBody .book').filter(has_text='Matius').first.click()
+        page.locator('#chList .ch-num').nth(4).click()
+        expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
+
+        # Open a book whose TB and SIM names match while the stage already reads
+        # Bible text: both edition blocks must stay mounted.
+        page.locator('#panelBody .book').filter(has_text='Rut').first.click()
+        page.locator('#chList .ch-num').nth(0).click()
+        blocks = page.locator('#readBody .read__ed')
+        expect(blocks).to_have_count(2)
+        expect(page.locator('#readBody .read__ed[data-ed="tb"]')).to_be_visible()
+        expect(page.locator('#readBody .read__ed[data-ed="sim"]')).to_be_hidden()
+        expect(page.get_by_text('Pada zaman para hakim ada kelaparan')).to_be_visible()
+        self.assertEqual(page.url, self.live_server_url
+                         + reverse('web-bible-chapter', args=[self.rut.pk, 1]))
+
+        # Moving between chapters keeps both editions mounted.
+        page.locator('#chList .ch-num').nth(1).click()
+        expect(page.get_by_text('Naomi mempunyai seorang sanak')).to_be_visible()
+        expect(blocks).to_have_count(2)
+        self.assertEqual(page.url, self.live_server_url
+                         + reverse('web-bible-chapter', args=[self.rut.pk, 2]))
+
+        # The switch still reaches both editions after the in-page move.
+        page.locator('#langSim').click()
+        expect(page.get_by_text('Adong ma donganna si Naomi')).to_be_visible()
+        page.locator('#langTb').click()
+        expect(page.get_by_text('Naomi mempunyai seorang sanak')).to_be_visible()
+
+        # A translation selected before the move stays selected, and only its
+        # block is shown, for the same-name book.
+        page.locator('#langSim').click()
+        page.locator('#chList .ch-num').nth(0).click()
+        expect(page.get_by_text('Bani parhukum ma manggomgomi huta i.')).to_be_visible()
+        expect(page.locator('#readBody .read__ed[data-ed="sim"]')).to_be_visible()
+        expect(page.locator('#readBody .read__ed[data-ed="tb"]')).to_be_hidden()
         page.close()
 
     def test_sim_codes_titles_labels_and_fallback_follow_selected_edition(self):
