@@ -1,6 +1,6 @@
 ---
 id: ITEM-125
-status: in_review
+status: done
 title: 'Keep a chapter''s verse text when both Bible editions share a book name'
 type: fix
 priority: P1
