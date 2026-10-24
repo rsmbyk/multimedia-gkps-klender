@@ -14,8 +14,10 @@ issue per card, carrying a stable number the pull request references.
 
 ## Decision
 
-- **One GitHub issue per card**, created when the card enters `Ready` — the point at which the
-  work is authorised and a pull request can exist.
+- **One GitHub issue per card, and no card past `Speccing` without one.** The issue is created when
+  the card enters `Ready` — the point at which the work is authorised and a pull request can exist —
+  and is backfilled by the agent when it works with a card already in `Ready`, `In progress`,
+  `In review` or `Done` that has no `issue:`.
 - **The issue holds a number, a title carrying `ITEM-XXX`, and one line pointing at the card.**
   No status, no priority, no assignee, no spec or branch field: each of those would be a second
   place to be wrong.
@@ -33,8 +35,24 @@ issue per card, carrying a stable number the pull request references.
 ## Consequences
 
 - The issue list is not a board; nobody can work from GitHub alone.
-- Anchors begin with ITEM-128, created alongside the wiring itself on the owner's word. The
-  cards already on the board keep an empty `issue:`; history is not backfilled.
+- Anchors begin with ITEM-128, created alongside the wiring itself on the owner's word. Cards that
+  predate the rule keep an empty `issue:` until an agent works with one: the widening below backfills
+  per card, never as a sweep of the board's history.
 - Pull request bodies carry a real `Refs #NNN` instead of the template's placeholder.
 - An issue that arrives from outside is a report, not an anchor: it becomes a card through the
   board first, and only then gets mirrored.
+
+## Amendment — 2026-10-25
+
+The decision above read, until this date:
+
+> **One GitHub issue per card**, created when the card enters `Ready` — the point at which the
+> work is authorised and a pull request can exist.
+
+That wording made the **transition** the trigger, and a card can reach `Ready` or beyond without it:
+`ITEM-132` was written at Fold, entered the board as `In progress`, and so never had an issue — the
+first card to expose the gap. The grammar's rule (BRD-10) was widened on the owner's instruction:
+every card past `Speccing` carries one anchor, the agent creates it whenever it works with a card
+that lacks one, and the rule itself — not the owner's `Ready` act — is the authorisation. Nothing
+else moved: still one issue per card, still `board:item` only, still `Refs` never `Closes`, still
+nothing read back from the issue.

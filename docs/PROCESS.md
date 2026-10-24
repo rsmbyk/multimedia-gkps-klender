@@ -1,6 +1,6 @@
 # Process
 
-This repository follows the Vex process grammar at vintage **2026-10-24**.
+This repository follows the Vex process grammar at vintage **2026-10-25**.
 
 **Precedence:** repo conventions → Vex version → original.
 
@@ -130,11 +130,13 @@ for that part, and is never regenerated.
 | BRD-07 | `In review` while the PR is open, `Done` before the merge — and `Done` is terminal. |
 | BRD-08 | The `## Archive` table holds only cards that ended without shipping, with a reason and a date. |
 | BRD-09 | Board `done` is not the spec's `Status`; board words never enter a spec, spec words never enter `status:`. |
-| BRD-10 | When the remote is GitHub, one anchor issue per card is created as it enters `Ready`, its number stored in `issue:`, and PRs say `Refs`, never `Closes`. |
+| BRD-10 | When the remote is GitHub, every card past `Speccing` — `Ready`, `In progress`, `In review`, `Done` — carries one anchor issue: it is created as the card enters `Ready`, and backfilled when an agent works with a card that reached those states with `issue:` empty; the number is stored in `issue:`, and PRs say `Refs`, never `Closes`. |
 | BRD-11 | Only the owner closes a card; the agent may propose. |
 
 <!-- repo:begin part=board -->
-- The anchor label is `board:item`; one issue per card, created when the card enters `Ready`.
+- The anchor label is `board:item`; one issue per card — created as the card enters `Ready`, and
+  backfilled the first time an agent works with a card past `Speccing` that has no `issue:`. The
+  backfill is reported in the slice's closing report.
 <!-- repo:end -->
 
 ## Contracts
