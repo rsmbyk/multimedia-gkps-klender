@@ -97,6 +97,45 @@ class ReadingViewTests(TestCase):
     def test_reading_pages_do_not_use_fomantic(self):
         self.assertNotContains(self.client.get(reverse('web-home')), 'semantic.min.css')
 
+    # --- sidebar empty states (spec 129) ---
+
+    def test_the_first_list_names_the_empty_and_the_filtered_case(self):
+        """One block per list, centred in its pane, carrying both copies and both
+        glyphs so script only has to pick: what the section has, and what a filter
+        that matched nothing has."""
+        html = self.client.get(reverse('web-bible')).content.decode()
+        self.assertIn('class="listempty" id="panelEmpty"', html)
+        self.assertIn('data-empty-title="No books yet."', html)
+        self.assertIn('data-empty-hint="Add a Bible edition to start reading."', html)
+        self.assertIn('data-filter-title="No matching books."', html)
+        self.assertIn('data-when="empty"', html)
+        self.assertIn('data-when="filter"', html)
+
+    def test_each_section_names_its_own_first_list(self):
+        cases = (
+            (reverse('web-bible'), 'No books yet.', 'No matching books.'),
+            (reverse('web-books'), 'No songbooks yet.', 'No matching songbooks.'),
+            (reverse('web-tatib'), 'No Tata Ibadah yet.', 'No matching Tata Ibadah.'),
+        )
+        for url, empty, filtered in cases:
+            html = self.client.get(url).content.decode()
+            self.assertIn(f'data-empty-title="{empty}"', html, url)
+            self.assertIn(f'data-filter-title="{filtered}"', html, url)
+
+    def test_a_songbook_with_no_songs_says_no_songs_yet(self):
+        blank = songs.Book.objects.create(name='Kosong', short_name='KOS', is_hymn_book=False)
+        html = self.client.get(reverse('web-book', args=[blank.pk])).content.decode()
+        self.assertIn('class="listempty" id="chEmpty"', html)
+        self.assertIn('data-empty-title="No songs yet."', html)
+        self.assertIn('data-filter-title="No matching songs."', html)
+
+    def test_a_service_with_no_sections_says_no_sections_yet(self):
+        blank = tatib.TataIbadah.objects.create(name='Kosong', date=date(2026, 9, 6))
+        html = self.client.get(reverse('web-tatib-service', args=[blank.pk])).content.decode()
+        self.assertIn('data-empty-title="No sections yet."', html)
+        self.assertIn('data-empty-hint="Add the first item to start preparing the service."', html)
+        self.assertIn('data-filter-title="No matching sections."', html)
+
     # --- search page ---
 
     def test_search_page_groups_song_hits(self):

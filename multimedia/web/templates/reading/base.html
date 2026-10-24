@@ -233,8 +233,49 @@
         <path d="M6 9.5l6 6 6-6"/>
       </svg>
     </button>
+
+    {% comment %}Centred in the list area, and it says which nothing it is: an
+    empty list invites the first row, a filtered one offers another search
+    (spec 129).{% endcomment %}
+    <div class="listempty" id="panelEmpty" role="status" hidden
+         data-empty-title="{{ panel_empty_title|default:'No books yet.' }}"
+         data-empty-hint="{{ panel_empty_hint|default:'Add a Bible edition to start reading.' }}"
+         data-filter-title="{{ panel_filter_title|default:'No matching books.' }}"
+         data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        {% if section == 'kidung' %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 17.4V5.6l10.2-2v11.6"/>
+          <circle cx="6.7" cy="17.4" r="2.4"/>
+          <circle cx="16.9" cy="15.2" r="2.4"/>
+        </svg>
+        {% elif section == 'tatib' %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"/>
+          <path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"/>
+        </svg>
+        {% else %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/>
+          <path d="M12 6.6v13.6"/>
+        </svg>
+        {% endif %}
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"/>
+          <path d="m15.4 15.4 5 5"/>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"/>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
   </div>
-  <p class="panel__empty" id="panelEmpty" role="status" hidden>{{ panel_empty_text|default:'No matching books.' }}</p>
 </aside>
 
 <!-- Second list: bible chapter tiles, the wide song list, or Tata Ibadah contents -->
@@ -317,8 +358,50 @@
         <path d="M6 9.5l6 6 6-6"/>
       </svg>
     </button>
+
+    {% comment %}The second list's own empty state, centred in its list area and
+    typed the same way as the panel's (spec 129).{% endcomment %}
+    <div class="listempty" id="chEmpty" role="status" hidden
+         data-empty-title="{{ ch_empty_title|default:'No chapters.' }}"
+         data-empty-hint="{{ ch_empty_hint|default:'This edition has no text in this book.' }}"
+         data-filter-title="{{ ch_filter_empty_title|default:'No matching songs.' }}"
+         data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        {% if section == 'kidung' %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 17.4V5.6l10.2-2v11.6"/>
+          <circle cx="6.7" cy="17.4" r="2.4"/>
+          <circle cx="16.9" cy="15.2" r="2.4"/>
+        </svg>
+        {% elif section == 'tatib' %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4.5 6.5h3.2M4.5 12h3.2M4.5 17.5h3.2"/>
+          <path d="M11 6.5h8.5M11 12h8.5M11 17.5h8.5"/>
+        </svg>
+        {% else %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/>
+          <rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/>
+          <rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/>
+          <rect x="13.5" y="13.5" width="7" height="7" rx="1.4"/>
+        </svg>
+        {% endif %}
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"/>
+          <path d="m15.4 15.4 5 5"/>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"/>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
   </div>
-  <p class="ch__empty" id="chEmpty" role="status" hidden>{{ ch_empty_text|default:'No matching songs.' }}</p>
 </aside>
 
 <main class="stage">

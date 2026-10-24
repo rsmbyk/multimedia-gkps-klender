@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-25
-**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `130-empty-service-tiles`
+**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
 in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
@@ -193,3 +193,46 @@ and the top-aligned flow it has always had.
 #### Scenario: the saved copy
 - WHEN an empty service is rendered from the saved library
 - THEN its tiles carry the same labels, one glyph each and the same square size as the server route
+
+### R7 — A sidebar list's empty state says which nothing it is
+
+Each of the shell's two sidebar lists SHALL show one empty-state block at a time, centred on that list's
+pane — a glyph above a title above a hint — rather than a line in the pane's corner. With no rows in the
+list the block SHALL carry that section's own "nothing yet" copy; with rows present but none matching the
+filter it SHALL carry that list's "no matching" copy; with at least one matching row it SHALL not be shown.
+The first column SHALL name its own list (books, songbooks, Tata Ibadah); the second SHALL name its
+contents (songs, sections). The block is not a control: it SHALL NOT take the pointer, the wheel or focus.
+
+The block SHALL be hidden in the collapsed mini panel and in the Bible's chapter list, where chapters are
+never filtered and a book without text is a property of the edition. A page built from the saved library
+SHALL carry the same copy and the same glyphs as the server route it mirrors.
+
+#### Scenario: a list with no rows
+- WHEN a Tata Ibadah has no sections, or a songbook has no songs
+- THEN the block shows `No sections yet.` / `No songs yet.` with that list's invitation beneath it,
+  centred on the pane
+
+#### Scenario: a filter that matched nothing
+- WHEN the list holds rows and the filter matches none of them
+- THEN the block shows `No matching sections.` / `No matching songs.` under a magnifier with a cross,
+  with `Try a different search.` beneath it
+
+#### Scenario: a match, or a cleared filter
+- WHEN at least one row matches, or the filter is cleared
+- THEN the block is not shown
+
+#### Scenario: a list that is both empty and filtered
+- WHEN a list with no rows is filtered anyway
+- THEN it keeps the "nothing yet" copy: the filter did not empty it
+
+#### Scenario: the first column's own words
+- WHEN the books, songbooks or Tata Ibadah column is filtered to nothing
+- THEN its title names that column's list, never another column's
+
+#### Scenario: the saved copy
+- WHEN a route is rendered from the saved library before the online update arrives
+- THEN both blocks carry the server route's copy and glyphs
+
+#### Scenario: the collapsed panel
+- WHEN the first column is collapsed to its mini rail
+- THEN no block is shown

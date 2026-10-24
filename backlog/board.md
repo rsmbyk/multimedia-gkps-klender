@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-132](./items/ITEM-132-sidebar-empty-states.md) | Centre the sidebars' empty states | One centred glyph + title + hint per list, typed empty versus filter miss | fix | P2 | S | [129](../specs/129-sidebar-empty-states/spec.md) | `fix/129-sidebar-empty-states` | 2026-10-25 |
 
 ## In review
 

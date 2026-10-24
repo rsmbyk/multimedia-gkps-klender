@@ -319,6 +319,72 @@
       + ' stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
       + '<path d="M4 2.5h8l4 4v11H4zM12 2.5v4h4M7 10h6M7 13h6"/></svg></a>';
   }
+  /* Both sidebar empty states name their own list, so the saved renderer
+     re-labels them for the section it is building: the shell it rebuilds from
+     is the cached home page, whose blocks are the Bible's (spec 129). */
+  var LIST_EMPTY = {
+    alkitab: {
+      panelTitle: 'No books yet.', panelHint: 'Add a Bible edition to start reading.',
+      panelFilter: 'No matching books.',
+      chTitle: 'No chapters.', chHint: 'This edition has no text in this book.',
+      chFilter: 'No matching chapters.',
+      panelGlyph: '<path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/>'
+        + '<path d="M12 6.6v13.6"/>',
+      chGlyph: ['3.5', '13.5'].map(function (x) {
+        return ['3.5', '13.5'].map(function (y) {
+          return '<rect x="' + x + '" y="' + y + '" width="7" height="7" rx="1.4"/>';
+        }).join('');
+      }).join('')
+    },
+    kidung: {
+      panelTitle: 'No songbooks yet.', panelHint: 'Add a songbook to start collecting songs.',
+      panelFilter: 'No matching songbooks.',
+      chTitle: 'No songs yet.', chHint: 'Add the first song to this songbook.',
+      chFilter: 'No matching songs.',
+      panelGlyph: '<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/>'
+        + '<circle cx="16.9" cy="15.2" r="2.4"/>',
+      chGlyph: '<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/>'
+        + '<circle cx="16.9" cy="15.2" r="2.4"/>'
+    },
+    tatib: {
+      panelTitle: 'No Tata Ibadah yet.', panelHint: 'Add the first service to start preparing it.',
+      panelFilter: 'No matching Tata Ibadah.',
+      chTitle: 'No sections yet.', chHint: 'Add the first item to start preparing the service.',
+      chFilter: 'No matching sections.',
+      panelGlyph: '<rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"/>'
+        + '<path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"/>',
+      chGlyph: '<path d="M4.5 6.5h3.2M4.5 12h3.2M4.5 17.5h3.2"/>'
+        + '<path d="M11 6.5h8.5M11 12h8.5M11 17.5h8.5"/>'
+    }
+  };
+  var EMPTY_ICON_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+    + ' stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">';
+
+  function labelListEmpty(doc, section) {
+    var copy = LIST_EMPTY[section] || LIST_EMPTY.alkitab;
+    [['#panelEmpty', 'panelTitle', 'panelHint', 'panelFilter', 'panelGlyph'],
+      ['#chEmpty', 'chTitle', 'chHint', 'chFilter', 'chGlyph']].forEach(function (spec) {
+      var block = doc.querySelector(spec[0]);
+      if (!block) return;
+      block.dataset.emptyTitle = copy[spec[1]];
+      block.dataset.emptyHint = copy[spec[2]];
+      block.dataset.filterTitle = copy[spec[3]];
+      var icon = block.querySelector('.listempty__icon[data-when="empty"]');
+      if (icon) icon.innerHTML = EMPTY_ICON_OPEN + copy[spec[4]] + '</svg>';
+    });
+  }
+
+  function paintListEmptyStates(doc) {
+    var paint = window.shellListEmpty;
+    if (!paint) return;
+    var panel = doc.querySelector('#panelEmpty');
+    var books = doc.querySelectorAll('#panelBody .book').length;
+    if (panel) paint(panel, books > 0, books);
+    var chapters = doc.querySelector('#chEmpty');
+    var rows = doc.querySelectorAll('#chList .songrow, #chList .ch-num').length;
+    if (chapters) paint(chapters, rows > 0, rows);
+  }
+
   function common(doc, section, title, name, number, body, panel, children, target, songListOpen) {
     var root = doc.documentElement;
     root.dataset.section = section;
@@ -335,8 +401,7 @@
     doc.querySelector('#bookFilter').placeholder = section === 'alkitab' ? 'Filter books...'
       : section === 'kidung' ? 'Filter songbooks...' : 'Filter Tata Ibadah...';
     doc.querySelector('#panelBody').innerHTML = panel;
-    doc.querySelector('#panelEmpty').textContent = section === 'alkitab' ? 'No matching books.'
-      : section === 'kidung' ? 'No matching songbooks.' : 'No matching Tata Ibadah.';
+    labelListEmpty(doc, section);
     doc.querySelector('#chList').innerHTML = children;
     doc.querySelector('#chTitle').textContent = section === 'alkitab' ? 'Chapters — ' + name
       : section === 'kidung' ? 'Song list' : 'Chapters';
@@ -345,8 +410,6 @@
       ? 'Filter sections' : 'Filter songs';
     doc.querySelector('#songFilter').placeholder = section === 'tatib'
       ? 'Filter sections...' : 'Filter songs...';
-    doc.querySelector('#chEmpty').textContent = section === 'tatib'
-      ? 'No matching sections.' : 'No matching songs.';
     doc.querySelector('#songSort').hidden = section !== 'kidung' || !songListOpen;
     var panelAdd = doc.querySelector('#panelAdd');
     if (panelAdd) panelAdd.remove();
@@ -372,6 +435,7 @@
       var targetRow = doc.querySelector(target);
       if (targetRow) targetRow.dataset.searchTarget = 'true';
     }
+    paintListEmptyStates(doc);
     return doc;
   }
   function biblePage(doc, route, book, books) {
@@ -842,8 +906,7 @@
       : section === 'alkitab' ? biblePanel(collection, selected && selected.id)
       : songbooksPanel(collection, selected && selected.id, editor);
     doc.querySelector('#panelBody').innerHTML = panel;
-    doc.querySelector('#panelEmpty').textContent = section === 'alkitab' ? 'No matching books.'
-      : section === 'kidung' ? 'No matching songbooks.' : 'No matching Tata Ibadah.';
+    labelListEmpty(doc, section);
     doc.querySelector('#chTitle').textContent = section === 'kidung' && selected
       ? 'Song list — ' + selected.name : 'Chapters';
     doc.querySelector('.ch__search').hidden = section === 'alkitab';
@@ -851,8 +914,6 @@
       ? 'Filter sections' : 'Filter songs';
     doc.querySelector('#songFilter').placeholder = section === 'tatib'
       ? 'Filter sections...' : 'Filter songs...';
-    doc.querySelector('#chEmpty').textContent = section === 'tatib'
-      ? 'No matching sections.' : 'No matching songs.';
     doc.querySelector('#songSort').hidden = section !== 'kidung' || !selected || selected.is_hymn_book;
     var panelAdd = doc.querySelector('#panelAdd');
     if (panelAdd) panelAdd.remove();
@@ -911,6 +972,7 @@
     }
     doc.title = (selected ? selected.name : doc.querySelector('#panelTitle').textContent)
       + ' — Multimedia GKPS Klender';
+    paintListEmptyStates(doc);
     return doc;
   }
   function chunkFor(url) {
