@@ -32,10 +32,12 @@ server-rendered and after script — with the same results as Pass 1.
 
 ## Accepted gaps
 
-- **The browser suites were not run.** `tests/e2e/` (reading, offline library, saved parity) run at the push
-  step under the owner's test budget; their expectations for the old name are updated in T010, so the push is
-  where they are proven. The saved-render and in-place behaviours were read on the running branch instead,
-  the SIM switch measured in Chromium.
+- **The full browser tree was not run.** The touched classes were: `tests.e2e.test_saved_render_parity`
+  (5 tests, saved-versus-server titles among its fields), `tests.e2e.test_reading`'s
+  `test_reader_can_browse_and_read_a_song` and `test_sim_codes_titles_labels_and_fallback_follow_selected_edition`,
+  and `tests.e2e.test_offline_library`'s `test_saved_sim_bible_copy_uses_sim_code_and_heading` — 9 tests, OK
+  (2026-10-24). The rest of `tests.e2e/` did not see this change and was left to the merge step; the repo
+  carries no CI since #371, so that step is manual.
 - **No preview artifact.** The change is text in the browser's tab; the running branch is the reference and
   `quickstart.md` is the reading list.
 
