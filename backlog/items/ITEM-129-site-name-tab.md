@@ -1,6 +1,6 @@
 ---
 id: ITEM-129
-status: in review
+status: done
 title: 'Name the site in the tab, and stop the index tab at the name'
 type: fix
 priority: P2

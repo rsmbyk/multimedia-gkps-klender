@@ -1,5 +1,5 @@
 ---
-id: ITEM-129
+id: ITEM-130
 status: done
 title: Follow the Vex process grammar from memory
 type: chore
@@ -17,7 +17,7 @@ bump: none
 release_version:
 ---
 
-# ITEM-129: Follow the Vex process grammar from memory
+# ITEM-130: Follow the Vex process grammar from memory
 
 ## Summary
 
