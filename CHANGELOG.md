@@ -7,11 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.20.2] - 2026-10-24
-
 ### Fixed
 
-- Opening or moving between chapters of a Bible book whose TB and SIM names match (Rut, Ezra, Nehemia, …) through the reading sidebar keeps the verse text on the stage; the two edition blocks no longer collapse into one hidden block, so a reload is no longer needed.
+- Opening or moving between chapters of a Bible book whose TB and SIM book translations share a name (Rut, Ezra, Nehemia, …) through the reading sidebar keeps the verse text on the stage; the two edition blocks no longer collapse into one hidden block, so a reload is no longer needed.
 
 ## [1.20.1] - 2026-10-21
 
