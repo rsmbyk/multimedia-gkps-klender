@@ -28,6 +28,10 @@ try:
 except ImportError:  # pragma: no cover - depends on environment
     HAS_PLAYWRIGHT = False
 
+# The eyebrow measurements that have to agree across pages and equal the frozen
+# look (spec 123). Keep this in step with the keys _eyebrow_style returns.
+EYEBROW_STYLE_KEYS = ('size', 'tracking', 'leading', 'weight', 'colour', 'opacity')
+
 
 @tag('e2e')
 @unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
@@ -1172,11 +1176,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         service_date = self._eyebrow_style(page)
         page.close()
 
-        for key in ('size', 'tracking', 'leading', 'weight', 'colour', 'opacity'):
+        for key in EYEBROW_STYLE_KEYS:
             self.assertEqual(service_date[key], songbook[key],
                              '%s differs: date %s vs songbook %s' % (key, service_date, songbook))
         self.assertEqual(service_date['size'], '16.5px', service_date)
         self.assertEqual(service_date['weight'], '600', service_date)
+        self.assertEqual(service_date['colour'], 'rgb(31, 31, 29)', service_date)
         self.assertEqual(service_date['opacity'], '0.78', service_date)
         self.assertAlmostEqual(float(service_date['tracking'].replace('px', '')), 16.5 * 0.12,
                                delta=0.01, msg=service_date)
@@ -1197,7 +1202,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                       const eyebrow = document.querySelector('#readEyebrow');
                       const box = eyebrow.getBoundingClientRect();
                       const button = document.querySelector('.read__project-btn').getBoundingClientRect();
-                      const row = document.querySelector('.read__head-top').getBoundingClientRect();
+                      const row = document.querySelector('.read__head-top');
                       const range = document.createRange();
                       range.selectNodeContents(eyebrow);
                       return {
@@ -1206,8 +1211,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                         inkWidth: range.getBoundingClientRect().width,
                         clipped: eyebrow.scrollWidth - eyebrow.clientWidth,
                         docOverflow: document.documentElement.scrollWidth - window.innerWidth,
-                        rowWidth: row.width,
-                        pairWidth: box.width + 12 + button.width,
+                        rowWidth: row.getBoundingClientRect().width,
+                        rowGap: parseInt(getComputedStyle(row).columnGap, 10) || 0,
+                        buttonWidth: button.width,
                         buttonOnItsOwnLine: button.top >= box.bottom + 4
                       };
                     }''')
@@ -1216,7 +1222,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                     self.assertLessEqual(geometry['clipped'], 0, geometry)
                     self.assertLessEqual(geometry['docOverflow'], 0, geometry)
                     # the rule: both on one row while they fit, the Project action beneath the date when not
-                    cannot_fit = geometry['pairWidth'] - 12 > geometry['rowWidth']
+                    cannot_fit = (geometry['boxWidth'] + geometry['rowGap']
+                                  + geometry['buttonWidth'] > geometry['rowWidth'])
                     self.assertEqual(geometry['buttonOnItsOwnLine'], cannot_fit, geometry)
                 finally:
                     page.close()
