@@ -10,7 +10,7 @@ updated: 2026-10-25
 spec: specs/129-sidebar-empty-states/spec.md
 branch: fix/129-sidebar-empty-states
 pr:
-issue:
+issue: 382
 closed_at:
 closed_reason:
 bump: patch
