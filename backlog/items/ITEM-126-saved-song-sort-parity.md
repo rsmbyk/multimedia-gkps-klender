@@ -1,6 +1,6 @@
 ---
 id: ITEM-126
-status: in_progress
+status: in_review
 title: 'A saved hymn song page never shows the song sort control'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-24
 updated: 2026-10-24
 spec: specs/125-saved-song-sort-parity/spec.md
 branch: fix/125-saved-song-sort-parity
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/374
 issue:
 closed_at:
 closed_reason:

@@ -65,5 +65,5 @@
 - [x] T013 [Converge] Add `sortHidden` to the `fields()` map of
       `test_saved_reading_routes_match_server_fields`, so the fifteen routes it covers compare the control
       too; class green (5 tests). *(FR-004)*
-- [ ] T012 Open the draft PR with the repository's body template once the owner asks to push, then record
-      the URL on the card and move it to `In review`.
+- [x] T012 Open the draft PR with the repository's body template, record the URL on the card, and move
+      it to `In review`. *(draft PR [#374](https://github.com/rsmbyk/multimedia-gkps-klender/pull/374))*
