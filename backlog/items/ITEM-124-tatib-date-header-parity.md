@@ -1,6 +1,6 @@
 ---
 id: ITEM-124
-status: in_review
+status: done
 title: 'Match the Tata Ibadah date header to the songbook header'
 type: fix
 priority: P1
