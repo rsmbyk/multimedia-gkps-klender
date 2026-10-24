@@ -189,23 +189,26 @@
   <p class="entry__empty-title">This Tata Ibadah is empty.</p>
   <p class="entry__empty-hint">Add the first item to start preparing the service.</p>
   <div class="entry__empty-actions">
-    <button type="button" class="entry__empty-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">
+    <button type="button" class="entry__empty-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}" title="Add Passage">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/></svg>
-      <span>Add Passage</span>
+      <span class="sr">Add Passage</span>
     </button>
-    <button type="button" class="entry__empty-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">
+    <button type="button" class="entry__empty-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}" title="Add Song">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/></svg>
-      <span>Add Song</span>
+      <span class="sr">Add Song</span>
     </button>
-    <button type="button" class="entry__empty-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">
+    <button type="button" class="entry__empty-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}" title="Add Text">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/></svg>
-      <span>Add Text</span>
+      <span class="sr">Add Text</span>
     </button>
-    <button type="button" class="entry__empty-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}">
+    <button type="button" class="entry__empty-btn" data-entry-open="section_break" data-entry-tatib="{{ service_id }}" title="Add Break">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12h17M7 7.5l5 5 5-5M7 16.5l5-5 5 5" opacity=".45"/><path d="M3.5 12h17"/></svg>
-      <span>Add Break</span>
+      <span class="sr">Add Break</span>
     </button>
-    <button type="button" class="entry__empty-btn" data-entry-open="media" data-entry-tatib="{{ service_id }}"><span>Add Media</span></button>
+    <button type="button" class="entry__empty-btn" data-entry-open="media" data-entry-tatib="{{ service_id }}" title="Add Media">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="2.4"/><path d="M10.4 9.2v5.6l4.6-2.8z"/></svg>
+      <span class="sr">Add Media</span>
+    </button>
   </div>
 </div>
 {% endif %}

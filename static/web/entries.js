@@ -58,6 +58,36 @@
     return { kind: 'old-item', id: target.dataset.oldItemPk };
   }
 
+  // The empty service is one row of square, icon-only buttons: the glyph is the
+  // whole target, so the label rides in a screen-reader span (the accessible
+  // name) and in the tooltip. Same markup as tatib.html and offline-render.js.
+  var EMPTY_ADD_ICONS = {
+    scripture: '<path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/>',
+    song: '<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>',
+    text: '<path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/>',
+    section_break: '<path d="M3.5 12h17M7 7.5l5 5 5-5M7 16.5l5-5 5 5" opacity=".45"/><path d="M3.5 12h17"/>',
+    media: '<rect x="3.2" y="5.2" width="17.6" height="13.6" rx="2.4"/><path d="M10.4 9.2v5.6l4.6-2.8z"/>'
+  };
+  var EMPTY_ADD_LABELS = {
+    scripture: 'Add Passage', song: 'Add Song', text: 'Add Text',
+    section_break: 'Add Break', media: 'Add Media'
+  };
+
+  function emptyAddButton(kind, serviceId) {
+    var label = EMPTY_ADD_LABELS[kind];
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'entry__empty-btn';
+    button.dataset.entryOpen = kind;
+    if (serviceId) button.dataset.entryTatib = serviceId;
+    button.title = label;
+    button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+      + ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"'
+      + ' aria-hidden="true">' + EMPTY_ADD_ICONS[kind] + '</svg>'
+      + '<span class="sr">' + label + '</span>';
+    return button;
+  }
+
   function removeDeletedLocally(id, oldItem) {
     var selector = oldItem ? '[data-old-item-pk="' : '[data-entry-pk="';
     var deleted = document.querySelector(selector + id + '"]');
@@ -113,15 +143,8 @@
         hint.textContent = 'Add the first item to start preparing the service.';
         var actions = document.createElement('div');
         actions.className = 'entry__empty-actions';
-        [['scripture', 'Add Passage'], ['song', 'Add Song'], ['text', 'Add Text'],
-          ['section_break', 'Add Break'], ['media', 'Add Media']].forEach(function (item) {
-          var button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'entry__empty-btn';
-          button.dataset.entryOpen = item[0];
-          if (serviceId) button.dataset.entryTatib = serviceId;
-          button.textContent = item[1];
-          actions.appendChild(button);
+        ['scripture', 'song', 'text', 'section_break', 'media'].forEach(function (kind) {
+          actions.appendChild(emptyAddButton(kind, serviceId));
         });
         empty.appendChild(title);
         empty.appendChild(hint);

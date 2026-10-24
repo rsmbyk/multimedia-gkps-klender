@@ -401,6 +401,18 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.evaluate('document.activeElement.id'), 'read')
         self.assertEqual(page.evaluate('getComputedStyle(document.activeElement).outlineStyle'), 'none')
 
+        # the last entry takes the invitation's place: the rebuilt block is the
+        # same centred row of tiles the server would have painted
+        empty = page.locator('.entry__empty')
+        expect(empty).to_be_visible()
+        self.assertEqual(empty.locator('.entry__empty-btn').count(), 5)
+        rebuilt = empty.locator('.entry__empty-btn').evaluate_all(
+            '(buttons) => buttons.map(button => { const r = button.getBoundingClientRect();'
+            ' return [r.x, r.y, r.width, r.height]; })')
+        self.assertEqual(len({round(tile[1], 1) for tile in rebuilt}), 1, 'one row after the rebuild')
+        for tile in rebuilt:
+            self.assertLessEqual(abs(tile[2] - tile[3]), 1, 'square after the rebuild')
+
         self._close_browser()
         self.assertEqual(gone, 0)
         self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.full).count(), 0)
@@ -424,3 +436,39 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
 
         self._close_browser()
         self.assertEqual(tatib.ServiceEntry.objects.filter(tatib=self.empty).count(), 1)
+
+    def test_an_empty_service_centres_a_row_of_square_icon_buttons(self):
+        page = self._page(reverse('web-tatib-service', args=[self.empty.pk]))
+
+        boxes = page.locator('.entry__empty-btn').evaluate_all(
+            '(buttons) => buttons.map(button => { const r = button.getBoundingClientRect();'
+            ' return [r.x, r.y, r.width, r.height]; })')
+        self.assertEqual(len(boxes), 5)
+        self.assertEqual(len({round(box[1], 1) for box in boxes}), 1, 'one row')
+        self.assertEqual([round(box[0]) for box in boxes],
+                         sorted(round(box[0]) for box in boxes), 'left to right')
+        for box in boxes:
+            self.assertLessEqual(abs(box[2] - box[3]), 1, 'square')
+            self.assertGreaterEqual(min(box[2], box[3]), 44, 'still a hit target')
+
+        # the glyph is the whole face of the button: the label survives as the
+        # accessible name and the tooltip, not as visible text
+        buttons = page.locator('.entry__empty-btn')
+        for index, label in enumerate(('Add Passage', 'Add Song', 'Add Text',
+                                       'Add Break', 'Add Media')):
+            button = buttons.nth(index)
+            self.assertEqual(button.get_attribute('title'), label)
+            self.assertEqual(button.locator('svg').count(), 1)
+            self.assertEqual(button.locator('.sr').text_content().strip(), label)
+            self.assertLessEqual(button.locator('.sr').evaluate(
+                'span => span.getBoundingClientRect().width'), 1)
+
+        # centred in the reading area the header left, not stacked under it
+        geometry = page.evaluate(
+            """() => {
+              const box = (sel) => document.querySelector(sel).getBoundingClientRect();
+              return {above: box('.entry__empty').top - box('.read__head').bottom,
+                      below: innerHeight - box('.entry__empty').bottom};
+            }""")
+        self.assertLessEqual(abs(geometry['above'] - geometry['below']), 2)
+        self._close_browser()
