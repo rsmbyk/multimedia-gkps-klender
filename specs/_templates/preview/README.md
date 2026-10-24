@@ -19,6 +19,12 @@
 | loading | <throttle or fixture> | |
 | responsive | resize to <breakpoint> | |
 
+## Live preview or mockup
+
+**Live preview** is the first choice: the project's own route, its own components and tokens, running.
+
+**Mockup** — only when a live preview is not viable: state the reason here, label the file `MOCKUP`, copy the project's real stylesheet or its exact values, class names, fonts and assets, and keep every `## UI/UX` state reachable by hand. An approximation is a different design.
+
 ## What is not a preview
 
-A screenshot, a static image and a recording are not previews. The preview is the **running** screen, built from the project's own components and tokens.
+A screenshot, a static image and a recording are not previews at either tier.

@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-129](./items/ITEM-129-vex-process.md) | Follow the Vex process grammar from memory | Generate `docs/PROCESS.md` from the grammar's rule index; keep the repo's conventions in `repo:` blocks | chore | P2 | S | — | `docs/vex-process` | 2026-10-24 |
 
 ## In review
 
