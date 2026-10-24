@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-131](./items/ITEM-131-empty-service-tiles.md) | An empty Tata Ibadah centres its five add tiles | Centre the empty block under the header and turn the five adds into square icon-only tiles in one row | fix | P2 | S | [130](../specs/130-empty-service-tiles/spec.md) | fix/130-empty-service-stage | 2026-10-25 |
 
 ## In review
 
