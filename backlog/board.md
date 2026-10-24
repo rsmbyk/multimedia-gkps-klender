@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-126](./items/ITEM-126-saved-song-sort-parity.md) | A saved hymn song page never shows the song sort control | Follow the server's hymn-book rule in the saved render so the control no longer flashes | fix | P2 | S | [125](../specs/125-saved-song-sort-parity/spec.md) | `fix/125-saved-song-sort-parity` | 2026-10-24 |
 
 ## In review
 

@@ -20,7 +20,7 @@ width throughout.
 
 **Acceptance scenarios**
 
-1. **Given** a synced saved library and an online session, **When** the operator opens a song of a hymn songbook from the second sidebar, **Then** the sort control is hidden in the first rendered frame and stays hidden after the online update, and the song filter's width does not change.
+1. **Given** a synced saved library and an online session, **When** the operator opens a song of a hymn songbook from the second sidebar, **Then** the sort control is hidden in the first rendered frame and stays hidden after the online update, and the song filter's width does not change while that song page is on the stage.
 2. **Given** the same saved library with the network unavailable, **When** the operator opens that song, **Then** the sort control stays hidden and the sidebar otherwise renders as it does today.
 3. **Given** a song of an ordinary (non-hymn) songbook, **When** the operator opens it from the sidebar, **Then** the sort control is visible before and after the online update, as it is today.
 
@@ -66,7 +66,7 @@ with the server page's own; the `hidden` state agrees on every route.
 
 | ID | Criterion | How it is measured |
 | --- | --- | --- |
-| SC-001 | A hymn song opened from the sidebar shows no sort control at any point | home → Kidung → NKB → first song on the running site, sampling `#songSort`'s rendered width and `hidden` on every animation frame: no frame with a visible control, one filter width throughout |
+| SC-001 | A hymn song opened from the sidebar shows no sort control at any point | home → Kidung → NKB → first song on the running site, sampling `#songSort`'s rendered width and `hidden` on every animation frame: no frame with a visible control, and one filter width across the frames where that song page is on the stage |
 | SC-002 | The saved page and the server page agree on the control for every song route in the library | the parity regression's saved-vs-server field comparison over every songbook's song route: equal `hidden` state for each |
 | SC-003 | An ordinary songbook's song page is unchanged | the same comparison on the ordinary songbook's song route: the control stays visible before and after the online update |
 
