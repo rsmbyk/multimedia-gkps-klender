@@ -1,7 +1,7 @@
 # Changelog
 
 > **Archived (pre-adoption, legacy format).** Preserved as-is from before the
-> vexbook adoption on 2026-09-30. It uses the legacy per-version "App Versions"
+> process adoption on 2026-09-30. It uses the legacy per-version "App Versions"
 > format and is no longer updated. See the root
 > [`CHANGELOG.md`](../CHANGELOG.md) for current history.
 

@@ -10,8 +10,9 @@ updated: YYYY-MM-DD
 spec:
 branch:
 pr:
-archived_at:
-archive_reason:
+issue:
+closed_at:
+closed_reason:
 bump:
 release_version:
 ---
@@ -20,11 +21,11 @@ release_version:
 
 ## Summary
 
-<!-- What / why in a few sentences -->
+<!-- What and why, a few sentences. -->
 
 ## Notes
 
-<!-- Ideas, links, constraints -->
+<!-- Ideas, links, constraints. -->
 
 ## Acceptance sketch
 

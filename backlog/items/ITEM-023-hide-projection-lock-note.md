@@ -1,17 +1,18 @@
 ---
 id: ITEM-023
-status: archived
+status: superseded
 title: 'Hide the projection-lock explanation'
 type: fix
 priority: P1
 effort: S
 created: 2026-10-07
 updated: 2026-10-08
-spec: specs/021-hide-projection-lock-note/spec.md
+spec: 021-hide-projection-lock-note
 branch:
 pr:
-archived_at: 2026-10-08
-archive_reason: Superseded by accepted Spec 026 / ITEM-028, which removes the projection lock entirely.
+issue:
+closed_at: 2026-10-08
+closed_reason: Superseded by accepted Spec 026 / ITEM-028, which removes the projection lock entirely.
 bump: patch
 release_version:
 ---

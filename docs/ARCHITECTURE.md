@@ -1,29 +1,16 @@
 # Architecture
 
-As-built notes for this repository. Humans and agents follow **this doc**, not memory. Facts are
+As-built notes for this repository. Humans and agents follow **this doc**, not recollection. Facts are
 taken from the codebase; items marked *(confirm)* are the owner's call.
 
 ## Git and versioning
 
-- **Git model:** **Git Flow** (locked by [ADR 0002](adr/0002-git-flow-merge-strategy.md)).
-  - `main` — production (deployed to Vercel).
-  - `develop` — integration.
-  - **Features** (`feat/*`, `fix/*`, `chore/*`, `docs/*`) branch from `develop` and merge **into
-    `develop` with a squash merge** (one commit per PR). Default PR target is `develop`.
-  - **Releases** (`release/*`) branch from `develop`; **hotfixes** (`hotfix/*`) branch from `main`.
-    Both target `main`, and **every merge into `main` uses a standard merge commit** (history is
-    preserved, never squashed).
-  - After a release/hotfix lands on `main`, merge `main` back into `develop` so `VERSION` stays
-    aligned, then tag `vX.Y.Z` on the `main` commit.
-  - **After any merge: delete the remote branch only. Keep the local branch intact.**
-  - Never force-push `main` or `develop`; never create vendor/agent-named branches.
-  Recorded here per [`docs/PROCESS.md`](PROCESS.md).
-- **Versioning:** SemVer, locked by vexbook. Identity is repo-root [`VERSION`](../VERSION),
-  [`CHANGELOG.md`](../CHANGELOG.md), and annotated tags `vX.Y.Z`. The changelog uses the Keep a
-  Changelog structure; pre-adoption history is archived at
-  [`docs/CHANGELOG-archive.md`](CHANGELOG-archive.md). `VERSION` continues from the highest tag
-  shared with the parallel `develop` line (currently `0.6.0`, the first feature release after
-  adoption). See [ADR 0001](adr/0001-adopt-vexbook-process.md).
+- **Git model:** Git Flow; the repository's deviations and additions are in
+  [ADR 0002](adr/0002-git-flow-merge-strategy.md).
+- **Versioning:** SemVer. Identity is repo-root [`VERSION`](../VERSION),
+  [`CHANGELOG.md`](../CHANGELOG.md), and annotated tags `vX.Y.Z`. `VERSION` moves on
+  `develop` with each merged slice; the tag matches `main`. Pre-adoption history is
+  archived at [`docs/CHANGELOG-archive.md`](CHANGELOG-archive.md).
 
 ## Stack
 
@@ -113,14 +100,6 @@ these file bytes. `docker compose down` preserves the named volume;
 - E2E: **Playwright (Python)**, driven from Django `StaticLiveServerTestCase` under
   `tests/e2e/`; every E2E test class has the Django `e2e` tag. Browser tests run through
   `python manage.py test` after `playwright install chromium`.
-- CI: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs the fast lane for relevant PR
-  updates to `develop`/`main` and pushes to those branches. Draft PRs do not run browser tests;
-  ready-for-review PRs run each E2E module in parallel. Relevant code changes rerun E2E, while
-  docs/spec/backlog/version/changelog-only changes do not. Every job uses its own ephemeral
-  PostgreSQL service; no production data or credentials are configured.
-- The current GitHub plan does not allow branch-protection/ruleset enforcement for this private
-  repository, so maintainers must manually confirm the fast check and every E2E shard are green
-  before merging.
 
 ## Hosting
 

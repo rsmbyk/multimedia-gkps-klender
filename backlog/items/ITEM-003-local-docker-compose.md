@@ -7,7 +7,7 @@ priority: P1
 effort: S
 created: 2026-09-30
 updated: 2026-10-01
-spec: ../specs/002-local-docker-compose/spec.md
+spec: 002-local-docker-compose
 branch: chore/002-local-docker-compose
 pr: 258
 archived_at:
@@ -35,9 +35,8 @@ per clone through `WEB_PORT` / `DB_PORT` in `.env`.
 
 - This capability already exists on another line of history: tag `v0.5.2`,
   branch `archive/legacy-develop` (`specs/018-local-compose-ports`,
-  `ITEM-011`). It is **not** on the current `main` (the repo re-adopted
-  vexbook onto a fresh line), so it is being re-introduced here, adapted to
-  this line.
+  `ITEM-011`). It is **not** on the current `main` (the repo started a fresh
+  line), so it is being re-introduced here, adapted to this line.
 - Ports: `WEB_PORT=63404`, `DB_PORT=59075` (verified in the dynamic range;
   the same values already sit in the local, gitignored `.env`).
 - Container-internal ports stay conventional — `web` listens on `8000`,
@@ -57,6 +56,6 @@ per clone through `WEB_PORT` / `DB_PORT` in `.env`.
 
 ## Links
 
-- Spec: [`specs/002-local-docker-compose/spec.md`](../specs/002-local-docker-compose/spec.md)
+- Spec: [`specs/002-local-docker-compose/spec.md`](../../specs/002-local-docker-compose/spec.md)
 - Related items: ITEM-000 (process adoption)
 - Related history: `specs/018-local-compose-ports` @ `v0.5.2` (archived line)
