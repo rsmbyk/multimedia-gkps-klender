@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-128](./items/ITEM-128-github-issues-anchor.md) | Anchor board cards on GitHub Issues | Declare the tracker mirror, add the `board:item` label, and record when and how an issue is created | chore | P2 | S | — | `docs/tracker-mirror` | 2026-10-24 |
 
 ## In review
 

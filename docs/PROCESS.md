@@ -7,6 +7,7 @@ What this project uses:
 | Specification | Specification-driven development with Spec Kit |
 | Tests | Test-driven development; Playwright (Python) E2E |
 | Board | In-repo Kanban board |
+| Tracker mirror | GitHub Issues as an anchor: one issue per card, `Refs` in the pull request, never `Closes` |
 | Git | Git Flow |
 | Commits | Conventional Commits |
 | Versioning | SemVer; `VERSION`, `CHANGELOG.md`, annotated `vX.Y.Z` tags |
