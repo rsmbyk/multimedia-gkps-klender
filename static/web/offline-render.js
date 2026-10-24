@@ -421,7 +421,6 @@
     var citation = book.is_hymn_book ? ((book.short_name || book.name)
       + (song.number != null ? ' ' + song.number + (song.sub_number || '').toUpperCase() : ''))
       : book.name;
-    if (!citation) citation = book.name;
     var panel = '<section class="group"><ul>' + sortedSongbooks(books).map(function (item) {
       return bookLink(item, item.id === book.id, 'songs', !!doc.querySelector('#editorModal'));
     }).join('') + '</ul></section>';
