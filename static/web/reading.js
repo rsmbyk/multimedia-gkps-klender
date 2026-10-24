@@ -165,8 +165,9 @@
      are matched in place by position and element type. */
   function nodeIdentity(node) {
     if (!node || node.nodeType !== 1) return null;
-    /* A Bible edition block's label is its book name, which is the same for TB
-       and SIM in books like Rut; identify the block by its edition instead. */
+    /* A Bible edition block's label is its book translation's name, which the
+       TB and SIM versions share for books like Rut; identify the block by its
+       edition, not the label. */
     var attrs = ['id', 'data-entry-pk', 'data-old-item-pk', 'data-anchor',
       'data-entry-after', 'data-i', 'data-ed', 'data-name', 'data-month',
       'data-testament', 'data-move-grip'];

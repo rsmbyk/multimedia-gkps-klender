@@ -152,26 +152,18 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 bible.Verse.objects.create(
                     book_translation=sim_book, chapter=6, verse=1, text='SIM-only chapter.')
             if self._testMethodName == 'test_same_name_edition_blocks_keep_the_verse_text':
-                # Both translations call this book "Rut", so the stage's two
-                # edition blocks carry the same label. Their identity is the
-                # edition, not the label.
+                # The TB and SIM book translations of Rut share their name, so
+                # the stage's two edition blocks carry the same label and are
+                # told apart by their edition, not the label.
                 rut = bible.Book.objects.create(name='Rut', testament='old', number_of_chapters=2)
                 rut_tb = bible.BookTranslation.objects.create(
                     version=version, book=rut, translation='Rut')
                 rut_sim = bible.BookTranslation.objects.create(
                     version=sim_version, book=rut, translation='Rut', abbreviation='Rut')
-                bible.Verse.objects.create(
-                    book_translation=rut_tb, chapter=1, verse=1,
-                    text='Pada zaman para hakim ada kelaparan di negeri itu.')
-                bible.Verse.objects.create(
-                    book_translation=rut_sim, chapter=1, verse=1,
-                    text='Bani parhukum ma manggomgomi huta i.')
-                bible.Verse.objects.create(
-                    book_translation=rut_tb, chapter=2, verse=1,
-                    text='Naomi mempunyai seorang sanak dari pihak suaminya.')
-                bible.Verse.objects.create(
-                    book_translation=rut_sim, chapter=2, verse=1,
-                    text='Adong ma donganna si Naomi sada halak.')
+                self._verse(rut_tb, 1, 1, 'Pada zaman para hakim ada kelaparan di negeri itu.')
+                self._verse(rut_sim, 1, 1, 'Bani parhukum ma manggomgomi huta i.')
+                self._verse(rut_tb, 2, 1, 'Naomi mempunyai seorang sanak dari pihak suaminya.')
+                self._verse(rut_sim, 2, 1, 'Adong ma donganna si Naomi sada halak.')
                 self.rut = rut
 
         if self._testMethodName == 'test_hymn_song_order_is_visible_after_browsing_from_home':
@@ -241,6 +233,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         field = page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')
         field.fill(query)
         field.press('Enter')
+
+    def _verse(self, book_translation, chapter, verse, text):
+        return bible.Verse.objects.create(
+            book_translation=book_translation, chapter=chapter, verse=verse, text=text)
 
     # --- shell ---
 
