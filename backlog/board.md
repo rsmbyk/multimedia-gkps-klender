@@ -156,6 +156,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-119](./items/ITEM-119-consistent-reading-navigation.md) | Keep public reading navigation consistent with current and saved data | Online clicks settle on current data; saved views keep canonical order | fix | P1 | M | [119](../specs/119-consistent-reading-navigation/spec.md) | develop via [#368](https://github.com/rsmbyk/multimedia-gkps-klender/pull/368) | 2026-10-21 |
 | [ITEM-120](./items/ITEM-120-projector-goto-freshness.md) | Refresh projector Go To data while online | Current suggestions without reload; saved offline lookup remains | fix | P1 | M | [120](../specs/120-projector-goto-freshness/spec.md) | develop via [#369](https://github.com/rsmbyk/multimedia-gkps-klender/pull/369) | 2026-10-21 |
 | [ITEM-123](./items/ITEM-123-project-process.md) | Declare the project process and conventions | Write down what the repo uses and its one convention; retire the old process copies, add the process templates, and remove CI | chore | P1 | M | — | develop via [#371](https://github.com/rsmbyk/multimedia-gkps-klender/pull/371) | 2026-10-23 |
+| [ITEM-124](./items/ITEM-124-tatib-date-header-parity.md) | Match the Tata Ibadah date header to the songbook header | Restore the shared eyebrow style for a service date; let the row wrap instead of shrinking it | fix | P1 | S | [123](../specs/123-tatib-date-header-parity/spec.md) | develop via [#372](https://github.com/rsmbyk/multimedia-gkps-klender/pull/372) | 2026-10-24 |
 
 ## Archive
 

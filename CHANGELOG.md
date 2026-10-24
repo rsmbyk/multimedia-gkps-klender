@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A Tata Ibadah page's date header now reads as the same element as every other reading page's header — the shared size, weight, tracking, and colour a songbook header uses — instead of the 11px left behind when the media controls joined that row. When the stage is too narrow for both, the Project action wraps beneath the date rather than the date shrinking.
+
 ## [1.20.1] - 2026-10-21
 
 ### Fixed
