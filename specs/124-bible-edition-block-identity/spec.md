@@ -3,7 +3,7 @@
 **Slice**: `specs/124-bible-edition-block-identity`
 **Branch**: `fix/124-bible-edition-block-identity`
 **Created**: 2026-10-24
-**Status**: Draft — awaiting the owner at gate 1
+**Status**: Accepted (owner, gate 1, 2026-10-24)
 **Input**: "when you open a passage whose name is the same for both translations, the verse text is gone. only after you refresh on the same page the text appear" (sent with a screenshot of `/bible/8/1/` showing `Rut 1`, TB selected, and no verse text)
 
 ## User Scenarios & Testing
