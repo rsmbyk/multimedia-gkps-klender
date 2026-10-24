@@ -1,6 +1,6 @@
 ---
 id: ITEM-127
-status: in-progress
+status: in-review
 title: 'Cite a song page''s songbook by its short name'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-24
 updated: 2026-10-24
 spec: specs/126-songbook-short-header/spec.md
 branch: feat/126-songbook-short-header
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/375
 issue:
 closed_at:
 closed_reason:
