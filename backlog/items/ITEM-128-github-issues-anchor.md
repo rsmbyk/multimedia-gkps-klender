@@ -1,6 +1,6 @@
 ---
 id: ITEM-128
-status: in-progress
+status: in-review
 title: Anchor board cards on GitHub Issues
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-24
 updated: 2026-10-24
 spec:
 branch: docs/tracker-mirror
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/377
 issue: 376
 closed_at:
 closed_reason:
