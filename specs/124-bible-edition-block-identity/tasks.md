@@ -48,8 +48,8 @@
 - [x] T007 Write `backlog/items/ITEM-125-bible-edition-block-identity.md` and its `backlog/board.md` row.
 - [x] T008 Bump `VERSION` with a patch and add the changelog entry (take develop's current number at merge
       time; the neighbouring slice bumps the same level).
-- [ ] T009 Tick this list, fill `analysis.md`'s dispositions, open the draft PR with the repository's body
-      template, and link the spec. *(waiting for the owner's word to push)*
+- [x] T009 Tick this list, fill `analysis.md`'s dispositions, open the draft PR with the repository's body
+      template, and link the spec. *(draft PR [#373](https://github.com/rsmbyk/multimedia-gkps-klender/pull/373))*
 
 ## Phase N+1 — Convergence
 

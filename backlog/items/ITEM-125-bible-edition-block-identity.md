@@ -1,6 +1,6 @@
 ---
 id: ITEM-125
-status: in_progress
+status: in_review
 title: 'Keep a chapter''s verse text when both Bible editions share a book name'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-24
 updated: 2026-10-24
 spec: specs/124-bible-edition-block-identity/spec.md
 branch: fix/124-bible-edition-block-identity
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/373
 issue:
 closed_at:
 closed_reason:
