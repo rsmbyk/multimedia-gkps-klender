@@ -28,6 +28,10 @@ try:
 except ImportError:  # pragma: no cover - depends on environment
     HAS_PLAYWRIGHT = False
 
+# The eyebrow measurements that have to agree across pages and equal the frozen
+# look (spec 123). Keep this in step with the keys _eyebrow_style returns.
+EYEBROW_STYLE_KEYS = ('size', 'tracking', 'leading', 'weight', 'colour', 'opacity')
+
 
 @tag('e2e')
 @unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
@@ -1207,6 +1211,83 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 self.assertLessEqual(geometry['dateRight'], geometry['buttonLeft'], geometry)
                 self.assertGreaterEqual(geometry['titleTop'], geometry['rowBottom'], geometry)
                 page.close()
+
+    def _eyebrow_style(self, page):
+        """The header element's computed look, so two pages can be compared as rendered."""
+        return page.locator('#readEyebrow').evaluate('''el => {
+          const cs = getComputedStyle(el);
+          return {text: el.textContent.trim(), size: cs.fontSize, tracking: cs.letterSpacing,
+                  leading: cs.lineHeight, weight: cs.fontWeight, colour: cs.color,
+                  opacity: cs.opacity};
+        }''')
+
+    def test_tatib_date_header_matches_songbook_header(self):
+        """The service date and the songbook header are the same element and must read the same."""
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-home'))
+        self._search(page, 'waktu pagi')
+        page.locator('.result-group[data-kind="songs"] .result-row').first.click()
+        expect(page.locator('#readEyebrow')).to_be_visible()
+        songbook = self._eyebrow_style(page)
+        self.assertEqual(songbook['text'], 'Nyanyikanlah Kidung Baru 12')
+
+        page.locator('.rail [data-panel="tatib"]').click()
+        page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
+        expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
+        service_date = self._eyebrow_style(page)
+        page.close()
+
+        for key in EYEBROW_STYLE_KEYS:
+            self.assertEqual(service_date[key], songbook[key],
+                             '%s differs: date %s vs songbook %s' % (key, service_date, songbook))
+        self.assertEqual(service_date['size'], '16.5px', service_date)
+        self.assertEqual(service_date['weight'], '600', service_date)
+        self.assertEqual(service_date['colour'], 'rgb(31, 31, 29)', service_date)
+        self.assertEqual(service_date['opacity'], '0.78', service_date)
+        self.assertAlmostEqual(float(service_date['tracking'].replace('px', '')), 16.5 * 0.12,
+                               delta=0.01, msg=service_date)
+        self.assertAlmostEqual(float(service_date['leading'].replace('px', '')), 16.5 * 1.65,
+                               delta=0.01, msg=service_date)
+
+    def test_tatib_date_header_reflows_at_a_narrow_stage(self):
+        """A stage too narrow for the date and Project keeps the date whole and the page still."""
+        for width in (1440, 1280, 390):
+            with self.subTest(width=width):
+                page = self._page(width=width)
+                try:
+                    page.goto(self.live_server_url + reverse('web-home'))
+                    page.locator('.rail [data-panel="tatib"]').click()
+                    page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
+                    expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
+                    geometry = page.evaluate('''() => {
+                      const eyebrow = document.querySelector('#readEyebrow');
+                      const box = eyebrow.getBoundingClientRect();
+                      const button = document.querySelector('.read__project-btn').getBoundingClientRect();
+                      const row = document.querySelector('.read__head-top');
+                      const range = document.createRange();
+                      range.selectNodeContents(eyebrow);
+                      return {
+                        size: getComputedStyle(eyebrow).fontSize,
+                        boxWidth: box.width,
+                        inkWidth: range.getBoundingClientRect().width,
+                        clipped: eyebrow.scrollWidth - eyebrow.clientWidth,
+                        docOverflow: document.documentElement.scrollWidth - window.innerWidth,
+                        rowWidth: row.getBoundingClientRect().width,
+                        rowGap: parseInt(getComputedStyle(row).columnGap, 10) || 0,
+                        buttonWidth: button.width,
+                        buttonOnItsOwnLine: button.top >= box.bottom + 4
+                      };
+                    }''')
+                    self.assertEqual(geometry['size'], '16.5px', geometry)
+                    self.assertGreaterEqual(geometry['boxWidth'] + 1, geometry['inkWidth'], geometry)
+                    self.assertLessEqual(geometry['clipped'], 0, geometry)
+                    self.assertLessEqual(geometry['docOverflow'], 0, geometry)
+                    # the rule: both on one row while they fit, the Project action beneath the date when not
+                    cannot_fit = (geometry['boxWidth'] + geometry['rowGap']
+                                  + geometry['buttonWidth'] > geometry['rowWidth'])
+                    self.assertEqual(geometry['buttonOnItsOwnLine'], cannot_fit, geometry)
+                finally:
+                    page.close()
 
     def test_service_text_sidebar_shows_two_lines_and_centers_grip(self):
         page = self._page()

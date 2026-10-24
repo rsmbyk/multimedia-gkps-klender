@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A Tata Ibadah page's date header now reads as the same element as every other reading page's header — the shared size, weight, tracking, and colour a songbook header uses — instead of the 11px left behind when the media controls joined that row. When the stage is too narrow for both, the Project action wraps beneath the date rather than the date shrinking.
 - Opening or moving between chapters of a Bible book whose TB and SIM book translations share a name (Rut, Ezra, Nehemia, …) through the reading sidebar keeps the verse text on the stage; the two edition blocks no longer collapse into one hidden block, so a reload is no longer needed.
 
 ## [1.20.1] - 2026-10-21
