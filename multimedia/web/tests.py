@@ -1,5 +1,6 @@
 from datetime import date
 import json
+import re
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
@@ -263,6 +264,57 @@ class ReadingViewTests(TestCase):
         self.assertContains(response, 'NKB 12')
         self.assertContains(response, 'Di waktu pagi aku bersyukur')
         self.assertContains(response, 'read__eyebrow')
+
+    # --- the song header's citation (spec 126) ---
+    #
+    # `assertContains(response, 'NKB 12')` cannot pin these: the sidebar row already
+    # prints that reference, so the assertion passes whichever name the *header* uses.
+    # These read the header paragraph itself.
+
+    def _eyebrow(self, response):
+        match = re.search(
+            r'<p class="read__eyebrow" id="readEyebrow"[^>]*>([^<]*)</p>',
+            response.content.decode())
+        if not match:
+            self.fail('the song page has no header paragraph')
+        return match.group(1)
+
+    def test_song_detail_header_cites_the_short_songbook_reference(self):
+        response = self.client.get(reverse('web-song', args=[self.song.id]))
+        self.assertEqual(self._eyebrow(response), 'NKB 12')
+
+    def test_a_sub_number_follows_the_short_reference(self):
+        sub = songs.Song.objects.create(
+            book=self.nkb, number=12, sub_number='b', title='Di Waktu Pagi, bait kedua')
+        response = self.client.get(reverse('web-song', args=[sub.id]))
+        self.assertEqual(self._eyebrow(response), 'NKB 12B')
+
+    def test_an_unnumbered_hymn_song_shows_the_reference_alone(self):
+        legacy = songs.Song.objects.create(book=self.nkb, number=None, title='Tanpa Nomor')
+        response = self.client.get(reverse('web-song', args=[legacy.id]))
+        self.assertEqual(self._eyebrow(response), 'NKB')
+
+    def test_song_detail_header_falls_back_to_the_full_songbook_name(self):
+        book = songs.Book.objects.create(
+            name='Kidung Tanpa Singkatan', short_name='', is_hymn_book=True)
+        numbered = songs.Song.objects.create(book=book, number=4, title='Lagu Empat')
+        response = self.client.get(reverse('web-song', args=[numbered.id]))
+        self.assertEqual(self._eyebrow(response), 'Kidung Tanpa Singkatan 4')
+
+    def test_song_detail_tab_title_uses_the_short_reference(self):
+        response = self.client.get(reverse('web-song', args=[self.song.id]))
+        self.assertEqual(response.context['page_title'], 'NKB 12 — GKPS Klender')
+
+    def test_an_ordinary_songbook_header_keeps_its_full_name(self):
+        ordinary_song = self.harian.song_set.order_by('title').first()
+        response = self.client.get(reverse('web-song', args=[ordinary_song.id]))
+        self.assertEqual(self._eyebrow(response), 'Kidung Harian')
+
+    def test_an_ordinary_songbook_with_a_short_name_still_shows_its_full_name(self):
+        book = songs.Book.objects.create(name='Kidung Harian Baru', short_name='KH')
+        song = songs.Song.objects.create(book=book, title='Zebra Baru')
+        response = self.client.get(reverse('web-song', args=[song.id]))
+        self.assertEqual(self._eyebrow(response), 'Kidung Harian Baru')
 
     def test_deleted_song_is_hidden_from_song_detail_and_search(self):
         self.next_song.delete()
