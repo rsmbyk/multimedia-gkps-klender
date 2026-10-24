@@ -50,7 +50,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
 | [ITEM-128](./items/ITEM-128-github-issues-anchor.md) | Anchor board cards on GitHub Issues | Declare the tracker mirror, add the `board:item` label, and record when and how an issue is created | chore | P2 | S | — | [#377](https://github.com/rsmbyk/multimedia-gkps-klender/pull/377) | 2026-10-24 |
-| [ITEM-129](./items/ITEM-129-vex-process.md) | Follow the Vex process grammar from memory | Generate `docs/PROCESS.md` from the grammar's rule index; keep the repo's conventions in `repo:` blocks | chore | P2 | S | — | [#379](https://github.com/rsmbyk/multimedia-gkps-klender/pull/379) | 2026-10-24 |
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
@@ -161,6 +160,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-125](./items/ITEM-125-bible-edition-block-identity.md) | Keep a chapter's verse text when both Bible editions share a book name | Key the reading stage's edition blocks by edition, not the shared book label | fix | P1 | S | [124](../specs/124-bible-edition-block-identity/spec.md) | develop via [#373](https://github.com/rsmbyk/multimedia-gkps-klender/pull/373) | 2026-10-24 |
 | [ITEM-126](./items/ITEM-126-saved-song-sort-parity.md) | A saved hymn song page never shows the song sort control | Follow the server's hymn-book rule in the saved render so the control no longer flashes | fix | P2 | S | [125](../specs/125-saved-song-sort-parity/spec.md) | develop via [#374](https://github.com/rsmbyk/multimedia-gkps-klender/pull/374) | 2026-10-24 |
 | [ITEM-127](./items/ITEM-127-songbook-short-header.md) | Cite a song page's songbook by its short name | Show `PKJ 4` in the song header and the tab, mirror it in the saved render, and start `docs/spec/reading.md` | fix | P2 | S | [126](../specs/126-songbook-short-header/spec.md) | develop via [#375](https://github.com/rsmbyk/multimedia-gkps-klender/pull/375) | 2026-10-24 |
+| [ITEM-129](./items/ITEM-129-vex-process.md) | Follow the Vex process grammar from memory | Generate `docs/PROCESS.md` from the grammar's rule index; keep the repo's conventions in `repo:` blocks | chore | P2 | S | — | develop via [#379](https://github.com/rsmbyk/multimedia-gkps-klender/pull/379) | 2026-10-24 |
 
 ## Archive
 

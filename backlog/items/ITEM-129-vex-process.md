@@ -1,6 +1,6 @@
 ---
 id: ITEM-129
-status: in-review
+status: done
 title: Follow the Vex process grammar from memory
 type: chore
 priority: P2
