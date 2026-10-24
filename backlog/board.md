@@ -30,7 +30,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-126](./items/ITEM-126-saved-song-sort-parity.md) | A saved hymn song page never shows the song sort control | Follow the server's hymn-book rule in the saved render so the control no longer flashes | fix | P2 | S | [125](../specs/125-saved-song-sort-parity/spec.md) | [#374](https://github.com/rsmbyk/multimedia-gkps-klender/pull/374) | 2026-10-24 |
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-017](./items/ITEM-017-tatib-form-fields.md) | Remove first-section and active controls from Tata Ibadah forms | Create empty active services and preserve activation on edit | fix | P1 | S | [015](../specs/015-tatib-form-fields/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -50,6 +49,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-118](./items/ITEM-118-powerpoint-media-display.md) | Display PowerPoint slides in Preview and projector | Keep the original PPT/PPTX; present static slides through a local display copy | feat | P1 | L | [118](../specs/118-powerpoint-media-display/spec.md) | [#366](https://github.com/rsmbyk/multimedia-gkps-klender/pull/366) | 2026-10-20 |
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
+| [ITEM-126](./items/ITEM-126-saved-song-sort-parity.md) | A saved hymn song page never shows the song sort control | Follow the server's hymn-book rule in the saved render so the control no longer flashes | fix | P2 | S | [125](../specs/125-saved-song-sort-parity/spec.md) | [#374](https://github.com/rsmbyk/multimedia-gkps-klender/pull/374) | 2026-10-24 |
 
 ## Done
 
