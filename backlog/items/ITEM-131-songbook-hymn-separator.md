@@ -1,6 +1,6 @@
 ---
 id: ITEM-131
-status: in-progress
+status: in-review
 title: 'Separate the hymn songbooks from the rest of the Kidung panel'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-24
 updated: 2026-10-24
 spec: specs/128-songbook-hymn-separator/spec.md
 branch: feat/128-songbook-hymn-separator
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/380
 issue:
 closed_at:
 closed_reason:
