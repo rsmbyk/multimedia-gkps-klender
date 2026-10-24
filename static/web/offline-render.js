@@ -445,8 +445,10 @@
       return '<p class="v"><span class="v__n">' + (index + 1) + '</span><span>'
         + escape(verse.lyric).replace(/\n/g, '<br>') + '</span></p>';
     }).join('');
+    /* A hymn book keeps number order, so its page offers no sort control — the same rule the
+       server applies (`show_song_sort = not book.is_hymn_book`, spec 011). */
     common(doc, 'kidung', citation, song.title || citation, '',
-      body, panel, children, null, true);
+      body, panel, children, null, !book.is_hymn_book);
     doc.querySelector('#chTitle').textContent = 'Song list — ' + book.name;
     doc.querySelector('#readEyebrow').textContent = citation;
     doc.querySelector('#readNo').textContent = '';

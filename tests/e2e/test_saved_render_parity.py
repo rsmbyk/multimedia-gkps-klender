@@ -123,6 +123,90 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                 self.assertLessEqual(abs(saved_gap - server_gap), 1)
             browser.close()
 
+    def test_saved_song_pages_match_the_server_sort_control(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+            routes = [
+                f'/songs/{self.hymn_song.pk}/',
+                f'/songs/{self.song.pk}/',
+                f'/songs/book/{self.hymn_id}/',
+                f'/songs/book/{self.ordinary_id}/',
+            ]
+            for url in routes:
+                with self.subTest(url=url):
+                    result = page.evaluate("""async url => {
+                      const saved = await GKPSOfflineRender.render(url);
+                      const response = await fetch(url, {cache: 'no-store'});
+                      const server = new DOMParser().parseFromString(await response.text(), 'text/html');
+                      const sortState = doc => {
+                        const sort = doc.querySelector('#songSort');
+                        return sort ? sort.hidden : null;
+                      };
+                      return {saved: sortState(saved), server: sortState(server)};
+                    }""", url)
+                    self.assertEqual(result['saved'], result['server'])
+
+    def test_hymn_song_sidebar_open_never_paints_the_sort_control(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(self.live_server_url + '/home/')
+            wait_for_offline_ready(page)
+
+            def start_sampling():
+                page.evaluate("""() => {
+                  window.__sortSamples = [];
+                  if (window.__sortSampler) cancelAnimationFrame(window.__sortSampler);
+                  const step = () => {
+                    const sort = document.getElementById('songSort');
+                    const filter = document.getElementById('songFilter');
+                    if (sort && filter) window.__sortSamples.push({
+                      path: location.pathname,
+                      hidden: sort.hidden,
+                      sortWidth: sort.getBoundingClientRect().width,
+                      filterWidth: filter.getBoundingClientRect().width,
+                    });
+                    window.__sortSampler = requestAnimationFrame(step);
+                  };
+                  window.__sortSampler = requestAnimationFrame(step);
+                }""")
+
+            def open_hymn_song(settle_ms):
+                page.locator('.rail [data-panel="kidung"]').click()
+                page.locator(f'#panelBody a.book[href="/songs/book/{self.hymn_id}/"]').click()
+                page.locator(f'#chList a.songrow[href="/songs/{self.hymn_song.pk}/"]').click()
+                page.wait_for_function(
+                    'path => location.pathname === path',
+                    arg=f'/songs/{self.hymn_song.pk}/')
+                page.wait_for_timeout(settle_ms)
+
+            start_sampling()
+            open_hymn_song(800)
+            samples = page.evaluate('window.__sortSamples')
+            painted = [sample for sample in samples if not sample['hidden'] or sample['sortWidth'] > 0]
+            self.assertEqual(painted, [])
+            song_samples = [sample for sample in samples
+                            if sample['path'] == f'/songs/{self.hymn_song.pk}/']
+            self.assertTrue(song_samples)
+            widths = {round(sample['filterWidth'], 1) for sample in song_samples}
+            self.assertEqual(len(widths), 1, f'the song filter changed width: {sorted(widths)}')
+            self.assertTrue(page.locator('#songSort').is_hidden())
+
+            page.locator('.rail__logo').click()
+            page.wait_for_function("() => location.pathname === '/'")
+            context.set_offline(True)
+            start_sampling()
+            open_hymn_song(600)
+            samples = page.evaluate('window.__sortSamples')
+            painted = [sample for sample in samples if not sample['hidden'] or sample['sortWidth'] > 0]
+            self.assertEqual(painted, [])
+            self.assertTrue(page.locator('#songSort').is_hidden())
+            browser.close()
+
     def test_saved_reading_routes_match_server_fields(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
@@ -160,6 +244,7 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                         chTitle: one(doc, '#chTitle'),
                         chLabel: one(doc, 'label[for="songFilter"]'),
                         chPlaceholder: one(doc, '#songFilter', 'placeholder'),
+                        sortHidden: doc.querySelector('#songSort') ? doc.querySelector('#songSort').hidden : null,
                         songNumbers: many(doc, '#chList .songrow__c'),
                         eyebrow: one(doc, '#readEyebrow'),
                         readName: doc.documentElement.dataset.read === 'on'
