@@ -2,12 +2,13 @@
 {% comment %}
 The operator dock (spec 119): pick a Tata Ibadah, browse it, and run it.
 
-Two views of one panel, built to the approved mockup (v70): the picker is a
-month-grouped list of services (flat rows — name, an "On screen" pill, a short date);
-the runner is a numbered list of entries — songs showing their reference beside the
-title with a "Bait …" line under it, untitled text in quiet italics, a section break
-as a hairline — with the current entry pinned, the next one named under it, and a
-transport row (edition chip, bait strip, two arrows) at the foot.
+Two views of one panel, built to the approved mockup (v70): the picker is an
+age-grouped list of services (flat rows — name, an "On screen" pill, a "Today" pill
+on the day's own rows, a short date) under the same four buckets the reading sidebar
+draws (spec 132); the runner is a numbered list of entries — songs showing their
+reference beside the title with a "Bait …" line under it, untitled text in quiet
+italics, a section break as a hairline — with the current entry pinned, the next one
+named under it, and a transport row (edition chip, bait strip, two arrows) at the foot.
 
 The display state is browser-local (web/display.js): the picker says which service is
 on screen, the runner says which entry and screen, and the slashed-eye button in the
@@ -81,16 +82,17 @@ and Space never presses whatever was last clicked.
 
     <div class="dock__body" id="pickBody">
       {% for group in groups %}
-      <section>
+      <section{% if group.key %} data-bucket="{{ group.key }}"{% endif %}>
         <h3 class="group__head">{{ group.label }}</h3>
         <ul>
           {% for service in group.services %}
           <li>
-            <button type="button" class="servicerow{% if service.is_today %} is-today{% elif service.is_upcoming %} is-upcoming{% endif %}"
+            <button type="button" class="servicerow"
                     data-service="{{ service.pk }}" data-name="{{ service.name }}"
                     data-date="{{ service.long_date }}" tabindex="-1">
               <span class="servicerow__n">{{ service.name }}</span>
               <span class="onscreen" data-onscreen-for="{{ service.pk }}" hidden>On screen</span>
+              {% if service.is_today %}<span class="servicerow__today">Today</span>{% endif %}
               <span class="servicerow__d">{{ service.short_date }}</span>
             </button>
           </li>

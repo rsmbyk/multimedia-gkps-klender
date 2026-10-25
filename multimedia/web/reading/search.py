@@ -49,11 +49,6 @@ def format_date_long(value):
     return f'{value.day} {MONTHS_LONG[value.month - 1]} {value.year}'
 
 
-def format_month_long(value):
-    """The mockup's long month head: ``Agustus 2026``."""
-    return f'{MONTHS_LONG[value.month - 1]} {value.year}'
-
-
 def normalize(text):
     """Case- and diacritic-folded comparison form."""
     text = unicodedata.normalize('NFD', str(text or ''))

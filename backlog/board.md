@@ -10,6 +10,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-002](./items/ITEM-002-projection-controls.md) | Projection source as display + controls | Drive the service from the projection window without switching to the dock | feat | P1 | L | — | 2026-09-30 |
+| [ITEM-137](./items/ITEM-137-songbook-empty-view-test.md) | The songbook empty-view E2E still expects the old filter copy | A red browser test from spec 129's rule change: the empty copy, not the filter copy, is what an empty panel shows | fix | P1 | S | — | 2026-10-25 |
 
 ## Speccing
 
@@ -55,6 +56,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-136](./items/ITEM-136-tatib-date-buckets.md) | Group the Tata Ibadah list by age, and mark today | Four age buckets instead of month headings, today first with a `Today` badge; the dock and the saved copy agree | feat | P2 | S | [132](../specs/132-tatib-sidebar-date-buckets/spec.md) | develop via [#392](https://github.com/rsmbyk/multimedia-gkps-klender/pull/392) | 2026-10-25 |
 | [ITEM-135](./items/ITEM-135-process-vintage-2026-10-25.md) | Carry the 2026-10-25 grammar vintage into the process page | Regenerate `docs/PROCESS.md` at the current vintage: one new rule, nine reworded, the operative detail restored | chore | P2 | S | — | develop via [#389](https://github.com/rsmbyk/multimedia-gkps-klender/pull/389) | 2026-10-25 |
 | [ITEM-134](./items/ITEM-134-retire-break-entry.md) | Retire the Break service entry kind | No surface offers a Break; the old ones still render, project, reorder and delete | feat | P1 | S | [131](../specs/131-retire-break-entry/spec.md) | develop via [#387](https://github.com/rsmbyk/multimedia-gkps-klender/pull/387) | 2026-10-25 |
 | [ITEM-133](./items/ITEM-133-empty-service-tiles.md) | An empty Tata Ibadah quarter-centres its five add tiles | Put the empty block on the quarter mark of the reading area and turn the five adds into square icon-only tiles in one row | fix | P2 | S | [130](../specs/130-empty-service-tiles/spec.md) | develop via [#384](https://github.com/rsmbyk/multimedia-gkps-klender/pull/384) | 2026-10-25 |

@@ -169,7 +169,7 @@
        TB and SIM versions share for books like Rut; identify the block by its
        edition, not the label. */
     var attrs = ['id', 'data-entry-pk', 'data-old-item-pk', 'data-anchor',
-      'data-entry-after', 'data-i', 'data-ed', 'data-name', 'data-month',
+      'data-entry-after', 'data-i', 'data-ed', 'data-name', 'data-bucket',
       'data-testament', 'data-move-grip'];
     for (var i = 0; i < attrs.length; i++) {
       var value = node.getAttribute(attrs[i]);

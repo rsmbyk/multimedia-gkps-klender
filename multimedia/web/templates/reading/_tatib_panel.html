@@ -1,12 +1,12 @@
 {% for group in tatib_groups %}
-<section class="group"{% if group.key %} data-month="{{ group.key }}"{% endif %}>
+<section class="group"{% if group.key %} data-bucket="{{ group.key }}"{% endif %}>
   {% if group.label %}<h3 class="group__head">{{ group.label }}</h3>{% endif %}
   <ul>
     {% for service in group.services %}
     <li><a class="book" href="{% url 'web-tatib-service' service.id %}"
            data-name="{{ service.id }}" data-sim="{{ service.id }}"
-           aria-label="{{ service.name }}{% if service.date_display %} ({{ service.date_display }}){% endif %}"{% if service.current %} aria-current="true"{% endif %}>
-      <span class="book__n">{{ service.name }}</span>
+           aria-label="{{ service.name }}{% if service.date_display %} ({{ service.date_display }}){% endif %}{% if service.today %} — today{% endif %}"{% if service.current %} aria-current="true"{% endif %}>
+      <span class="book__n">{{ service.name }}</span>{% if service.today %}<span class="book__today">Today</span>{% endif %}
       {% if service.date_display %}<span class="book__s">{{ service.date_display }}</span>{% endif %}</a>{% if editor_enabled %}
     <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="{{ service.id }}"
             aria-label="Edit {{ service.name }}">

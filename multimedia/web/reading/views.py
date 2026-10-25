@@ -41,6 +41,7 @@ from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
 from multimedia import media_handoff
 from multimedia.tatib.screen_breaks import eligible_boundaries, single_screen_boundaries, valid_breaks
+from multimedia.web.reading import date_buckets
 from multimedia.web.reading import editors
 from multimedia.web.reading import entries as entry_forms
 from multimedia.web.reading.formatting import format_verses
@@ -846,19 +847,18 @@ def _tatib_groups(mode, selected_service=None):
                 for service in templates]
         groups = [{'label': 'Templates', 'key': '', 'services': rows}]
     else:
+        # The dated list reads as a schedule, not a calendar: the four age buckets of
+        # spec 132, in their fixed order, each drawn only while it holds rows.
         groups = []
-        current = None
-        for service in services.filter(date__isnull=False).order_by('-date', '-created_at'):
-            key = f'{service.date.year}-{service.date.month:02d}'
-            if current is None or current['key'] != key:
-                current = {'label': search_lib.format_month_long(service.date),
-                           'key': key, 'services': []}
-                groups.append(current)
-            current['services'].append({
-                'id': service.pk, 'name': service.name,
-                'date_display': search_lib.format_date_short(service.date),
-                'current': service.pk == selected_id,
-            })
+        dated = services.filter(date__isnull=False).order_by('-date', '-created_at')
+        today = date_buckets.present_day()
+        for key, label, rows in date_buckets.groups(dated, today):
+            groups.append({'key': key, 'label': label, 'services': [
+                {'id': service.pk, 'name': service.name, 'date': service.date,
+                 'date_display': search_lib.format_date_short(service.date),
+                 'today': service.date == today,
+                 'current': service.pk == selected_id}
+                for service in rows]})
     # A service the shown mode does not hold is not listed at all -- no synthetic row and no
     # "currently open" card under the last one (spec 082). The open service is highlighted
     # only where its own row is.
@@ -1347,19 +1347,20 @@ def obs_dock(request):
     """
     services = list(tatib_models.TataIbadah.objects
                     .filter(is_active=True, date__isnull=False)
-                    .order_by('-date', '-id'))
+                    .order_by('-date', '-created_at'))
+    today = date_buckets.present_day()
     groups = []
-    today = timezone.localdate()
-    for service in services:
-        # Indonesian month names (the template's |date filter speaks English here).
-        service.short_date = search_lib.format_date_short(service.date)
-        service.long_date = search_lib.format_date_long(service.date)
-        service.is_today = service.date == today
-        service.is_upcoming = service.date > today
-        label = search_lib.format_month_long(service.date)
-        if not groups or groups[-1]['label'] != label:
-            groups.append({'label': label, 'services': []})
-        groups[-1]['services'].append(service)
+    # The same four age buckets the reading panel draws (spec 132), each row keeping
+    # the dock's own Indonesian dates and the one mark the panel also uses: the
+    # today badge. No tints: the bucket heading carries the age, and the today tint
+    # was the same token a selected row uses.
+    for key, label, rows in date_buckets.groups(services, today):
+        for service in rows:
+            # Indonesian month names (the template's |date filter speaks English here).
+            service.short_date = search_lib.format_date_short(service.date)
+            service.long_date = search_lib.format_date_long(service.date)
+            service.is_today = service.date == today
+        groups.append({'key': key, 'label': label, 'services': rows})
     return render(request, 'reading/obs_dock.html', {
         'groups': groups,
         'page_title': 'Dock — Service Entries',

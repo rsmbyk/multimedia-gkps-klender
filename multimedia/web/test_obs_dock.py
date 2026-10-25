@@ -4,9 +4,11 @@ Routes and first paint only: the state behaviour lives in the browser (E2E);
 these tests pin the server side — which pages exist, what they carry, and that
 the old per-service projector routes are gone.
 """
+from datetime import date, timedelta
+from unittest.mock import patch
+
 from django.conf import settings
 from django.test import TestCase, override_settings
-from django.utils import timezone
 
 from pathlib import Path
 import re
@@ -14,13 +16,21 @@ import re
 from multimedia.tatib.models import TataIbadah
 from multimedia.web.reading import search as search_lib
 
+# The dock's fixture day is fixed, not `timezone.localdate()`: the bucket test pins
+# its own present day, and a moving fixture would one day collide with it.
+FIXTURE_DAY = date(2026, 6, 15)
+# The present day the bucket test pins. Pinned, not read from the clock: a moving day
+# would put the today-minus-forty row in the previous calendar year from 1 January to
+# 9 February, emptying `Earlier this year`.
+BUCKET_DAY = date(2026, 12, 20)
+
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class ObsSurfacesTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.service = TataIbadah.objects.create(
-            name='Ibadah Minggu', date=timezone.localdate())
+            name='Ibadah Minggu', date=FIXTURE_DAY)
 
     def test_the_projector_renders_without_a_service(self):
         response = self.client.get('/projector')
@@ -39,15 +49,41 @@ class ObsSurfacesTest(TestCase):
         self.assertTemplateUsed(response, 'reading/obs_dock.html')
         self.assertContains(response, 'Ibadah Minggu')
 
-    def test_the_dock_groups_the_picker_by_month_in_indonesian(self):
-        response = self.client.get('/obs/dock')
-        # The product's own month names, not Django's English filter. Built from the
-        # fixture's date and the name tables — a literal date here rots at midnight.
-        date = self.service.date
+    def test_the_dock_picker_names_the_same_date_buckets_as_the_reading_panel(self):
+        """Spec 132: the dock and the reading panel name dates the same way.
+
+        The present day is pinned so the four buckets hold on any run: a today-minus-
+        forty row falls into the previous calendar year from 1 January to 9 February,
+        which would empty `Earlier this year`.
+        """
+        today = BUCKET_DAY
+        for name, day in (('Hari ini', today),
+                          ('Besok', today + timedelta(days=1)),
+                          ('Besok lagi', today + timedelta(days=1)),
+                          ('Minggu depan', today + timedelta(days=7)),
+                          ('Sepuluh hari lalu', today - timedelta(days=10)),
+                          ('Sebulan lebih', today - timedelta(days=40)),
+                          ('Tahun lalu', today - timedelta(days=400))):
+            TataIbadah.objects.create(name=name, date=day, is_active=True)
+        with patch('multimedia.web.reading.date_buckets.present_day', return_value=today):
+            response = self.client.get('/obs/dock')
+        groups = response.context['groups']
+        self.assertEqual([group['label'] for group in groups],
+                         ['Upcoming', 'Last 30 days', 'Earlier this year', 'Older'])
+        # FR-004: today first, then the rest farthest date first; same-date rows break
+        # on creation time, newest first — the same tiebreak the panel uses.
+        upcoming = next(group for group in groups if group['label'] == 'Upcoming')
+        self.assertEqual([service.name for service in upcoming['services']],
+                         ['Hari ini', 'Minggu depan', 'Besok lagi', 'Besok'])
+        # The dock keeps its own Indonesian short dates inside the rows (spec 132) …
         self.assertContains(
-            response, f'{search_lib.MONTHS_LONG[date.month - 1]} {date.year}')
-        self.assertContains(
-            response, f'{date.day} {search_lib.MONTHS_SHORT[date.month - 1]} {date.year}')
+            response, f'{today.day} {search_lib.MONTHS_SHORT[today.month - 1]} {today.year}')
+        # … marks today with the panel's badge, and no longer tints a row.
+        html = response.content.decode()
+        self.assertContains(response, 'class="servicerow"')
+        self.assertNotIn(' is-today', html)
+        self.assertNotIn(' is-upcoming', html)
+        self.assertEqual(html.count('<span class="servicerow__today">Today</span>'), 1)
 
     def test_the_dock_lists_only_dated_services(self):
         TataIbadah.objects.create(name='Kerangka Kosong', date=None)
