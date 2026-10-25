@@ -1,6 +1,6 @@
 ---
 id: ITEM-135
-status: in-progress
+status: in-review
 title: 'Carry the 2026-10-25 grammar vintage into the process page'
 type: chore
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-25
 updated: 2026-10-25
 spec:
 branch: docs/process-vintage-2026-10-25
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/389
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/388
 closed_at:
 closed_reason:
