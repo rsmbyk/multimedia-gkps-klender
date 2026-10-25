@@ -4,7 +4,7 @@
 **Branch**: `fix/130-empty-service-stage`
 **Created**: 2026-10-25
 **Status**: Accepted (owner, gate 1, 2026-10-25; the spec, plan, tasks and analysis pack accepted at
-gate 2 the same day)
+gate 2 the same day; Revision 1 — the quarter mark — accepted the same day)
 **Input**: "center the empty tata ibadah view (and the buttons) vertically on the page. also replace the
 buttons to be a square icon-only without texts and arranged horizontally" (sent with a screenshot of an
 empty `25 OKTOBER 2026` service whose five add actions sit as a full-width column under the heading, near
@@ -147,10 +147,10 @@ None. The change is presentational; no model, view signature or stored value cha
 - Q: Does `Add Media` get a glyph, having never had one? → *Assumed* yes; an icon-only row cannot leave a
   blank tile.
 
-### Revision 1 — 2026-10-25, after gate 2
+### Revision 1 — 2026-10-25, after gate 2 · **accepted**
 
 The owner accepted the pack and then moved the placement: **from the middle of the reading area to its
-quarter mark.** What changed, and only this:
+quarter mark.** Accepted as written below on the same day. What changed, and only this:
 
 | Artifact | Was | Now |
 | --- | --- | --- |

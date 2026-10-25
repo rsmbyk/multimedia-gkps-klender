@@ -2,7 +2,7 @@
 
 Reviewer-owned: the agent writes these and never ticks them.
 
-- [x] The empty block sits in the middle of the reading area, not under the header, at 1440×900.
+- [x] The empty block's centre sits a quarter of the way down the reading area, clear of the header, at 1440×900.
 - [x] The five add actions are one horizontal row, and each is a square.
 - [x] A tile shows only a glyph — no visible label anywhere in the row.
 - [x] Hovering a tile names it, and the name is `Add Passage`, `Add Song`, `Add Text`, `Add Break`,
