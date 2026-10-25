@@ -4,7 +4,8 @@
 **Branch**: `feat/132-tatib-sidebar-date-buckets`
 **Created**: 2026-10-25
 **Status**: Accepted (owner, gate 1, 2026-10-25; the plan, tasks, analysis and the 22-item checklist
-accepted at gate 2 the same day)
+accepted at gate 2 the same day). A post-Fold review on 2026-10-25 superseded US3/AC2 and one
+Assumption (SDD-08) — the dock keeps only its `Today` badge; see their notes.
 **Input**: "i want you to change the date group header in tataibadah sidebar to the followings (i still
 need suggestion on the naming part tho): upcoming (today or later) · last months (last 30 days) · earlier
 this year (older than 30 days but still in the current calendar year) · anything older" — sent with a
@@ -65,8 +66,9 @@ reading panel's.
 
 1. **Given** the same services, **When** `/obs/dock` opens, **Then** its picker shows the four buckets
    under the same labels and in the same order.
-2. **Given** a service dated today, **Then** its dock row keeps its today mark, and a future one keeps its
-   upcoming mark.
+2. ~~**Given** a service dated today, **Then** its dock row keeps its today mark, and a future one
+   keeps its upcoming mark.~~ **Superseded 2026-10-25** (review): the dock drops both row tints and a
+   future row carries no mark — the Clarify answer and FR-006 win (SDD-08).
 
 ### US4 — The saved copy groups the same way (P2)
 
@@ -165,7 +167,8 @@ the server route's.
   window. Thirty days is written as a constant, not a form field.
 - **The dock's month grouping is the same rule** and takes the same buckets, because the owner asked for
   both surfaces to name dates the same way; the dock keeps its own row markup and its today/upcoming
-  marks.
+  marks. **Superseded 2026-10-25** (review): "its today/upcoming marks" meant the two row tints; the dock
+  now keeps only the `Today` badge, as the Clarify answer and FR-006 say (SDD-08).
 - **The saved copy recomputes on open**: its buckets follow the day the page is read, not the day it was
   saved.
 - **Out of scope**: the media library's date lane, the search results' ordering, and the editor's date

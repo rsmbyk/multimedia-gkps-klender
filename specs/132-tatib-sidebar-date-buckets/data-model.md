@@ -37,9 +37,9 @@ Boundaries, stated as tests: `d == t` → `upcoming`; `d == t - 1 day` → `last
 
 | Surface | Context key | Row shape |
 | --- | --- | --- |
-| Reading sidebar (`_tatib_groups`) | `tatib_groups` | `{key, label, services: [{id, name, date, date_display, current}]}` |
-| Operator dock (`obs_dock`) | `groups` | `{label, services: [TataIbadah with short_date, long_date, is_today, is_upcoming]}` |
-| Saved renderer (`servicePanel`) | — | the same `{label, rows}` written to markup in the browser |
+| Reading sidebar (`_tatib_groups`) | `tatib_groups` | `{key, label, services: [{id, name, date, date_display, today, current}]}` |
+| Operator dock (`obs_dock`) | `groups` | `{key, label, services: [TataIbadah with short_date, long_date, is_today]}` |
+| Saved renderer (`servicePanel`) | — | the same `{key, label, rows}` written to markup in the browser |
 
 ## What is removed
 

@@ -53,3 +53,21 @@ Two corrections came out of that run, both applied:
 - `test_the_panel_shows_its_empty_view_when_no_songbook_exists` fails on `develop` too: it expects
   `No matching songbooks.` where spec 129 requires the empty copy. It is a stale assertion from another
   slice, not this one; recorded as card `ITEM-137` so it is not a silently red test (TDD-09).
+
+## Pass 2 — 2026-10-25 (review response)
+
+PR #392's two-axis review found that pass 1's `contradicts — none` was wrong. Three corrections, no code
+task opened because the code already followed the winning statement:
+
+| Found | Correction |
+| --- | --- |
+| **spec conflict** — US3/AC2 and one Assumption still promised the dock's *upcoming* mark, which FR-006 and the Clarify answer drop | the losing statements are marked **superseded** in `spec.md`, kept not deleted (SDD-08) |
+| **calendar-fragile tests** — `test_obs_dock`'s bucket test and the reading E2E pinned `Earlier this year` to a today-minus-forty row, which crosses into the previous calendar year from 1 January to 9 February and empties that bucket | both pin the present day, as the panel unit tests already did; the dock's fixture day is fixed so it cannot collide with the pinned day |
+| **`implemented but suspect`** — the dock broke same-date ties on `-id` while the panel used `-created_at`, so the two "same-way" surfaces reordered ties differently (FR-004) | the dock orders on `-created_at` too, and the dock test asserts the same-date order |
+
+Absent from this pass: the dock's deleted Indonesian short-date assertion is restored, and
+`data-model.md`'s dock row shape drops `is_upcoming` for the `is_today` the view actually sets.
+
+**Typed gaps** — `missing`: none. `partial`: none. `contradicts`: one, now superseded in `spec.md` and
+recorded here. `unrequested`: none (`ITEM-137` is a TDD-09 quarantine record for a red test that
+reproduces on `develop`, not this slice's work).
