@@ -1,6 +1,6 @@
 ---
 id: ITEM-135
-status: in-review
+status: done
 title: 'Carry the 2026-10-25 grammar vintage into the process page'
 type: chore
 priority: P2
