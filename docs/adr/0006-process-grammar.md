@@ -11,8 +11,9 @@ statement of what the repository uses ([ADR 0001](0001-project-process.md)). In 
 rules lived as prose inside this repository, so a change to the process meant editing every copy —
 and a copy that stopped moving looked exactly like a deliberate convention.
 
-The grammar has moved since: SDD's eleven stages and two owner gates, the board's tracker anchor,
-the capability tree under `docs/spec/`, one commit per slice at Fold.
+The grammar has moved since: SDD's eleven stages and two owner gates, the board's tracker anchor — widened
+on 2026-10-25 so every card past `Speccing` carries one, backfilled by the agent rather than hung on the
+`Ready` transition — the capability tree under `docs/spec/`, one commit per slice at Fold.
 
 ## Decision
 

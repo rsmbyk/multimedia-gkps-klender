@@ -197,7 +197,9 @@ own conventions and deviations for that part, and is never regenerated.
 | BRD-11 | Only the owner closes a card; the agent may propose. |
 
 <!-- repo:begin part=board -->
-- The anchor label is `board:item`; one issue per card, created when the card enters `Ready`.
+- The anchor label is `board:item`; one issue per card — created as the card enters `Ready`, and
+  backfilled the first time an agent works with a card past `Speccing` that has no `issue:`. The
+  backfill is reported in the slice's closing report.
 <!-- repo:end -->
 
 **The original — Kanban as published.**

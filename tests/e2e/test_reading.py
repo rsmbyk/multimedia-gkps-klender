@@ -201,6 +201,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 tatib=self.theme_service, kind=tatib.ServiceEntryKind.SONG,
                 order_number=1, song=theme_song)
 
+        if self._testMethodName == 'test_sidebar_empty_states_are_centred_and_typed':
+            # created here, before Playwright starts: the ORM must not run inside
+            # its event loop (see the class note)
+            self.blank_service = tatib.TataIbadah.objects.create(
+                name='Kosong', date=date(2026, 9, 13), is_active=True)
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -1406,6 +1412,66 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#searchQuery')).to_have_value('')
         expect(search_clear).to_be_hidden()
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()   # results stay
+
+    def test_sidebar_empty_states_are_centred_and_typed(self):
+        """Spec 129: a list with no rows invites the first one, a filter that matched
+        nothing points at a search; both sit on the centre of their pane under a glyph.
+        """
+        blank = self.blank_service
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[blank.pk]))
+
+        empty = page.locator('#chEmpty')
+        expect(empty).to_be_visible()
+        expect(empty).to_have_attribute('data-state', 'empty')
+        expect(empty.locator('.listempty__title')).to_have_text('No sections yet.')
+        expect(empty.locator('.listempty__hint')).to_have_text(
+            'Add the first item to start preparing the service.')
+        expect(empty.locator('.listempty__icon[data-when="empty"]')).to_be_visible()
+        expect(empty.locator('.listempty__icon[data-when="filter"]')).to_be_hidden()
+        self._assert_ink_centred(page, '#chEmpty', '#chBody')
+
+        # the same list holding sections, filtered to nothing
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.big.pk]))
+        page.fill('#songFilter', 'zzz')
+        expect(empty).to_be_visible()
+        expect(empty).to_have_attribute('data-state', 'filter')
+        expect(empty.locator('.listempty__title')).to_have_text('No matching sections.')
+        expect(empty.locator('.listempty__icon[data-when="filter"]')).to_be_visible()
+        expect(empty.locator('.listempty__icon[data-when="empty"]')).to_be_hidden()
+        self._assert_ink_centred(page, '#chEmpty', '#chBody')
+
+        page.fill('#songFilter', '')
+        expect(empty).to_be_hidden()
+
+        # the first column says the same two things about its own list
+        page.goto(self.live_server_url + reverse('web-bible'))
+        panel = page.locator('#panelEmpty')
+        page.fill('#bookFilter', 'zzz')
+        expect(panel).to_have_attribute('data-state', 'filter')
+        expect(panel.locator('.listempty__title')).to_have_text('No matching books.')
+        expect(panel.locator('.listempty__hint')).to_have_text('Try a different search.')
+        self._assert_ink_centred(page, '#panelEmpty', '.panel__scrollwrap')
+
+    def _assert_ink_centred(self, page, block, pane):
+        def offsets(selector_block, selector_pane):
+            return page.evaluate(
+                """([blockSelector, paneSelector]) => {
+                    const block = document.querySelector(blockSelector);
+                    const pane = document.querySelector(paneSelector).getBoundingClientRect();
+                    const boxes = Array.from(block.children)
+                      .map((node) => node.getBoundingClientRect())
+                      .filter((box) => box.height > 0 && box.width > 0);
+                    const top = Math.min(...boxes.map((box) => box.top));
+                    const bottom = Math.max(...boxes.map((box) => box.bottom));
+                    const left = Math.min(...boxes.map((box) => box.left));
+                    const right = Math.max(...boxes.map((box) => box.right));
+                    return [((top + bottom) / 2) - ((pane.top + pane.bottom) / 2),
+                            ((left + right) / 2) - ((pane.left + pane.right) / 2)];
+                }""", [selector_block, selector_pane])
+        vertical, horizontal = offsets(block, pane)
+        self.assertLessEqual(abs(vertical), 1.5, f'{block} is {vertical:.1f}px off centre')
+        self.assertLessEqual(abs(horizontal), 1.5, f'{block} is {horizontal:.1f}px off centre')
 
     def test_tatib_mode_switch_keeps_open_service_and_reveals_its_row(self):
         page = self._page()

@@ -167,6 +167,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-130](./items/ITEM-130-vex-process.md) | Follow the Vex process grammar from memory | Generate `docs/PROCESS.md` from the grammar's rule index; keep the repo's conventions in `repo:` blocks | chore | P2 | S | — | develop via [#379](https://github.com/rsmbyk/multimedia-gkps-klender/pull/379) | 2026-10-24 |
 | [ITEM-129](./items/ITEM-129-site-name-tab.md) | Name the site in the tab, and stop the index tab at the name | Reading tabs say `Multimedia GKPS Klender`; the index's tab is the name alone | fix | P2 | S | [127](../specs/127-site-name-tab/spec.md) | develop via [#378](https://github.com/rsmbyk/multimedia-gkps-klender/pull/378) | 2026-10-24 |
 | [ITEM-131](./items/ITEM-131-songbook-hymn-separator.md) | Separate the hymn songbooks from the rest of the Kidung panel | Hymn books first, one divider, the ordinary songbooks A–Z, no headings | feat | P2 | S | [128](../specs/128-songbook-hymn-separator/spec.md) | develop via [#380](https://github.com/rsmbyk/multimedia-gkps-klender/pull/380) | 2026-10-25 |
+| [ITEM-132](./items/ITEM-132-sidebar-empty-states.md) | Centre the sidebars' empty states | One centred glyph + title + hint per list, typed empty versus filter miss | fix | P2 | S | [129](../specs/129-sidebar-empty-states/spec.md) | develop via [#390](https://github.com/rsmbyk/multimedia-gkps-klender/pull/390) | 2026-10-25 |
 
 ## Archive
 

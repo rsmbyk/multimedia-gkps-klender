@@ -407,6 +407,7 @@ body {
 .panel__ind:hover { color: var(--ink); }
 .panel__ind svg { width: 15px; height: 15px; }
 .panel__scrollwrap {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -1340,11 +1341,45 @@ li:hover > .row-edit,
 .book[aria-current="true"] .book__s { color: inherit; opacity: 1; }
 .is-hidden { display: none !important; }
 
-.panel__empty {
-  margin: 4px 18px 0;
-  font-size: 14px;
-  color: var(--head-ink);
+/* ============================================================
+   Sidebar list empty states — the one block both columns use.
+   Centred in the list area (not the whole column, so the filter
+   strip above never pushes it off-centre), icon over a title over
+   a hint, and typed: a list with no rows invites the first one,
+   a filter that matched nothing offers another search (spec 129).
+   ============================================================ */
+.listempty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  text-align: center;
+  pointer-events: none;    /* the list beneath keeps its wheel and drags */
 }
+.listempty[hidden] { display: none; }
+.listempty__icon { display: none; color: var(--head-ink); opacity: .85; }
+.listempty[data-state="empty"] .listempty__icon[data-when="empty"],
+.listempty[data-state="filter"] .listempty__icon[data-when="filter"] { display: block; }
+.listempty__icon svg { display: block; width: 38px; height: 38px; }
+.listempty__title {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.listempty__hint {
+  margin: 0;
+  max-width: 26ch;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--head-ink);
+  text-wrap: balance;
+}
+/* the collapsed panel is a rail: no room for a two-line state */
+[data-nav="mini"] .panel .listempty { display: none; }
 
 .sr {
   position: absolute; width: 1px; height: 1px;
@@ -1491,6 +1526,7 @@ li:hover > .row-edit,
 }
 
 .ch__wrap {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -1582,13 +1618,6 @@ li:hover > .row-edit,
 .ch__collapse:hover { background: var(--icon-hover-bg); }
 .ch__collapse svg { width: 20px; height: 20px; }
 /* in song mode there is nothing to collapse to: the button just closes */
-
-.ch__empty {
-  flex: none;
-  margin: 0 18px 14px;
-  font-size: 14px;
-  color: var(--head-ink);
-}
 
 /* chapters scroll indicators: same furniture as the books mini rail */
 .ch__ind {

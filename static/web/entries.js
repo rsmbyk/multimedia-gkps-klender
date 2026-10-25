@@ -153,10 +153,7 @@
     }
     if (tocRow && !document.querySelector('#chList > li')) {
       var emptyStatus = document.getElementById('chEmpty');
-      if (emptyStatus) {
-        emptyStatus.textContent = 'This Tata Ibadah is empty.';
-        emptyStatus.hidden = false;
-      }
+      if (emptyStatus && window.shellListEmpty) window.shellListEmpty(emptyStatus, false, 0);
     }
     document.dispatchEvent(new CustomEvent('shell:local-entry-delete'));
   }

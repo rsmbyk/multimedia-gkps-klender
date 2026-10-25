@@ -870,12 +870,49 @@
   bindChRows();
 
   /* ---------- panel filter ---------- */
+  /* One empty state per list, typed by what the list actually holds: no rows at
+     all is emptiness, which invites the first one; rows the filter hid is a
+     miss, which points at the search. The words live on the element's own data
+     attributes, so each section names its own list and the panel keeps saying
+     "songbooks" where the list says "songs" (spec 129). */
+  function paintListEmpty(el, any, total) {
+    if (!el) return;
+    if (any) { el.hidden = true; return; }
+    var state = total ? 'filter' : 'empty';
+    el.dataset.state = state;
+    var title = el.querySelector('.listempty__title');
+    var hint = el.querySelector('.listempty__hint');
+    if (title) title.textContent = el.dataset[state + 'Title'] || '';
+    if (hint) hint.textContent = el.dataset[state + 'Hint'] || '';
+    el.hidden = false;
+  }
+  /* entries.js (an entry deleted out of the service) and offline-render.js
+     (a page rebuilt from the saved library) type the same two lists. */
+  window.shellListEmpty = paintListEmpty;
+
+  /* Boot: neither list runs its filter until someone types, so a page that
+     arrives with an empty list (a service with no sections, a songbook with no
+     songs) has to be typed here (spec 129). */
+  (function paintBootListEmpty() {
+    var books = panelBody.querySelectorAll('.book').length;
+    paintListEmpty(panelEmpty, books > 0, books);
+    if (activeSection !== 'alkitab') {
+      /* a section break is a row without being a section: while one is there the
+         list is not empty, however few sections it holds */
+      var rows = chList.querySelectorAll('.songrow').length;
+      var dividers = chList.querySelectorAll('.toc__eos').length;
+      paintListEmpty(songEmpty, rows > 0 || dividers > 0, rows);
+    }
+  }());
+
   function applyFilter(query) {
     var needle = (query || '').trim().toLowerCase();
     var any = false;
+    var total = 0;
     panelBody.querySelectorAll('.group').forEach(function (group) {
       var shownInGroup = 0;
       group.querySelectorAll('.book').forEach(function (row) {
+        total++;
         var hit = !needle
           || String(row.dataset.name).toLowerCase().indexOf(needle) !== -1
           || String(row.dataset.sim).toLowerCase().indexOf(needle) !== -1
@@ -887,11 +924,7 @@
       });
       group.classList.toggle('is-hidden', shownInGroup === 0);
     });
-    panelEmpty.hidden = any;
-    panelEmpty.textContent = activeSection === 'kidung'
-      ? 'No matching songbooks.'
-      : activeSection === 'tatib'
-        ? 'No matching Tata Ibadah.' : 'No matching books.';
+    paintListEmpty(panelEmpty, any, total);
     if (needle) panelBody.scrollTop = 0;
     updateInds();
   }
@@ -913,10 +946,12 @@
       return;
     }
     var any = false;
+    var total = 0;
     chList.querySelectorAll('.toc__eos').forEach(function (li) {
       li.classList.toggle('is-hidden', !!needle);
     });
     chList.querySelectorAll('.songrow').forEach(function (row) {
+      total++;
       var hay = row.dataset.txt
         || row.querySelector('.songrow__t').textContent.toLowerCase()
            + ' ' + (row.dataset.num || '').toLowerCase();
@@ -924,7 +959,12 @@
       row.parentNode.classList.toggle('is-hidden', !hit);
       if (hit) any = true;
     });
-    songEmpty.hidden = any;
+    if (!any) {
+      any = Array.prototype.some.call(chList.querySelectorAll('.toc__eos'), function (li) {
+        return !li.classList.contains('is-hidden');
+      });
+    }
+    paintListEmpty(songEmpty, any, total);
     if (needle) chBody.scrollTop = 0;
     updateChInds();
   }
@@ -1547,10 +1587,7 @@
     if (freshFilter) filter.placeholder = freshFilter.getAttribute('placeholder') || '';
     reconcileChildren(panelBody, doc.querySelector('#panelBody'));
     var freshEmpty = doc.querySelector('#panelEmpty');
-    if (freshEmpty) {
-      panelEmpty.textContent = freshEmpty.textContent;
-      panelEmpty.hidden = freshEmpty.hidden;
-    }
+    if (freshEmpty) reconcileNode(panelEmpty, freshEmpty);
     var freshPanelCollapse = doc.querySelector('#panelCollapse');
     if (freshPanelCollapse) panelCollapse.setAttribute('aria-label', freshPanelCollapse.getAttribute('aria-label'));
     /* the Tata Ibadah mode switch lives in the filter strip */
@@ -1571,7 +1608,8 @@
     var freshChSearch = doc.querySelector('.ch__search');
     if (freshChSearch) chSearchEl.hidden = freshChSearch.hidden;
     songEmpty.hidden = true;
-    songEmpty.textContent = txt(doc, '#chEmpty') || songEmpty.textContent;
+    var freshChEmpty = doc.querySelector('#chEmpty');
+    if (freshChEmpty) reconcileNode(songEmpty, freshChEmpty);
     var freshChCollapse = doc.querySelector('#chCollapse');
     if (freshChCollapse) chCollapse.setAttribute('aria-label', freshChCollapse.getAttribute('aria-label'));
     var freshSort = doc.querySelector('#songSort');
