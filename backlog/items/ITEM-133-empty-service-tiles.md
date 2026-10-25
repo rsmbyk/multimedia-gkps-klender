@@ -1,6 +1,6 @@
 ---
 id: ITEM-133
-status: in-review
+status: done
 title: 'An empty Tata Ibadah quarter-centres its five add tiles'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/130-empty-service-tiles/spec.md
 branch: fix/130-empty-service-stage
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/384
 issue: 383
-closed_at:
-closed_reason:
+closed_at: 2026-10-25
+closed_reason: merged into develop via #384
 bump: patch
 release_version:
 ---
