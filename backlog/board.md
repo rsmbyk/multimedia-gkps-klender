@@ -26,12 +26,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-138](./items/ITEM-138-text-modal-large-frame.md) | A text entry opens in the media modal's large frame | Every text form takes the create-media 840×760 frame, its Text box fills the height, and the dialog is placed against the window instead of the document | chore | P2 | S | [133](../specs/133-text-modal-large-frame/spec.md) | feat/133-text-modal-large-frame | 2026-10-25 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-138](./items/ITEM-138-text-modal-large-frame.md) | A text entry opens in the media modal's large frame | Every text form takes the create-media 840×760 frame, its Text box fills the height, and the dialog is placed against the window instead of the document | chore | P2 | S | [133](../specs/133-text-modal-large-frame/spec.md) | [#394](https://github.com/rsmbyk/multimedia-gkps-klender/pull/394) | 2026-10-25 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

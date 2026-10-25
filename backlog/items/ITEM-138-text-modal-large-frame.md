@@ -1,6 +1,6 @@
 ---
 id: ITEM-138
-status: in-progress
+status: in-review
 title: 'A text entry opens in the media modal''s large frame'
 type: chore
 priority: P2
@@ -9,8 +9,8 @@ created: 2026-10-25
 updated: 2026-10-25
 spec: specs/133-text-modal-large-frame/spec.md
 branch: feat/133-text-modal-large-frame
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/394
+issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/393
 closed_at:
 closed_reason:
 bump: patch
