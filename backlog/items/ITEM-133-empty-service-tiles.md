@@ -1,6 +1,6 @@
 ---
 id: ITEM-133
-status: in_progress
+status: in-review
 title: 'An empty Tata Ibadah quarter-centres its five add tiles'
 type: fix
 priority: P2
@@ -10,7 +10,7 @@ updated: 2026-10-25
 spec: specs/130-empty-service-tiles/spec.md
 branch: fix/130-empty-service-stage
 pr:
-issue:
+issue: 383
 closed_at:
 closed_reason:
 bump: patch
