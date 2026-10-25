@@ -12,7 +12,7 @@ One-time setup::
 
 import unittest
 from datetime import date, datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
+from unittest.mock import patch
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
@@ -32,6 +32,12 @@ except ImportError:  # pragma: no cover - depends on environment
 # The eyebrow measurements that have to agree across pages and equal the frozen
 # look (spec 123). Keep this in step with the keys _eyebrow_style returns.
 EYEBROW_STYLE_KEYS = ('size', 'tracking', 'leading', 'weight', 'colour', 'opacity')
+
+# The congregation day the spec 132 bucket test pins on both sides — the fixture
+# dates and the server's present day — so the four buckets hold on any run. A
+# today-minus-forty row crosses into the previous calendar year from 1 January to
+# 9 February, which would empty `Earlier this year`.
+TATIB_BUCKET_DAY = date(2026, 12, 20)
 
 
 @tag('e2e')
@@ -91,10 +97,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=3,
                 title='Second flash target', text='Second flash body')
         if self._testMethodName == 'test_the_tata_ibadah_panel_buckets_its_services_by_age':
-            # One service per bucket boundary, dated from the congregation's own day
-            # (spec 132). Created here because Playwright's loop is live during the
-            # test body and must not overlap an ORM write.
-            today = datetime.now(ZoneInfo('Asia/Jakarta')).date()
+            # One service per bucket boundary, dated from a pinned day (spec 132) so
+            # all four buckets hold however the calendar reads; the test pins the
+            # server's present day to match. Created here because Playwright's loop is
+            # live during the test body and must not overlap an ORM write.
+            today = TATIB_BUCKET_DAY
             for name, offset in (('Hari Ini', 0), ('Dua Bulan Lagi', 60), ('Minggu Depan', 7),
                                  ('Sepuluh Hari Lalu', -10), ('Sebulan Lebih', -40),
                                  ('Tahun Lalu', -400)):
@@ -1970,10 +1977,13 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_the_tata_ibadah_panel_buckets_its_services_by_age(self):
         """Spec 132: four age buckets, today's rows pinned first and carrying the badge.
 
-        The services come from setUp — one per boundary, dated from the congregation's day.
+        The services come from setUp — one per boundary, dated from a pinned day — and
+        the server's present day is pinned to match, so all four buckets hold on any run.
         """
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-tatib'))
+        with patch('multimedia.web.reading.date_buckets.present_day',
+                   return_value=TATIB_BUCKET_DAY):
+            page.goto(self.live_server_url + reverse('web-tatib'))
 
         expect(page.locator('#panelBody .group__head')).to_have_text(
             ['Upcoming', 'Last 30 days', 'Earlier this year', 'Older'])
