@@ -1347,7 +1347,7 @@ def obs_dock(request):
     """
     services = list(tatib_models.TataIbadah.objects
                     .filter(is_active=True, date__isnull=False)
-                    .order_by('-date', '-id'))
+                    .order_by('-date', '-created_at'))
     today = date_buckets.present_day()
     groups = []
     # The same four age buckets the reading panel draws (spec 132), each row keeping
