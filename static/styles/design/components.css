@@ -2174,9 +2174,9 @@ kbd {
 .entry__add-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* An empty service is an invitation, not a void: the four kinds, big enough to
-   read as the starting point, centred on the page. It is the whole page when
-   nothing is in it, so it sits in the middle of the reading area under the
-   header rather than stacked at the top of the column (spec 130). */
+   read as the starting point. It is the whole page when nothing is in it, so it
+   sits a quarter of the way down the reading area under the header rather than
+   stacked at the top of the column (spec 130). */
 .entry__empty {
   display: grid;
   place-items: center;
