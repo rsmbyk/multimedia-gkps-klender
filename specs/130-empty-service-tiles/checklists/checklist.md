@@ -20,7 +20,8 @@ Reviewer-owned: the agent writes these and never ticks them.
 
 **Ticked at gate 2** (owner, 2026-10-25), together with the plan pack's acceptance.
 
-*One of them rests on a different test than the plan names:* "the saved copy matches the server page" is
-proved by `test_empty_saved_tatib_shows_add_media_after_sidebar_navigation_offline` and by the tile
-comparison written into `test_saved_render_parity.py`, which cannot run to that point because its Kidung step
-already fails on `develop` — recorded as G1 in `converge.md`, not as a hidden gap.
+*One of them rests on a different test than the plan names:* "the saved copy matches the server page" was
+proved by `test_empty_saved_tatib_shows_add_media_after_sidebar_navigation_offline` while the parity suite
+could not run to that point on `develop` — recorded as G1 in `converge.md`, not as a hidden gap. That gap
+closed on rebasing onto spec 128: `test_saved_render_parity` now runs the saved-against-server tile comparison
+and passes, three runs of three.

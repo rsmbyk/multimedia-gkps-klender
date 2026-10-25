@@ -22,6 +22,13 @@ exists in `test_saved_render_parity.py`, but that test dies earlier — at its *
 parity is not. Not repairable inside this slice: the failing step is a Kidung page's `#readEyebrow`, which
 this slice does not touch. Reported for the owner.
 
+**G1 closed — 2026-10-25, on rebasing onto `develop`.** The branch now sits on `04b085a2` (spec 128, the hymn
+separator), and `tests.e2e.test_saved_render_parity` runs green three times of three: the Kidung step that
+failed here failed because of what 128 fixes, not because of this slice. FR-006 is therefore verified end to
+end — the five tiles' labels, glyph counts and square sizes now compare saved-against-server and match. The
+gap above is kept rather than rewritten: it was real when it was written, and it closed for a reason outside
+this slice.
+
 **G2 — `unrequested`: none.** The media glyph is the only addition the request did not name, and it is
 recorded as an assumption in `spec.md`.
 
