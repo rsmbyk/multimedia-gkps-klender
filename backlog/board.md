@@ -26,6 +26,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-138](./items/ITEM-138-text-modal-large-frame.md) | A text entry opens in the media modal's large frame | Every text form takes the create-media 840×760 frame, its Text box fills the height, and the dialog is placed against the window instead of the document | chore | P2 | S | [133](../specs/133-text-modal-large-frame/spec.md) | feat/133-text-modal-large-frame | 2026-10-25 |
 
 ## In review
 

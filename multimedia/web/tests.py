@@ -1036,6 +1036,46 @@ class ServiceEntryViewTests(TestCase):
                 for needle in needles:
                     self.assertContains(response, needle)
 
+    def test_the_large_frame_is_marked_for_both_text_forms(self):
+        """Spec 133: the dialog's frame is chosen by what the form is, not by its kind's script."""
+        for url in (self.new_url('text'),
+                    reverse('web-entry-edit', args=[self.make(
+                        kind=tatib.ServiceEntryKind.TEXT, text='Salam').pk])):
+            with self.subTest(url=url.split('?')[0]):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'data-editor-size="large"')
+                self.assertContains(response, 'data-editor-grow')
+
+    def test_the_large_frame_is_not_marked_for_the_other_forms(self):
+        """Only text and the media *create* form are large; everything else keeps its compact dialog."""
+        text_entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='Salam')
+        media = tatib.MediaIdentity.objects.create(
+            sha256='a' * 64, byte_count=120, family=tatib.MediaFamily.IMAGE,
+            display_filename='slide.png')
+        media_entry = self.make(kind=tatib.ServiceEntryKind.MEDIA, order_number=2,
+                                media_id=media.sha256, media_filename='slide.png')
+        compact = {
+            'new passage': self.new_url('scripture'),
+            'new song': self.new_url('song'),
+            'edit passage': reverse('web-entry-edit', args=[self.make(
+                kind=tatib.ServiceEntryKind.SCRIPTURE, order_number=3,
+                book_translation=self.matius, chapter=5, verse_start=2).pk]),
+            'edit media': reverse('web-entry-edit', args=[media_entry.pk]),
+        }
+        for name, url in compact.items():
+            with self.subTest(form=name):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                self.assertNotContains(response, 'data-editor-size')
+        # the media create form keeps the frame, so the marker is not text-only
+        self.assertContains(self.client.get(self.new_url('media')), 'data-editor-size="large"')
+        # ...and the growing field belongs to text alone
+        self.assertNotContains(self.client.get(reverse('web-entry-edit', args=[media_entry.pk])),
+                               'data-editor-grow')
+        self.assertContains(self.client.get(reverse('web-entry-edit', args=[text_entry.pk])),
+                            'data-editor-grow')
+
     def test_the_scripture_fragment_groups_searchable_books_by_testament(self):
         response = self.client.get(self.new_url('scripture'))
         self.assertContains(response, 'Matius')
