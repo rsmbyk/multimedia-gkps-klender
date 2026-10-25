@@ -11,6 +11,9 @@ Other columns stay in workflow order — the row that has waited longest first.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-002](./items/ITEM-002-projection-controls.md) | Projection source as display + controls | Drive the service from the projection window without switching to the dock | feat | P1 | L | — | 2026-09-30 |
 | [ITEM-137](./items/ITEM-137-songbook-empty-view-test.md) | The songbook empty-view E2E still expects the old filter copy | A red browser test from spec 129's rule change: the empty copy, not the filter copy, is what an empty panel shows | fix | P1 | S | — | 2026-10-25 |
+| [ITEM-139](./items/ITEM-139-offline-projector-e2e-errors.md) | Three offline projector E2E tests error with ERR_INTERNET_DISCONNECTED | Taking the page offline blocks the loopback navigation itself, so the saved-projection behaviour is unproven; identical on develop | fix | P1 | S | — | 2026-10-25 |
+| [ITEM-140](./items/ITEM-140-projector-display-off-state.md) | The projector keeps data-showing=true when display-off is asked for | Audio and video display-off tests never see the projector leave its showing state; identical on develop | fix | P1 | S | — | 2026-10-25 |
+| [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
 
 ## Speccing
 

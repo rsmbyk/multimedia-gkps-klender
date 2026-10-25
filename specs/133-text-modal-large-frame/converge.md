@@ -36,13 +36,30 @@ this slice adds (4 tests), then the two modules it claims to leave alone (16 tes
 
 **Outcome**: converged on pass 1. No open task, no requirement resting on nothing.
 
-## Push-step evidence — the browser suites
+## Push-step evidence — the full matrix
 
-| Suite | Result |
+This repository has **no CI**: the GitHub Actions workflow was removed on 2026-10-24 in #371 ("chore(ci):
+remove the GitHub Actions pipeline"), leaving only the E2E-tag invariant for the local fast lane. The full
+matrix is therefore a **manual** run before the merge, and it was run in full:
+
+| Run | Result |
 | --- | --- |
-| `tests.e2e.test_entry_modal_frame` (4 tests, new) | green — box parity, Text box fill, narrow gutters, scrolled placement |
-| `tests.e2e.test_unified_text_screen_mode` (2) + `tests.e2e.test_entries` (14) | green, unmodified — the switch, the help line, the hidden `default_screen_mode` field and the Save guard |
-| `multimedia.web` + `tests.test_design_tokens` (340) | green |
+| `manage.py test` (everything, all ten browser modules) | **912 tests in 1895s — 4 failures, 3 errors** |
+| `multimedia` (every app) + `tests.test_design_tokens` | 419 green |
+| `tests.e2e.test_entry_modal_frame` (new) | 4 green |
+| `tests.e2e.test_unified_text_screen_mode` + `tests.e2e.test_entries` | 16 green, unmodified |
 
-The repository's full matrix (all ten browser modules) is the CI step that follows the push, not a local
-run; this slice ran the modules its own rows name, plus the two it claims to leave untouched.
+**None of the seven reds belongs to this slice, and each was proved on the target branch.** The same
+seven test ids were run in a checkout of `develop` `ffa5c340` under the same environment, command,
+database and browser: **identical 4 failures and 3 errors**, same assertions. They are pre-existing on
+the base this slice was cut from, so they are carded rather than folded into this pack:
+
+| Test | What it does | Card |
+| --- | --- | --- |
+| `test_offline_library…::test_saved_content_and_projector_survive_disconnection`, `test_pdf_display…::test_saved_projector_renders_pdf_while_django_is_offline`, `test_powerpoint_display…::test_saved_projector_renders_slides_while_django_is_offline` | `Page.goto: net::ERR_INTERNET_DISCONNECTED` — Playwright's offline emulation blocks loopback, so the projector never loads | `ITEM-139` |
+| `test_audio_display…::test_untitled_preview_and_projector_idle_display_off`, `test_video_display…::test_navigation_and_display_off_stop_and_reset_video` | the projector's `<body>` keeps `data-showing="true"` after display-off | `ITEM-140` |
+| `test_reading…::test_bible_edition_preference_returns_after_unavailable_chapter` | `Garam ni dunia.` is absent after the unavailable chapter — the preference or the seed moved | `ITEM-141` |
+| `test_reading…::test_the_panel_shows_its_empty_view_when_no_songbook_exists` | expects `No matching songbooks.` where spec 129 requires the empty copy | already `ITEM-137` |
+
+A red suite nobody owns is the one the next session inherits, so the four cards carry the evidence and the
+`develop` reproduction in their Notes.
