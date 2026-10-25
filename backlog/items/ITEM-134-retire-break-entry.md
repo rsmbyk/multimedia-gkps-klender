@@ -1,6 +1,6 @@
 ---
 id: ITEM-134
-status: in_review
+status: done
 title: 'Retire the Break service entry kind'
 type: feat
 priority: P1
@@ -14,7 +14,7 @@ issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/386
 closed_at:
 closed_reason:
 bump: patch
-release_version:
+release_version: 1.20.9
 ---
 
 # ITEM-134: Retire the Break service entry kind
