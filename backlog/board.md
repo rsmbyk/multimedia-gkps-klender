@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-135](./items/ITEM-135-process-vintage-2026-10-25.md) | Carry the 2026-10-25 grammar vintage into the process page | Regenerate `docs/PROCESS.md` at the current vintage: one new rule, nine reworded, the operative detail restored | chore | P2 | S | — | docs/process-vintage-2026-10-25 | 2026-10-25 |
 
 ## In review
 
