@@ -11,9 +11,10 @@ from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 from tests.e2e.test_offline_library import wait_for_offline_ready
 
-# What the five quick-add tiles are, not where they land: the saved copy and the
-# server route can be drawn in differently wide reading columns, so position is
-# no evidence and the label, the glyph and the square size are.
+# What the four quick-add tiles are, not where they land (the Break kind retired in
+# spec 131): the saved copy and the server route can be drawn in differently wide
+# reading columns, so position is no evidence and the label, the glyph and the square
+# size are.
 TILE_METRICS = """
 () => [...document.querySelectorAll('.entry__empty-btn')].map((button) => {
   const box = button.getBoundingClientRect();
@@ -76,7 +77,7 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                 (f'/songs/{self.hymn_song.pk}/', 'eyebrow', 'HT 7'),
                 (f'/songs/{self.song.pk}/', 'eyebrow', 'Ordinary Test'),
                 (f'/songs/{self.song.pk}/', 'heading', 'Song list — Ordinary Test'),
-                (f'/tatib/{self.service.pk}/', 'icon_count', 5),
+                (f'/tatib/{self.service.pk}/', 'icon_count', 4),
             ]
             for url, field, expected in cases:
                 with self.subTest(url=url, field=field):
@@ -119,8 +120,8 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                              'Filter Tata Ibadah...')
             # the saved copy is painted a tick after the click; count after it lands
             page.wait_for_selector('.entry__empty-btn')
-            self.assertEqual(page.locator('.entry__empty-btn').count(), 5)
-            self.assertEqual(page.locator('.entry__empty-btn svg').count(), 5)
+            self.assertEqual(page.locator('.entry__empty-btn').count(), 4)
+            self.assertEqual(page.locator('.entry__empty-btn svg').count(), 4)
             saved = page.evaluate(TILE_METRICS)
             page.context.set_offline(False)
             page.goto(self.live_server_url + f'/tatib/{self.service.pk}/')

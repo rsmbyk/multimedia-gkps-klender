@@ -2246,18 +2246,19 @@ kbd {
 }
 .entry__empty-hint { margin: 0; color: var(--head-ink); }
 /* one row of square tiles, the kind named by the glyph and the tooltip: the
-   labels were read once and the row reads as a toolbar from then on. The five
-   columns shrink with a narrow reading column rather than wrapping into a
-   ragged 4 + 1. */
+   labels were read once and the row reads as a toolbar from then on. Four tracks
+   since the Break kind retired (spec 131) -- a fifth empty track would leave the
+   four tiles off centre. A narrow reading column takes them 3 + 1 rather than
+   shrinking them. */
 .entry__empty-actions {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 52px));
+  grid-template-columns: repeat(4, minmax(0, 52px));
   justify-content: center;
   gap: 10px;
   margin-top: 20px;
 }
-/* a reading column too narrow to give five tiles 44px each (300px of body) takes
-   them three and two at full size rather than shrinking them into dots */
+/* a reading column too narrow to give four tiles 44px each (238px of body) takes
+   them three and one at full size rather than shrinking them into dots */
 @container (max-width: 300px) {
   .entry__empty-actions { grid-template-columns: repeat(3, 52px); }
 }

@@ -29,15 +29,15 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         super().setUp()
         self.tatib = tatib.TataIbadah.objects.create(
             name='Ibadah Minggu', date=date(2026, 10, 4), is_active=True)
-        tatib.ServiceEntry.objects.create(
+        self.text_pk = tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=1, kind=tatib.ServiceEntryKind.TEXT,
-            title='Salam', text='Kasih karunia')
-        tatib.ServiceEntry.objects.create(
+            title='Salam', text='Kasih karunia').pk
+        self.break_pk = tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.SECTION_BREAK,
-            title='Persembahan')
-        tatib.ServiceEntry.objects.create(
+            title='Persembahan').pk
+        self.closing_pk = tatib.ServiceEntry.objects.create(
             tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
-            title='Penutup', text='Amin')
+            title='Penutup', text='Amin').pk
         tatib.TataIbadahItem.objects.create(
             tatib=self.tatib, order_number=4, item_type=tatib.TataIbadahItemType.END_OF_SECTION,
             text='Doa syafaat')
@@ -49,9 +49,14 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
             raise unittest.SkipTest(f'playwright browser unavailable: {error}')
 
     def tearDown(self):
-        self.browser.close()
-        self._playwright.stop()
+        self._close_browser()
         super().tearDown()
+
+    def _close_browser(self):
+        if getattr(self, '_playwright', None) is not None:
+            self.browser.close()
+            self._playwright.stop()
+            self._playwright = None
 
     def _page(self):
         context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
@@ -95,17 +100,39 @@ class SectionBreakE2ETests(StaticLiveServerTestCase):
         box, note_box = divider.bounding_box(), note.bounding_box()
         self.assertAlmostEqual(note_box['y'] - box['y'], 35, delta=2)   # 50% + 7px
 
-    def test_plus_break_adds_the_break_at_once_without_a_dialog(self):
+    def test_the_add_row_offers_no_break(self):
+        # Spec 131 retired the kind: the divider still reads, but nothing offers a new one.
         page = self._page()
-        before = page.locator('.tatib__eos').count()
         page.locator('.tatib__eos').first.hover()
         page.wait_for_timeout(400)
-        # The add row reveals on hover; dispatching the click avoids the 2px rule moving under the pointer.
-        page.locator('.entry__add-btn[data-entry-open="section_break"]').first.dispatch_event('click')
+        self.assertEqual(page.locator('[data-entry-open="section_break"]').count(), 0)
+        row = page.locator('.entry__add').first
+        self.assertEqual(row.locator('.entry__add-btn').evaluate_all(
+            '(buttons) => buttons.map((button) => button.textContent.trim())'),
+            ['+ Passage', '+ Song', '+ Text', '+ Media'])
+
+    def test_a_break_deletes_from_its_divider(self):
+        page = self._page()
+        before = page.locator('.tatib__eos').count()
+        divider = page.locator('.tatib__eos').first
+        page.mouse.move(1400, 850)
+        divider.hover()          # the reveal moves the row once (spec 052)
+        page.wait_for_timeout(400)
+        divider.hover()
+        page.wait_for_timeout(300)
+        divider.locator('[data-entry-delete]').click()
+        page.wait_for_selector('[data-confirm-delete]')
+        page.click('[data-confirm-delete]')
         page.wait_for_function(
-            "document.querySelectorAll('.tatib__eos').length > %d" % before)
-        self.assertEqual(page.locator('dialog[open]').count(), 0)   # no form opened (spec 057)
-        self.assertEqual(page.locator('.tatib__eos').count(), before + 1)
+            "document.querySelectorAll('.tatib__eos').length < %d" % before)
+        self.assertEqual(page.locator('dialog[open]').count(), 0)
+        self.assertEqual(page.locator('.tatib__eos').count(), before - 1)
+        self._close_browser()    # the ORM runs outside Playwright's event loop
+        self.assertFalse(tatib.ServiceEntry.objects.filter(pk=self.break_pk).exists())
+        remaining = list(tatib.ServiceEntry.objects.filter(tatib=self.tatib)
+                         .order_by('order_number'))
+        self.assertEqual([entry.pk for entry in remaining], [self.text_pk, self.closing_pk])
+        self.assertEqual([entry.order_number for entry in remaining], [1, 2])
 
     def test_the_divider_carries_its_own_controls(self):
         page = self._page()

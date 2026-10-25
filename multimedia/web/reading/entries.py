@@ -19,9 +19,11 @@ KINDS = {
     'text': tatib_models.ServiceEntryKind.TEXT,
     'scripture': tatib_models.ServiceEntryKind.SCRIPTURE,
     'song': tatib_models.ServiceEntryKind.SONG,
-    'section_break': tatib_models.ServiceEntryKind.SECTION_BREAK,
     'media': tatib_models.ServiceEntryKind.MEDIA,
 }
+"""The kinds that can be written. The section break is retired (spec 131): its stored rows
+still render, project, reorder and delete, but no form is built for it, so every endpoint
+answers `Unknown kind.` — the same refusal an unknown kind has always had."""
 
 
 class ServiceEntryForm(forms.ModelForm):
@@ -84,13 +86,6 @@ class TextEntryForm(ServiceEntryForm):
         if commit:
             entry.save()
         return entry
-
-
-class SectionBreakEntryForm(ServiceEntryForm):
-    """A break is just a break: no label (spec 038)."""
-
-    class Meta(ServiceEntryForm.Meta):
-        fields = ['kind']
 
 
 class RangeCheckedModelChoiceField(forms.ModelChoiceField):
@@ -186,7 +181,6 @@ class MediaEntryForm(ServiceEntryForm):
 
 FORMS = {
     'text': TextEntryForm,
-    'section_break': SectionBreakEntryForm,
     'scripture': ScriptureEntryForm,
     'song': SongEntryForm,
     'media': MediaEntryForm,
@@ -195,7 +189,7 @@ FORMS = {
 
 TITLES = {
     'text': 'text', 'scripture': 'passage',
-    'song': 'song', 'section_break': 'break', 'media': 'media',
+    'song': 'song', 'media': 'media',
 }
 
 

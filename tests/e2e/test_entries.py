@@ -405,7 +405,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         # same centred row of tiles the server would have painted
         empty = page.locator('.entry__empty')
         expect(empty).to_be_visible()
-        self.assertEqual(empty.locator('.entry__empty-btn').count(), 5)
+        self.assertEqual(empty.locator('.entry__empty-btn').count(), 4)
         rebuilt = empty.locator('.entry__empty-btn').evaluate_all(
             '(buttons) => buttons.map(button => { const r = button.getBoundingClientRect();'
             ' return [r.x, r.y, r.width, r.height]; })')
@@ -422,8 +422,11 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
     def test_an_empty_service_invites_the_first_item(self):
         page = self._page(reverse('web-tatib-service', args=[self.empty.pk]))
         expect(page.locator('.entry__empty-title')).to_contain_text('empty')
-        for label in ('Add Passage', 'Add Song', 'Add Text', 'Add Break'):
+        for label in ('Add Passage', 'Add Song', 'Add Text', 'Add Media'):
             expect(page.locator('.entry__empty-btn', has_text=label)).to_have_count(1)
+        # the Break kind is retired (spec 131): the tile is gone, not disabled
+        expect(page.locator('.entry__empty-btn', has_text='Add Break')).to_have_count(0)
+        expect(page.locator('[data-entry-open="section_break"]')).to_have_count(0)
         page.locator('.entry__empty-btn', has_text='Add Text').first.click()
         page.wait_for_selector('dialog[open]')
         expect(page.locator('#editorTitle')).to_have_text('New text')
@@ -443,7 +446,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         boxes = page.locator('.entry__empty-btn').evaluate_all(
             '(buttons) => buttons.map(button => { const r = button.getBoundingClientRect();'
             ' return [r.x, r.y, r.width, r.height]; })')
-        self.assertEqual(len(boxes), 5)
+        self.assertEqual(len(boxes), 4)
         self.assertEqual(len({round(box[1], 1) for box in boxes}), 1, 'one row')
         self.assertEqual([round(box[0]) for box in boxes],
                          sorted(round(box[0]) for box in boxes), 'left to right')
@@ -454,8 +457,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         # the glyph is the whole face of the button: the label survives as the
         # accessible name and the tooltip, not as visible text
         buttons = page.locator('.entry__empty-btn')
-        for index, label in enumerate(('Add Passage', 'Add Song', 'Add Text',
-                                       'Add Break', 'Add Media')):
+        for index, label in enumerate(('Add Passage', 'Add Song', 'Add Text', 'Add Media')):
             button = buttons.nth(index)
             self.assertEqual(button.get_attribute('title'), label)
             self.assertEqual(button.locator('svg').count(), 1)
