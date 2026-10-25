@@ -1,6 +1,6 @@
 ---
 id: ITEM-134
-status: in_progress
+status: in_review
 title: 'Retire the Break service entry kind'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-25
 updated: 2026-10-25
 spec: specs/131-retire-break-entry/spec.md
 branch: feat/131-retire-break-entry
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/387
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/386
 closed_at:
 closed_reason:
