@@ -1,6 +1,6 @@
 ---
 id: ITEM-132
-status: in_review
+status: done
 title: 'Centre the sidebars'' empty states, and say which nothing they are'
 type: fix
 priority: P2
