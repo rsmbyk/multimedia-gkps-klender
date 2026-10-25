@@ -1,6 +1,6 @@
 ---
 id: ITEM-132
-status: in_progress
+status: in_review
 title: 'Centre the sidebars'' empty states, and say which nothing they are'
 type: fix
 priority: P2
@@ -9,8 +9,8 @@ created: 2026-10-25
 updated: 2026-10-25
 spec: specs/129-sidebar-empty-states/spec.md
 branch: fix/129-sidebar-empty-states
-pr:
-issue: 382
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/390
+issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/382
 closed_at:
 closed_reason:
 bump: patch

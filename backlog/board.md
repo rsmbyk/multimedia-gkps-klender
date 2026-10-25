@@ -25,12 +25,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-132](./items/ITEM-132-sidebar-empty-states.md) | Centre the sidebars' empty states | One centred glyph + title + hint per list, typed empty versus filter miss | fix | P2 | S | [129](../specs/129-sidebar-empty-states/spec.md) | `fix/129-sidebar-empty-states` | 2026-10-25 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-132](./items/ITEM-132-sidebar-empty-states.md) | Centre the sidebars' empty states | One centred glyph + title + hint per list, typed empty versus filter miss | fix | P2 | S | [129](../specs/129-sidebar-empty-states/spec.md) | [#390](https://github.com/rsmbyk/multimedia-gkps-klender/pull/390) | 2026-10-25 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
