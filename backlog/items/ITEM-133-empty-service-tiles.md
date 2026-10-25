@@ -9,7 +9,7 @@ created: 2026-10-25
 updated: 2026-10-25
 spec: specs/130-empty-service-tiles/spec.md
 branch: fix/130-empty-service-stage
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/384
 issue: 383
 closed_at:
 closed_reason:
