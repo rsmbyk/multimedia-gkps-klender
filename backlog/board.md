@@ -55,6 +55,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-134](./items/ITEM-134-retire-break-entry.md) | Retire the Break service entry kind | No surface offers a Break; the old ones still render, project, reorder and delete | feat | P1 | S | [131](../specs/131-retire-break-entry/spec.md) | develop via [#387](https://github.com/rsmbyk/multimedia-gkps-klender/pull/387) | 2026-10-25 |
 | [ITEM-133](./items/ITEM-133-empty-service-tiles.md) | An empty Tata Ibadah quarter-centres its five add tiles | Put the empty block on the quarter mark of the reading area and turn the five adds into square icon-only tiles in one row | fix | P2 | S | [130](../specs/130-empty-service-tiles/spec.md) | develop via [#384](https://github.com/rsmbyk/multimedia-gkps-klender/pull/384) | 2026-10-25 |
 | [ITEM-000](./items/ITEM-000-project-process.md) | Adopt the project process | Process declaration + adoption ADR + board/specs scaffolding | chore | P0 | M | — | main via [#256](https://github.com/rsmbyk/multimedia-gkps-klender/pull/256) | 2026-09-30 |
 | [ITEM-001](./items/ITEM-001-public-songs-reading.md) | Public song reading + design foundation | Design foundation + public song pages; editor to /manage | feat | P0 | M | [001](../specs/001-public-songs-reading/spec.md) | main via [#257](https://github.com/rsmbyk/multimedia-gkps-klender/pull/257) | 2026-09-30 |

@@ -215,14 +215,12 @@
   </div>
 
   {% else %}
-  {% if kind != 'section_break' %}
   <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}">
     <label for="id_title">Title <span class="editor__hint">(optional)</span></label>
     <input type="text" name="title" id="id_title" maxlength="64" value="{{ form.title.value|default:'' }}"
            {% if form.title.errors %}aria-invalid="true"{% endif %}>
     {% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
   </div>
-  {% endif %}
   {% if kind == 'text' %}
   <div class="editor__field{% if form.text.errors %} is-invalid{% endif %}">
     <label for="id_text">Text</label>

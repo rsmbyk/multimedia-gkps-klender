@@ -65,12 +65,11 @@
     scripture: '<path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/>',
     song: '<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>',
     text: '<path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/>',
-    section_break: '<path d="M3.5 12h17M7 7.5l5 5 5-5M7 16.5l5-5 5 5" opacity=".45"/><path d="M3.5 12h17"/>',
     media: '<rect x="3.2" y="5.2" width="17.6" height="13.6" rx="2.4"/><path d="M10.4 9.2v5.6l4.6-2.8z"/>'
   };
   var EMPTY_ADD_LABELS = {
     scripture: 'Add Passage', song: 'Add Song', text: 'Add Text',
-    section_break: 'Add Break', media: 'Add Media'
+    media: 'Add Media'
   };
 
   function emptyAddButton(kind, serviceId) {
@@ -143,7 +142,7 @@
         hint.textContent = 'Add the first item to start preparing the service.';
         var actions = document.createElement('div');
         actions.className = 'entry__empty-actions';
-        ['scripture', 'song', 'text', 'section_break', 'media'].forEach(function (kind) {
+        ['scripture', 'song', 'text', 'media'].forEach(function (kind) {
           actions.appendChild(emptyAddButton(kind, serviceId));
         });
         empty.appendChild(title);
@@ -933,55 +932,17 @@
     }
     var opener = event.target.closest('[data-entry-open]');
     if (!opener || opener.disabled) return;
-    if (opener.dataset.entryOpen !== 'section_break'
-        && !window.gkpsEditorLoadForm.canOpen()) return;
+    if (!window.gkpsEditorLoadForm.canOpen()) return;
     event.preventDefault();
     var row = opener.closest('[data-entry-after]');
     var after = row ? row.dataset.entryAfter
                     : (opener.closest('[data-entry-start]') ? 'start' : '');
-    if (opener.dataset.entryOpen === 'section_break') {
-      addBreak(opener.dataset.entryTatib, after, opener);
-      return;
-    }
     trigger = opener;
     keyboardOpened = false;
     var titles = { scripture: 'Add Passage', song: 'Add Song', text: 'Add Text', media: 'Add Media' };
     load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after),
       titles[opener.dataset.entryOpen] || 'Add entry');
   });
-
-  /* A break has no fields (spec 057): '+ Break' creates it at once, at the add row's
-     position (the empty-state button passes none, so it lands at the end). */
-  function addBreak(tatib, after, opener) {
-    var url = (modal.dataset.entrySaveNewUrl || '/editor/entry/new/save/')
-      + '?tatib=' + encodeURIComponent(tatib);
-    var body = new URLSearchParams({ kind: '3' });   /* ServiceEntryKind.SECTION_BREAK */
-    if (after) body.set('after', after);
-    var action = feedback && feedback.beginAction({
-      pendingTitle: 'Adding section break…',
-      successTitle: 'Section break added',
-      failureTitle: 'Could not add section break',
-      failureMessage: 'The section break was not added. Try again.'
-    });
-    var release = feedback ? feedback.lockControl(opener) : null;
-    announce('');
-    fetch(url, {
-      method: 'POST', credentials: 'same-origin',
-      headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrf() },
-      body: body
-    }).then(function (response) {
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.json();
-    }).then(function (saved) {
-      if (!saved || saved.id == null) throw new Error('unexpected');
-      if (action) action.success();
-      document.dispatchEvent(new CustomEvent('editor:saved', {
-        detail: { id: saved.id, kind: 'entry', focusKind: 'entry', focusId: saved.id }
-      }));
-    }).catch(function () {
-      if (action) action.failure();
-    }).finally(function () { if (release) release(); });
-  }
 
   /* ---------- a hovered item reveals its neighbouring add rows (spec 037) ----
      CSS cannot reach a preceding sibling, so the pair of add rows around the row

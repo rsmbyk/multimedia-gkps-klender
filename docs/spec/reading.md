@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-25
-**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `130-empty-service-tiles`
+**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `130-empty-service-tiles`, `131-retire-break-entry`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
 in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
@@ -134,14 +134,14 @@ panel does not reorder itself when the online update arrives.
 - WHEN a Kidung route is rendered from the saved library
 - THEN its panel's group count and row order equal the server page's
 
-### R6 — An empty Tata Ibadah quarter-centres its five add tiles
+### R6 — An empty Tata Ibadah quarter-centres its four add tiles
 
-A service that holds no items and can be edited SHALL show its invitation — the heading, the hint and the five
-add actions — with its centre a quarter of the way down the reading area the header leaves, not at its middle,
-and never overlapping the header. The five actions SHALL be one horizontal row of square, icon-only tiles:
-52px at a full-width column, 10px apart, the glyph alone on the face, and the sentence `Add Passage`,
-`Add Song`, `Add Text`, `Add Break`, `Add Media` carried as the accessible name and the tooltip. A reading
-column narrower than 300px SHALL take them three and two at full size rather than shrinking them below 44px.
+A service that holds no items and can be edited SHALL show its invitation — the heading, the hint and the
+four add actions — with its centre a quarter of the way down the reading area the header leaves, not at its
+middle, and never overlapping the header. The four actions SHALL be one horizontal row of square, icon-only
+tiles: 52px at a full-width column, 10px apart, the glyph alone on the face, and the sentence `Add Passage`,
+`Add Song`, `Add Text`, `Add Media` carried as the accessible name and the tooltip. A reading column narrower
+than 300px SHALL take them three and one at full size rather than shrinking them below 44px.
 
 The server template, the saved renderer and the rebuild that follows deleting a service's last entry SHALL
 paint the same tiles. A service that holds items is outside this requirement: it keeps the header-to-body gap
@@ -150,11 +150,11 @@ and the top-aligned flow it has always had.
 #### Scenario: an empty service
 - WHEN a service with no items opens at any width
 - THEN the block's centre sits a quarter of the way down the reading area under the header, never above it
-- AND its five actions stand in one row of 52px squares, or three and two when the column is under 300px
+- AND its four actions stand in one row of 52px squares, or three and one when the column is under 300px
 
 #### Scenario: naming a tile
 - WHEN a tile is hovered, focused or read by a screen reader
-- THEN it is named `Add Passage`, `Add Song`, `Add Text`, `Add Break` or `Add Media`, in that order
+- THEN it is named `Add Passage`, `Add Song`, `Add Text` or `Add Media`, in that order
 - AND no visible label text appears in the row
 
 #### Scenario: the last entry deleted in place
@@ -165,31 +165,30 @@ and the top-aligned flow it has always had.
 - WHEN an empty service is rendered from the saved library
 - THEN its tiles carry the same labels, one glyph each and the same square size as the server route
 
-A service that holds no items and can be edited SHALL show its invitation — the heading, the hint and the five
-add actions — with its centre a quarter of the way down the reading area the header leaves, not at its middle,
-and never overlapping the header. The five actions SHALL be one horizontal row of square, icon-only tiles:
-52px at a full-width column, 10px apart, the glyph alone on the face, and the sentence `Add Passage`,
-`Add Song`, `Add Text`, `Add Break`, `Add Media` carried as the accessible name and the tooltip. A reading
-column narrower than 300px SHALL take them three and two at full size rather than shrinking them below 44px.
+### R8 — A retired entry kind stops being offered, and what it wrote keeps working
 
-The server template, the saved renderer and the rebuild that follows deleting a service's last entry SHALL
-paint the same tiles. A service that holds items is outside this requirement: it keeps the header-to-body gap
-and the top-aligned flow it has always had.
+An entry kind MAY be retired without deleting what it already wrote. A retired kind SHALL offer no creation
+control on any surface — the server template, the rebuild after a deletion and the saved renderer — and the
+writing endpoints SHALL refuse it with the same answer an unknown kind gets, so a stale page or a direct
+request cannot create or edit one by any route. The Break kind is the first retired kind: its add row, its
+empty-state tile and its edit form are gone, and `+ Break` no longer exists anywhere.
 
-#### Scenario: an empty service
-- WHEN a service with no items opens at any width
-- THEN the block's centre sits a quarter of the way down the reading area under the header, never above it
-- AND its five actions stand in one row of 52px squares, or three and two when the column is under 300px
+What the kind already produced SHALL keep working unchanged: an existing Break SHALL still draw its one
+full-width divider on the stage and its row in the sidebar, still contribute its blank projector screen, and
+still reorder by drag or keyboard and delete from its divider. Its stored kind value and its display name
+SHALL be kept, because every reader — the stage, the sidebar, the projector, search and the saved page — keys
+off them, and the legacy `END_OF_SECTION` row of the older table is a different shape and SHALL be untouched.
 
-#### Scenario: naming a tile
-- WHEN a tile is hovered, focused or read by a screen reader
-- THEN it is named `Add Passage`, `Add Song`, `Add Text`, `Add Break` or `Add Media`, in that order
-- AND no visible label text appears in the row
+#### Scenario: no surface offers one
+- WHEN a service's add rows, the start bar or an empty service's tiles are read
+- THEN the offered kinds are Passage, Song, Text and Media
+- AND no `+ Break` control or `Add Break` tile exists
 
-#### Scenario: the last entry deleted in place
-- WHEN the only entry is deleted without a reload
-- THEN the rebuilt block is the same centred row of tiles
+#### Scenario: a direct request
+- WHEN a save request names the retired kind, or the edit form of an existing break is asked for
+- THEN the answer is `404` and nothing is created or changed
 
-#### Scenario: the saved copy
-- WHEN an empty service is rendered from the saved library
-- THEN its tiles carry the same labels, one glyph each and the same square size as the server route
+#### Scenario: an existing break
+- WHEN a service holding a Break opens, projects, or is read from the saved library
+- THEN the divider, its place in the order, its sidebar row and its projector screen are exactly as before
+- AND its Delete still removes it and closes the order up

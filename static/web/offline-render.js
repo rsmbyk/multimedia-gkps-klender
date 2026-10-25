@@ -121,8 +121,8 @@
     }).join('');
   }
   function addButtons(serviceId) {
-    return ['scripture', 'song', 'text', 'section_break', 'media'].map(function (kind) {
-      var names = {scripture: 'Passage', song: 'Song', text: 'Text', section_break: 'Break', media: 'Media'};
+    return ['scripture', 'song', 'text', 'media'].map(function (kind) {
+      var names = {scripture: 'Passage', song: 'Song', text: 'Text', media: 'Media'};
       return '<button type="button" class="entry__add-btn" data-entry-open="' + kind
         + '" data-entry-tatib="' + serviceId + '">+ ' + names[kind] + '</button>';
     }).join('');
@@ -132,11 +132,10 @@
       scripture: '<path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/>',
       song: '<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>',
       text: '<path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/>',
-      section_break: '<path d="M3.5 12h17M7 7.5l5 5 5-5M7 16.5l5-5 5 5" opacity=".45"/><path d="M3.5 12h17"/>',
       media: '<rect x="3.2" y="5.2" width="17.6" height="13.6" rx="2.4"/><path d="M10.4 9.2v5.6l4.6-2.8z"/>'
     };
-    var names = {scripture: 'Passage', song: 'Song', text: 'Text', section_break: 'Break', media: 'Media'};
-    return ['scripture', 'song', 'text', 'section_break', 'media'].map(function (kind) {
+    var names = {scripture: 'Passage', song: 'Song', text: 'Text', media: 'Media'};
+    return ['scripture', 'song', 'text', 'media'].map(function (kind) {
       var label = 'Add ' + names[kind];
       return '<button type="button" class="entry__empty-btn" data-entry-open="' + kind
         + '" data-entry-tatib="' + serviceId + '" title="' + label + '">'

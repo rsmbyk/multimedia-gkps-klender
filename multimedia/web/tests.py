@@ -939,7 +939,6 @@ class ServiceEntryViewTests(TestCase):
             'scripture': ['name="book_translation"', 'name="chapter"', 'name="verse_start"',
                           'name="verse_end"'],
             'song': ['name="song"', 'id="entry-verses"'],
-            'section_break': [],
         }
         for kind, needles in cases.items():
             with self.subTest(kind=kind):
@@ -1234,10 +1233,12 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.tatib.service_entries.get().verses, [1, 3])
 
-    def test_creating_a_section_break_without_a_label(self):
-        response = self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.SECTION_BREAK, 'title': ''})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.tatib.service_entries.get().resolve(), ('', ''))
+    def test_a_section_break_cannot_be_created_any_more(self):
+        """Spec 131 retired the kind; the write path refuses it and writes nothing."""
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': tatib.ServiceEntryKind.SECTION_BREAK, 'title': ''})
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(self.tatib.service_entries.exists())
 
     def test_deleted_song_cannot_be_added_as_a_new_service_entry(self):
         deleted_song = songs.Song.objects.create(
@@ -1655,8 +1656,9 @@ class ServiceEntryViewTests(TestCase):
         entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='a')
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
-        for kind in ('scripture', 'song', 'text', 'section_break'):
+        for kind in ('scripture', 'song', 'text', 'media'):
             self.assertIn(f'data-entry-open="{kind}"', html)
+        self.assertNotIn('data-entry-open="section_break"', html)   # retired (spec 131)
         self.assertIn(f'data-entry-after="e{entry.pk}"', html)
 
     # --- clamping a text in the pane (spec 031) -----------------------------
@@ -1943,8 +1945,9 @@ class ServiceEntryViewTests(TestCase):
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
         self.assertIn('This Tata Ibadah is empty', html)
-        for label in ('Add Passage', 'Add Song', 'Add Text', 'Add Break'):
+        for label in ('Add Passage', 'Add Song', 'Add Text', 'Add Media'):
             self.assertIn(label, html)
+        self.assertNotIn('Add Break', html)          # retired (spec 131)
         self.assertIn('entry__empty-btn', html)
 
     def test_a_service_built_only_from_entries_is_listed_in_the_sidebar(self):
@@ -2061,27 +2064,28 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['count'], 5)
 
-    def test_an_instant_break_lands_after_its_add_row_and_the_neighbours_keep_order(self):
+    def test_a_new_entry_lands_after_its_add_row_and_the_neighbours_keep_order(self):
         first = self.make(kind=tatib.ServiceEntryKind.TEXT, text='first', order_number=1)
         second = self.make(kind=tatib.ServiceEntryKind.TEXT, text='second', order_number=2)
         response = self.client.post(self.save_new_url(), {
-            'kind': tatib.ServiceEntryKind.SECTION_BREAK, 'after': f'e{first.pk}'})
+            'kind': tatib.ServiceEntryKind.TEXT, 'text': 'between', 'after': f'e{first.pk}'})
         self.assertEqual(response.status_code, 200)
         ordered = list(self.tatib.service_entries.order_by('order_number')
                        .values_list('pk', 'kind'))
         self.assertEqual(ordered, [
             (first.pk, tatib.ServiceEntryKind.TEXT),
-            (response.json()['id'], tatib.ServiceEntryKind.SECTION_BREAK),
+            (response.json()['id'], tatib.ServiceEntryKind.TEXT),
             (second.pk, tatib.ServiceEntryKind.TEXT),
         ])
 
-    def test_an_instant_break_without_a_position_goes_to_the_end(self):
+    def test_a_new_entry_without_a_position_goes_to_the_end(self):
         self.make(kind=tatib.ServiceEntryKind.TEXT, text='only', order_number=1)
-        response = self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.SECTION_BREAK})
+        response = self.client.post(self.save_new_url(),
+                                    {'kind': tatib.ServiceEntryKind.TEXT, 'text': 'last'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(self.tatib.service_entries.order_by('order_number')
                               .values_list('kind', flat=True)),
-                         [tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.SECTION_BREAK])
+                         [tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.TEXT])
 
     def test_the_sidebar_song_row_shows_its_verses_on_a_second_line(self):
         self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
@@ -2096,6 +2100,103 @@ class ServiceEntryViewTests(TestCase):
         toc = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk])).context['toc_items']
         item = next(item for item in toc if item.get('pk') == entry.pk)
         self.assertFalse(item.get('two_line_label', False))
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class ServiceEntryKindRetirementTests(TestCase):
+    """The Break kind is retired (spec 131): no surface offers it, no endpoint writes it,
+    and everything it already produced keeps reading, projecting, ordering and deleting.
+    """
+
+    def setUp(self):
+        self.tatib = tatib.TataIbadah.objects.create(name='Ibadah Minggu IV')
+        self.text = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=1, kind=tatib.ServiceEntryKind.TEXT,
+            title='Salam', text='Kasih karunia')
+        self.break_entry = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=2, kind=tatib.ServiceEntryKind.SECTION_BREAK)
+        self.closing = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=3, kind=tatib.ServiceEntryKind.TEXT,
+            title='Penutup', text='Amin')
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.END_OF_SECTION,
+            text='Doa syafaat', order_number=4)
+        self.empty = tatib.TataIbadah.objects.create(name='Ibadah kosong')
+
+    def save_new_url(self, service=None):
+        return reverse('web-entry-save-new') + f'?tatib={(service or self.tatib).pk}'
+
+    def html(self, service=None):
+        return self.client.get(reverse('web-tatib-service',
+                                       args=[(service or self.tatib).pk])).content.decode()
+
+    # --- no surface offers one (FR-001) --------------------------------------
+
+    def test_no_page_offers_a_break(self):
+        markup = self.html()
+        self.assertNotIn('data-entry-open="section_break"', markup)
+        self.assertNotIn('Add Break', markup)
+        # the four remaining kinds are still offered in every add row
+        self.assertEqual(markup.count('data-entry-open="scripture"'), 5)  # start bar + 4 rows
+        for kind in ('song', 'text', 'media'):
+            self.assertEqual(markup.count(f'data-entry-open="{kind}"'), 5, kind)
+
+    def test_an_empty_service_offers_four_tiles(self):
+        markup = self.html(self.empty)
+        self.assertIn('entry__empty-actions', markup)
+        self.assertEqual(markup.count('class="entry__empty-btn"'), 4)
+        self.assertNotIn('data-entry-open="section_break"', markup)
+        self.assertNotIn('Add Break', markup)
+
+    # --- no endpoint writes one (FR-004, FR-005) -----------------------------
+
+    def test_the_break_kind_cannot_be_created(self):
+        before = self.tatib.service_entries.count()
+        responses = [
+            self.client.post(self.save_new_url(), {'kind': tatib.ServiceEntryKind.SECTION_BREAK}),
+            self.client.post(self.save_new_url(),
+                             {'kind': tatib.ServiceEntryKind.SECTION_BREAK, 'after': 'start'}),
+            self.client.post(self.save_new_url(),
+                             {'kind': tatib.ServiceEntryKind.SECTION_BREAK, 'title': 'Doa'}),
+        ]
+        self.assertEqual([response.status_code for response in responses], [404, 404, 404])
+        self.assertEqual(self.tatib.service_entries.count(), before)
+        self.assertFalse(self.tatib.service_entries.filter(
+            kind=tatib.ServiceEntryKind.SECTION_BREAK).exclude(pk=self.break_entry.pk).exists())
+        new_form = self.client.get(
+            reverse('web-entry-new') + f'?kind=section_break&tatib={self.tatib.pk}')
+        self.assertEqual(new_form.status_code, 404)
+
+    def test_an_existing_break_cannot_be_edited(self):
+        form = self.client.get(reverse('web-entry-edit', args=[self.break_entry.pk]))
+        self.assertEqual(form.status_code, 404)
+        response = self.client.post(reverse('web-entry-save', args=[self.break_entry.pk]),
+                                    {'kind': tatib.ServiceEntryKind.SECTION_BREAK,
+                                     'title': 'Doa', 'text': 'changed'})
+        self.assertEqual(response.status_code, 404)
+        self.break_entry.refresh_from_db()
+        self.assertEqual(self.break_entry.kind, tatib.ServiceEntryKind.SECTION_BREAK)
+        self.assertEqual((self.break_entry.title, self.break_entry.text), ('', ''))
+
+    # --- what it produced survives (FR-006, FR-010) --------------------------
+
+    def test_the_kind_and_its_rows_survive(self):
+        self.assertEqual(int(tatib.ServiceEntryKind.SECTION_BREAK), 3)
+        self.assertEqual(self.break_entry.get_kind_display(), 'Section Break')
+        markup = self.html()
+        self.assertEqual(markup.count('class="tatib__eos"'), 2)      # the entry and the legacy row
+        self.assertIn(f'data-entry-delete="{self.break_entry.pk}"', markup)
+        self.assertIn('Doa syafaat', markup)                          # the legacy note still shows
+        toc = self.client.get(reverse('web-tatib-service',
+                                      args=[self.tatib.pk])).context['toc_items']
+        self.assertTrue(any(item.get('eos') and item.get('pk') == self.break_entry.pk
+                            for item in toc))
+
+    def test_the_legacy_row_keeps_both_its_controls(self):
+        markup = self.html()
+        row = markup.split('data-old-item-pk="')[1].split('</div>')[0]
+        self.assertIn('data-old-item-edit', row)
+        self.assertIn('data-old-item-delete', row)
 
 
 class ServiceEntryReorderTests(TestCase):
