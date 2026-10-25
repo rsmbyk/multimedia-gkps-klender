@@ -16,10 +16,11 @@ the capability tree under `docs/spec/`, one commit per slice at Fold.
 
 ## Decision
 
-- This repository follows the **Vex process grammar at vintage 2026-10-24**, kept once in shared
+- This repository follows the **Vex process grammar at vintage 2026-10-25**, kept once in shared
   memory. The repository holds no second copy of the rules.
-- [`docs/PROCESS.md`](../PROCESS.md) is **generated** from the grammar's rule index: every rule of a
-  selected part, verbatim and in ID order, plus the contracts between the selected parts.
+- [`docs/PROCESS.md`](../PROCESS.md) is **generated** from the grammar's rule notes: every rule of a
+  selected part, verbatim in ID order with its operative detail, plus the contracts between the
+  selected parts and the original model's rules each of them adapts.
 - This repository's own conventions and deviations live in `repo:` blocks inside that file. They are
   never regenerated, and they win over the grammar wherever they speak.
 - The parts in use are unchanged: SDD, TDD, Git Flow, SemVer, an in-repo Kanban, and the GitHub
