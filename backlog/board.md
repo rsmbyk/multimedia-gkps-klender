@@ -34,7 +34,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-138](./items/ITEM-138-text-modal-large-frame.md) | A text entry opens in the media modal's large frame | Every text form takes the create-media 840×760 frame, its Text box fills the height, and the dialog is placed against the window instead of the document | chore | P2 | S | [133](../specs/133-text-modal-large-frame/spec.md) | [#394](https://github.com/rsmbyk/multimedia-gkps-klender/pull/394) | 2026-10-25 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -60,6 +59,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-138](./items/ITEM-138-text-modal-large-frame.md) | A text entry opens in the media modal's large frame | Every text form takes the create-media 840×760 frame, its Text box fills the height, and the dialog is placed against the window instead of the document | chore | P2 | S | [133](../specs/133-text-modal-large-frame/spec.md) | develop via [#394](https://github.com/rsmbyk/multimedia-gkps-klender/pull/394) | 2026-10-25 |
 | [ITEM-136](./items/ITEM-136-tatib-date-buckets.md) | Group the Tata Ibadah list by age, and mark today | Four age buckets instead of month headings, today first with a `Today` badge; the dock and the saved copy agree | feat | P2 | S | [132](../specs/132-tatib-sidebar-date-buckets/spec.md) | develop via [#392](https://github.com/rsmbyk/multimedia-gkps-klender/pull/392) | 2026-10-25 |
 | [ITEM-135](./items/ITEM-135-process-vintage-2026-10-25.md) | Carry the 2026-10-25 grammar vintage into the process page | Regenerate `docs/PROCESS.md` at the current vintage: one new rule, nine reworded, the operative detail restored | chore | P2 | S | — | develop via [#389](https://github.com/rsmbyk/multimedia-gkps-klender/pull/389) | 2026-10-25 |
 | [ITEM-134](./items/ITEM-134-retire-break-entry.md) | Retire the Break service entry kind | No surface offers a Break; the old ones still render, project, reorder and delete | feat | P1 | S | [131](../specs/131-retire-break-entry/spec.md) | develop via [#387](https://github.com/rsmbyk/multimedia-gkps-klender/pull/387) | 2026-10-25 |
