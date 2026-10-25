@@ -69,8 +69,11 @@
         + '" data-tip="' + escape(name + (short ? ' — ' + short : '')) + '"' : '')
       + ' aria-label="' + escape(name)
       + (short ? ' (' + escape(short) + ')' : '')
+      + (kind === 'service' && book.today ? ' — today' : '')
       + '"' + (selected ? ' aria-current="true"' : '') + '><span class="book__n">'
-      + escape(name) + '</span>' + (kind === 'bible' ? '<span class="book__a">'
+      + escape(name) + '</span>'
+      + (kind === 'service' && book.today ? '<span class="book__today">Today</span>' : '')
+      + (kind === 'bible' ? '<span class="book__a">'
         + escape(miniCode) + '</span>' : '') + (kind === 'bible'
         ? (short ? '<span class="book__s">' + escape(short) + '</span>' : '')
         : '<span class="book__s">' + escape(short || '') + '</span>') + '</a>'
@@ -264,6 +267,37 @@
   }
   var MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   var MONTHS_LONG = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  /* The Tata Ibadah list's four age buckets (spec 132): the server's rule, repeated
+     here because a saved page is rebuilt in the browser with no server to ask. */
+  var TATIB_BUCKETS = [['upcoming', 'Upcoming'], ['last-30-days', 'Last 30 days'],
+    ['earlier-this-year', 'Earlier this year'], ['older', 'Older']];
+  var TATIB_RECENT_DAYS = 30;
+  function jakartaToday() {
+    try {
+      return new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Jakarta',
+        year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
+    } catch (e) {
+      /* An old engine without Intl time zones: the operator's own day is the best
+         available answer, and the panel is read in the congregation's time zone. */
+      var now = new Date();
+      return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0')
+        + '-' + String(now.getDate()).padStart(2, '0');
+    }
+  }
+  function isoDay(value) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value || '');
+    return match ? match[1] + '-' + match[2] + '-' + match[3] : '';
+  }
+  function utcDays(iso) {
+    return Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1,
+      Number(iso.slice(8, 10))) / 86400000;
+  }
+  function tatibBucket(iso, todayIso) {
+    if (iso >= todayIso) return 'upcoming';
+    if (utcDays(todayIso) - utcDays(iso) <= TATIB_RECENT_DAYS) return 'last-30-days';
+    if (iso.slice(0, 4) === todayIso.slice(0, 4)) return 'earlier-this-year';
+    return 'older';
+  }
   function dateParts(value) {
     var match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value || '');
     return match ? {year: Number(match[1]), month: Number(match[2]), day: Number(match[3])} : null;
@@ -272,38 +306,50 @@
     var filtered = services.filter(function (service) {
       return mode === 'template' ? !service.date : !!service.date;
     });
-    var groups = {};
+    var todayIso = jakartaToday();
+    var sections = [];
     if (mode === 'template') {
       filtered.sort(function (a, b) {
         return normalized(a.name).replace(/\|/g, '').localeCompare(normalized(b.name).replace(/\|/g, ''));
       });
-      groups.Templates = filtered;
+      sections.push({key: '', label: 'Templates', rows: filtered});
     } else {
       filtered.sort(function (a, b) {
         return String(b.date).localeCompare(String(a.date))
           || String(b.created_at || '').localeCompare(String(a.created_at || ''))
           || b.id - a.id;
       });
+      var byKey = {};
       filtered.forEach(function (service) {
-        var parts = dateParts(service.date);
-        if (!parts) return;
-        var key = parts.year + '-' + String(parts.month).padStart(2, '0');
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(service);
+        var iso = isoDay(service.date);
+        if (!iso) return;
+        var key = tatibBucket(iso, todayIso);
+        if (!byKey[key]) byKey[key] = [];
+        byKey[key].push(service);
+      });
+      if (byKey.upcoming) {
+        /* Today's rows lead, then the future farthest-first: the list is already in
+           date-descending order, so a stable partition is the whole rule (spec 132). */
+        byKey.upcoming.sort(function (a, b) {
+          return (isoDay(a.date) !== todayIso) - (isoDay(b.date) !== todayIso);
+        });
+      }
+      TATIB_BUCKETS.forEach(function (bucket) {
+        var rows = byKey[bucket[0]];
+        if (rows && rows.length) sections.push({key: bucket[0], label: bucket[1], rows: rows});
       });
     }
-    return Object.keys(groups).map(function (key) {
-      var group = groups[key];
-      var parts = mode === 'template' ? null : dateParts(group[0].date);
-      var label = mode === 'template' ? key : MONTHS_LONG[parts.month - 1] + ' ' + parts.year;
-      var rows = group.map(function (service) {
+    return sections.map(function (section) {
+      var rows = section.rows.map(function (service) {
         var date = dateParts(service.date);
         var dateLabel = date ? date.day + ' ' + MONTHS_SHORT[date.month - 1] + ' ' + date.year : '';
-        return bookLink(Object.assign({}, service, {date_display: dateLabel}),
+        return bookLink(Object.assign({}, service, {date_display: dateLabel,
+          today: isoDay(service.date) === todayIso}),
           service.id === selectedId, 'service', editor);
       }).join('');
-      return '<section class="group"' + (mode === 'dated' ? ' data-month="' + key + '"' : '')
-        + '><h3 class="group__head">' + escape(label) + '</h3><ul>' + rows + '</ul></section>';
+      var attr = section.key ? ' data-bucket="' + section.key + '"' : '';
+      return '<section class="group"' + attr + '><h3 class="group__head">'
+        + escape(section.label) + '</h3><ul>' + rows + '</ul></section>';
     }).join('');
   }
   function tatibModeButton(url, mode) {

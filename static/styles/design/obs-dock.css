@@ -300,11 +300,24 @@ body.obs-dock {
   font-variant-numeric: tabular-nums;
 }
 
-.servicerow.is-today,
-.servicerow.is-today:hover { background: var(--sidebar-selected-bg); }
-
-.servicerow.is-upcoming { background: color-mix(in srgb, var(--sidebar-selected-bg) 55%, transparent); }
-.servicerow.is-upcoming:hover { background: color-mix(in srgb, var(--sidebar-selected-bg) 75%, transparent); }
+/* A today row carries the badge instead of a tint (spec 132): the tint was the same
+   token a selected row uses, and the bucket heading already says how old a row is.
+   Kept in step with `.book__today` in components.css — same numbers, other sheet. */
+.servicerow__today {
+  flex: none;
+  align-self: center;
+  margin-left: auto;
+  padding: 1px 7px 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--active-bg);
+  color: var(--active-ink);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
 
 /* The mockup leaves 4px between service rows (44px pitch); without it the flat
    rows read as one block. */

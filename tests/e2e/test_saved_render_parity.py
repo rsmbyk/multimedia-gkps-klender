@@ -271,12 +271,19 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                       };
                       const many = (doc, selector) => Array.from(doc.querySelectorAll(selector))
                         .map(node => node.textContent.trim());
+                      const isTatib = node => node.documentElement.dataset.section === 'tatib';
                       const fields = doc => ({
                         section: doc.documentElement.dataset.section,
                         panelTitle: one(doc, '#panelTitle'),
                         panelLabel: one(doc, 'label[for="bookFilter"]'),
                         panelPlaceholder: one(doc, '#bookFilter', 'placeholder'),
                         panelRows: many(doc, '#panelBody .book__n'),
+                        // The bucket key and the today badge exist on the Tata Ibadah
+                        // panel only; other sections' groups carry neither (spec 132).
+                        panelHeads: isTatib(doc) ? many(doc, '#panelBody .group__head') : null,
+                        panelBuckets: isTatib(doc) ? Array.from(doc.querySelectorAll('#panelBody .group'))
+                          .map(node => node.dataset.bucket || '') : null,
+                        todayBadges: isTatib(doc) ? many(doc, '#panelBody .book__today') : null,
                         chTitle: one(doc, '#chTitle'),
                         chLabel: one(doc, 'label[for="songFilter"]'),
                         chPlaceholder: one(doc, '#songFilter', 'placeholder'),

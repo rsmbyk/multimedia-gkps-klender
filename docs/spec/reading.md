@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-25
-**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`
+**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
 in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
@@ -235,3 +235,69 @@ off them, and the legacy `END_OF_SECTION` row of the older table is a different 
 - WHEN a service holding a Break opens, projects, or is read from the saved library
 - THEN the divider, its place in the order, its sidebar row and its projector screen are exactly as before
 - AND its Delete still removes it and closes the order up
+
+### R9 — The Tata Ibadah list groups by age, and today is marked
+
+The dated Tata Ibadah list SHALL group its rows into four age buckets, in this order and under these
+labels: `Upcoming` (today or later), `Last 30 days` (one to thirty days before today), `Earlier this
+year` (older than thirty days and in the present calendar year) and `Older` (anything older). The present
+day SHALL be the congregation's calendar day in `Asia/Jakarta`, never the server's UTC date. A bucket
+holding no rows SHALL draw neither a heading nor a separator, and the buckets kept SHALL stay in the order
+above.
+
+Inside `Upcoming`, rows dated today SHALL come first and the remaining future rows SHALL follow farthest
+date first; every other bucket SHALL list its newest date first. Within one date, rows SHALL break ties on
+creation time, newest first.
+
+A row dated today SHALL carry a `Today` badge between its name and its date, and no other row SHALL carry
+one; the badge SHALL be drawn on the action accent (`--active-bg` fill with `--active-ink` ink), and the
+row's accessible name SHALL end `— today`.
+
+The operator dock's picker SHALL group by the same four buckets, in the same order and under the same
+labels, and SHALL mark today with the same badge. It SHALL NOT tint a row for being today or for being
+upcoming: the bucket heading carries the age, and the badge carries the day.
+
+The saved copy of the page SHALL draw the same four buckets, the same row order and the same badge,
+computing its present day in `Asia/Jakarta`, so a page opened a day after it was saved buckets by that day
+and not by the day it was written.
+
+The month heading and the month group key SHALL be gone from both renderers and from the in-page
+reconciler; a group SHALL carry `data-bucket` with its bucket key (`upcoming`, `last-30-days`,
+`earlier-this-year`, `older`). The panel filter SHALL keep working across the buckets, hiding a bucket it
+empties together with that bucket's separator. Template mode (`?mode=template`) SHALL be unchanged: one
+`Templates` heading over the undated services, sorted by their folded names.
+
+#### Scenario: the four buckets
+- WHEN `/tatib/` opens with a service in each age bucket
+- THEN the headings run `Upcoming`, `Last 30 days`, `Earlier this year`, `Older`, in that order
+
+#### Scenario: the boundary
+- WHEN a service is dated exactly thirty days before today
+- THEN it sits under `Last 30 days`
+- AND a service dated one day earlier sits under `Earlier this year` when it is in the same calendar year
+
+#### Scenario: early January
+- WHEN today is early in January and a service is dated in the last days of December
+- THEN it sits under `Last 30 days`, because the window is days, not months
+
+#### Scenario: today
+- WHEN a service is dated today and another is dated two months from now
+- THEN the today row is the first row of `Upcoming`, above the two-month-out row
+- AND only the today row carries the `Today` badge
+
+#### Scenario: an emptied bucket
+- WHEN the panel filter leaves a bucket with no visible row
+- THEN that bucket's heading is hidden and the separator above the next bucket goes with it
+
+#### Scenario: the dock
+- WHEN `/obs/dock` opens against the same services
+- THEN its picker shows the same four headings and the same badge
+- AND no row is tinted for today or for being upcoming
+
+#### Scenario: the saved copy
+- WHEN a saved `/tatib/` page is opened
+- THEN its headings, bucket keys, rows and badges equal the server route's for the day it is opened
+
+#### Scenario: template mode
+- WHEN `?mode=template` is on
+- THEN the undated list still shows one `Templates` heading and no bucket

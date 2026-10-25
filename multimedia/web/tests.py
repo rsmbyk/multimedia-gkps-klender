@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import json
 import re
 from unittest.mock import patch
@@ -498,11 +498,60 @@ class ReadingViewTests(TestCase):
                             '<p class="read__eyebrow" id="readEyebrow">Tata Ibadah</p>',
                             html=True)
 
-    def test_tatib_list_groups_by_month(self):
-        response = self.client.get(reverse('web-tatib'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Agustus 2026')
-        self.assertContains(response, 'Ibadah Minggu III')
+    def test_tatib_list_buckets_its_services_by_age(self):
+        """The panel asks how old a service is, not which month it fell in (spec 132)."""
+        today = date(2026, 10, 25)
+        for name, day in (('Hari ini', today),
+                          ('Dua bulan lagi', today + timedelta(days=60)),
+                          ('Minggu depan', today + timedelta(days=7)),
+                          ('Sepuluh hari lalu', today - timedelta(days=10)),
+                          ('Sebulan lebih', today - timedelta(days=40)),
+                          ('Tahun lalu', date(2025, 12, 24))):
+            tatib.TataIbadah.objects.create(name=name, date=day, is_active=True)
+        with patch('multimedia.web.reading.date_buckets.present_day', return_value=today):
+            response = self.client.get(reverse('web-tatib'))
+        groups = response.context['tatib_groups']
+        self.assertEqual([(group['key'], group['label']) for group in groups], [
+            ('upcoming', 'Upcoming'),
+            ('last-30-days', 'Last 30 days'),
+            ('earlier-this-year', 'Earlier this year'),
+            ('older', 'Older'),
+        ])
+        self.assertEqual([row['name'] for row in groups[0]['services']],
+                         ['Hari ini', 'Dua bulan lagi', 'Minggu depan'])
+        self.assertEqual([row['name'] for row in groups[1]['services']], ['Sepuluh hari lalu'])
+        self.assertEqual([row['name'] for row in groups[2]['services']],
+                         ['Sebulan lebih', 'Ibadah Minggu III'])
+        self.assertEqual([row['name'] for row in groups[3]['services']], ['Tahun lalu'])
+        html = response.content.decode()
+        self.assertIn('<h3 class="group__head">Upcoming</h3>', html)
+        self.assertIn('data-bucket="upcoming"', html)
+        self.assertNotIn('Agustus 2026', html)          # the month heading is gone
+        self.assertNotIn('data-month=', html)
+
+    def test_tatib_list_draws_no_heading_for_a_bucket_without_rows(self):
+        today = date(2026, 8, 24)                      # the fixture service is one day back
+        with patch('multimedia.web.reading.date_buckets.present_day', return_value=today):
+            response = self.client.get(reverse('web-tatib'))
+        self.assertEqual([group['label'] for group in response.context['tatib_groups']],
+                         ['Last 30 days'])
+        html = response.content.decode()
+        self.assertEqual(html.count('class="group__head"'), 1)
+        self.assertNotIn('data-bucket="upcoming"', html)
+
+    def test_a_today_row_carries_the_today_badge_and_no_other_row_does(self):
+        """Spec 132: today leads Upcoming, and the badge is what says why."""
+        today = date(2026, 10, 25)
+        tatib.TataIbadah.objects.create(
+            name='Hari Ini', date=today, is_active=True)
+        tatib.TataIbadah.objects.create(
+            name='Besok', date=today + timedelta(days=1), is_active=True)
+        with patch('multimedia.web.reading.date_buckets.present_day', return_value=today):
+            html = self.client.get(reverse('web-tatib')).content.decode()
+        self.assertEqual(html.count('<span class="book__today">Today</span>'), 1)
+        self.assertIn('aria-label="Hari Ini (25 Okt 2026) — today"', html)
+        self.assertIn('aria-label="Besok (26 Okt 2026)"', html)
+        self.assertIn('aria-label="Ibadah Minggu III (23 Agu 2026)"', html)
 
     # --- editor relocation ---
 

@@ -1339,6 +1339,24 @@ li:hover > .row-edit,
   color: var(--head-ink);
 }
 .book[aria-current="true"] .book__s { color: inherit; opacity: 1; }
+/* A today row leads Upcoming, and the badge is what says why (spec 132). The action
+   accent is the mark: forest green in light, royal blue in dark. Kept in step with
+   `.servicerow__today` in obs-dock.css — same numbers, other sheet. */
+.book__today {
+  flex: none;
+  align-self: center;
+  margin-left: auto;
+  padding: 1px 7px 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--active-bg);
+  color: var(--active-ink);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
 .is-hidden { display: none !important; }
 
 /* ============================================================

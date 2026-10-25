@@ -10,6 +10,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-002](./items/ITEM-002-projection-controls.md) | Projection source as display + controls | Drive the service from the projection window without switching to the dock | feat | P1 | L | — | 2026-09-30 |
+| [ITEM-137](./items/ITEM-137-songbook-empty-view-test.md) | The songbook empty-view E2E still expects the old filter copy | A red browser test from spec 129's rule change: the empty copy, not the filter copy, is what an empty panel shows | fix | P1 | S | — | 2026-10-25 |
 
 ## Speccing
 
@@ -25,6 +26,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-136](./items/ITEM-136-tatib-date-buckets.md) | Group the Tata Ibadah list by age, and mark today | Four age buckets instead of month headings, today first with a `Today` badge; the dock and the saved copy agree | feat | P2 | S | [132](../specs/132-tatib-sidebar-date-buckets/spec.md) | feat/132-tatib-sidebar-date-buckets | 2026-10-25 |
 
 ## In review
 

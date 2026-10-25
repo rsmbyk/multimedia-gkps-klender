@@ -12,6 +12,7 @@ One-time setup::
 
 import unittest
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
@@ -89,6 +90,16 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             self.flash_second = tatib.ServiceEntry.objects.create(
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=3,
                 title='Second flash target', text='Second flash body')
+        if self._testMethodName == 'test_the_tata_ibadah_panel_buckets_its_services_by_age':
+            # One service per bucket boundary, dated from the congregation's own day
+            # (spec 132). Created here because Playwright's loop is live during the
+            # test body and must not overlap an ORM write.
+            today = datetime.now(ZoneInfo('Asia/Jakarta')).date()
+            for name, offset in (('Hari Ini', 0), ('Dua Bulan Lagi', 60), ('Minggu Depan', 7),
+                                 ('Sepuluh Hari Lalu', -10), ('Sebulan Lebih', -40),
+                                 ('Tahun Lalu', -400)):
+                tatib.TataIbadah.objects.create(
+                    name=name, date=today + timedelta(days=offset), is_active=True)
         for n in range(1, 21):
             extra = tatib.TataIbadah.objects.create(
                 name='Ibadah %02d' % n, date=date(2026, 1, 1) + timedelta(days=n), is_active=True)
@@ -1955,6 +1966,21 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         self.assertGreater(resumed, 100, f'the result set was not resumed at an offset: {resumed}')
         self.assertLessEqual(resumed, offset)
         self.assertGreaterEqual(resumed, offset - 60, f'resumed far from the remembered offset: {resumed} vs {offset}')
+
+    def test_the_tata_ibadah_panel_buckets_its_services_by_age(self):
+        """Spec 132: four age buckets, today's rows pinned first and carrying the badge.
+
+        The services come from setUp — one per boundary, dated from the congregation's day.
+        """
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-tatib'))
+
+        expect(page.locator('#panelBody .group__head')).to_have_text(
+            ['Upcoming', 'Last 30 days', 'Earlier this year', 'Older'])
+        upcoming = page.locator('#panelBody .group').first
+        self.assertEqual(upcoming.locator('a.book .book__n').all_text_contents(),
+                         ['Hari Ini', 'Dua Bulan Lagi', 'Minggu Depan'])
+        expect(page.locator('#panelBody .book__today')).to_have_count(1)
 
     def test_the_songbook_panel_draws_one_divider_between_the_groups(self):
         page = self._page()
