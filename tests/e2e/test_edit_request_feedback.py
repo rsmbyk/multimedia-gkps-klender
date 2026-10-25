@@ -145,20 +145,6 @@ class EditRequestFeedbackE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.edit-toast[data-state="failure"] .edit-toast__title'))\
             .to_have_text('Could not load songs', timeout=3000)
 
-    def test_non_modal_break_write_disables_only_its_initiating_button(self):
-        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
-        opener = page.locator('[data-entry-open="section_break"]').first
-        self._hold_post(page, '/editor/entry/new/save/')
-        opener.evaluate('(button) => button.click()')
-        expect(opener).to_be_disabled()
-        page.wait_for_timeout(220)
-        expect(page.locator('.edit-toast[data-state="pending"]')).to_be_visible()
-        self.assertEqual(page.evaluate('window.__heldWriteCount'), 1)
-        page.evaluate('window.__settleHeldWrite()')
-        expect(page.locator('.edit-toast[data-state="failure"]')).to_be_visible()
-        expect(opener).to_be_enabled()
-        expect(page.locator('.preview__error')).to_have_count(0)
-
     def test_failed_reorder_restores_the_last_confirmed_order_and_reports_failure(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
         grip = page.locator('[data-move-grip]').first

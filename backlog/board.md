@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-134](./items/ITEM-134-retire-break-entry.md) | Retire the Break service entry kind | No surface offers a Break; the old ones still render, project, reorder and delete | feat | P1 | S | [131](../specs/131-retire-break-entry/spec.md) | `feat/131-retire-break-entry` | 2026-10-25 |
 
 ## In review
 

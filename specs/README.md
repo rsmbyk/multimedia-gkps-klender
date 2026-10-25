@@ -76,3 +76,4 @@ the templates are in [`_templates/`](./_templates/).
 | [127](127-site-name-tab/spec.md) | The tab names the site, and the index's tab stops at the name | Accepted |
 | [128](128-songbook-hymn-separator/spec.md) | Hymn songbooks above one separator, the rest A–Z | Accepted |
 | [130](130-empty-service-tiles/spec.md) | An empty Tata Ibadah quarter-centres its five add tiles | Accepted |
+| [131](131-retire-break-entry/spec.md) | The Break kind retires, and the breaks already written stay | Accepted |
