@@ -1,7 +1,7 @@
 ---
-id: ITEM-131
+id: ITEM-133
 status: in_progress
-title: 'An empty Tata Ibadah centres its five add tiles'
+title: 'An empty Tata Ibadah quarter-centres its five add tiles'
 type: fix
 priority: P2
 effort: S
@@ -17,12 +17,12 @@ bump: patch
 release_version:
 ---
 
-# ITEM-131: An empty Tata Ibadah centres its five add tiles
+# ITEM-133: An empty Tata Ibadah quarter-centres its five add tiles
 
 ## Summary
 
-An empty service draws its five add actions as full-width labelled buttons stacked under the date, so the
-only content on the page sits in its top third and the rest is blank — the page reads as unfinished rather
+An empty service drew its five add actions as full-width labelled buttons stacked under the date, so the
+only content on the page sat in its top third and the rest was blank — the page read as unfinished rather
 than as an invitation. The five labels also repeat what an operator learns once.
 
 ## Notes
@@ -38,8 +38,9 @@ than as an invitation. The five labels also repeat what an operator learns once.
 
 ## Acceptance sketch
 
-- An empty service shows one centred block: heading, hint, one row of five square tiles.
-- The gaps above and below the block are equal at 1440×900, 1280×800, 1024×700 and 390×844.
+- An empty service shows one block a quarter of the way down the reading area: heading, hint, one row of
+  five square tiles.
+- The block's centre is on the quarter mark at 1440×900, 1280×800, 1024×700 and 390×844, clear of the header.
 - Hovering a tile names it; keyboard focus keeps its ring; clicking one opens the same editor.
 - Deleting the last entry leaves the same centered row, and the saved copy matches the server page.
 

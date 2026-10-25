@@ -46,5 +46,5 @@
 
 - [X] T012 `docs/spec/reading.md` folds the behaviour as R6.
 - [X] T013 This slice's record: spec, plan, research, data-model, quickstart, contracts, checklist, analysis.
-- [X] T014 Board card `ITEM-131`, `specs/README.md` index row, `CHANGELOG.md` entries, `VERSION` → `1.20.6`.
+- [X] T014 Board card `ITEM-133`, `specs/README.md` index row, `CHANGELOG.md` entries, `VERSION` → `1.20.6`.
 - [X] T015 Report: no push, no PR until the owner asks.
