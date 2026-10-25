@@ -11,6 +11,18 @@ from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 from tests.e2e.test_offline_library import wait_for_offline_ready
 
+# What the five quick-add tiles are, not where they land: the saved copy and the
+# server route can be drawn in differently wide reading columns, so position is
+# no evidence and the label, the glyph and the square size are.
+TILE_METRICS = """
+() => [...document.querySelectorAll('.entry__empty-btn')].map((button) => {
+  const box = button.getBoundingClientRect();
+  return {label: button.textContent.trim(),
+          glyphs: button.querySelectorAll('svg').length,
+          size: [Math.round(box.width), Math.round(box.height)]};
+})
+"""
+
 
 @override_settings(DEBUG=True, STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 @tag('e2e')
@@ -64,7 +76,7 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
                 (f'/songs/{self.hymn_song.pk}/', 'eyebrow', 'HT 7'),
                 (f'/songs/{self.song.pk}/', 'eyebrow', 'Ordinary Test'),
                 (f'/songs/{self.song.pk}/', 'heading', 'Song list — Ordinary Test'),
-                (f'/tatib/{self.service.pk}/', 'icon_count', 4),
+                (f'/tatib/{self.service.pk}/', 'icon_count', 5),
             ]
             for url, field, expected in cases:
                 with self.subTest(url=url, field=field):
@@ -105,23 +117,18 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
             page.locator(f'#panelBody a.book[href="/tatib/{self.service.pk}/"]').click()
             self.assertEqual(page.locator('#bookFilter').get_attribute('placeholder'),
                              'Filter Tata Ibadah...')
+            # the saved copy is painted a tick after the click; count after it lands
+            page.wait_for_selector('.entry__empty-btn')
             self.assertEqual(page.locator('.entry__empty-btn').count(), 5)
-            self.assertEqual(page.locator('.entry__empty-btn svg').count(), 4)
-            saved_boxes = page.locator('.entry__empty-btn').evaluate_all(
-                '(buttons) => buttons.map(button => { const r = button.getBoundingClientRect();'
-                ' return [r.x, r.y, r.width, r.height]; })')
+            self.assertEqual(page.locator('.entry__empty-btn svg').count(), 5)
+            saved = page.evaluate(TILE_METRICS)
             page.context.set_offline(False)
             page.goto(self.live_server_url + f'/tatib/{self.service.pk}/')
-            server_boxes = page.locator('.entry__empty-btn').evaluate_all(
-                '(buttons) => buttons.map(button => { const r = button.getBoundingClientRect();'
-                ' return [r.x, r.y, r.width, r.height]; })')
-            self.assertEqual(len(saved_boxes), len(server_boxes))
-            for saved, server in zip(saved_boxes, server_boxes):
-                self.assertLessEqual(abs(saved[3] - server[3]), 1)
-            for index in range(1, len(saved_boxes)):
-                saved_gap = saved_boxes[index][1] - saved_boxes[index - 1][1]
-                server_gap = server_boxes[index][1] - server_boxes[index - 1][1]
-                self.assertLessEqual(abs(saved_gap - server_gap), 1)
+            server = page.evaluate(TILE_METRICS)
+            # the two pages can be drawn in differently wide reading columns, so
+            # the tiles are compared by what they are, not by where they landed:
+            # same labels, one glyph each, same square size.
+            self.assertEqual(saved, server)
             browser.close()
 
     def test_saved_song_pages_match_the_server_sort_control(self):

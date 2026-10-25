@@ -2174,13 +2174,41 @@ kbd {
 .entry__add-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* An empty service is an invitation, not a void: the four kinds, big enough to
-   read as the starting point, centred on the page. */
+   read as the starting point. It is the whole page when nothing is in it, so it
+   sits a quarter of the way down the reading area under the header rather than
+   stacked at the top of the column (spec 130). */
 .entry__empty {
   display: grid;
   place-items: center;
   gap: 10px;
-  padding: 56px 16px;
+  padding: 0 16px;
   text-align: center;
+}
+/* the article takes the stage's height and the body takes the rest of it, so
+   the empty block has somewhere to sit that is not the top of the column (the
+   header is furniture, not part of the invitation). Its centre lands a quarter
+   of the way down that body, not halfway: the band it centres in is the body's
+   first half. Both margins come off — they are the page's header-to-content
+   gap, and here they would only bias the centre downwards. */
+.read[data-kind="tatib"]:has(.entry__empty) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.read[data-kind="tatib"]:has(.entry__empty) .read__head { margin-bottom: 0; }
+.read[data-kind="tatib"] .read__body:has(> .entry__empty) {
+  display: grid;
+  /* centred in here = the quarter mark; `min-content` keeps the band from being
+     shorter than the block, which at 1024×700 pushed it back over the header */
+  grid-template-rows: minmax(min-content, 50%);
+  align-content: start;
+  align-items: center;
+  justify-items: center;
+  flex: 1;
+  margin-top: 0;
+  padding-top: 12px;      /* a floor for the band's collapsed case: never flush */
+  padding-bottom: 0;      /* nothing follows the empty block to hold a gap for */
+  container-type: inline-size;   /* the tile row sizes against the column, not the window */
 }
 .entry__empty-title {
   margin: 0;
@@ -2188,18 +2216,28 @@ kbd {
   color: var(--ink);
 }
 .entry__empty-hint { margin: 0; color: var(--head-ink); }
-/* a short menu rather than a row of tiles: a wide rectangle per kind, icon left of
-   the label, stacked down the middle */
+/* one row of square tiles, the kind named by the glyph and the tooltip: the
+   labels were read once and the row reads as a toolbar from then on. The five
+   columns shrink with a narrow reading column rather than wrapping into a
+   ragged 4 + 1. */
 .entry__empty-actions {
-  display: flex; flex-direction: column; align-items: stretch; gap: 10px;
-  margin-top: 16px;
-  width: min(320px, 100%);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 52px));
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+/* a reading column too narrow to give five tiles 44px each (300px of body) takes
+   them three and two at full size rather than shrinking them into dots */
+@container (max-width: 300px) {
+  .entry__empty-actions { grid-template-columns: repeat(3, 52px); }
 }
 .entry__empty-btn {
-  display: flex; flex-direction: row; align-items: center; gap: 14px;
-  padding: 16px 20px;
-  text-align: left;
-  font: 500 14px/1.2 ui-sans-serif, system-ui, sans-serif;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
   color: var(--ink);
   background: var(--canvas);
   border: 1px solid var(--divider);
@@ -2207,8 +2245,9 @@ kbd {
   cursor: pointer;
   transition: border-color var(--ease), background var(--ease);
 }
-.entry__empty-btn svg { width: 22px; height: 22px; flex: none; color: var(--head-ink); }
+.entry__empty-btn svg { width: 22px; height: 22px; max-width: 60%; max-height: 60%; flex: none; color: var(--head-ink); }
 .entry__empty-btn:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.entry__empty-btn:hover svg { color: var(--ink); }
 .entry__empty-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
 
