@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-25
-**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`
+**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
 in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
@@ -301,3 +301,52 @@ empties together with that bucket's separator. Template mode (`?mode=template`) 
 #### Scenario: template mode
 - WHEN `?mode=template` is on
 - THEN the undated list still shows one `Templates` heading and no bucket
+
+### R10 — A text entry's form is the media modal's large frame
+
+A service entry's text form SHALL be drawn in the same dialog frame as the media create form: `840px`
+wide and `760px` tall, each clamped to the window (`100vw − 32px` and `100dvh − 32px`). The frame SHALL
+carry that dialog's chrome — no content padding, a title band padded `20px 26px` over a 1px divider at
+21px type, top-level fields and the mode switch inset `26px` from the sides and `14px` apart, and an
+action row inset `26px`, `14px` above and `20px` below, drawing no divider of its own.
+
+Inside that frame the Text field SHALL take the height the switch, the title field and the action row
+leave: the field SHALL grow and its textarea SHALL grow with it, so the box ends `14px` above the action
+row and never pushes that row out of the dialog.
+
+The frame SHALL be chosen by what the form is, not by a kind's script. A text form — Create and Edit — and
+a media Create form SHALL carry `data-editor-size="large"`; the passage, song and media Edit forms and the
+old-item forms SHALL NOT carry it, and SHALL keep the compact dialog: 480px wide, content padded 22px,
+the action row divided by a 1px rule.
+
+Below a 650px window the large frame's gutters SHALL fall to 18px and its title band to `16px 18px`, as
+the media create form already drew them.
+
+The editor dialog SHALL be placed against the window and not the document, so that its position does not
+change with the page's scroll offset; an absolutely positioned child inside it (the date popover) SHALL
+keep resolving against the dialog.
+
+The text form's behaviour SHALL be unchanged: the Multi-line/Single-screen switch and its help line, the
+Save guard that disables while the text is blank, the hidden `default_screen_mode` field, and the
+re-render that follows a rejected save.
+
+#### Scenario: the two create dialogs
+- WHEN `+ Text` and `+ Media` are opened on a service at 1440×900
+- THEN both dialogs measure 840×760 at (300, 70), with a 72.5px title band, fields 788px wide at x=326 and an action row at y=772 that is 38px tall
+
+#### Scenario: the Text box inside the frame
+- WHEN the New text form is open and empty
+- THEN its textarea is 419px tall, ending 14px above the action row
+- AND the Edit form's textarea is 507px tall on the same dialog
+
+#### Scenario: a scrolled page
+- WHEN an entry's Edit is opened on a service scrolled to the bottom of the window
+- THEN the dialog is centred on the window and neither edge is clipped
+
+#### Scenario: the other forms
+- WHEN the passage, song or media-edit form is opened
+- THEN it keeps the compact 480px dialog with its divided action row
+
+#### Scenario: a narrow window
+- WHEN the window is 390×844
+- THEN the frame is 352×760, its title band padded `16px 18px`, its fields inset 18px, and the page behind gains no scrollbar

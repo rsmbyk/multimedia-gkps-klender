@@ -11,6 +11,9 @@ Other columns stay in workflow order — the row that has waited longest first.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-002](./items/ITEM-002-projection-controls.md) | Projection source as display + controls | Drive the service from the projection window without switching to the dock | feat | P1 | L | — | 2026-09-30 |
 | [ITEM-137](./items/ITEM-137-songbook-empty-view-test.md) | The songbook empty-view E2E still expects the old filter copy | A red browser test from spec 129's rule change: the empty copy, not the filter copy, is what an empty panel shows | fix | P1 | S | — | 2026-10-25 |
+| [ITEM-139](./items/ITEM-139-offline-projector-e2e-errors.md) | Three offline projector E2E tests error with ERR_INTERNET_DISCONNECTED | Taking the page offline blocks the loopback navigation itself, so the saved-projection behaviour is unproven; identical on develop | fix | P1 | S | — | 2026-10-25 |
+| [ITEM-140](./items/ITEM-140-projector-display-off-state.md) | The projector keeps data-showing=true when display-off is asked for | Audio and video display-off tests never see the projector leave its showing state; identical on develop | fix | P1 | S | — | 2026-10-25 |
+| [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
 
 ## Speccing
 
@@ -56,6 +59,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-138](./items/ITEM-138-text-modal-large-frame.md) | A text entry opens in the media modal's large frame | Every text form takes the create-media 840×760 frame, its Text box fills the height, and the dialog is placed against the window instead of the document | chore | P2 | S | [133](../specs/133-text-modal-large-frame/spec.md) | develop via [#394](https://github.com/rsmbyk/multimedia-gkps-klender/pull/394) | 2026-10-25 |
 | [ITEM-136](./items/ITEM-136-tatib-date-buckets.md) | Group the Tata Ibadah list by age, and mark today | Four age buckets instead of month headings, today first with a `Today` badge; the dock and the saved copy agree | feat | P2 | S | [132](../specs/132-tatib-sidebar-date-buckets/spec.md) | develop via [#392](https://github.com/rsmbyk/multimedia-gkps-klender/pull/392) | 2026-10-25 |
 | [ITEM-135](./items/ITEM-135-process-vintage-2026-10-25.md) | Carry the 2026-10-25 grammar vintage into the process page | Regenerate `docs/PROCESS.md` at the current vintage: one new rule, nine reworded, the operative detail restored | chore | P2 | S | — | develop via [#389](https://github.com/rsmbyk/multimedia-gkps-klender/pull/389) | 2026-10-25 |
 | [ITEM-134](./items/ITEM-134-retire-break-entry.md) | Retire the Break service entry kind | No surface offers a Break; the old ones still render, project, reorder and delete | feat | P1 | S | [131](../specs/131-retire-break-entry/spec.md) | develop via [#387](https://github.com/rsmbyk/multimedia-gkps-klender/pull/387) | 2026-10-25 |
