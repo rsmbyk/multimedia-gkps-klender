@@ -1,6 +1,6 @@
 ---
 id: ITEM-136
-status: in-review
+status: done
 title: 'Group the Tata Ibadah list by age, and mark today'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/132-tatib-sidebar-date-buckets/spec.md
 branch: feat/132-tatib-sidebar-date-buckets
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/392
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/391
-closed_at:
-closed_reason:
+closed_at: 2026-10-25
+closed_reason: merged into develop via #392
 bump: patch
 release_version:
 ---
