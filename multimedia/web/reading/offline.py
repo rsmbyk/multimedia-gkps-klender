@@ -82,7 +82,7 @@ def _service_chunk(service):
         if key in item} for item in items]
     public_toc = [{key: item.get(key) for key in (
         'eos', 'anchor', 'n', 'label', 'label_lines', 'titled',
-        'two_line_label', 'song_label', 'song_reference', 'song_title',
+        'song_label', 'song_reference', 'song_title',
         'verse_line', 'txt', 'entry', 'pk') if key in item} for item in toc]
     rows = []
     for kind, row in _ordered_service_rows(service):

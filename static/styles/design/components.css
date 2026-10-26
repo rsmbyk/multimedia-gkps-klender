@@ -1602,11 +1602,27 @@ li:hover > .row-edit,
   min-width: 3.4rem;
 }
 .songrow[aria-current="true"] .songrow__c { color: var(--ink); }
-.songrow__t { min-width: 0; }
-.songrow__t--lines { display: flex; flex-direction: column; line-height: 1.35; }
-.songrow__line--blank { min-height: 1.35em; }
+/* A contents row is three lines of its own text, whatever it holds (spec 135): the box
+   clamps at three line boxes, and a line too wide for the pane wraps inside it instead
+   of running past it. */
+.songrow__t {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+/* A song that has a Bait line spends at most two lines on its heading, so the Bait
+   line is always drawn as the third (spec 135). */
+.songrow__t--song:has(.songrow__verses) .songrow__heading {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
 /* Service-order songs: reference + title, with verse selection beneath (spec 059). */
-.songrow__t--song { flex: 1; font-style: normal; line-height: 20px; overflow-wrap: anywhere; }
+.songrow__t--song { flex: 1; font-style: normal; line-height: 20px; }
 .songrow__heading { display: block; color: var(--ink); }
 .songrow__reference { font-size: 12px; font-weight: 600; margin-right: 8px; }
 .songrow__title { font-size: 14px; font-weight: 400; }

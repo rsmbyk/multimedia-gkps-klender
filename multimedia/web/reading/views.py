@@ -927,6 +927,8 @@ def _text_preview(entry):
 
 
 PANE_TEXT_LINES = 3
+# A contents row shows three lines of its own text, whatever it holds (spec 135).
+ROW_TEXT_LINES = 3
 
 
 def _clamped_paragraphs(text):
@@ -940,6 +942,19 @@ def _clamped_paragraphs(text):
     last = dict(kept[-1])
     last['text'] = last['text'].rstrip() + '…'
     kept[-1] = last
+    return kept, True
+
+
+def _label_lines(text, limit=ROW_TEXT_LINES):
+    """A contents row's lines: the body's first `limit` lines, the last ending "…" when
+    the rest is hidden. Blank lines count, and a speaker's mark stays in its line."""
+    lines = [line.rstrip() for line in (text or '').split('\n')]
+    while lines and not lines[-1].strip():
+        lines.pop()
+    if len(lines) <= limit:
+        return lines, False
+    kept = lines[:limit]
+    kept[-1] = kept[-1] + '…'
     return kept, True
 
 
@@ -1013,11 +1028,11 @@ def _tatib_stage(service):
             items.append({'eos': False, 'anchor': anchor, 'title': row.title,
                           'old_item': True, 'pk': row.pk, 'after_marker': after_marker,
                           'paras': paras, 'clipped': clipped, 'preview': preview})
-            label = row.title or _first_line(row.text)
-            if len(label) > 60:
-                label = label[:60] + '…'
+            label_lines = [row.title] if row.title else _label_lines(row.text)[0]
+            if not label_lines:
+                label_lines = [f'Section {text_count}']
             toc.append({'eos': False, 'anchor': anchor, 'n': text_count,
-                        'label': label or f'Section {text_count}',
+                        'label': ' '.join(label_lines), 'label_lines': label_lines,
                         'titled': bool(row.title), 'txt': f'{row.title} {row.text}'})
             continue
 
@@ -1032,7 +1047,8 @@ def _tatib_stage(service):
                           'entry': True, 'pk': row.pk, 'after_marker': anchor})
             text_count += 1
             toc.append({'eos': True, 'anchor': anchor, 'n': text_count,
-                        'label': row.get_kind_display(), 'titled': False,
+                        'label': row.get_kind_display(),
+                        'label_lines': [row.get_kind_display()], 'titled': False,
                         'pk': row.pk, 'entry': True, 'txt': row.get_kind_display()})
             continue
         deleted_target = row.target_deleted
@@ -1078,29 +1094,26 @@ def _tatib_stage(service):
         items.append(block)
         text_count += 1
         text_kind = kind_key == 'text'
-        two_line_label = text_kind and not title
-        label = title or row.get_kind_display()
-        if two_line_label:
-            label = '\n'.join((body or '').split('\n')[:2]) or row.get_kind_display()
-        if kind_key == 'song' and row.song_id and row.song.book.is_hymn_book:
-            # A hymn song reads by its short reference and title (spec 039).
-            song = row.song
-            label = f'{song.book_number} {song.title}'.strip() if song.title else song.book_number
+        label_lines = [title] if title else []
+        if text_kind and not title:
+            # A text entry without a title reads by its body (spec 135).
+            label_lines = _label_lines(body)[0]
         # Keep song parts structured so the sidebar can style them independently.
         song_label = kind_key == 'song' and bool(row.song_id) and not deleted_target
         song_reference, song_title = '', ''
         if song_label:
             song_reference = row.song.book_number if row.song.book.is_hymn_book else ''
-            song_title = row.song.title or ('' if song_reference else label)
+            song_title = row.song.title or ('' if song_reference else row.get_kind_display())
+            # A hymn song reads by its short reference and title (spec 039); the
+            # Bait line is a separate field, not part of the heading.
+            label_lines = [f'{song_reference} {song_title}'.strip()]
+        if not label_lines:
+            label_lines = [row.get_kind_display()]
+        label = ' '.join(label_lines)
         filter_text = f'{label} {title} {body} {verse_line}'
-        label = label[:60]
-        label_lines = label.split('\n') if two_line_label else None
-        if verse_line:
-            two_line_label = True
-            label_lines = [label, verse_line]
         toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
                     'label': label, 'label_lines': label_lines, 'titled': bool(title),
-                    'two_line_label': two_line_label, 'pk': row.pk, 'entry': True,
+                    'pk': row.pk, 'entry': True,
                     'song_label': song_label, 'song_reference': song_reference,
                     'song_title': song_title, 'verse_line': verse_line,
                     'txt': filter_text})

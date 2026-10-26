@@ -1690,43 +1690,75 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'KJ 152 Ada Kuasa dalam DarahNya')
 
-    def test_service_text_sidebar_labels_use_two_literal_lines_and_respect_scope(self):
-        untitled = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=1,
-                             text='First line\nSecond line\nThird line')
-        single_screen = self.make(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', order_number=2,
-                                  text='Screen one\nScreen two\nScreen three')
-        blank_second = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=3,
-                                 text='Keep this\n\nSkip this')
-        titled = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=4, title='Kept title',
-                           text='Body line one\nBody line two')
-        long_body = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=5,
-                              text=f'{"A" * 50}\n{"B" * 20}\nThird line')
-        long_title = self.make(kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen', order_number=6,
-                               title='T' * 64, text='Short body')
-        empty_body = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=7, text='')
-        passage = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, order_number=8,
-                            book_translation=self.matius, chapter=5, verse_start=2)
-        song = self.make(kind=tatib.ServiceEntryKind.SONG, order_number=9, song=self.song, verses=[1])
-        section_break = self.make(kind=tatib.ServiceEntryKind.SECTION_BREAK, order_number=10)
-        tatib.TataIbadahItem.objects.create(
-            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT, order_number=11,
-            text='Legacy first\nLegacy second\nLegacy third')
+    def test_an_untitled_text_row_carries_three_body_lines(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, order_number=1,
+                          text='First line\nSecond line\nThird line\nFourth line')
+        row = self._toc_row(entry.pk)
+        self.assertEqual(row['label_lines'], ['First line', 'Second line', 'Third line\u2026'])
+        self.assertEqual(row['label'], 'First line Second line Third line\u2026')
 
-        response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
-        toc = response.context['toc_items']
-        entries = {item['pk']: item for item in toc if item.get('entry')}
+    def test_a_titled_text_row_carries_its_title_alone(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, title='Kept title',
+                          text='Body one\nBody two')
+        self.assertEqual(self._toc_row(entry.pk)['label_lines'], ['Kept title'])
 
-        self.assertEqual(entries[untitled.pk]['label'], 'First line\nSecond line')
-        self.assertEqual(entries[single_screen.pk]['label'], 'Screen one\nScreen two')
-        self.assertEqual(entries[blank_second.pk]['label'], 'Keep this\n')
-        self.assertEqual(entries[titled.pk]['label'], 'Kept title')
-        self.assertEqual(entries[long_body.pk]['label'], f'{"A" * 50}\n{"B" * 9}')
-        self.assertEqual(entries[long_title.pk]['label'], 'T' * 60)
-        self.assertEqual(entries[empty_body.pk]['label'], empty_body.get_kind_display())
-        self.assertEqual(entries[passage.pk]['label'], 'Matius 5:2')
-        self.assertEqual(entries[song.pk]['label'], f'{self.song.book_number} {self.song.title}')
-        self.assertEqual(entries[section_break.pk]['label'], section_break.get_kind_display())
-        self.assertEqual(next(item['label'] for item in toc if not item.get('entry')), 'Legacy first')
+    def test_a_row_label_is_no_longer_cut_at_sixty_characters(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT,
+                          default_screen_mode='single_screen', title='T' * 64, text='Short body')
+        row = self._toc_row(entry.pk)
+        self.assertEqual(row['label_lines'], ['T' * 64])
+        self.assertEqual(row['label'], 'T' * 64)
+
+    def test_a_row_that_fits_carries_no_ellipsis(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='One\nTwo\nThree')
+        self.assertEqual(self._toc_row(entry.pk)['label_lines'], ['One', 'Two', 'Three'])
+
+    def test_a_blank_body_line_keeps_its_line(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT, text='Keep this\n\nSkip this')
+        self.assertEqual(self._toc_row(entry.pk)['label_lines'], ['Keep this', '', 'Skip this'])
+
+    def test_the_filter_text_keeps_the_whole_entry(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.TEXT,
+                          text='\n'.join(f'Line {n}' for n in range(1, 7)))
+        self.assertIn('Line 6', self._toc_row(entry.pk)['txt'])
+
+    def test_a_legacy_row_follows_the_text_entry_shape(self):
+        untitled = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT, order_number=1,
+            text='Legacy one\nLegacy two\nLegacy three\nLegacy four')
+        titled = tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.TEXT, order_number=2,
+            title='Legacy title', text='Legacy body')
+        rows = [row for row in self._toc_rows() if not row.get('entry')]
+        self.assertEqual([row['label_lines'] for row in rows],
+                         [['Legacy one', 'Legacy two', 'Legacy three\u2026'],
+                          ['Legacy title']])
+
+    def test_a_song_row_sends_its_heading_and_bait_line_separately(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        row = self._toc_row(entry.pk)
+        self.assertEqual(row['label_lines'], [f'{self.song.book_number} {self.song.title}'])
+        self.assertEqual(row['verse_line'], 'Bait 1-3')
+        self.assertTrue(row['song_label'])
+        self.assertNotIn('two_line_label', row)
+
+    def test_a_song_without_a_verse_line_has_three_lines_for_its_heading(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[])
+        row = self._toc_row(entry.pk)
+        self.assertEqual(row['verse_line'], '')
+        self.assertEqual(row['label_lines'], [f'{self.song.book_number} {self.song.title}'])
+
+    def test_a_passage_row_carries_its_citation_as_one_line(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SCRIPTURE, order_number=1,
+                          book_translation=self.matius, chapter=5, verse_start=2)
+        self.assertEqual(self._toc_row(entry.pk)['label_lines'], ['Matius 5:2'])
+
+    def _toc_rows(self):
+        return self.client.get(reverse('web-tatib-service',
+                                       args=[self.tatib.pk])).context['toc_items']
+
+    def _toc_row(self, pk):
+        return next(row for row in self._toc_rows() if row.get('pk') == pk)
 
     # --- the pane: entries in the service's own stage ----------------------
 
@@ -2216,18 +2248,18 @@ class ServiceEntryViewTests(TestCase):
                          [tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.TEXT])
 
     def test_the_sidebar_song_row_shows_its_verses_on_a_second_line(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
-        toc = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk])).context['toc_items']
-        entry = next(item for item in toc if item.get('entry'))
-        self.assertTrue(entry['two_line_label'])
-        self.assertEqual(entry['label_lines'][1], 'Bait 1-3')
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        row = self._toc_row(entry.pk)
+        self.assertTrue(row['song_label'])
+        self.assertEqual(row['label_lines'], [f'{self.song.book_number} {self.song.title}'])
+        self.assertEqual(row['verse_line'], 'Bait 1-3')
 
     def test_a_deleted_song_target_shows_no_sidebar_verse_line(self):
         entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
         self.song.delete()
-        toc = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk])).context['toc_items']
-        item = next(item for item in toc if item.get('pk') == entry.pk)
-        self.assertFalse(item.get('two_line_label', False))
+        row = self._toc_row(entry.pk)
+        self.assertEqual(row['verse_line'], '')
+        self.assertFalse(row['song_label'])
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')

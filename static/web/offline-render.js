@@ -600,12 +600,8 @@
             + '</span> ' : '') + '<span class="songrow__title">' + escape(item.song_title)
             + '</span></span>' + (item.verse_line ? '<span class="songrow__verses">'
             + escape(item.verse_line) + '</span>' : '') + '</span>'
-        : item.two_line_label
-          ? '<span class="songrow__t songrow__t--lines">' + (item.label_lines || []).map(function (line) {
-            return '<span class="songrow__line' + (line ? '' : ' songrow__line--blank')
-              + '">' + (line ? escape(line) : '&nbsp;') + '</span>';
-          }).join('') + '</span>'
-          : '<span class="songrow__t">' + escape(item.label) + '</span>';
+        : '<span class="songrow__t">' + (item.label_lines || [item.label])
+          .map(function (line) { return escape(line || ''); }).join('<br>') + '</span>';
       return '<li' + (item.entry ? ' data-move-row' : '') + '><a class="songrow' + (item.titled ? '' : ' songrow--cont')
         + '" href="#ti-' + escape(item.anchor) + '"' + (item.entry ? ' draggable="false"' : '')
         + ' data-i="' + escape(item.anchor)
