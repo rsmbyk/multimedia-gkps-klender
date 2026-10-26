@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-26
-**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
 in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
@@ -351,7 +351,57 @@ re-render that follows a rejected save.
 - WHEN the window is 390×844
 - THEN the frame is 352×760, its title band padded `16px 18px`, its fields inset 18px, and the page behind gains no scrollbar
 
-### R11 — A Tata Ibadah contents row is three lines, ellipsized
+### R11 — A sidebar edit keeps every visible reading view current
+
+After a successful edit of a Tata Ibadah, songbook or song from a reading-shell sidebar editor, every
+currently visible representation of that record SHALL show the saved values without a page reload, a
+sidebar reopen or any further navigation: its sidebar row, the stage heading and content when the stage
+shows that record, and, when search results are open, the current result set and each affected group
+count for the query already in the field.
+
+The refresh SHALL stay on the current route and preserve the current query, the selected record, the
+sidebar's open, mini and closed states, both filters, both scroll positions and keyboard focus — except
+that a row which no longer matches an active filter or query may leave the list. An unrelated stage
+SHALL keep its content and its route: editing a Kidung row while a Bible chapter is open changes the
+Kidung lists only.
+
+The document title SHALL be the title the refreshed route renders, following `R1` and `R3`; a save never
+composes a tab title of its own. A save the server rejects SHALL leave every visible reading value
+unchanged, and an entry edited inside an open Tata Ibadah SHALL keep its existing in-place stage and
+contents refresh.
+
+#### Scenario: a Tata Ibadah renamed from the first sidebar
+- WHEN an open service is renamed in the first sidebar and saved
+- THEN its first-sidebar row and stage heading show the saved name, the tab shows `<saved name> — Multimedia GKPS Klender`, and the page did not reload
+
+#### Scenario: a song renamed from the second sidebar
+- WHEN an open song's title is edited in the second sidebar and saved
+- THEN its second-sidebar row and stage heading show the saved title, and the tab keeps its header-derived title (`R1`), not the song title
+
+#### Scenario: a songbook renamed from the first sidebar
+- WHEN the open song's songbook is renamed and saved
+- THEN the songbook row, the song list heading and the song page's tab show the saved name, and the song itself is still on screen
+
+#### Scenario: a Kidung edit while a Bible chapter is open
+- WHEN a songbook row is renamed while the stage shows a Bible chapter
+- THEN the songbook row shows the saved name and the chapter, its route, the pane states, the filter, the scroll and the focus stay as they were
+
+#### Scenario: a search result that still matches
+- WHEN a song in an open search result is renamed so that it still matches the query
+- THEN the result shows the saved title, the group count is current, and the query and results page are unchanged
+
+#### Scenario: a search result that stops matching
+- WHEN the renamed song no longer matches the query
+- THEN it leaves the results and the group counts are current, with the query and results page still in place
+
+#### Scenario: a rejected save
+- WHEN the server returns the form with a validation error
+- THEN no reading row, heading or tab shows the unsaved values
+
+#### Scenario: an entry inside an open service
+- WHEN an entry is edited from the open Tata Ibadah
+- THEN the stage and the contents list update in place, as they did before this requirement
+### R12 — A Tata Ibadah contents row is three lines, ellipsized
 
 A service-order row in the reading sidebar SHALL be capped at three visual lines of its own text, and a row that
 does not show all of its text SHALL end in `…`. No row's label SHALL be cut at 60 characters: the cap is the row's

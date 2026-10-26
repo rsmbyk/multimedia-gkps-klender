@@ -1455,7 +1455,11 @@
                     if (!updated || navBusy || generation !== navigationGeneration
                         || pendingNavigation) return;
                     updated.querySelector('#offlineSavedSource').hidden = true;
-                    applyPage(updated, url, {kind: 'refresh', skipHistory: true});
+                    /* A saved-copy paint is background work: it must not move the
+                       operator's panes, filter or scroll while they browse. */
+                    applyPage(updated, url, {
+                      kind: 'refresh', skipHistory: true, backgroundRefresh: true
+                    });
                     window.GKPSOffline.sync().catch(function () {});
                     return refreshFullPage();
                   });
@@ -1547,38 +1551,6 @@
        live collapsed state is what sprang the panel open (spec 080). */
     var stageOnly = kind === 'chapter' || kind === 'song' || kind === 'service'
       || kind === 'refresh';
-
-    /* A background refresh only replaces the saved screen content. Rebuilding
-       the sidebars here detaches their rows while people are using them and can
-       discard keyboard focus, filters, and scroll position. */
-    if (kind === 'refresh') {
-      root.dataset.read = fresh.read;
-      root.dataset.home = fresh.home;
-      var freshRead = doc.querySelector('#read');
-      if (freshRead && freshRead.dataset.kind === 'tatib') {
-        var freshChList = doc.querySelector('#chList');
-        if (freshChList) {
-          reconcileChildren(chList, freshChList);
-          bindChRows();
-        }
-      }
-      reconcileChildren(stage, doc.querySelector('.stage'));
-      refreshStageRefs();
-      restoreSelectedEdition();
-      syncBibleSidebar();
-      bindLangLinks();
-      bindStageExtras();
-      bindPanelTips();
-      applyFilter(filter.value);
-      applySongFilter(songFilterEl.value);
-      panelBody.scrollTop = changingMainMenu ? 0 : currentPanelScroll;
-      chBody.scrollTop = changingMainMenu ? 0 : currentChScroll;
-      if (!opts.deferFocus) restoreRequestedFocus(opts);
-      document.title = doc.title;
-      syncVisibleBibleTitle();
-      document.dispatchEvent(new CustomEvent('shell:page', {detail: {url: url, kind: kind}}));
-      return true;
-    }
 
     /* shared first column: books / songbooks / services */
     setTextIfChanged(panelTitleEl, txt(doc, '#panelTitle'));
@@ -1849,7 +1821,12 @@
       var target = readBody ? readBody.querySelector('[data-search-target="true"]') : null;
       if (target) revealSearchTarget(target);
     }
-    if (kind === 'lists' && opts.focusKind) restoreRequestedFocus(opts);
+    /* A deleted row hands focus to its neighbour itself (entries.js), so the
+       restore here stays out of that path: deferFocus marks it. */
+    if ((kind === 'lists' || kind === 'refresh') && opts.focusKind
+        && !(kind === 'refresh' && opts.deferFocus)) {
+      restoreRequestedFocus(opts);
+    }
     if (kind === 'search') {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
@@ -2006,18 +1983,22 @@
     /* In-page navigation does not change location. Refresh the section that
        supplied the visible sidebar; if the reader is in another section, keep
        its stage by swapping only the lists. */
+    var searchResultsOpen = root.dataset.home === 'results';
     var stageMatchesSection = readKind() && stageSection() === activeSection;
     var currentSongbook = activeSection === 'kidung' && root.dataset.ch === 'open'
       ? panelBody.querySelector('.book[aria-current="true"]') : null;
-    var url = stageMatchesSection ? stageInfo.url
+    var url = searchResultsOpen ? location.pathname + location.search
+      : stageMatchesSection ? stageInfo.url
       : currentSongbook ? currentSongbook.getAttribute('href')
         : panelOwner().getAttribute('href');
     var refreshOptions = {
-      kind: stageMatchesSection ? 'refresh' : 'lists',
+      kind: searchResultsOpen || stageMatchesSection ? 'refresh' : 'lists',
       what: event.detail && (event.detail.focusId || event.detail.id),
       focusKind: event.detail && (event.detail.focusKind || event.detail.kind),
       entryKeyboardFocus: !!(event.detail && event.detail.entryKeyboardFocus),
-      deferFocus: !!(event.detail && event.detail.deferFocus)
+      deferFocus: !!(event.detail && event.detail.deferFocus),
+      backgroundRefresh: true,
+      skipHistory: true
     };
     /* Show the just-saved server state immediately. The full offline snapshot can
        refresh in parallel; waiting for it here delayed editor feedback and could

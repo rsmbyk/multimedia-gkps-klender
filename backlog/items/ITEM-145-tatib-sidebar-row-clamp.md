@@ -1,5 +1,5 @@
 ---
-id: ITEM-143
+id: ITEM-145
 status: done
 title: 'A Tata Ibadah sidebar row is three lines, ellipsized'
 type: feat
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-143: A Tata Ibadah sidebar row is three lines, ellipsized
+# ITEM-145: A Tata Ibadah sidebar row is three lines, ellipsized
 
 ## Summary
 
