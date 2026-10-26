@@ -886,8 +886,7 @@
     if (hint) hint.textContent = el.dataset[state + 'Hint'] || '';
     el.hidden = false;
   }
-  /* entries.js (an entry deleted out of the service) and offline-render.js
-     (a page rebuilt from the saved library) type the same two lists. */
+  /* entries.js (an entry deleted out of the service) types the same two lists. */
   window.shellListEmpty = paintListEmpty;
 
   /* Boot: neither list runs its filter until someone types, so a page that
@@ -1373,9 +1372,6 @@
       if (window.console && console.error) console.error('in-page navigation failed:', error);
       if (!isSuperseded() && navigator.onLine && !opts.noLocationFallback) {
         window.location.href = url;
-      } else if (!navigator.onLine) {
-        var status = document.getElementById('searchStatus');
-        if (status) status.textContent = 'This content is not saved for offline use.';
       }
       finish(false);
     }
@@ -1404,71 +1400,7 @@
       fromServer().catch(fail);
       return completion;
     }
-    var renderer = window.GKPSOfflineRender;
-    if (renderer && renderer.route(url)) {
-      function refreshFullPage() {
-        var queryBeforeRequest = searchQuery && searchQuery.value;
-        return fetch(url, {cache: 'no-store', credentials: 'same-origin',
-          headers: {'X-Requested-With': 'fetch'}}).then(function (response) {
-          if (!response.ok) throw new Error('HTTP ' + response.status);
-          return response.text();
-        }).then(function (html) {
-          if (generation !== navigationGeneration || pendingNavigation || navBusy
-              || opts.kind === 'results' && searchQuery
-              && searchQuery.value !== queryBeforeRequest) return;
-          var doc = new window.DOMParser().parseFromString(html, 'text/html');
-          applyPage(doc, url, Object.assign({}, opts, {
-            skipHistory: true, backgroundRefresh: true
-          }));
-        });
-      }
-      var ready = window.GKPSOffline && window.GKPSOffline.status
-        ? window.GKPSOffline.status().then(function (state) { return state.ready; })
-        : Promise.resolve(false);
-      ready.then(function (isReady) {
-        if (!isReady) return fromServer();
-        if (navigator.onLine && (opts.kind === 'results' || opts.kind === 'search')
-            && !opts.historyTraversal && !opts.restoreSearchId) {
-          return fromServer().catch(function () {
-            return renderer.render(url).then(function (doc) {
-              if (!doc) throw new Error('No saved search page');
-              applyFresh(doc);
-            });
-          }).catch(fail);
-        }
-        renderer.render(url).then(function (doc) {
-          if (!doc) return fromServer();
-          if (!applyFresh(doc)) return;
-          if (navigator.onLine && window.GKPSOffline && generation === navigationGeneration
-              && !opts.restoreSearchId) {
-            renderer.chunkFor(url).then(function (chunkUrl) {
-              if (!chunkUrl) return refreshFullPage();
-              return fetch(chunkUrl, {cache: 'no-store', credentials: 'same-origin'})
-                .then(function (response) {
-                  if (!response.ok) throw new Error('HTTP ' + response.status);
-                  return response.json();
-                }).then(function (payload) {
-                  if (payload.schema !== 1 || !payload.data) return;
-                  if (generation !== navigationGeneration || pendingNavigation
-                      || new URL(url, location.href).pathname !== location.pathname) return;
-                  return renderer.render(url, payload.data).then(function (updated) {
-                    if (!updated || navBusy || generation !== navigationGeneration
-                        || pendingNavigation) return;
-                    updated.querySelector('#offlineSavedSource').hidden = true;
-                    /* A saved-copy paint is background work: it must not move the
-                       operator's panes, filter or scroll while they browse. */
-                    applyPage(updated, url, {
-                      kind: 'refresh', skipHistory: true, backgroundRefresh: true
-                    });
-                    window.GKPSOffline.sync().catch(function () {});
-                    return refreshFullPage();
-                  });
-                });
-            }).catch(function () { /* the saved copy stays visible */ });
-          }
-        }).catch(function () { return fromServer(); }).catch(fail);
-      }).catch(function () { return fromServer(); }).catch(fail);
-    } else fromServer().catch(fail);
+    fromServer().catch(fail);
     return completion;
   }
 
@@ -1524,8 +1456,8 @@
       }
     }
     var kind = opts.kind || 'lists';
-    /* A direct offline boot can finish after the operator has already opened a
-       sidebar. Keep those live shell controls while replacing the page content. */
+    /* A page that has already opened a sidebar keeps those live shell controls
+       while its content is replaced. */
     var bootNavState = root.dataset.nav;
     var bootChState = root.dataset.ch;
     var bootPanelFilter = opts.directBoot ? filter.value : null;
@@ -1966,17 +1898,6 @@
     navigate('/', {kind: 'results', replaceUrl: true});
   });
 
-  function needsOfflineShellHydration() {
-    var path = location.pathname;
-    if (path === '/' || path === '/home/') return false;
-    if (path === '/search' || path === '/search/') return root.dataset.home === 'landing';
-    if (root.dataset.read === 'on') return false;
-    if (/^\/bible(?:\/|$)/.test(path)) return root.dataset.nav === 'closed';
-    if (/^\/songs(?:\/|$)/.test(path)) return root.dataset.section !== 'kidung';
-    if (/^\/tatib(?:\/|$)/.test(path)) return root.dataset.section !== 'tatib';
-    return false;
-  }
-
   /* A sidebar editor saved something: re-render the page's regions in place, so
      every list, the panel selection and the reading stage agree again. */
   document.addEventListener('editor:saved', function (event) {
@@ -2000,17 +1921,13 @@
       backgroundRefresh: true,
       skipHistory: true
     };
-    /* Show the just-saved server state immediately. The full offline snapshot can
-       refresh in parallel; waiting for it here delayed editor feedback and could
-       leave the pane showing the previous generation. */
+    /* Show the just-saved server state immediately: waiting for a second read here
+       delayed editor feedback and could leave the pane showing the previous page. */
     var viewUpdate = navigate(url, Object.assign({}, refreshOptions, {
       forceServer: true,
       noLocationFallback: !!(event.detail && event.detail.noLocationFallback)
     }));
     if (event.detail) event.detail.viewUpdate = viewUpdate;
-    if (navigator.onLine && window.GKPSOffline) {
-      window.GKPSOffline.sync().catch(function () { /* the current page is already fresh */ });
-    }
   });
 
   /* ---------- reveal search targets ---------- */
@@ -2024,6 +1941,26 @@
       }
     }, transitionDurationMs() + 60);
   }
+
+  /* Spec 136: a browser that still holds the retired library drops it here — the service
+     worker with its shell cache, and the IndexedDB store nothing reads any more. */
+  function retireOfflineLibrary() {
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        registrations.forEach(function (registration) { registration.unregister(); });
+      }).catch(function () { /* nothing to retire */ });
+    }
+    if (window.caches && caches.keys) {
+      caches.keys().then(function (keys) {
+        keys.filter(function (key) { return key.indexOf('gkps-public-shell-') === 0; })
+          .forEach(function (key) { caches.delete(key); });
+      }).catch(function () { /* no cache storage */ });
+    }
+    if (window.indexedDB && indexedDB.deleteDatabase) {
+      try { indexedDB.deleteDatabase('gkps-public-library'); } catch (error) { /* none */ }
+    }
+  }
+  retireOfflineLibrary();
 
   /* ---------- init ---------- */
   applyTheme(root.dataset.themeMode || 'system', false);
@@ -2063,10 +2000,4 @@
                    skipHistory: true, historyTraversal: true,
                    restoreSearchId: state && state.searchId});
   });
-  if (root.dataset.home === 'landing' && needsOfflineShellHydration()
-      && window.GKPSOfflineRender
-      && window.GKPSOfflineRender.route(location.href)) {
-    navigate(location.href, {kind: historyKind(location.pathname), skipHistory: true,
-      directBoot: true});
-  }
 })();

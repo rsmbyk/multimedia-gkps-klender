@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The projector's Go To now searches a small index held in the page itself, so its suggestions appear as you type without a request; choosing a passage or a song fetches it — the whole chapter in both editions, or the whole song — while the panel refuses every key, click and dismissal and shows a loading indicator on the chosen row and beside the shortcuts button. A step that leaves the loaded chapter fetches the next one under the same lock, and the page's Update re-reads the index so a song added mid-service is findable.
+
 ### Changed
 
 - A service-order row in the Tata Ibadah sidebar is three lines now, whatever it holds — a text body's first three lines, a media or passage title, a song's heading above its `Bait …` line, a legacy row — and a row that hides text ends `…`. The 60-character cut is gone, so a 64-character title is shown whole; a song's heading spends at most two lines so its `Bait …` line always shows; and a run wider than the pane, such as a pasted link, wraps inside the row instead of running past its edge with the ellipsis clipped away. The saved copy draws the same rows.
@@ -18,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- The app no longer keeps a saved copy of the public library: the browser database, the service worker and its page shells, the rail's offline status panel and the saved-copy paint are gone, so reading and projection always show the server's own page. The four `/offline/…` routes and `/service-worker.js` answer 404, and a browser that still holds the old library drops it on its next visit.
 - The **Break** service entry kind is retired: no add row, no start bar and no empty-service tile offers one, and the editor endpoints refuse it, so a break cannot be created from any surface — a stale page or a direct request included. The breaks already written still draw their full-width divider on the stage and their row in the sidebar, still contribute their projector screen, and still reorder and delete as before; the stored kind and its rows are untouched. The empty service now offers four tiles, one row of 52px squares that stays centred.
 
 ### Fixed

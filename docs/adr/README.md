@@ -7,10 +7,11 @@ ADRs capture significant choices. Add the next numbered file from
 | --- | ----- |
 | [0001](0001-project-process.md) | Project process |
 | [0002](0002-git-flow-merge-strategy.md) | Git Flow deviations |
-| [0003](0003-offline-reading-shell-and-library.md) | Use a saved shell and revisioned browser library for offline reading |
+| [0003](0003-offline-reading-shell-and-library.md) | Use a saved shell and revisioned browser library for offline reading — superseded by 0007 |
 | [0004](0004-computer-level-media-library.md) | Store service media in a computer-level library |
 | [0005](0005-github-issues-anchor.md) | Anchor board cards on GitHub Issues |
 | [0006](0006-process-grammar.md) | Follow the Vex process grammar |
+| [0007](0007-remove-the-offline-library.md) | Remove the offline library; the projector fetches on selection |
 
 This product follows the process declared in [`docs/PROCESS.md`](../PROCESS.md);
 [ADR 0001](0001-project-process.md) records the choice and

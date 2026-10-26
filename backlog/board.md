@@ -30,6 +30,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-146](./items/ITEM-146-remove-offline-library.md) | Remove the offline library; the projector Go To fetches on selection | Stop keeping a local copy of the library; search from a page-memory index and fetch the chosen chapter or song behind a loading mode | feat | P1 | L | [136](../specs/136-remove-offline-library/spec.md) | feat/136-remove-offline-library | 2026-10-26 |
 
 ## In review
 

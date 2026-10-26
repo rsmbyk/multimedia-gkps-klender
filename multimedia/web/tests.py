@@ -3135,3 +3135,110 @@ class FormatVersesTests(TestCase):
 
     def test_unsorted_and_duplicate_input_is_normalised(self):
         self.assertEqual(self.fmt([10, 3, 1, 2, 2, 9, 8]), '1-3, 8-10')
+
+
+class ProjectorGotoPayloadTests(TestCase):
+    """The projector's Go To payloads (spec 136): one index, one chapter, one song.
+
+    The index is the panel's search data and carries no paintable text; the chapter and
+    song payloads are what the projector paints after a selection.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        lang = bible.Language.objects.create(name='Perancis')
+        tb = bible.Version.objects.create(lang=lang, name='Terjemahan Baru', abbreviation='TB')
+        sim = bible.Version.objects.create(lang=lang, name='Simalungun', abbreviation='SIM')
+        cls.mat = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=2)
+        cls.mat_tb = bible.BookTranslation.objects.create(
+            version=tb, book=cls.mat, translation='Matius')
+        cls.mat_sim = bible.BookTranslation.objects.create(
+            version=sim, book=cls.mat, translation='Mateus Simalungun')
+        for verse in (1, 2, 3):
+            bible.Verse.objects.create(book_translation=cls.mat_tb, chapter=1,
+                                       verse=verse, text=f'TB baris {verse}')
+        for verse in (1, 2):
+            bible.Verse.objects.create(book_translation=cls.mat_sim, chapter=1,
+                                       verse=verse, text=f'SIM baris {verse}')
+        # Chapter 2 exists in TB only: the payload must omit the edition that lacks it.
+        bible.Verse.objects.create(book_translation=cls.mat_tb, chapter=2, verse=1,
+                                   text='TB pasal dua')
+        cls.songbook = songs.Book.objects.create(
+            name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
+        cls.song = songs.Song.objects.create(book=cls.songbook, number=152, title='Ada Kuasa')
+        songs.Verse.objects.create(song=cls.song, number=1,
+                                   lyric='Baris satu\n\nBaris dua dan tiga')
+        cls.empty_song = songs.Song.objects.create(book=cls.songbook, number=153,
+                                                   title='Tanpa Bait')
+
+    def _keys(self, value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                yield key
+                yield from self._keys(item)
+        elif isinstance(value, list):
+            for item in value:
+                yield from self._keys(item)
+
+    def test_the_index_carries_no_verse_text_or_lyric(self):
+        response = self.client.get('/projector/goto/index/')
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload['schema'], 1)
+        self.assertNotIn('text', set(self._keys(payload)))
+        self.assertNotIn('lyric', set(self._keys(payload)))
+
+    def test_the_index_lists_every_book_edition_and_active_song(self):
+        payload = self.client.get('/projector/goto/index/').json()
+        book = next(row for row in payload['books'] if row['id'] == self.mat.pk)
+        editions = {edition['v']: edition for edition in book['editions']}
+        self.assertEqual(editions['TB']['verses'], [[1, 3], [2, 1]])
+        self.assertEqual(editions['SIM']['verses'], [[1, 2]])
+        self.assertIn(self.song.pk, [row[0] for row in payload['songs']])
+        self.assertIn(self.songbook.pk, [row['id'] for row in payload['songbooks']])
+
+    def test_the_index_stays_under_one_hundred_and_thirty_kilobytes(self):
+        response = self.client.get('/projector/goto/index/')
+        self.assertLessEqual(len(response.content), 130 * 1024)
+
+    def test_a_chapter_carries_both_editions_verses(self):
+        response = self.client.get(f'/projector/goto/chapter/{self.mat.pk}/1/')
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload['chapter'], 1)
+        self.assertEqual(payload['label'], 'Matius 1')
+        self.assertEqual([row['n'] for row in payload['editions']['TB']['verses']], [1, 2, 3])
+        self.assertEqual(payload['editions']['SIM']['verses'][0]['text'], 'SIM baris 1')
+
+    def test_a_chapter_omits_an_edition_that_lacks_it(self):
+        payload = self.client.get(f'/projector/goto/chapter/{self.mat.pk}/2/').json()
+        self.assertIn('TB', payload['editions'])
+        self.assertNotIn('SIM', payload['editions'])
+
+    def test_an_unknown_chapter_is_not_found(self):
+        self.assertEqual(
+            self.client.get(f'/projector/goto/chapter/{self.mat.pk}/9/').status_code, 404)
+        self.assertEqual(self.client.get('/projector/goto/chapter/99999/1/').status_code, 404)
+
+    def test_a_song_carries_its_screens_and_baits(self):
+        payload = self.client.get(f'/projector/goto/song/{self.song.pk}/').json()
+        self.assertEqual(payload['label'], 'KJ 152 Ada Kuasa')
+        self.assertEqual(len(payload['baits']), 1)
+        bait = payload['baits'][0]
+        self.assertEqual((bait['number'], bait['start'], bait['end']), (1, 0, 2))
+        self.assertEqual([screen['split'] for screen in payload['screens'][:2]], [1, 2])
+        self.assertTrue(payload['screens'][-1]['bait_rest'])
+
+    def test_a_song_without_live_verses_carries_no_screens(self):
+        payload = self.client.get(f'/projector/goto/song/{self.empty_song.pk}/').json()
+        self.assertEqual(payload['screens'], [])
+        self.assertEqual(payload['baits'], [])
+
+    def test_an_unknown_song_is_not_found(self):
+        self.assertEqual(self.client.get('/projector/goto/song/99999/').status_code, 404)
+
+    def test_the_offline_routes_are_gone(self):
+        for path in ('/service-worker.js', '/offline/manifest/',
+                     f'/offline/chunk/bible/{self.mat_tb.pk}/', '/offline/projector-shell/'):
+            self.assertEqual(self.client.get(path).status_code, 404, path)
+

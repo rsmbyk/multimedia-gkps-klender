@@ -48,19 +48,18 @@ compatible reading-home route. Only `/` is gated; every other surface is unaffec
 Public reading pages use the project's own design language (`static/styles/design/tokens.css`,
 `components.css`); Fomantic UI remains in use by the editor and OBS surfaces until they migrate.
 
-### Offline public reading and projector
+### Public reading and the projector are online-only
 
-- `static/web/offline-library.js` owns the browser's revisioned IndexedDB library. It stages
-  changed chunks as a new generation and publishes only a complete generation; public reading and
-  projector Go To use that committed data.
-- `static/web/service-worker.js` caches only the public reading and service-projector shells and
-  their required versioned assets. Its navigation fallback is deliberately limited to those routes;
-  legacy OBS docks, editors, and other pages continue using the network.
-- `static/web/offline-render.js` reuses the saved public shell for in-page reading navigation.
-  Online refreshes request data chunks asynchronously. `static/web/projector-library.js` resolves
-  Go To and service detours from the same local Bible/song library.
-- This storage is a presentation fallback and search source. It does not queue editor writes or
-  replace the server as the authoritative content store.
+- Every page is painted from the response to the request that opened it. There is no saved copy, no
+  service worker and no browser store of the public library (ADR 0007 retires ADR 0003).
+- The projector's Go To holds a page-memory index — books, their editions' chapter and verse counts,
+  songbooks and song titles, with no verse text or lyric — fetched once when the page loads and
+  re-fetched by the page's Update (`multimedia/web/reading/goto.py`,
+  `static/web/projector-library.js`). The search itself makes no request.
+- Choosing a result fetches the whole chapter (both editions) or the whole song from
+  `/projector/goto/…`, and the page locks every input until it paints. A step that leaves the loaded
+  chapter is the same fetch, under the same lock.
+- The server remains the only content store; nothing is cached between selections.
 
 ## Boundaries
 

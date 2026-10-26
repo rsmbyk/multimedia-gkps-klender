@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR 0007](0007-remove-the-offline-library.md) — the library and its shells were
+removed on 2026-10-26 (spec 136). This record stays as the account of the decision it describes.
 
 ## Context
 

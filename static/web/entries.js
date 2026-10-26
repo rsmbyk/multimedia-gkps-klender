@@ -60,7 +60,7 @@
 
   // The empty service is one row of square, icon-only buttons: the glyph is the
   // whole target, so the label rides in a screen-reader span (the accessible
-  // name) and in the tooltip. Same markup as tatib.html and offline-render.js.
+  // name) and in the tooltip. Same markup as tatib.html.
   var EMPTY_ADD_ICONS = {
     scripture: '<path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/>',
     song: '<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>',

@@ -17,13 +17,9 @@ from django.contrib import admin
 from django.urls import path, include
 
 from multimedia.web.reading import views as reading_views
-from multimedia.web.reading import offline as offline_views
+from multimedia.web.reading import goto as goto_views
 
 urlpatterns = [
-    path('service-worker.js', offline_views.service_worker, name='offline-worker'),
-    path('offline/manifest/', offline_views.manifest, name='offline-manifest'),
-    path('offline/chunk/<str:kind>/<int:pk>/', offline_views.chunk, name='offline-chunk'),
-    path('offline/projector-shell/', offline_views.projector_shell, name='offline-projector-shell'),
     path('admin/', admin.site.urls),
     path('api/', include('multimedia.api.urls')),
     # The service projector (specs 006, 091, 119). One page, /projector, outside the
@@ -35,6 +31,13 @@ urlpatterns = [
          name='web-projector-lookup'),
     path('projector/detour/', reading_views.projector_detour,
          name='web-projector-detour'),
+    # The projector's Go To payloads (spec 136): the page-memory index, and the
+    # chapter or song a selection fetches.
+    path('projector/goto/index/', goto_views.index, name='web-projector-goto-index'),
+    path('projector/goto/chapter/<int:book_id>/<int:chapter>/', goto_views.chapter,
+         name='web-projector-goto-chapter'),
+    path('projector/goto/song/<int:song_id>/', goto_views.song,
+         name='web-projector-goto-song'),
     # The operator dock and the OBS caption overlay (spec 119).
     path('obs/dock', reading_views.obs_dock, name='web-obs-dock'),
     path('obs/source/overlay', reading_views.obs_overlay, name='web-obs-overlay'),
