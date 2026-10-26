@@ -1,6 +1,6 @@
 ---
 id: ITEM-142
-status: in review
+status: done
 title: 'Count a static page built from the real components as a preview'
 type: chore
 priority: P2
@@ -9,10 +9,10 @@ created: 2026-10-26
 updated: 2026-10-26
 spec:
 branch: docs/process-static-preview
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/396
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/395
-closed_at:
-closed_reason:
+closed_at: 2026-10-26
+closed_reason: merged into develop via #396
 bump: none
 release_version:
 ---
