@@ -1,6 +1,6 @@
 ---
 id: ITEM-143
-status: in-review
+status: done
 title: 'A Tata Ibadah sidebar row is three lines, ellipsized'
 type: feat
 priority: P2
@@ -11,7 +11,7 @@ spec: specs/135-tatib-sidebar-row-clamp/spec.md
 branch: feat/135-tatib-sidebar-row-clamp
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/400
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/399
-closed_at:
+closed_at: 2026-10-26
 closed_reason:
 bump: patch
 release_version:

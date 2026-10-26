@@ -34,7 +34,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-143](./items/ITEM-143-tatib-sidebar-row-clamp.md) | A Tata Ibadah sidebar row is three lines, ellipsized | Cap a service-order row at three visual lines with an ellipsis, and drop the 60-character cut | feat | P2 | S | [135](../specs/135-tatib-sidebar-row-clamp/spec.md) | [#400](https://github.com/rsmbyk/multimedia-gkps-klender/pull/400) | 2026-10-26 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -61,6 +60,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-143](./items/ITEM-143-tatib-sidebar-row-clamp.md) | A Tata Ibadah sidebar row is three lines, ellipsized | Cap a service-order row at three visual lines with an ellipsis, and drop the 60-character cut | feat | P2 | S | [135](../specs/135-tatib-sidebar-row-clamp/spec.md) | develop via [#400](https://github.com/rsmbyk/multimedia-gkps-klender/pull/400) | 2026-10-26 |
 | [ITEM-142](./items/ITEM-142-static-preview-tier.md) | Count a static page built from the real components as a preview | The 2026-10-26 grammar amendment: no duplicate server, `MOCKUP` retires; page regenerated at vintage 2026-10-26 | chore | P2 | S | — | develop via [#396](https://github.com/rsmbyk/multimedia-gkps-klender/pull/396) | 2026-10-26 |
 | [ITEM-138](./items/ITEM-138-text-modal-large-frame.md) | A text entry opens in the media modal's large frame | Every text form takes the create-media 840×760 frame, its Text box fills the height, and the dialog is placed against the window instead of the document | chore | P2 | S | [133](../specs/133-text-modal-large-frame/spec.md) | develop via [#394](https://github.com/rsmbyk/multimedia-gkps-klender/pull/394) | 2026-10-25 |
 | [ITEM-136](./items/ITEM-136-tatib-date-buckets.md) | Group the Tata Ibadah list by age, and mark today | Four age buckets instead of month headings, today first with a `Today` badge; the dock and the saved copy agree | feat | P2 | S | [132](../specs/132-tatib-sidebar-date-buckets/spec.md) | develop via [#392](https://github.com/rsmbyk/multimedia-gkps-klender/pull/392) | 2026-10-25 |
