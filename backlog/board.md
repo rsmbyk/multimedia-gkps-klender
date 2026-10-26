@@ -14,6 +14,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-139](./items/ITEM-139-offline-projector-e2e-errors.md) | Three offline projector E2E tests error with ERR_INTERNET_DISCONNECTED | Taking the page offline blocks the loopback navigation itself, so the saved-projection behaviour is unproven; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-140](./items/ITEM-140-projector-display-off-state.md) | The projector keeps data-showing=true when display-off is asked for | Audio and video display-off tests never see the projector leave its showing state; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
+| [ITEM-144](./items/ITEM-144-date-dependent-picker-e2e.md) | Five date-picker E2E tests fail when the nearest Sunday falls in the next month | `_fill` steps months from today while the picker opens on the nearest Sunday, so five editor tests time out on days that cross a month boundary; identical on develop | fix | P1 | S | — | 2026-10-26 |
 
 ## Speccing
 
