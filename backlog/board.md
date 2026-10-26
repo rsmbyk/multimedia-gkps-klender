@@ -29,7 +29,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-142](./items/ITEM-142-static-preview-tier.md) | Count a static page built from the real components as a preview | The 2026-10-26 grammar amendment: no duplicate server, `MOCKUP` retires; page regenerated at vintage 2026-10-26 | chore | P2 | S | — | `docs/process-static-preview` | 2026-10-26 |
 
 ## In review
 
@@ -56,6 +55,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
 | [ITEM-128](./items/ITEM-128-github-issues-anchor.md) | Anchor board cards on GitHub Issues | Declare the tracker mirror, add the `board:item` label, and record when and how an issue is created | chore | P2 | S | — | [#377](https://github.com/rsmbyk/multimedia-gkps-klender/pull/377) | 2026-10-24 |
+| [ITEM-142](./items/ITEM-142-static-preview-tier.md) | Count a static page built from the real components as a preview | The 2026-10-26 grammar amendment: no duplicate server, `MOCKUP` retires; page regenerated at vintage 2026-10-26 | chore | P2 | S | — | [#396](https://github.com/rsmbyk/multimedia-gkps-klender/pull/396) | 2026-10-26 |
+
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |

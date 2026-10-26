@@ -1,6 +1,6 @@
 ---
 id: ITEM-142
-status: in progress
+status: in review
 title: 'Count a static page built from the real components as a preview'
 type: chore
 priority: P2
