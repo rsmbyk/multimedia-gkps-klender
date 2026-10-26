@@ -1,12 +1,13 @@
 # Preview: <short title>
 
 **Spec**: `specs/NNN-slug/spec.md`
-**Route**: `/<url path>` or `n/a — <reason>`
+**Shape**: `live` or `static`
+**Open**: `/<url path>` for a live preview, or `specs/NNN-slug/preview/<file>.html` opened directly
 
 ## Run
 
 ```sh
-<the command that serves it, from the repo root>
+<the command that serves a live preview, from the repo root — or "none: open the file directly" for a static one>
 ```
 
 ## States to click through
@@ -19,12 +20,14 @@
 | loading | <throttle or fixture> | |
 | responsive | resize to <breakpoint> | |
 
-## Live preview or mockup
+## Live or static
 
-**Live preview** is the first choice: the project's own route, its own components and tokens, running.
+**Live** is served from the project: its own route, components and tokens, running.
 
-**Mockup** — only when a live preview is not viable: state the reason here, label the file `MOCKUP`, copy the project's real stylesheet or its exact values, class names, fonts and assets, and keep every `## UI/UX` state reachable by hand. An approximation is a different design.
+**Static** is one or more HTML pages assembled from the project's real templates, class names, stylesheets, tokens and assets, opened directly. It is a preview, not a fallback — no reason sentence, and no server of its own.
+
+**What a static page cannot show:** anything that fetches — server-rendered context, the API, uploaded media. A slice that changes one of those is previewed live.
 
 ## What is not a preview
 
-A screenshot, a static image and a recording are not previews at either tier.
+A screenshot, a static image and a recording are not previews.
