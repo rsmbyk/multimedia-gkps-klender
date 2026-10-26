@@ -2,11 +2,11 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-26
-**slices**: `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
-The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
-in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
-replaces it.
+The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
+shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
+saved-copy requirements this file carried until 2026-10-26 are retired.
 
 **This file starts at spec 126.** No capability tree existed while specs 001–125 landed, so the requirements
 they shipped are not folded here; they live in their dated slice records under `specs/` and are folded as a
@@ -45,21 +45,9 @@ the whole citation.
 
 ### R2 — A saved reading page shows its server route's header and title
 
-A reading page built from the synced library by `static/web/offline-render.js` SHALL show the same header
-text and the same document title as the server route it mirrors, so the page does not change under the
-operator when the online update arrives.
-
-#### Scenario: saved song page, hymn songbook
-- WHEN a hymn song is rendered from the saved library
-- THEN the saved header and title equal the server page's for that song
-
-#### Scenario: saved song page, ordinary songbook
-- WHEN a song of an ordinary songbook is rendered from the saved library
-- THEN the saved header and title equal the server page's, which is the songbook's full name
-
-#### Scenario: offline
-- WHEN the saved render is the final page because the network is unavailable
-- THEN it carries the same header it would have shown online
+**Removed 2026-10-26 by `136-remove-offline-library`.** There is no saved copy: the browser library,
+`static/web/offline-render.js` and the service worker are gone, and every page is painted from its own
+server response (ADR 0007). The requirement and its scenarios described a page that no longer exists.
 
 ### R3 — The tab names the site, and the index's tab stops at the name
 
@@ -78,10 +66,6 @@ name, the logo's `alt` and the rail's labels keep the congregation name `GKPS Kl
 #### Scenario: a reading page
 - WHEN a Bible chapter, song, Tata Ibadah service, section landing, results page or the Media Library opens
 - THEN the document title is its leading text followed by ` — Multimedia GKPS Klender`
-
-#### Scenario: the saved copy
-- WHEN a route is rendered from the saved library before the online update arrives
-- THEN its document title is the server page's own, name included
 
 #### Scenario: an in-place edition switch
 - WHEN the Bible edition changes without a navigation
@@ -126,13 +110,8 @@ current row and the per-row edit button SHALL stay on the rows they marked befor
 
 ### R5 — A saved Kidung panel draws the same two groups
 
-A Kidung page rendered from the saved library by `static/web/offline-render.js` SHALL draw the same two groups,
-in the same order, as the server route it mirrors — the same hymn order and the same folded A–Z key — so the
-panel does not reorder itself when the online update arrives.
-
-#### Scenario: saved panel
-- WHEN a Kidung route is rendered from the saved library
-- THEN its panel's group count and row order equal the server page's
+**Removed 2026-10-26 by `136-remove-offline-library`.** The saved Kidung page it constrained is gone with
+the library; the server route's own grouping is R4.
 
 ### R6 — An empty Tata Ibadah quarter-centres its four add tiles
 

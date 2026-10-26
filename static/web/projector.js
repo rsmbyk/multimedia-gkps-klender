@@ -26,7 +26,6 @@
   var stage = document.getElementById('projectorScreens');
   var entries = JSON.parse(document.getElementById('projectorEntryData').textContent) || [];
   var screenData = JSON.parse(document.getElementById('projectorScreenData').textContent) || [];
-  var savedScreensSignature = JSON.stringify(screenData);
   var KEY = 'gkps-display';
 
   var channel = null;
@@ -928,6 +927,61 @@
   function findUrl(path, params) {
     return window.location.pathname + path + '?' + new URLSearchParams(params).toString();
   }
+  /* ---------- the Go To's loading state (spec 136) ------------------------- */
+  var gotoBusy = false;
+  var cueLoading = null;
+  function beginGotoLoad(row) {
+    gotoBusy = true;
+    findInput.disabled = true;
+    if (row && !row.classList.contains('is-loading')) {
+      row.classList.add('is-loading');
+      var spinner = document.createElement('span');
+      spinner.className = 'projector-find__spinner';
+      spinner.setAttribute('aria-hidden', 'true');
+      row.appendChild(spinner);
+    }
+    if (!cueLoading) {
+      cueLoading = document.createElement('span');
+      cueLoading.className = 'cue-loading';
+      cueLoading.setAttribute('role', 'status');
+      cueLoading.setAttribute('aria-label', 'Loading');
+      keysButton.parentNode.insertBefore(cueLoading, keysButton);
+    }
+  }
+  function endGotoLoad() {
+    gotoBusy = false;
+    findInput.disabled = false;
+    if (findResults && findResults.classList.contains('is-loading')) {
+      findResults.classList.remove('is-loading');
+      var spinner = findResults.querySelector('.projector-find__spinner');
+      if (spinner) spinner.remove();
+    }
+    if (cueLoading) { cueLoading.remove(); cueLoading = null; }
+  }
+  /* One guard for every input path: while the Go To is fetching, no key and no click
+     reaches the page — the shortcuts, the mouse zones, the cue and the panel itself. */
+  ['keydown', 'click', 'pointerdown', 'contextmenu'].forEach(function (name) {
+    document.addEventListener(name, function (event) {
+      if (!gotoBusy) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
+  });
+  function waitForIndex() {
+    beginGotoLoad(findResults);
+    findSuggestion.textContent = 'Loading search…';
+    findCount.textContent = '0 / 0';
+    window.GKPSProjectorLibrary.load().then(function () {
+      endGotoLoad();
+      refreshFind();
+      findInput.focus();
+    }).catch(function () {
+      endGotoLoad();
+      findSuggestion.textContent = 'Search unavailable';
+      findCount.textContent = '0 / 0';
+    });
+  }
+
   function openFind(kind) {
     if (kind === 'j') { setEntryListOpen(true); return; }
     window.clearTimeout(findCloseTimer);
@@ -940,13 +994,15 @@
     findDismiss.hidden = false;
     body.classList.add('find-open');
     revealControls();
-    refreshFind();
-    findInput.focus();
-    if (navigator.onLine && window.GKPSOffline) {
-      window.GKPSOffline.sync().catch(function () { /* keep saved suggestions */ });
+    if (window.GKPSProjectorLibrary && !window.GKPSProjectorLibrary.ready()) {
+      waitForIndex();
+    } else {
+      refreshFind();
+      findInput.focus();
     }
   }
   function closeFind() {
+    if (gotoBusy) return;
     if (!body.classList.contains('find-open')) return;
     ++lookupSequence;
     findInput.blur();
@@ -1034,19 +1090,36 @@
     render();
   }
   function openDetour(row) {
-    var data = window.GKPSProjectorLibrary && window.GKPSProjectorLibrary.detour(row);
-    if (!data) return;
-    if (!detour) returnScreen = current;
-    detour = data;
-    detour.index = 0;
-    showing = true;
-    renderDetour();
+    if (gotoBusy || !window.GKPSProjectorLibrary) return;
+    beginGotoLoad(findResults);
+    window.GKPSProjectorLibrary.detour(row).then(function (data) {
+      if (!data) throw new Error('Nothing to paint');
+      if (!detour) returnScreen = current;
+      detour = data;
+      detour.index = 0;
+      showing = true;
+      renderDetour();
+      endGotoLoad();
+      closeFind();
+    }).catch(function (error) {
+      if (window.console && console.error) console.error('Go To load failed:', error);
+      endGotoLoad();
+      findSuggestion.textContent = 'Could not load — try again';
+      if (findRows.length) findCount.textContent = (findChoice + 1) + ' / ' + findRows.length;
+    });
   }
   function requestPassage(action, level) {
-    if (!detour || detour.kind !== 'passage') return;
-    var data = window.GKPSProjectorLibrary
-      && window.GKPSProjectorLibrary.movePassage(detour, action, level);
-    if (data) { detour = data; renderDetour(); }
+    if (!detour || detour.kind !== 'passage' || gotoBusy) return;
+    if (!window.GKPSProjectorLibrary) return;
+    var step = window.GKPSProjectorLibrary.movePassage(detour, action, level);
+    if (!step) return;
+    if (step.detour) { detour = step.detour; renderDetour(); return; }
+    beginGotoLoad(null);
+    window.GKPSProjectorLibrary.fetchChapter(step.request.book_id, step.request.chapter,
+      step.request.verse, step.request.edition).then(function (data) {
+      if (data) { detour = data; renderDetour(); }
+    }).catch(function () { /* keep the screen that is showing */ })
+      .then(endGotoLoad);
   }
   function detourStep(step, level) {
     if (detour.kind === 'passage') { requestPassage(step > 0 ? 'next' : 'previous', level); return; }
@@ -1297,14 +1370,6 @@
 
   /* Update: re-read the page (a song's lyrics may have changed) and keep the place. */
   function reflow() {
-    if (window.GKPSOffline) {
-      window.GKPSOffline.sync().then(function () {
-        return window.GKPSOffline.get('service', service);
-      }).then(function (saved) {
-        if (saved) drawSavedScreens(saved);
-      }).catch(function () { /* preserve the currently projected screen */ });
-      return;
-    }
     /* A saved change reads back at once; no-store keeps a cached page from being served
        for the read that follows close behind it. */
     fetch(window.location.href, {credentials: 'same-origin', cache: 'no-store'})
@@ -1325,6 +1390,9 @@
         render(true);
       })
       .catch(function () { /* keep showing what we have */ });
+    if (window.GKPSProjectorLibrary && window.GKPSProjectorLibrary.refresh) {
+      window.GKPSProjectorLibrary.refresh().catch(function () { /* the panel keeps its state */ });
+    }
   }
 
   /* Spec 119: adopt another Tata Ibadah in place. The same fetch-and-swap as reflow()
@@ -1366,100 +1434,6 @@
       .catch(function () { /* keep showing what we have */ });
   }
 
-  function drawSavedScreens(saved) {
-    if (!saved || !Array.isArray(saved.screens)) return;
-    savedScreensSignature = JSON.stringify(saved.screens);
-    var fragment = document.createDocumentFragment();
-    saved.screens.forEach(function (item, index) {
-      var section = document.createElement('section');
-      section.className = 'screen' + (item.blank ? ' is-blank' : '')
-        + (item.single ? ' screen--single' : '');
-      section.dataset.screen = String(index);
-      section.dataset.entry = String(item.entry_index == null ? '' : item.entry_index);
-      section.dataset.bait = String(item.bait == null ? '' : item.bait);
-      section.dataset.split = String(item.split == null ? '' : item.split);
-      section.dataset.splitTotal = String(item.split_total == null ? '' : item.split_total);
-      section.dataset.baitRest = item.bait_rest ? 'true' : 'false';
-      if (item.single) section.dataset.fit = 'single';
-      section.setAttribute('aria-hidden', index === current ? 'false' : 'true');
-      if (item.header) {
-        var head = document.createElement('h1');
-        head.className = 'screen__head';
-        head.textContent = item.header;
-        section.appendChild(head);
-      }
-      if (item.lines && item.lines.length) {
-        var lines = document.createElement('div');
-        lines.className = 'screen__lines';
-        item.lines.forEach(function (line) {
-          var p = document.createElement('p');
-          p.className = 'screen__line' + (line.voice ? ' is-' + line.voice : '');
-          p.textContent = line.text;
-          lines.appendChild(p);
-        });
-        section.appendChild(lines);
-      }
-      if (item.image_sha256) {
-        var imageBox = document.createElement('div');
-        imageBox.className = 'screen__image-box';
-        imageBox.dataset.mediaImage = item.image_sha256;
-        imageBox.innerHTML = '<img class="screen__image" alt="" hidden>'
-          + '<svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true">'
-          + '<rect x="7" y="9" width="34" height="29" rx="3"/>'
-          + '<circle cx="17" cy="19" r="2.5"/>'
-          + '<path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>';
-        section.appendChild(imageBox);
-      }
-      if (item.pdf_sha256 || item.slides_sha256) {
-        var pdfBox = document.createElement('div');
-        pdfBox.className = 'screen__pdf-box';
-        if (item.slides_sha256) pdfBox.dataset.mediaSlides = item.slides_sha256;
-        else pdfBox.dataset.mediaPdf = item.pdf_sha256;
-        pdfBox.innerHTML = '<canvas class="screen__pdf-page" hidden></canvas>'
-          + '<svg class="screen__pdf-missing" viewBox="0 0 48 48" aria-hidden="true" hidden>'
-          + (item.slides_sha256
-            ? '<rect x="7" y="7" width="34" height="34" rx="3"/><path d="M13 15h22M13 33h22M17 25l5-5 4 4 5-5M12 5l27 38"/>'
-            : '<path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/>') + '</svg>';
-        section.appendChild(pdfBox);
-      }
-      if (item.audio_sha256) {
-        var audioBox = document.createElement('div');
-        audioBox.className = 'screen__audio-box';
-        audioBox.dataset.mediaAudio = item.audio_sha256;
-        audioBox.innerHTML = '<div class="screen__audio-player" hidden>'
-          + '<span class="screen__audio-play" data-audio-play aria-label="Play audio"></span>'
-          + '<div class="screen__audio-seek" data-audio-seek><span class="screen__audio-fill"></span></div>'
-          + '<div class="screen__audio-times"><span data-audio-elapsed>0:00</span> / <span data-audio-total>0:00</span></div></div>'
-          + '<svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden>'
-          + '<rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg>';
-        section.appendChild(audioBox);
-      }
-      if (item.video_sha256) {
-        var videoBox = document.createElement('div');
-        videoBox.className = 'screen__video-box';
-        videoBox.dataset.mediaVideo = item.video_sha256;
-        videoBox.innerHTML = '<video class="screen__video" playsinline preload="metadata" hidden></video>'
-          + '<span class="screen__video-play" data-video-play aria-label="Play video"></span>'
-          + '<div class="screen__video-controls" data-video-controls>'
-          + '<div class="screen__video-seek" data-video-seek><span class="screen__video-fill"></span></div>'
-          + '<span class="screen__video-time"><span data-video-elapsed>0:00</span> / '
-          + '<span data-video-total>0:00</span></span></div>'
-          + '<svg class="screen__video-missing" viewBox="0 0 48 48" aria-hidden="true" hidden>'
-          + '<rect x="7" y="9" width="34" height="29" rx="3"/>'
-          + '<path d="m20 17 12 7-12 7zM12 5l24 38"/></svg>';
-        section.appendChild(videoBox);
-      }
-      fragment.appendChild(section);
-    });
-    stage.replaceChildren(fragment);
-    stage.appendChild(detourNode);
-    entries = saved.entries || [];
-    screenData = saved.screens;
-    var empty = screen.querySelector('.projector__empty');
-    if (empty) empty.hidden = !!saved.screens.length;
-    render(true);
-  }
-
   /* Spec 119: the page renders the browser-local state. `?service=<id>` opens that
      service (an act of projection — the adoption writes the state); without it the
      page follows whatever is stored, adopting another service in place. */
@@ -1495,22 +1469,10 @@
     showing = false;
     render(true);
   }
-  if (!screens().length && service && window.GKPSOffline) {
-    window.GKPSOffline.get('service', service).then(function (saved) {
-      if (saved) drawSavedScreens(saved);
-      else {
-        var empty = screen.querySelector('.projector__empty');
-        if (empty) empty.textContent = 'This service is not saved for offline use yet.';
-      }
-    }).catch(function () {});
+  if (!screens().length && service) {
+    var empty = screen.querySelector('.projector__empty');
+    if (empty) empty.textContent = 'Nothing to show yet: this Tata Ibadah has no items.';
   }
-  document.addEventListener('offline:changed', function () {
-    if (!window.GKPSOffline) return;
-    window.GKPSOffline.get('service', service).then(function (saved) {
-      if (saved && (!screens().length || JSON.stringify(saved.screens) !== savedScreensSignature))
-        drawSavedScreens(saved);
-    }).catch(function () {});
-  });
   window.addEventListener('resize', function () { render(true); });
   /* The fit is measured in the face that is on screen. The bundled display faces
      arrive a frame or two after first paint, and their metrics differ from the

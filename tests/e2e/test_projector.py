@@ -24,15 +24,15 @@ from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 
 
-def wait_for_offline_ready(page):
+def wait_for_goto(page):
+    """The Go To index is fetched with the page; wait until the panel can search."""
     page.evaluate("""(async () => {
       const deadline = Date.now() + 25000;
       while (Date.now() < deadline) {
-        const state = await GKPSOffline.status();
-        if (state.ready && !state.syncing) return true;
+        if (window.GKPSProjectorLibrary && GKPSProjectorLibrary.ready()) return true;
         await new Promise(resolve => setTimeout(resolve, 40));
       }
-      throw new Error('Offline library did not become ready');
+      throw new Error('Go To index did not load');
     })()""")
 
 
@@ -80,15 +80,30 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         mat = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
         matius = bible.BookTranslation.objects.create(version=version, book=mat,
                                                       translation='Matius')
-        bible.Verse.objects.create(book_translation=matius, chapter=5, verse=3, text='ayat 3')
+        # Every chapter runs 1..N, as the real database does: the Go To index carries a
+        # count per chapter, so a fixture starting at verse 3 would describe a chapter no
+        # Bible has and no search could find.
+        for verse in (1, 2, 3):
+            bible.Verse.objects.create(book_translation=matius, chapter=5, verse=verse,
+                                       text=f'ayat {verse}')
+        if self._testMethodName in ('test_a_verse_step_inside_a_chapter_makes_no_request',
+                                    'test_a_chapter_crossing_locks_the_cue_and_paints_the_next_chapter'):
+            bible.Verse.objects.create(book_translation=matius, chapter=5, verse=4,
+                                       text='ayat 4')
+            bible.Verse.objects.create(book_translation=matius, chapter=6, verse=1,
+                                       text='ayat enam satu')
+        if self._testMethodName == 'test_a_previous_chapter_crossing_locks_and_paints':
+            bible.Verse.objects.create(book_translation=matius, chapter=4, verse=1,
+                                       text='ayat empat satu')
         if self._testMethodName == 'test_goto_passage_translation_flip_brightens_the_label':
             sim_lang = bible.Language.objects.create(name='Simalungun')
             sim_version = bible.Version.objects.create(lang=sim_lang, name='Simalungun',
                                                        abbreviation='SIM')
             mateus = bible.BookTranslation.objects.create(version=sim_version, book=mat,
                                                           translation='Mateus')
-            bible.Verse.objects.create(book_translation=mateus, chapter=5, verse=3,
-                                       text='ayat 3 (SIM)')
+            for verse in (1, 2, 3):
+                bible.Verse.objects.create(book_translation=mateus, chapter=5, verse=verse,
+                                           text=f'ayat {verse} (SIM)')
         tatib.ServiceEntry.objects.create(
             tatib=self.service, order_number=5, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=matius, chapter=5, verse_start=3)
@@ -518,7 +533,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         with ThreadPoolExecutor(max_workers=1) as executor:
             executor.submit(add_songs).result()
         page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
+        wait_for_goto(page)
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('KJ 2')
         page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 40'")
@@ -557,7 +572,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             executor.submit(add_songs).result()
 
         page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
+        wait_for_goto(page)
         page.keyboard.press('g')
         field = page.locator('#projectorFindInput')
         field.fill('012')
@@ -638,25 +653,10 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.locator('#projectorFind').wait_for(state='hidden')
         self.assertFalse(page.locator('body').evaluate("el => el.classList.contains('find-closing')"))
 
-    def test_goto_ignores_old_lookup_responses(self):
-        page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
-        lookup_requests = []
-        page.on('request', lambda request: lookup_requests.append(request.url)
-                if '/lookup/' in request.url or '/detour/' in request.url else None)
-        page.keyboard.press('g')
-        query = page.locator('#projectorFindInput')
-        query.fill('KJ 15')
-        self.assertIn('KJ 152', page.locator('.projector-find__suggestion').inner_text())
-        query.fill('Mat 5')
-        self.assertEqual(page.locator('.projector-find__suggestion').inner_text(), 'Matius 5')
-        self.assertEqual(lookup_requests, [])
-        page.keyboard.press('Escape')
-        page.locator('#projectorFind').wait_for(state='hidden')
 
     def test_goto_click_opens_the_selected_suggestion(self):
         page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
+        wait_for_goto(page)
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('KJ 152')
         page.wait_for_function("document.querySelector('.projector-find__count').textContent === '1 / 1'")
@@ -669,51 +669,12 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.locator('#projectorFind').wait_for(state='hidden')
         page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
 
-    def test_online_goto_finds_song_added_after_saved_library_without_reload(self):
-        page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
-        with ThreadPoolExecutor(max_workers=1) as pool:
-            def add_song():
-                try:
-                    book = songs.Book.objects.get(short_name='KJ')
-                    song = songs.Song.objects.create(book=book, number=999, title='Fresh title')
-                    songs.Verse.objects.create(song=song, number=1, lyric='Fresh lyric')
-                finally:
-                    connections.close_all()
-            pool.submit(add_song).result()
-        page.keyboard.press('g')
-        page.locator('#projectorFindInput').fill('KJ 999')
-        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent.includes('KJ 999')")
 
-    def test_online_goto_finds_verse_added_after_saved_library_without_reload(self):
-        page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
-        with ThreadPoolExecutor(max_workers=1) as pool:
-            def add_verse():
-                try:
-                    translation = bible.BookTranslation.objects.get(translation='Matius')
-                    bible.Verse.objects.create(
-                        book_translation=translation, chapter=5, verse=4, text='Fresh verse')
-                finally:
-                    connections.close_all()
-            pool.submit(add_verse).result()
-        page.keyboard.press('g')
-        page.locator('#projectorFindInput').fill('Mat 5:4')
-        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent.includes('Matius 5:4')")
 
-    def test_goto_keeps_saved_suggestions_when_online_sync_fails(self):
-        page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
-        page.route('**/offline/manifest/', lambda route: route.abort())
-        page.keyboard.press('g')
-        page.locator('#projectorFindInput').fill('KJ 152')
-        page.wait_for_function("document.querySelector('.projector-find__suggestion').textContent.includes('KJ 152')")
-        page.wait_for_timeout(200)
-        self.assertIn('KJ 152', page.locator('.projector-find__suggestion').inner_text())
 
     def test_goto_chapter_suggestion_opens_first_available_verse_by_enter_and_click(self):
         page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
+        wait_for_goto(page)
         for method in ('Enter', 'click'):
             page.keyboard.press('g')
             page.locator('#projectorFindInput').fill('Mat 5')
@@ -723,14 +684,14 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             else:
                 page.locator('#projectorFindResults').click()
             page.wait_for_function("document.querySelector('.projector-detour').classList.contains('is-active')")
-            self.assertIn('Matius 5:3', page.locator('.projector-detour').inner_text())
+            self.assertIn('Matius 5:1', page.locator('.projector-detour').inner_text())
             page.locator('#projectorFind').wait_for(state='hidden')
             page.keyboard.press('Escape')
             page.wait_for_function("!document.querySelector('.projector-detour').classList.contains('is-active')")
 
     def test_goto_accepts_tb_and_sim_book_abbreviations(self):
         page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
+        wait_for_goto(page)
         query = page.locator('#projectorFindInput')
         for abbreviation, expected_name, edition in (
                 ('Kej', 'Kejadian', 'TB'), ('1Mu', '1 Musa', 'SIM')):
@@ -861,7 +822,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_passage_translation_flip_brightens_the_label(self):
         page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
+        wait_for_goto(page)
         highlight = 'rgb(232, 228, 220)'
         detour = page.locator('.projector-detour')
         page.keyboard.press('g')
@@ -879,15 +840,15 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(state['text'], 'SIM')
         self.assertTrue(state['flash'])
         self.assertEqual(state['color'], highlight)
-        self.assertIn('Mateus 5:3', detour.inner_text())
-        self.assertIn('ayat 3 (SIM)', detour.inner_text())
+        self.assertIn('Mateus 5:1', detour.inner_text())
+        self.assertIn('ayat 1 (SIM)', detour.inner_text())
 
         # flipping again during the hold toggles back and stays bright
         page.keyboard.press('t')
         self.assertEqual(label.inner_text(), 'TB')
         self.assertTrue(label.evaluate("el => el.classList.contains('flash')"))
         self.assertEqual(label.evaluate('el => getComputedStyle(el).color'), highlight)
-        self.assertIn('Matius 5:3', detour.inner_text())
+        self.assertIn('Matius 5:1', detour.inner_text())
         page.wait_for_function(
             "!document.querySelector('.cue-translation').classList.contains('flash')", timeout=3000)
         page.wait_for_function(
@@ -1090,7 +1051,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def test_goto_clear_ignores_pending_lookup(self):
         page = self._page(self._projector_url())
-        wait_for_offline_ready(page)
+        wait_for_goto(page)
         page.keyboard.press('g')
         page.locator('#projectorFindInput').fill('KJ 152')
         self.assertEqual(page.locator('.projector-find__count').inner_text(), '1 / 1')
@@ -1652,8 +1613,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("!document.querySelector('dialog[open]')", timeout=8000)
         projector.wait_for_function("document.querySelector('#projectorScreens').textContent.includes('Berita baru untuk layar')",
                                     timeout=8000)
-        self.assertTrue([url for url in asked if f'/offline/chunk/service/{self.service.pk}/' in url],
-                        f'the display must refresh its service data after a save: {asked}')
+        self.assertTrue([url for url in asked if f'/projector?service={self.service.pk}' in url],
+                        f'the display must re-read its service after a save: {asked}')
         self.assertIn('Berita baru untuk layar', projector.locator('#projectorScreens').text_content())
 
     def test_a_reorder_reaches_the_display_without_update(self):
@@ -1672,62 +1633,237 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         grip.focus()
         page.keyboard.press('ArrowDown')
         page.wait_for_timeout(900)
-        self.assertTrue([url for url in asked if f'/offline/chunk/service/{self.service.pk}/' in url],
-                        f'the display must refresh its service data after a reorder: {asked}')
+        self.assertTrue([url for url in asked if f'/projector?service={self.service.pk}' in url],
+                        f'the display must re-read its service after a reorder: {asked}')
 
-    def test_a_failed_service_refresh_preserves_the_projected_screen_and_snapshot(self):
-        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
-        page = self._page('/home/', context)
-        wait_for_offline_ready(page)
-        projector = self._page(self._projector_url(), context)
-        wait_for_offline_ready(projector)
+    def test_goto_lists_without_a_request_per_query(self):
+        page = self._page(self._projector_url())
+        wait_for_goto(page)
+        requests = []
+        page.on('request', lambda request: requests.append(request.url)
+                if '/projector/goto/' in request.url else None)
+        page.keyboard.press('g')
+        field = page.locator('#projectorFindInput')
+        for query in ('KJ 15', 'Mat 5', 'KJ 152', 'Ada Kuasa', 'nonsense', ''):
+            field.fill(query)
+        page.wait_for_timeout(400)
+        self.assertEqual(requests, [])
 
-        initial_screen = projector.locator('#projectorScreens').text_content()
-        initial_snapshot = projector.evaluate(
-            'id => GKPSOffline.get("service", id)', self.service.pk)
-        self.assertIn('Tuhan adalah gembalaku', initial_screen)
-        self.assertTrue(any(row.get('text') == 'Mazmur 23\n\nTuhan adalah gembalaku, '
-                                'takkan kekurangan aku.' for row in initial_snapshot['rows']))
-
-        def change_service_after_snapshot():
-            try:
-                entry = tatib.TataIbadahItem.objects.get(pk=self.first_legacy_id)
-                entry.text = 'Server content that must not replace the saved screen'
-                entry.save()
-            finally:
-                connections.close_all()
-
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            executor.submit(change_service_after_snapshot).result()
-
-        failed_chunks = []
-
-        def abort_service_chunk(route):
-            failed_chunks.append(route.request.url)
-            route.abort()
-
-        projector.route(f'**/offline/chunk/service/{self.service.pk}/', abort_service_chunk)
-        page.evaluate("""() => {
+    def test_update_finds_a_song_added_after_the_page_loaded(self):
+        page = self._page(self._projector_url())
+        wait_for_goto(page)
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            def add_song():
+                try:
+                    book = songs.Book.objects.get(short_name='KJ')
+                    song = songs.Song.objects.create(book=book, number=999, title='Fresh title')
+                    songs.Verse.objects.create(song=song, number=1, lyric='Fresh lyric')
+                finally:
+                    connections.close_all()
+            pool.submit(add_song).result()
+        # A broadcast never reaches the page that sent it: another tab posts the update.
+        sender = page.context.new_page()
+        sender.goto(self.live_server_url + '/api/')
+        sender.evaluate("""() => {
           const channel = new BroadcastChannel('gkps-service-display');
           channel.postMessage({type: 'update'});
           channel.close();
         }""")
-        failure = projector.evaluate("""async () => {
-          const deadline = Date.now() + 10000;
-          while (Date.now() < deadline) {
-            const state = await GKPSOffline.status();
-            if (state.error) return state.error;
-            await new Promise(resolve => setTimeout(resolve, 40));
-          }
-          throw new Error('The failed service refresh was not reported');
-        }""")
+        sender.close()
+        page.wait_for_timeout(1200)
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('KJ 999')
+        page.wait_for_function(
+            "document.querySelector('.projector-find__suggestion').textContent.includes('KJ 999')")
 
-        self.assertTrue(failed_chunks, 'the projector did not request the changed service chunk')
-        self.assertTrue(failure)
-        self.assertIn('Tuhan adalah gembalaku', projector.locator('#projectorScreens').text_content())
-        self.assertNotIn('Server content that must not replace the saved screen',
-                         projector.locator('#projectorScreens').text_content())
-        saved_after_failure = projector.evaluate(
-            'id => GKPSOffline.get("service", id)', self.service.pk)
-        self.assertTrue(any(row.get('text') == 'Mazmur 23\n\nTuhan adalah gembalaku, '
-                                'takkan kekurangan aku.' for row in saved_after_failure['rows']))
+    def _open_matius_5(self, page):
+        wait_for_goto(page)
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('Mat 5')
+        page.wait_for_function(
+            "document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        statuses = []
+        messages = []
+        page.on('console', lambda message: messages.append(message.text))
+        page.on('pageerror', lambda error: messages.append(str(error)))
+        page.on('response', lambda response: statuses.append((response.status, response.url))
+                if '/projector/goto/' in response.url else None)
+        page.keyboard.press('Enter')
+        try:
+            page.wait_for_function(
+                "document.querySelector('.projector-detour').classList.contains('is-active')",
+                timeout=4000)
+        except Exception:
+            state = page.evaluate("""() => ({
+              detour: document.querySelector('.projector-detour').className,
+              suggestion: document.querySelector('.projector-find__suggestion').textContent,
+              panelHidden: document.querySelector('#projectorFind').hidden,
+              disabled: document.querySelector('#projectorFindInput').disabled,
+              cue: !!document.querySelector('.cue-loading'),
+              body: document.body.dataset.currentScreen,
+            })""")
+            self.fail(str(state) + ' ' + str(statuses) + ' ' + str(messages))
+        page.locator('#projectorFind').wait_for(state='hidden')
+
+    def test_a_verse_step_inside_a_chapter_makes_no_request(self):
+        page = self._page(self._projector_url())
+        self._open_matius_5(page)
+        before = page.locator('.projector-detour').inner_text()
+        requests = []
+        page.on('request', lambda request: requests.append(request.url)
+                if '/projector/goto/' in request.url else None)
+        page.keyboard.press('ArrowDown')
+        page.wait_for_timeout(250)
+        self.assertNotEqual(page.locator('.projector-detour').inner_text(), before)
+        self.assertEqual(requests, [])
+
+    def test_a_chapter_crossing_locks_the_cue_and_paints_the_next_chapter(self):
+        page = self._page(self._projector_url())
+        self._open_matius_5(page)
+        page.keyboard.press('End')
+        page.wait_for_timeout(200)
+        release = []
+        page.route('**/projector/goto/chapter/**', lambda route: release.append(route))
+        page.keyboard.press('ArrowRight')                  # last verse -> next chapter
+        page.wait_for_function("document.querySelector('.cue-loading') !== null")
+        spinner = page.locator('.cue-loading').bounding_box()
+        keys = page.locator('.keys').bounding_box()
+        self.assertLess(spinner['x'] + spinner['width'], keys['x'])
+        self.assertAlmostEqual(spinner['y'] + spinner['height'] / 2,
+                               keys['y'] + keys['height'] / 2, delta=1.5)
+        release.pop().continue_()
+        page.wait_for_function(
+            "document.querySelector('.projector-detour').textContent.includes('Matius 6')")
+
+    def test_a_previous_chapter_crossing_locks_and_paints(self):
+        page = self._page(self._projector_url())
+        self._open_matius_5(page)
+        page.keyboard.press('Home')
+        page.wait_for_timeout(200)
+        release = []
+        page.route('**/projector/goto/chapter/**', lambda route: release.append(route))
+        page.keyboard.press('ArrowLeft')
+        page.wait_for_function("document.querySelector('.cue-loading') !== null")
+        release.pop().continue_()
+        page.wait_for_function(
+            "document.querySelector('.projector-detour').textContent.includes('Matius 4:1')")
+
+    def test_a_book_change_locks_and_paints_the_first_chapter(self):
+        page = self._page(self._projector_url())
+        self._open_matius_5(page)
+        release = []
+        page.route('**/projector/goto/chapter/**', lambda route: release.append(route))
+        page.keyboard.press('Control+ArrowRight')
+        page.wait_for_function("document.querySelector('.cue-loading') !== null")
+        release.pop().continue_()
+        page.wait_for_function(
+            "document.querySelector('.projector-detour').textContent.includes('Mazmur 23:1')")
+
+    def test_the_translation_flip_makes_no_request(self):
+        page = self._page(self._projector_url())
+        self._open_matius_5(page)
+        requests = []
+        page.on('request', lambda request: requests.append(request.url)
+                if '/projector/goto/' in request.url else None)
+        page.keyboard.press('t')
+        page.wait_for_timeout(250)
+        self.assertEqual(page.locator('.cue-translation').inner_text(), 'TB')
+        self.assertEqual(requests, [])
+
+    def test_a_selection_locks_the_panel_until_the_content_paints(self):
+        page = self._page(self._projector_url())
+        wait_for_goto(page)
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('Mat 5')
+        page.wait_for_timeout(800)
+        page.wait_for_function(
+            "document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        before = page.get_attribute('body', 'data-current-screen')
+        release = []
+        page.route('**/projector/goto/chapter/**', lambda route: release.append(route))
+        page.keyboard.press('Enter')
+        page.wait_for_function(
+            "document.querySelector('.projector-find__row').classList.contains('is-loading')")
+        self.assertTrue(page.locator('#projectorFindInput').is_disabled())
+        self.assertEqual(page.locator('.projector-find__spinner').count(), 1)
+        self.assertEqual(page.locator('.cue-loading').count(), 1)
+        page.keyboard.press('Escape')
+        page.wait_for_timeout(150)
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+        self.assertFalse(page.locator('body').evaluate(
+            "el => el.classList.contains('find-closing')"))
+        page.keyboard.press('ArrowRight')
+        self.assertEqual(page.get_attribute('body', 'data-current-screen'), before)
+        release.pop().continue_()
+        page.wait_for_function(
+            "document.querySelector('.projector-detour').classList.contains('is-active')")
+        page.locator('#projectorFind').wait_for(state='hidden')
+        self.assertFalse(page.locator('#projectorFind').is_visible())
+        self.assertFalse(page.locator('#projectorFindInput').is_disabled())
+        self.assertEqual(page.locator('.cue-loading').count(), 0)
+
+    def test_a_failed_selection_restores_the_panel(self):
+        page = self._page(self._projector_url())
+        wait_for_goto(page)
+        page.route('**/projector/goto/chapter/**', lambda route: route.abort())
+        page.keyboard.press('g')
+        page.locator('#projectorFindInput').fill('Mat 5')
+        page.wait_for_function(
+            "document.querySelector('.projector-find__count').textContent === '1 / 1'")
+        page.keyboard.press('Enter')
+        page.wait_for_function(
+            "document.querySelector('.projector-find__suggestion').textContent.includes('Could not load')")
+        self.assertTrue(page.locator('#projectorFind').is_visible())
+        self.assertFalse(page.locator('#projectorFindInput').is_disabled())
+        self.assertEqual(page.locator('.cue-loading').count(), 0)
+
+    def test_goto_opened_before_the_index_shows_the_loading_state(self):
+        page = self.browser.new_context(viewport={'width': 1440, 'height': 900}).new_page()
+        release = []
+        page.route('**/projector/goto/index/', lambda route: release.append(route))
+        page.goto(self.live_server_url + self._projector_url())
+        page.keyboard.press('g')
+        page.wait_for_function(
+            "document.querySelector('.projector-find__row').classList.contains('is-loading')")
+        self.assertTrue(page.locator('#projectorFindInput').is_disabled())
+        self.assertEqual(page.locator('.projector-find__spinner').count(), 1)
+        self.assertIn('Loading search', page.locator('.projector-find__suggestion').inner_text())
+        release.pop().continue_()
+        page.wait_for_function(
+            "!document.querySelector('.projector-find__row').classList.contains('is-loading')")
+        self.assertFalse(page.locator('#projectorFindInput').is_disabled())
+
+    def test_the_page_leaves_no_browser_storage(self):
+        page = self.browser.new_context().new_page()
+        page.goto(self.live_server_url + '/api/')
+        page.evaluate("""() => new Promise((resolve, reject) => {
+          const request = indexedDB.open('gkps-public-library', 1);
+          request.onupgradeneeded = () => request.result.createObjectStore('chunks');
+          request.onsuccess = () => { request.result.close(); resolve(true); };
+          request.onerror = () => reject(request.error);
+        })""")
+        page.evaluate("""() => caches.open('gkps-public-shell-test').then(
+          (cache) => cache.put('/home/', new Response('saved shell')))""")
+        page.goto(self.live_server_url + '/home/')
+        page.wait_for_timeout(400)
+        state = page.evaluate("""async () => ({
+          databases: (await indexedDB.databases()).map((row) => row.name),
+          caches: await caches.keys(),
+          workers: (await navigator.serviceWorker.getRegistrations()).length,
+        })""")
+        self.assertNotIn('gkps-public-library', state['databases'])
+        self.assertFalse([name for name in state['caches'] if 'gkps-public-shell' in name])
+        self.assertEqual(state['workers'], 0)
+
+    def test_an_empty_service_shows_its_empty_state(self):
+        page = self._page(f'/projector?service={self.other.pk}')
+        self.assertIn('no items', page.locator('.projector__empty').inner_text())
+        self.assertNotIn('offline', page.locator('.projector__empty').inner_text().lower())
+
+    def test_the_reading_shell_carries_no_offline_control(self):
+        page = self._page('/home/')
+        self.assertEqual(page.locator('#offlineSyncButton').count(), 0)
+        self.assertEqual(page.locator('#offlineSyncPanel').count(), 0)
+        self.assertEqual(page.locator('#offlineSavedSource').count(), 0)
+        sources = page.eval_on_selector_all('script[src]', 'els => els.map(e => e.src)')
+        self.assertFalse([src for src in sources if 'offline' in src])

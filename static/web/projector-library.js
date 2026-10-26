@@ -1,23 +1,84 @@
-/* Spec 092: projector Go To reads only the committed browser library. */
+/* Spec 136: the projector's Go To reads a page-memory index and fetches its content.
+ *
+ * The page keeps no library. `load()` fetches one index of what the lookup matches on —
+ * book names, editions, chapter and verse counts, songbooks and song titles — and holds
+ * it in memory for the life of the page. A query is answered here, with no request; a
+ * chosen result fetches its chapter (both editions) or its song.
+ */
 (function () {
   'use strict';
   var books = [], songbooks = [], songs = [];
+  var ready = false;
+  var loading = null;
   function normalize(value) {
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/\s+/g, ' ').trim().toLowerCase();
   }
-  function load() {
-    if (!window.GKPSOffline) return Promise.resolve();
-    return Promise.all([GKPSOffline.list('bible'), GKPSOffline.list('songs')])
-      .then(function (values) {
-        books = values[0];
-        songbooks = values[1];
-        songs = songbooks.flatMap(function (book) {
-          return book.songs.map(function (song) { return {book: book, song: song}; });
-        });
-        document.dispatchEvent(new Event('projector-library:ready'));
-      });
+
+  /* ---------- the index ---------------------------------------------------- */
+  function expandEdition(edition) {
+    /* The index sends one verse count per chapter; the lookup expects the verse rows
+       themselves, so they are rebuilt here — chapter 1 first, verses 1..count. */
+    var verses = [];
+    (edition.verses || []).forEach(function (pair) {
+      for (var number = 1; number <= pair[1]; number += 1) {
+        verses.push({chapter: pair[0], verse: number});
+      }
+    });
+    return {version: edition.v, name: edition.name, abbreviation: edition.abbr || '',
+            verses: verses};
   }
+  function shape(payload) {
+    books = (payload.books || []).map(function (book) {
+      return {id: book.id, name: book.name,
+              translations: (book.editions || []).map(expandEdition)};
+    });
+    songbooks = (payload.songbooks || []).map(function (book) {
+      return {id: book.id, name: book.name, short_name: book.short_name || '',
+              is_hymn_book: !!book.is_hymn_book, songs: []};
+    });
+    var byId = {};
+    songbooks.forEach(function (book) { byId[book.id] = book; });
+    songs = [];
+    (payload.songs || []).forEach(function (song) {
+      /* [id, songbook id, number, sub-number, title] — see the server's byte-budget note. */
+      var shaped = {id: song[0],
+                    number: song[2] === '' || song[2] == null ? null : song[2],
+                    sub_number: song[3] || '', title: song[4] || '', verses: []};
+      var book = byId[song[1]];
+      if (book) book.songs.push(shaped);
+      songs.push({book: book, song: shaped});
+    });
+  }
+  function load() {
+    if (loading) return loading;
+    loading = fetch('/projector/goto/index/', {credentials: 'same-origin', cache: 'no-store'})
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        if (!payload || payload.schema !== 1) throw new Error('Unexpected index');
+        shape(payload);
+        ready = true;
+        document.dispatchEvent(new Event('projector-library:ready'));
+        return true;
+      })
+      .catch(function (error) {
+        loading = null;                    // a later open or Update may retry
+        throw error;
+      });
+    return loading;
+  }
+  function isReady() { return ready; }
+  function refresh() {
+    /* The page's Update re-reads everything; the index is fetched again rather than
+       reused, so a song added while the service runs is findable. */
+    loading = null;
+    return load();
+  }
+
+  /* ---------- the lookup (unchanged from spec 092) ------------------------- */
   function translationFor(book, edition) {
     if (!book) return null;
     return book.translations.find(function (item) {
@@ -178,110 +239,170 @@
           target: {song_id: row.entry.song.id}};
       });
   }
-  function linePairs(text) {
-    var screens = [], pair = [];
-    String(text || '').split('\n').forEach(function (raw) {
-      var line = raw.trim();
-      if (!line) {
-        if (pair.length) { screens.push(pair); pair = []; }
-        return;
-      }
-      pair.push({text: line, voice: ''});
-      if (pair.length === 2) { screens.push(pair); pair = []; }
-    });
-    if (pair.length) screens.push(pair);
-    return screens;
-  }
-  function songDetour(id) {
-    var entry = songs.find(function (item) { return item.song.id === id; });
-    if (!entry) return null;
-    var screens = [], baits = [];
-    entry.song.verses.forEach(function (verse) {
-      var start = screens.length;
-      var pairs = linePairs(verse.lyric);
-      pairs.forEach(function (lines, index) {
-        screens.push({blank: false, header: '', lines: lines, bait: verse.number,
-          split: index + 1, split_total: pairs.length});
+
+  /* ---------- the fetched content ----------------------------------------- */
+  function fetchJson(url) {
+    return fetch(url, {credentials: 'same-origin', cache: 'no-store'})
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
       });
-      screens.push({blank: true, header: '', lines: [], bait: verse.number, bait_rest: true});
-      baits.push({number: verse.number, start: start, end: screens.length - 1});
-    });
-    return {kind: 'song', label: songLabel(entry.book, entry.song), screens: screens,
-      baits: baits, index: 0};
   }
-  function passageDetour(bookId, chapter, verse, requestedEdition) {
-    var book = books.find(function (item) { return item.id === bookId; });
-    if (!book) return null;
+  function variantsAt(editions, chapter, verse) {
     var variants = {};
-    book.translations.forEach(function (translation) {
-      var code = translation.version.toUpperCase();
-      if (code !== 'TB' && code !== 'SIM') return;
-      var row = translation.verses.find(function (item) {
-        return item.chapter === chapter && item.verse === verse;
-      });
+    Object.keys(editions).forEach(function (code) {
+      var edition = editions[code];
+      var row = edition.verses.find(function (item) { return item.n === verse; });
       if (!row) return;
-      var reference = translation.name + ' ' + chapter + ':' + verse;
+      var reference = edition.name + ' ' + chapter + ':' + verse;
       variants[code] = {header: reference + (row.title ? '\n' + row.title : ''),
-        line: row.text.trim()};
+                        line: (row.text || '').trim()};
     });
-    if (requestedEdition && !variants[requestedEdition]) return null;
-    var selected = requestedEdition || (variants.TB ? 'TB' : Object.keys(variants)[0]);
+    return variants;
+  }
+  function chooseEdition(variants, requested) {
+    if (requested && !variants[requested]) return '';
+    return requested || (variants.TB ? 'TB' : Object.keys(variants)[0] || '');
+  }
+  function labelAt(editions, chapter, verse) {
+    var edition = editions.TB || editions[Object.keys(editions)[0]];
+    return edition.name + ' ' + chapter + (verse == null ? '' : ':' + verse);
+  }
+  function passageDetour(payload, verse, requestedEdition) {
+    var editions = payload.editions || {};
+    var preferred = editions.TB || editions[Object.keys(editions)[0]];
+    if (!preferred || !preferred.verses.length) return null;
+    var wanted = verse == null ? preferred.verses[0].n : verse;
+    var variants = variantsAt(editions, payload.chapter, wanted);
+    var selected = chooseEdition(variants, requestedEdition);
     if (!selected) return null;
-    return {kind: 'passage', book_id: bookId, chapter: chapter, verse: verse,
-      translation: selected, label: passageLabel(book, chapter, verse,
-        translationFor(book, selected)), translations: variants};
+    return {kind: 'passage', book_id: payload.book_id, chapter: payload.chapter,
+            verse: wanted, translation: selected, editions: editions,
+            label: labelAt(editions, payload.chapter, wanted), translations: variants};
+  }
+  function chapterUrl(bookId, chapter) {
+    return '/projector/goto/chapter/' + encodeURIComponent(bookId) + '/'
+      + encodeURIComponent(chapter) + '/';
   }
   function detour(row) {
-    if (row.kind === 'song') return songDetour(Number(row.target.song_id));
-    return passageDetour(Number(row.target.book_id), Number(row.target.chapter),
-      Number(row.target.verse) || firstVerse(books.find(function (book) {
-        return book.id === Number(row.target.book_id);
-      }), Number(row.target.chapter)), row.target.edition);
+    if (!row || !row.target) return Promise.reject(new Error('No result'));
+    if (row.kind === 'song') {
+      return fetchJson('/projector/goto/song/' + encodeURIComponent(row.target.song_id) + '/')
+        .then(function (payload) {
+          return {kind: 'song', label: payload.label, screens: payload.screens || [],
+                  baits: payload.baits || [], index: 0};
+        });
+    }
+    var bookId = Number(row.target.book_id);
+    var chapter = Number(row.target.chapter);
+    var verse = row.target.verse == null ? null : Number(row.target.verse);
+    return fetchJson(chapterUrl(bookId, chapter)).then(function (payload) {
+      var made = passageDetour(payload, verse, row.target.edition);
+      if (!made && window.console && console.error) {
+        console.error('empty passage detour', verse, row.target.edition, JSON.stringify(payload).slice(0, 400));
+      }
+      return made;
+    });
+  }
+  function fetchChapter(bookId, chapter, verse, edition) {
+    return fetchJson(chapterUrl(bookId, chapter)).then(function (payload) {
+      return passageDetour(payload, verse, edition);
+    });
+  }
+
+  /* ---------- stepping ----------------------------------------------------- */
+  function positionsFor(book) {
+    var preferred = book.translations.find(function (translation) {
+      return translation.version.toUpperCase() === 'TB';
+    }) || book.translations.find(function (translation) {
+      return translation.verses.length;
+    });
+    return preferred ? preferred.verses : [];
   }
   function movePassage(current, action, level) {
-    var candidates = books.filter(function (book) { return book.translations.some(function (tr) {
-      return tr.verses.length;
-    }); });
-    var bookIndex = candidates.findIndex(function (book) { return book.id === current.book_id; });
-    if (bookIndex < 0) return current;
-    var book = candidates[bookIndex];
-    if (level === 'ctrl') {
-      if (action === 'first') book = candidates[0];
-      if (action === 'last') book = candidates[candidates.length - 1];
-      if (action === 'next') book = candidates[Math.min(bookIndex + 1, candidates.length - 1)];
-      if (action === 'previous') book = candidates[Math.max(bookIndex - 1, 0)];
-      return passageDetour(book.id, 1, firstVerse(book, 1));
+    var candidates = books.filter(function (book) {
+      return book.translations.some(function (translation) { return translation.verses.length; });
+    });
+    var at = candidates.findIndex(function (book) { return book.id === current.book_id; });
+    if (at < 0) return null;
+    if (level === 'ctrl' && action) {
+      var targetBook = candidates[at];
+      if (action === 'first') targetBook = candidates[0];
+      if (action === 'last') targetBook = candidates[candidates.length - 1];
+      if (action === 'next') targetBook = candidates[Math.min(at + 1, candidates.length - 1)];
+      if (action === 'previous') targetBook = candidates[Math.max(at - 1, 0)];
+      var firstPositions = positionsFor(targetBook);
+      if (!firstPositions.length) return null;
+      return {request: {book_id: targetBook.id, chapter: firstPositions[0].chapter,
+                        verse: firstPositions[0].verse}};
     }
-    var preferred = book.translations.find(function (item) { return item.version.toUpperCase() === 'TB'; })
-      || book.translations[0];
-    var positions = preferred.verses.map(function (row) { return [row.chapter, row.verse]; });
-    if (level === 'shift') {
-      var chapters = Array.from(new Set(positions.map(function (pair) { return pair[0]; })));
-      var chapterIndex = chapters.indexOf(current.chapter);
-      if (action === 'first') chapterIndex = 0;
-      if (action === 'last') chapterIndex = chapters.length - 1;
-      if (action === 'next') chapterIndex = Math.min(chapterIndex + 1, chapters.length - 1);
-      if (action === 'previous') chapterIndex = Math.max(chapterIndex - 1, 0);
-      var chapter = chapters[chapterIndex];
-      return passageDetour(book.id, chapter, firstVerse(book, chapter));
+    var positions = positionsFor(candidates[at]);
+    if (!positions.length) return null;
+    if (level === 'shift' && action) {
+      var chapters = Array.from(new Set(positions.map(function (pair) { return pair.chapter; })));
+      var chapterAt = chapters.indexOf(current.chapter);
+      if (chapterAt < 0) chapterAt = 0;
+      if (action === 'first') chapterAt = 0;
+      if (action === 'last') chapterAt = chapters.length - 1;
+      if (action === 'next') chapterAt = Math.min(chapterAt + 1, chapters.length - 1);
+      if (action === 'previous') chapterAt = Math.max(chapterAt - 1, 0);
+      var chapter = chapters[chapterAt];
+      var chapterPositions = positions.filter(function (pair) { return pair.chapter === chapter; });
+      if (!chapterPositions.length) return null;
+      return stepTo(current, current.book_id, chapter, chapterPositions[0].verse);
     }
     var index = positions.findIndex(function (pair) {
-      return pair[0] === current.chapter && pair[1] === current.verse;
+      return pair.chapter === current.chapter && pair.verse === current.verse;
     });
-    if (index < 0) return current;
+    if (index < 0) {
+      index = positions.findIndex(function (pair) { return pair.chapter === current.chapter; });
+      if (index < 0) return null;
+    }
     if (action === 'first' || action === 'last') {
-      var chapterPositions = positions.map(function (pair, i) { return pair[0] === current.chapter ? i : -1; })
-        .filter(function (i) { return i >= 0; });
-      index = chapterPositions[action === 'first' ? 0 : chapterPositions.length - 1];
+      var inChapter = positions.map(function (pair, position) {
+        return pair.chapter === current.chapter ? position : -1;
+      }).filter(function (position) { return position >= 0; });
+      if (inChapter.length) index = inChapter[action === 'first' ? 0 : inChapter.length - 1];
     }
     if (action === 'next') index = Math.min(index + 1, positions.length - 1);
     if (action === 'previous') index = Math.max(index - 1, 0);
-    return passageDetour(book.id, positions[index][0], positions[index][1]);
+    return stepTo(current, current.book_id, positions[index].chapter, positions[index].verse);
   }
-  window.GKPSProjectorLibrary = {load: load, lookup: lookup, detour: detour,
-    movePassage: movePassage};
-  if (window.GKPSOffline) {
-    load();
-    document.addEventListener('offline:changed', load);
+  function stepTo(current, bookId, chapter, verse) {
+    if (bookId === current.book_id && chapter === current.chapter) {
+      var variants = variantsAt(current.editions, chapter, verse);
+      var selected = chooseEdition(variants, current.translation);
+      if (!selected) return null;
+      return {detour: {kind: 'passage', book_id: bookId, chapter: chapter, verse: verse,
+                       translation: selected, editions: current.editions,
+                       label: labelAt(current.editions, chapter, verse),
+                       translations: variants}};
+    }
+    return {request: {book_id: bookId, chapter: chapter, verse: verse,
+                      edition: current.translation}};
   }
+
+  /* Spec 136: a browser that still holds the retired library drops it here — the service
+     worker with its shell cache, and the IndexedDB store nothing reads any more. */
+  function retireOfflineLibrary() {
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        registrations.forEach(function (registration) { registration.unregister(); });
+      }).catch(function () { /* nothing to retire */ });
+    }
+    if (window.caches && caches.keys) {
+      caches.keys().then(function (keys) {
+        keys.filter(function (key) { return key.indexOf('gkps-public-shell-') === 0; })
+          .forEach(function (key) { caches.delete(key); });
+      }).catch(function () { /* no cache storage */ });
+    }
+    if (window.indexedDB && indexedDB.deleteDatabase) {
+      try { indexedDB.deleteDatabase('gkps-public-library'); } catch (error) { /* none */ }
+    }
+  }
+  retireOfflineLibrary();
+
+  window.GKPSProjectorLibrary = {load: load, refresh: refresh, ready: isReady, lookup: lookup,
+    detour: detour, fetchChapter: fetchChapter, movePassage: movePassage};
+  load().catch(function () { /* the panel reports it when opened */ });
 })();

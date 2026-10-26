@@ -31,7 +31,6 @@
 <link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
 <link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
 <link rel="stylesheet" href="{% static 'styles/design/components.css' %}">
-<link rel="stylesheet" href="{% static 'styles/design/offline.css' %}">
 </head>
 <body>
 
@@ -103,16 +102,6 @@
 
   <div class="rail__foot">
     <button class="rail__btn media-transfer-rail" type="button" id="mediaTransferRail" data-tip="Transfer progress" aria-label="Transfer progress" hidden><span id="mediaTransferRailIcon" aria-hidden="true">⇄</span><span class="media-transfer-rail__dot" id="mediaTransferRailDot" data-state="active"></span></button>
-    <button class="rail__btn offline-sync-btn" type="button" id="offlineSyncButton"
-            data-tip="Offline library" aria-label="Offline library status"
-            aria-expanded="false" aria-controls="offlineSyncPanel">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M19.7 9A8 8 0 0 0 5.6 6.8L4 8.5M4.2 15A8 8 0 0 0 18.3 17l1.7-1.5"/>
-        <path d="M4 4.6v3.9h3.9M20 19.4v-3.9h-3.9"/>
-      </svg>
-      <span class="offline-sync-dot" id="offlineSyncDot" data-state="empty"></span>
-    </button>
     <button class="rail__btn rail__theme" type="button" id="themeBtn"
             data-tip="System mode" aria-label="System mode">
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
@@ -132,24 +121,6 @@
     </button>
   </div>
 </aside>
-<section class="offline-sync-panel" id="offlineSyncPanel" aria-label="Offline library"
-         aria-live="polite" hidden>
-  <div class="offline-sync-head"><span class="offline-sync-mark" id="offlineSyncMark"
-       data-state="empty"></span><div><h2>Offline library</h2>
-    <p class="offline-sync-availability" id="offlineSyncAvailability">Checking saved library</p></div></div>
-  <p class="offline-sync-detail" id="offlineSyncDetail">Checking the saved public library and page shells.</p>
-  <div class="offline-connection"><span>Browser connection</span>
-    <span class="offline-connection-value" id="offlineConnectionValue" data-offline="false">
-      <i aria-hidden="true"></i><span id="offlineConnectionLabel">Online</span></span>
-  </div>
-  <dl class="offline-sync-meta">
-    <div><dt>Last synced</dt><dd id="offlineLastSynced">Never</dd></div>
-    <div><dt>Last checked</dt><dd id="offlineLastChecked">Not checked</dd></div>
-  </dl>
-  <button class="offline-sync-action" id="offlineSyncNow" type="button">Sync now</button>
-  <div class="offline-sync-progress" id="offlineSyncProgress" hidden></div>
-</section>
-
 <!-- First list beside the rail: books / songbooks / services -->
 <aside class="panel" id="panel" role="region"
        aria-labelledby="panelTitle">
@@ -432,7 +403,6 @@
  </section>
 
  <article class="read" id="read" lang="{{ read_lang|default:'id' }}" tabindex="-1"{% if read_kind %} data-kind="{{ read_kind }}"{% endif %}>
-  <p class="offline-saved-source" id="offlineSavedSource" hidden>Saved copy</p>
   <header class="read__head">
    <div class="read__head-top">
     <p class="read__eyebrow" id="readEyebrow"{% if not read_eyebrow %} hidden{% endif %}>{{ read_eyebrow|default:'' }}</p>
@@ -459,9 +429,6 @@
 <dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList"></div></dialog>
 <div class="edit-toasts" id="editToastHost" popover="manual"
      aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
-<script src="{% static 'web/offline-library.js' %}"></script>
-<script src="{% static 'web/offline-status.js' %}"></script>
-<script src="{% static 'web/offline-render.js' %}"></script>
 <script src="{% static 'web/focus.js' %}"></script>
 <script src="{% static 'web/reading.js' %}"></script>
 <script src="{% static 'web/display.js' %}"></script>

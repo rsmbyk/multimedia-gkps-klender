@@ -261,25 +261,6 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             raise unittest.SkipTest(f'playwright browser unavailable: {error}')
 
     def tearDown(self):
-        # Public-page tests now start an asynchronous local-library sync. Let any
-        # in-flight manifest/chunk reads finish before LiveServerTestCase flushes
-        # SQLite between examples.
-        for context in self.browser.contexts:
-            for page in context.pages:
-                try:
-                    page.evaluate("""async () => {
-                      if (!window.GKPSOffline) return;
-                      await GKPSOffline.install().catch(() => {});
-                      await new Promise(resolve => setTimeout(resolve, 80));
-                      const deadline = Date.now() + 8000;
-                      while (Date.now() < deadline) {
-                        const state = await GKPSOffline.status();
-                        if (!state.syncing) return;
-                        await new Promise(resolve => setTimeout(resolve, 40));
-                      }
-                    }""")
-                except Exception:
-                    pass
         self.browser.close()
         self._playwright.stop()
         super().tearDown()
@@ -554,7 +535,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
-        expect(page.locator('.rail__foot button:visible')).to_have_count(2)
+        # The rail's foot holds the theme button alone since the offline control left
+        # (spec 136); the media-transfer button stays hidden until there is a transfer.
+        expect(page.locator('.rail__foot button:visible')).to_have_count(1)
         expect(page.locator('#themeBtn')).to_have_attribute('aria-label', 'System mode')
         expect(page.locator('#themeBtn')).to_have_attribute('data-tip', 'System mode')
         expect(page.locator('#themeBtn .system')).to_have_css('opacity', '1')

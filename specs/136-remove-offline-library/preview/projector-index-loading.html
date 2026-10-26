@@ -1,0 +1,2361 @@
+<!DOCTYPE html><html lang="id" data-theme="dark"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ibadah Minggu — display</title>
+<link rel="shortcut icon" type="image/png" href="../../../static/assets/gkps.png">
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/projector.css">
+<style type="text/css">
+/* --- spec 136 preview: the Go To's loading state --- */
+.projector-find__row.is-loading { cursor: progress; }
+.projector-find__row.is-loading .projector-find__count { display: none; }
+.projector-find__spinner,
+.cue-loading {
+  box-sizing: border-box; flex: none; border-radius: 50%;
+  border: 2px solid var(--whisper); border-top-color: var(--quiet);
+  animation: goto-load-spin 800ms linear infinite;
+}
+.projector-find__spinner { width: 12px; height: 12px; }
+.cue-loading {
+  position: absolute; z-index: 5; right: 74px; bottom: 25px;
+  width: 14px; height: 14px;
+}
+@keyframes goto-load-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .projector-find__spinner, .cue-loading { animation: none; }
+}
+.projector-find input:disabled { color: var(--quiet); cursor: not-allowed; }
+</style></head>
+<body class="projector fullscreen-available find-open" data-display-channel="gkps-service-display" data-service="144" data-adopt="144" data-current-screen="0" data-showing="true">
+
+<div class="mouse-zones" aria-hidden="true">
+  <div class="mouse-zone mouse-zone--previous" data-mouse-action="previous"></div>
+  <div class="mouse-zone mouse-zone--display" data-mouse-action="display"></div>
+  <div class="mouse-zone mouse-zone--next" data-mouse-action="next"></div>
+</div>
+<main class="projector__screen" id="projectorScreen">
+  <div class="projector__screens" id="projectorScreens">
+    
+    <section class="screen is-active" data-screen="0" data-entry="0" data-bait="1" data-split="1" data-split-total="4" data-bait-rest="" aria-hidden="false">
+      
+      
+      <div class="screen__lines" style="font-size: 118px;">
+        <p class="screen__line">(1) Sangap di jahowa na sun timbul i</p><p class="screen__line">Balga ni holongNa ndang tarasam i</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="1" data-entry="0" data-bait="1" data-split="2" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Dilehon AnakNa na sasada i</p><p class="screen__line">Manobus hita jolma pardosa i</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="2" data-entry="0" data-bait="1" data-split="3" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Puji ma Debata ale manisia</p><p class="screen__line">Las roham las roham somba ma Debata</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="3" data-entry="0" data-bait="1" data-split="4" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Dapothon Jahowa na sun timbul i</p><p class="screen__line">Marhite AnakNa Tuhan Jesus i</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="4" data-entry="0" data-bait="1" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="5" data-entry="0" data-bait="2" data-split="1" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">(2) Tung so hasuhatan do basaNa i</p><p class="screen__line">Marhite AnakNa nilehonNa i</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="6" data-entry="0" data-bait="2" data-split="2" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">MudarNa durus do di hau silang i</p><p class="screen__line">Rara pe dosanta ias dibaen i</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="7" data-entry="0" data-bait="2" data-split="3" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Puji ma Debata ale manisia</p><p class="screen__line">Las roham las roham somba ma Debata</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="8" data-entry="0" data-bait="2" data-split="4" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Dapothon Jahowa na sun timbul i</p><p class="screen__line">Marhite AnakNa Tuhan Jesus i</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="9" data-entry="0" data-bait="2" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="10" data-entry="0" data-bait="3" data-split="1" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">(3) Balga situtu pambaenMi Debata</p><p class="screen__line">Tung so hasuhatan holong ni rohaM</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="11" data-entry="0" data-bait="3" data-split="2" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Tu jolma pardosa asi do rohaM</p><p class="screen__line">Diungkap Ho dalan lao tu banuaM</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="12" data-entry="0" data-bait="3" data-split="3" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Puji ma Debata ale manisia</p><p class="screen__line">Las roham las roham somba ma Debata</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="13" data-entry="0" data-bait="3" data-split="4" data-split-total="4" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Dapothon Jahowa na sun timbul i</p><p class="screen__line">Marhite AnakNa Tuhan Jesus i</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="14" data-entry="0" data-bait="3" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="15" data-entry="1" data-bait="1" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Porini dong maribu hali, paraloling ni sorangkin</p><p class="screen__line">Bois ni gogoh inggananni, mamuji Naibatanta in,</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="16" data-entry="1" data-bait="1" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ibaen malasni uhurhin, hinorhon ni pambaen-Ni in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="17" data-entry="1" data-bait="1" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="18" data-entry="1" data-bait="2" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ai ambit ondos ma sorangku, bai ujung ni dunia on,</p><p class="screen__line">sagala jolma arahonku, mamuji Naibata tongtong.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="19" data-entry="1" data-bait="2" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Talup do gok ni uhurhin, hubaen pasangap Tuhan in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="20" data-entry="1" data-bait="2" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="21" data-entry="1" data-bait="3" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ulang ma modom ho tonduyhu, sai puho ho, sai hehe ma.</p><p class="screen__line">Pongkut ma ho bani horjamu, sai puji Tuhan Naibata.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="22" data-entry="1" data-bait="3" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Sai baen ma gok ni pandeimin, laho mamuji Tuhan in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="23" data-entry="1" data-bait="3" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="24" data-entry="1" data-bait="4" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Tarima kasih ma uhurhu, Bamu o Naibata tongtong.</p><p class="screen__line">Ibahen dearni layak-Mu, binere-Mu hubangku on.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="25" data-entry="1" data-bait="4" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ai ipatudu Ham tongtong ganup na porlu bangku on.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="26" data-entry="1" data-bait="4" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="27" data-entry="1" data-bait="5" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Hupuji pakon Ham, o Jesus, ibaen parholong ateiMu.</p><p class="screen__line">Mardingat darohMu madurus, pakon ganupan layak-Mu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="28" data-entry="1" data-bait="5" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Mambahen haluahon on, hubai pardousa banggal on.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="29" data-entry="1" data-bait="5" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="30" data-entry="1" data-bait="6" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ham pe homa, Tonduy Napansing, sai jalo Ham ma dodingkon.</p><p class="screen__line">Margogoh anjaha matunggung do Ham, mangapoh uhurhon</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="31" data-entry="1" data-bait="6" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ia hubaen na dear in, halani gogoh-Mu do in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="32" data-entry="1" data-bait="6" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="33" data-entry="1" data-bait="7" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ai ise do mamasu-masu, au on o Naibata, lang Ham?</p><p class="screen__line">Pamatang rap pakon tonduyhu, sai iparmudu-mudu Ham</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="34" data-entry="1" data-bait="7" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Jaha lumbang uhur-Mu in mangidah pardousaonkin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="35" data-entry="1" data-bait="7" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="36" data-entry="1" data-bait="8" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Sai layakMu do pujionku sadokah na manggoluh au.</p><p class="screen__line">Sai Goran-Mu pasangaponku sadokah na marhosah au</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="37" data-entry="1" data-bait="8" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ronsi rotap ni hosahkin, sai pujionku Ham ijin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="38" data-entry="1" data-bait="8" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="39" data-entry="1" data-bait="9" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Sai jalo ma, ale Tuhanku, pamujingkon na hurang in.</p><p class="screen__line">Paima das au on hu surga, ianan na gok dear in,</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="40" data-entry="1" data-bait="9" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Marlaksa hali ma ijin, dodingkononku Tuhankin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="41" data-entry="1" data-bait="9" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="42" data-entry="2" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      <h1 class="screen__head">Kisah Para Rasul 1:1
+Roh Kudus dijanjikan</h1>
+      
+      <div class="screen__lines">
+        <p class="screen__line">Hai Teofilus, dalam bukuku yang pertama aku menulis tentang segala sesuatu yang dikerjakan dan diajarkan Yesus,</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="43" data-entry="2" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="44" data-entry="3" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__image-box" data-media-image="5cced97edf39ffe2bdf90bbf50880c236ae25b6ab7b7449b55860e74c2cd0888"><img class="screen__image" alt="" hidden=""><svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"></rect><circle cx="17" cy="19" r="2.5"></circle><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"></path></svg></div>
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="45" data-entry="4" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      <div class="screen__pdf-box" data-media-pdf="ce5151f33d3ce6e034ad0aa969071859982f43d16bf5d0d0b657848b4065560f"><canvas class="screen__pdf-page" hidden=""></canvas><svg class="screen__pdf-missing" viewBox="0 0 48 48" aria-hidden="true" hidden=""><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"></path></svg></div>
+      
+    </section>
+    
+    <section class="screen" data-screen="46" data-entry="5" data-bait="" data-split="1" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">VOTUM, INTROITUS, DOA</p><p class="screen__line is-leader">L. Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="47" data-entry="5" data-bait="" data-split="2" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Amin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="48" data-entry="5" data-bait="" data-split="3" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="49" data-entry="5" data-bait="" data-split="4" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Aku mau bersyukur kepada Tuhan dengan segenap hati, dalam lingkungan orang-orang benar dan dalam jemaah.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="50" data-entry="5" data-bait="" data-split="5" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Besar perbuatan-perbuatan Tuhan, layak diselidiki oleh semua orang yang menyukainya.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="51" data-entry="5" data-bait="" data-split="6" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="52" data-entry="5" data-bait="" data-split="7" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Agung dan bersemarak pekerjaan-Nya, dan keadilan-Nya tetap untuk selamanya.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="53" data-entry="5" data-bait="" data-split="8" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Diberikan-Nya rezeki kepada orang-orang yang takut akan Dia. Ia ingat untuk selama-lamanya akan perjanjian-Nya.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="54" data-entry="5" data-bait="" data-split="9" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="55" data-entry="5" data-bait="" data-split="10" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Kekuatan perbuatan-Nya diberitakan-Nya kepada umat-Nya, dengan memberikan kepada mereka milik pusaka bangsa-bangsa.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="56" data-entry="5" data-bait="" data-split="11" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Perbuatan tangan-Nya ialah kebenaran dan keadilan, segala titah-Nya teguh, kokoh untuk seterusnya dan selamanya, dilakukan dalam kebenaran dan kejujuran.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="57" data-entry="5" data-bait="" data-split="12" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="58" data-entry="5" data-bait="" data-split="13" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Permulaan hikmat adalah takut akan TUHAN, semua orang yang melakukannya berakal budi yang baik. Puji-pujian kepada-Nya tetap untuk selamanya.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="59" data-entry="5" data-bait="" data-split="14" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Haleluya,Haleluya,Haleluya.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="60" data-entry="5" data-bait="" data-split="15" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. (Menyanyikan) Haleluya, Haleluya, Haleluya.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="61" data-entry="5" data-bait="" data-split="16" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="62" data-entry="5" data-bait="" data-split="17" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Marilah kita berdoa.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="63" data-entry="5" data-bait="" data-split="18" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Ya Tuhan Allah Maha Adil yang bertakhta di sorga....</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="64" data-entry="5" data-bait="" data-split="19" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Edit</p><p class="screen__line is-leader">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="65" data-entry="5" data-bait="" data-split="20" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">NEXT PENGAMPUNAN DOSAEdit</p><p class="screen__line is-leader">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="66" data-entry="5" data-bait="" data-split="21" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">PENGAMPUNAN DOSA</p><p class="screen__line is-leader">L. Marilah kita bangkit berdiri!</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="67" data-entry="5" data-bait="" data-split="22" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Marilah datang kepada Tuhan dengan segala kerendahan hati untuk mengaku kelemahan dan dosa kita...</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="68" data-entry="5" data-bait="" data-split="23" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Ampuni kami Tuhan, jika dalam kesulitan, kami sering bersungut-sungut pada-Mu. Biarlah Engkau tetap menjadi pembela dan penolong kami.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="69" data-entry="5" data-bait="" data-split="24" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Edit</p><p class="screen__line is-leader">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="70" data-entry="5" data-bait="" data-split="25" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Bernyanyi reff Kidung Jemaat No. 33</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="71" data-entry="5" data-bait="" data-split="26" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Aku datanglah, Tuhan-Mu, pada-Mu</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="72" data-entry="5" data-bait="" data-split="27" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Dalam darah-Mu kudus, sucikan diriku</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="73" data-entry="5" data-bait="" data-split="28" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="74" data-entry="5" data-bait="" data-split="29" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Ya Tuhan, kami datang ke hadapan-Mu di Bait-Mu ini...</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="75" data-entry="5" data-bait="" data-split="30" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Ampuni kami jika dalam kehidupan bergereja kami tidak peka pada perjuangan dan kesulitan yang mereka hadapi. Kami tidak menopang mereka dalam kesusahan yang mereka.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="76" data-entry="5" data-bait="" data-split="31" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Edit</p><p class="screen__line is-leader">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="77" data-entry="5" data-bait="" data-split="32" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Bernyanyi reff Kidung Jemaat No. 33</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="78" data-entry="5" data-bait="" data-split="33" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Aku datanglah, Tuhan-Mu, pada-Mu</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="79" data-entry="5" data-bait="" data-split="34" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Dalam darah-Mu kudus, sucikan diriku.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="80" data-entry="5" data-bait="" data-split="35" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="81" data-entry="5" data-bait="" data-split="36" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Tuhan, Ampuni kami atas segala dosa dan kesalahan kami dan tolong kami agar dapat memperbaiki kesalahan kami...</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="82" data-entry="5" data-bait="" data-split="37" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Di dalam nama Tuhan Yesus Kristus kami berdoa. Amin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="83" data-entry="5" data-bait="" data-split="38" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Edit</p><p class="screen__line is-leader">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="84" data-entry="5" data-bait="" data-split="39" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Menyanyikan “Kasih”</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="85" data-entry="5" data-bait="" data-split="40" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Kasih pasti lemah lembut Kasih pasti memaafkan</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="86" data-entry="5" data-bait="" data-split="41" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Kasih pasti murah hati kasihMu, kasihMu, Tuhan…</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="87" data-entry="5" data-bait="" data-split="42" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Preview</p><p class="screen__line is-assembly">Edit</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="88" data-entry="5" data-bait="" data-split="43" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Delete</p><p class="screen__line is-leader">L. Dengarkanlah dan percayailah firman Allah, janji tentang pengampunan dosa... Kemuliaan bagi Allah di tempat yang mahatinggi.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="89" data-entry="5" data-bait="" data-split="44" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Amin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="90" data-entry="5" data-bait="" data-split="45" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="91" data-entry="5" data-bait="" data-split="46" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">NEXT PENGAKUAN DAN TEKAD MINGGU SAHABATEdit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="92" data-entry="5" data-bait="" data-split="47" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">PENGAKUAN DAN TEKAD MINGGU SAHABAT KHUSUS</p><p class="screen__line is-leader">L. Jemaat yang dikasihi Tuhan, melalui Minggu Sahabat Khusus, kita diingatkan bahwa semua warga jemaat adalah bersaudara dan satu dalam Kristus... seperti yang tertulis dalam 1 Korintus 12:4-11+18. Ada rupa-rupa karunia, tetapi satu Roh.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="93" data-entry="5" data-bait="" data-split="48" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">Edit</p><p class="screen__line is-leader">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="94" data-entry="5" data-bait="" data-split="49" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Dan ada rupa-rupa pelayanan, tetapi satu Tuhan.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="95" data-entry="5" data-bait="" data-split="50" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="96" data-entry="5" data-bait="" data-split="51" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Dan ada berbagai-bagai perbuatan ajaib, tetapi Allah adalah satu yang mengerjakan semuanya dalam semua orang.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="97" data-entry="5" data-bait="" data-split="52" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Tetapi kepada tiap-tiap orang dikaruniakan penyataan Roh untuk kepentingan bersama.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="98" data-entry="5" data-bait="" data-split="53" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="99" data-entry="5" data-bait="" data-split="54" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Sebab kepada yang seorang Roh memberikan karunia untuk berkata-kata dengan hikmat, dan kepada yang lain Roh yang sama memberikan karunia berkata-kata dengan pengetahuan.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="100" data-entry="5" data-bait="" data-split="55" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Kepada yang seorang Roh yang sama memberikan iman, dan kepada yang lain Ia memberikan karunia untuk menyembuhkan.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="101" data-entry="5" data-bait="" data-split="56" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="102" data-entry="5" data-bait="" data-split="57" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Kepada yang seorang Roh memberikan kuasa untuk mengadakan mujizat, dan kepada yang lain Ia memberikan karunia untuk bernubuat, dan kepada yang lain lagi Ia memberikan karunia untuk membedakan bermacam-macam roh.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="103" data-entry="5" data-bait="" data-split="58" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Kepada yang seorang Ia memberikan karunia untuk berkata-kata dengan bahasa roh, dan kepada yang lain Ia memberikan karunia untuk menafsirkan bahasa roh itu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="104" data-entry="5" data-bait="" data-split="59" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="105" data-entry="5" data-bait="" data-split="60" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Tetapi semuanya ini dikerjakan oleh Roh yang satu dan yang sama, yang memberikan karunia kepada tiap-tiap orang secara khusus, seperti yang dikehendaki-Nya.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="106" data-entry="5" data-bait="" data-split="61" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Tetapi Allah telah memberikan kepada anggota, masing-masing secara khusus, suatu tempat pada tubuh, seperti yang dikehendaki-Nya.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="107" data-entry="5" data-bait="" data-split="62" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">Edit</p><p class="screen__line is-assembly">Delete</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="108" data-entry="5" data-bait="" data-split="63" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-leader">L. Dengan demikian, Tuhan memberikan kepada semua orang karunia-karunia rohani; kepada yatim-piatu, janda, duda, lansia, disabilitas dan kepada kita semua...</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="109" data-entry="5" data-bait="" data-split="64" data-split-total="64" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line is-assembly">J. Amin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="110" data-entry="5" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="111" data-entry="6" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="112" data-entry="7" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      <div class="screen__audio-box" data-media-audio="aa6451bbae4732be80f48c7281702fa6ad9aef38e26b5994c62fe421a959fc6d"><div class="screen__audio-player" hidden=""><span class="screen__audio-play" data-audio-play="" aria-label="Play audio"></span><div class="screen__audio-seek" data-audio-seek=""><span class="screen__audio-fill"></span></div><div class="screen__audio-times"><span data-audio-elapsed="">0:00</span> / <span data-audio-total="">0:00</span></div></div><svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden=""><rect x="7" y="9" width="34" height="29" rx="3"></rect><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"></path></svg></div>
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="113" data-entry="8" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="114" data-entry="9" data-bait="1" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Porini dong maribu hali, paraloling ni sorangkin</p><p class="screen__line">Bois ni gogoh inggananni, mamuji Naibatanta in,</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="115" data-entry="9" data-bait="1" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ibaen malasni uhurhin, hinorhon ni pambaen-Ni in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="116" data-entry="9" data-bait="1" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="117" data-entry="9" data-bait="2" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ai ambit ondos ma sorangku, bai ujung ni dunia on,</p><p class="screen__line">sagala jolma arahonku, mamuji Naibata tongtong.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="118" data-entry="9" data-bait="2" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Talup do gok ni uhurhin, hubaen pasangap Tuhan in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="119" data-entry="9" data-bait="2" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="120" data-entry="9" data-bait="3" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ulang ma modom ho tonduyhu, sai puho ho, sai hehe ma.</p><p class="screen__line">Pongkut ma ho bani horjamu, sai puji Tuhan Naibata.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="121" data-entry="9" data-bait="3" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Sai baen ma gok ni pandeimin, laho mamuji Tuhan in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="122" data-entry="9" data-bait="3" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="123" data-entry="9" data-bait="4" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Tarima kasih ma uhurhu, Bamu o Naibata tongtong.</p><p class="screen__line">Ibahen dearni layak-Mu, binere-Mu hubangku on.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="124" data-entry="9" data-bait="4" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ai ipatudu Ham tongtong ganup na porlu bangku on.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="125" data-entry="9" data-bait="4" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="126" data-entry="9" data-bait="5" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Hupuji pakon Ham, o Jesus, ibaen parholong ateiMu.</p><p class="screen__line">Mardingat darohMu madurus, pakon ganupan layak-Mu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="127" data-entry="9" data-bait="5" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Mambahen haluahon on, hubai pardousa banggal on.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="128" data-entry="9" data-bait="5" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="129" data-entry="9" data-bait="6" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ham pe homa, Tonduy Napansing, sai jalo Ham ma dodingkon.</p><p class="screen__line">Margogoh anjaha matunggung do Ham, mangapoh uhurhon</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="130" data-entry="9" data-bait="6" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ia hubaen na dear in, halani gogoh-Mu do in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="131" data-entry="9" data-bait="6" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="132" data-entry="9" data-bait="7" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ai ise do mamasu-masu, au on o Naibata, lang Ham?</p><p class="screen__line">Pamatang rap pakon tonduyhu, sai iparmudu-mudu Ham</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="133" data-entry="9" data-bait="7" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Jaha lumbang uhur-Mu in mangidah pardousaonkin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="134" data-entry="9" data-bait="7" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="135" data-entry="9" data-bait="8" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Sai layakMu do pujionku sadokah na manggoluh au.</p><p class="screen__line">Sai Goran-Mu pasangaponku sadokah na marhosah au</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="136" data-entry="9" data-bait="8" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ronsi rotap ni hosahkin, sai pujionku Ham ijin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="137" data-entry="9" data-bait="8" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="138" data-entry="9" data-bait="9" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Sai jalo ma, ale Tuhanku, pamujingkon na hurang in.</p><p class="screen__line">Paima das au on hu surga, ianan na gok dear in,</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="139" data-entry="9" data-bait="9" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Marlaksa hali ma ijin, dodingkononku Tuhankin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="140" data-entry="9" data-bait="9" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="141" data-entry="10" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="142" data-entry="11" data-bait="1" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Jahowa sihol pujionku, ai Ham do Naibata sitompa au.</p><p class="screen__line">Sai suruh Tonduy-Mu hu bangku, mangajar au mamuji goran-Mu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="143" data-entry="11" data-bait="1" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Marhiteihitei Jesus AnakMu, ase dear dodingku hu Bamu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="144" data-entry="11" data-bait="1" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="145" data-entry="11" data-bait="2" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Bai Anak-Mu bobahon ahu ase Bamu iboban au homa.</p><p class="screen__line">Sorapkon Tonduy-Mu hubangku, manogu au bai dalan na torsa.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="146" data-entry="11" data-bait="2" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ase tongtong gok damei uhurhin, janah mesek mamuji Goran-Mu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="147" data-entry="11" data-bait="2" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="148" data-entry="11" data-bait="3" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Sai holong atei-Mu Jahowa, papandei au mamuji Goran-Mu.</p><p class="screen__line">Sai ulang asal puas hata, ningon botul mamuji hu Bamu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="149" data-entry="11" data-bait="3" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ham Bapa, Anak pakon Tonduy-Mu, doskon najongjong au i lobei-Mu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="150" data-entry="11" data-bait="3" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="151" data-entry="11" data-bait="4" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Tonggokku na lang tarpajojor, Tonduy Napansing patalarhon in</p><p class="screen__line">Au gabe anak-Mu goranon, Tonduy homa do mangkatahon in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="152" data-entry="11" data-bait="4" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ase ibagas Kristus Anak-Mu boi au mardilo Bapa hu Bamu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="153" data-entry="11" data-bait="4" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="154" data-entry="11" data-bait="5" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ai Tonduy-Mu do mangajarhon martonggo au domu bai rosuh-Mu</p><p class="screen__line">Sirsir do tong Ham manangihon tonggokku marhiteihon Anak-Mu</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="155" data-entry="11" data-bait="5" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ibagas Jesus jaloonku do, mardapot-dapot pasu-pasu-Mu.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="156" data-entry="11" data-bait="5" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="157" data-entry="11" data-bait="6" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Sonin ma au marolob-olob, marhamegahon malas uhurhin.</p><p class="screen__line">Ai ra do Ham mamparuhurhon, na husuhutkon hu Bamu ijin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="158" data-entry="11" data-bait="6" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Pasu-pasu-Mu sai sirnip do in, lobih humbani panagamankin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="159" data-entry="11" data-bait="6" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="160" data-entry="11" data-bait="7" data-split="1" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Ibagas Kristus au manean, ai pitah Ia hasiholankin.</p><p class="screen__line">Marhitei Jesus sai saud  ma Amen,  na hupindohon rapkon Tonduy in.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen" data-screen="161" data-entry="11" data-bait="7" data-split="2" data-split-total="2" data-bait-rest="" aria-hidden="true">
+      
+      
+      <div class="screen__lines">
+        <p class="screen__line">Hupuji Ham ronsi sadokahniin, ai Ham tumang do hamegahonkin.</p>
+      </div>
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="162" data-entry="11" data-bait="7" data-split="" data-split-total="" data-bait-rest="true" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="163" data-entry="12" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="164" data-entry="13" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    <section class="screen is-blank" data-screen="165" data-entry="14" data-bait="" data-split="" data-split-total="" data-bait-rest="" aria-hidden="true">
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+  <section class="screen projector-detour"><h1 class="screen__head"></h1><div class="screen__lines"></div></section></div>
+
+  
+</main>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="kbd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+    <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M8 12h.01M12 12h.01M16 12h.01M7 15h10" stroke-width="2.4"></path>
+  </symbol>
+  <symbol id="service-list-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+    <path d="M9 6h11M9 12h11M9 18h11"></path>
+    <path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="2.4"></path>
+  </symbol>
+  <symbol id="arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8h10m-4-4 4 4-4 4"></path>
+  </symbol>
+  <symbol id="arrow-left" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 8H3m4-4-4 4 4 4"></path>
+  </symbol>
+  <symbol id="arrow-up" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 13V3m-4 4 4-4 4 4"></path>
+  </symbol>
+  <symbol id="arrow-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3v10m-4-4 4 4 4-4"></path>
+  </symbol>
+  <symbol id="shift-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 2 14 8h-3v4H5V8H2zM4.5 14h7"></path>
+  </symbol>
+  <symbol id="backspace" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h7a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 13 13H6L2 8z"></path>
+    <path d="m8 6 4 4m0-4-4 4"></path>
+  </symbol>
+  <symbol id="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 3v8H3m0 0 3-3m-3 3 3 3"></path>
+  </symbol>
+</svg>
+  <div class="cue" id="corner-cue" aria-label="Current position and next entry">
+    <button type="button" class="cue-service" id="cue-service" aria-label="Service entries" aria-expanded="false" aria-controls="entry-list" title="Service entries"><svg aria-hidden="true"><use href="#service-list-icon"></use></svg></button><span class="cue-separator" aria-hidden="true">·</span>
+    <span id="cue-prefix"><span>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa ·</span></span><span class="cue-baits" id="cue-baits" aria-label="Choose a bait"><button type="button" class="cue-bait" data-bait-index="0" aria-label="Go to bait 1" aria-pressed="true">1</button><button type="button" class="cue-bait" data-bait-index="1" aria-label="Go to bait 2" aria-pressed="false">2</button><button type="button" class="cue-bait" data-bait-index="2" aria-label="Go to bait 3" aria-pressed="false">3</button></span><span class="cue-progress" id="cue-progress">1/4</span>
+    <button type="button" class="cue-next" id="cue-next" aria-label="Go to next entry: HAL 7">
+      <span class="cue-arrow" id="cue-arrow" aria-hidden="true"><svg><use href="#arrow-right"></use></svg></span><span id="cue-next-name">HAL 7</span>
+    </button>
+  </div>
+  <button type="button" class="entry-list-dismiss" id="entry-list-dismiss" aria-label="Close service entries" hidden=""></button>
+  <div class="entry-list" id="entry-list" aria-label="Service entries" hidden="">
+    <div class="entry-list__header">
+      <label class="entry-list__heading" for="entry-list-search">SERVICE ENTRIES</label>
+      <div class="projector-search-field">
+        <input id="entry-list-search" class="entry-list__search" type="search" placeholder="Search entries" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="entry-list-results" aria-activedescendant="entry-list-option-0">
+        <button type="button" class="projector-search-clear" id="entry-list-clear" aria-label="Clear service search" hidden=""><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg></button>
+      </div>
+    </div>
+    <div id="entry-list-results" class="entry-list__results" role="listbox" aria-label="Matching service entries"><button type="button" class="entry-list__item" id="entry-list-option-0" role="option" data-entry-index="0" aria-current="true" data-active="true" aria-selected="true"><span class="entry-list__number">1</span><span>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa<small class="entry-list__meta">Bait 1, 2, 3</small></span></button><button type="button" class="entry-list__item" id="entry-list-option-1" role="option" data-entry-index="1" data-active="false" aria-selected="false"><span class="entry-list__number">2</span><span>HAL 7<small class="entry-list__meta">Bait 1, 2, 3, 4, 5, 6, 7, 8, 9</small></span></button><button type="button" class="entry-list__item" id="entry-list-option-2" role="option" data-entry-index="2" data-active="false" aria-selected="false"><span class="entry-list__number">3</span><span>Kisah Para Rasul 1:1</span></button><button type="button" class="entry-list__item" id="entry-list-option-3" role="option" data-entry-index="3" data-active="false" aria-selected="false"><span class="entry-list__number">4</span><span>images.jpeg</span></button><button type="button" class="entry-list__item" id="entry-list-option-4" role="option" data-entry-index="4" data-active="false" aria-selected="false"><span class="entry-list__number">5</span><span>Receipt-2773-9204.png</span></button><button type="button" class="entry-list__item" id="entry-list-option-5" role="option" data-entry-index="5" data-active="false" aria-selected="false"><span class="entry-list__number">6</span><span>VOTUM, INTROITUS, DOA</span></button><button type="button" class="entry-list__item" id="entry-list-option-6" role="option" data-entry-index="6" data-active="false" aria-selected="false"><span class="entry-list__number">7</span><span>Section break</span></button><button type="button" class="entry-list__item" id="entry-list-option-7" role="option" data-entry-index="7" data-active="false" aria-selected="false"><span class="entry-list__number">8</span><span>Sujud &amp; Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3</span></button><button type="button" class="entry-list__item" id="entry-list-option-8" role="option" data-entry-index="8" data-active="false" aria-selected="false"><span class="entry-list__number">9</span><span>Section break</span></button><button type="button" class="entry-list__item" id="entry-list-option-9" role="option" data-entry-index="9" data-active="false" aria-selected="false"><span class="entry-list__number">10</span><span>HAL 7<small class="entry-list__meta">Bait 1, 2, 3, 4, 5, 6, 7, 8, 9</small></span></button><button type="button" class="entry-list__item" id="entry-list-option-10" role="option" data-entry-index="10" data-active="false" aria-selected="false"><span class="entry-list__number">11</span><span>Section break</span></button><button type="button" class="entry-list__item" id="entry-list-option-11" role="option" data-entry-index="11" data-active="false" aria-selected="false"><span class="entry-list__number">12</span><span>HAL 1<small class="entry-list__meta">Bait 1, 2, 3, 4, 5, 6, 7</small></span></button><button type="button" class="entry-list__item" id="entry-list-option-12" role="option" data-entry-index="12" data-active="false" aria-selected="false"><span class="entry-list__number">13</span><span>Section break</span></button><button type="button" class="entry-list__item" id="entry-list-option-13" role="option" data-entry-index="13" data-active="false" aria-selected="false"><span class="entry-list__number">14</span><span>Section break</span></button><button type="button" class="entry-list__item" id="entry-list-option-14" role="option" data-entry-index="14" data-active="false" aria-selected="false"><span class="entry-list__number">15</span><span>Section break</span></button></div>
+  </div>
+  <span class="cue-loading" role="status" aria-label="Loading"></span><button type="button" class="keys" aria-label="Shortcuts" aria-expanded="false" aria-controls="key-list"><svg aria-hidden="true"><use href="#kbd"></use></svg></button>
+  <div class="sheet" id="key-list">
+    <div class="stack">
+      <section class="group">
+        <h3>Service</h3>
+        <p class="row"><span class="fn">Next</span><span class="combo"><span class="chord"><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"></use></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Down Arrow"><svg aria-hidden="true"><use href="#arrow-down"></use></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous</span><span class="combo"><span class="chord"><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"></use></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Up Arrow"><svg aria-hidden="true"><use href="#arrow-up"></use></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First</span><span class="combo"><span class="chord"><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last</span><span class="combo"><span class="chord"><span class="k nav">End</span></span></span></p>
+        <p class="row"><span class="fn">Next Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"></use></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Previous Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"></use></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">First Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Song</h3>
+        <p class="row"><span class="fn">Next Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"></use></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"></use></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Passage</h3>
+        <p class="row"><span class="fn">Flip TB / SIM</span><span class="combo"><span class="chord"><span class="k">T</span></span></span></p>
+        <p class="row"><span class="fn">First Verse</span><span class="combo"><span class="chord"><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Verse</span><span class="combo"><span class="chord"><span class="k nav">End</span></span></span></p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="group">
+        <h3>Library passage</h3>
+        <p class="row"><span class="fn">Next Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"></use></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"></use></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"></use></svg></span></span><span class="k nav">End</span></span></span></p>
+        <p class="row"><span class="fn">Next Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"></use></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Previous Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"></use></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">First Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Library Detour</h3>
+        <p class="row"><span class="fn">Back to Service</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="group">
+        <h3>Display</h3>
+        <p class="row"><span class="fn">Show or Hide Words</span><span class="combo"><span class="chord"><span class="k sp glyph" title="Space" aria-label="Space"><span class="space-mark">␣</span></span></span></span></p>
+        <p class="row"><span class="fn">Audio/Video Play/Pause</span><span class="combo"><span class="chord"><span class="k sp glyph" title="Space" aria-label="Space"><span class="space-mark">␣</span></span></span></span></p>
+        <p class="row"><span class="fn">Show or Hide Corner</span><span class="combo"><span class="chord"><span class="k">C</span></span></span></p>
+        <p class="row"><span class="fn">Keyboard Shortcuts</span><span class="combo"><span class="chord"><span class="k">K</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Find</h3>
+        <p class="row"><span class="fn">Find in Service</span><span class="combo"><span class="chord"><span class="k">J</span></span></span></p>
+        <p class="row"><span class="fn">Passage or Song</span><span class="combo"><span class="chord"><span class="k">G</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>While Finding</h3>
+        <p class="row"><span class="fn">Previous Match</span><span class="combo"><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Up Arrow"><svg aria-hidden="true"><use href="#arrow-up"></use></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Next Match</span><span class="combo"><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Down Arrow"><svg aria-hidden="true"><use href="#arrow-down"></use></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Close When Empty</span><span class="combo"><span class="chord"><span class="k bk glyph" title="Backspace" aria-label="Backspace"><span class="key-symbol" aria-hidden="true"><svg><use href="#backspace"></use></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Open Match</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Enter" aria-label="Enter"><span class="key-symbol" aria-hidden="true"><svg><use href="#enter"></use></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Close Find</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Fullscreen</h3>
+        <p class="row"><span class="fn">Enter or Leave</span><span class="combo"><span class="chord"><span class="k">F</span></span></span></p>
+        <p class="row"><span class="fn">Hold to Leave</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+    </div>
+  </div>
+
+<button type="button" class="projector-find-dismiss" id="projectorFindDismiss" aria-label="Close passage or song search"></button>
+<section class="projector-find" id="projectorFind" aria-label="Projector find" data-state="loading">
+  <label for="projectorFindInput" id="projectorFindLabel">Go To · Passage or Song</label>
+  <div class="projector-search-field">
+    <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false" placeholder="Try NKB 2, Matius 2, or Haleluya" aria-controls="projectorFindResults" disabled="">
+    <button type="button" class="projector-search-clear" id="projectorFindClear" aria-label="Clear Go To search" hidden=""><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg></button>
+  </div>
+  <button type="button" id="projectorFindResults" class="projector-find__row is-loading" disabled="">
+    <span class="projector-find__suggestion">Loading search…</span>
+    <span class="projector-find__count">0 / 0</span>
+  <span class="projector-find__spinner" aria-hidden="true"></span></button>
+  <div class="projector-find__footer"><span>↑ ↓ cycle · Enter open</span><span>Esc close</span></div>
+</section>
+
+
+
+
+
+
+
+
+
+
+</body></html>

@@ -154,21 +154,3 @@ class PDFDisplayE2ETests(StaticLiveServerTestCase):
         expect(page.locator('[data-pdf-count]')).to_have_text('1 / 3')
         page.close()
 
-    def test_saved_projector_renders_pdf_while_django_is_offline(self):
-        page = self._page('/home/')
-        page.evaluate("""async () => {
-          const deadline = Date.now() + 25000;
-          while (Date.now() < deadline) {
-            const state = await GKPSOffline.status();
-            if (state.ready && !state.syncing) return;
-            await new Promise(resolve => setTimeout(resolve, 50));
-          }
-          throw new Error('Offline library was not ready');
-        }""")
-        page.context.set_offline(True)
-        page.goto(self.live_server_url + f'/projector?service={self.service.pk}')
-        page.keyboard.press('Space')
-        page.keyboard.press('Control+ArrowRight')
-        expect(page.locator('.screen.is-active .screen__pdf-page')).to_be_visible()
-        expect(page.locator('#cue-progress')).to_have_text('1/3')
-        page.close()

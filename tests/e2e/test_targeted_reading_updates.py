@@ -240,8 +240,6 @@ class TargetedReadingUpdatesE2ETests(StaticLiveServerTestCase):
         first_path = reverse('web-tatib-service', args=[self.other_service.pk])
         latest_path = reverse('web-tatib-service', args=[self.legacy_service.pk])
         page.evaluate('''firstPath => {
-          window.GKPSOfflineRender = null;
-          window.GKPSOffline = null;
           const realFetch = window.fetch.bind(window);
           window.__releaseOldRead = null;
           window.fetch = (input, init) => {
