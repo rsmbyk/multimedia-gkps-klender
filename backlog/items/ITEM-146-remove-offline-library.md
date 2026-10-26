@@ -14,7 +14,6 @@ issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/401
 closed_at: 2026-10-26
 closed_reason: merged into develop via #402
 bump: minor
-release_version: 1.21.0
 release_version:
 ---
 
