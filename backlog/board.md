@@ -30,12 +30,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-146](./items/ITEM-146-remove-offline-library.md) | Remove the offline library; the projector Go To fetches on selection | Stop keeping a local copy of the library; search from a page-memory index and fetch the chosen chapter or song behind a loading mode | feat | P1 | L | [136](../specs/136-remove-offline-library/spec.md) | feat/136-remove-offline-library | 2026-10-26 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-146](./items/ITEM-146-remove-offline-library.md) | Remove the offline library; the projector Go To fetches on selection | Stop keeping a local copy of the library; search from a page-memory index and fetch the chosen chapter or song behind a loading mode | feat | P1 | L | [136](../specs/136-remove-offline-library/spec.md) | [#402](https://github.com/rsmbyk/multimedia-gkps-klender/pull/402) | 2026-10-26 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

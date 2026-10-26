@@ -1,6 +1,6 @@
 ---
 id: ITEM-146
-status: in-progress
+status: in-review
 title: 'Remove the offline library; the projector Go To fetches on selection'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-26
 updated: 2026-10-26
 spec: specs/136-remove-offline-library/spec.md
 branch: feat/136-remove-offline-library
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/402
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/401
 closed_at:
 closed_reason:
