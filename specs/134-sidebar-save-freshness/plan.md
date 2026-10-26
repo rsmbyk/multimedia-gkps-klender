@@ -4,7 +4,7 @@
 **Branch**: `feat/134-sidebar-save-freshness`
 **Bump**: `patch`
 **Preview**: `specs/134-sidebar-save-freshness/preview/` — live Django reading shell with disposable data
-**Board**: ITEM-142 is Ready; anchor issue [#397](https://github.com/rsmbyk/multimedia-gkps-klender/issues/397)
+**Board**: ITEM-143 is Ready; anchor issue [#397](https://github.com/rsmbyk/multimedia-gkps-klender/issues/397)
 
 ## Technical Context
 
@@ -88,7 +88,7 @@ No `tasks.md` is created during Plan; SDD-14 reserves that artifact for Tasks af
 ```text
 static/web/reading.js                         existing shared reading-shell refresh path
 tests/e2e/test_sidebar_save_freshness.py      planned Playwright save-freshness scenarios
-backlog/items/ITEM-142-sidebar-save-freshness.md  Ready demand card anchored to issue #397
+backlog/items/ITEM-143-sidebar-save-freshness.md  Ready demand card anchored to issue #397
 ```
 
 ### Structure Decision

@@ -1,5 +1,5 @@
 ---
-id: ITEM-142
+id: ITEM-143
 status: in-review
 title: 'Keep reading views current after sidebar edits'
 type: fix
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-142: Keep reading views current after sidebar edits
+# ITEM-143: Keep reading views current after sidebar edits
 
 ## Summary
 

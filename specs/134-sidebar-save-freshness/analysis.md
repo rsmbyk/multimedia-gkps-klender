@@ -20,7 +20,7 @@
 | `checklists/checklist.md` | `1ffc4f5385f64d41fe6275bac2d7e9d43e46ca7dbb5e87b90dcc2a23f8132be7` |
 | `preview/README.md` | `5bf588a36429cfe573fe6f1d946d8cb198faa51b257bf996a09083e37b2f2d35` |
 | `backlog/board.md` | `ddff58940c81a9a534319653cfc2a1d80c63a78e363441846269f4788e57b576` |
-| `backlog/items/ITEM-142-sidebar-save-freshness.md` | `24a775ab35930badda927d072115d6a901af0709ad9fe248cfb9b1a87455204c` |
+| `backlog/items/ITEM-143-sidebar-save-freshness.md` | `24a775ab35930badda927d072115d6a901af0709ad9fe248cfb9b1a87455204c` |
 
 ## Metrics
 
