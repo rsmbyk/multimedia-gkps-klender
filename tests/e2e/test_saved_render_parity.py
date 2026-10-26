@@ -56,6 +56,11 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
         tatib.TataIbadahItem.objects.create(
             tatib=self.filled_service, item_type=0, title='Opening',
             text='Welcome', order_number=1)
+        # four body lines: the saved row must carry the same three lines and the same
+        # trailing ellipsis as the server row (spec 135)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.filled_service, kind=tatib.ServiceEntryKind.TEXT, order_number=2,
+            text='Salam sejahtera\nBagi kita semua\nYang hadir\nDan yang melayani')
 
     def test_saved_documents_use_route_specific_labels_and_markup(self):
         with sync_playwright() as playwright:
@@ -131,6 +136,27 @@ class SavedRenderParityTests(StaticLiveServerTestCase):
             # same labels, one glyph each, same square size.
             self.assertEqual(saved, server)
             browser.close()
+
+    def test_a_saved_service_row_matches_the_server_row(self):
+        url = f'/tatib/{self.filled_service.pk}/'
+        rows_js = """() => [...document.querySelectorAll('#chList .songrow__t')].map(el => ({
+          text: el.textContent, breaks: el.querySelectorAll('br').length }))"""
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(self.live_server_url + url)
+            server = page.evaluate(rows_js)
+            wait_for_offline_ready(page)
+            page.context.set_offline(True)
+            page.locator('.rail [data-panel="tatib"]').click()
+            page.locator(f'#panelBody a.book[href="{url}"]').click()
+            page.wait_for_selector('#chList .songrow__t', state='attached')
+            saved = page.evaluate(rows_js)
+            browser.close()
+        self.assertTrue(server, 'no contents rows on the server page')
+        self.assertEqual(saved, server)
+        self.assertTrue(any(row['text'].endswith('\u2026') for row in server), server)
+        self.assertTrue(any(row['breaks'] == 2 for row in server), server)
 
     def test_saved_song_pages_match_the_server_sort_control(self):
         with sync_playwright() as playwright:

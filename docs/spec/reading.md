@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-10-25
-**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`
+**last folded**: 2026-10-26
+**slices**: `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page shows
 in its header, title, stage and sidebars, and what the saved copy of a page must show before the online update
@@ -350,3 +350,49 @@ re-render that follows a rejected save.
 #### Scenario: a narrow window
 - WHEN the window is 390×844
 - THEN the frame is 352×760, its title band padded `16px 18px`, its fields inset 18px, and the page behind gains no scrollbar
+
+### R11 — A Tata Ibadah contents row is three lines, ellipsized
+
+A service-order row in the reading sidebar SHALL be capped at three visual lines of its own text, and a row that
+does not show all of its text SHALL end in `…`. No row's label SHALL be cut at 60 characters: the cap is the row's
+height, not a character count.
+
+An untitled Text entry or legacy `TataIbadahItem` row SHALL carry the first three lines of its body, the third
+ending `…` when the body holds more; a titled one SHALL carry its title alone. A song row SHALL carry its heading
+and its `Bait …` line, the heading occupying at most two lines and the `Bait …` line always drawn — when the
+heading cannot fit two lines it ends `…` and the `Bait …` line is still the third. A passage, media or section
+break row SHALL obey the same three-line cap over its label as rendered.
+
+A row of any kind SHALL wrap a run wider than the pane at the pane's edge instead of overflowing it, so no line —
+and no `…` — sits past the row's right edge. The panel filter SHALL keep matching the entry's whole text, however
+much of it the row shows. A page rendered from the saved library SHALL draw the same rows: the same lines, the same
+wrapping and the same trailing `…` as the server route it mirrors.
+
+#### Scenario: a row that hides text
+- WHEN a text body holds more than three lines
+- THEN the row shows the first three, the third ending `…`, and is three lines tall
+
+#### Scenario: a row that fits
+- WHEN a row's text fits in one, two or three lines
+- THEN it ends without `…` and is exactly as tall as its own lines
+
+#### Scenario: a 64-character title
+- WHEN a title of 61 to 64 characters fits in three lines
+- THEN all of it is shown, with no silent cut at 60
+
+#### Scenario: an unbroken run
+- WHEN a body or title is one unbroken string wider than the pane, such as a pasted link
+- THEN it wraps inside the row at the pane's edge, and no part of it sits past the right edge
+
+#### Scenario: a song row
+- WHEN a song entry has a `Bait …` line and a heading that needs more than two lines
+- THEN the heading is capped at two lines ending `…`, and `Bait …` is the third line
+- AND when the heading fits, it takes one or two lines above that same `Bait …` line
+
+#### Scenario: a song with no verse line
+- WHEN a song entry's target is deleted or no verses are stored
+- THEN its heading may use all three lines
+
+#### Scenario: the saved copy
+- WHEN a service page is opened from the saved library
+- THEN its rows carry the same lines, breaks and trailing `…` as the server page's

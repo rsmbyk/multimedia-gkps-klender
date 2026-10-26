@@ -195,16 +195,44 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             songs.Song.objects.create(book=self.book, number=2, title='Two')
             songs.Song.objects.create(book=self.book, number=None, title='Legacy')
 
-        if self._testMethodName == 'test_service_text_sidebar_shows_two_lines_and_centers_grip':
+        if self._testMethodName in ('test_a_text_sidebar_row_is_three_lines_and_keeps_its_grip_centered',
+                                    'test_no_row_label_overflows_the_panel'):
             self.preview_text_entry = tatib.ServiceEntry.objects.create(
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=2,
-                text='First line\nSecond line\nThird line')
+                text='First line\nSecond line\nThird line\nFourth line')
             self.titled_text_entry = tatib.ServiceEntry.objects.create(
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, default_screen_mode='single_screen',
                 order_number=3, title='Kept sidebar title', text='Body should not replace title')
             self.blank_text_entry = tatib.ServiceEntry.objects.create(
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=4,
                 text='Keep this\n\nSkip this')
+            # an unbroken run wider than the pane: a link a liturgist pasted as the body
+            self.link_text_entry = tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=5,
+                text='https://drive.google.com/drive/folders/18A0dI3cwJxzSGTxim3ENlj4GwrB2Yatd')
+            # a title with no break opportunity at all, sixteen characters past the old cap
+            self.unbroken_title_entry = tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=6,
+                title='PengakuanImanRasuliDanDoaSyafaatBagiJemaatDanPelayananGereja',
+                text='Short body')
+
+        if self._testMethodName == 'test_every_row_kind_stays_within_three_lines':
+            long_song = songs.Song.objects.create(
+                book=self.book, number=77,
+                title='Saudara, Mari Kita Menyanyikan Pujian bagi Tuhan yang Setia')  # 64 characters
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=2,
+                text='One\nTwo\nThree\nFour\nFive')
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=3,
+                title='Pengakuan Iman Rasuli dan Doa Syafaat bagi Jemaat dan Pelayanan')  # 60 characters
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.SONG, order_number=4,
+                song=long_song, verses=[1])
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, kind=tatib.ServiceEntryKind.SCRIPTURE, order_number=5,
+                book_translation=bible.BookTranslation.objects.filter(book=self.mat).first(),
+                chapter=5, verse_start=2)
 
         if self._testMethodName == 'test_the_panel_shows_its_empty_view_when_no_songbook_exists':
             songs.Book.objects.all().update(is_deleted=True)
@@ -1318,7 +1346,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 finally:
                     page.close()
 
-    def test_service_text_sidebar_shows_two_lines_and_centers_grip(self):
+    def test_a_text_sidebar_row_is_three_lines_and_keeps_its_grip_centered(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         page.locator('.rail [data-panel="tatib"]').click()
@@ -1327,9 +1355,14 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         row = page.locator(f'#chList .songrow[data-i="e{self.preview_text_entry.pk}"]')
         label = row.locator('.songrow__t')
         expect(row).to_be_visible()
-        self.assertEqual(label.locator('.songrow__line').all_inner_texts(),
-                         ['First line', 'Second line'])
-        self.assertGreater(row.bounding_box()['height'], 38)
+        self.assertTrue(label.inner_text().endswith('\u2026'), label.inner_text())
+        self.assertEqual(label.locator('br').count(), 2)      # three lines, two breaks
+        box = label.evaluate("""el => {
+          const box = el.getBoundingClientRect();
+          return {h: box.height, lh: parseFloat(getComputedStyle(el).lineHeight),
+                  clipped: el.scrollHeight > el.clientHeight + 1};
+        }""")
+        self.assertLessEqual(box['h'], 3 * box['lh'] + 1, box)
 
         grip = row.locator('xpath=..').locator('.toc__grip')
         row.hover()
@@ -1338,24 +1371,49 @@ class ReadingE2ETests(StaticLiveServerTestCase):
           const grip = row.parentElement.querySelector('.toc__grip');
           const rowBox = row.getBoundingClientRect();
           const gripBox = grip.getBoundingClientRect();
-          return {rowHeight: rowBox.height,
-                  delta: (gripBox.top + gripBox.height / 2) - (rowBox.top + rowBox.height / 2)};
+          return {delta: (gripBox.top + gripBox.height / 2) - (rowBox.top + rowBox.height / 2)};
         }""")
         self.assertLessEqual(abs(centers['delta']), 1, f'grip is not centered: {centers}')
 
         blank_row = page.locator(f'#chList .songrow[data-i="e{self.blank_text_entry.pk}"]')
-        blank_label = blank_row.locator('.songrow__t')
-        blank_lines = blank_label.locator('.songrow__line')
-        self.assertEqual(blank_lines.count(), 2)
-        self.assertEqual(blank_lines.nth(0).inner_text(), 'Keep this')
-        self.assertEqual(blank_lines.nth(1).get_attribute('class'),
-                         'songrow__line songrow__line--blank')
-        self.assertGreater(blank_row.evaluate("el => el.getBoundingClientRect().height"), 38)
+        blank_box = blank_row.locator('.songrow__t').evaluate(
+            "el => ({h: el.getBoundingClientRect().height, "
+            "lh: parseFloat(getComputedStyle(el).lineHeight)})")
+        self.assertGreater(blank_box['h'], 2.5 * blank_box['lh'], blank_box)   # the blank line counts
 
         titled_row = page.locator(f'#chList .songrow[data-i="e{self.titled_text_entry.pk}"]')
-        titled_label = titled_row.locator('.songrow__t')
-        expect(titled_label).to_have_text('Kept sidebar title')
-        self.assertFalse(titled_label.evaluate("el => el.classList.contains('songrow__t--lines')"))
+        expect(titled_row.locator('.songrow__t')).to_have_text('Kept sidebar title')
+
+    def test_every_row_kind_stays_within_three_lines(self):
+        for width in (1440, 390):
+            with self.subTest(width=width):
+                page = self._page(width=width)
+                page.goto(self.live_server_url + reverse('web-home'))
+                page.locator('.rail [data-panel="tatib"]').click()
+                page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
+                page.wait_for_selector('#chList .songrow__t', state='attached')
+                rows = page.evaluate("""() => [...document.querySelectorAll('#chList .songrow__t')].map(el => {
+                  const cs = getComputedStyle(el);
+                  return {text: el.textContent.slice(0, 40),
+                          lines: el.getBoundingClientRect().height / parseFloat(cs.lineHeight),
+                          overflow: el.scrollWidth - el.clientWidth};
+                })""")
+                self.assertTrue(rows, 'no contents rows rendered')
+                for row in rows:
+                    self.assertLessEqual(row['lines'], 3.05, row)
+
+    def test_no_row_label_overflows_the_panel(self):
+        for width in (1440, 390):
+            with self.subTest(width=width):
+                page = self._page(width=width)
+                page.goto(self.live_server_url + reverse('web-home'))
+                page.locator('.rail [data-panel="tatib"]').click()
+                page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
+                page.wait_for_selector('#chList .songrow__t', state='attached')
+                overflowing = page.evaluate("""() => [...document.querySelectorAll('#chList .songrow__t')]
+                  .filter(el => el.scrollWidth > el.clientWidth + 1)
+                  .map(el => el.textContent.slice(0, 40))""")
+                self.assertEqual(overflowing, [], overflowing)
 
     def test_sidebar_click_never_scrolls_the_list(self):
         page = self._page()

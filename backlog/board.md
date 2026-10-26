@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-143](./items/ITEM-143-tatib-sidebar-row-clamp.md) | A Tata Ibadah sidebar row is three lines, ellipsized | Cap a service-order row at three visual lines with an ellipsis, and drop the 60-character cut | feat | P2 | S | [135](../specs/135-tatib-sidebar-row-clamp/spec.md) | feat/135-tatib-sidebar-row-clamp | 2026-10-26 |
 
 ## In review
 
