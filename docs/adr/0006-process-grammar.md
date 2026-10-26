@@ -17,7 +17,7 @@ on 2026-10-25 so every card past `Speccing` carries one, backfilled by the agent
 
 ## Decision
 
-- This repository follows the **Vex process grammar at vintage 2026-10-25**, kept once in shared
+- This repository follows the **Vex process grammar at vintage 2026-10-26**, kept once in shared
   memory. The repository holds no second copy of the rules.
 - [`docs/PROCESS.md`](../PROCESS.md) is **generated** from the grammar's rule notes: every rule of a
   selected part, verbatim in ID order with its operative detail, plus the contracts between the

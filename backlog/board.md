@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-142](./items/ITEM-142-static-preview-tier.md) | Count a static page built from the real components as a preview | The 2026-10-26 grammar amendment: no duplicate server, `MOCKUP` retires; page regenerated at vintage 2026-10-26 | chore | P2 | S | — | `docs/process-static-preview` | 2026-10-26 |
 
 ## In review
 
