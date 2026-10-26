@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-142](./items/ITEM-142-sidebar-save-freshness.md) | Keep reading views current after sidebar edits | Saved Tata Ibadah, song, and songbook edits refresh visible reading rows, stages, titles, and search results in place | fix | P1 | M | [134](../specs/134-sidebar-save-freshness/spec.md) | `feat/134-sidebar-save-freshness` | 2026-10-26 |
 
 ## In review
 
