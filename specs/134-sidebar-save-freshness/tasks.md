@@ -50,8 +50,8 @@ No new dependency, schema, API, or test service is required; the slice uses the 
 - [X] T011 [US2] Run the focused Django/Playwright module with `python manage.py test tests.e2e.test_sidebar_save_freshness --noinput -v 2` and run the repository's required suite before the first Fold commit.
 - [X] T012 [US1] After Converge, fold the new `reading` requirement into `docs/spec/reading.md` as R11, add `fold.md`, and verify the resulting capability delta is idempotent.
 - [X] T013 [US1] Prepare the SDD closing report with verification split, Converge/Fold evidence, capability delta, branch and commit count, declared patch bump and changelog line, PR title/body, and that nothing is pushed; ask the owner before pushing.
-- [ ] T014 [US1] After the owner authorizes the first push, open the draft PR, use `Refs #397`, record its URL and update ITEM-143 to In review in the same PR.
-- [ ] T015 [US1] Before merge, append the user-visible fix to `CHANGELOG.md`, apply the declared patch bump to `VERSION`, and set ITEM-143 to Done before the merge.
+- [X] T014 [US1] After the owner authorizes the first push, open the draft PR, use `Refs #397`, record its URL and update ITEM-143 to In review in the same PR.
+- [X] T015 [US1] Before merge, append the user-visible fix to `CHANGELOG.md`, apply the declared patch bump to `VERSION`, and set ITEM-143 to Done before the merge.
 
 ## Phase 6 — Convergence
 

@@ -1,6 +1,6 @@
 ---
 id: ITEM-143
-status: in-review
+status: done
 title: 'Keep reading views current after sidebar edits'
 type: fix
 priority: P1
@@ -10,9 +10,9 @@ updated: 2026-10-26
 spec: specs/134-sidebar-save-freshness/spec.md
 branch: feat/134-sidebar-save-freshness
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/398
-issue: 397
-closed_at:
-closed_reason:
+issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/397
+closed_at: 2026-10-26
+closed_reason: merged into develop via #398
 bump: patch
 release_version:
 ---
