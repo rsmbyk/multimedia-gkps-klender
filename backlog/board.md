@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-150](./items/ITEM-150-projector-window-reopen.md) | A closed projector window cannot be reopened without stopping the projection | A service on air has no route back to its projector window: Stop projecting releases and Project restarts at screen 0 | fix | P1 | S | [141](../specs/141-projector-window-reopen/spec.md) | 2026-10-27 |
 
 ## In review
 

@@ -2681,6 +2681,19 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 @media (max-width: 600px) {
   .read[data-kind="tatib"] .read__project { max-width: 100%; }
 }
+/* The way back to a closed projector window (spec 141): a square icon button in the
+   group, drawn only while this page's service is the one on air, and never on a
+   phone — the toolbar has no room for it. The group wraps inside a narrow pane so
+   the third control cannot cross the pane's edge. */
+.read__project-btn.read__project-btn--icon,
+.read[data-kind="tatib"] .read__project-btn--icon { width: 34px; padding: 0; justify-content: center; }
+.read__project-btn[data-project-window] { display: none; }
+@media (min-width: 721px) {
+  .read__project[data-displaying="true"] .read__project-btn[data-project-window] {
+    display: inline-flex;
+  }
+  .read[data-kind="tatib"] .read__project { flex-wrap: wrap; max-width: 100%; }
+}
 .media-transfer-rail #mediaTransferRailIcon svg { width: 22px; height: 22px; display: block; }
 .media-transfers__mark svg { width: 21px; height: 21px; }
 .service-media__states svg { width: 20px; height: 20px; display: block; }

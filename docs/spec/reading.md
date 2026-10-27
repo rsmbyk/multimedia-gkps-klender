@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-27
-**slices**: `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `141-projector-window-reopen`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -485,7 +485,7 @@ drawer under that toolbar, its destinations shown with their names. The control 
 glyphs only: a menu glyph when nothing is open, a close glyph when anything is; it SHALL NEVER step
 back one level. Choosing a section SHALL open its list over the menu, which stays underneath. A
 Tata Ibadah service SHALL offer no contents drawer at this width: its rows open the service's page and
-close the stack. The Project control SHALL NOT be drawn.
+close the stack. Neither the Project control nor the projector-window control SHALL be drawn.
 
 A row's reorder handle SHALL show on the same terms, and dragging it SHALL own the gesture rather
 than becoming the list's scroll.
@@ -525,3 +525,35 @@ beside the always-visible control. Every icon in the toolbar SHALL be drawn at o
 #### Scenario: the desktop
 - WHEN the window is 1440px wide
 - THEN the columns push the stage exactly as they did before this requirement
+
+
+### R15 — A service on air offers the way back to its projector window
+
+While this page's Tata Ibadah is the browser's live service and the display is on, the reading page's
+project group SHALL draw a second control immediately before Stop projecting: an icon-only button
+**34 × 34 px** whose accessible name and tooltip read `Open projector window`, drawn on the desktop
+widths the Project control is drawn on and never at the phone width (R14). It SHALL NOT be drawn in
+any other state — off air, hidden, released, or another service live.
+
+Pressing it SHALL open `/projector` in the browser's `gkps-projector` window at the screen that is on
+air and SHALL NOT write the display state; when that window is already open it SHALL be brought
+forward without loading the projector page again. Stop projecting SHALL keep releasing, and closing
+the projector window SHALL keep leaving the state untouched. When the pane is narrower than the
+group, the group SHALL wrap inside the pane rather than cross its right edge — the live group with
+Media files measures 280.4 px in the 240 px pane of a 1280 window, and 181.7 px without it.
+
+#### Scenario: reopening a closed window
+- WHEN a service is on air at screen 4 and its projector window has been closed
+- THEN the control reopens the window on `/projector` showing screen 4, and the state is unchanged
+
+#### Scenario: an open window
+- WHEN the projector window is already open
+- THEN the control brings it forward without loading the page again
+
+#### Scenario: nothing on air
+- WHEN the display is released, hidden, or naming another service
+- THEN the control is not drawn and Project is the only projection control
+
+#### Scenario: a narrow desktop
+- WHEN the window is 1280px wide and the service has media
+- THEN the group wraps inside the 240px pane, no part of it crosses the pane's edge, and the header is 111px tall
