@@ -15,6 +15,13 @@ green, and every rewrite is a finding about either the spec's wording or the cod
   block appended to the file the deploy already ships.
 - **S4 Backup / recovery** — n/a: nothing stored.
 
+## Baseline (T001)
+
+`tests.e2e.test_navigation_freshness` + `tests.e2e.test_song_label_typography`: **4 tests, OK**, before
+any edit. `tests.e2e.test_reading` was **not** baselined before the edits — a gap: it is the module
+this slice changes most, and the only known-red row in it (`test_the_panel_shows_its_empty_view_when_no_songbook_exists`)
+was carried over from the 137 session's reading of `develop` rather than re-proved here.
+
 ## Findings
 
 | # | Class | Finding | Disposition |
