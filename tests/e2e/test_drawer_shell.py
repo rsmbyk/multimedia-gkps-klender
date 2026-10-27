@@ -423,6 +423,28 @@ class DrawerShellE2ETests(StaticLiveServerTestCase):
             "() => getComputedStyle(document.querySelector('#panelBody .row-edit')).opacity")
         self.assertEqual(opacity, '1', 'the edit control is still hover-only under a touch pointer')
 
+    def test_a_long_press_on_the_rail_selects_nothing(self):
+        self.context.close()
+        self.context = self.browser.new_context(viewport={'width': 1024, 'height': 768},
+                                                has_touch=True)
+        self.page = self.context.new_page()
+        self.page.set_default_timeout(5000)
+        self.open('web-tatib-service', self.service.pk)
+        self.at(1024)
+        box = self.box('.rail__menu .rail__btn[data-panel="tatib"]')
+        self.page.mouse.move(box['left'] + box['width'] // 2, box['top'] + box['height'] // 2)
+        self.page.mouse.down()
+        self.page.wait_for_timeout(700)          # the long-press window
+        metrics = self.page.evaluate("""() => ({
+          ranges: window.getSelection().rangeCount,
+          text: String(window.getSelection()).trim(),
+          userSelect: getComputedStyle(document.querySelector('.rail')).userSelect,
+        })""")
+        self.page.mouse.up()
+        self.assertEqual(metrics['ranges'], 0, 'the long press painted a selection')
+        self.assertEqual(metrics['text'], '')
+        self.assertEqual(metrics['userSelect'], 'none')
+
     def test_a_phone_row_is_two_lines(self):
         self.open('web-tatib-service', self.service.pk)
         self.at(425)
