@@ -18,9 +18,16 @@ green, and every rewrite is a finding about either the spec's wording or the cod
 ## Baseline (T001)
 
 `tests.e2e.test_navigation_freshness` + `tests.e2e.test_song_label_typography`: **4 tests, OK**, before
-any edit. `tests.e2e.test_reading` was **not** baselined before the edits — a gap: it is the module
-this slice changes most, and the only known-red row in it (`test_the_panel_shows_its_empty_view_when_no_songbook_exists`)
-was carried over from the 137 session's reading of `develop` rather than re-proved here.
+any edit. `tests.e2e.test_reading` was **not** baselined before the edits — a gap: it is the module this slice
+changes most.
+
+Two full runs of the neighbourhood (`test_reading` + `test_navigation_freshness` +
+`test_song_label_typography`, 90 tests) ended **1 red**: `test_the_panel_shows_its_empty_view_when_no_songbook_exists`,
+proved pre-existing by running it in the primary checkout on untouched `develop` — same failure,
+`'No songbooks yet.…' != 'No matching songbooks.'`. The first run's second red,
+`test_song_label_typography::test_typography_wrapping_and_theme_states`, is flaky: it measured a
+contrast of 4.44 against the 4.5 threshold once, and passes alone and in the repeat of the same
+command. No colour was touched by this slice.
 
 ## Findings
 
