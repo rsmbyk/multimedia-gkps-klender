@@ -2815,9 +2815,21 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
   }
   :root[data-rail="open"] .rail { left: 0; box-shadow: var(--shadow); }
   .rail__logo { display: none; }
-  .rail__menu { padding: 8px; }
+  /* the strip's centred icon column becomes a list of rows: the base button is
+     a 44px grid box with its glyph centred, so it has to become a flex row */
+  .rail { align-items: stretch; padding: 0; }
+  .rail__menu {
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 2px;
+    margin: 0;
+    padding: 10px 12px;
+    overflow-y: auto;
+  }
   .rail__menu li { width: 100%; }
   .rail__menu .rail__btn {
+    display: flex;
+    align-items: center;
     justify-content: flex-start;
     gap: 14px;
     width: 100%;
@@ -2825,7 +2837,14 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
     padding: 0 14px;
     border-radius: 10px;
   }
-  .rail__name { display: inline; font-size: 15px; font-weight: 600; }
+  .rail__btn svg { flex: none; }
+  .rail__name {
+    display: block;
+    flex: 1;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 600;
+  }
   .rail__btn[aria-current] .rail__name { color: currentColor; }
 
   /* the foot moves into the toolbar's right end without leaving the rail */
