@@ -202,7 +202,7 @@ class DrawerShellE2ETests(StaticLiveServerTestCase):
         self.at(1024)
         self.close_stack()
         self.open_rail_section()
-        self.assertTrue(self.visible('#panel'))
+        self.assertEqual(self.state()['nav'], 'open')
         # switching section is a navigation; the new page must not inherit the stack
         self.page.click('.rail__menu .rail__btn[data-panel="kidung"]')
         expect(self.page.locator('html')).to_have_attribute('data-section', 'kidung')
@@ -211,6 +211,31 @@ class DrawerShellE2ETests(StaticLiveServerTestCase):
         # a section switch keeps the stage and the URL; only the lists move
         self.assertEqual(state['section'], 'kidung')
         self.assertEqual((state['nav'], state['ch']), ('open', 'closed'))
+
+    def test_a_lower_drawer_is_not_drawn_under_an_open_child(self):
+        self.open('web-tatib-service', self.service.pk)
+        self.at(1024)
+        self.close_stack()
+        self.open_rail_section()
+        self.page.wait_for_timeout(320)
+        state = self.state()
+        self.assertEqual((state['nav'], state['ch']), ('open', 'open'))
+        # both levels describe the stack, but only the top one is drawn: a lower
+        # drawer exposed while the top one travels is what this rule prevents
+        self.assertFalse(self.visible('#panel'), 'the parent is drawn under its child')
+        self.assertTrue(self.visible('#chapters'))
+
+    def test_the_stack_leaves_in_one_step(self):
+        self.open('web-tatib-service', self.service.pk)
+        self.at(1024)
+        self.close_stack()
+        self.open_rail_section()
+        self.page.wait_for_timeout(320)
+        self.page.keyboard.press('Escape')
+        self.page.wait_for_timeout(120)      # one frame's worth: not the whole wipe
+        state = self.state()
+        self.assertEqual((state['nav'], state['ch']), ('closed', 'closed'),
+                         'the levels left one after the other')
 
     # -- US3: the backdrop closes, the rail restores ---------------------
 

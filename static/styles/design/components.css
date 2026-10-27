@@ -2748,6 +2748,10 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
   /* the second level covers its parent exactly: same left, same width, one
      layer up — a parent edge showing would read as a third column */
   :root[data-ch="open"] .chapters { left: var(--rail-w); width: var(--panel-w); }
+  /* A level under an open child is not drawn at all: the stack reads as one
+     sheet, so a lower drawer is never exposed while the top one travels in or
+     out from under the rail. */
+  :root[data-ch="open"] .panel { visibility: hidden; }
 
   /* the dimmed page behind the stack, and the page's own scroll held still */
   :root[data-drawer-open] .drawer-backdrop {

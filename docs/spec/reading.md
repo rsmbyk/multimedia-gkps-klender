@@ -474,7 +474,9 @@ width unchanged, and the drawer SHALL be painted over the page with the rail abo
 sliding out from under the rail. Only one section's stack SHALL be open at a time; the second level
 SHALL cover its parent exactly — same left edge, same width — rather than offset beside it. A click on
 the dimmed page behind the stack, and the Escape key, SHALL close the whole stack; the rail SHALL
-reopen the level that was last open for its section. Above 1272px the columns SHALL push as they do
+reopen the level that was last open for its section. While a level travels, no level below it SHALL
+be drawn, and a stack opening or closing SHALL move all its levels at once rather than one after
+another. Above 1272px the columns SHALL push as they do
 today.
 
 Below 720px the rail's strip SHALL be replaced by a top toolbar — the drawer control at its left end
@@ -492,6 +494,10 @@ beside the always-visible control. Every icon in the toolbar SHALL be drawn at o
 #### Scenario: a drawer over a 768px window
 - WHEN a sidebar is opened at 1024px or 768px
 - THEN the stage keeps the width it had, the drawer floats over it, and the second level covers the first exactly
+
+#### Scenario: a level travels alone
+- WHEN the second level opens over its parent, or the stack closes
+- THEN no level below the travelling one is drawn, and every open level moves in the same frame
 
 #### Scenario: the stack closes
 - WHEN the dimmed page or Escape is used with a two-level stack open

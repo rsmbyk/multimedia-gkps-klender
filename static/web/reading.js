@@ -1192,6 +1192,14 @@
   function closeAllPanels() {
     if (railCloseListener) return;      /* ignore duplicate clicks during the wipe */
     if (root.dataset.ch !== 'open') { closePanel(); return; }
+    /* At the overlay width the levels are one sheet over the page: they leave
+       together, so the lower one is never seen sliding out after the top one
+       (spec 138). Above it the columns still wipe in sequence. */
+    if (mqOverlay.matches) {
+      closeChapters();
+      closePanel();
+      return;
+    }
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       closeChapters();
       closePanel();

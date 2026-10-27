@@ -167,6 +167,7 @@ and the same content are where they were.
 | FR-020 | At the phone width a Tata Ibadah row in the section list SHALL open the service's page and close the drawers, since the contents level is not offered (FR-018); above the phone width the same row keeps opening the contents level. | `new: reading` |
 | FR-021 | A sidebar row's edit control SHALL be visible without a pointer hover where the pointer cannot hover (a touch screen) and at the phone width — the exemption the entry controls and the add tiles already carry. | `new: reading` |
 | FR-022 | Every icon in the phone toolbar SHALL be drawn at one size — the rail's own 24px — so the control, the foot's controls and the theme glyph read as one set. | `new: reading` |
+| FR-024 | While any level of the stack travels, no level below it SHALL be drawn, and opening or closing the stack SHALL move every open level at once — never one level after another. | `new: reading` |
 | FR-023 | At the phone width a sidebar row SHALL stack what it carries: the name (with its `Today` badge) on one line and its date or short name on the next, so an always-visible edit control never squeezes either, and no text SHALL run under that control. | `new: reading` |
 
 ### Key Entities
@@ -266,6 +267,9 @@ requirements above.
   project's 24px theme glyph — a real 2px mismatch the owner spotted, now both 24px.
 - **A phone's row stacks its name and its date**, with the edit control always on (FR-023): the date
   was being clipped to `25 Okt 2…` once the pencil held the right-hand column.
+- **The stack travels as one sheet** (FR-024). A level under an open child is not drawn at all, and a
+  close moves both levels in the same frame — the sequential wipe (child, then parent) is the
+  desktop's choreography and read as two sheets at the overlay width.
 - **The remaining four settled at gate 1**: the overlay starts at **≤1272px** (FR-001), the phone
   shell at **≤720px** (FR-007), **Escape closes the whole stack** (US3.4), **the page behind a drawer
   does not scroll** (US5.2), and **the toolbar is fixed** (Assumptions). Each was carried by the
