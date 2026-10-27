@@ -1,6 +1,6 @@
 ---
 id: ITEM-147
-status: in-review
+status: done
 title: 'A long title runs past the reading pane instead of wrapping'
 type: fix
 priority: P1
@@ -11,7 +11,7 @@ spec: specs/137-reading-text-wrap/spec.md
 branch: feat/137-reading-text-wrap
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/404
 issue:
-closed_at:
+closed_at: 2026-10-27
 closed_reason:
 bump: patch
 release_version:
