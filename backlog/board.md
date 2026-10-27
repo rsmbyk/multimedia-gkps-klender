@@ -26,11 +26,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
-## In progress
-
-| ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
@@ -61,6 +56,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-148](./items/ITEM-148-drawer-shell.md) | On a small screen the sidebars are a drawer stack; a phone gets a toolbar | Below 1272px the columns stop pushing and become drawers over the page — one stack, the child covering the parent, a backdrop that closes them, the rail restoring the last level; a phone swaps the icon strip for a toolbar and a labelled menu drawer | feat | P1 | L | [138](../specs/138-sidebar-overlay-stack/spec.md) | develop via [#405](https://github.com/rsmbyk/multimedia-gkps-klender/pull/405) | 2026-10-27 |
 | [ITEM-147](./items/ITEM-147-reading-text-wrap.md) | A long title runs past the reading pane instead of wrapping | An unbroken run in a page title, Bible heading, verse line, body paragraph or search row is painted out of its box — 1,033px past the viewport on `/tatib/149/` — and the page scrolls sideways | fix | P1 | S | [137](../specs/137-reading-text-wrap/spec.md) | develop via [#404](https://github.com/rsmbyk/multimedia-gkps-klender/pull/404) | 2026-10-27 |
 | [ITEM-146](./items/ITEM-146-remove-offline-library.md) | Remove the offline library; the projector Go To fetches on selection | Stop keeping a local copy of the library; search from a page-memory index and fetch the chosen chapter or song behind a loading mode | feat | P1 | L | [136](../specs/136-remove-offline-library/spec.md) | develop via [#402](https://github.com/rsmbyk/multimedia-gkps-klender/pull/402) | 2026-10-26 |
 | [ITEM-145](./items/ITEM-145-tatib-sidebar-row-clamp.md) | A Tata Ibadah sidebar row is three lines, ellipsized | Cap a service-order row at three visual lines with an ellipsis, and drop the 60-character cut | feat | P2 | S | [135](../specs/135-tatib-sidebar-row-clamp/spec.md) | develop via [#400](https://github.com/rsmbyk/multimedia-gkps-klender/pull/400) | 2026-10-26 |

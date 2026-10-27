@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-27
-**slices**: `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -465,3 +465,63 @@ the media library's filenames stay one line ending `…`, and a contents row kee
 #### Scenario: a surface that truncates
 - WHEN a sidebar service row or a media filename is longer than its row
 - THEN it stays one line ending `…`, and a contents row keeps its three-line clamp
+
+
+### R14 — Below 1272px the sidebars are drawers over the page; below 720px a toolbar carries them
+
+Below 1272px the sidebars SHALL NOT take width from the stage: opening one SHALL leave the stage's
+width unchanged, and the drawer SHALL be painted over the page with the rail above it, so it reads as
+sliding out from under the rail. Only one section's stack SHALL be open at a time; the second level
+SHALL cover its parent exactly — same left edge, same width — rather than offset beside it. A click on
+the dimmed page behind the stack, and the Escape key, SHALL close the whole stack; the rail SHALL
+reopen the level that was last open for its section. While a level travels, no level below it SHALL
+be drawn, and a stack opening or closing SHALL move all its levels at once rather than one after
+another. Above 1272px the columns SHALL push as they do
+today.
+
+Below 720px the rail's strip SHALL be replaced by a top toolbar — the drawer control at its left end
+beside the logo, the light/dark control at its right — and the rail SHALL become a full-width menu
+drawer under that toolbar, its destinations shown with their names. The control SHALL carry two
+glyphs only: a menu glyph when nothing is open, a close glyph when anything is; it SHALL NEVER step
+back one level. Choosing a section SHALL open its list over the menu, which stays underneath. A
+Tata Ibadah service SHALL offer no contents drawer at this width: its rows open the service's page and
+close the stack. The Project control SHALL NOT be drawn.
+
+A row's reorder handle SHALL show on the same terms, and dragging it SHALL own the gesture rather
+than becoming the list's scroll.
+
+A row's edit control SHALL show without a pointer hover wherever the pointer cannot hover, and at the
+phone width; and at that width a row SHALL stack its name over its date rather than clip the date
+beside the always-visible control. Every icon in the toolbar SHALL be drawn at one size.
+
+#### Scenario: a drawer over a 768px window
+- WHEN a sidebar is opened at 1024px or 768px
+- THEN the stage keeps the width it had, the drawer floats over it, and the second level covers the first exactly
+
+#### Scenario: a level travels alone
+- WHEN the second level opens over its parent, or the stack closes
+- THEN no level below the travelling one is drawn, and every open level moves in the same frame
+
+#### Scenario: the stack closes
+- WHEN the dimmed page or Escape is used with a two-level stack open
+- THEN every level closes and the page is whole again
+
+#### Scenario: the rail restores
+- WHEN the rail is used after a two-level stack closed
+- THEN that section's first and second levels both reopen
+
+#### Scenario: a phone's menu
+- WHEN a 425px window opens the control
+- THEN the rail is a full-width drawer of named destinations, and choosing one slides its list over the still-open menu
+
+#### Scenario: a service on a phone
+- WHEN a Tata Ibadah row is tapped at 425px
+- THEN the service's page opens, the drawers close, and no contents drawer is offered
+
+#### Scenario: a row on a phone
+- WHEN a sidebar row is shown at the phone width, or under a touch pointer
+- THEN its edit control is visible without hover, its date sits under its name, and neither runs under the control
+
+#### Scenario: the desktop
+- WHEN the window is 1440px wide
+- THEN the columns push the stage exactly as they did before this requirement

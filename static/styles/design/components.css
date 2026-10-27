@@ -2690,3 +2690,239 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 .media-library__cloud-button svg, .media-library__cloud-available svg { width: 21px; height: 21px; display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .service-media__states [data-local-state].is-missing { color: var(--danger); }
 .service-media__states [data-local-state].is-unavailable, .service-media__states [data-online-state].is-offline { color: var(--head-ink); }
+
+/* ============================================================
+   The drawer shell (spec 138)
+
+   Below 1272px there is no room to push: the two lists stop
+   taking width from the stage and become drawers resting behind
+   the rail, sliding out from under it. Below 720px the rail's
+   strip becomes the menu drawer and a toolbar carries the
+   control, the logo and the theme.
+   ============================================================ */
+
+/* the phone's toolbar: markup everywhere, drawn below 720px only */
+.topbar { display: none; }
+.rail__name { display: none; }
+
+/* A long press on a rail control must not paint a selection across the drawer
+   (spec 138): the strip's glyphs and the toolbar carry no text worth selecting,
+   and the highlight lands on the drawer behind them. */
+.rail, .topbar, .drawer-backdrop {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 1272px) {
+  /* the columns stop reserving width, so the stage is never pushed — the
+     tokens are zeroed on every state that could set one */
+  :root,
+  :root[data-nav],
+  :root[data-ch="open"],
+  :root[data-ch="open"][data-ch-mode="song"],
+  :root[data-section] {
+    --books-w: 0px; --ch-w-shown: 0px; --reserve-ch: 0px;
+  }
+  /* the rail stays in flow at this width, so the page still starts after it —
+     zeroing this would slide the reading column under the rail */
+  :root .stage { margin-left: var(--rail-w); transition: none; }
+
+  /* the rail paints above the drawers: a drawer at rest is behind it, and it
+     emerges from the rail's edge rather than from the window's */
+  .rail { z-index: 50; }
+
+  :root .panel,
+  :root .chapters {
+    left: var(--rail-w);
+    width: var(--panel-w);
+    max-width: none;
+    clip-path: none;
+    visibility: hidden;
+    transform: translateX(calc(-100% - var(--rail-w) - 1px));
+    box-shadow: none;
+    transition: transform var(--ease), box-shadow var(--ease), visibility 0s linear 200ms;
+  }
+  :root .panel { z-index: 40; }
+  :root .chapters { z-index: 41; }
+  :root[data-nav="open"] .panel,
+  :root[data-nav="mini"] .panel,
+  :root[data-ch="open"] .chapters {
+    clip-path: none;
+    visibility: visible;
+    transform: none;
+    box-shadow: var(--shadow);
+    transition: transform var(--ease), box-shadow var(--ease), visibility 0s;
+  }
+  /* the second level covers its parent exactly: same left, same width, one
+     layer up — a parent edge showing would read as a third column */
+  :root[data-ch="open"] .chapters { left: var(--rail-w); width: var(--panel-w); }
+  /* A level under an open child is not drawn at all: the stack reads as one
+     sheet, so a lower drawer is never exposed while the top one travels in or
+     out from under the rail. */
+  :root[data-ch="open"] .panel { visibility: hidden; }
+
+  /* the dimmed page behind the stack, and the page's own scroll held still */
+  :root[data-drawer-open] .drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(11, 13, 17, .34);
+  }
+  /* the page scrolls at the document, so that is what is held still */
+  :root[data-drawer-open] { overflow: hidden; }
+
+  .drawer-backdrop { display: none; }
+}
+
+@media (max-width: 720px) {
+  :root { --topbar-h: 58px; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    padding: 0 8px;
+    /* under the rail's stacking context (42): the rail's foot is positioned
+       into this bar and must paint above it. Neither covers the other — the
+       rail starts below the bar — and the drawers (43/44) start below it too. */
+    z-index: 41;
+    background: var(--rail-bg);
+    border-bottom: 1px solid var(--divider);
+  }
+  .topbar__control {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px; height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .topbar__control svg { width: 24px; height: 24px; }
+  .topbar__control[data-glyph="menu"] .topbar__icon--close,
+  .topbar__control[data-glyph="close"] .topbar__icon--menu { display: none; }
+  .topbar__logo {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px; height: 44px;
+    border-radius: 10px;
+  }
+  .topbar__logo img { display: block; border-radius: 50%; }
+
+  /* the rail is the menu drawer: full width, under the toolbar, off the left
+     edge when closed — by `left`, so its fixed foot stays anchored to the
+     viewport rather than to a transformed box */
+  .rail {
+    top: var(--topbar-h);
+    left: calc(-100vw - 2px);
+    width: 100vw;
+    z-index: 42;
+    transition: left var(--ease), box-shadow var(--ease);
+  }
+  :root[data-rail="open"] .rail { left: 0; box-shadow: var(--shadow); }
+  .rail__logo { display: none; }
+  /* the strip's centred icon column becomes a list of rows: the base button is
+     a 44px grid box with its glyph centred, so it has to become a flex row */
+  .rail { align-items: stretch; padding: 0; }
+  .rail__menu {
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 2px;
+    margin: 0;
+    padding: 10px 12px;
+    overflow-y: auto;
+  }
+  .rail__menu li { width: 100%; }
+  .rail__menu .rail__btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border-radius: 10px;
+  }
+  .rail__btn svg { flex: none; }
+  .rail__name {
+    display: block;
+    flex: 1;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .rail__btn[aria-current] .rail__name { color: currentColor; }
+
+  /* the foot moves into the toolbar's right end without leaving the rail */
+  .rail__foot {
+    position: fixed;
+    top: 0; right: 8px;
+    height: var(--topbar-h);
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    z-index: 46;
+    background: none;
+  }
+
+  /* drawers are the full window, under the toolbar, over the menu */
+  :root .panel { top: var(--topbar-h); left: 0; width: 100vw; z-index: 43; }
+  :root .chapters {
+    top: var(--topbar-h); left: 0; width: 100vw; max-width: none; z-index: 44;
+  }
+  :root[data-nav="open"] .panel,
+  :root[data-nav="mini"] .panel,
+  :root[data-ch="open"] .chapters { left: 0; width: 100vw; max-width: none; }
+  /* the song list's own rules pin it at the rail's edge with a 26rem cap above
+     this width; at four selectors deep they outrank the line above, so the
+     drawer's own geometry is stated at the same depth */
+  :root[data-ch="open"][data-ch-mode="song"] .chapters,
+  :root[data-ch="open"][data-ch-mode="chapter"] .chapters {
+    left: 0;
+    width: 100vw;
+    max-width: none;
+  }
+
+  /* the rail is a drawer here, so the page takes the whole window */
+  :root .stage { margin-left: 0; padding-top: calc(var(--topbar-h) + 18px); }
+
+  /* the Project control is the desktop's: the toolbar has no room for it */
+  [data-project-open] { display: none; }
+
+  /* a row keeps its name on one line and its date under it, clear of the
+     always-visible edit control */
+  .panel__body li .book {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    row-gap: 1px;
+    padding-right: 42px;
+  }
+  .panel__body li .book__n { grid-column: 1; }
+  .panel__body li .book__today { grid-column: 2; }
+  .panel__body li .book__s { grid-column: 1 / -1; }
+  .row-edit { opacity: 1; pointer-events: auto; }
+  /* the phone's drawers are touch-first: the order's handle is always drawn and
+     owns the gesture */
+  .toc__grip { opacity: 1; touch-action: none; }
+}
+
+/* A touch screen has no hover to give: the row's pencil is the same control the
+   entry pane and the add tiles already exempt from it. */
+@media (hover: none) and (pointer: coarse) {
+  .row-edit { opacity: 1; pointer-events: auto; }
+  /* The order's handle has no hover to reveal it on a touch screen, and the
+     gesture must belong to the handle rather than to the list's scroll — or a
+     drag dies as a scroll the moment the finger moves (spec 138). */
+  .toc__grip { opacity: 1; touch-action: none; }
+}
