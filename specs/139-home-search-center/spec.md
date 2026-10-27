@@ -3,7 +3,9 @@
 **Slice**: `specs/139-home-search-center`
 **Branch**: `feat/139-home-search-center`
 **Created**: 2026-10-27
-**Status**: Draft
+**Status**: Accepted (owner, gate 1, 2026-10-27 — accepted as specced: the field's own box on the
+window's middle, the logo above it; the alternative, keeping the logo-and-field block centred, was
+offered and declined)
 **Input**: "center the search bar vertically" — with a 1920×1200 screenshot of the landing page, the
 field visibly below the window's middle.
 
@@ -68,7 +70,7 @@ reading page is unchanged.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | On the landing page the search field's border box SHALL be vertically centred on the window's middle, within 1px, at every width from 320px to 1920px and at every height that fits the logo and the field. | `new: reading` |
+| FR-001 | On the landing page the search field's border box SHALL be vertically centred on the window's middle, within 1px, at each of the eleven widths and heights SC-001 names — every width from 320px to 1920px that the two layout switches (1272px, 720px) divide, at a height that fits the logo and the field. | `new: reading` |
 | FR-002 | The logo SHALL sit above the field, fully inside the window, keeping the 26px gap it has today between its bottom edge and the field's top edge. | `new: reading` |
 | FR-003 | The landing page SHALL stay exactly one window tall: the document's scroll height SHALL equal the window's height, adding no vertical or horizontal scrollbar. | `new: reading` |
 | FR-004 | The phone layout (≤720px, where the stage pads for the toolbar) SHALL centre the field on the same terms as the desktop layout — the section's height SHALL be derived from the stage's real top and bottom padding, not from `--pad-top` alone. | `new: reading` |
