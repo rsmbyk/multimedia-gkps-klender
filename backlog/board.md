@@ -20,7 +20,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-151](./items/ITEM-151-stage-link-affordance.md) | The stage's entry links read as text until hovered | Every song and passage title is a green (or blue) line at rest; it becomes heading ink, underlined only on hover or keyboard focus | chore | P2 | S | [140](../specs/140-stage-link-affordance/spec.md) | 2026-10-27 |
 
 ## Ready
 
@@ -52,6 +51,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
 | [ITEM-128](./items/ITEM-128-github-issues-anchor.md) | Anchor board cards on GitHub Issues | Declare the tracker mirror, add the `board:item` label, and record when and how an issue is created | chore | P2 | S | — | [#377](https://github.com/rsmbyk/multimedia-gkps-klender/pull/377) | 2026-10-24 |
+| [ITEM-151](./items/ITEM-151-stage-link-affordance.md) | The stage's entry links read as text until hovered | Every song and passage title is a green (or blue) line at rest; it becomes heading ink, underlined only on hover or keyboard focus | chore | P2 | S | [140](../specs/140-stage-link-affordance/spec.md) | [#410](https://github.com/rsmbyk/multimedia-gkps-klender/pull/410) | 2026-10-27 |
 
 ## Done
 
