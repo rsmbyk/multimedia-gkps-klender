@@ -79,3 +79,4 @@ the templates are in [`_templates/`](./_templates/).
 | [130](130-empty-service-tiles/spec.md) | An empty Tata Ibadah quarter-centres its five add tiles | Accepted |
 | [131](131-retire-break-entry/spec.md) | The Break kind retires, and the breaks already written stay | Accepted |
 | [141](141-projector-window-reopen/spec.md) | A closed projector window can be reopened at the screen that is on air | Accepted |
+| [142](142-entry-surface/spec.md) | A service entry draws no box until it is pointed at | Speccing |
