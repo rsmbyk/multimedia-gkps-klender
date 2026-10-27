@@ -1,0 +1,870 @@
+<html lang="en" data-theme="light" data-theme-mode="system" data-nav="open" data-ch="open" data-read="off" data-home="results" data-section="alkitab" data-ch-mode="chapter" data-bible-edition="tb"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Results for “ibadah” — Multimedia GKPS Klender</title>
+
+<!-- Resolve the saved mode before first paint. -->
+
+
+<link rel="shortcut icon" type="image/png" href="../../../static/assets/gkps.png">
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<style>
+/* --- spec 137 preview: the page as it renders before the slice --- */
+.read, .search-results, .preview { overflow-wrap: normal; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     The rail: logo tile at top, icon menu in the middle,
+     theme choices pinned at the bottom.
+     ============================================================ -->
+<aside class="rail" aria-label="Main navigation">
+
+  <a class="rail__logo" href="/" aria-label="GKPS Klender — home">
+    <img src="../../../static/assets/gkps.png" alt="" width="40" height="40">
+  </a>
+
+  <ul class="rail__menu">
+    <!-- SEARCH: keeps the last result set (upgraded to it in reading.js) -->
+    <li>
+      <a class="rail__btn" id="railSearch" href="/search?q=ibadah" data-tip="Search" aria-label="Search" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+        </svg>
+      </a>
+    </li>
+    <!-- ALKITAB -->
+    <li>
+      <a class="rail__btn" data-tip="Alkitab" aria-label="Alkitab" data-panel="alkitab" aria-expanded="false" aria-controls="panel chapters" href="/bible/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"></path>
+          <path d="M12 6.6v13.6"></path>
+        </svg>
+      </a>
+    </li>
+
+    <!-- KIDUNG -->
+    <li>
+      <a class="rail__btn" data-tip="Kidung" aria-label="Kidung" data-panel="kidung" aria-expanded="false" aria-controls="panel chapters" href="/songs/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 17.4V5.6l10.2-2v11.6"></path>
+          <circle cx="6.7" cy="17.4" r="2.4"></circle>
+          <circle cx="16.9" cy="15.2" r="2.4"></circle>
+        </svg>
+      </a>
+    </li>
+
+    <!-- TATA IBADAH -->
+    <li>
+      <a class="rail__btn" data-tip="Tata Ibadah" aria-label="Tata Ibadah" data-panel="tatib" aria-expanded="false" aria-controls="panel chapters" href="/tatib/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"></rect>
+          <path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"></path>
+        </svg>
+      </a>
+    </li>
+    <li><a class="rail__btn" id="railMediaLibrary" href="/media-library/" data-tip="Media Library" aria-label="Media Library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7V5.8c0-1 .8-1.8 1.8-1.8h5.1l2 2h6.3c1 0 1.8.8 1.8 1.8v1.3"></path><path d="M3.5 9.1h17l-1.5 10.1c-.1.6-.7 1.1-1.3 1.1H6.3c-.6 0-1.2-.5-1.3-1.1L3.5 9.1Z"></path><path d="M8 13h8M8.7 16h6.6"></path></svg></a></li>
+  </ul>
+
+  <div class="rail__foot">
+    <button class="rail__btn media-transfer-rail" type="button" id="mediaTransferRail" data-tip="Transfer progress" aria-label="Transfer progress" hidden=""><span id="mediaTransferRailIcon" aria-hidden="true">⇄</span><span class="media-transfer-rail__dot" id="mediaTransferRailDot" data-state="active"></span></button>
+    <button class="rail__btn rail__theme" type="button" id="themeBtn" data-tip="System mode" aria-label="System mode">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"></path>
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"></path>
+      </svg>
+      <svg class="system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="13" rx="2"></rect>
+        <path d="M8 21h8M12 17v4"></path>
+      </svg>
+    </button>
+  </div>
+</aside>
+<!-- First list beside the rail: books / songbooks / services -->
+<aside class="panel" id="panel" role="region" aria-labelledby="panelTitle" data-mode-clicks-bound="true">
+  <h2 class="sr" id="panelTitle">Books — Alkitab</h2>
+
+  <div class="panel__filter">
+    <div class="filter-box">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="9" cy="9" r="6"></circle><path d="M14 14l4 4" stroke-linecap="round"></path>
+      </svg>
+      <label class="sr" for="bookFilter">Filter books</label>
+      <input id="bookFilter" type="search" placeholder="Filter books..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear books" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+    </div>
+    
+    <button class="ch__collapse" type="button" id="panelCollapse" aria-controls="panel" aria-expanded="false" aria-label="Open Alkitab panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"></path>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"></path>
+      </svg>
+    </button>
+  </div>
+
+  
+
+  <div class="panel__expand">
+    <button class="rail__btn" type="button" id="panelExpand" data-tip="Expand Alkitab panel" aria-label="Expand Alkitab panel" aria-controls="panel" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 5.5h15M4.5 12h9M4.5 18.5h15"></path>
+        <path d="M16.5 10l2.8 2 2.8-2v7.5l-2.8 2-2.8-2z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="panel__scrollwrap">
+    <button class="panel__ind" type="button" id="indUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"></path>
+      </svg>
+    </button>
+
+    <div class="panel__body" id="panelBody" tabindex="0" data-tile-clicks-bound="true">
+      
+<section class="group" data-testament="old">
+  <h3 class="group__head" data-label-tb="Perjanjian Lama" data-label-sim="Padan na Basaia">Perjanjian Lama</h3>
+  <ul>
+    
+    <li><a class="book" href="/bible/1/" data-name="Kejadian" data-sim="1 Musa" data-tb-code="Kej" data-sim-code="1Mu" data-has-tb="true" data-has-sim="true" data-tip="Kejadian — 1 Musa" aria-label="Kejadian (1 Musa)">
+      <span class="book__n">Kejadian</span>
+      <span class="book__a">Kej</span>
+      <span class="book__s">1 Musa</span></a></li>
+    
+    <li><a class="book" href="/bible/2/" data-name="Keluaran" data-sim="2 Musa" data-tb-code="Kel" data-sim-code="2Mu" data-has-tb="true" data-has-sim="true" data-tip="Keluaran — 2 Musa" aria-label="Keluaran (2 Musa)">
+      <span class="book__n">Keluaran</span>
+      <span class="book__a">Kel</span>
+      <span class="book__s">2 Musa</span></a></li>
+    
+    <li><a class="book" href="/bible/3/" data-name="Imamat" data-sim="3 Musa" data-tb-code="Ima" data-sim-code="3Mu" data-has-tb="true" data-has-sim="true" data-tip="Imamat — 3 Musa" aria-label="Imamat (3 Musa)">
+      <span class="book__n">Imamat</span>
+      <span class="book__a">Ima</span>
+      <span class="book__s">3 Musa</span></a></li>
+    
+    <li><a class="book" href="/bible/4/" data-name="Bilangan" data-sim="4 Musa" data-tb-code="Bil" data-sim-code="4Mu" data-has-tb="true" data-has-sim="true" data-tip="Bilangan — 4 Musa" aria-label="Bilangan (4 Musa)">
+      <span class="book__n">Bilangan</span>
+      <span class="book__a">Bil</span>
+      <span class="book__s">4 Musa</span></a></li>
+    
+    <li><a class="book" href="/bible/5/" data-name="Ulangan" data-sim="5 Musa" data-tb-code="Ula" data-sim-code="5Mu" data-has-tb="true" data-has-sim="true" data-tip="Ulangan — 5 Musa" aria-label="Ulangan (5 Musa)">
+      <span class="book__n">Ulangan</span>
+      <span class="book__a">Ula</span>
+      <span class="book__s">5 Musa</span></a></li>
+    
+    <li><a class="book" href="/bible/6/" data-name="Yosua" data-sim="Josua" data-tb-code="Yos" data-sim-code="Jos" data-has-tb="true" data-has-sim="true" data-tip="Yosua — Josua" aria-label="Yosua (Josua)">
+      <span class="book__n">Yosua</span>
+      <span class="book__a">Yos</span>
+      <span class="book__s">Josua</span></a></li>
+    
+    <li><a class="book" href="/bible/7/" data-name="Hakim-hakim" data-sim="Panguhum" data-tb-code="Hak" data-sim-code="Pah" data-has-tb="true" data-has-sim="true" data-tip="Hakim-hakim — Panguhum" aria-label="Hakim-hakim (Panguhum)">
+      <span class="book__n">Hakim-hakim</span>
+      <span class="book__a">Hak</span>
+      <span class="book__s">Panguhum</span></a></li>
+    
+    <li><a class="book" href="/bible/8/" data-name="Rut" data-sim="Rut" data-tb-code="Rut" data-sim-code="Rut" data-has-tb="true" data-has-sim="true" data-tip="Rut — Rut" aria-label="Rut (Rut)">
+      <span class="book__n">Rut</span>
+      <span class="book__a">Rut</span>
+      <span class="book__s">Rut</span></a></li>
+    
+    <li><a class="book" href="/bible/9/" data-name="1 Samuel" data-sim="1 Samuel" data-tb-code="1Sa" data-sim-code="1Sa" data-has-tb="true" data-has-sim="true" data-tip="1 Samuel — 1 Samuel" aria-label="1 Samuel (1 Samuel)">
+      <span class="book__n">1 Samuel</span>
+      <span class="book__a">1Sa</span>
+      <span class="book__s">1 Samuel</span></a></li>
+    
+    <li><a class="book" href="/bible/10/" data-name="2 Samuel" data-sim="2 Samuel" data-tb-code="2Sa" data-sim-code="2Sa" data-has-tb="true" data-has-sim="true" data-tip="2 Samuel — 2 Samuel" aria-label="2 Samuel (2 Samuel)">
+      <span class="book__n">2 Samuel</span>
+      <span class="book__a">2Sa</span>
+      <span class="book__s">2 Samuel</span></a></li>
+    
+    <li><a class="book" href="/bible/11/" data-name="1 Raja-raja" data-sim="1 Raja-raja" data-tb-code="1Ra" data-sim-code="1Ra" data-has-tb="true" data-has-sim="true" data-tip="1 Raja-raja — 1 Raja-raja" aria-label="1 Raja-raja (1 Raja-raja)">
+      <span class="book__n">1 Raja-raja</span>
+      <span class="book__a">1Ra</span>
+      <span class="book__s">1 Raja-raja</span></a></li>
+    
+    <li><a class="book" href="/bible/12/" data-name="2 Raja-raja" data-sim="2 Raja-raja" data-tb-code="2Ra" data-sim-code="2Ra" data-has-tb="true" data-has-sim="true" data-tip="2 Raja-raja — 2 Raja-raja" aria-label="2 Raja-raja (2 Raja-raja)">
+      <span class="book__n">2 Raja-raja</span>
+      <span class="book__a">2Ra</span>
+      <span class="book__s">2 Raja-raja</span></a></li>
+    
+    <li><a class="book" href="/bible/13/" data-name="1 Tawarikh" data-sim="1 Kronika" data-tb-code="1Ta" data-sim-code="1Kr" data-has-tb="true" data-has-sim="true" data-tip="1 Tawarikh — 1 Kronika" aria-label="1 Tawarikh (1 Kronika)">
+      <span class="book__n">1 Tawarikh</span>
+      <span class="book__a">1Ta</span>
+      <span class="book__s">1 Kronika</span></a></li>
+    
+    <li><a class="book" href="/bible/14/" data-name="2 Tawarikh" data-sim="2 Kronika" data-tb-code="2Ta" data-sim-code="2Kr" data-has-tb="true" data-has-sim="true" data-tip="2 Tawarikh — 2 Kronika" aria-label="2 Tawarikh (2 Kronika)">
+      <span class="book__n">2 Tawarikh</span>
+      <span class="book__a">2Ta</span>
+      <span class="book__s">2 Kronika</span></a></li>
+    
+    <li><a class="book" href="/bible/15/" data-name="Ezra" data-sim="Esra" data-tb-code="Ezr" data-sim-code="Esr" data-has-tb="true" data-has-sim="true" data-tip="Ezra — Esra" aria-label="Ezra (Esra)">
+      <span class="book__n">Ezra</span>
+      <span class="book__a">Ezr</span>
+      <span class="book__s">Esra</span></a></li>
+    
+    <li><a class="book" href="/bible/16/" data-name="Nehemia" data-sim="Nehemia" data-tb-code="Neh" data-sim-code="Neh" data-has-tb="true" data-has-sim="true" data-tip="Nehemia — Nehemia" aria-label="Nehemia (Nehemia)">
+      <span class="book__n">Nehemia</span>
+      <span class="book__a">Neh</span>
+      <span class="book__s">Nehemia</span></a></li>
+    
+    <li><a class="book" href="/bible/17/" data-name="Ester" data-sim="Ester" data-tb-code="Est" data-sim-code="Est" data-has-tb="true" data-has-sim="true" data-tip="Ester — Ester" aria-label="Ester (Ester)">
+      <span class="book__n">Ester</span>
+      <span class="book__a">Est</span>
+      <span class="book__s">Ester</span></a></li>
+    
+    <li><a class="book" href="/bible/18/" data-name="Ayub" data-sim="Job" data-tb-code="Ayb" data-sim-code="Job" data-has-tb="true" data-has-sim="true" data-tip="Ayub — Job" aria-label="Ayub (Job)">
+      <span class="book__n">Ayub</span>
+      <span class="book__a">Ayb</span>
+      <span class="book__s">Job</span></a></li>
+    
+    <li><a class="book" href="/bible/19/" data-name="Mazmur" data-sim="Psalmen" data-tb-code="Mzm" data-sim-code="Psa" data-has-tb="true" data-has-sim="true" data-tip="Mazmur — Psalmen" aria-label="Mazmur (Psalmen)">
+      <span class="book__n">Mazmur</span>
+      <span class="book__a">Mzm</span>
+      <span class="book__s">Psalmen</span></a></li>
+    
+    <li><a class="book" href="/bible/20/" data-name="Amsal" data-sim="Podah" data-tb-code="Ams" data-sim-code="Pod" data-has-tb="true" data-has-sim="true" data-tip="Amsal — Podah" aria-label="Amsal (Podah)">
+      <span class="book__n">Amsal</span>
+      <span class="book__a">Ams</span>
+      <span class="book__s">Podah</span></a></li>
+    
+    <li><a class="book" href="/bible/21/" data-name="Pengkhotbah" data-sim="Parambilan" data-tb-code="Pkh" data-sim-code="Par" data-has-tb="true" data-has-sim="true" data-tip="Pengkhotbah — Parambilan" aria-label="Pengkhotbah (Parambilan)">
+      <span class="book__n">Pengkhotbah</span>
+      <span class="book__a">Pkh</span>
+      <span class="book__s">Parambilan</span></a></li>
+    
+    <li><a class="book" href="/bible/22/" data-name="Kidung Agung" data-sim="Doding Ni Doding" data-tb-code="Kid" data-sim-code="Dod" data-has-tb="true" data-has-sim="true" data-tip="Kidung Agung — Doding Ni Doding" aria-label="Kidung Agung (Doding Ni Doding)">
+      <span class="book__n">Kidung Agung</span>
+      <span class="book__a">Kid</span>
+      <span class="book__s">Doding Ni Doding</span></a></li>
+    
+    <li><a class="book" href="/bible/23/" data-name="Yesaya" data-sim="Jesaya" data-tb-code="Yes" data-sim-code="Jes" data-has-tb="true" data-has-sim="true" data-tip="Yesaya — Jesaya" aria-label="Yesaya (Jesaya)">
+      <span class="book__n">Yesaya</span>
+      <span class="book__a">Yes</span>
+      <span class="book__s">Jesaya</span></a></li>
+    
+    <li><a class="book" href="/bible/24/" data-name="Yeremia" data-sim="Jeremia" data-tb-code="Yer" data-sim-code="Jer" data-has-tb="true" data-has-sim="true" data-tip="Yeremia — Jeremia" aria-label="Yeremia (Jeremia)">
+      <span class="book__n">Yeremia</span>
+      <span class="book__a">Yer</span>
+      <span class="book__s">Jeremia</span></a></li>
+    
+    <li><a class="book" href="/bible/25/" data-name="Ratapan" data-sim="Tangis-tangis" data-tb-code="Rat" data-sim-code="Tan" data-has-tb="true" data-has-sim="true" data-tip="Ratapan — Tangis-tangis" aria-label="Ratapan (Tangis-tangis)">
+      <span class="book__n">Ratapan</span>
+      <span class="book__a">Rat</span>
+      <span class="book__s">Tangis-tangis</span></a></li>
+    
+    <li><a class="book" href="/bible/26/" data-name="Yehezkiel" data-sim="Hesekiel" data-tb-code="Yeh" data-sim-code="Hes" data-has-tb="true" data-has-sim="true" data-tip="Yehezkiel — Hesekiel" aria-label="Yehezkiel (Hesekiel)">
+      <span class="book__n">Yehezkiel</span>
+      <span class="book__a">Yeh</span>
+      <span class="book__s">Hesekiel</span></a></li>
+    
+    <li><a class="book" href="/bible/27/" data-name="Daniel" data-sim="Daniel" data-tb-code="Dan" data-sim-code="Dan" data-has-tb="true" data-has-sim="true" data-tip="Daniel — Daniel" aria-label="Daniel (Daniel)">
+      <span class="book__n">Daniel</span>
+      <span class="book__a">Dan</span>
+      <span class="book__s">Daniel</span></a></li>
+    
+    <li><a class="book" href="/bible/28/" data-name="Hosea" data-sim="Hosea" data-tb-code="Hos" data-sim-code="Hos" data-has-tb="true" data-has-sim="true" data-tip="Hosea — Hosea" aria-label="Hosea (Hosea)">
+      <span class="book__n">Hosea</span>
+      <span class="book__a">Hos</span>
+      <span class="book__s">Hosea</span></a></li>
+    
+    <li><a class="book" href="/bible/29/" data-name="Yoel" data-sim="Joel" data-tb-code="Yoe" data-sim-code="Joe" data-has-tb="true" data-has-sim="true" data-tip="Yoel — Joel" aria-label="Yoel (Joel)">
+      <span class="book__n">Yoel</span>
+      <span class="book__a">Yoe</span>
+      <span class="book__s">Joel</span></a></li>
+    
+    <li><a class="book" href="/bible/30/" data-name="Amos" data-sim="Amos" data-tb-code="Amo" data-sim-code="Amo" data-has-tb="true" data-has-sim="true" data-tip="Amos — Amos" aria-label="Amos (Amos)">
+      <span class="book__n">Amos</span>
+      <span class="book__a">Amo</span>
+      <span class="book__s">Amos</span></a></li>
+    
+    <li><a class="book" href="/bible/31/" data-name="Obaja" data-sim="Obaja" data-tb-code="Oba" data-sim-code="Obj" data-has-tb="true" data-has-sim="true" data-tip="Obaja — Obaja" aria-label="Obaja (Obaja)">
+      <span class="book__n">Obaja</span>
+      <span class="book__a">Oba</span>
+      <span class="book__s">Obaja</span></a></li>
+    
+    <li><a class="book" href="/bible/32/" data-name="Yunus" data-sim="Jona" data-tb-code="Yun" data-sim-code="Jon" data-has-tb="true" data-has-sim="true" data-tip="Yunus — Jona" aria-label="Yunus (Jona)">
+      <span class="book__n">Yunus</span>
+      <span class="book__a">Yun</span>
+      <span class="book__s">Jona</span></a></li>
+    
+    <li><a class="book" href="/bible/33/" data-name="Mikha" data-sim="Mika" data-tb-code="Mik" data-sim-code="Mik" data-has-tb="true" data-has-sim="true" data-tip="Mikha — Mika" aria-label="Mikha (Mika)">
+      <span class="book__n">Mikha</span>
+      <span class="book__a">Mik</span>
+      <span class="book__s">Mika</span></a></li>
+    
+    <li><a class="book" href="/bible/34/" data-name="Nahum" data-sim="Nahum" data-tb-code="Nah" data-sim-code="Nah" data-has-tb="true" data-has-sim="true" data-tip="Nahum — Nahum" aria-label="Nahum (Nahum)">
+      <span class="book__n">Nahum</span>
+      <span class="book__a">Nah</span>
+      <span class="book__s">Nahum</span></a></li>
+    
+    <li><a class="book" href="/bible/35/" data-name="Habakuk" data-sim="Habakuk" data-tb-code="Hab" data-sim-code="Hab" data-has-tb="true" data-has-sim="true" data-tip="Habakuk — Habakuk" aria-label="Habakuk (Habakuk)">
+      <span class="book__n">Habakuk</span>
+      <span class="book__a">Hab</span>
+      <span class="book__s">Habakuk</span></a></li>
+    
+    <li><a class="book" href="/bible/36/" data-name="Zefanya" data-sim="Sepanya" data-tb-code="Zef" data-sim-code="Sef" data-has-tb="true" data-has-sim="true" data-tip="Zefanya — Sepanya" aria-label="Zefanya (Sepanya)">
+      <span class="book__n">Zefanya</span>
+      <span class="book__a">Zef</span>
+      <span class="book__s">Sepanya</span></a></li>
+    
+    <li><a class="book" href="/bible/37/" data-name="Hagai" data-sim="Hagga" data-tb-code="Hag" data-sim-code="Hag" data-has-tb="true" data-has-sim="true" data-tip="Hagai — Hagga" aria-label="Hagai (Hagga)">
+      <span class="book__n">Hagai</span>
+      <span class="book__a">Hag</span>
+      <span class="book__s">Hagga</span></a></li>
+    
+    <li><a class="book" href="/bible/38/" data-name="Zakharia" data-sim="Sakaria" data-tb-code="Zak" data-sim-code="Sak" data-has-tb="true" data-has-sim="true" data-tip="Zakharia — Sakaria" aria-label="Zakharia (Sakaria)">
+      <span class="book__n">Zakharia</span>
+      <span class="book__a">Zak</span>
+      <span class="book__s">Sakaria</span></a></li>
+    
+    <li><a class="book" href="/bible/39/" data-name="Maleakhi" data-sim="Maleaki" data-tb-code="Mal" data-sim-code="Mal" data-has-tb="true" data-has-sim="true" data-tip="Maleakhi — Maleaki" aria-label="Maleakhi (Maleaki)">
+      <span class="book__n">Maleakhi</span>
+      <span class="book__a">Mal</span>
+      <span class="book__s">Maleaki</span></a></li>
+    
+  </ul>
+</section>
+
+<section class="group" data-testament="new">
+  <h3 class="group__head" data-label-tb="Perjanjian Baru" data-label-sim="Padan na Baru">Perjanjian Baru</h3>
+  <ul>
+    
+    <li><a class="book" href="/bible/40/" data-name="Matius" data-sim="Mateus" data-tb-code="Mat" data-sim-code="Mat" data-has-tb="true" data-has-sim="true" data-tip="Matius — Mateus" aria-label="Matius (Mateus)">
+      <span class="book__n">Matius</span>
+      <span class="book__a">Mat</span>
+      <span class="book__s">Mateus</span></a></li>
+    
+    <li><a class="book" href="/bible/41/" data-name="Markus" data-sim="Markus" data-tb-code="Mrk" data-sim-code="Mrk" data-has-tb="true" data-has-sim="true" data-tip="Markus — Markus" aria-label="Markus (Markus)">
+      <span class="book__n">Markus</span>
+      <span class="book__a">Mrk</span>
+      <span class="book__s">Markus</span></a></li>
+    
+    <li><a class="book" href="/bible/42/" data-name="Lukas" data-sim="Lukas" data-tb-code="Luk" data-sim-code="Luk" data-has-tb="true" data-has-sim="true" data-tip="Lukas — Lukas" aria-label="Lukas (Lukas)">
+      <span class="book__n">Lukas</span>
+      <span class="book__a">Luk</span>
+      <span class="book__s">Lukas</span></a></li>
+    
+    <li><a class="book" href="/bible/43/" data-name="Yohanes" data-sim="Johannes" data-tb-code="Yoh" data-sim-code="Joh" data-has-tb="true" data-has-sim="true" data-tip="Yohanes — Johannes" aria-label="Yohanes (Johannes)">
+      <span class="book__n">Yohanes</span>
+      <span class="book__a">Yoh</span>
+      <span class="book__s">Johannes</span></a></li>
+    
+    <li><a class="book" href="/bible/44/" data-name="Kisah Para Rasul" data-sim="Lahoan Ni Apostel" data-tb-code="Kis" data-sim-code="Lah" data-has-tb="true" data-has-sim="true" data-tip="Kisah Para Rasul — Lahoan Ni Apostel" aria-label="Kisah Para Rasul (Lahoan Ni Apostel)">
+      <span class="book__n">Kisah Para Rasul</span>
+      <span class="book__a">Kis</span>
+      <span class="book__s">Lahoan Ni Apostel</span></a></li>
+    
+    <li><a class="book" href="/bible/45/" data-name="Roma" data-sim="Rom" data-tb-code="Rom" data-sim-code="Rom" data-has-tb="true" data-has-sim="true" data-tip="Roma — Rom" aria-label="Roma (Rom)">
+      <span class="book__n">Roma</span>
+      <span class="book__a">Rom</span>
+      <span class="book__s">Rom</span></a></li>
+    
+    <li><a class="book" href="/bible/46/" data-name="1 Korintus" data-sim="1 Korint" data-tb-code="1Ko" data-sim-code="1Ko" data-has-tb="true" data-has-sim="true" data-tip="1 Korintus — 1 Korint" aria-label="1 Korintus (1 Korint)">
+      <span class="book__n">1 Korintus</span>
+      <span class="book__a">1Ko</span>
+      <span class="book__s">1 Korint</span></a></li>
+    
+    <li><a class="book" href="/bible/47/" data-name="2 Korintus" data-sim="2 Korint" data-tb-code="2Ko" data-sim-code="2Ko" data-has-tb="true" data-has-sim="true" data-tip="2 Korintus — 2 Korint" aria-label="2 Korintus (2 Korint)">
+      <span class="book__n">2 Korintus</span>
+      <span class="book__a">2Ko</span>
+      <span class="book__s">2 Korint</span></a></li>
+    
+    <li><a class="book" href="/bible/48/" data-name="Galatia" data-sim="Galatia" data-tb-code="Gal" data-sim-code="Gal" data-has-tb="true" data-has-sim="true" data-tip="Galatia — Galatia" aria-label="Galatia (Galatia)">
+      <span class="book__n">Galatia</span>
+      <span class="book__a">Gal</span>
+      <span class="book__s">Galatia</span></a></li>
+    
+    <li><a class="book" href="/bible/49/" data-name="Efesus" data-sim="Epesus" data-tb-code="Efe" data-sim-code="Epe" data-has-tb="true" data-has-sim="true" data-tip="Efesus — Epesus" aria-label="Efesus (Epesus)">
+      <span class="book__n">Efesus</span>
+      <span class="book__a">Efe</span>
+      <span class="book__s">Epesus</span></a></li>
+    
+    <li><a class="book" href="/bible/50/" data-name="Filipi" data-sim="Pilippi" data-tb-code="Flp" data-sim-code="Pil" data-has-tb="true" data-has-sim="true" data-tip="Filipi — Pilippi" aria-label="Filipi (Pilippi)">
+      <span class="book__n">Filipi</span>
+      <span class="book__a">Flp</span>
+      <span class="book__s">Pilippi</span></a></li>
+    
+    <li><a class="book" href="/bible/51/" data-name="Kolose" data-sim="Kolosse" data-tb-code="Kol" data-sim-code="Kol" data-has-tb="true" data-has-sim="true" data-tip="Kolose — Kolosse" aria-label="Kolose (Kolosse)">
+      <span class="book__n">Kolose</span>
+      <span class="book__a">Kol</span>
+      <span class="book__s">Kolosse</span></a></li>
+    
+    <li><a class="book" href="/bible/52/" data-name="1 Tesalonika" data-sim="1 Tessalonika" data-tb-code="1Te" data-sim-code="1Te" data-has-tb="true" data-has-sim="true" data-tip="1 Tesalonika — 1 Tessalonika" aria-label="1 Tesalonika (1 Tessalonika)">
+      <span class="book__n">1 Tesalonika</span>
+      <span class="book__a">1Te</span>
+      <span class="book__s">1 Tessalonika</span></a></li>
+    
+    <li><a class="book" href="/bible/53/" data-name="2 Tesalonika" data-sim="2 Tessalonika" data-tb-code="2Te" data-sim-code="2Te" data-has-tb="true" data-has-sim="true" data-tip="2 Tesalonika — 2 Tessalonika" aria-label="2 Tesalonika (2 Tessalonika)">
+      <span class="book__n">2 Tesalonika</span>
+      <span class="book__a">2Te</span>
+      <span class="book__s">2 Tessalonika</span></a></li>
+    
+    <li><a class="book" href="/bible/54/" data-name="1 Timotius" data-sim="1 Timoteus" data-tb-code="1Ti" data-sim-code="1Ti" data-has-tb="true" data-has-sim="true" data-tip="1 Timotius — 1 Timoteus" aria-label="1 Timotius (1 Timoteus)">
+      <span class="book__n">1 Timotius</span>
+      <span class="book__a">1Ti</span>
+      <span class="book__s">1 Timoteus</span></a></li>
+    
+    <li><a class="book" href="/bible/55/" data-name="2 Timotius" data-sim="2 Timoteus" data-tb-code="2Ti" data-sim-code="2Ti" data-has-tb="true" data-has-sim="true" data-tip="2 Timotius — 2 Timoteus" aria-label="2 Timotius (2 Timoteus)">
+      <span class="book__n">2 Timotius</span>
+      <span class="book__a">2Ti</span>
+      <span class="book__s">2 Timoteus</span></a></li>
+    
+    <li><a class="book" href="/bible/56/" data-name="Titus" data-sim="Titus" data-tb-code="Tit" data-sim-code="Tit" data-has-tb="true" data-has-sim="true" data-tip="Titus — Titus" aria-label="Titus (Titus)">
+      <span class="book__n">Titus</span>
+      <span class="book__a">Tit</span>
+      <span class="book__s">Titus</span></a></li>
+    
+    <li><a class="book" href="/bible/57/" data-name="Filemon" data-sim="Pilemon" data-tb-code="Flm" data-sim-code="Plm" data-has-tb="true" data-has-sim="true" data-tip="Filemon — Pilemon" aria-label="Filemon (Pilemon)">
+      <span class="book__n">Filemon</span>
+      <span class="book__a">Flm</span>
+      <span class="book__s">Pilemon</span></a></li>
+    
+    <li><a class="book" href="/bible/58/" data-name="Ibrani" data-sim="Heber" data-tb-code="Ibr" data-sim-code="Heb" data-has-tb="true" data-has-sim="true" data-tip="Ibrani — Heber" aria-label="Ibrani (Heber)">
+      <span class="book__n">Ibrani</span>
+      <span class="book__a">Ibr</span>
+      <span class="book__s">Heber</span></a></li>
+    
+    <li><a class="book" href="/bible/59/" data-name="Yakobus" data-sim="Jakobus" data-tb-code="Yak" data-sim-code="Jak" data-has-tb="true" data-has-sim="true" data-tip="Yakobus — Jakobus" aria-label="Yakobus (Jakobus)">
+      <span class="book__n">Yakobus</span>
+      <span class="book__a">Yak</span>
+      <span class="book__s">Jakobus</span></a></li>
+    
+    <li><a class="book" href="/bible/60/" data-name="1 Petrus" data-sim="1 Petrus" data-tb-code="1Pt" data-sim-code="1Pt" data-has-tb="true" data-has-sim="true" data-tip="1 Petrus — 1 Petrus" aria-label="1 Petrus (1 Petrus)">
+      <span class="book__n">1 Petrus</span>
+      <span class="book__a">1Pt</span>
+      <span class="book__s">1 Petrus</span></a></li>
+    
+    <li><a class="book" href="/bible/61/" data-name="2 Petrus" data-sim="2 Petrus" data-tb-code="2Pt" data-sim-code="2Pt" data-has-tb="true" data-has-sim="true" data-tip="2 Petrus — 2 Petrus" aria-label="2 Petrus (2 Petrus)">
+      <span class="book__n">2 Petrus</span>
+      <span class="book__a">2Pt</span>
+      <span class="book__s">2 Petrus</span></a></li>
+    
+    <li><a class="book" href="/bible/62/" data-name="1 Yohanes" data-sim="1 Johannes" data-tb-code="1Yo" data-sim-code="1Jo" data-has-tb="true" data-has-sim="true" data-tip="1 Yohanes — 1 Johannes" aria-label="1 Yohanes (1 Johannes)">
+      <span class="book__n">1 Yohanes</span>
+      <span class="book__a">1Yo</span>
+      <span class="book__s">1 Johannes</span></a></li>
+    
+    <li><a class="book" href="/bible/63/" data-name="2 Yohanes" data-sim="2 Johannes" data-tb-code="2Yo" data-sim-code="2Jo" data-has-tb="true" data-has-sim="true" data-tip="2 Yohanes — 2 Johannes" aria-label="2 Yohanes (2 Johannes)">
+      <span class="book__n">2 Yohanes</span>
+      <span class="book__a">2Yo</span>
+      <span class="book__s">2 Johannes</span></a></li>
+    
+    <li><a class="book" href="/bible/64/" data-name="3 Yohanes" data-sim="3 Johannes" data-tb-code="3Yo" data-sim-code="3Jo" data-has-tb="true" data-has-sim="true" data-tip="3 Yohanes — 3 Johannes" aria-label="3 Yohanes (3 Johannes)">
+      <span class="book__n">3 Yohanes</span>
+      <span class="book__a">3Yo</span>
+      <span class="book__s">3 Johannes</span></a></li>
+    
+    <li><a class="book" href="/bible/65/" data-name="Yudas" data-sim="Judas" data-tb-code="Yud" data-sim-code="Jud" data-has-tb="true" data-has-sim="true" data-tip="Yudas — Judas" aria-label="Yudas (Judas)">
+      <span class="book__n">Yudas</span>
+      <span class="book__a">Yud</span>
+      <span class="book__s">Judas</span></a></li>
+    
+    <li><a class="book" href="/bible/66/" data-name="Wahyu" data-sim="Pangungkabon" data-tb-code="Why" data-sim-code="Pak" data-has-tb="true" data-has-sim="true" data-tip="Wahyu — Pangungkabon" aria-label="Wahyu (Pangungkabon)">
+      <span class="book__n">Wahyu</span>
+      <span class="book__a">Why</span>
+      <span class="book__s">Pangungkabon</span></a></li>
+    
+  </ul>
+</section>
+
+
+    </div>
+
+    <button class="panel__ind" type="button" id="indDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"></path>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="panelEmpty" role="status" hidden="" data-empty-title="No books yet." data-empty-hint="Add a Bible edition to start reading." data-filter-title="No matching books." data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"></path>
+          <path d="M12 6.6v13.6"></path>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"></circle>
+          <path d="m15.4 15.4 5 5"></path>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"></path>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<!-- Second list: bible chapter tiles, the wide song list, or Tata Ibadah contents -->
+<aside class="chapters" id="chapters" role="region" aria-labelledby="chTitle">
+  <h2 class="sr" id="chTitle">Chapters</h2>
+
+  <div class="ch__top">
+    <div class="ch__tools">
+      <div class="ch__search" hidden="">
+        <div class="filter-box">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="9" cy="9" r="6"></circle><path d="M14 14l4 4" stroke-linecap="round"></path>
+          </svg>
+          <label class="sr" for="songFilter">Filter songs</label>
+          <input id="songFilter" type="search" placeholder="Filter songs..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear songs" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+        </div>
+        <button class="ch__sort" type="button" id="songSort" data-order="m" aria-label="Sort: last modified — switch to alphabetical" title="Sort: last modified — switch to alphabetical" hidden="">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 5.5h14M5 10h10M8 14.5h4"></path>
+          </svg>
+          <span class="ch__sort-mark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+    <button class="ch__collapse" type="button" id="chCollapse" aria-controls="chapters" aria-expanded="false" aria-label="Close chapter list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"></path>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"></path>
+      </svg>
+    </button>
+  </div>
+
+  
+
+  
+
+  <div class="ch__wrap">
+    <button class="ch__ind" type="button" id="chUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"></path>
+      </svg>
+    </button>
+
+    <div class="ch__body" id="chBody" tabindex="0"><ul id="chList" data-row-clicks-bound="true"></ul></div>
+
+    <button class="ch__ind" type="button" id="chDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"></path>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="chEmpty" role="status" hidden="" data-empty-title="No chapters." data-empty-hint="This edition has no text in this book." data-filter-title="No matching chapters." data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.5" y="3.5" width="7" height="7" rx="1.4"></rect>
+          <rect x="13.5" y="3.5" width="7" height="7" rx="1.4"></rect>
+          <rect x="3.5" y="13.5" width="7" height="7" rx="1.4"></rect>
+          <rect x="13.5" y="13.5" width="7" height="7" rx="1.4"></rect>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"></circle>
+          <path d="m15.4 15.4 5 5"></path>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"></path>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<main class="stage" data-lang-links-bound="true" data-stage-clicks-bound="true">
+ <section class="search-home" id="searchHome" aria-labelledby="searchHeading">
+  <div class="search-home__inner">
+   <h1 class="sr" id="searchHeading">Search GKPS Klender</h1>
+   <img class="search-home__logo" id="homeLogo" src="../../../static/assets/gkps.png" alt="GKPS Klender" width="96" height="96">
+   <form class="search-home__form" id="globalSearch" role="search" action="/search" method="get">
+    <label class="sr" for="searchQuery">Search Alkitab, Kidung, and Tata Ibadah</label>
+    <input class="search-home__input" id="searchQuery" type="search" name="q" value="ibadah" placeholder="Search Alkitab, Kidung, Tata Ibadah..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear search" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+    <button class="search-home__submit" type="submit" aria-label="Search">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+     </svg>
+    </button>
+   </form>
+  </div>
+ </section>
+ <section class="search-results" id="searchResults" aria-label="Search results">
+   
+
+<p class="search-results__intro" id="searchStatus" role="status">Results for “ibadah”</p>
+
+<section class="result-group" data-kind="bible">
+  <div class="result-group__head">
+    <h2 class="result-group__title">Alkitab</h2>
+    <span class="result-group__count">213 results</span>
+  </div>
+  <ul class="result-list">
+    
+    <li><a class="result-row" data-kind="bible" href="/bible/11/12/?v=25&amp;to=25" data-fixture="1">
+      <span class="result-row__title">PembagianTanahDanPerjanjianYangKekalBagiSeluruhSukuBangsaIsraelDiTanahPerjanjianYangDijanjikanKepadaAbrahamIshakDanYakubBesertaSeluruhKeturunannya</span>
+      <span class="result-row__meta">https://drive.google.com/drive/folders/18A0dI3cwJxzSGTxim3ENlj4GwrB2Yatd</span>
+      <span class="result-row__excerpt">Kemudian Yerobeam memperkuat Sikhem di pegunungan Efraim, lalu diam di sana. Ia keluar dari sana, lalu memperkuat Pnuel.</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="bible" href="/bible/11/16/?v=31&amp;to=31">
+      <span class="result-row__title">1 Raja-raja 16:31</span>
+      <span class="result-row__meta">TB</span>
+      <span class="result-row__excerpt">…on, menjadi isterinya, sehingga ia pergi beribadah kepada Baal dan sujud menyembah kepadanya.</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="bible" href="/bible/11/22/?v=53&amp;to=53">
+      <span class="result-row__title">1 Raja-raja 22:53</span>
+      <span class="result-row__meta">TB</span>
+      <span class="result-row__excerpt">(22-54) Ia beribadah kepada Baal dan sujud menyembah kepadanya dan dengan demikian ia menimbulkan sakit hati TUHAN, Allah Israel, tepat seperti yang dilakukan ayahnya.</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="bible" href="/bible/11/9/?v=6&amp;to=6">
+      <span class="result-row__title">1 Raja-raja 9:6</span>
+      <span class="result-row__meta">TB</span>
+      <span class="result-row__excerpt">…yang telah Kuberikan kepadamu, dan pergi beribadah kepada allah lain dan sujud menyembah kepadanya,</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="bible" href="/bible/11/9/?v=9&amp;to=9">
+      <span class="result-row__title">1 Raja-raja 9:9</span>
+      <span class="result-row__meta">TB</span>
+      <span class="result-row__excerpt">…h lain dan sujud menyembah kepadanya dan beribadah kepadanya. Itulah sebabnya TUHAN mendatangkan segala malapetaka ini ke atas mereka."</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="bible" href="/bible/9/12/?v=10&amp;to=10">
+      <span class="result-row__title">1 Samuel 12:10</span>
+      <span class="result-row__meta">TB</span>
+      <span class="result-row__excerpt">… sebab kami telah meninggalkan TUHAN dan beribadah kepada para Baal dan para Asytoret; maka sekarang lepaskanlah kami dari tangan musuh kami, maka kami akan beribadah kepad…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="bible" href="/bible/9/12/?v=14&amp;to=14">
+      <span class="result-row__title">1 Samuel 12:14</span>
+      <span class="result-row__meta">TB</span>
+      <span class="result-row__excerpt">asal saja kamu takut akan TUHAN, beribadah kepada-Nya, mendengarkan firman-Nya dan tidak menentang titah TUHAN, dan baik kamu, maupun raja yang akan memerintah kamu itu men…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="bible" href="/bible/9/12/?v=20&amp;to=20">
+      <span class="result-row__title">1 Samuel 12:20</span>
+      <span class="result-row__meta">TB</span>
+      <span class="result-row__excerpt">…nlah berhenti mengikuti TUHAN, melainkan beribadahlah kepada TUHAN dengan segenap hatimu.</span>
+    </a></li>
+    
+  </ul>
+  <a class="result-more" href="/search?q=ibadah&amp;bible=16&amp;songs=8&amp;tatib=8">Show more</a>
+</section>
+
+<section class="result-group" data-kind="songs">
+  <div class="result-group__head">
+    <h2 class="result-group__title">Kidung</h2>
+    <span class="result-group__count">11 results</span>
+  </div>
+  <ul class="result-list">
+    
+    <li><a class="result-row" data-kind="songs" href="/songs/1273/">
+      <span class="result-row__title">Apalah Arti Ibadahmu</span>
+      <span class="result-row__meta">PKJ 264</span>
+      <span class="result-row__excerpt">Apalah arti ibadahmu kepada Tuhan, bila tiada rela sujud dan sungkur? Apalah arti ibadahmu kepada Tuhan, bila tiada hati tulus dan syukur? Ibadah sejati, jadikanlah persemb…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="songs" href="/songs/1550/">
+      <span class="result-row__title">Di Sini, Tuhan ‘Ku Memandangmu</span>
+      <span class="result-row__meta">NKB 157</span>
+      <span class="result-row__excerpt">…akannya t’rus, di dalam sukacita s’lamanya. Ibadah ini hampir usailah, namun ‘Kau, Tuhan, tinggal sertaku. Roti dan anggur barang yang fana, ‘Kau Surya Hidup dan Perisaiku.…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="songs" href="/songs/677/">
+      <span class="result-row__title">Hosiana! Putra Daud</span>
+      <span class="result-row__meta">KJ 162</span>
+      <span class="result-row__excerpt">…agar kami tanpa pamrih kepadaMu berserah beribadah yang sejati. Yang tak patut dan teguh, ia bukan muridMu. Hosiana bergema, terdengar dimana-mana. Putra Daud, penuh berkat…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="songs" href="/songs/1282/">
+      <span class="result-row__title">Ladang Menguning</span>
+      <span class="result-row__meta">PKJ 273</span>
+      <span class="result-row__excerpt">…esus, raja Kasih, aku serahkan hidupku jadi ibadah yang sejati dan persembahan yang kudus. Kini dunia makin bertingkah oleh kuasa maut kejam. Jutaan jiwa yang menderita, di…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="songs" href="/songs/591/">
+      <span class="result-row__title">Mahaterpuji Allahku</span>
+      <span class="result-row__meta">KJ 79</span>
+      <span class="result-row__excerpt">…menjadi nyata: umatNya bersejahtera 'kan beribadah padaNya dan hidup bagi Dia. Nabi Yohanes, kau seg'ra 'kan meratakan jalanNya, Sang Raja yang mulia! Agar umatNya mengerti…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="songs" href="/songs/1285/">
+      <span class="result-row__title">Rasul Pergi Beribadah</span>
+      <span class="result-row__meta">PKJ 276</span>
+      <span class="result-row__excerpt">Rasul pergi beribadah, bertemu yang lumpuh di gerbang, Mengemis meminta sedekah. Dan Pet’rus memb’ri jawabnya: Mas, perak tiada padaku: hanya ini yang dapat kb’ri. Dalam na…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="songs" href="/songs/1102/">
+      <span class="result-row__title">Sungguh Agunglah Rahasia Ibadah</span>
+      <span class="result-row__meta">PKJ 93</span>
+      <span class="result-row__excerpt">Sungguh agunglah rahasia ibadah Gereja, amat dalamlah maknanya bagi orang beriman: Tuhan menyatakan Diri dalam rupa manusia, disalibkan, dibangkitkan, dibenarkan dalam Roh.…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="songs" href="/songs/590/">
+      <span class="result-row__title">Waktu Herodes Raja di Yudea</span>
+      <span class="result-row__meta">KJ 78</span>
+      <span class="result-row__excerpt">…bet, ialah bibi Maria. Di waktu Zakharia beribadah, turun malaikat Gabriel padanya, ia terperanjat terkelu: apakah akan terjadi? "Janganlah takut, bapa Zakharia, aku utusan…</span>
+    </a></li>
+    
+  </ul>
+  <a class="result-more" href="/search?q=ibadah&amp;bible=8&amp;songs=16&amp;tatib=8">Show more</a>
+</section>
+
+<section class="result-group" data-kind="tatib">
+  <div class="result-group__head">
+    <h2 class="result-group__title">Tata Ibadah</h2>
+    <span class="result-group__count">35 results</span>
+  </div>
+  <ul class="result-list">
+    
+    <li><a class="result-row" data-kind="tatib" href="/tatib/133/#ti-3">
+      <span class="result-row__title">Bulsn Oikumene · Section 3</span>
+      <span class="result-row__meta">Bulsn Oikumene · Section 3</span>
+      <span class="result-row__excerpt">Suara 2 : Hari ini dalam ibadah syukur hari ulang tahun ke 76 PGI dan bulan Oikoumene, kita menyerukan damai sejahtera untuk dunia. Biarlah ruang persaudaraan dan persahaba…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="tatib" href="/tatib/133/#ti-4">
+      <span class="result-row__title">Bulsn Oikumene · Section 4</span>
+      <span class="result-row__meta">Bulsn Oikumene · Section 4</span>
+      <span class="result-row__excerpt">…san bumi karena berbagai krisis, marilah beribadah dalam pengakuan bahwa Allah hadir dan Allah tetap setia. Marilah menyembah dalam Roh dan kebenaran Allah. Pujilah nama Tu…</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="tatib" href="/tatib/67/#ti-16">
+      <span class="result-row__title">Hari Doa Sedunia · Section 15</span>
+      <span class="result-row__meta">Hari Doa Sedunia · Section 15</span>
+      <span class="result-row__excerpt">L: Dalam ibadah hari ini, kita akan mendengar tiga kisah dari wanita Kristen Palestina yang menjadi saksi atas kekuatan menanggung bersama dalam kasih...</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="tatib" href="/tatib/67/#ti-9">
+      <span class="result-row__title">Hari Doa Sedunia · Section 9</span>
+      <span class="result-row__meta">Hari Doa Sedunia · Section 9</span>
+      <span class="result-row__excerpt">…ji Tuhan yang membawa kita bersama untuk beribadah dalam kasih dan persatuan.</span>
+    </a></li>
+    
+    <li><a class="result-row" data-kind="tatib" href="/tatib/136/">
+      <span class="result-row__title">Ibadah 14 Juni 2026</span>
+      <span class="result-row__meta">14 Jun 2026</span>
+      
+    </a></li>
+    
+    <li><a class="result-row" data-kind="tatib" href="/tatib/19/">
+      <span class="result-row__title">ibadah 28 agustus</span>
+      <span class="result-row__meta">28 Agu 2022</span>
+      
+    </a></li>
+    
+    <li><a class="result-row" data-kind="tatib" href="/tatib/17/">
+      <span class="result-row__title">ibadah 7 agustus</span>
+      <span class="result-row__meta">7 Agu 2022</span>
+      
+    </a></li>
+    
+    <li><a class="result-row" data-kind="tatib" href="/tatib/31/">
+      <span class="result-row__title">Ibadah Awal Tahun 2023</span>
+      <span class="result-row__meta">1 Jan 2023</span>
+      
+    </a></li>
+    
+  </ul>
+  <a class="result-more" href="/search?q=ibadah&amp;bible=8&amp;songs=8&amp;tatib=16">Show more</a>
+</section>
+
+
+
+ </section>
+
+ <article class="read" id="read" lang="id" tabindex="-1">
+  <header class="read__head">
+   <div class="read__head-top">
+    <p class="read__eyebrow" id="readEyebrow" hidden=""></p>
+    
+   </div>
+   <div class="read__row">
+    <h1 class="read__title"><span id="readName"></span> <span class="read__no" id="readNo"></span></h1>
+    
+   </div>
+  </header>
+  <div class="read__body" id="readBody"></div>
+ </article>
+</main>
+
+
+
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle" data-editor-new="/editor/KIND/new/" data-editor-edit="/editor/KIND/0/" data-entry-new-url="/editor/entry/new/" data-entry-save-new-url="/editor/entry/new/save/" data-entry-edit-url="/editor/entry/0/edit/" data-entry-delete-url="/editor/entry/0/delete/" data-entry-songs-url="/editor/entry/songs/" data-entry-song-verses-url="/editor/entry/song/0/verses/" data-entry-chapter-url="/editor/entry/chapter/0/0/" data-old-item-edit-url="/editor/item/0/edit/" data-old-item-delete-url="/editor/item/0/delete/" data-feedback-guarded="true">
+  <div class="editor__content" id="editorContent" aria-live="polite"></div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+</dialog>
+
+
+<dialog class="media-error-dialog" id="mediaErrorDialog" aria-labelledby="mediaErrorTitle"><h2 id="mediaErrorTitle">File not supported</h2><p id="mediaErrorMessage"></p><button type="button" id="mediaErrorClose">OK</button></dialog>
+
+<dialog class="preview" id="previewModal" aria-label="Preview" data-feedback-guarded="true">
+  
+  <div class="preview__head" data-preview-head="" hidden="">
+    <span class="preview__title" id="previewTitle"></span>
+    <div class="preview__versetabs" data-preview-tabs-host="" hidden=""></div>
+  </div>
+  <div class="preview__body" id="previewContent" tabindex="0"></div>
+  <div class="preview__foot" data-screen-mode-footer="" hidden="">
+    <div class="screen-mode preview__screen-mode" role="group" aria-label="Screen mode" data-preview-screen-mode="">
+      <span class="screen-mode__thumb" aria-hidden="true"></span>
+      <button type="button" data-preview-mode="multi_line" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"></path></svg>Multi-line
+      </button>
+      <span class="screen-mode__custom" data-preview-custom="" tabindex="0" role="status" aria-label="Custom breaks" title="Custom breaks">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"></rect><path d="M2.5 10h15"></path></svg>
+      </span>
+      <button type="button" data-preview-mode="single_screen" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"></rect><path d="M5.5 8h9M5.5 11h9"></path></svg>Single-screen
+      </button>
+    </div>
+    <p class="preview__mode-readonly" data-mode-readonly="" hidden=""></p>
+  </div>
+  <div class="preview__confirm-layer" data-mode-confirm="" hidden="">
+    <div class="preview__confirm" role="alertdialog" aria-modal="true" aria-labelledby="modeConfirmTitle" aria-describedby="modeConfirmMessage">
+      <h3 id="modeConfirmTitle" data-confirm-title=""></h3>
+      <p id="modeConfirmMessage">Your custom screen breaks will be removed.</p>
+      <div class="preview__confirm-actions">
+        <button type="button" data-confirm-cancel="">Keep custom</button>
+        <button type="button" data-confirm-accept="">Switch &amp; remove</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList"><p class="media-transfers__empty">Local library unavailable on this computer.</p></div></dialog>
+<div class="edit-toasts" id="editToastHost" popover="manual" aria-live="polite" aria-relevant="additions text" aria-atomic="false" role="region" aria-label="Edit request feedback"></div>
+
+<div class="ftip" id="ftip" role="tooltip"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>

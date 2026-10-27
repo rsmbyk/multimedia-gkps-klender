@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-10-26
-**slices**: `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-10-27
+**slices**: `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -425,3 +425,43 @@ wrapping and the same trailing `…` as the server route it mirrors.
 #### Scenario: the saved copy
 - WHEN a service page is opened from the saved library
 - THEN its rows carry the same lines, breaks and trailing `…` as the server page's
+
+### R13 — A reading page's text wraps at its pane
+
+A run of text wider than the box that owns it SHALL wrap at the box's edge on every reading surface —
+the page title, section and item headings, verse and lyric lines, body paragraphs, search result rows
+and the Preview modal's lines — and SHALL NOT be painted past it. No reading route SHALL scroll
+horizontally because of text.
+
+The rule SHALL reach a surface by inheritance from that surface's own root, so a text run inside it
+is covered without naming each element. Wrapping SHALL NOT change the layout's own measuring: a title
+keeps the box width it has today, and the language toggle keeps the line it takes today. A run that
+already fits SHALL render as it does now — the same line count, box height and width.
+
+A surface that declares its own cut SHALL keep truncating: the sidebar's service and songbook rows and
+the media library's filenames stay one line ending `…`, and a contents row keeps its three-line clamp
+(R12).
+
+#### Scenario: a title at the column's limit
+- WHEN a service's or a song's 64-character unbroken title is opened at 1440×900, 1280×800 or 390×844
+- THEN it wraps inside the reading pane, no part of it sits past the pane, and the document does not scroll sideways
+
+#### Scenario: a body paragraph holding a link
+- WHEN a Text entry's body is a pasted URL wider than the pane
+- THEN it wraps inside the pane instead of running past it
+
+#### Scenario: a heading and a verse
+- WHEN a Bible pericope heading or a verse line holds a run wider than the pane
+- THEN it wraps at the pane's edge, at every width
+
+#### Scenario: a search result and the Preview modal
+- WHEN a search result's title, or a rendered line in the Preview modal, is wider than its box
+- THEN it wraps inside it
+
+#### Scenario: text that fits
+- WHEN a title or a body already fits its box
+- THEN it takes the same line count, height and width as before this requirement
+
+#### Scenario: a surface that truncates
+- WHEN a sidebar service row or a media filename is longer than its row
+- THEN it stays one line ending `…`, and a contents row keeps its three-line clamp

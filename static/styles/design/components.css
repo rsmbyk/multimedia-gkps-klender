@@ -1026,6 +1026,17 @@ li:hover > .row-edit,
 [data-read="on"] .stage__demo { display: none; }
 [data-read="on"] .read { display: block; }
 
+/* A run of text wider than the box that owns it breaks at the box's edge instead of
+   being painted past it (spec 137): a pasted link, a thousand-character title, a Bible
+   heading. `break-word`, not `anywhere`, so nothing about the layout's own measuring
+   changes — the title's flex row still gives the language toggle its line the way it
+   does today — and a run only breaks when its line box genuinely cannot hold it.
+   Deliberate one-line ellipses (`.book__n`, the media filenames) say `nowrap` and keep
+   clipping; the contents rows say `anywhere` and keep their three-line clamp. */
+.read,
+.search-results,
+.preview { overflow-wrap: break-word; }
+
 .read__head { margin-bottom: 30px; }
 /* the index header ("Sidebar · langkah pertama") renders through the demo's
    generic .stage__demo p override: 16.5px / 1.65, weight 600, .12em tracking,

@@ -1,0 +1,511 @@
+<html lang="en" data-theme="light" data-theme-mode="system" data-nav="open" data-ch="open" data-read="on" data-home="reading" data-section="kidung" data-ch-mode="song" data-bible-edition="tb"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buku Ende HKBP — Multimedia GKPS Klender</title>
+
+<!-- Resolve the saved mode before first paint. -->
+
+
+<link rel="shortcut icon" type="image/png" href="../../../static/assets/gkps.png">
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+</head>
+<body>
+
+<!-- ============================================================
+     The rail: logo tile at top, icon menu in the middle,
+     theme choices pinned at the bottom.
+     ============================================================ -->
+<aside class="rail" aria-label="Main navigation">
+
+  <a class="rail__logo" href="/" aria-label="GKPS Klender — home">
+    <img src="../../../static/assets/gkps.png" alt="" width="40" height="40">
+  </a>
+
+  <ul class="rail__menu">
+    <!-- SEARCH: keeps the last result set (upgraded to it in reading.js) -->
+    <li>
+      <a class="rail__btn" id="railSearch" href="/" data-tip="Search" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+        </svg>
+      </a>
+    </li>
+    <!-- ALKITAB -->
+    <li>
+      <a class="rail__btn" data-tip="Alkitab" aria-label="Alkitab" data-panel="alkitab" aria-expanded="false" aria-controls="panel chapters" href="/bible/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"></path>
+          <path d="M12 6.6v13.6"></path>
+        </svg>
+      </a>
+    </li>
+
+    <!-- KIDUNG -->
+    <li>
+      <a class="rail__btn" data-tip="Kidung" aria-label="Kidung" data-panel="kidung" aria-expanded="true" aria-controls="panel chapters" href="/songs/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 17.4V5.6l10.2-2v11.6"></path>
+          <circle cx="6.7" cy="17.4" r="2.4"></circle>
+          <circle cx="16.9" cy="15.2" r="2.4"></circle>
+        </svg>
+      </a>
+    </li>
+
+    <!-- TATA IBADAH -->
+    <li>
+      <a class="rail__btn" data-tip="Tata Ibadah" aria-label="Tata Ibadah" data-panel="tatib" aria-expanded="false" aria-controls="panel chapters" href="/tatib/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"></rect>
+          <path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"></path>
+        </svg>
+      </a>
+    </li>
+    <li><a class="rail__btn" id="railMediaLibrary" href="/media-library/" data-tip="Media Library" aria-label="Media Library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7V5.8c0-1 .8-1.8 1.8-1.8h5.1l2 2h6.3c1 0 1.8.8 1.8 1.8v1.3"></path><path d="M3.5 9.1h17l-1.5 10.1c-.1.6-.7 1.1-1.3 1.1H6.3c-.6 0-1.2-.5-1.3-1.1L3.5 9.1Z"></path><path d="M8 13h8M8.7 16h6.6"></path></svg></a></li>
+  </ul>
+
+  <div class="rail__foot">
+    <button class="rail__btn media-transfer-rail" type="button" id="mediaTransferRail" data-tip="Transfer progress" aria-label="Transfer progress" hidden=""><span id="mediaTransferRailIcon" aria-hidden="true">⇄</span><span class="media-transfer-rail__dot" id="mediaTransferRailDot" data-state="active"></span></button>
+    <button class="rail__btn rail__theme" type="button" id="themeBtn" data-tip="System mode" aria-label="System mode">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"></path>
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"></path>
+      </svg>
+      <svg class="system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="13" rx="2"></rect>
+        <path d="M8 21h8M12 17v4"></path>
+      </svg>
+    </button>
+  </div>
+</aside>
+<!-- First list beside the rail: books / songbooks / services -->
+<aside class="panel" id="panel" role="region" aria-labelledby="panelTitle" data-mode-clicks-bound="true">
+  <h2 class="sr" id="panelTitle">Songbooks</h2>
+
+  <div class="panel__filter">
+    <div class="filter-box">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="9" cy="9" r="6"></circle><path d="M14 14l4 4" stroke-linecap="round"></path>
+      </svg>
+      <label class="sr" for="bookFilter">Filter songbooks</label>
+      <input id="bookFilter" type="search" placeholder="Filter songbooks..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear songbooks" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+    </div>
+    
+    <button class="ch__collapse" type="button" id="panelCollapse" aria-controls="panel" aria-expanded="true" aria-label="Close Kidung panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"></path>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"></path>
+      </svg>
+    </button>
+  </div>
+
+  
+  <button class="editor-add" type="button" id="panelAdd" data-editor-open="songbook" data-editor-label="Add songbook">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"></path></svg>
+    <span class="editor-add__label">Add songbook</span>
+  </button>
+  
+
+  <div class="panel__expand">
+    <button class="rail__btn" type="button" id="panelExpand" data-tip="Expand Alkitab panel" aria-label="Expand Alkitab panel" aria-controls="panel" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 5.5h15M4.5 12h9M4.5 18.5h15"></path>
+        <path d="M16.5 10l2.8 2 2.8-2v7.5l-2.8 2-2.8-2z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="panel__scrollwrap">
+    <button class="panel__ind" type="button" id="indUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"></path>
+      </svg>
+    </button>
+
+    <div class="panel__body" id="panelBody" tabindex="0" data-tile-clicks-bound="true">
+      
+
+<section class="group"><ul>
+  
+  <li><a class="book" href="/songs/book/1/" data-name="1" data-sim="HAL" aria-label="Haleluya (HAL)">
+    <span class="book__n">Haleluya</span>
+    <span class="book__s">HAL</span></a></li>
+  
+  <li><a class="book" href="/songs/book/2/" data-name="2" data-sim="KJ" aria-label="Kidung Jemaat (KJ)">
+    <span class="book__n">Kidung Jemaat</span>
+    <span class="book__s">KJ</span></a></li>
+  
+  <li><a class="book" href="/songs/book/3/" data-name="3" data-sim="PKJ" aria-label="Pelengkap Kidung Jemaat (PKJ)">
+    <span class="book__n">Pelengkap Kidung Jemaat</span>
+    <span class="book__s">PKJ</span></a></li>
+  
+  <li><a class="book" href="/songs/book/25/" data-name="25" data-sim="NKB" aria-label="Nyanyikanlah Kidung Baru (NKB)">
+    <span class="book__n">Nyanyikanlah Kidung Baru</span>
+    <span class="book__s">NKB</span></a></li>
+  
+</ul></section>
+
+<section class="group"><ul>
+  
+  <li><a class="book" href="/songs/book/35/" data-name="35" data-sim="" aria-label="ab">
+    <span class="book__n">ab</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="35" aria-label="Edit ab">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/36/" data-name="36" data-sim="" aria-label="b">
+    <span class="book__n">b</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="36" aria-label="Edit b">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/32/" data-name="32" data-sim="" aria-label="Buku Ende HKBP" aria-current="true">
+    <span class="book__n">Buku Ende HKBP</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="32" aria-label="Edit Buku Ende HKBP">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/18/" data-name="18" data-sim="" aria-label="Lagu">
+    <span class="book__n">Lagu</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="18" aria-label="Edit Lagu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/28/" data-name="28" data-sim="" aria-label="Lagu Sekolah Minggu">
+    <span class="book__n">Lagu Sekolah Minggu</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="28" aria-label="Edit Lagu Sekolah Minggu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/34/" data-name="34" data-sim="" aria-label="Lagu Setelah persembahan">
+    <span class="book__n">Lagu Setelah persembahan</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="34" aria-label="Edit Lagu Setelah persembahan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/33/" data-name="33" data-sim="" aria-label="Lagu setelah persembahan">
+    <span class="book__n">Lagu setelah persembahan</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="33" aria-label="Edit Lagu setelah persembahan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/31/" data-name="31" data-sim="" aria-label="Pengutusan Bahasa Indonesia">
+    <span class="book__n">Pengutusan Bahasa Indonesia</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="31" aria-label="Edit Pengutusan Bahasa Indonesia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/17/" data-name="17" data-sim="" aria-label="Tata Ibadah">
+    <span class="book__n">Tata Ibadah</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="17" aria-label="Edit Tata Ibadah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+</ul></section>
+
+
+    </div>
+
+    <button class="panel__ind" type="button" id="indDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"></path>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="panelEmpty" role="status" hidden="" data-empty-title="No songbooks yet." data-empty-hint="Add a songbook to start collecting songs." data-filter-title="No matching songbooks." data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 17.4V5.6l10.2-2v11.6"></path>
+          <circle cx="6.7" cy="17.4" r="2.4"></circle>
+          <circle cx="16.9" cy="15.2" r="2.4"></circle>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"></circle>
+          <path d="m15.4 15.4 5 5"></path>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"></path>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<!-- Second list: bible chapter tiles, the wide song list, or Tata Ibadah contents -->
+<aside class="chapters" id="chapters" role="region" aria-labelledby="chTitle">
+  <h2 class="sr" id="chTitle">Song list — Buku Ende HKBP</h2>
+
+  <div class="ch__top">
+    <div class="ch__tools">
+      <div class="ch__search">
+        <div class="filter-box">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="9" cy="9" r="6"></circle><path d="M14 14l4 4" stroke-linecap="round"></path>
+          </svg>
+          <label class="sr" for="songFilter">Filter songs</label>
+          <input id="songFilter" type="search" placeholder="Filter songs..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear songs" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+        </div>
+        <button class="ch__sort" type="button" id="songSort" data-order="m" aria-label="Sort: last modified — switch to alphabetical" title="Sort: last modified — switch to alphabetical">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 5.5h14M5 10h10M8 14.5h4"></path>
+          </svg>
+          <span class="ch__sort-mark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+    <button class="ch__collapse" type="button" id="chCollapse" aria-controls="chapters" aria-expanded="true" aria-label="Close song list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"></path>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"></path>
+      </svg>
+    </button>
+  </div>
+
+  
+  <div class="ch__add">
+    <button class="editor-add" type="button" id="songAdd" data-editor-open="song" data-editor-book="32" data-editor-label="Add song">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"></path></svg>
+      <span class="editor-add__label">Add song</span>
+    </button>
+  </div>
+  
+
+  
+
+  <div class="ch__wrap">
+    <button class="ch__ind" type="button" id="chUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"></path>
+      </svg>
+    </button>
+
+    <div class="ch__body" id="chBody" tabindex="0"><ul id="chList" data-row-clicks-bound="true">
+<li><a class="songrow" href="/songs/1817/" data-i="1817" data-t="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. sangap di jahowa" data-o="0" data-m="1792986588845594" aria-current="true">
+  
+  <span class="songrow__t">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1817" aria-label="Edit aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1818/" data-i="1818" data-t="hibul rohangku" data-o="1" data-m="1792238008278652">
+  
+  <span class="songrow__t">690. Hibul Rohangku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1818" aria-label="Edit 690. Hibul Rohangku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1820/" data-i="1820" data-t="sai solhot tu silangmi" data-o="2" data-m="1792238006278652">
+  
+  <span class="songrow__t">449. Sai Solhot tu SilangMi</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1820" aria-label="Edit 449. Sai Solhot tu SilangMi">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1821/" data-i="1821" data-t="marolopolop tondingki" data-o="3" data-m="1792238005278652">
+  
+  <span class="songrow__t">435. Marolopolop Tondingki</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1821" aria-label="Edit 435. Marolopolop Tondingki">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1822/" data-i="1822" data-t="pahehe au on" data-o="4" data-m="1792238004278652">
+  
+  <span class="songrow__t">685. Pahehe Au On</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1822" aria-label="Edit 685. Pahehe Au On">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1823/" data-i="1823" data-t="togu au ale jahowa" data-o="5" data-m="1792238003278652">
+  
+  <span class="songrow__t">712. Togu au ale Jahowa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1823" aria-label="Edit 712. Togu au ale Jahowa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1824/" data-i="1824" data-t="sai patau ma au tuhan" data-o="6" data-m="1792238002278652">
+  
+  <span class="songrow__t">730. Sai Patau ma au Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1824" aria-label="Edit 730. Sai Patau ma au Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+</ul></div>
+
+    <button class="ch__ind" type="button" id="chDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"></path>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="chEmpty" role="status" hidden="" data-empty-title="No songs yet." data-empty-hint="Add the first song to this songbook." data-filter-title="No matching songs." data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 17.4V5.6l10.2-2v11.6"></path>
+          <circle cx="6.7" cy="17.4" r="2.4"></circle>
+          <circle cx="16.9" cy="15.2" r="2.4"></circle>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"></circle>
+          <path d="m15.4 15.4 5 5"></path>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"></path>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<main class="stage" data-lang-links-bound="true" data-stage-clicks-bound="true">
+ <section class="search-home" id="searchHome" aria-labelledby="searchHeading">
+  <div class="search-home__inner">
+   <h1 class="sr" id="searchHeading">Search GKPS Klender</h1>
+   <img class="search-home__logo" id="homeLogo" src="../../../static/assets/gkps.png" alt="GKPS Klender" width="96" height="96">
+   <form class="search-home__form" id="globalSearch" role="search" action="/search" method="get">
+    <label class="sr" for="searchQuery">Search Alkitab, Kidung, and Tata Ibadah</label>
+    <input class="search-home__input" id="searchQuery" type="search" name="q" value="" placeholder="Search Alkitab, Kidung, Tata Ibadah..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear search" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+    <button class="search-home__submit" type="submit" aria-label="Search">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+     </svg>
+    </button>
+   </form>
+  </div>
+ </section>
+ <section class="search-results" id="searchResults" aria-label="Search results" hidden="">
+   
+ </section>
+
+ <article class="read" id="read" lang="id" tabindex="-1" data-kind="song">
+  <header class="read__head">
+   <div class="read__head-top">
+    <p class="read__eyebrow" id="readEyebrow">Buku Ende HKBP</p>
+    
+   </div>
+   <div class="read__row">
+    <h1 class="read__title"><span id="readName">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa</span> <span class="read__no" id="readNo"></span></h1>
+    
+   </div>
+  </header>
+  <div class="read__body" id="readBody">
+<p class="v"><span class="v__n">1</span><span>(1) Sangap di jahowa na sun timbul i<br>Balga ni holongNa ndang tarasam i<br>Dilehon AnakNa na sasada i<br>Manobus hita jolma pardosa i<br>Puji ma Debata ale manisia<br>Las roham las roham somba ma Debata<br>Dapothon Jahowa na sun timbul i<br>Marhite AnakNa Tuhan Jesus i</span></p>
+<p class="v"><span class="v__n">2</span><span>(2) Tung so hasuhatan do basaNa i<br>Marhite AnakNa nilehonNa i<br>MudarNa durus do di hau silang i<br>Rara pe dosanta ias dibaen i<br>Puji ma Debata ale manisia<br>Las roham las roham somba ma Debata<br>Dapothon Jahowa na sun timbul i<br>Marhite AnakNa Tuhan Jesus i</span></p>
+<p class="v"><span class="v__n">3</span><span>(3) Balga situtu pambaenMi Debata<br>Tung so hasuhatan holong ni rohaM<br>Tu jolma pardosa asi do rohaM<br>Diungkap Ho dalan lao tu banuaM<br>Puji ma Debata ale manisia<br>Las roham las roham somba ma Debata<br>Dapothon Jahowa na sun timbul i<br>Marhite AnakNa Tuhan Jesus i</span></p>
+
+</div>
+ </article>
+</main>
+
+
+
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle" data-editor-new="/editor/KIND/new/" data-editor-edit="/editor/KIND/0/" data-entry-new-url="/editor/entry/new/" data-entry-save-new-url="/editor/entry/new/save/" data-entry-edit-url="/editor/entry/0/edit/" data-entry-delete-url="/editor/entry/0/delete/" data-entry-songs-url="/editor/entry/songs/" data-entry-song-verses-url="/editor/entry/song/0/verses/" data-entry-chapter-url="/editor/entry/chapter/0/0/" data-old-item-edit-url="/editor/item/0/edit/" data-old-item-delete-url="/editor/item/0/delete/" data-feedback-guarded="true">
+  <div class="editor__content" id="editorContent" aria-live="polite"></div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+</dialog>
+
+
+<dialog class="media-error-dialog" id="mediaErrorDialog" aria-labelledby="mediaErrorTitle"><h2 id="mediaErrorTitle">File not supported</h2><p id="mediaErrorMessage"></p><button type="button" id="mediaErrorClose">OK</button></dialog>
+
+<dialog class="preview" id="previewModal" aria-label="Preview" data-feedback-guarded="true">
+  
+  <div class="preview__head" data-preview-head="" hidden="">
+    <span class="preview__title" id="previewTitle"></span>
+    <div class="preview__versetabs" data-preview-tabs-host="" hidden=""></div>
+  </div>
+  <div class="preview__body" id="previewContent" tabindex="0"></div>
+  <div class="preview__foot" data-screen-mode-footer="" hidden="">
+    <div class="screen-mode preview__screen-mode" role="group" aria-label="Screen mode" data-preview-screen-mode="">
+      <span class="screen-mode__thumb" aria-hidden="true"></span>
+      <button type="button" data-preview-mode="multi_line" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"></path></svg>Multi-line
+      </button>
+      <span class="screen-mode__custom" data-preview-custom="" tabindex="0" role="status" aria-label="Custom breaks" title="Custom breaks">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"></rect><path d="M2.5 10h15"></path></svg>
+      </span>
+      <button type="button" data-preview-mode="single_screen" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"></rect><path d="M5.5 8h9M5.5 11h9"></path></svg>Single-screen
+      </button>
+    </div>
+    <p class="preview__mode-readonly" data-mode-readonly="" hidden=""></p>
+  </div>
+  <div class="preview__confirm-layer" data-mode-confirm="" hidden="">
+    <div class="preview__confirm" role="alertdialog" aria-modal="true" aria-labelledby="modeConfirmTitle" aria-describedby="modeConfirmMessage">
+      <h3 id="modeConfirmTitle" data-confirm-title=""></h3>
+      <p id="modeConfirmMessage">Your custom screen breaks will be removed.</p>
+      <div class="preview__confirm-actions">
+        <button type="button" data-confirm-cancel="">Keep custom</button>
+        <button type="button" data-confirm-accept="">Switch &amp; remove</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList"><p class="media-transfers__empty">Local library unavailable on this computer.</p></div></dialog>
+<div class="edit-toasts" id="editToastHost" popover="manual" aria-live="polite" aria-relevant="additions text" aria-atomic="false" role="region" aria-label="Edit request feedback"></div>
+
+<div class="ftip" id="ftip" role="tooltip"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
