@@ -34,7 +34,7 @@ at 1280×800; control 34 × 34; the phone draws only Media files (90.7 px). No d
 | # | Type | Finding | Disposition |
 | --- | --- | --- | --- |
 | C1 | missing | The projector page never finished adopting the stored service: `static/web/projector.js` assigned `savedScreensSignature` — a variable spec 136 removed when the offline library went — under `'use strict'`, so `adoptService` threw at that line before `done`. Evidence: the console reported `ReferenceError: savedScreensSignature is not defined`, the reopened page showed service 144 at screen 0 with `data-showing="false"`, and the fetched screens were already in the stage. After removing the dead assignment, the reopened window lands on screen 4 with the words up. | Fixed in this pass: the assignment is deleted (dead — nothing reads it). Code at fault, so it became a task (T006's scope) rather than a spec conflict. It restores spec 119's adoption behaviour that FR-002 depends on; `docs/spec/projector.md` is unchanged because no behaviour changed — the defect was that behaviour not working. |
-| C2 | note | The capability file's R14 named only the Project control at the phone width; the new control must be covered by that rule. | Folded: R14's sentence now names both controls, and R15 states it again where the control is defined. |
+| C2 | note | The capability file's R14 named only the Project control at the phone width; the new control must be covered by that rule. | Folded: R14's sentence now names both controls, and R16 states it again where the control is defined (renumbered from R15 at the merge with slice 139). |
 
 No `contradicts` or `unrequested` gaps: every requirement and success criterion has its row, and
 each row was checked by the method it declared.

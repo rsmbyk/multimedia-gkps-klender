@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-27
-**slices**: `141-projector-window-reopen`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -526,8 +526,37 @@ beside the always-visible control. Every icon in the toolbar SHALL be drawn at o
 - WHEN the window is 1440px wide
 - THEN the columns push the stage exactly as they did before this requirement
 
+### R15 — The landing page's search field sits on the window's middle
 
-### R15 — A service on air offers the way back to its projector window
+On the landing page the search field SHALL be vertically centred on the window's middle, within 1px,
+at every width from 320px to 1920px — the field's own border box, not the logo-and-field block it is
+part of. The logo SHALL keep its 96px box 26px above the field, whole, and the landing page SHALL stay
+exactly one window tall, adding neither a vertical nor a horizontal scrollbar.
+
+The section SHALL be as tall as the box the stage leaves it, so the phone layout — where the stage pads
+for its toolbar — centres on the same terms as the desktop rather than 36px low. The stage's two
+vertical paddings SHALL be stated once, so a layout that moves one moves the measurement with it.
+
+The views that are not the landing SHALL NOT move: a results page's compact bar keeps its place at the
+top of the stage and never recentres on a resize, and a reading page keeps its column where it was.
+
+#### Scenario: a desktop window
+- WHEN the landing page is opened at 1920×1000, 1440×900, 1280×800 or 1024×768
+- THEN the field's box centre equals the window's middle within 1px, the logo sits 26px above it, and the page is one window tall
+
+#### Scenario: a phone
+- WHEN the landing page is opened at 720×900, 600×800, 390×844 or 320×568
+- THEN the field is on the middle on the same terms, with the logo wholly inside the window above it
+
+#### Scenario: the results page
+- WHEN a query is submitted and the window is then resized
+- THEN the compact bar stays at the top of the stage, its field 46px (or 82px at the phone width) from the stage's top, and never recentres
+
+#### Scenario: a reading page
+- WHEN a saved reading page is opened
+- THEN no search section is painted, and the reading column occupies the stage exactly as before
+
+### R16 — A service on air offers the way back to its projector window
 
 While this page's Tata Ibadah is the browser's live service and the display is on, the reading page's
 project group SHALL draw a second control immediately before Stop projecting: an icon-only button
