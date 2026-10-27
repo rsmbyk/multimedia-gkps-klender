@@ -2,7 +2,7 @@
 
 **Slice**: `specs/139-home-search-center` · **Branch**: `feat/139-home-search-center`
 **Date**: 2026-10-27 · **Status**: Draft (gate 1 accepted the spec on 2026-10-27)
-**bump**: `patch` — a presentation fix to an existing surface; no stored value, endpoint or capability
+**bump**: `patch` — `VERSION` 1.22.0 → **1.22.1**; a presentation fix to an existing surface; no stored value, endpoint or capability
 is added or removed. One `CHANGELOG.md` line under `## [Unreleased]` → `### Changed`: *"The landing
 page's search field is centred on the window's middle at every width, with the logo above it — it sat
 49px low on a desktop and 85px low on a phone."*
