@@ -1,6 +1,6 @@
 ---
 id: ITEM-150
-status: ready
+status: in_review
 title: 'A closed projector window cannot be reopened without stopping the projection'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-10-27
 updated: 2026-10-27
 spec: specs/141-projector-window-reopen/spec.md
 branch: feat/141-projector-window-reopen
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/408
+issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/407
 closed_at:
 closed_reason:
 bump: patch
