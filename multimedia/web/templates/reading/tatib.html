@@ -10,6 +10,15 @@
 {% block read_actions %}{% if service_id %}
 <div class="read__project" data-project-group data-display-channel="gkps-service-display">
   {% if service_media %}<button type="button" class="read__project-btn" id="serviceMediaButton" aria-label="Media files">Media files</button>{% endif %}
+  <button type="button" class="read__project-btn read__project-btn--icon" data-project-window
+          data-projector-url="{% url 'web-projector' %}" data-project-service="{{ service_id }}"
+          aria-label="Open projector window" title="Open projector window">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.5" y="6.6" width="9.6" height="9" rx="1.6"/>
+      <path d="M12.6 4.2h3.8v3.8M16.4 4.2 9.9 10.7"/>
+    </svg>
+  </button>
   <button type="button" class="read__project-btn" data-project-open
           data-projector-url="{{ projector_url }}" data-project-service="{{ service_id }}"
           data-label-project="Project" data-label-stop="Stop projecting"

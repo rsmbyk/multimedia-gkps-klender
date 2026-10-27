@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>141 preview — reopening the projector window</title>
+<!-- The project's own tokens and components. Nothing about their look is restated here. -->
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<style>
+  /* ==========================================================================
+     Preview chrome only. Never part of the product.
+     ========================================================================== */
+  body { margin: 0; background: var(--canvas); color: var(--ink); font: 13px/1.45 ui-sans-serif, system-ui, sans-serif; }
+  .bar {
+    position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 22px;
+    align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--divider); background: var(--canvas);
+  }
+  .bar h1 { margin: 0 12px 0 0; font-size: 13px; font-weight: 650; letter-spacing: .01em; }
+  .bar__note { color: var(--head-ink); font-size: 11.5px; }
+  .switch { display: inline-flex; align-items: center; gap: 2px; border: 1px solid var(--divider); border-radius: 9px; padding: 2px; }
+  .switch button {
+    height: 26px; padding: 0 10px; border: 0; border-radius: 7px; background: none;
+    color: var(--head-ink); font: 600 11.5px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+  }
+  .switch button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); }
+  .switch + .switch { margin-left: 2px; }
+  .field { display: inline-flex; align-items: center; gap: 8px; }
+  .field > span { color: var(--head-ink); font-size: 11.5px; }
+
+  .frames { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 22px; padding: 22px; }
+  .frame { border: 1px solid var(--divider); border-radius: 12px; overflow: hidden; background: var(--canvas); }
+  .frame__label {
+    margin: 0; padding: 9px 14px; border-bottom: 1px solid var(--divider);
+    color: var(--head-ink); font-size: 11px; letter-spacing: .02em;
+  }
+  .frame__label b { color: var(--ink); font-weight: 650; }
+  .frame__stage { box-sizing: border-box; padding: 40px 64px 28px; }
+  .frame--1440 .frame__stage { width: 528px; }
+  .frame--1280 .frame__stage { width: 368px; }
+  .frame--425 .frame__stage { width: 425px; padding: 24px 18px; }
+  .frame .read { width: 100%; }
+  /* the phone's own rule (components.css: "the Project control is the desktop's"):
+     the fixed-width frame cannot answer a media query, so it is restated here */
+  .frame--425 [data-project-open] { display: none; }
+  .frame--425 .read__project[data-displaying="true"] .read__project-btn[data-project-window] { display: none; }
+
+  /* ==========================================================================
+     The proposed product rules for spec 141 — they land in
+     static/styles/design/components.css with the implementation.
+     ========================================================================== */
+  /* the reopen control: a square icon button, like nothing else in the group */
+  .read__project-btn.read__project-btn--icon,
+  .read[data-kind="tatib"] .read__project-btn--icon { width: 34px; padding: 0; justify-content: center; }
+  .read__project-btn[data-project-window] { display: none; }
+  @media (min-width: 721px) {
+    /* drawn only while this page's service is the one on air */
+    .read__project[data-displaying="true"] .read__project-btn[data-project-window] { display: inline-flex; }
+    /* the group wraps inside a narrow pane instead of spilling past it */
+    .read[data-kind="tatib"] .read__project { flex-wrap: wrap; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <h1>Reopening the projector window</h1>
+  <div class="field">
+    <span>Display</span>
+    <div class="switch" role="group" aria-label="Display state">
+      <button type="button" data-state="off" aria-pressed="false">Off air</button>
+      <button type="button" data-state="on" aria-pressed="true">On air</button>
+    </div>
+  </div>
+  <div class="field">
+    <span>Service</span>
+    <div class="switch" role="group" aria-label="Media files">
+      <button type="button" data-media="no" aria-pressed="false">No media</button>
+      <button type="button" data-media="yes" aria-pressed="true">With media</button>
+    </div>
+  </div>
+  <div class="field">
+    <span>Theme</span>
+    <div class="switch" role="group" aria-label="Theme">
+      <button type="button" data-theme="light" aria-pressed="true">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+  <p class="bar__note">Hover and focus the controls; the frames are the stage column at its real width.</p>
+</header>
+
+<main class="frames" id="frames"></main>
+
+<template id="readTpl">
+  <article class="read" lang="id" data-kind="tatib">
+    <header class="read__head">
+      <div class="read__head-top">
+        <p class="read__eyebrow">25 Oktober 2026</p>
+        <div class="read__project" data-project-group data-displaying="false">
+          <button type="button" class="read__project-btn" data-media-files hidden>Media files</button>
+          <button type="button" class="read__project-btn read__project-btn--icon" data-project-window
+                  data-projector-url="/projector" aria-label="Open projector window" title="Open projector window">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="6.6" width="9.6" height="9" rx="1.6"/>
+              <path d="M12.6 4.2h3.8v3.8M16.4 4.2 9.9 10.7"/>
+            </svg>
+          </button>
+          <button type="button" class="read__project-btn" data-project-open
+                  data-projector-url="/projector?service=147" data-project-service="147"
+                  data-label-project="Project" data-label-stop="Stop projecting"
+                  aria-label="Project" title="Project">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+              <circle cx="6.7" cy="9.7" r="1.7"/>
+              <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+            </svg>
+            <span data-project-label>Project</span>
+          </button>
+        </div>
+      </div>
+      <div class="read__row">
+        <h1 class="read__title"><span>Ibadah Minggu</span></h1>
+      </div>
+    </header>
+    <div class="read__body">
+      <div class="entry__empty">
+        <p class="entry__empty-title">This Tata Ibadah is empty.</p>
+        <p class="entry__empty-hint">Add the first item to start preparing the service.</p>
+        <div class="entry__empty-actions">
+          <button type="button" class="entry__empty-btn" title="Add Passage">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/></svg>
+            <span class="sr">Add Passage</span>
+          </button>
+          <button type="button" class="entry__empty-btn" title="Add Song">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/></svg>
+            <span class="sr">Add Song</span>
+          </button>
+          <button type="button" class="entry__empty-btn" title="Add Text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/></svg>
+            <span class="sr">Add Text</span>
+          </button>
+          <button type="button" class="entry__empty-btn" title="Add Media">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="2.4"/><path d="M10.4 9.2v5.6l4.6-2.8z"/></svg>
+            <span class="sr">Add Media</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </article>
+</template>
+
+<script>
+  'use strict';
+
+  /* The three frames are the stage column at the three widths that matter:
+     the 1440 window's 400px pane, the 1280 window's 240px pane, and the phone's
+     389px pane, where the Project control is not drawn. */
+  var FRAMES = [
+    {cls: 'frame--1440', label: 'a 1440 px window', measure: 'stage 528 px · pane 400 px'},
+    {cls: 'frame--1280', label: 'a 1280 px window', measure: 'stage 368 px · pane 240 px'},
+    {cls: 'frame--425',  label: 'a 425 px window',  measure: 'pane 389 px · no Project control'}
+  ];
+
+  var template = document.getElementById('readTpl');
+  var frames = document.getElementById('frames');
+  FRAMES.forEach(function (spec) {
+    var section = document.createElement('section');
+    section.className = 'frame ' + spec.cls;
+    section.dataset.frame = spec.cls;
+    var label = document.createElement('p');
+    label.className = 'frame__label';
+    label.innerHTML = '<b>' + spec.label + '</b> — ' + spec.measure;
+    var stage = document.createElement('div');
+    stage.className = 'frame__stage';
+    stage.appendChild(template.content.cloneNode(true));
+    section.appendChild(label);
+    section.appendChild(stage);
+    frames.appendChild(section);
+  });
+
+  /* The one rule the live page follows (web/display.js, syncButton):
+     data-displaying="true" + the label swap while THIS service is on air. */
+  var state = {on: true, media: true, theme: 'light'};
+
+  function apply() {
+    document.documentElement.dataset.theme = state.theme;
+    document.querySelectorAll('[data-project-group]').forEach(function (group) {
+      group.dataset.displaying = state.on ? 'true' : 'false';
+      var stop = group.querySelector('[data-project-open]');
+      var label = stop.querySelector('[data-project-label]');
+      label.textContent = state.on ? 'Stop projecting' : 'Project';
+      stop.setAttribute('aria-label', label.textContent);
+      stop.title = label.textContent;
+    });
+    document.querySelectorAll('[data-media-files]').forEach(function (button) {
+      button.hidden = !state.media;
+    });
+  }
+
+  function press(attr, value) {
+    document.querySelectorAll('[data-' + attr + ']').forEach(function (button) {
+      button.setAttribute('aria-pressed', button.dataset[attr] === value ? 'true' : 'false');
+    });
+    if (attr === 'state') state.on = value === 'on';
+    if (attr === 'media') state.media = value === 'yes';
+    if (attr === 'theme') state.theme = value;
+    apply();
+  }
+
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-state],[data-media],[data-theme]');
+    if (!button) return;
+    if (button.dataset.state) press('state', button.dataset.state);
+    else if (button.dataset.media) press('media', button.dataset.media);
+    else press('theme', button.dataset.theme);
+  });
+
+  /* A click on the controls in the frames is a look, not an action. */
+  document.querySelectorAll('[data-project-window],[data-project-open],[data-media-files]').forEach(function (b) {
+    b.addEventListener('click', function (event) { event.preventDefault(); });
+  });
+
+  apply();
+</script>
+</body>
+</html>

@@ -10,7 +10,9 @@
  *
  * This file is the shared state module. The dock is the writer; the projector
  * (web/projector.js) and the caption overlay (web/obs-overlay.js) render; the
- * reading page's project button is a writer for one act (project / release).
+ * reading page's project button is a writer for one act (project / release), and
+ * its second control opens the projector window again while the service is on air
+ * (spec 141) without writing anything.
  *
  * Messages, all on `gkps-service-display`:
  *
@@ -171,7 +173,40 @@
     n.open.title = text;
   }
 
+  /* ---------- the way back to a closed window (spec 141) -------------------- */
+
+  /* The window this page last opened, so a second press focuses it. It is a hint,
+     not the truth: after a reload it is gone, and the named window is asked for. */
+  var projected = null;
+
+  /* Bring the projector window forward, opening it only when it is not there. An
+     empty URL reuses the named window without loading it; only a fresh, blank one
+     is sent to the page. A blocked window opens nothing and changes nothing. */
+  function openProjector(url) {
+    if (projected && !projected.closed) {
+      try { projected.focus(); } catch (e) { /* a window that is already gone */ }
+      return;
+    }
+    var win = null;
+    try { win = window.open('', 'gkps-projector', 'width=1280,height=800'); } catch (e) { win = null; }
+    if (!win) return;
+    projected = win;
+    try {
+      if (win.location.href === 'about:blank') win.location.href = url;
+    } catch (e) { /* a window that is not ours is left where it is */ }
+    try { win.focus(); } catch (e) { /* the window may already be gone */ }
+  }
+
   document.addEventListener('click', function (event) {
+    var reopen = event.target.closest('[data-project-window]');
+    if (reopen) {
+      event.preventDefault();
+      /* Only this page's own service, and only while it is on air: the control is a
+         reader, so it never releases, hides or adopts anything. */
+      if (state.on !== true || state.service !== Number(reopen.dataset.projectService)) return;
+      openProjector(reopen.dataset.projectorUrl || '/projector');
+      return;
+    }
     var open = event.target.closest('[data-project-open]');
     if (!open) return;
     event.preventDefault();
@@ -185,7 +220,10 @@
        screen. The dock drives what it renders from here on (spec 119). */
     var projector = window.open(open.dataset.projectorUrl, 'gkps-projector',
                                 'width=1280,height=800');
-    if (projector) projector.focus();
+    if (projector) {
+      projector.focus();
+      projected = projector;                              /* the reopen control focuses it */
+    }
     show(service, 0);                                     /* the display opens at its start */
     syncButton();
   });
