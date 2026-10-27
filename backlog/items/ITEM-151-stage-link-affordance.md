@@ -1,5 +1,5 @@
 ---
-id: ITEM-150
+id: ITEM-151
 status: speccing
 title: 'The stage''s entry links read as text until hovered'
 type: chore
@@ -10,14 +10,14 @@ updated: 2026-10-27
 spec: specs/140-stage-link-affordance/spec.md
 branch: feat/140-stage-link-affordance
 pr:
-issue:
+issue: 409
 closed_at:
 closed_reason:
 bump: patch
 release_version:
 ---
 
-# ITEM-150: The stage's entry links read as text until hovered
+# ITEM-151: The stage's entry links read as text until hovered
 
 ## Summary
 

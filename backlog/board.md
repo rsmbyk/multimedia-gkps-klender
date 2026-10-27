@@ -20,7 +20,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-150](./items/ITEM-150-stage-link-affordance.md) | The stage's entry links read as text until hovered | Every song and passage title is a green (or blue) line at rest; it becomes heading ink, underlined only on hover or keyboard focus | chore | P2 | S | [140](../specs/140-stage-link-affordance/spec.md) | 2026-10-27 |
+| [ITEM-151](./items/ITEM-151-stage-link-affordance.md) | The stage's entry links read as text until hovered | Every song and passage title is a green (or blue) line at rest; it becomes heading ink, underlined only on hover or keyboard focus | chore | P2 | S | [140](../specs/140-stage-link-affordance/spec.md) | 2026-10-27 |
 
 ## Ready
 
