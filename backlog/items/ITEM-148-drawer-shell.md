@@ -1,6 +1,6 @@
 ---
 id: ITEM-148
-status: in-progress
+status: in_review
 title: 'On a small screen the sidebars are a drawer stack; a phone gets a toolbar'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-27
 updated: 2026-10-27
 spec: specs/138-sidebar-overlay-stack/spec.md
 branch: feat/138-sidebar-overlay-stack
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/405
 issue:
 closed_at:
 closed_reason:
