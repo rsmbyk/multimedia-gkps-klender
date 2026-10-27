@@ -15,6 +15,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-140](./items/ITEM-140-projector-display-off-state.md) | The projector keeps data-showing=true when display-off is asked for | Audio and video display-off tests never see the projector leave its showing state; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-144](./items/ITEM-144-date-dependent-picker-e2e.md) | Five date-picker E2E tests fail when the nearest Sunday falls in the next month | `_fill` steps months from today while the picker opens on the nearest Sunday, so five editor tests time out on days that cross a month boundary; identical on develop | fix | P1 | S | — | 2026-10-26 |
+| [ITEM-148](./items/ITEM-148-drawer-shell.md) | On a small screen the sidebars are a drawer stack; a phone gets a toolbar | Below 1272px the columns stop pushing and become drawers over the page — one stack, the child covering the parent, a backdrop that closes them, the rail restoring the last level; a phone swaps the icon strip for a toolbar and a labelled menu drawer | feat | P1 | L | [138](../specs/138-sidebar-overlay-stack/spec.md) | 2026-10-27 |
 
 ## Speccing
 

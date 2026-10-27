@@ -1,0 +1,1089 @@
+<html lang="en" data-theme="light" data-theme-mode="system" data-nav="closed" data-ch="closed" data-read="on" data-home="reading" data-section="kidung" data-ch-mode="song" data-browser-offline="false" data-bible-edition="tb" data-rail="closed"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buku Ende HKBP — Multimedia GKPS Klender</title>
+
+<!-- Resolve the saved mode before first paint. -->
+
+
+<link rel="shortcut icon" type="image/png" href="../../../static/assets/gkps.png">
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<link rel="stylesheet" href="../../../static/styles/design/offline.css">
+<style>
+/* Spec 138 prototype — the drawer shell over the real page.
+   Everything here is the proposal; the page under it is the project's own markup
+   and stylesheets. Two attributes drive it, both set by proto.js from the window
+   width and the inspector's thresholds:
+
+     html[data-mode="overlay"]   the sidebars are drawers, not columns
+     html[data-phone="yes"]      the drawer shell with a top toolbar
+
+   Only the deltas are written here: geometry, the backdrop, the toolbar, the
+   names the rail only had as tooltips, and the stacking. */
+
+/* ---------- overlay mode: nothing pushes ---------- */
+html[data-mode="overlay"] {
+  --books-w: 0px !important;
+  --ch-w-shown: 0px !important;
+  --reserve-ch: 0px !important;
+  --proto-drawer-w: var(--panel-w);
+}
+html[data-mode="overlay"] .stage {
+  margin-left: var(--rail-w) !important;
+  width: auto !important;
+  transition: none !important;
+}
+
+/* The rail is painted ABOVE the drawers, so a drawer at rest is hidden behind it
+   and, sliding in, appears to come out from under it. */
+html[data-mode="overlay"] .rail { z-index: 50; }
+
+/* both lists are drawers hanging off the rail; level 2 lands on level 1 */
+html[data-mode="overlay"] .panel,
+html[data-mode="overlay"] .chapters {
+  position: fixed;
+  top: 0; bottom: 0;
+  left: var(--rail-w);
+  width: var(--proto-drawer-w);
+  max-width: none;
+  clip-path: none !important;
+  visibility: visible !important;
+  transform: translateX(-100%);
+  transition: transform var(--ease), box-shadow var(--ease);
+  box-shadow: none;
+  z-index: 40;
+  border-right: 1px solid var(--divider);
+}
+html[data-mode="overlay"] .chapters { z-index: 41; }
+
+html[data-mode="overlay"][data-nav="open"] .panel {
+  transform: none !important;
+  box-shadow: var(--shadow);
+}
+/* The child covers its parent exactly: same left edge, same width, one step higher.
+   !important because the page's own `[data-ch-mode="song"]` rule below 1272px
+   still pins this element's left edge, and the prototype must win. */
+html[data-mode="overlay"][data-ch="open"] .chapters {
+  transform: none !important;
+  left: var(--rail-w) !important;
+  width: var(--proto-drawer-w) !important;
+  box-shadow: var(--shadow-dialog);
+}
+
+/* ---------- the backdrop ---------- */
+.proto-backdrop {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  left: var(--rail-w);
+  background: var(--backdrop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ease);
+  z-index: 35;
+}
+html[data-mode="overlay"]:is([data-nav="open"], [data-ch="open"]) .proto-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================================
+   The phone: a top toolbar, no strip, drawers at full width
+   ============================================================ */
+:root { --toolbar-h: 58px; }
+
+html[data-phone="yes"] .stage {
+  margin-left: 0 !important;
+  padding-top: calc(var(--toolbar-h) + 12px) !important;
+}
+
+/* every phone drawer is the whole width, and starts under the toolbar. The
+   `[data-ch="open"]` rule above is more specific than a bare [data-phone] one,
+   so the phone's geometry is restated with the open state included. */
+html[data-phone="yes"] .panel,
+html[data-phone="yes"] .chapters,
+html[data-mode="overlay"][data-phone="yes"][data-nav="open"] .panel,
+html[data-mode="overlay"][data-phone="yes"][data-ch="open"] .chapters {
+  top: var(--toolbar-h);
+  left: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;   /* the page caps the song list at 26rem */
+}
+
+/* the rail is a drawer of its own: the main menu, nothing else */
+html[data-phone="yes"] .rail {
+  top: var(--toolbar-h);
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  max-width: 100vw;
+  align-items: stretch;
+  padding: 10px;
+  box-sizing: border-box;
+  transform: translateX(-100%);
+  transition: transform var(--ease);
+  z-index: 42;
+  border-right: 1px solid var(--divider);
+  box-shadow: none;
+}
+html[data-phone="yes"][data-rail="open"] .rail {
+  transform: none;
+  box-shadow: var(--shadow-dialog);
+}
+/* On a phone the menu stays under the section list: level 1 slides over it, and
+   level 2 over level 1, so nothing swaps places. */
+html[data-phone="yes"] .panel { z-index: 43; }
+html[data-phone="yes"] .chapters { z-index: 44; }
+/* the Project / Stop projecting control is a wide-screen action */
+html[data-phone="yes"] [data-project-open] { display: none !important; }
+/* A touch screen has no hover to reveal a row's edit control with, and neither
+   does a phone drawer. The project already exempts .entry__acts and the add
+   tiles this way; the sidebar rows were missed. */
+html[data-phone="yes"] .row-edit { opacity: 1; pointer-events: auto; }
+/* With the edit control always on, the date no longer has a column of its own on
+   a phone: the name keeps the row and the date drops under it, clear of the
+   control. */
+html[data-phone="yes"] .panel__body .book {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  row-gap: 1px;
+  padding-right: 42px;
+}
+html[data-phone="yes"] .panel__body .book__n { grid-column: 1; }
+html[data-phone="yes"] .panel__body .book__today { grid-column: 2; margin-left: 6px; }
+html[data-phone="yes"] .panel__body .book__s { grid-column: 1 / -1; }
+/* the edit control keeps the row's middle, now against two lines */
+html[data-phone="yes"] .panel__body li > .row-edit { top: 50%; }
+@media (hover: none) and (pointer: coarse) {
+  .row-edit { opacity: 1; pointer-events: auto; }
+}
+html[data-phone="yes"] .rail__logo { display: none; }
+html[data-phone="yes"] .rail__menu {
+  width: 100%;
+  align-items: stretch;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  gap: 6px;
+  list-style: none;
+}
+html[data-phone="yes"] .rail__menu li { width: 100%; }
+html[data-phone="yes"] .rail__menu .rail__btn {
+  /* the strip's button is a centred grid; the drawer's is icon + name */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 48px;
+  border-radius: 9px;
+  gap: 12px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+html[data-phone="yes"] .rail__menu .rail__btn svg { flex: none; width: 22px; height: 22px; }
+/* the name the rail only carried as a tooltip becomes its label, in the icon's ink */
+html[data-phone="yes"] .rail__menu .rail__btn .proto-label {
+  display: inline;
+  font: 600 14.5px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: inherit;
+  letter-spacing: -.01em;
+}
+.proto-label { display: none; }
+/* tooltips are for the strip, not the drawer */
+html[data-phone="yes"] .rail__btn::after,
+html[data-phone="yes"] .ftip { display: none !important; }
+
+/* ---------- the phone toolbar ---------- */
+.proto-toolbar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--toolbar-h);
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--divider);
+  z-index: 45;
+}
+html[data-phone="yes"] .proto-toolbar { display: flex; }
+.proto-toolbar__control,
+.proto-toolbar__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  border-radius: 9px;
+  cursor: pointer;
+  padding: 0;
+  flex: none;
+}
+.proto-toolbar__control:hover,
+.proto-toolbar__logo:hover { background: var(--rail-bg); }
+.proto-toolbar__control svg { width: 24px; height: 24px; }   /* the rail's own icon size */
+.proto-toolbar__logo img { width: 34px; height: 34px; border-radius: 9px; display: block; }
+.proto-toolbar__title {
+  font: 600 14px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: var(--head-ink);
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 4px;
+}
+.proto-toolbar__spacer { flex: 1 1 auto; }
+/* the rail's foot — transfer progress and the theme — moved into the toolbar */
+.proto-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+html[data-phone="yes"] .proto-toolbar__right .rail__foot {
+  margin: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+html[data-phone="yes"] .proto-toolbar__right .rail__theme { display: inline-flex; }
+
+/* ---------- the inspector: a prototype's own furniture ---------- */
+.proto-panel {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 60;
+  width: 268px;
+  background: var(--tip-bg);
+  color: var(--tip-ink);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 12px;
+  box-shadow: var(--shadow-dialog);
+  font: 500 12.5px/1.45 ui-sans-serif, system-ui, sans-serif;
+  padding: 10px 12px 12px;
+}
+.proto-panel[hidden] { display: none; }
+.proto-panel h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.proto-panel__row { display: flex; align-items: center; gap: 8px; margin: 0 0 7px; }
+.proto-panel__row > span { flex: none; width: 78px; opacity: .75; }
+.proto-panel select {
+  flex: 1 1 auto; min-width: 0; height: 27px; border-radius: 6px;
+  background: rgba(255, 255, 255, .1); color: inherit; border: 1px solid rgba(255, 255, 255, .2);
+  font: inherit;
+}
+.proto-panel__buttons { display: flex; gap: 6px; margin-top: 9px; }
+.proto-panel button {
+  flex: 1 1 auto; height: 29px; border-radius: 7px; border: 1px solid rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .1); color: inherit; font: inherit; cursor: pointer;
+}
+.proto-panel button:hover { background: rgba(255, 255, 255, .2); }
+.proto-panel__readout { margin: 8px 0 0; opacity: .7; font-variant-numeric: tabular-nums; }
+.proto-chip {
+  position: fixed; right: 12px; bottom: 12px; z-index: 60;
+  height: 32px; padding: 0 13px; border-radius: 999px;
+  background: var(--tip-bg); color: var(--tip-ink);
+  border: 1px solid rgba(255, 255, 255, .2); box-shadow: var(--shadow);
+  font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     The rail: logo tile at top, icon menu in the middle,
+     theme choices pinned at the bottom.
+     ============================================================ -->
+<aside class="rail" aria-label="Main navigation">
+
+  <a class="rail__logo" href="/" aria-label="GKPS Klender — home">
+    <img src="../../../static/assets/gkps.png" alt="" width="40" height="40">
+  </a>
+
+  <ul class="rail__menu">
+    <!-- SEARCH: keeps the last result set (upgraded to it in reading.js) -->
+    <li>
+      <a class="rail__btn" id="railSearch" href="/" data-tip="Search" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+        </svg>
+      </a>
+    </li>
+    <!-- ALKITAB -->
+    <li>
+      <a class="rail__btn" data-tip="Alkitab" aria-label="Alkitab" data-panel="alkitab" aria-expanded="false" aria-controls="panel chapters" href="/bible/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"></path>
+          <path d="M12 6.6v13.6"></path>
+        </svg>
+      </a>
+    </li>
+
+    <!-- KIDUNG -->
+    <li>
+      <a class="rail__btn" data-tip="Kidung" aria-label="Kidung" data-panel="kidung" aria-expanded="true" aria-controls="panel chapters" href="/songs/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 17.4V5.6l10.2-2v11.6"></path>
+          <circle cx="6.7" cy="17.4" r="2.4"></circle>
+          <circle cx="16.9" cy="15.2" r="2.4"></circle>
+        </svg>
+      </a>
+    </li>
+
+    <!-- TATA IBADAH -->
+    <li>
+      <a class="rail__btn" data-tip="Tata Ibadah" aria-label="Tata Ibadah" data-panel="tatib" aria-expanded="false" aria-controls="panel chapters" href="/tatib/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"></rect>
+          <path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"></path>
+        </svg>
+      </a>
+    </li>
+    <li><a class="rail__btn" id="railMediaLibrary" href="/media-library/" data-tip="Media Library" aria-label="Media Library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7V5.8c0-1 .8-1.8 1.8-1.8h5.1l2 2h6.3c1 0 1.8.8 1.8 1.8v1.3"></path><path d="M3.5 9.1h17l-1.5 10.1c-.1.6-.7 1.1-1.3 1.1H6.3c-.6 0-1.2-.5-1.3-1.1L3.5 9.1Z"></path><path d="M8 13h8M8.7 16h6.6"></path></svg></a></li>
+  </ul>
+
+  <div class="rail__foot">
+    <button class="rail__btn media-transfer-rail" type="button" id="mediaTransferRail" data-tip="Transfer progress" aria-label="Transfer progress" hidden=""><span id="mediaTransferRailIcon" aria-hidden="true">⇄</span><span class="media-transfer-rail__dot" id="mediaTransferRailDot" data-state="active"></span></button>
+    <button class="rail__btn offline-sync-btn" type="button" id="offlineSyncButton" data-tip="Offline library" aria-label="Offline library status" aria-expanded="false" aria-controls="offlineSyncPanel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19.7 9A8 8 0 0 0 5.6 6.8L4 8.5M4.2 15A8 8 0 0 0 18.3 17l1.7-1.5"></path>
+        <path d="M4 4.6v3.9h3.9M20 19.4v-3.9h-3.9"></path>
+      </svg>
+      <span class="offline-sync-dot" id="offlineSyncDot" data-state="ready"></span>
+    </button>
+    <button class="rail__btn rail__theme" type="button" id="themeBtn" data-tip="System mode" aria-label="System mode">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"></path>
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"></path>
+      </svg>
+      <svg class="system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="13" rx="2"></rect>
+        <path d="M8 21h8M12 17v4"></path>
+      </svg>
+    </button>
+  </div>
+</aside>
+<section class="offline-sync-panel" id="offlineSyncPanel" aria-label="Offline library" aria-live="polite" hidden="">
+  <div class="offline-sync-head"><span class="offline-sync-mark" id="offlineSyncMark" data-state="ready"></span><div><h2>Offline library</h2>
+    <p class="offline-sync-availability" id="offlineSyncAvailability">Ready for offline use</p></div></div>
+  <p class="offline-sync-detail" id="offlineSyncDetail">Bible, songs, and Tata Ibadah are saved and available offline.</p>
+  <div class="offline-connection"><span>Browser connection</span>
+    <span class="offline-connection-value" id="offlineConnectionValue" data-offline="false">
+      <i aria-hidden="true"></i><span id="offlineConnectionLabel">Online</span></span>
+  </div>
+  <dl class="offline-sync-meta">
+    <div><dt>Last synced</dt><dd id="offlineLastSynced">10/27/2026, 9:44:22 AM</dd></div>
+    <div><dt>Last checked</dt><dd id="offlineLastChecked">10/27/2026, 9:44:24 AM</dd></div>
+  </dl>
+  <button class="offline-sync-action" id="offlineSyncNow" type="button">Sync now</button>
+  <div class="offline-sync-progress" id="offlineSyncProgress" hidden=""></div>
+</section>
+
+<!-- First list beside the rail: books / songbooks / services -->
+<aside class="panel" id="panel" role="region" aria-labelledby="panelTitle" data-mode-clicks-bound="true">
+  <h2 class="sr" id="panelTitle">Songbooks</h2>
+
+  <div class="panel__filter">
+    <div class="filter-box">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="9" cy="9" r="6"></circle><path d="M14 14l4 4" stroke-linecap="round"></path>
+      </svg>
+      <label class="sr" for="bookFilter">Filter songbooks</label>
+      <input id="bookFilter" type="search" placeholder="Filter songbooks..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear songbooks" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+    </div>
+    
+    <button class="ch__collapse" type="button" id="panelCollapse" aria-controls="panel" aria-expanded="true" aria-label="Close Kidung panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"></path>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"></path>
+      </svg>
+    </button>
+  </div>
+
+  
+  <button class="editor-add" type="button" id="panelAdd" data-editor-open="songbook" data-editor-label="Add songbook">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"></path></svg>
+    <span class="editor-add__label">Add songbook</span>
+  </button>
+  
+
+  <div class="panel__expand">
+    <button class="rail__btn" type="button" id="panelExpand" data-tip="Expand Alkitab panel" aria-label="Expand Alkitab panel" aria-controls="panel" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 5.5h15M4.5 12h9M4.5 18.5h15"></path>
+        <path d="M16.5 10l2.8 2 2.8-2v7.5l-2.8 2-2.8-2z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="panel__scrollwrap">
+    <button class="panel__ind" type="button" id="indUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"></path>
+      </svg>
+    </button>
+
+    <div class="panel__body" id="panelBody" tabindex="0" data-tile-clicks-bound="true">
+      
+
+<section class="group"><ul>
+  
+  <li><a class="book" href="/songs/book/1/" data-name="1" data-sim="HAL" aria-label="Haleluya (HAL)">
+    <span class="book__n">Haleluya</span>
+    <span class="book__s">HAL</span></a></li>
+  
+  <li><a class="book" href="/songs/book/2/" data-name="2" data-sim="KJ" aria-label="Kidung Jemaat (KJ)">
+    <span class="book__n">Kidung Jemaat</span>
+    <span class="book__s">KJ</span></a></li>
+  
+  <li><a class="book" href="/songs/book/3/" data-name="3" data-sim="PKJ" aria-label="Pelengkap Kidung Jemaat (PKJ)">
+    <span class="book__n">Pelengkap Kidung Jemaat</span>
+    <span class="book__s">PKJ</span></a></li>
+  
+  <li><a class="book" href="/songs/book/25/" data-name="25" data-sim="NKB" aria-label="Nyanyikanlah Kidung Baru (NKB)">
+    <span class="book__n">Nyanyikanlah Kidung Baru</span>
+    <span class="book__s">NKB</span></a></li>
+  
+</ul></section>
+
+<section class="group"><ul>
+  
+  <li><a class="book" href="/songs/book/35/" data-name="35" data-sim="" aria-label="ab">
+    <span class="book__n">ab</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="35" aria-label="Edit ab">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/36/" data-name="36" data-sim="" aria-label="b">
+    <span class="book__n">b</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="36" aria-label="Edit b">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/32/" data-name="32" data-sim="" aria-label="Buku Ende HKBP" aria-current="true">
+    <span class="book__n">Buku Ende HKBP</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="32" aria-label="Edit Buku Ende HKBP">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/18/" data-name="18" data-sim="" aria-label="Lagu">
+    <span class="book__n">Lagu</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="18" aria-label="Edit Lagu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/28/" data-name="28" data-sim="" aria-label="Lagu Sekolah Minggu">
+    <span class="book__n">Lagu Sekolah Minggu</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="28" aria-label="Edit Lagu Sekolah Minggu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/34/" data-name="34" data-sim="" aria-label="Lagu Setelah persembahan">
+    <span class="book__n">Lagu Setelah persembahan</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="34" aria-label="Edit Lagu Setelah persembahan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/33/" data-name="33" data-sim="" aria-label="Lagu setelah persembahan">
+    <span class="book__n">Lagu setelah persembahan</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="33" aria-label="Edit Lagu setelah persembahan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/31/" data-name="31" data-sim="" aria-label="Pengutusan Bahasa Indonesia">
+    <span class="book__n">Pengutusan Bahasa Indonesia</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="31" aria-label="Edit Pengutusan Bahasa Indonesia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/17/" data-name="17" data-sim="" aria-label="Tata Ibadah">
+    <span class="book__n">Tata Ibadah</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="17" aria-label="Edit Tata Ibadah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+  
+</ul></section>
+
+
+    </div>
+
+    <button class="panel__ind" type="button" id="indDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"></path>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="panelEmpty" role="status" hidden="" data-empty-title="No songbooks yet." data-empty-hint="Add a songbook to start collecting songs." data-filter-title="No matching songbooks." data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 17.4V5.6l10.2-2v11.6"></path>
+          <circle cx="6.7" cy="17.4" r="2.4"></circle>
+          <circle cx="16.9" cy="15.2" r="2.4"></circle>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"></circle>
+          <path d="m15.4 15.4 5 5"></path>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"></path>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<!-- Second list: bible chapter tiles, the wide song list, or Tata Ibadah contents -->
+<aside class="chapters" id="chapters" role="region" aria-labelledby="chTitle">
+  <h2 class="sr" id="chTitle">Song list — Buku Ende HKBP</h2>
+
+  <div class="ch__top">
+    <div class="ch__tools">
+      <div class="ch__search">
+        <div class="filter-box">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="9" cy="9" r="6"></circle><path d="M14 14l4 4" stroke-linecap="round"></path>
+          </svg>
+          <label class="sr" for="songFilter">Filter songs</label>
+          <input id="songFilter" type="search" placeholder="Filter songs..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear songs" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+        </div>
+        <button class="ch__sort" type="button" id="songSort" data-order="m" aria-label="Sort: last modified — switch to alphabetical" title="Sort: last modified — switch to alphabetical">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 5.5h14M5 10h10M8 14.5h4"></path>
+          </svg>
+          <span class="ch__sort-mark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+    <button class="ch__collapse" type="button" id="chCollapse" aria-controls="chapters" aria-expanded="true" aria-label="Close song list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"></path>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"></path>
+      </svg>
+    </button>
+  </div>
+
+  
+  <div class="ch__add">
+    <button class="editor-add" type="button" id="songAdd" data-editor-open="song" data-editor-book="32" data-editor-label="Add song">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"></path></svg>
+      <span class="editor-add__label">Add song</span>
+    </button>
+  </div>
+  
+
+  
+
+  <div class="ch__wrap">
+    <button class="ch__ind" type="button" id="chUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"></path>
+      </svg>
+    </button>
+
+    <div class="ch__body" id="chBody" tabindex="0"><ul id="chList" data-row-clicks-bound="true">
+<li><a class="songrow" href="/songs/1817/" data-i="1817" data-t="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. sangap di jahowa" data-o="0" data-m="1792986588845594" aria-current="true">
+  
+  <span class="songrow__t">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1817" aria-label="Edit aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1818/" data-i="1818" data-t="hibul rohangku" data-o="1" data-m="1792238008278652">
+  
+  <span class="songrow__t">690. Hibul Rohangku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1818" aria-label="Edit 690. Hibul Rohangku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1820/" data-i="1820" data-t="sai solhot tu silangmi" data-o="2" data-m="1792238006278652">
+  
+  <span class="songrow__t">449. Sai Solhot tu SilangMi</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1820" aria-label="Edit 449. Sai Solhot tu SilangMi">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1821/" data-i="1821" data-t="marolopolop tondingki" data-o="3" data-m="1792238005278652">
+  
+  <span class="songrow__t">435. Marolopolop Tondingki</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1821" aria-label="Edit 435. Marolopolop Tondingki">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1822/" data-i="1822" data-t="pahehe au on" data-o="4" data-m="1792238004278652">
+  
+  <span class="songrow__t">685. Pahehe Au On</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1822" aria-label="Edit 685. Pahehe Au On">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1823/" data-i="1823" data-t="togu au ale jahowa" data-o="5" data-m="1792238003278652">
+  
+  <span class="songrow__t">712. Togu au ale Jahowa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1823" aria-label="Edit 712. Togu au ale Jahowa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1824/" data-i="1824" data-t="sai patau ma au tuhan" data-o="6" data-m="1792238002278652">
+  
+  <span class="songrow__t">730. Sai Patau ma au Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1824" aria-label="Edit 730. Sai Patau ma au Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+
+</ul></div>
+
+    <button class="ch__ind" type="button" id="chDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"></path>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="chEmpty" role="status" hidden="" data-empty-title="No songs yet." data-empty-hint="Add the first song to this songbook." data-filter-title="No matching songs." data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 17.4V5.6l10.2-2v11.6"></path>
+          <circle cx="6.7" cy="17.4" r="2.4"></circle>
+          <circle cx="16.9" cy="15.2" r="2.4"></circle>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"></circle>
+          <path d="m15.4 15.4 5 5"></path>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"></path>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<main class="stage" data-lang-links-bound="true" data-stage-clicks-bound="true">
+ <section class="search-home" id="searchHome" aria-labelledby="searchHeading">
+  <div class="search-home__inner">
+   <h1 class="sr" id="searchHeading">Search GKPS Klender</h1>
+   <img class="search-home__logo" id="homeLogo" src="../../../static/assets/gkps.png" alt="GKPS Klender" width="96" height="96">
+   <form class="search-home__form" id="globalSearch" role="search" action="/search" method="get">
+    <label class="sr" for="searchQuery">Search Alkitab, Kidung, and Tata Ibadah</label>
+    <input class="search-home__input" id="searchQuery" type="search" name="q" value="" placeholder="Search Alkitab, Kidung, Tata Ibadah..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear search" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+    <button class="search-home__submit" type="submit" aria-label="Search">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+     </svg>
+    </button>
+   </form>
+  </div>
+ </section>
+ <section class="search-results" id="searchResults" aria-label="Search results" hidden="">
+   
+ </section>
+
+ <article class="read" id="read" lang="id" tabindex="-1" data-kind="song">
+  <p class="offline-saved-source" id="offlineSavedSource" hidden="">Saved copy</p>
+  <header class="read__head">
+   <div class="read__head-top">
+    <p class="read__eyebrow" id="readEyebrow">Buku Ende HKBP</p>
+    
+   </div>
+   <div class="read__row">
+    <h1 class="read__title"><span id="readName">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa</span> <span class="read__no" id="readNo"></span></h1>
+    
+   </div>
+  </header>
+  <div class="read__body" id="readBody">
+<p class="v"><span class="v__n">1</span><span>(1) Sangap di jahowa na sun timbul i<br>Balga ni holongNa ndang tarasam i<br>Dilehon AnakNa na sasada i<br>Manobus hita jolma pardosa i<br>Puji ma Debata ale manisia<br>Las roham las roham somba ma Debata<br>Dapothon Jahowa na sun timbul i<br>Marhite AnakNa Tuhan Jesus i</span></p>
+<p class="v"><span class="v__n">2</span><span>(2) Tung so hasuhatan do basaNa i<br>Marhite AnakNa nilehonNa i<br>MudarNa durus do di hau silang i<br>Rara pe dosanta ias dibaen i<br>Puji ma Debata ale manisia<br>Las roham las roham somba ma Debata<br>Dapothon Jahowa na sun timbul i<br>Marhite AnakNa Tuhan Jesus i</span></p>
+<p class="v"><span class="v__n">3</span><span>(3) Balga situtu pambaenMi Debata<br>Tung so hasuhatan holong ni rohaM<br>Tu jolma pardosa asi do rohaM<br>Diungkap Ho dalan lao tu banuaM<br>Puji ma Debata ale manisia<br>Las roham las roham somba ma Debata<br>Dapothon Jahowa na sun timbul i<br>Marhite AnakNa Tuhan Jesus i</span></p>
+
+</div>
+ </article>
+</main>
+
+
+
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle" data-editor-new="/editor/KIND/new/" data-editor-edit="/editor/KIND/0/" data-entry-new-url="/editor/entry/new/" data-entry-save-new-url="/editor/entry/new/save/" data-entry-edit-url="/editor/entry/0/edit/" data-entry-delete-url="/editor/entry/0/delete/" data-entry-songs-url="/editor/entry/songs/" data-entry-song-verses-url="/editor/entry/song/0/verses/" data-entry-chapter-url="/editor/entry/chapter/0/0/" data-old-item-edit-url="/editor/item/0/edit/" data-old-item-delete-url="/editor/item/0/delete/" data-feedback-guarded="true">
+  <div class="editor__content" id="editorContent" aria-live="polite"></div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+</dialog>
+
+
+<dialog class="media-error-dialog" id="mediaErrorDialog" aria-labelledby="mediaErrorTitle"><h2 id="mediaErrorTitle">File not supported</h2><p id="mediaErrorMessage"></p><button type="button" id="mediaErrorClose">OK</button></dialog>
+
+<dialog class="preview" id="previewModal" aria-label="Preview" data-feedback-guarded="true">
+  
+  <div class="preview__head" data-preview-head="" hidden="">
+    <span class="preview__title" id="previewTitle"></span>
+    <div class="preview__versetabs" data-preview-tabs-host="" hidden=""></div>
+  </div>
+  <div class="preview__body" id="previewContent" tabindex="0"></div>
+  <div class="preview__foot" data-screen-mode-footer="" hidden="">
+    <div class="screen-mode preview__screen-mode" role="group" aria-label="Screen mode" data-preview-screen-mode="">
+      <span class="screen-mode__thumb" aria-hidden="true"></span>
+      <button type="button" data-preview-mode="multi_line" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"></path></svg>Multi-line
+      </button>
+      <span class="screen-mode__custom" data-preview-custom="" tabindex="0" role="status" aria-label="Custom breaks" title="Custom breaks">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"></rect><path d="M2.5 10h15"></path></svg>
+      </span>
+      <button type="button" data-preview-mode="single_screen" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"></rect><path d="M5.5 8h9M5.5 11h9"></path></svg>Single-screen
+      </button>
+    </div>
+    <p class="preview__mode-readonly" data-mode-readonly="" hidden=""></p>
+  </div>
+  <div class="preview__confirm-layer" data-mode-confirm="" hidden="">
+    <div class="preview__confirm" role="alertdialog" aria-modal="true" aria-labelledby="modeConfirmTitle" aria-describedby="modeConfirmMessage">
+      <h3 id="modeConfirmTitle" data-confirm-title=""></h3>
+      <p id="modeConfirmMessage">Your custom screen breaks will be removed.</p>
+      <div class="preview__confirm-actions">
+        <button type="button" data-confirm-cancel="">Keep custom</button>
+        <button type="button" data-confirm-accept="">Switch &amp; remove</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList"><p class="media-transfers__empty">Local library unavailable on this computer.</p></div></dialog>
+<div class="edit-toasts" id="editToastHost" popover="manual" aria-live="polite" aria-relevant="additions text" aria-atomic="false" role="region" aria-label="Edit request feedback"></div>
+
+
+
+
+<div class="ftip" id="ftip" role="tooltip"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+/* Spec 138 prototype — the drawer shell's behaviour, on the real page.
+   The page's own scripts are stripped by the builder, so this file owns
+   data-nav / data-ch / data-rail and nothing else touches them.
+
+   Model: level 0 is the rail (a drawer only on a phone), level 1 the section's
+   list, level 2 the chapter or song list. Level 2 covers level 1 completely and
+   slides out from under the rail; a sibling level never opens beside it. */
+(function () {
+  var root = document.documentElement;
+  var state = {
+    overlayMax: 1272,
+    phoneMax: 720,
+  };
+
+  var panel = document.getElementById('panel');
+  var chapters = document.getElementById('chapters');
+  var rail = document.querySelector('.rail');
+
+  /* ---------- the geometry, from the window width ---------- */
+  function applyThresholds() {
+    var w = window.innerWidth;
+    var overlay = w <= state.overlayMax;
+    root.dataset.mode = overlay ? 'overlay' : 'columns';
+    root.dataset.phone = (overlay && w <= state.phoneMax) ? 'yes' : 'no';
+    if (!overlay) closeAll(false);          /* the columns have no stack to keep */
+    if (root.dataset.phone !== 'yes') root.dataset.rail = 'closed';
+    placeFoot();
+    sync();
+  }
+
+  /* ---------- per-section memory ---------- */
+  var perSection = {};
+  function currentSection() { return root.dataset.section || 'tatib'; }
+  function rememberLevel(level) { perSection[currentSection()] = level; }
+  function rememberedLevel() { return perSection[currentSection()] || 1; }
+
+  /* ---------- the stack ---------- */
+  function openRail() {
+    root.dataset.rail = 'open';
+    root.dataset.nav = 'closed';
+    root.dataset.ch = 'closed';
+    sync();
+  }
+  function openLevel1(fromMenu) {
+    /* on a phone the menu stays open underneath, so the list slides over it */
+    root.dataset.rail = (fromMenu && root.dataset.phone === 'yes') ? 'open' : 'closed';
+    root.dataset.nav = 'open';
+    root.dataset.ch = 'closed';
+    rememberLevel(1);
+    sync();
+  }
+  function level2Exists() {
+    /* a service's contents list only jumps into the page it already sits on, so
+       a phone never offers it */
+    return !(root.dataset.phone === 'yes' && currentSection() === 'tatib');
+  }
+  function openLevel2() {
+    if (!level2Exists()) return;
+    root.dataset.rail = 'closed';
+    root.dataset.nav = 'open';
+    root.dataset.ch = 'open';
+    rememberLevel(2);
+    sync();
+  }
+  function restoreLast() {
+    if (!isOverlay()) { openRail(); return; }
+    if (rememberedLevel() === 2) openLevel2(); else openLevel1();
+  }
+  function closeLevel2() {
+    root.dataset.ch = 'closed';
+    rememberLevel(1);
+    sync();
+  }
+  function closeAll(andSync) {
+    root.dataset.nav = 'closed';
+    root.dataset.ch = 'closed';
+    root.dataset.rail = 'closed';
+    if (andSync !== false) sync();
+  }
+  function isOverlay() { return root.dataset.mode === 'overlay'; }
+  function anyOpen() {
+    return root.dataset.nav === 'open' || root.dataset.ch === 'open' || root.dataset.rail === 'open';
+  }
+
+  /* ---------- the backdrop ---------- */
+  var backdrop = document.createElement('div');
+  backdrop.className = 'proto-backdrop';
+  backdrop.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(backdrop);
+  backdrop.addEventListener('click', function () { closeAll(); });
+
+  /* ---------- the phone toolbar ---------- */
+  var ICON = {
+    menu: '<path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17"/>',
+    back: '<path d="M20 12H4.5"/><path d="m10.5 5.5-6 6.5 6 6.5"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  };
+
+  var toolbar = document.createElement('header');
+  toolbar.className = 'proto-toolbar';
+  toolbar.setAttribute('aria-label', 'Site');
+  toolbar.innerHTML =
+    '<button class="proto-toolbar__control" type="button" data-icon="menu" aria-label="Open the menu">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' + ICON.menu + '</svg></button>' +
+    '<a class="proto-toolbar__logo" href="#" aria-label="GKPS Klender">' +
+    '<img src="../../../static/assets/gkps.png" alt="" width="34" height="34"></a>' +
+    '<span class="proto-toolbar__title"></span>' +
+    '<span class="proto-toolbar__spacer"></span>' +
+    '<div class="proto-toolbar__right"></div>';
+  document.body.appendChild(toolbar);
+
+  var control = toolbar.querySelector('.proto-toolbar__control');
+  /* one control, two glyphs: open the menu, or close whatever is open. Going
+     back one level is each drawer's own back control. */
+  control.addEventListener('click', function () {
+    if (anyOpen()) { closeAll(); return; }
+    openRail();
+  });
+  toolbar.querySelector('.proto-toolbar__logo').addEventListener('click', function (e) {
+    e.preventDefault();          /* a mark, not a control, in this prototype */
+  });
+
+  /* the rail's foot (transfer progress and the theme) lives in the toolbar on a
+     phone and in the rail everywhere else */
+  var railFoot = rail.querySelector('.rail__foot');
+  var footHost = toolbar.querySelector('.proto-toolbar__right');
+  function placeFoot() {
+    if (!railFoot) return;
+    if (root.dataset.phone === 'yes' && railFoot.parentElement !== footHost) {
+      footHost.appendChild(railFoot);
+    } else if (root.dataset.phone !== 'yes' && railFoot.parentElement !== rail) {
+      rail.appendChild(railFoot);
+    }
+  }
+
+  /* ---------- names for the rail drawer ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('.rail__menu .rail__btn'), function (btn) {
+    if (btn.querySelector('.proto-label')) return;
+    var label = document.createElement('span');
+    label.className = 'proto-label';
+    label.textContent = btn.getAttribute('data-tip') || btn.getAttribute('aria-label') || '';
+    btn.appendChild(label);
+  });
+
+  /* ---------- the rail's sections ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('.rail__menu .rail__btn'), function (btn) {
+    btn.addEventListener('click', function (event) {
+      if (!isOverlay()) return;              /* above the breakpoint the page keeps its own links */
+      event.preventDefault();
+      if (root.dataset.rail === 'open') { openLevel1(true); return; }
+      if (root.dataset.nav === 'open' || root.dataset.ch === 'open') { openLevel1(true); return; }
+      restoreLast();
+    });
+  });
+
+  /* A row in level 1: on a tablet it opens level 2; on a phone a Tata Ibadah row
+     opens the page it names — the service's contents list is not offered there —
+     so the drawer closes and the page is what is left. */
+  if (panel) {
+    panel.addEventListener('click', function (event) {
+      if (!isOverlay()) return;
+      var row = event.target.closest('.book, .songrow');
+      if (!row) return;
+      event.preventDefault();
+      if (root.dataset.phone === 'yes' && currentSection() === 'tatib') { closeAll(); return; }
+      openLevel2();
+    });
+  }
+
+  /* the two collapse chevrons: one level each */
+  var panelCollapse = document.getElementById('panelCollapse');
+  if (panelCollapse) panelCollapse.addEventListener('click', function (e) {
+    if (!isOverlay()) return;
+    e.preventDefault(); e.stopPropagation();
+    if (root.dataset.phone === 'yes' && root.dataset.rail === 'open') { root.dataset.nav = 'closed'; sync(); return; }
+    closeAll();
+  });
+  var chCollapse = document.getElementById('chCollapse');
+  if (chCollapse) chCollapse.addEventListener('click', function (e) {
+    if (!isOverlay()) return;
+    e.preventDefault(); e.stopPropagation();
+    closeLevel2();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isOverlay() && anyOpen()) { e.preventDefault(); closeAll(); }
+  });
+
+  /* ---------- readouts ---------- */
+  function sync() {
+    var icon = anyOpen() ? 'close' : 'menu';
+    if (control.dataset.icon !== icon) {
+      control.dataset.icon = icon;
+      control.querySelector('svg').innerHTML = ICON[icon];
+      control.setAttribute('aria-label',
+        icon === 'close' ? 'Close the menu' : icon === 'back' ? 'Back' : 'Open the menu');
+    }
+    var name = { alkitab: 'Alkitab', kidung: 'Kidung', tatib: 'Tata Ibadah' }[root.dataset.section] || '';
+    toolbar.querySelector('.proto-toolbar__title').textContent = name;
+    if (readout) {
+      readout.textContent = window.innerWidth + 'px · ' + root.dataset.mode +
+        ' · levels ' + (root.dataset.rail === 'open' ? '0 ' : '') +
+        (root.dataset.nav === 'open' ? '1 ' : '') + (root.dataset.ch === 'open' ? '2' : '');
+    }
+  }
+
+  /* ---------- the inspector ---------- */
+  var chip = document.createElement('button');
+  chip.className = 'proto-chip';
+  chip.type = 'button';
+  chip.textContent = '⚙ prototype';
+  document.body.appendChild(chip);
+
+  var inspector = document.createElement('section');
+  inspector.className = 'proto-panel';
+  inspector.setAttribute('aria-label', 'Prototype controls');
+  inspector.hidden = true;
+  inspector.innerHTML =
+    '<h2>Drawer prototype</h2>' +
+    '<div class="proto-panel__row"><span>Overlay at</span><select data-k="overlay">' +
+    '<option value="1272">≤ 1272px</option><option value="1024">≤ 1024px</option>' +
+    '<option value="720">≤ 720px</option></select></div>' +
+    '<div class="proto-panel__row"><span>Toolbar at</span><select data-k="phone">' +
+    '<option value="720">≤ 720px</option><option value="560">≤ 560px</option>' +
+    '<option value="425">≤ 425px</option></select></div>' +
+    '<div class="proto-panel__row"><span>Page</span><select data-k="page">' +
+    '<option value="prototype-tatib.html">Tata Ibadah</option>' +
+    '<option value="prototype-songs.html">Kidung</option></select></div>' +
+    '<div class="proto-panel__buttons">' +
+    '<button type="button" data-do="l1">Level 1</button>' +
+    '<button type="button" data-do="l2">Level 2</button>' +
+    '<button type="button" data-do="close">Close</button></div>' +
+    '<p class="proto-panel__readout" data-readout></p>';
+  document.body.appendChild(inspector);
+  var readout = inspector.querySelector('[data-readout]');
+
+  chip.addEventListener('click', function () {
+    inspector.hidden = !inspector.hidden;
+    chip.hidden = !inspector.hidden;
+  });
+  inspector.querySelector('[data-k="overlay"]').value = String(state.overlayMax);
+  inspector.querySelector('[data-k="phone"]').value = String(state.phoneMax);
+  inspector.querySelector('[data-k="page"]').value = location.pathname.split('/').pop();
+
+  inspector.addEventListener('change', function (event) {
+    var key = event.target.getAttribute('data-k');
+    if (!key) return;
+    if (key === 'page') { location.href = event.target.value; return; }
+    state[key === 'phone' ? 'phoneMax' : 'overlayMax'] = Number(event.target.value);
+    if (state.phoneMax > state.overlayMax) state.phoneMax = state.overlayMax;
+    applyThresholds();
+  });
+  inspector.addEventListener('click', function (event) {
+    var action = event.target.getAttribute('data-do');
+    if (action === 'l1') openLevel1();
+    if (action === 'l2') openLevel2();
+    if (action === 'close') closeAll();
+  });
+
+  window.addEventListener('resize', applyThresholds);
+  applyThresholds();
+})();
+
+</script>
+</body></html>

@@ -40,6 +40,19 @@ EYEBROW_STYLE_KEYS = ('size', 'tracking', 'leading', 'weight', 'colour', 'opacit
 TATIB_BUCKET_DAY = date(2026, 12, 20)
 
 
+def click_section(page, name):
+    """Reach a rail destination at any width.
+
+    Below 720px the rail's strip is a drawer (spec 138), so a section is one
+    gesture further away: the toolbar's control opens the menu first.
+    """
+    width = (page.viewport_size or {}).get('width') or 1440
+    if width <= 720 and page.locator('html').get_attribute('data-rail') != 'open':
+        page.locator('#drawerControl').click()
+        page.wait_for_timeout(250)
+    page.locator(f'.rail [data-panel="{name}"]').click()
+
+
 @tag('e2e')
 @unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -371,7 +384,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         expect(page.locator('#railSearch[aria-current="page"]')).to_have_count(1)
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         expect(page.locator('#railSearch[aria-current="page"]')).to_have_count(0)
         page.keyboard.press('Escape')
@@ -407,7 +420,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.clock.run_for(60000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
 
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
         self.assertEqual(page.url, current_url)
@@ -442,7 +455,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
         page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
-        page.locator('.rail [data-panel="kidung"]').click()
+        click_section(page, 'kidung')
         expect(page.locator('html')).to_have_attribute('data-section', 'kidung')
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
 
@@ -454,6 +467,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page(width=390, height=844)
         page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
         page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        # a phone boots on the page (spec 138): the drawer is the operator's own action
+        click_section(page, 'alkitab')
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
 
         page.clock.run_for(60000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
@@ -514,9 +530,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator(f'.songrow[data-i="{self.song.id}"][aria-current="true"]')).to_have_count(1)
         page.locator('#chCollapse').click()
         expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
-        page.locator('.rail [data-panel="kidung"]').click()      # closes the open panel
+        click_section(page, 'kidung')      # closes the open panel
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
-        page.locator('.rail [data-panel="kidung"]').click()      # reopens from stage content
+        click_section(page, 'kidung')      # reopens from stage content
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         expect(page.locator('html')).to_have_attribute('data-ch', 'open')
         expect(page.locator(f'.songrow[data-i="{self.song.id}"][aria-current="true"]')).to_have_count(1)
@@ -657,7 +673,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         def open_sidebar_tile(section, title, theme):
             page.goto(home_url)
             expect(page.locator('html')).to_have_attribute('data-theme', theme)
-            page.locator('.rail [data-panel="%s"]' % section).click()
+            click_section(page, section)
             expect(page.locator('html')).to_have_attribute('data-nav', 'open')
             tile = page.locator('#panelBody .book').filter(has_text=title).first
             expect(tile).to_be_visible()
@@ -732,7 +748,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
         start = page.url
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         expect(page.locator('#panelBody .book').first).to_be_visible()
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
@@ -747,7 +763,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             with self.subTest(width=width):
                 page = self._page(width=width)
                 page.goto(self.live_server_url + reverse('web-home'))
-                page.locator('.rail [data-panel="alkitab"]').click()
+                click_section(page, 'alkitab')
                 page.locator('#panelBody .book').filter(has_text='Matius').first.click()
                 page.locator('#chList .ch-num').nth(4).click()
                 expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
@@ -768,7 +784,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 }''')
                 self.assertLessEqual(geometry['rowHeight'], 1, geometry)
                 self.assertTrue(geometry['titleVisible'] and geometry['toggleVisible'], geometry)
-                self.assertEqual(geometry['paddingTop'], 40, geometry)
+                if width > 720:
+                    self.assertEqual(geometry['paddingTop'], 40, geometry)
                 self.assertAlmostEqual(min(geometry['titleTop'], geometry['toggleTop']),
                                        geometry['stageTop'] + geometry['paddingTop'], delta=1)
                 page.close()
@@ -813,7 +830,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_same_name_edition_blocks_keep_the_verse_text(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
@@ -919,7 +936,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("document.documentElement.dataset.nav === 'mini'")
         expect(row.locator('.book__a')).to_have_text('1Mu')
 
-        page.locator('.rail [data-panel="kidung"]').click()
+        click_section(page, 'kidung')
         self.assertEqual(page.locator('html').get_attribute('data-bible-edition'), 'sim')
         self.assertEqual(page.locator('.rail [data-panel="kidung"]').get_attribute('data-tip'), 'Doding')
         self.assertEqual(page.locator('.rail [data-panel="kidung"]').get_attribute('aria-label'), 'Doding')
@@ -944,11 +961,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         book_url = reverse('web-bible-book', args=[self.mat.pk])
 
         def open_song_page_and_return_to_bible(edition):
-            page.locator('.rail [data-panel="kidung"]').click()
+            click_section(page, 'kidung')
             page.locator(f'#panelBody .book[href="{songbook_url}"]').click()
             page.locator(f'#chList .songrow[href="{song_url}"]').click()
             expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
-            page.locator('.rail [data-panel="alkitab"]').click()
+            click_section(page, 'alkitab')
             page.locator(f'#panelBody .book[href="{book_url}"]').click()
             row = page.locator(f'#panelBody .book[href="{book_url}"]')
             if edition == 'sim':
@@ -967,7 +984,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             self._search(page, 'Ibadah Minggu III')
             page.locator('.result-group[data-kind="tatib"] .result-row').first.click()
             expect(page.locator('#read[data-kind="tatib"]')).to_be_visible()
-            page.locator('.rail [data-panel="alkitab"]').click()
+            click_section(page, 'alkitab')
             page.locator(f'#panelBody .book[href="{book_url}"]').click()
             row = page.locator(f'#panelBody .book[href="{book_url}"]')
             expect(row.locator('.book__n')).to_have_text('Matius')
@@ -1046,7 +1063,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_bible_language_highlight_slides_without_reflow(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
@@ -1087,7 +1104,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_bible_language_highlight_static_and_reduced_motion(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(19).click()  # TB-only chapter
         switch = page.locator('.read__lang')
@@ -1105,7 +1122,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         page.emulate_media(reduced_motion='reduce')
         page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
         switch = page.locator('.read__lang')
@@ -1177,7 +1194,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_bible_language_links_keep_keyboard_and_no_js_navigation(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
         sim = page.locator('#langSim')
@@ -1213,7 +1230,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             "el => getComputedStyle(el).marginBottom"), '10px')
         self.assertGreaterEqual(page.locator('.read__head-top').bounding_box()['height'], 34)
 
-        page.locator('.rail [data-panel="tatib"]').click()
+        click_section(page, 'tatib')
         page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
         expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
         expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
@@ -1224,10 +1241,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             with self.subTest(width=width):
                 page = self._page(width=width)
                 page.goto(self.live_server_url + reverse('web-home'))
-                page.locator('.rail [data-panel="tatib"]').click()
+                click_section(page, 'tatib')
                 page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                 expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
-                expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
+                if width > 720:
+                    expect(page.locator('.read__project-btn[data-project-open]')).to_be_visible()
                 self.assertEqual(page.locator('#readEyebrow').evaluate(
                     "el => getComputedStyle(el).marginBottom"), '0px')
 
@@ -1245,8 +1263,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                     titleTop: title.top
                   };
                 }''')
-                self.assertLessEqual(abs(geometry['centerDelta']), 1, geometry)
-                self.assertLessEqual(geometry['dateRight'], geometry['buttonLeft'], geometry)
+                if width > 720:
+                    self.assertLessEqual(abs(geometry['centerDelta']), 1, geometry)
+                    self.assertLessEqual(geometry['dateRight'], geometry['buttonLeft'], geometry)
                 self.assertGreaterEqual(geometry['titleTop'], geometry['rowBottom'], geometry)
                 page.close()
 
@@ -1271,7 +1290,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         # short name; this pins the element under measurement, not the citation's wording.
         self.assertEqual(songbook['text'], 'NKB 12')
 
-        page.locator('.rail [data-panel="tatib"]').click()
+        click_section(page, 'tatib')
         page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
         expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
         service_date = self._eyebrow_style(page)
@@ -1296,7 +1315,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
                 page = self._page(width=width)
                 try:
                     page.goto(self.live_server_url + reverse('web-home'))
-                    page.locator('.rail [data-panel="tatib"]').click()
+                    click_section(page, 'tatib')
                     page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                     expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
                     geometry = page.evaluate('''() => {
@@ -1332,7 +1351,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_a_text_sidebar_row_is_three_lines_and_keeps_its_grip_centered(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="tatib"]').click()
+        click_section(page, 'tatib')
         page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
 
         row = page.locator(f'#chList .songrow[data-i="e{self.preview_text_entry.pk}"]')
@@ -1372,7 +1391,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             with self.subTest(width=width):
                 page = self._page(width=width)
                 page.goto(self.live_server_url + reverse('web-home'))
-                page.locator('.rail [data-panel="tatib"]').click()
+                click_section(page, 'tatib')
                 page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                 page.wait_for_selector('#chList .songrow__t', state='attached')
                 rows = page.evaluate("""() => [...document.querySelectorAll('#chList .songrow__t')].map(el => {
@@ -1390,7 +1409,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             with self.subTest(width=width):
                 page = self._page(width=width)
                 page.goto(self.live_server_url + reverse('web-home'))
-                page.locator('.rail [data-panel="tatib"]').click()
+                click_section(page, 'tatib')
                 page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                 page.wait_for_selector('#chList .songrow__t', state='attached')
                 overflowing = page.evaluate("""() => [...document.querySelectorAll('#chList .songrow__t')]
@@ -1579,7 +1598,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         template = self.mode_template
         page = self._page()
         page.goto(self.live_server_url + reverse('web-tatib-service', args=[template.pk]))
-        page.set_viewport_size({'width': 390, 'height': 844})
+        # The mode toggle lives in the second-level list, which a phone does not
+        # open for Tata Ibadah (spec 138, FR-018); the overlay width still has it.
+        page.set_viewport_size({'width': 1024, 'height': 844})
         page.emulate_media(reduced_motion='reduce')
         # The first pane sits behind the open second pane at this width; its
         # state must still survive the mode action when that level is surfaced.
@@ -1587,7 +1608,8 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         # this template is not in the dated list: nothing is selected, and no row is invented
         expect(page.locator('#panelBody .book[aria-current="true"]')).to_have_count(0)
         expect(page.locator('#panelBody')).not_to_contain_text('Currently open')
-        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
+        # the list you opened is still the drawer on screen (a phone offers one level)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
 
         page.goto(self.live_server_url + reverse('web-tatib'))
         page.locator('#tatibMode').click()
@@ -1650,12 +1672,12 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.ch__search .field-clear')).to_be_visible()
 
         # Closing and reopening the active menu keeps both filters.
-        page.locator('.rail [data-panel="kidung"]').click()
-        page.locator('.rail [data-panel="kidung"]').click()
+        click_section(page, 'kidung')
+        click_section(page, 'kidung')
         expect(page.locator('#bookFilter')).to_have_value('not a songbook')
         expect(page.locator('#songFilter')).to_have_value('Lagu 1')
 
-        page.locator('.rail [data-panel="tatib"]').click()
+        click_section(page, 'tatib')
         expect(page.locator('html')).to_have_attribute('data-section', 'tatib')
         expect(page.locator('#bookFilter')).to_have_value('')
         expect(page.locator('#songFilter')).to_have_value('')
@@ -1663,14 +1685,14 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.ch__search .field-clear')).to_be_hidden()
         self.assertGreater(page.locator('#panelBody .book:not(.is-hidden)').count(), 0)
 
-        page.locator('.rail [data-panel="kidung"]').click()
+        click_section(page, 'kidung')
         expect(page.locator('html')).to_have_attribute('data-section', 'kidung')
         self.assertGreater(page.locator('#panelBody .book:not(.is-hidden)').count(), 0)
         expect(page.locator('#bookFilter')).to_have_value('')
 
         page.set_viewport_size({'width': 390, 'height': 844})
         page.fill('#bookFilter', 'songbook')
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         expect(page.locator('html')).to_have_attribute('data-section', 'alkitab')
         expect(page.locator('#bookFilter')).to_have_value('')
 
@@ -1679,7 +1701,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-home'))
         self._search(page, 'kasih')
         page.wait_for_selector('#searchStatus')
-        page.locator('.rail [data-panel="tatib"]').click()
+        click_section(page, 'tatib')
         page.fill('#bookFilter', 'Ibadah')
         page.locator('#railSearch').click()
         expect(page.get_by_text('Results for').first).to_be_visible()
@@ -1690,7 +1712,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_hymn_song_order_is_visible_after_browsing_from_home(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-home'))
-        page.locator('.rail [data-panel="kidung"]').click()
+        click_section(page, 'kidung')
         page.locator('#panelBody .book').filter(has_text=self.book.name).first.click()
 
         rows = page.locator('#chList .songrow')
@@ -1896,9 +1918,9 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.id, 20]))
         expect(page.locator('#chList .ch-num[data-n="20"]')).to_have_attribute('aria-current', 'true')
         page.locator('#chCollapse').click()
-        page.locator('.rail [data-panel="alkitab"]').click()      # close both levels
+        click_section(page, 'alkitab')      # close both levels
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
-        page.locator('.rail [data-panel="alkitab"]').click()      # reopen -> restore + reveal
+        click_section(page, 'alkitab')      # reopen -> restore + reveal
         expect(page.locator('html')).to_have_attribute('data-ch', 'open')
         self._settle_reveal(page)
         state = self._row_state(page, '#chBody', '#chList .ch-num')
@@ -1910,7 +1932,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.id, 20]))
         page.locator('#chCollapse').click()
-        page.locator('.rail [data-panel="alkitab"]').click()      # close both levels
+        click_section(page, 'alkitab')      # close both levels
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
         out = page.evaluate("""() => new Promise(resolve => {
           const body = document.getElementById('chBody');
@@ -1988,7 +2010,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         offset = page.evaluate('window.scrollY')
         self.assertGreater(offset, 0, 'the result page did not scroll')
         # leave through the sidebars, never through a result
-        page.locator('.rail [data-panel="alkitab"]').click()
+        click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
         page.wait_for_function("document.documentElement.dataset.read === 'on'")
@@ -2223,19 +2245,21 @@ class SidebarStateOnItemOpenTests(StaticLiveServerTestCase):
         expect(page.locator('html')).to_have_attribute('data-ch', 'closed')
 
     def test_a_collapsed_panel_survives_opening_a_song_at_a_narrow_width(self):
-        # At this width the first panel covers the song list, so collapsing it is the
-        # only way to reach a song — and the song must not push it back open.
-        page = self._page(width=390, height=844)
+        # A collapsed panel must survive opening a song. Below 1272px there is no
+        # collapsed panel to survive — the drawers cover their neighbours instead of
+        # shrinking (spec 138, R14) — so the invariant lives at the desktop width,
+        # where a closed panel still has a state to keep.
+        page = self._page(width=1440, height=900)
         page.goto(self.live_server_url + reverse('web-book', args=[self.songbook.pk]))
+        expect(page.locator('html')).to_have_attribute('data-ch', 'open')
         page.locator('#panelCollapse').click()
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
 
         page.locator('#chList a.songrow').first.click()
+        page.wait_for_timeout(600)
 
         expect(page.locator('#read')).to_contain_text('Nyanyian 1')
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
-
-
 
 
 @tag('e2e')

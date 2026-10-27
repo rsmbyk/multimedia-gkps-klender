@@ -15,6 +15,9 @@
   var SECTION_NAMES = { alkitab: 'Alkitab', kidung: 'Kidung', tatib: 'Tata Ibadah' };
   var mqNarrow = window.matchMedia('(max-width: 720px)');
   var mqSongNarrow = window.matchMedia('(max-width: 1272px)');
+  /* The drawer shell's own width (spec 138): the same number the stylesheet
+     uses to turn the columns into drawers over the page. */
+  var mqOverlay = window.matchMedia('(max-width: 1272px)');
 
   var themeBtn = document.getElementById('themeBtn');
   var panel = document.getElementById('panel');
@@ -35,6 +38,8 @@
   var chList = document.getElementById('chList');
   var chBody = document.getElementById('chBody');
   var chCollapse = document.getElementById('chCollapse');
+  var drawerControl = document.getElementById('drawerControl');
+  var drawerBackdrop = document.getElementById('drawerBackdrop');
   var chUp = document.getElementById('chUp');
   var chDown = document.getElementById('chDown');
   var songFilterEl = document.getElementById('songFilter');
@@ -740,12 +745,11 @@
   function openChaptersInPlace(name) {
     hideTips();
     cancelPendingRailClose();
-    if (mqNarrow.matches && root.dataset.nav !== 'closed') {
-      navBeforeCh = root.dataset.nav;
-      root.dataset.nav = 'closed';
-    } else {
-      navBeforeCh = null;
-    }
+    /* The second level covers its parent rather than replacing it (spec 138):
+       the parent stays open underneath, so the chevron returns to a drawer that
+       is still there. The old phone rule closed the parent because the child
+       pushed it off the stage; the drawer model has nothing to push. */
+    navBeforeCh = null;
     markBookTile(name);
     root.dataset.ch = 'open';
     chBody.scrollTop = 0;
@@ -932,7 +936,8 @@
     if (event.key === 'Escape') {
       event.stopPropagation();
       if (filter.value) { filter.value = ''; applyFilter(''); }
-      else { closePanel(); panelOwner().focus(); }
+      /* an empty filter has nothing to clear: Escape takes the whole stack */
+      else { closeAllPanels(); panelOwner().focus(); }
     }
   });
 
@@ -981,7 +986,8 @@
       event.stopPropagation();
       if (songFilterEl.value) { songFilterEl.value = ''; applySongFilter(''); }
       else {
-        closeChapters(true);
+        /* an empty filter has nothing to clear: Escape takes the whole stack */
+        closeAllPanels();
         var row = panelBody.querySelector('.book[aria-current="true"]');
         if (root.dataset.nav !== 'closed' && row) row.focus({ preventScroll: true });
         else panelOwner().focus();
@@ -1056,6 +1062,17 @@
       : activeSection === 'alkitab'
         ? 'Collapse ' + name + ' panel' : 'Close ' + name + ' panel');
     panelExpand.setAttribute('aria-expanded', String(mode === 'mini'));
+    /* One control for the whole stack, and one attribute that tells the
+       stylesheet to hold the page still behind it (spec 138). */
+    var anyDrawerOpen = root.dataset.rail === 'open' || sectionOpen;
+    if (drawerControl) {
+      drawerControl.dataset.glyph = anyDrawerOpen ? 'close' : 'menu';
+      drawerControl.setAttribute('aria-expanded', String(anyDrawerOpen));
+      drawerControl.setAttribute('aria-label', anyDrawerOpen ? 'Close the menu' : 'Open the menu');
+    }
+    if (drawerBackdrop) drawerBackdrop.hidden = !(anyDrawerOpen && mqOverlay.matches);
+    if (anyDrawerOpen && mqOverlay.matches) root.dataset.drawerOpen = 'true';
+    else delete root.dataset.drawerOpen;
     chCollapse.setAttribute('aria-expanded', String(root.dataset.ch === 'open'));
     chCollapse.setAttribute('aria-label', activeSection === 'alkitab'
       ? 'Close chapter list'
@@ -1191,6 +1208,52 @@
     closeChapters();
     railCloseTimer = window.setTimeout(finish, transitionDurationMs() + 50);
   }
+  /* ---------- the drawer shell: the menu, the backdrop, the whole stack ----------
+     One gesture each: the toolbar's control opens the menu when nothing is open
+     and closes whatever is open otherwise; the backdrop closes the lot. */
+  function openRail() {
+    hideTips();
+    cancelPendingRailClose();
+    root.dataset.rail = 'open';
+    syncState();
+  }
+  function closeRail() {
+    if (root.dataset.rail !== 'open') return;
+    root.dataset.rail = 'closed';
+    syncState();
+  }
+  function closeEverything() {
+    closeAllPanels();
+    closeRail();
+    syncState();
+  }
+  if (drawerControl) {
+    drawerControl.addEventListener('click', function () {
+      if (root.dataset.rail === 'open' || root.dataset.nav !== 'closed'
+          || root.dataset.ch === 'open') {
+        closeEverything();
+        return;
+      }
+      openRail();
+    });
+  }
+  if (drawerBackdrop) {
+    drawerBackdrop.addEventListener('click', closeEverything);
+  }
+  window.addEventListener('resize', function () {
+    /* above the overlay width the menu has no drawer to be in */
+    if (!mqOverlay.matches && root.dataset.rail === 'open') closeRail();
+    /* entering the phone width: the open columns become a drawer over the
+       page, so the shell arrives on the page with nothing over it */
+    if (mqNarrow.matches && (root.dataset.nav !== 'closed' || root.dataset.ch === 'open'
+        || root.dataset.rail === 'open')) {
+      root.dataset.rail = 'closed';
+      root.dataset.nav = 'closed';
+      root.dataset.ch = 'closed';
+      syncState();
+    }
+  });
+
   panelCollapse.addEventListener('click', function () {
     if (activeSection === 'alkitab') {
       if (root.dataset.nav === 'open') { miniPanel(); alkBtn.focus(); }
@@ -1208,6 +1271,9 @@
     return function (event) {
       event.preventDefault();
       var fromClosed = root.dataset.nav === 'closed' && root.dataset.ch === 'closed';
+      /* the phone's menu is the rail: choosing a section keeps it underneath
+         the list that slides over it (spec 138) */
+      if (mqNarrow.matches) root.dataset.rail = 'open';
       if (name !== activeSection) {
         /* another section: fetch its root and morph the shell in place */
         navigate(btn.getAttribute('href'), { kind: 'rail', section: name });
@@ -1219,7 +1285,9 @@
         return;
       }
       openPanel();
-      if (fromClosed) restoreCurrentPath(name);
+      /* On a phone the drawer you asked for is the one you get: restoring the
+         path would open a contents drawer over the list you just opened. */
+      if (fromClosed && !mqNarrow.matches) restoreCurrentPath(name);
     };
   }
   alkBtn.addEventListener('click', railBtnClick('alkitab', alkBtn));
@@ -1228,6 +1296,9 @@
 
   function restoreCurrentPath(name) {
     if (root.dataset.read !== 'on' || stageSection() !== name) return;
+    /* a phone has no contents level for a service: its rows jump within the
+       page already on screen (spec 138, FR-018) */
+    if (mqNarrow.matches && name === 'tatib') return;
     if (chList.children.length === 0) {
       /* a section switch wiped the lists: rebuild them from the stage's page */
       if (stageInfo.url) navigate(stageInfo.url, { kind: 'sync' });
@@ -1591,6 +1662,20 @@
       root.dataset.ch = bootChState;
     }
 
+    /* On a phone the drawers cover the page, so arriving somewhere closes them;
+       a rail switch is the exception — the menu stays under its section list. */
+    if (mqNarrow.matches) {
+      if (kind === 'rail') {
+        root.dataset.rail = 'open';
+        root.dataset.ch = 'closed';     /* a service offers no contents level here */
+      } else if (swapsStage) {
+        root.dataset.rail = 'closed';
+        root.dataset.nav = 'closed';
+        root.dataset.ch = 'closed';
+      }
+      syncState();
+    }
+
     /* Sidebar add controls sit outside the scrollable row containers. Reconcile
        them in their fixed toolbars, inserting only when the destination adds one
        and removing only when its section has none. */
@@ -1812,20 +1897,27 @@
   }
   bindStageExtras();
 
-  /* ---------- Escape closes the innermost open layer ---------- */
+  /* A phone boots into the page, not into a drawer: the server rendered the
+     desktop's open panel, and at this width that is a drawer over everything. */
+  if (mqNarrow.matches) {
+    root.dataset.rail = 'closed';
+    root.dataset.nav = 'closed';
+    root.dataset.ch = 'closed';
+    syncState();
+  }
+
+  /* ---------- Escape takes the whole stack ---------- */
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Escape') return;
     /* an open modal (the editors' <dialog>) is the innermost layer: the browser
        closes it and the keypress must stop there, or Esc also closes the sidebar
        behind it (review report) */
     if (document.querySelector('dialog[open]')) return;
-    if (root.dataset.ch === 'open') {
-      closeChapters(true);
-      var row = panelBody.querySelector('.book[aria-current="true"]');
-      if (root.dataset.nav !== 'closed' && row) row.focus({ preventScroll: true });
-      else panelOwner().focus();
-    } else if (root.dataset.nav !== 'closed') {
-      closePanel();
+    /* Escape takes the whole stack, not one level (spec 138): a drawer over a
+       page is one layer to the operator, however many steps deep it is. */
+    if (root.dataset.rail === 'open' || root.dataset.ch === 'open' || root.dataset.nav !== 'closed') {
+      closeAllPanels();
+      closeRail();
       panelOwner().focus();
     }
   });
