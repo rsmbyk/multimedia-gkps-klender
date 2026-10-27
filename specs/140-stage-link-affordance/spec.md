@@ -75,10 +75,10 @@ links, the sidebar rows, the editor — and find their link treatments exactly a
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | At rest, a stage entry title is painted in `--ink`, with no underline, in both themes. | `new: reading/R16` |
-| FR-002 | On pointer hover, a stage entry title gains an underline with a 3px offset; its colour stays `--ink`. | `new: reading/R16` |
-| FR-003 | On keyboard focus (`:focus-visible`), a stage entry title gains the same underline; its colour stays `--ink`. | `new: reading/R16` |
-| FR-004 | The `--link` token and every other anchor's treatment are unchanged; the media library's links keep their colour. | `new: reading/R16` |
+| FR-001 | At rest, a stage entry title is painted in `--ink`, with no underline, in both themes. | `new: reading/R17` |
+| FR-002 | On pointer hover, a stage entry title gains an underline with a 3px offset; its colour stays `--ink`. | `new: reading/R17` |
+| FR-003 | On keyboard focus (`:focus-visible`), a stage entry title gains the same underline; its colour stays `--ink`. | `new: reading/R17` |
+| FR-004 | The `--link` token and every other anchor's treatment are unchanged; the media library's links keep their colour. | `new: reading/R17` |
 
 ### Key Entities
 

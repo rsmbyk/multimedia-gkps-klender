@@ -1424,7 +1424,6 @@
         stage.appendChild(detourNode);
         entries = JSON.parse(freshEntries.textContent) || [];
         screenData = JSON.parse(freshScreens.textContent) || [];
-        savedScreensSignature = JSON.stringify(screenData);
         current = Math.max(0, Number(screenIndex) || 0);
         previousIndex = current;
         var empty = screen.querySelector('.projector__empty');

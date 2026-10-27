@@ -212,6 +212,13 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 tatib=self.service, order_number=7, kind=tatib.ServiceEntryKind.TEXT,
                 title='Closing', text='Amin')
 
+        if self._testMethodName == 'test_the_project_group_stays_inside_the_pane':
+            media = tatib.MediaIdentity.objects.create(
+                sha256='e' * 64, byte_count=2048, family='image', display_filename='slide.png')
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, order_number=9, kind=tatib.ServiceEntryKind.MEDIA,
+                media=media, media_filename='slide.png')
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -241,6 +248,20 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
 
     def _projector_url(self):
         return f'/projector?service={self.service.pk}'
+
+    def _group_geometry(self, page):
+        """The reading pane's own edges against the project group's (spec 141)."""
+        return page.evaluate("""() => {
+          const pane = document.querySelector('.read').getBoundingClientRect();
+          const group = document.querySelector('[data-project-group]');
+          const box = group.getBoundingClientRect();
+          const control = group.querySelector('[data-project-window]');
+          const head = document.querySelector('.read__head-top').getBoundingClientRect();
+          return {paneLeft: pane.left, paneRight: pane.right, paneWidth: pane.width,
+                  groupLeft: box.left, groupRight: box.right, groupWidth: box.width,
+                  headHeight: head.height,
+                  control: control ? getComputedStyle(control).display : null};
+        }""")
 
     def _slides(self, page):
         return page.eval_on_selector_all(
@@ -1558,6 +1579,186 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page.locator('[data-entry-open="text"]').first.click()
         page.wait_for_selector('dialog[open]')
         page.keyboard.press('Escape')
+
+    # --- reopening the window while the service is on air (spec 141) ---------
+
+    def test_the_reopen_control_appears_only_while_the_service_is_on_air(self):
+        """Spec 141: the control is the way back to a closed projector window, so it
+        exists exactly when this page's service is the live one and the words are up."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        self.assertFalse(page.locator('[data-project-window]').is_visible(),
+                         'the reopen control is drawn while nothing is on air')
+
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        projector = popup_info.value
+        projector.wait_for_load_state('networkidle')
+
+        control = page.locator('[data-project-window]')
+        self.assertTrue(control.is_visible(), 'the control is missing while on air')
+        self.assertEqual(control.get_attribute('aria-label'), 'Open projector window')
+        self.assertEqual(control.get_attribute('title'), 'Open projector window')
+
+        # a second tab hears the state and draws it too
+        tab = self._page(self._service_url(), context)
+        self.assertTrue(tab.locator('[data-project-window]').is_visible())
+
+        # hidden: the words are off, so the way back is not offered
+        projector.keyboard.press('Space')
+        page.wait_for_timeout(600)
+        self.assertFalse(page.locator('[data-project-window]').is_visible())
+        self.assertFalse(tab.locator('[data-project-window]').is_visible())
+
+        # showing again brings it back; releasing takes it away in every tab
+        page.click('[data-project-open]')
+        page.wait_for_timeout(500)
+        self.assertTrue(page.locator('[data-project-window]').is_visible())
+        page.click('[data-project-open]')                     # Stop projecting
+        page.wait_for_timeout(500)
+        self.assertFalse(page.locator('[data-project-window]').is_visible())
+        self.assertFalse(tab.locator('[data-project-window]').is_visible())
+
+    def test_reopening_returns_the_window_to_the_screen_on_air(self):
+        """Spec 141: the way back lands on the screen that is on air -- not on the
+        service's first screen, which is what release-then-Project does."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        projector = popup_info.value
+        projector.wait_for_load_state('networkidle')
+        page.evaluate("window.gkpsDisplay.screen(4)")
+        projector.wait_for_function("document.body.dataset.currentScreen === '4'")
+        projector.close()
+        page.wait_for_timeout(400)
+        self.assertIn('Stop projecting', page.locator('[data-project-open]').inner_text())
+
+        with page.expect_popup() as reopened_info:
+            page.click('[data-project-window]')
+        reopened = reopened_info.value
+        reopened.wait_for_url('**/projector')
+        reopened.wait_for_load_state('networkidle')
+        self.assertNotIn('service=', reopened.url, 'the reopen adopted the service again')
+        reopened.wait_for_function("document.body.dataset.currentScreen === '4'")
+        self.assertEqual(reopened.get_attribute('body', 'data-showing'), 'true')
+        self.assertIn('Stop projecting', page.locator('[data-project-open]').inner_text())
+
+    def test_reopening_writes_no_display_state(self):
+        """Spec 141: reopening is a reader's act -- the state, and its timestamp, are
+        exactly what they were before the press."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        projector = popup_info.value
+        projector.wait_for_load_state('networkidle')
+        page.evaluate("window.gkpsDisplay.screen(2)")
+        projector.wait_for_function("document.body.dataset.currentScreen === '2'")
+        projector.close()
+        page.wait_for_timeout(400)
+        before = page.evaluate("() => localStorage.getItem('gkps-display')")
+
+        with page.expect_popup() as reopened_info:
+            page.click('[data-project-window]')
+        reopened = reopened_info.value
+        reopened.wait_for_url('**/projector')
+        reopened.wait_for_load_state('networkidle')
+        reopened.wait_for_function("document.body.dataset.currentScreen === '2'")
+        after = page.evaluate("() => localStorage.getItem('gkps-display')")
+        self.assertEqual(json.loads(before), json.loads(after))
+
+    def test_an_open_projector_window_is_focused_not_reloaded(self):
+        """Spec 141: the window that is already open is brought forward, not loaded
+        again -- a reload would restart its media and lose its place."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        projector = popup_info.value
+        projector.wait_for_load_state('networkidle')
+        projector.evaluate("window.__gkpsReopenToken = 'kept'")
+        pages_before = len(context.pages)
+
+        page.click('[data-project-window]')
+        page.wait_for_timeout(700)
+        self.assertEqual(len(context.pages), pages_before, 'a second projector window was opened')
+        self.assertEqual(projector.evaluate("window.__gkpsReopenToken"), 'kept',
+                         'the projector page was loaded again')
+
+        page.click('[data-project-window]')
+        page.wait_for_timeout(500)
+        self.assertEqual(len(context.pages), pages_before)
+
+    def test_stop_projecting_still_releases_with_the_control_present(self):
+        """Spec 141: the new control is not the stop -- Stop projecting still releases
+        the display in every tab (spec 119)."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        popup_info.value.wait_for_load_state('networkidle')
+        self.assertTrue(page.locator('[data-project-window]').is_visible())
+
+        page.click('[data-project-open]')                     # Stop projecting
+        page.wait_for_timeout(500)
+        self.assertIn('Project', page.locator('[data-project-open]').inner_text())
+        self.assertFalse(page.locator('[data-project-window]').is_visible())
+        state = page.evaluate("() => JSON.parse(localStorage.getItem('gkps-display') || 'null')")
+        self.assertIsNone(state['service'])
+        self.assertFalse(state['on'])
+
+    def test_the_project_group_stays_inside_the_pane(self):
+        """Spec 141: the third control must not spill the group past the reading pane,
+        whose narrowest desktop width is 240px (a 1280 window)."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        popup_info.value.close()
+        page.wait_for_timeout(400)
+        self.assertEqual(page.locator('[data-project-group] button').count(), 3,
+                         'the widest group: Media files, the reopen control, Stop projecting')
+        for width, height in ((1440, 900), (1280, 800)):
+            page.set_viewport_size({'width': width, 'height': height})
+            page.wait_for_timeout(400)
+            geometry = self._group_geometry(page)
+            self.assertNotEqual(geometry['control'], 'none', (width, geometry))
+            self.assertLessEqual(geometry['groupRight'], geometry['paneRight'] + 0.5,
+                                 f'the group crosses the pane at {width}px: {geometry}')
+            self.assertLessEqual(geometry['groupWidth'], geometry['paneWidth'] + 0.5,
+                                 f'the group is wider than the pane at {width}px: {geometry}')
+
+        # without Media files the group is narrower, and still inside the pane
+        other = self._page(reverse('web-tatib-service', args=[self.untitled_service.pk]), context)
+        with other.expect_popup() as other_info:
+            other.click('[data-project-open]')
+        other_info.value.close()
+        other.set_viewport_size({'width': 1280, 'height': 800})
+        other.wait_for_timeout(400)
+        self.assertEqual(other.locator('[data-project-group] button').count(), 2)
+        geometry = self._group_geometry(other)
+        self.assertLessEqual(geometry['groupRight'], geometry['paneRight'] + 0.5, geometry)
+
+    def test_the_reopen_control_is_not_drawn_on_a_phone(self):
+        """Spec 141 keeps spec 138's phone: the toolbar has no room for the control."""
+        context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+        page = self._page(self._service_url(), context)
+        with page.expect_popup() as popup_info:
+            page.click('[data-project-open]')
+        popup_info.value.close()
+        page.wait_for_timeout(300)
+        self.assertTrue(page.locator('[data-project-window]').is_visible())
+
+        page.set_viewport_size({'width': 425, 'height': 900})
+        page.wait_for_timeout(400)
+        self.assertFalse(page.locator('[data-project-window]').is_visible())
+        self.assertFalse(page.locator('[data-project-open]').is_visible())
+
+        page.set_viewport_size({'width': 1024, 'height': 900})
+        page.wait_for_timeout(400)
+        self.assertTrue(page.locator('[data-project-window]').is_visible())
+        self.assertTrue(page.locator('[data-project-open]').is_visible())
 
     # --- the path a person actually clicks through ---------------------------
 
