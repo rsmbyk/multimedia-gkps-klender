@@ -2912,10 +2912,17 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
   .panel__body li .book__today { grid-column: 2; }
   .panel__body li .book__s { grid-column: 1 / -1; }
   .row-edit { opacity: 1; pointer-events: auto; }
+  /* the phone's drawers are touch-first: the order's handle is always drawn and
+     owns the gesture */
+  .toc__grip { opacity: 1; touch-action: none; }
 }
 
 /* A touch screen has no hover to give: the row's pencil is the same control the
    entry pane and the add tiles already exempt from it. */
 @media (hover: none) and (pointer: coarse) {
   .row-edit { opacity: 1; pointer-events: auto; }
+  /* The order's handle has no hover to reveal it on a touch screen, and the
+     gesture must belong to the handle rather than to the list's scroll — or a
+     drag dies as a scroll the moment the finger moves (spec 138). */
+  .toc__grip { opacity: 1; touch-action: none; }
 }

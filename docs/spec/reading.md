@@ -487,6 +487,9 @@ back one level. Choosing a section SHALL open its list over the menu, which stay
 Tata Ibadah service SHALL offer no contents drawer at this width: its rows open the service's page and
 close the stack. The Project control SHALL NOT be drawn.
 
+A row's reorder handle SHALL show on the same terms, and dragging it SHALL own the gesture rather
+than becoming the list's scroll.
+
 A row's edit control SHALL show without a pointer hover wherever the pointer cannot hover, and at the
 phone width; and at that width a row SHALL stack its name over its date rather than clip the date
 beside the always-visible control. Every icon in the toolbar SHALL be drawn at one size.

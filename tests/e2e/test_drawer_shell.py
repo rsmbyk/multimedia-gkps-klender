@@ -423,6 +423,39 @@ class DrawerShellE2ETests(StaticLiveServerTestCase):
             "() => getComputedStyle(document.querySelector('#panelBody .row-edit')).opacity")
         self.assertEqual(opacity, '1', 'the edit control is still hover-only under a touch pointer')
 
+    def test_a_touch_drag_reorders_the_entries(self):
+        """The grip owns the gesture: without touch-action, the first move scrolls."""
+        self.context.close()
+        self.context = self.browser.new_context(viewport={'width': 768, 'height': 768},
+                                                has_touch=True, is_mobile=True)
+        self.page = self.context.new_page()
+        self.page.set_default_timeout(8000)
+        self.open('web-tatib-service', self.service.pk)
+        self.at(768)
+        self.assertEqual(self.state()['ch'], 'open')
+        order = """() => [...document.querySelectorAll('#chList > li')].map((li) => {
+          const grip = li.querySelector('[data-move-grip]');
+          return grip ? Number(grip.dataset.moveGrip) : null; }).filter(Boolean)"""
+        before = self.page.evaluate(order)
+        self.assertGreaterEqual(len(before), 3, 'the fixture needs rows to reorder')
+        grip = self.box('#chList [data-move-grip]')
+        self.assertEqual(self.page.evaluate(
+            "() => getComputedStyle(document.querySelector('#chList [data-move-grip]')).touchAction"),
+            'none')
+        cdp = self.context.new_cdp_session(self.page)
+        x, y = grip['left'] + 11, grip['top'] + 11
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': x, 'y': y}]})
+        self.page.wait_for_timeout(150)
+        for step in range(1, 13):
+            cdp.send('Input.dispatchTouchEvent',
+                     {'type': 'touchMove', 'touchPoints': [{'x': x, 'y': y + step * 9}]})
+            self.page.wait_for_timeout(45)
+        self.assertTrue(self.page.evaluate("() => !!document.querySelector('#chList .is-dragging')"),
+                        'the drag never started')
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
+        self.page.wait_for_timeout(1200)
+        self.assertNotEqual(self.page.evaluate(order), before, 'the drop wrote no order')
+
     def test_a_long_press_on_the_rail_selects_nothing(self):
         self.context.close()
         self.context = self.browser.new_context(viewport={'width': 1024, 'height': 768},

@@ -167,6 +167,7 @@ and the same content are where they were.
 | FR-020 | At the phone width a Tata Ibadah row in the section list SHALL open the service's page and close the drawers, since the contents level is not offered (FR-018); above the phone width the same row keeps opening the contents level. | `new: reading` |
 | FR-021 | A sidebar row's edit control SHALL be visible without a pointer hover where the pointer cannot hover (a touch screen) and at the phone width — the exemption the entry controls and the add tiles already carry. | `new: reading` |
 | FR-022 | Every icon in the phone toolbar SHALL be drawn at one size — the rail's own 24px — so the control, the foot's controls and the theme glyph read as one set. | `new: reading` |
+| FR-025 | A contents row's reorder handle SHALL be drawn without hover where the pointer cannot hover and at the phone width, and dragging it SHALL own the gesture — the list SHALL NOT scroll instead of the row moving. | `new: reading` |
 | FR-024 | While any level of the stack travels, no level below it SHALL be drawn, and opening or closing the stack SHALL move every open level at once — never one level after another. | `new: reading` |
 | FR-023 | At the phone width a sidebar row SHALL stack what it carries: the name (with its `Today` badge) on one line and its date or short name on the next, so an always-visible edit control never squeezes either, and no text SHALL run under that control. | `new: reading` |
 
