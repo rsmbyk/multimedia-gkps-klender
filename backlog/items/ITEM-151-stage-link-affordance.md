@@ -1,6 +1,6 @@
 ---
 id: ITEM-151
-status: in-review
+status: done
 title: 'The stage''s entry links read as text until hovered'
 type: chore
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/140-stage-link-affordance/spec.md
 branch: feat/140-stage-link-affordance
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/410
 issue: 409
-closed_at:
-closed_reason:
+closed_at: 2026-10-27
+closed_reason: merged into develop (410)
 bump: patch
 release_version:
 ---
