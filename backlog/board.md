@@ -20,12 +20,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-149](./items/ITEM-149-home-search-center.md) | The landing search field sits 49px below the window's middle | Put the field's own box on the window's middle line, logo above it — at every width, phone included, without moving the results bar | fix | P2 | S | [139](../specs/139-home-search-center/spec.md) | 2026-10-27 |
 
 ## Ready
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-149](./items/ITEM-149-home-search-center.md) | The landing search field sits 49px below the window's middle | Put the field's own box on the window's middle line, logo above it — at every width, phone included, without moving the results bar | fix | P2 | S | [139](../specs/139-home-search-center/spec.md) | 2026-10-27 |
 
 ## In review
 

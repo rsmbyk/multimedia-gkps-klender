@@ -1,6 +1,6 @@
 ---
 id: ITEM-149
-status: speccing
+status: in-progress
 title: 'The landing search field sits 49px below the window''s middle'
 type: fix
 priority: P2
@@ -13,7 +13,7 @@ pr:
 issue:
 closed_at:
 closed_reason:
-bump:
+bump: patch
 release_version:
 ---
 

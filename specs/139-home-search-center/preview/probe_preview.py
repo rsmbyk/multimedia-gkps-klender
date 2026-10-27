@@ -2,12 +2,13 @@
 
 Run with the project's venv:
 
-    .venv/bin/python specs/139-home-search-center/preview/probe_preview.py
+    .venv/bin/python specs/139-home-search-center/preview/probe_preview.py --shots
 
 Prints, for `before-home.html` and `after-home.html`, the field's border box, the
 logo's, the document's height and any horizontal overflow at each width — the
 numbers the spec's UI/UX section quotes — and writes `shots/` when `--shots` is
-passed.
+passed. `--url <url>` measures a running instance instead of the static pages, so
+the recorded numbers can be read off the stylesheet as it ships.
 """
 import pathlib
 import sys
@@ -17,6 +18,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 WIDTHS = [(1920, 1000), (1440, 900), (1280, 800), (1024, 768), (834, 1112),
           (720, 900), (390, 844), (320, 568)]
 SHOTS = "--shots" in sys.argv
+LIVE = sys.argv[sys.argv.index("--url") + 1] if "--url" in sys.argv else None
 
 RECT = """sel => {
   const el = document.querySelector(sel);
@@ -31,10 +33,11 @@ RECT = """sel => {
 
 def main() -> None:
     (HERE / "shots").mkdir(exist_ok=True)
+    targets = ([("live", LIVE)] if LIVE
+               else [(label, (HERE / f"{label}-home.html").as_uri()) for label in ("before", "after")])
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        for label in ("before", "after"):
-            page_url = (HERE / f"{label}-home.html").as_uri()
+        for label, page_url in targets:
             for w, h in WIDTHS:
                 page = browser.new_page(viewport={"width": w, "height": h})
                 page.goto(page_url, wait_until="networkidle")
