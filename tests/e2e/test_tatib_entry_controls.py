@@ -168,23 +168,22 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
             ['0px', '0px'])
         self.assertAlmostEqual(divider.bounding_box()['height'], 56, delta=0.6)
 
-    def test_the_resting_surface_matches_spec_068_in_both_themes(self):
+    def test_the_resting_surface_is_the_canvas_in_both_themes(self):
+        # Spec 142 retires the spec 068 fill and inset ring: at rest an entry is
+        # the page. What must survive is the box's dimensions -- the 8/8/8/12
+        # padding, the 56px floor and the reserved controls column -- because
+        # those are what the hover tint turns into a row.
         page = self._page(self.with_break)
         page.mouse.move(1400, 850)
-        for theme, fill, outline in (
-            ('light', 'rgba(31, 31, 29, 0.012)', 'rgba(31, 31, 29, 0.08)'),
-            ('dark', 'rgba(255, 255, 255, 0.012)', 'rgba(255, 255, 255, 0.09)'),
-        ):
+        for theme in ('light', 'dark'):
             page.evaluate('(value) => document.documentElement.dataset.theme = value', theme)
-            root = page.locator('html')
-            self.assertEqual(root.evaluate(
-                "el => getComputedStyle(el).getPropertyValue('--tatib-entry-fill').trim()"), fill)
-            self.assertEqual(root.evaluate(
-                "el => getComputedStyle(el).getPropertyValue('--tatib-entry-outline').trim()"), outline)
-            # Spec 140 reserves the controls' column on the item's right; the
-            # divider carries no title to protect and keeps the spec 068 padding.
             item = page.locator('.tatib__item--acts').first
             divider = page.locator('.tatib__eos').first
+            for box in (item, divider):
+                self.assertEqual(box.evaluate('el => getComputedStyle(el).backgroundColor'),
+                                 'rgba(0, 0, 0, 0)', theme)
+                self.assertEqual(box.evaluate('el => getComputedStyle(el).boxShadow'),
+                                 'none', theme)
             self.assertEqual(item.evaluate(
                 'el => [getComputedStyle(el).paddingTop, getComputedStyle(el).paddingLeft, '
                 'getComputedStyle(el).paddingBottom]'), ['8px', '12px', '8px'])
@@ -195,7 +194,6 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
             self.assertGreaterEqual(reserved, controls + 4)
             for box in (item, divider):
                 self.assertEqual(box.evaluate('el => getComputedStyle(el).minHeight'), '56px')
-                self.assertIn('1px inset', box.evaluate('el => getComputedStyle(el).boxShadow'))
             acts = page.locator('.entry__acts').first
             self.assertEqual(acts.evaluate(
                 'el => [getComputedStyle(el).top, getComputedStyle(el).right]'), ['8px', '8px'])
@@ -348,7 +346,7 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         bar.hover()
         expect(bar).to_have_css('opacity', '1')               # the bar's own hover keeps it
         expect(acts).to_have_css('opacity', '0')              # the item above is not revealed
-        expect(item).to_have_css('background-color', 'rgba(31, 31, 29, 0.01)')
+        expect(item).to_have_css('background-color', 'rgba(0, 0, 0, 0)')
         item_box, bar_box = item.bounding_box(), bar.bounding_box()
         self.assertLessEqual(item_box['y'] + item_box['height'], bar_box['y'] + 1)   # no overlap
 
