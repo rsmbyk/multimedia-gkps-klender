@@ -27,6 +27,9 @@ Checked the code against `plan.md`'s traceability table, row by row, by the meth
 
 ### Neighbouring modules (T014)
 
+Baseline first: `tests.e2e.test_song_label_typography` + `tests.e2e.test_media_library` ran green
+(24 tests, OK) before the stylesheet was touched, so a later red in them would have been this slice's.
+
 | Module | Tests | Result |
 | --- | --- | --- |
 | `tests.e2e.test_text_wrap` | 9 | OK |
