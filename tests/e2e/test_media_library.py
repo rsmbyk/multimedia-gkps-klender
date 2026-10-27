@@ -508,7 +508,12 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).paddingTop'), '16px')
         self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).paddingBottom'), '16px')
         self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).paddingLeft'), '64px')
-        self.assertEqual(desktop_row.evaluate('el => getComputedStyle(el).paddingRight'), '16px')
+        # spec 140: the right padding is the controls' reserved column, not the
+        # spec 117 resting inset
+        desktop_acts = desktop_row.locator('.entry__acts').bounding_box()['width']
+        self.assertGreaterEqual(
+            desktop_row.evaluate('el => parseFloat(getComputedStyle(el).paddingRight)'),
+            desktop_acts + 4)
         desktop_box, desktop_icon_box = desktop_row.bounding_box(), desktop_icon.bounding_box()
         self.assertAlmostEqual(desktop_box['y'] + desktop_box['height'] / 2,
                                desktop_icon_box['y'] + desktop_icon_box['height'] / 2, delta=1)
@@ -522,7 +527,10 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         self.assertEqual(row.evaluate('el => getComputedStyle(el).paddingTop'), '16px')
         self.assertEqual(row.evaluate('el => getComputedStyle(el).paddingBottom'), '16px')
         self.assertEqual(row.evaluate('el => getComputedStyle(el).paddingLeft'), '60px')
-        self.assertEqual(row.evaluate('el => getComputedStyle(el).paddingRight'), '12px')
+        phone_acts = row.locator('.entry__acts').bounding_box()['width']
+        self.assertGreaterEqual(
+            row.evaluate('el => parseFloat(getComputedStyle(el).paddingRight)'),
+            phone_acts + 4)
         heading = row.locator('.read__sec')
         expect(heading).to_contain_text('Invoice-AATTCSTN-0002-with-a-long-filename-for-narrow-screens.pdf')
         self.assertGreater(heading.bounding_box()['height'], 24)

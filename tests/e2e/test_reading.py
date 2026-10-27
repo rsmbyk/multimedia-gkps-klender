@@ -250,7 +250,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         if self._testMethodName == 'test_the_panel_shows_its_empty_view_when_no_songbook_exists':
             songs.Book.objects.all().update(is_deleted=True)
 
-        if self._testMethodName == 'test_tatib_stage_entry_links_follow_the_theme':
+        if self._testMethodName == 'test_stage_entry_links_read_as_ink_until_hovered':
             theme_song = songs.Song.objects.create(
                 book=self.book, number=99, title='Nyanyian Tema')
             songs.Verse.objects.create(song=theme_song, number=1, lyric='Nyanyian tema')
@@ -619,22 +619,135 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.locator('#themeBtn').click()
         expect(page.locator('html')).to_have_attribute('data-theme', 'light')
 
-    def test_tatib_stage_entry_links_follow_the_theme(self):
-        # Spec 056: the stage's entry-title links wear the theme's link colour
-        # (forest green in light, lifted royal blue in dark), underline kept,
-        # instead of the browser default blue.
-        page = self._page()
+    def test_stage_entry_links_read_as_ink_until_hovered(self):
+        # Spec 140: the stage's entry-title links are the heading's ink with no
+        # resting underline. The underline is the whole affordance and appears on
+        # hover and on keyboard focus, 3px under the text, without recolouring the
+        # text. Retires spec 056's link colour.
+        # 1440: at 1280 the pane is narrow enough that the entry's floating
+        # controls sit on top of the title, so the title cannot be hovered at all.
+        page = self._page(width=1440, height=900)
         page.emulate_media(color_scheme='light')
         page.goto(self.live_server_url + reverse(
             'web-tatib-service', args=[self.theme_service.pk]))
-        link = page.locator('#readBody .entry__jump').first
-        expect(link).to_be_visible()
-        expect(link).to_have_css('color', 'rgb(28, 92, 60)')          # --link, light
-        self.assertEqual(
-            link.evaluate('el => getComputedStyle(el).textDecorationLine'), 'underline')
+        links = page.locator('#readBody .entry__jump')
+        expect(links.first).to_be_visible()
+        self.assertGreaterEqual(links.count(), 1)
+
+        def styles(index):
+            return links.nth(index).evaluate("""el => {
+                const s = getComputedStyle(el);
+                return {
+                    color: s.color,
+                    line: s.textDecorationLine,
+                    offset: s.textUnderlineOffset,
+                    heading: getComputedStyle(el.closest('.read__sec')).color,
+                };
+            }""")
+
+        # rest: every title wears its own heading's ink and draws no line
+        for index in range(links.count()):
+            rest = styles(index)
+            self.assertEqual(rest['color'], rest['heading'])
+            self.assertEqual(rest['line'], 'none')
+        expect(links.first).to_have_css('color', 'rgb(31, 31, 29)')       # --ink, light
+
+        # hover: one line 3px under the text, colour unchanged. Aim at the
+        # title's left end: the entry's floating controls sit over its top-right
+        # while shown, so a centre hover is intercepted by a button.
+        links.first.hover(position={'x': 12, 'y': 8})
+        expect(links.first).to_have_css('text-decoration-line', 'underline')
+        expect(links.first).to_have_css('text-underline-offset', '3px')
+        expect(links.first).to_have_css('color', 'rgb(31, 31, 29)')
+        page.mouse.move(2, 2)
+        expect(links.first).to_have_css('text-decoration-line', 'none')
+
+        # keyboard: Tab reaches a title and draws the same line
+        reached = False
+        for _ in range(120):
+            page.keyboard.press('Tab')
+            if page.evaluate(
+                    "document.activeElement && "
+                    "document.activeElement.classList.contains('entry__jump')"):
+                reached = True
+                break
+        self.assertTrue(reached, 'Tab never reached a stage entry link')
+        focused = page.evaluate("""() => {
+            const el = document.activeElement;
+            const s = getComputedStyle(el);
+            return {
+                line: s.textDecorationLine,
+                offset: s.textUnderlineOffset,
+                color: s.color,
+                focusVisible: el.matches(':focus-visible'),
+            };
+        }""")
+        self.assertEqual(focused['line'], 'underline')
+        self.assertEqual(focused['offset'], '3px')
+        self.assertEqual(focused['color'], 'rgb(31, 31, 29)')
+        self.assertTrue(focused['focusVisible'])
+
+        # dark: the same two states with the dark ink
         page.locator('#themeBtn').click()
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
-        expect(link).to_have_css('color', 'rgb(124, 156, 240)')       # --link, dark
+        page.mouse.move(2, 2)
+        expect(links.first).to_have_css('color', 'rgb(245, 243, 238)')
+        expect(links.first).to_have_css('text-decoration-line', 'none')
+        links.first.hover(position={'x': 12, 'y': 8})
+        expect(links.first).to_have_css('text-decoration-line', 'underline')
+        expect(links.first).to_have_css('color', 'rgb(245, 243, 238)')
+
+        # the controls own a column: the title ends before they begin. At 1440
+        # with both sidebars open the pane is 400px, so the controls are icons.
+        layout = page.evaluate("""() => {
+            const item = document.querySelector('#readBody .tatib__item--acts');
+            const link = item.querySelector('.entry__jump');
+            const acts = item.querySelector('.entry__acts');
+            const label = acts.querySelector('.entry__ctrl-label');
+            const l = link.getBoundingClientRect(), a = acts.getBoundingClientRect();
+            return {
+                linkRight: l.right,
+                actsLeft: a.left,
+                paneWidth: document.querySelector('.read').getBoundingClientRect().width,
+                labelPosition: getComputedStyle(label).position,
+            };
+        }""")
+        self.assertLess(layout['paneWidth'], 700)
+        self.assertLess(layout['linkRight'], layout['actsLeft'])
+        self.assertEqual(layout['labelPosition'], 'absolute')    # icons, narrow pane
+
+        # a pane wide enough for the words brings the labels back
+        page.set_viewport_size({'width': 1920, 'height': 1000})
+        expect(page.locator('#readBody .entry__ctrl-label').first).to_have_css(
+            'position', 'static')
+        wide = page.evaluate("""() => {
+            const item = document.querySelector('#readBody .tatib__item--acts');
+            const link = item.querySelector('.entry__jump');
+            const acts = item.querySelector('.entry__acts');
+            const l = link.getBoundingClientRect(), a = acts.getBoundingClientRect();
+            return {
+                linkRight: l.right, actsLeft: a.left,
+                paneWidth: document.querySelector('.read').getBoundingClientRect().width,
+            };
+        }""")
+        self.assertGreaterEqual(wide['paneWidth'], 700)
+        self.assertLess(wide['linkRight'], wide['actsLeft'])
+
+        # phone: labels collapse to icons, the column narrows, the title stays clear
+        page.set_viewport_size({'width': 390, 'height': 844})
+        expect(page.locator('#readBody .entry__ctrl-label').first).to_have_css(
+            'position', 'absolute')
+        phone = page.evaluate("""() => {
+            const item = document.querySelector('#readBody .tatib__item--acts');
+            const link = item.querySelector('.entry__jump');
+            const acts = item.querySelector('.entry__acts');
+            const l = link.getBoundingClientRect(), a = acts.getBoundingClientRect();
+            return {linkRight: l.right, actsLeft: a.left};
+        }""")
+        self.assertLess(phone['linkRight'], phone['actsLeft'])
+        page.locator('#readBody .entry__jump').first.hover(position={'x': 6, 'y': 8})
+        expect(page.locator('#readBody .entry__jump').first).to_have_css(
+            'text-decoration-line', 'underline')
 
     def test_sidebar_selection_tint_matches_theme_for_all_current_rows(self):
         page = self._page()

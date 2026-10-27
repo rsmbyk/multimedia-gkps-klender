@@ -35,7 +35,7 @@
   --tip-ink: #FFFFFF;
   --head-ink: #646357;           /* group headers + meta on canvas */
   --danger: #B3261E;             /* destructive actions, invalid fields */
-  --link: #1C5C3C;               /* stage entry links (spec 056) */
+  --link: #1C5C3C;               /* link colour: media library "used by" links */
   /* liturgy voices (spec 059): quieter than --ink, leader quietest */
   --speaker-join: #2B5A64;
   --speaker-leader: #866B50;
@@ -105,7 +105,7 @@
   --tip-ink: #16150F;
   --head-ink: #9C9A91;
   --danger: #FF9E9A;            /* lifted for dark surfaces */
-  --link: #7C9CF0;              /* stage entry links (spec 056) */
+  --link: #7C9CF0;              /* link colour: media library "used by" links */
   --speaker-join: #8EC2CC;      /* liturgy voices (spec 059), also the projector's */
   --speaker-leader: #9C8463;
   --focus: #7C9CF0;

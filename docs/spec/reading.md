@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-27
-**slices**: `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `140-stage-link-affordance`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -555,3 +555,27 @@ top of the stage and never recentres on a resize, and a reading page keeps its c
 #### Scenario: a reading page
 - WHEN a saved reading page is opened
 - THEN no search section is painted, and the reading column occupies the stage exactly as before
+### R16 — A stage entry link reads as text until it is pointed at
+
+A Tata Ibadah stage's entry titles SHALL be painted in the same ink as the text around them, with no
+resting underline, in both themes. Pointing at one SHALL underline it 3px below the text without
+changing its colour, and keyboard focus SHALL draw the same underline. The entry's floating controls
+SHALL hold a column of their own at the item's right edge, so no title or media name is drawn under
+them; while the reading pane is narrower than 700px their labels SHALL collapse to icons, and the
+label SHALL remain available to assistive technology.
+
+#### Scenario: at rest
+- WHEN a stage's entries are shown in either theme
+- THEN every entry title is the heading's ink with no underline
+
+#### Scenario: pointed at
+- WHEN the pointer rests on an entry title, or the title is reached with the keyboard
+- THEN the title gains a 3px underline and keeps its colour
+
+#### Scenario: the controls
+- WHEN an entry is hovered, at any width
+- THEN its Preview / Edit / Delete controls sit in their own column and no title or media name is drawn under them
+
+#### Scenario: a narrow pane
+- WHEN the reading pane is narrower than 700px, as on a phone or a 1440px window with both sidebars open
+- THEN the controls show as three icons and each still carries its name for assistive technology
