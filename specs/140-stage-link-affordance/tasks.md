@@ -54,7 +54,7 @@ underlines it 3px under the text; tabbing to it does the same.
 
 - [X] T007 Re-run the targeted set — `tests.e2e.test_reading`, `tests.test_design_tokens`,
   `tests.e2e.test_media_library` — and record the counts.
-- [ ] T008 Fold the capability: `docs/spec/reading.md` gains `R16` (added), the header moves
+- [X] T008 Fold the capability: `docs/spec/reading.md` gains `R16` (added), the header moves
   `last folded` to 2026-10-27 and prepends `140-stage-link-affordance`; write `fold.md`.
 - [ ] T009 Apply `bump: patch` in the pre-merge commit: `VERSION` `1.22.0` → `1.22.1`, one
   `CHANGELOG.md` line under `## [Unreleased]`, card `release_version` left empty; then the PR title
