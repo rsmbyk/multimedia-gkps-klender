@@ -1,0 +1,38 @@
+/* The slice's whole change, as a preview overlay.
+   Preview only — the real rules land in static/styles/design/components.css. */
+
+/* the stage states its two vertical paddings once, so the search section can
+   measure the box it actually lives in (the phone layout moves the top one) */
+.stage {
+  --stage-pad-top: var(--pad-top);
+  --stage-pad-bottom: 64px;
+  padding: var(--stage-pad-top) clamp(24px, 5vw, 64px) var(--stage-pad-bottom);
+}
+
+@media (max-width: 720px) {
+  :root .stage { --stage-pad-top: calc(var(--topbar-h) + 18px); }
+}
+
+/* the field is the middle line, not the middle of the logo-and-field block:
+   three rows — free space, the form, free space — put the form's own box on
+   the section's middle whatever the logo measures */
+.search-home {
+  min-height: calc(100svh - var(--stage-pad-top) - var(--stage-pad-bottom));
+  display: grid;
+  align-items: stretch;
+  justify-items: center;
+}
+.search-home__inner {
+  width: min(100%, 610px);
+  text-align: center;
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  justify-items: center;
+}
+/* the stage pads 40px above and 64px below, so the section's own middle is
+   12px above the window's: half the difference brings the form back onto it */
+[data-home="landing"] .search-home__inner {
+  margin-top: calc(var(--stage-pad-bottom) - var(--stage-pad-top));
+}
+.search-home__logo { grid-row: 1; align-self: end; }
+.search-home__form { grid-row: 2; width: 100%; }
