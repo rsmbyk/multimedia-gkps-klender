@@ -1,6 +1,6 @@
 ---
 id: ITEM-149
-status: in-progress
+status: in-review
 title: 'The landing search field sits 49px below the window''s middle'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-27
 updated: 2026-10-27
 spec: specs/139-home-search-center/spec.md
 branch: feat/139-home-search-center
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/406
 issue:
 closed_at:
 closed_reason:
