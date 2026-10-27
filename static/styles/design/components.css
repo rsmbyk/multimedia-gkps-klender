@@ -1216,10 +1216,16 @@ li:hover > .row-edit,
 /* The date and Project action share the first Tata Ibadah header row. Remove
    the eyebrow's general second-row spacing so its box centers with the button. */
 .read[data-kind="tatib"] .read__head-top .read__eyebrow { margin-bottom: 0; }
-/* The stage's entry-title links wear the theme's link colour (spec 056) --
-   forest green in light, lifted royal blue in dark; not the browser's default
-   blue, which fails contrast on the dark canvas. The underline stays. */
-.entry__jump { color: var(--link); }
+/* The stage's entry-title links read as the heading they sit in -- ink in both
+   themes, no separate colour and no resting underline (spec 140 retires the
+   spec 056 colour rule). The underline is the whole affordance and appears
+   only on hover or keyboard focus, the same cue search results use. */
+.entry__jump { color: inherit; text-decoration: none; }
+.entry__jump:hover,
+.entry__jump:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .read[data-kind="tatib"] .tatib__tx {
   margin: 0 0 4px;
   font: 400 clamp(1.06rem, 1rem + .3vw, 1.18rem)/1.78 ui-serif, Georgia, 'Times New Roman', serif;
@@ -1943,7 +1949,6 @@ kbd {
 .read[data-kind="tatib"] .tatib__item--acts > :first-child { margin-top: 0; }
 .read[data-kind="tatib"] .tatib__item--acts > :last-child,
 .read[data-kind="tatib"] .tatib__item--acts > *:has(+ .entry__acts) { margin-bottom: 0; }
-
 /* Hovering an entry reads as one row: the whole item takes the shared hover fill,
    bled into the gutter with a matching negative margin so no text moves. */
 .tatib__item, .tatib__eos { border-radius: 9px; transition: background var(--ease); }
@@ -1963,6 +1968,16 @@ kbd {
 .tatib__item--media { min-height: 80px; padding: 16px 16px 16px 64px; }
 @media (max-width: 520px) {
   .tatib__item--media { padding-right: 12px; padding-left: 60px; }
+}
+/* The controls own a column at the item's right edge (spec 140): the entry
+   reserves it, so a title or a media name never runs under the buttons. The
+   column is 106px while the controls are icons and 264px once the pane is wide
+   enough for their labels -- the question is the pane's width, not the window's,
+   so it is asked of the pane as a container. */
+.read__body { container: stage-pane / inline-size; }
+.tatib__item--acts { padding-right: 106px; }
+@container stage-pane (min-width: 700px) {
+  .tatib__item--acts { padding-right: 264px; }
 }
 .read[data-kind="tatib"] .tatib__item--media .read__sec { margin: 0 0 3px; }
 .tatib__item--media .read__sub { margin: 0; color: var(--head-ink); }
@@ -2373,6 +2388,21 @@ kbd {
 .entry__ctrl--danger:hover {
   color: var(--danger); border-color: var(--danger);
   background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+/* Where the pane is too narrow for their words the three controls read as icons
+   (spec 140); the label stays in the accessibility tree, only its box collapses.
+   From 700px of pane the labels return and the buttons keep their padding. */
+.entry__ctrl { gap: 0; padding: 5px 6px; }
+.entry__ctrl .entry__ctrl-label {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+@container stage-pane (min-width: 700px) {
+  .entry__ctrl { gap: 6px; padding: 5px 10px; }
+  .entry__ctrl .entry__ctrl-label {
+    position: static; width: auto; height: auto; margin: 0;
+    clip-path: none; white-space: normal;
+  }
 }
 
 /* ---------- the entry modals ---------------------------------------------- */

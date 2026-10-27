@@ -181,10 +181,19 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
                 "el => getComputedStyle(el).getPropertyValue('--tatib-entry-fill').trim()"), fill)
             self.assertEqual(root.evaluate(
                 "el => getComputedStyle(el).getPropertyValue('--tatib-entry-outline').trim()"), outline)
-            for box in (page.locator('.tatib__item--acts').first,
-                        page.locator('.tatib__eos').first):
-                self.assertEqual(box.evaluate('el => getComputedStyle(el).padding'),
-                                 '8px 8px 8px 12px')
+            # Spec 140 reserves the controls' column on the item's right; the
+            # divider carries no title to protect and keeps the spec 068 padding.
+            item = page.locator('.tatib__item--acts').first
+            divider = page.locator('.tatib__eos').first
+            self.assertEqual(item.evaluate(
+                'el => [getComputedStyle(el).paddingTop, getComputedStyle(el).paddingLeft, '
+                'getComputedStyle(el).paddingBottom]'), ['8px', '12px', '8px'])
+            self.assertEqual(divider.evaluate('el => getComputedStyle(el).padding'),
+                             '8px 8px 8px 12px')
+            reserved = float(item.evaluate('el => parseFloat(getComputedStyle(el).paddingRight)'))
+            controls = page.locator('.entry__acts').first.bounding_box()['width']
+            self.assertGreaterEqual(reserved, controls + 4)
+            for box in (item, divider):
                 self.assertEqual(box.evaluate('el => getComputedStyle(el).minHeight'), '56px')
                 self.assertIn('1px inset', box.evaluate('el => getComputedStyle(el).boxShadow'))
             acts = page.locator('.entry__acts').first
