@@ -1,6 +1,6 @@
 ---
 id: ITEM-148
-status: backlog
+status: in-progress
 title: 'On a small screen the sidebars are a drawer stack; a phone gets a toolbar'
 type: feat
 priority: P1
