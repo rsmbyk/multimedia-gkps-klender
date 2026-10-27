@@ -2715,7 +2715,9 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
   :root[data-section] {
     --books-w: 0px; --ch-w-shown: 0px; --reserve-ch: 0px;
   }
-  :root .stage { margin-left: 0; transition: none; }
+  /* the rail stays in flow at this width, so the page still starts after it —
+     zeroing this would slide the reading column under the rail */
+  :root .stage { margin-left: var(--rail-w); transition: none; }
 
   /* the rail paints above the drawers: a drawer at rest is behind it, and it
      emerges from the rail's edge rather than from the window's */
@@ -2877,7 +2879,8 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
     max-width: none;
   }
 
-  .stage { padding-top: calc(var(--topbar-h) + 18px); }
+  /* the rail is a drawer here, so the page takes the whole window */
+  :root .stage { margin-left: 0; padding-top: calc(var(--topbar-h) + 18px); }
 
   /* the Project control is the desktop's: the toolbar has no room for it */
   [data-project-open] { display: none; }
