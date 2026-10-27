@@ -2867,6 +2867,15 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
   :root[data-nav="open"] .panel,
   :root[data-nav="mini"] .panel,
   :root[data-ch="open"] .chapters { left: 0; width: 100vw; max-width: none; }
+  /* the song list's own rules pin it at the rail's edge with a 26rem cap above
+     this width; at four selectors deep they outrank the line above, so the
+     drawer's own geometry is stated at the same depth */
+  :root[data-ch="open"][data-ch-mode="song"] .chapters,
+  :root[data-ch="open"][data-ch-mode="chapter"] .chapters {
+    left: 0;
+    width: 100vw;
+    max-width: none;
+  }
 
   .stage { padding-top: calc(var(--topbar-h) + 18px); }
 
