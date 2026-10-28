@@ -31,12 +31,12 @@ order-independent, not concurrent — this slice was run in one thread.
 - [X] T010 [P] Regenerate `specs/142-entry-surface/preview/preview.html` from the live markup via `preview/build_preview.py`
 - [X] T011 Card ITEM-152, and ITEM-153 for the touch-controls E2E found red on `develop` while running this suite (`backlog/`)
 - [X] T012 Board row and `specs/README.md` index row
-- [ ] T013 Bump `VERSION` 1.22.2 → 1.22.3 and write the `CHANGELOG.md` line — **held until the branch is split** (see `analysis.md` F1)
-- [ ] T014 Mark spec 068 superseded in `specs/README.md` and its own `Status` line — **at merge**, so a superseded spec never points at an unaccepted one
+- [X] T013 Bump `VERSION` 1.22.2 → 1.22.3 and write the `CHANGELOG.md` line
+- [X] T014 Mark spec 068 superseded in its own `Status` line (`specs/README.md` has no 068 row — the index is partial)
 
 ## Acceptance
 
 - `tests.test_design_tokens` — 6/6 green.
-- `tests.e2e.test_tatib_entry_controls` + `tests.e2e.test_tatib_hover` — 29/42, with 13 red documents
-  belong to slice 143's stacked add-bar commit or predate this branch; see `analysis.md` F1 for the
-  disposition.
+- `tests.e2e.test_tatib_entry_controls` + `tests.e2e.test_tatib_hover` + `tests.test_design_tokens` —
+  **41/42**, the one red being the pre-existing touch-controls error (ITEM-153), identical on
+  `develop`. The add-bar work that made 13 red was split into `feat/143-add-bar`.

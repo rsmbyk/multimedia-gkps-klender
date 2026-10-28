@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-10-27
-**slices**: `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-10-28
+**slices**: `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -611,3 +611,25 @@ label SHALL remain available to assistive technology.
 #### Scenario: a narrow pane
 - WHEN the reading pane is narrower than 700px, as on a phone or a 1440px window with both sidebars open
 - THEN the controls show as three icons and each still carries its name for assistive technology
+
+### R18 — A service entry draws no box until it is pointed at
+
+A Tata Ibadah stage's entries SHALL draw no surface at rest, in both themes: no fill and no outline
+on an entry or on a section break. Pointing at an entry, reaching it with the keyboard deliberately,
+or holding its editor open SHALL fill it with `--icon-hover-bg` inside the box it already owned —
+`min-height: 56px`, `padding: 8px 8px 8px 12px`, a 9px radius and the reserved controls column —
+and quiet focus restoration SHALL NOT fill it. A media entry SHALL keep its own geometry
+(`min-height: 80px`, `padding: 16px 16px 16px 64px`, a 42px tile at `left: 13px`) and a section
+break SHALL keep its 56px box, its 2px rule and its diamond.
+
+#### Scenario: at rest
+- WHEN a stage is shown with nothing hovered or focused
+- THEN every entry and section break paints no background and no inset ring, in either theme
+
+#### Scenario: pointed at
+- WHEN an entry is hovered, deliberately focused, or owns the open editor
+- THEN it fills with the same tint its rail's icons use, and keeps its box and its words in place
+
+#### Scenario: every kind
+- WHEN a service holds text, scripture, song, media and section-break entries
+- THEN each draws no resting surface, and the media tile and the break's rule still identify them

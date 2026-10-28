@@ -1,7 +1,7 @@
 # Spec 068: Subtle surface for Tata Ibadah entries
 
 - **ID:** 068
-- **Status:** Accepted
+- **Status:** Superseded by 142 (2026-10-28) — entries draw no box at rest
 - **Item:** ITEM-071
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

@@ -3,9 +3,9 @@
 **Date**: 2026-10-28 · **Spec**: `f5ca87f0` (pack, `spec.md` as accepted) · **Plan/tasks**:
 uncommitted at the time of writing · **Preview**: `specs/142-entry-surface/preview/preview.html`
 
-**Metrics**: 6 requirements · 6 success criteria · 14 tasks (12 done, 2 held) · requirement coverage
+**Metrics**: 6 requirements · 6 success criteria · 14 tasks (14 done) · requirement coverage
 **100%** · traceability rows **12/12 declared** · verification split **7 test · 5 inspection · 0
-manual** · open findings **2 HIGH, 1 LOW**, 0 CRITICAL.
+manual** · open findings **0 CRITICAL, 0 HIGH, 2 LOW** — F1 resolved by the split.
 
 ## Findings
 
