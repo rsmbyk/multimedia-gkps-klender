@@ -1,6 +1,6 @@
 ---
 id: ITEM-152
-status: speccing
+status: in-review
 title: 'A service entry draws no box until it is pointed at'
 type: chore
 priority: P2
@@ -9,8 +9,8 @@ created: 2026-10-28
 updated: 2026-10-28
 spec: specs/142-entry-surface/spec.md
 branch: feat/142-bare-entry-surface
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/412
+issue: 411
 closed_at:
 closed_reason:
 bump: patch
