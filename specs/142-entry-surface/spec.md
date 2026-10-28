@@ -3,7 +3,7 @@
 **Slice**: `specs/142-entry-surface`
 **Branch**: `feat/142-bare-entry-surface`
 **Created**: 2026-10-28
-**Status**: Draft
+**Status**: Accepted (owner, gate 1, 2026-10-28)
 **Input**: "i want to revamp the entry item style. what would you do? i mean, i dont feel like the border and a slight fill there" — then, on the candidates: "try bare as default, then filled when being hovered" — then, on the five entry kinds: "leave all kinds bare — media reads fine up close"
 
 ## What the page does today
