@@ -1216,6 +1216,10 @@ li:hover > .row-edit,
 /* The date and Project action share the first Tata Ibadah header row. Remove
    the eyebrow's general second-row spacing so its box centers with the button. */
 .read[data-kind="tatib"] .read__head-top .read__eyebrow { margin-bottom: 0; }
+/* The first seam has to look like every other seam: the same white space between
+   two lines of words (53px measured ink-to-ink), with the add bar centred in it.
+   34px of box margin + the entry's own 8px padding lands there. */
+.read[data-kind="tatib"] .read__head { margin-bottom: 34px; }
 /* The stage's entry-title links read as the heading they sit in -- ink in both
    themes, no separate colour and no resting underline (spec 140 retires the
    spec 056 colour rule). The underline is the whole affordance and appears
@@ -1234,7 +1238,7 @@ li:hover > .row-edit,
    field is a liturgist's private cue (often NEXT <name>) — shown small/dim
    under the rule, never as content */
 .tatib__eos {
-  margin: 0;
+  margin: 8px 0;      /* the separator gets a little more air than the entries */
   border: 0;
   position: relative;
   scroll-margin-top: 44px;
@@ -1246,7 +1250,7 @@ li:hover > .row-edit,
 .tatib__eos::before {
   content: "";
   display: block;
-  border-top: 2px solid var(--divider);
+  border-top: 2px solid color-mix(in srgb, var(--divider) 62%, var(--canvas));
 }
 .tatib__eos::after {
   content: "";
@@ -1254,7 +1258,7 @@ li:hover > .row-edit,
   left: 50%; top: 50%;
   width: 5px; height: 5px;
   transform: translate(-50%, -50%) rotate(45deg);
-  background: var(--divider);
+  background: color-mix(in srgb, var(--divider) 62%, var(--canvas));
 }
 .tatib__eos .tatib__note { position: absolute; left: 0; right: 0; top: calc(50% + 7px); margin-top: 0; }
 .tatib__note {
@@ -1845,71 +1849,105 @@ kbd {
    REVEALED, the row brackets its buttons with equal 8px above and below
    (spec 055): margin-block drops to 0 and the 8px padding appears, so the
    gap to the entry boxes on either side is the same in every state. */
+/* A row is opened by its OWN band, or by the entry ABOVE it — never by the entry
+   below it (spec 142). Its buttons are DRAWN OVER the seam between the two
+   entries: the row keeps a zero-content 12px slot in the flow, exactly the gap
+   the two entries had before, and the bar itself is absolutely positioned on top
+   of it. Nothing above, below, or under the pointer moves — the bar simply covers
+   the air (and a little of the leading) around the seam, with an opaque button
+   fill so no words read through it. */
 .entry__add {
-  display: grid;
-  grid-template-rows: 0fr;
-  padding: 0;
-  margin: 6px 0;
-  opacity: 0;
-  transition: grid-template-rows 140ms ease 220ms, opacity 140ms ease 220ms,
-              padding 140ms ease 220ms, margin 140ms ease 220ms;
+  position: relative;
+  height: 20px;      /* the gap between two blocks */
+  margin: 0;
+  z-index: 3;
 }
 .entry__add-inner {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  min-height: 0; overflow: hidden;
+  position: absolute;
+  left: 50%; right: auto; width: max-content;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; align-items: center; gap: 6px;
+  height: 34px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms var(--ease-timing) 220ms;
 }
-/* The add row is not part of the item (spec 036): it starts below the item's box, so
-   hovering it never counts as hovering the item above. The padding below the buttons
-   appears with the row, so nothing is reserved at rest. */
-.tatib__item:hover + .entry__add,
-.tatib__eos:hover + .entry__add,
-.entry__add:hover,
-.entry__add:focus-within {
-  grid-template-rows: 1fr;
-  padding: 8px 0;
-  margin-block: 0;
+/* The insertion line: it is what makes the bar read as "here", not as loose
+   buttons floating between two paragraphs. It lives on the ROW, not on the bar, so
+   the bar's hit area stays as wide as its buttons and never covers the entry's own
+   controls — a full-width overlay would sit exactly where Edit and Delete are. */
+.entry__add::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; border-radius: 1px;
+  background: color-mix(in srgb, var(--focus) 40%, var(--divider));
+  opacity: .15;                 /* faint, but always there: the seam is a place */
+  pointer-events: none;
+  transition: opacity 140ms var(--ease-timing) 220ms;
+}
+.tatib__item:hover + .entry__add::before,
+.tatib__eos:hover + .entry__add::before,
+.entry__add:hover::before,
+.entry__add:focus-within::before,
+.entry__add.is-revealed::before { opacity: .6; transition-delay: 0s; }
+/* The add row is not part of the item (spec 036): it sits on the seam below the
+   item's box, so hovering it never counts as hovering the item above. */
+.tatib__item:hover + .entry__add .entry__add-inner,
+.tatib__eos:hover + .entry__add .entry__add-inner,
+.entry__add:hover .entry__add-inner,
+.entry__add:focus-within .entry__add-inner {
   opacity: 1;
+  pointer-events: auto;
   transition-delay: 0s;
 }
 /* The add rows on either side of a hovered (or focused) item (spec 037). */
-.entry__add.is-revealed {
-  grid-template-rows: 1fr;
-  padding: 8px 0;
-  margin-block: 0;
+.entry__add.is-revealed .entry__add-inner {
   opacity: 1;
+  pointer-events: auto;
   transition-delay: 0s;
 }
-/* The start bar is a row too (spec 055): it collapses at rest and reveals
-   through `.is-revealed` (set by entries.js -- it precedes the first block, so
-   CSS alone cannot reveal it), its own hover, or keyboard focus. While open it
-   pulls up into the page head's own 30px margin, so it sits 8px under the
-   heading and 8px above the first words. */
+/* The start bar is the same bar at the top of the service: it hangs from the seam
+   under the page head, inside the head's own 30px margin. */
 .entry__start {
-  display: grid;
-  grid-template-rows: 0fr;
-  padding: 0;
-  margin: 0;
-  opacity: 0;
-  transition: grid-template-rows 140ms ease 220ms, opacity 140ms ease 220ms,
-              padding 140ms ease 220ms, margin-top 140ms ease 220ms;
+  position: relative;
+  height: 20px;
+  margin-top: -20px;
+  z-index: 3;
 }
 .entry__start-inner {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  min-height: 0; overflow: hidden;
+  position: absolute;
+  left: 50%; right: auto; width: max-content;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; align-items: center; gap: 6px;
+  height: 34px;              /* the same bar as every other seam */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms var(--ease-timing) 220ms;
 }
-.entry__start.is-revealed,
-.entry__start:hover,
-.entry__start:focus-within {
-  grid-template-rows: 1fr;
-  padding: 8px 0;
-  margin-top: -30px;
+.entry__start::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; border-radius: 1px;
+  background: color-mix(in srgb, var(--focus) 40%, var(--divider));
+  opacity: .15;                 /* faint, but always there: the seam is a place */
+  pointer-events: none;
+  transition: opacity 140ms var(--ease-timing) 220ms;
+}
+.entry__start:hover::before,
+.entry__start:focus-within::before,
+.entry__start.is-revealed::before { opacity: .6; transition-delay: 0s; }
+.entry__start.is-revealed .entry__start-inner,
+.entry__start:hover .entry__start-inner,
+.entry__start:focus-within .entry__start-inner {
   opacity: 1;
+  pointer-events: auto;
   transition-delay: 0s;
 }
 /* A touch device has no hover to reveal the rows with: show them outright. */
 @media (hover: none) and (pointer: coarse) {
-  .entry__add { grid-template-rows: 1fr; padding: 8px 0; margin-block: 0; opacity: 1; }
-  .entry__start { grid-template-rows: 1fr; padding: 8px 0; margin-top: -30px; opacity: 1; }
+  .entry__add-inner, .entry__start-inner { opacity: 1; pointer-events: auto; transition-delay: 0s; }
 }
 
 /* ---------- the entry controls (spec 032/033) ----------------------------- */
@@ -2290,6 +2328,14 @@ kbd {
   color: var(--ink);
   border-color: var(--focus);
   background: var(--icon-hover-bg);
+}
+/* A floating button's hover fill has to be opaque (spec 142): --icon-hover-bg is an
+   8% wash, and over the insertion line — which runs behind the buttons — and the
+   entry's own words, that reads as a hole rather than a fill. The same tone, mixed
+   into the canvas instead of laid over it. */
+.entry__add-btn:hover {
+  background: color-mix(in srgb, var(--ink) 8%, var(--canvas));
+  border-style: solid;
 }
 .entry__add-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 

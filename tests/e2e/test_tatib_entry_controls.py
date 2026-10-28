@@ -1,11 +1,11 @@
 """The entry box: the controls' home (spec 033, amended by spec 055).
 
 Preview, Edit and Delete float at their item's top-right inside a box that
-CONTAINS them -- 56px minimum, words centred on the box's centreline. Every
-revealed add row keeps equal 8px above and below its buttons; the start bar
-collapses at rest and reveals with the first block; the controls appear while
-the item is hovered or holds keyboard focus, and always on a device with no
-hover.
+CONTAINS them -- 56px minimum, words centred on the box's centreline. Each add
+row keeps a 20px slot in the flow and draws its 34px bar over that slot on the
+seam line, so opening one moves nothing (spec 143); the start bar is the same bar
+above the first block; the controls appear while the item is hovered or holds
+keyboard focus, and always on a device with no hover.
 """
 from datetime import date
 import unittest
@@ -165,7 +165,7 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         divider = page.locator('.tatib__eos').first
         self.assertEqual(divider.evaluate(
             'el => [getComputedStyle(el).marginTop, getComputedStyle(el).marginBottom]'),
-            ['0px', '0px'])
+            ['8px', '8px'])
         self.assertAlmostEqual(divider.bounding_box()['height'], 56, delta=0.6)
 
     def test_the_resting_surface_is_the_canvas_in_both_themes(self):
@@ -219,86 +219,160 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
 
     # --- the gaps include the buttons (spec 055) ------------------------------
 
-    def test_a_revealed_row_keeps_equal_gaps_above_and_below(self):
+    def test_opening_a_row_moves_nothing(self):
+        """Spec 143: the bar is drawn over the seam, so the page never reflows."""
         page = self._page()
-        for index in (0, 1, 3):          # the first tall entry, the second, the one-liner
-            hovered = page.locator('.tatib__item').nth(index)
-            page.mouse.move(1400, 850)
-            page.wait_for_timeout(400)   # past the hide delay
-            hovered.hover()
-            page.wait_for_timeout(450)   # past the expand
-            hovered.hover()              # a short entry slides once; re-target it
-            page.wait_for_timeout(450)
-            gaps = self._revealed_gaps(page)
-            self.assertGreater(len(gaps), 0, index)
-            for gap in gaps:
-                if gap['above'] is not None:
-                    self.assertAlmostEqual(gap['above'], 8, delta=1, msg=(index, gaps))
-                if gap['below'] is not None:
-                    self.assertAlmostEqual(gap['below'], 8, delta=1, msg=(index, gaps))
-
-    def test_focus_keeps_the_same_gaps(self):
-        page = self._page()
+        tops = """() => [].slice.call(
+            document.querySelectorAll('#readBody > .tatib__item, #readBody > .tatib__eos'))
+          .map(function (block) {
+            return Math.round((block.getBoundingClientRect().top + window.scrollY) * 10) / 10;
+          })"""
         page.mouse.move(1400, 850)
+        page.wait_for_timeout(400)
+        resting = page.evaluate(tops)
+        height = page.evaluate('document.body.scrollHeight')
+        for index in (0, 1, 3):
+            page.mouse.move(1400, 850)
+            page.wait_for_timeout(400)
+            page.locator('.tatib__item').nth(index).hover()
+            page.wait_for_timeout(500)
+            self.assertEqual(page.evaluate(tops), resting,
+                             'hovering entry %d moved the blocks' % index)
+            self.assertEqual(page.evaluate('document.body.scrollHeight'), height)
+            opened = page.evaluate("""() => [].slice.call(
+                document.querySelectorAll('.entry__add-inner, .entry__start-inner'))
+              .filter(function (bar) { return getComputedStyle(bar).opacity === '1'; }).length""")
+            self.assertEqual(opened, 2, 'entry %d should open both its rows' % index)
+
+    def test_focus_moves_nothing_either(self):
+        page = self._page()
+        tops = """() => [].slice.call(
+            document.querySelectorAll('#readBody > .tatib__item, #readBody > .tatib__eos'))
+          .map(function (block) {
+            return Math.round((block.getBoundingClientRect().top + window.scrollY) * 10) / 10;
+          })"""
+        page.mouse.move(1400, 850)
+        page.wait_for_timeout(400)
+        resting = page.evaluate(tops)
         page.locator('.tatib__item').nth(1).locator('[data-entry-edit]').first.focus()
         page.wait_for_timeout(450)
-        gaps = self._revealed_gaps(page)
-        self.assertGreater(len(gaps), 0)
-        for gap in gaps:
-            if gap['above'] is not None:
-                self.assertAlmostEqual(gap['above'], 8, delta=1, msg=gaps)
-            if gap['below'] is not None:
-                self.assertAlmostEqual(gap['below'], 8, delta=1, msg=gaps)
+        self.assertEqual(page.evaluate(tops), resting)
 
-    def test_the_start_bar_collapses_and_reveals_with_equal_gaps(self):
+    def test_the_start_bar_opens_without_moving_the_first_entry(self):
         page = self._page()
-        bar = page.locator('#readBody > .entry__start')
-        self.assertEqual(bar.count(), 1)
         page.mouse.move(1400, 850)
-        page.wait_for_timeout(450)
-        self.assertEqual(bar.bounding_box()['height'], 0)      # collapsed at rest
+        page.wait_for_timeout(400)
+        first = page.locator('#readBody > .tatib__item').first
+        before = first.bounding_box()['y']
         page.locator('.tatib__item').first.hover()
         page.wait_for_timeout(450)
-        self.assertGreater(bar.bounding_box()['height'], 30)   # revealed with the first entry
-        gaps = page.evaluate("""() => {
-          const round = n => Math.round(n * 10) / 10;
-          const bar = document.querySelector('#readBody > .entry__start');
-          const block = bar.querySelector('.entry__start-inner').getBoundingClientRect();
-          const head = document.querySelector('#readBody').previousElementSibling;
-          const entry = bar.nextElementSibling;
-          const word = entry.querySelector('h2, p');
-          return {
-            above: round(block.top - head.getBoundingClientRect().bottom),
-            below: round(entry.getBoundingClientRect().top - block.bottom),
-            wordBelow: round(word.getBoundingClientRect().top - block.bottom),
-            margin: getComputedStyle(bar).marginTop,
-          };
+        bar = page.locator('#readBody > .entry__start .entry__start-inner')
+        self.assertEqual(bar.evaluate('el => getComputedStyle(el).opacity'), '1')
+        self.assertAlmostEqual(first.bounding_box()['y'], before, delta=0.5)
+        # the bar is centred on its row, and its row is the seam
+        centres = page.evaluate("""() => {
+          const row = document.querySelector('#readBody > .entry__start');
+          const bar = row.querySelector('.entry__start-inner');
+          const r = row.getBoundingClientRect(), b = bar.getBoundingClientRect();
+          return [r.top + r.height / 2, b.top + b.height / 2];
         }""")
-        self.assertAlmostEqual(gaps['above'], 8, delta=1, msg=gaps)
-        self.assertAlmostEqual(gaps['below'], 8, delta=1, msg=gaps)
-        self.assertAlmostEqual(gaps['wordBelow'], 16, delta=1, msg=gaps)
-        self.assertEqual(gaps['margin'], '-30px')
+        self.assertAlmostEqual(centres[0], centres[1], delta=1)
 
-    # --- at rest the rows and the bar reserve nothing (spec 055) --------------
-
-    def test_at_rest_the_rows_and_the_bar_reserve_nothing(self):
+    def test_the_row_keeps_its_slot_and_the_bar_floats_over_it(self):
         page = self._page()
         page.mouse.move(1400, 850)
-        self.assertEqual(page.locator('#readBody > .entry__start').bounding_box()['height'], 0)
-        for row in page.locator('#readBody > .entry__add').all():
-            self.assertEqual(row.bounding_box()['height'], 0)
-        # The resting rhythm is uniform: 12px between the boxes (the rows' 6px
-        # margins), not the uneven stack the reserved space used to leave.
+        slots = page.evaluate("""() => [].slice.call(
+            document.querySelectorAll('#readBody > .entry__add, #readBody > .entry__start'))
+          .map(function (row) { return Math.round(row.getBoundingClientRect().height); })""")
+        self.assertTrue(slots)
+        for height in slots:
+            self.assertEqual(height, 20, 'every row keeps a 20px slot: %r' % (slots,))
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(450)
+        bar = page.evaluate("""() => {
+          const row = document.querySelector('#readBody > .entry__add');
+          const inner = row.querySelector('.entry__add-inner');
+          const r = row.getBoundingClientRect(), b = inner.getBoundingClientRect();
+          return { position: getComputedStyle(inner).position,
+                   height: Math.round(b.height),
+                   rowHeight: Math.round(r.height),
+                   offCentre: Math.abs((b.left + b.right) / 2 - (r.left + r.right) / 2) };
+        }""")
+        self.assertEqual(bar['position'], 'absolute')
+        self.assertEqual(bar['height'], 34)
+        self.assertEqual(bar['rowHeight'], 20)
+        self.assertLess(bar['offCentre'], 1, bar)
+
+    def test_the_seam_is_a_hint_at_rest_and_brightens_when_opened(self):
+        page = self._page()
+        page.mouse.move(1400, 850)
+        page.wait_for_timeout(400)
+        rest = page.evaluate("""() => {
+          const cs = getComputedStyle(document.querySelector('#readBody > .entry__add'), '::before');
+          return { opacity: cs.opacity, colour: cs.backgroundColor };
+        }""")
+        self.assertEqual(rest['opacity'], '0.15')
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(450)
+        opened = page.evaluate("""() => getComputedStyle(
+            document.querySelector('#readBody > .entry__add'), '::before').opacity""")
+        self.assertEqual(opened, '0.6')
+
+    def test_the_bar_does_not_cover_the_entry_controls(self):
+        page = self._page()
+        page.mouse.move(1400, 850)
+        page.locator('.tatib__item').nth(1).hover()
+        page.wait_for_timeout(450)
+        hits = page.evaluate("""() => {
+          const item = document.querySelectorAll('.tatib__item')[1];
+          const control = item.querySelector('.entry__acts .entry__ctrl');
+          const r = control.getBoundingClientRect();
+          return [r.top + 2, r.top + r.height / 2, r.bottom - 2].map(function (y) {
+            const hit = document.elementFromPoint(r.left + r.width / 2, y);
+            return !!(hit && (hit === control || control.contains(hit)));
+          });
+        }""")
+        self.assertEqual(hits, [True, True, True], 'the open bar covers the controls')
+
+    def test_a_hovered_button_is_solid_and_opaque(self):
+        page = self._page()
+        page.mouse.move(1400, 850)
+        page.locator('.tatib__item').first.hover()
+        page.wait_for_timeout(450)
+        target = page.evaluate("""() => {
+          const button = document.querySelector('.entry__add.is-revealed .entry__add-btn');
+          const r = button.getBoundingClientRect();
+          return { x: r.left + r.width / 2, y: r.top + r.height / 2,
+                   resting: getComputedStyle(button).borderStyle };
+        }""")
+        self.assertEqual(target['resting'], 'dashed')
+        page.mouse.move(target['x'], target['y'])
+        page.wait_for_timeout(300)
+        hovered = page.evaluate("""() => {
+          const button = document.querySelector('.entry__add-btn:hover');
+          if (!button) return null;
+          const cs = getComputedStyle(button);
+          return { style: cs.borderStyle, background: cs.backgroundColor };
+        }""")
+        self.assertIsNotNone(hovered, 'no button took the hover')
+        self.assertEqual(hovered['style'], 'solid')
+        self.assertNotIn('rgba', hovered['background'],
+                         'the hover fill must be opaque: %r' % (hovered,))
+
+    def test_the_first_seam_and_the_gaps_between_blocks(self):
+        page = self._page()
+        page.mouse.move(1400, 850)
         gaps = page.evaluate("""() => {
           const round = n => Math.round(n * 10) / 10;
-          const boxes = [].slice.call(document.querySelectorAll(
-            '#readBody > .tatib__item, #readBody > .tatib__eos'));
-          return boxes.slice(1).map((box, i) => round(
-            box.getBoundingClientRect().top - boxes[i].getBoundingClientRect().bottom));
+          const head = document.querySelector('.read__head');
+          const blocks = [].slice.call(
+            document.querySelectorAll('#readBody > .tatib__item, #readBody > .tatib__eos'));
+          return { head: round(blocks[0].getBoundingClientRect().top - head.getBoundingClientRect().bottom),
+                   between: round(blocks[2].getBoundingClientRect().top
+                                  - blocks[1].getBoundingClientRect().bottom) };
         }""")
-        self.assertEqual(len(gaps), 3)
-        for gap in gaps:
-            self.assertAlmostEqual(gap, 12, delta=0.6)
+        self.assertAlmostEqual(gaps['head'], 34, delta=1, msg=gaps)
+        self.assertAlmostEqual(gaps['between'], 20, delta=1, msg=gaps)
 
     def test_hovering_an_entry_settles_with_both_rows_open(self):
         page = self._page()
@@ -307,30 +381,22 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         below = page.locator('.entry__add').nth(1)
         page.mouse.move(1400, 850)
         before = second.bounding_box()
-        # hover the entry at its centre, where a reader points
         page.mouse.move(before['x'] + before['width'] / 2,
                         before['y'] + before['height'] / 2, steps=4)
-        page.wait_for_timeout(600)                    # past expand + hide delays
-        self.assertGreater(above.bounding_box()['height'], 0)
-        self.assertGreater(below.bounding_box()['height'], 0)
-        # the reveal settles: the entry stays under the pointer (its controls show)
-        # and nothing flickers -- both rows are still open after the hide window
+        page.wait_for_timeout(600)
+        for row in (above, below):
+            self.assertEqual(row.locator('.entry__add-inner').evaluate(
+                'el => getComputedStyle(el).opacity'), '1')
         expect(second.locator('.entry__acts')).to_have_css('opacity', '1')
         page.wait_for_timeout(400)
-        self.assertGreater(above.bounding_box()['height'], 0)
-        self.assertGreater(below.bounding_box()['height'], 0)
-        # the closed row above opens by pushing the entry down once, by at most
-        # that row's height; the shift is bounded, never unbounded churn
-        shift = second.bounding_box()['y'] - before['y']
-        self.assertLessEqual(shift, above.bounding_box()['height'] + 1)
-        # and each row's box starts below its item's box (spec 036: no overlap)
-        item_above = page.locator('.tatib__item').nth(0)
-        self.assertLessEqual(item_above.bounding_box()['y'] + item_above.bounding_box()['height'],
-                             above.bounding_box()['y'] + 1)
-        after = second.bounding_box()
-        self.assertLessEqual(after['y'] + after['height'], below.bounding_box()['y'] + 1)
+        for row in (above, below):
+            self.assertEqual(row.locator('.entry__add-inner').evaluate(
+                'el => getComputedStyle(el).opacity'), '1')
+        self.assertAlmostEqual(second.bounding_box()['y'], before['y'], delta=0.5)
+        self.assertLessEqual(second.bounding_box()['y'] + second.bounding_box()['height'],
+                             below.bounding_box()['y'] + 21)
 
-    # --- reveal behaviour (specs 036/037/052; geometry of spec 055) -----------
+    # --- reveal behaviour (specs 036/037; drawn over the seam by spec 143) ----
 
     def test_the_add_row_is_not_part_of_the_item(self):
         page = self._page()
@@ -339,37 +405,35 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         acts = page.locator('.entry__acts').first
         page.mouse.move(1400, 850)
         expect(acts).to_have_css('opacity', '0')
-        self.assertEqual(bar.bounding_box()['height'], 0)   # collapsed at rest (spec 052)
-        item.hover()                             # a collapsed row has no box to hover
-        expect(bar).to_have_css('opacity', '1')
-        page.wait_for_timeout(250)               # past the reveal transition
+        expect(bar.locator('.entry__add-inner')).to_have_css('opacity', '0')
+        item.hover()
+        expect(bar.locator('.entry__add-inner')).to_have_css('opacity', '1')
+        page.wait_for_timeout(250)
         bar.hover()
-        expect(bar).to_have_css('opacity', '1')               # the bar's own hover keeps it
-        expect(acts).to_have_css('opacity', '0')              # the item above is not revealed
+        expect(bar.locator('.entry__add-inner')).to_have_css('opacity', '1')
+        expect(acts).to_have_css('opacity', '0')
         expect(item).to_have_css('background-color', 'rgba(0, 0, 0, 0)')
-        item_box, bar_box = item.bounding_box(), bar.bounding_box()
-        self.assertLessEqual(item_box['y'] + item_box['height'], bar_box['y'] + 1)   # no overlap
 
     def test_hovering_the_item_still_reveals_its_add_row(self):
         page = self._page()
         item = page.locator('.tatib__item').first
         bar = page.locator('.entry__add').first
         page.mouse.move(1400, 850)
-        expect(bar).to_have_css('opacity', '0')
+        expect(bar.locator('.entry__add-inner')).to_have_css('opacity', '0')
         item.hover()
-        expect(bar).to_have_css('opacity', '1')
+        expect(bar.locator('.entry__add-inner')).to_have_css('opacity', '1')
 
     def test_hovering_an_item_reveals_the_add_rows_around_it(self):
         page = self._page()
         second = page.locator('.tatib__item').nth(1)
-        above = page.locator('.entry__add').nth(0)     # the row between the two items
-        below = page.locator('.entry__add').nth(1)     # the row after the second item
+        above = page.locator('.entry__add').nth(0)
+        below = page.locator('.entry__add').nth(1)
         page.mouse.move(1400, 850)
-        expect(above).to_have_css('opacity', '0')
-        expect(below).to_have_css('opacity', '0')
+        expect(above.locator('.entry__add-inner')).to_have_css('opacity', '0')
+        expect(below.locator('.entry__add-inner')).to_have_css('opacity', '0')
         second.hover()
-        expect(above).to_have_css('opacity', '1')
-        expect(below).to_have_css('opacity', '1')
+        expect(above.locator('.entry__add-inner')).to_have_css('opacity', '1')
+        expect(below.locator('.entry__add-inner')).to_have_css('opacity', '1')
 
     def test_focus_within_an_item_reveals_the_add_rows_around_it(self):
         page = self._page()
@@ -377,10 +441,10 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         above = page.locator('.entry__add').nth(0)
         below = page.locator('.entry__add').nth(1)
         page.mouse.move(1400, 850)
-        expect(above).to_have_css('opacity', '0')
+        expect(above.locator('.entry__add-inner')).to_have_css('opacity', '0')
         second.locator('[data-entry-edit]').first.focus()
-        expect(above).to_have_css('opacity', '1')
-        expect(below).to_have_css('opacity', '1')
+        expect(above.locator('.entry__add-inner')).to_have_css('opacity', '1')
+        expect(below.locator('.entry__add-inner')).to_have_css('opacity', '1')
 
     def test_moving_onto_an_add_row_shows_only_that_row(self):
         page = self._page()
@@ -388,19 +452,20 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
         above = page.locator('.entry__add').nth(0)
         below = page.locator('.entry__add').nth(1)
         second.hover()
-        expect(below).to_have_css('opacity', '1')
+        expect(below.locator('.entry__add-inner')).to_have_css('opacity', '1')
         above.hover()
-        expect(above).to_have_css('opacity', '1')
-        expect(below).to_have_css('opacity', '0')
+        expect(above.locator('.entry__add-inner')).to_have_css('opacity', '1')
+        expect(below.locator('.entry__add-inner')).to_have_css('opacity', '0')
 
-    def test_tabbing_into_a_collapsed_row_expands_it(self):
+    def test_tabbing_into_a_row_opens_it(self):
         page = self._page()
         page.mouse.move(1400, 850)
         row = page.locator('#readBody > .entry__add').first
-        self.assertEqual(row.bounding_box()['height'], 0)
+        bar = row.locator('.entry__add-inner')
+        expect(bar).to_have_css('opacity', '0')
         row.locator('[data-entry-open]').first.focus()
-        expect(row).to_have_css('opacity', '1')
-        self.assertGreater(row.bounding_box()['height'], 0)
+        expect(bar).to_have_css('opacity', '1')
+        expect(bar).to_have_css('pointer-events', 'auto')
 
     # --- the no-hover device --------------------------------------------------
 
@@ -414,7 +479,7 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
             for (const rule of rules) {
               if (!rule.media || !rule.media.mediaText.includes('pointer: coarse')) continue;
               for (const inner of rule.cssRules) {
-                if (inner.selectorText && inner.selectorText.includes('.entry__add')
+                if (inner.selectorText && inner.selectorText.includes('.entry__add-inner')
                     && inner.style.opacity === '1') return true;
               }
             }
@@ -451,7 +516,7 @@ class EntryControlsE2ETests(StaticLiveServerTestCase):
             for (const rule of rules) {
               if (!rule.media || !rule.media.mediaText.includes('pointer: coarse')) continue;
               for (const inner of rule.cssRules) {
-                if (inner.selectorText && inner.selectorText.includes('.entry__start')
+                if (inner.selectorText && inner.selectorText.includes('.entry__start-inner')
                     && inner.style.opacity === '1') return true;
               }
             }

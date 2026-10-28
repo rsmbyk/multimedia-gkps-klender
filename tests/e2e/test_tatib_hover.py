@@ -69,7 +69,7 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         # reports the hover tint instead.
         return 'rgba(0, 0, 0, 0)'
 
-    def test_hovering_the_first_entry_moves_it_once_then_settles(self):
+    def test_hovering_the_first_entry_does_not_move_it(self):
         page = self._page()
         item = page.locator('.tatib__item').first
         text = page.locator('.tatib__tx').first
@@ -77,21 +77,19 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         expect(item).to_have_css('background-color', self._resting_background(page))
         before = text.bounding_box()
         item.hover()
-        page.wait_for_timeout(600)                   # past the start bar's expand
+        page.wait_for_timeout(600)                   # past the start bar's reveal
         after = text.bounding_box()
         background = item.evaluate('el => getComputedStyle(el).backgroundColor')
         self.assertNotEqual(background, self._resting_background(page), background)
-        # The start bar revealing (spec 055) moves the first entry ONCE, by the
-        # bar's revealed height minus the page head's 30px margin (13.6px on one
-        # line; ~47px when the five buttons wrap at this width). The text itself
-        # never reflows horizontally, and nothing drifts after it settles.
+        # Spec 143: the start bar and the add rows are drawn over the seam, so the
+        # entry under the pointer keeps its place -- it used to drop 13.6px with the
+        # bar and 31.6px with the row above it.
+        self.assertAlmostEqual(after['y'], before['y'], delta=0.5, msg=(before, after))
         self.assertEqual(round(before['x']), round(after['x']))
-        bar_h = page.locator('#readBody > .entry__start').evaluate(
-            'el => el.getBoundingClientRect().height')
-        shift = after['y'] - before['y']
-        self.assertAlmostEqual(shift, bar_h - 30, delta=2, msg=(shift, bar_h))
+        start = page.locator('#readBody > .entry__start .entry__start-inner')
+        self.assertEqual(start.evaluate('el => getComputedStyle(el).opacity'), '1')
         page.wait_for_timeout(400)
-        self.assertEqual(text.bounding_box()['y'], after['y'])
+        self.assertAlmostEqual(text.bounding_box()['y'], before['y'], delta=0.5)
 
     def test_keyboard_focus_within_highlights_the_item(self):
         page = self._page()
