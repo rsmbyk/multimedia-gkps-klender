@@ -480,6 +480,72 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.locator('form[data-media-create] .editor__save').click()
         expect(page.locator('.tatib__item--media')).to_contain_text('notes.pdf')
 
+    def sample_companion(self, page, files):
+        """A connected companion whose reported size is the bytes the browser actually sent."""
+        header = {'Access-Control-Allow-Origin': self.live_server_url}
+        def companion(route):
+            url = route.request.url
+            body = route.request.post_data_buffer or b''
+            if url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': len(files),
+                           'total_size': sum(f['size'] for f in files),
+                           'retention': '30', 'write_token': 'test-token'}
+            elif url.endswith('/inspect'):
+                uploaded = {'sha256': 'c' * 64, 'name': 'images (1).jpeg', 'family': 'image',
+                            'size': len(body), 'reused': False}
+                payload = dict(uploaded, uploaded_at='2026-10-28T12:00:00+00:00',
+                               unused_since=None, delete_at=None)
+            else:
+                payload = {'files': files}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers=header)
+        page.route('http://127.0.0.1:63174/**', companion)
+        return page
+
+    def choose_bytes(self, page, count):
+        page.locator('[data-media-file]').set_input_files({
+            'name': 'images (1).jpeg', 'mimeType': 'image/jpeg', 'buffer': b'\xff' * count})
+
+    def test_media_size_reads_in_the_smallest_unit_that_shows_a_number(self):
+        page = self.sample_companion(
+            self.browser.new_page(viewport={'width': 1440, 'height': 900}),
+            [{'sha256': 'c' * 64, 'name': 'images (1).jpeg', 'family': 'image', 'size': 12345,
+              'uploaded_at': '2026-10-28T12:00:00+00:00', 'unused_since': None, 'delete_at': None}])
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('[data-entry-open="media"]').first.dispatch_event('click')
+        meta = page.locator('[data-media-selected-meta]')
+        self.choose_bytes(page, 12345)
+        expect(meta).to_have_text('Image · 12.3 KB')
+        self.choose_bytes(page, 512)
+        expect(meta).to_have_text('Image · 512 B')
+        self.choose_bytes(page, 1000000)
+        expect(meta).to_have_text('Image · 1 MB')
+        self.choose_bytes(page, 999999)
+        expect(meta).to_have_text('Image · 1 MB')
+        # The cap and the gigabyte boundary cannot be uploaded as a body; the shipped function is asked
+        # directly, so the whole unit chain is still asserted rather than assumed.
+        self.assertEqual(page.evaluate('window.gkpsFormatSize(200000000)'), '200 MB')
+        self.assertEqual(page.evaluate('window.gkpsFormatSize(1000000000)'), '1 GB')
+        self.assertEqual(page.evaluate('window.gkpsFormatSize(0)'), '0 B')
+        page.locator('[data-media-tab-button="library"]').click()
+        expect(page.locator('[data-media-hash] small').first).to_have_text('Image · 12.3 KB')
+
+    def test_media_library_row_and_total_use_the_chosen_label(self):
+        files = [
+            {'sha256': 'a' * 64, 'name': 'images (1).jpeg', 'family': 'image', 'size': 12345,
+             'uploaded_at': '2026-10-28T12:00:00+00:00', 'unused_since': None, 'delete_at': None},
+            {'sha256': 'b' * 64, 'name': 'edge.jpeg', 'family': 'image', 'size': 999999,
+             'uploaded_at': '2026-10-27T12:00:00+00:00', 'unused_since': None, 'delete_at': None},
+        ]
+        page = self.sample_companion(
+            self.browser.new_page(viewport={'width': 1440, 'height': 900}), files)
+        page.goto(self.live_server_url + reverse('web-media-library'))
+        rows = page.locator('.media-library__meta')
+        expect(rows.nth(0)).to_have_text('Image · 28 Oktober 2026 · 12.3 KB')
+        expect(rows.nth(1)).to_have_text('Image · 27 Oktober 2026 · 1 MB')
+        page.locator('#mediaStatusButton').click()
+        expect(page.locator('#mediaTotalSize')).to_have_text('1 MB')
+
     def test_service_entry_distinguishes_disconnected_and_missing(self):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
         row = page.locator('.tatib__item--media')

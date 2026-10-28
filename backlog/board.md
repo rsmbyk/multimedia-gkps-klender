@@ -16,16 +16,17 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-144](./items/ITEM-144-date-dependent-picker-e2e.md) | Five date-picker E2E tests fail when the nearest Sunday falls in the next month | `_fill` steps months from today while the picker opens on the nearest Sunday, so five editor tests time out on days that cross a month boundary; identical on develop | fix | P1 | S | — | 2026-10-26 |
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
+| [ITEM-156](./items/ITEM-156-media-entry-phone-gap.md) | The gap above a media entry is 19.9px at the phone width, not the 12px its test asserts | A red E2E inherited from an earlier spacing change: the measured gap is 19.89px, identical on develop | fix | P1 | S | — | 2026-10-28 |
 
 ## Speccing
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-
 ## Ready
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-155](./items/ITEM-155-media-size-precision.md) | A media size reads in the unit that still shows its number | One label replaces two formulas: `0.0 MB` for any file under 50 KB and `0 KB` for anything under 500 B become `512 B` · `12.3 KB` · `1 MB` | fix | P1 | S | [145](../specs/145-media-size-precision/spec.md) | 2026-10-28 |
 
 ## In review
 

@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-28
-**slices**: `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -659,3 +659,23 @@ Every row SHALL remain reachable by pointer, by a hover band of its own, and by 
 #### Scenario: keyboard
 - WHEN a row's first button takes focus by Tab
 - THEN the row opens and its buttons are reachable
+
+### R20 — A media size reads in the unit that still shows its number
+
+Every size the product prints SHALL be drawn in the largest decimal unit in which its value is at least
+one — `B`, `KB` (1,000 B), `MB` (1,000 KB), `GB` (1,000 MB) — so that a non-empty file never reads as
+zero, and SHALL carry one decimal only when that decimal is not zero. A value that would round to `1000`
+SHALL be drawn in the next unit. The New media card, a Media Library row and the Media Library Total
+SHALL draw every size through one function.
+
+#### Scenario: a small file
+- WHEN a 12,345-byte file is chosen on the card
+- THEN its line reads `Image · 12.3 KB`, and a 512-byte file reads `Image · 512 B`
+
+#### Scenario: a whole value
+- WHEN a size is a whole unit
+- THEN it reads `2 KB`, `1 MB` or `200 MB`, with no trailing `.0`
+
+#### Scenario: every surface
+- WHEN the same file is drawn on the card, in its library row and in the library Total
+- THEN all three print the same string
