@@ -964,6 +964,11 @@
       node.classList.contains('entry__start'));
   }
 
+  /* A row gives back the height it takes (spec 142). Opened, it draws its buttons in
+     the empty air the two neighbouring entries already leave — 8px of padding on each
+     side — instead of borrowing from the page: no padding of its own and -7.8px of
+     margin on each side, so its 27.6px of buttons nets the 12px the resting band
+     already occupied. Nothing above it, below it, or under the pointer moves. */
   function neighboursOf(item) {
     return [item.previousElementSibling, item.nextElementSibling].filter(isRow);
   }
