@@ -1,6 +1,6 @@
 ---
 id: ITEM-154
-status: speccing
+status: in-review
 title: 'The add bar opens over the seam, and nothing moves'
 type: chore
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-10-28
 updated: 2026-10-28
 spec: specs/143-add-bar/spec.md
 branch: feat/143-add-bar
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/414
+issue: 413
 closed_at:
 closed_reason:
 bump: patch

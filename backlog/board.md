@@ -21,7 +21,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-154](./items/ITEM-154-add-bar.md) | The add bar opens over the seam, and nothing moves | The rows keep a 20px slot in the flow and draw their bar over it, so no entry moves when one opens; the seam is hinted at rest | chore | P1 | M | [143](../specs/143-add-bar/spec.md) | 2026-10-28 |
 
 ## Ready
 
@@ -33,6 +32,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-152](./items/ITEM-152-entry-surface.md) | A service entry draws no box until it is pointed at | Drop the spec 068 fill and ring from every entry kind; hover, deliberate focus and an open modal still fill the row | chore | P2 | S | [142](../specs/142-entry-surface/spec.md) | [#412](https://github.com/rsmbyk/multimedia-gkps-klender/pull/412) | 2026-10-28 |
+| [ITEM-154](./items/ITEM-154-add-bar.md) | The add bar opens over the seam, and nothing moves | The rows keep a 20px slot in the flow and draw their bar over it, so no entry moves when one opens; the seam is hinted at rest | chore | P1 | M | [143](../specs/143-add-bar/spec.md) | [#414](https://github.com/rsmbyk/multimedia-gkps-klender/pull/414) | 2026-10-28 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
