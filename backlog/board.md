@@ -15,6 +15,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-140](./items/ITEM-140-projector-display-off-state.md) | The projector keeps data-showing=true when display-off is asked for | Audio and video display-off tests never see the projector leave its showing state; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-144](./items/ITEM-144-date-dependent-picker-e2e.md) | Five date-picker E2E tests fail when the nearest Sunday falls in the next month | `_fill` steps months from today while the picker opens on the nearest Sunday, so five editor tests time out on days that cross a month boundary; identical on develop | fix | P1 | S | — | 2026-10-26 |
+| [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
 
 ## Speccing
 
@@ -30,6 +31,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-152](./items/ITEM-152-entry-surface.md) | A service entry draws no box until it is pointed at | Drop the spec 068 fill and ring from every entry kind; hover, deliberate focus and an open modal still fill the row | chore | P2 | S | [142](../specs/142-entry-surface/spec.md) | [#412](https://github.com/rsmbyk/multimedia-gkps-klender/pull/412) | 2026-10-28 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

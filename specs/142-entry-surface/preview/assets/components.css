@@ -1,0 +1,2995 @@
+/*
+ * Components — Multimedia GKPS Klender
+ *
+ * Ported from the accepted mockup (spec 004): the icon rail, push panels with
+ * clip-wipe, the reader stage, tooltips, and the print block. Design tokens
+ * live in tokens.css; the :root[data-*] rules below are the shell's state
+ * machine, driven by static/web/reading.js.
+ *
+ * Parity note: while spec 004 is being verified, edit this file only in step
+ * with the mockup at scratch/revamp-mockup/index-search-indonesian-terms.html.
+ */
+
+/* ============================================================
+   Everything hand-written. No framework, no icon library, no
+   web fonts. Icons are inline SVG with stroke="currentColor".
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Shared scrollbars for the public reading UI, including dialogs, pickers,
+   textareas, and document scrolling. Collapsed rails override this below.
+
+   The two mechanisms must never be in play at once. In Blink and WebKit, where
+   the ::-webkit-scrollbar rules below apply, ALSO setting `scrollbar-width` /
+   `scrollbar-color` makes the standard properties win: the platform's thin bar
+   is painted (stepper buttons and all) and every ::-webkit-scrollbar rule here
+   is ignored, the button suppression included. Measured on Chromium 145, that
+   native bar is 10px wide with a stepper glyph; the custom one is 5px and bare.
+   So the standard properties are gated to the engines that have no
+   ::-webkit-scrollbar at all (spec 087). */
+@supports not selector(::-webkit-scrollbar) {
+  :root, :root * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) transparent;
+  }
+}
+:root::-webkit-scrollbar, :root *::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+/* no stepper buttons, and a track that never paints */
+:root::-webkit-scrollbar-button, :root *::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+:root::-webkit-scrollbar-track, :root *::-webkit-scrollbar-track,
+:root::-webkit-scrollbar-corner, :root *::-webkit-scrollbar-corner {
+  background: transparent;
+}
+:root::-webkit-scrollbar-thumb, :root *::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 999px;
+}
+:root::-webkit-scrollbar-thumb:hover, :root *::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+}
+
+:root[data-nav="open"] { --books-w: var(--panel-w); }
+:root[data-nav="mini"] { --books-w: var(--mini-w); }
+/* Tata Ibadah's service list matches the max-width of its item/contents pane.
+   Reserve the same reading-stage space used by that pane at tighter widths. */
+:root[data-section="tatib"] {
+  --nav-w: min(26rem, calc(100vw - var(--rail-w) - 20rem));
+}
+:root[data-ch="open"] { --ch-w-shown: var(--ch-w); --reserve-ch: var(--ch-w); }
+/* The song list reuses the chapters column as a wide pane. It can remain
+   visible beside the main rail when its songbook/service list is hidden. */
+:root[data-ch="open"][data-ch-mode="song"] {
+  --ch-w-shown: var(--songsp-w); --reserve-ch: var(--songlist-reserve);
+}
+/* Bible alone has a genuine mini-rail; its mini expand control and scroll
+   indicators do not apply to songbooks or Tata Ibadah. */
+:root:not([data-section="alkitab"]) .panel__expand,
+:root:not([data-section="alkitab"]) .panel__ind { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: flex;
+  background: var(--canvas);
+  color: var(--ink);
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--ease), color var(--ease);
+}
+
+/* ============================================================
+   The rail
+   ============================================================ */
+.rail {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  /* above the panels (25/24): the rail's ::after tooltip is painted into its
+     stacking context and overflows rightward over a panel beside the rail.
+     The mini .ftip (40) still floats above everything. */
+  z-index: 30;
+  width: var(--rail-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  background: var(--rail-bg);
+  border-right: 1px solid var(--divider);
+  transition: background var(--ease), border-color var(--ease);
+}
+
+/* ---------- logo tile ---------- */
+.rail__logo {
+  flex: none;
+  width: var(--logo);
+  height: var(--logo);
+  display: grid;
+  place-items: center;
+  padding: 5px;                /* lets the mark breathe inside the tile */
+  border-radius: 50%;          /* circle */
+  background: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(20,20,18,.12), 0 3px 8px rgba(20,20,18,.22);
+  overflow: hidden;
+  text-decoration: none;
+}
+.rail__logo img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ---------- menu — vertically centred in the space between logo and toggle ---------- */
+.rail__menu {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;    /* the menu buttons sit at the rail's vertical centre */
+  gap: 16px;                  /* 44px button + 16px = 60px centres */
+  margin: 16px 0;             /* keeps clear of logo/toggle if the viewport is short */
+  padding: 0;
+  list-style: none;
+  overflow: visible;          /* tooltips may extend past the rail */
+}
+.rail__menu li { margin: 0; }
+
+.rail__btn {
+  position: relative;
+  width: var(--btn);
+  height: var(--btn);
+  /* the mockup's controls are <button>s, so their UA font metrics apply;
+     links mirror them so computed styles stay identical */
+  font-size: 13.3333px;
+  line-height: normal;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: var(--r-btn);
+  color: var(--icon);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--ease), color var(--ease);
+  /* clears the rail so tooltips can overhang to the right */
+  overflow: visible;
+}
+.rail__btn svg { width: 24px; height: 24px; display: block; }
+
+.rail__btn:hover { background: var(--icon-hover-bg); }
+.rail__menu .rail__btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.rail__btn[aria-current="page"] {
+  background: var(--active-bg);
+  color: var(--active-ink);
+}
+/* while its panel is open, the Alkitab button reads exactly like the active
+   menu (Kidung): same active accent fill, same contrasting icon — main rail only, so the
+   panel's own .rail__btn-styled controls don't inherit the look */
+.rail .rail__btn[aria-expanded="true"] {
+  background: var(--active-bg);
+  color: var(--active-ink);
+}
+
+/* ---------- bottom: theme toggle ---------- */
+.rail__foot {
+  flex: none;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.rail__theme { position: relative; }
+.rail__theme svg {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: rotate(40deg) scale(.65);
+  transition: opacity var(--ease), transform var(--ease);
+}
+:root[data-theme-mode="system"] .rail__theme .system,
+:root[data-theme-mode="dark"] .rail__theme .moon,
+:root[data-theme-mode="light"] .rail__theme .sun {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================
+   Tooltip — appears after a hover DELAY, instantly after
+   focus. Pure CSS is used only for the transition; the delay
+   and the open-state attribute are driven by the script.
+   ============================================================ */
+.rail__btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + var(--tip-x));   /* measured from the button, lands ~10px past the RAIL edge */
+  top: 50%;
+  z-index: 30;
+  padding: 7px 11px;
+  border-radius: 7px;
+  background: var(--tip-bg);
+  color: var(--tip-ink);
+  font: 500 13px/1.25 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  letter-spacing: -.005em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  /* translateY(-50%) is applied in the SAME transform as the slide, so the tip
+     stays vertically centred on the icon instead of drifting below it */
+  transform: translate(-6px, -50%) scale(.94);
+  transform-origin: left center;
+  transition: opacity 130ms ease, transform 130ms ease;
+}
+.rail__btn[data-tip-open="true"]::after {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, -50%) scale(1);
+}
+
+/* mini book tiles use a FLOATING tooltip element instead of a pseudo-element:
+   the panel's clip-path would slice a child at the panel border, a fixed-position
+   node outside the panel cannot be clipped */
+.ftip {
+  position: fixed;
+  z-index: 40;
+  padding: 7px 11px;
+  border-radius: 7px;
+  background: var(--tip-bg);
+  color: var(--tip-ink);
+  font: 500 13px/1.25 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  letter-spacing: -.005em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translate(-6px, -50%) scale(.94);
+  transform-origin: left center;
+  transition: opacity 130ms ease, transform 130ms ease;
+}
+.ftip.show {
+  opacity: 1;
+  transform: translate(0, -50%) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+  .panel, .chapters { transition-delay: 0s !important; }
+}
+
+/* ============================================================
+   Nested panel — pushes the stage; wipes alone, slides when replaced
+   ============================================================ */
+.panel {
+  position: fixed;
+  top: 0; left: var(--rail-w); bottom: 0;
+  z-index: 25;
+  width: var(--panel-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+  border-right: 1px solid var(--divider);
+  /* collapsible: wipes open from the rail edge; contents never reflow */
+  clip-path: inset(0 100% 0 0);
+  visibility: hidden;
+  /* 0s duration + 200ms delay keeps rows focusable until the wipe finishes */
+  /* On close, keep a mini panel at mini width through the wipe; reset its
+     hidden box only afterward so it never fans outward before disappearing. */
+  transition: transform var(--ease), clip-path var(--ease),
+              width 0s linear 200ms, background var(--ease), box-shadow var(--ease),
+              visibility 0s linear 200ms;
+}
+[data-nav="open"] .panel,
+[data-nav="mini"] .panel {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  /* visibility must flip INSTANTLY on entry; the base rule's 200ms delay is
+     for the wipe-out only. Without this override the panel wipes open blank
+     and the content pops in when the animation ends. */
+  transition: transform var(--ease), clip-path var(--ease), width var(--ease),
+              background var(--ease), box-shadow var(--ease), visibility 0s;
+}
+[data-nav="open"] .panel { box-shadow: var(--shadow); }
+/* When a third-level pane replaces its parent, slide the intact list behind
+   the main rail. The chapter pane follows the same edge, even on phones;
+   Bible's mini state remains a separate 80px-width morph. */
+:root[data-ch="open"][data-nav="closed"] .panel {
+  transform: translateX(-100%);
+  clip-path: inset(0);
+}
+/* collapsed mode: the panel becomes a scrollable mini rail, same width and
+   item rhythm as the main sidebar */
+[data-nav="mini"] .panel {
+  width: var(--mini-w);
+  background: var(--rail-bg);
+  border-right: 1px solid var(--divider);
+}
+
+/* collapse button is placed beside each panel's search field; it shares the
+   44px square control used by the second-level sidebar */
+/* ---------- search filter (fixed, does not scroll) ---------- */
+.panel__filter {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  /* The 44px control row stays centred on the logo at y=40px; the 38px
+     search field aligns to that same centre. */
+  padding: 18px 16px;
+}
+/* mini mode: the search field is replaced by an expand icon */
+.panel__expand {
+  flex: none;
+  display: none;
+  place-items: center;
+  padding: 18px 0 18px;          /* 44px button centre lands on 40px */
+}
+.panel__expand button {
+  width: var(--btn); height: var(--btn);
+  display: grid; place-items: center;
+  background: none; border: 0; border-radius: 8px;
+  color: var(--icon);
+  cursor: pointer;
+  transition: background var(--ease);
+}
+.panel__expand button:hover { background: var(--icon-hover-bg); }
+.panel__expand svg { width: 20px; height: 20px; }
+[data-nav="mini"] .panel__filter { display: none; }
+[data-nav="mini"] .panel__expand { display: grid; }
+/* ---------- mini mode: the panel as a scrollable second rail ---------- */
+[data-nav="mini"] .group__head { display: none; }
+[data-nav="mini"] .group + .group { margin-top: 8px; padding-top: 8px; }
+[data-nav="mini"] .panel__body {
+  padding: 0 0 8px;
+  scrollbar-width: none;
+}
+[data-nav="mini"] .panel__body::-webkit-scrollbar { display: none; }
+[data-nav="mini"] .group ul {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;                     /* same pitch as the main rail */
+}
+[data-nav="mini"] .book {
+  position: relative;              /* tooltip anchors here, beside the mini rail */
+  width: var(--btn); height: var(--btn);   /* same size as the main rail items */
+  min-height: 0;
+  padding: 0;
+  display: grid; place-items: center;
+  /* the base rule's space-between (a flex declaration) still applies in grid
+     and overrides place-items — explicitly re-center the content axis */
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 590;
+  letter-spacing: .01em;
+  color: var(--icon);
+}
+[data-nav="mini"] .book__s { display: none; }
+[data-nav="mini"] .book__n { display: none; }
+[data-nav="mini"] .book__a {
+  display: block;
+  width: 100%;
+  text-align: center;            /* glyphs dead-centre in the tile */
+  overflow: visible;
+  white-space: nowrap;
+}
+[data-nav="mini"] .group li + li { margin-top: 0; }   /* exact 60px pitch: 44 + 16 */
+
+/* scroll-end chevrons — replace the scrollbar in mini mode only */
+.panel__ind {
+  flex: none;
+  display: none;
+  place-items: center;
+  width: 100%; height: 26px;
+  padding: 0;
+  background: none; border: 0;
+  color: var(--head-ink);
+  cursor: pointer;
+  transition: color var(--ease);
+}
+[data-nav="mini"] .panel__ind.show { display: grid; }
+.panel__ind:hover { color: var(--ink); }
+.panel__ind svg { width: 15px; height: 15px; }
+.panel__scrollwrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+[data-nav="mini"] .panel__scrollwrap .panel__body { flex: 1; }
+.panel__filter .filter-box { position: relative; flex: 1; min-width: 0; }
+.panel__filter .filter-box > svg {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 15px; height: 15px;
+  color: var(--head-ink);
+  pointer-events: none;
+}
+.panel__filter input {
+  width: 100%;
+  height: 38px;
+  padding: 0 38px 0 36px;
+  font: 500 14px/1 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--rail-bg);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  transition: border-color var(--ease), box-shadow var(--ease), background var(--ease);
+}
+.panel__filter input::placeholder { color: var(--head-ink); }
+.panel__filter input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.panel__filter input:focus {
+  outline: none;
+  background: var(--canvas);
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+
+/* ---------- sidebar editors (spec 005) ----------
+   The add button sits below its filter row; the row controls stay out of the
+   way until the row is hovered or focused, so an idle list is unchanged. */
+.editor-add {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  flex: none; align-self: stretch; height: 38px; margin: 0 16px 12px;
+  border: 0; border-radius: 9px;
+  background: var(--active-bg); color: var(--active-ink);
+  font: 600 13.5px/1 ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer; transition: opacity var(--ease);
+}
+.editor-add svg { width: 15px; height: 15px; flex: none; }
+.editor-add:hover { opacity: .92; }
+.editor-add:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.editor-add[disabled] { opacity: .45; cursor: not-allowed; }
+.editor-add[hidden] { display: none; }   /* author display beats UA [hidden] */
+.ch__tools .editor-add { margin: 8px 0 0; }
+[data-nav="mini"] .editor-add, [data-nav="closed"] .editor-add { display: none; }
+
+/* the song list's add button: full width, right below the toolbar (spec 005) */
+.ch__add { flex: none; padding: 0 12px 12px; }
+/* the wrapper owns the inset; .editor-add's own horizontal margin (for the panels)
+   would double it and push the button past the sidebar's edge */
+.ch__add .editor-add { width: 100%; margin: 0; }
+
+/* the rows are the positioning context for their own control */
+#panelBody li, #chList li { position: relative; }
+.row-edit {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
+  cursor: pointer;
+  border: 1px solid var(--divider); border-radius: 7px;
+  background: var(--rail-bg); color: var(--head-ink);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--ease), color var(--ease);
+}
+.row-edit svg { width: 13px; height: 13px; }
+.row-edit:hover { color: var(--ink); }
+/* Only a hovered row, or the control itself once focused (Tab still reaches it).
+   `li:focus-within` looked equivalent but the row link holds focus after a
+   sidebar closes, which revealed the control with no pointer on it. */
+li:hover > .row-edit,
+.row-edit:focus-visible { opacity: 1; pointer-events: auto; }
+.row-edit:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.focus-restore-quiet:focus-visible { outline: none !important; outline-offset: 0; }
+.row-flash { animation: tatibRowFlash 2.6s linear 1; }
+
+/* the modal: a native dialog, so the focus trap and Escape come for free */
+.editor {
+  /* fixed, not relative: a relative dialog is laid out in the document's own
+     coordinates, so a scrolled page shifted it up by the scroll offset — a
+     760px frame opened from a long service started above the viewport's top
+     edge. Both are positioned, so absolutely-placed children still resolve. */
+  position: fixed; width: min(30rem, calc(100vw - 32px));
+  padding: 0; border: 0; border-radius: 14px;
+  background: var(--canvas); color: var(--ink);
+  /* the hairline is drawn with a shadow, not a border: a border would take two pixels
+     off the dialog's own width and shift every measurement inside it */
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
+  display: flex; flex-direction: column;
+  max-height: min(86vh, 46rem);
+}
+/* An author display rule beats the UA's rule for a CLOSED dialog, so the dialog
+   has to say it again for itself -- otherwise it lays out inside the page and
+   steals width from the reading column. */
+.editor:not([open]) { display: none; }
+.editor::backdrop { background: var(--backdrop); }
+/* The scroll belongs in here, not on the page behind: a dialog taller than the
+   viewport scrolls the document it sits over, which is the scrollbar everybody
+   notices and nobody wants. */
+.editor__content { padding: 22px; overflow-y: auto; min-height: 0; }
+.editor:has([data-editor-size="large"]) { width: min(840px, calc(100vw - 32px)); height: min(760px, calc(100dvh - 32px)); max-height: min(760px, calc(100dvh - 32px)); }
+.editor[open]:has([data-entry-form="media"]) { animation: media-library-in 190ms cubic-bezier(.2,.8,.2,1) both; }
+.editor[open].media-closing:has([data-entry-form="media"]) { animation: media-library-out 150ms ease-in both; }
+.editor:has([data-editor-size="large"]) .editor__content { padding: 0; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
+.editor:has([data-editor-size="large"]) .editor__title { margin: 0; padding: 20px 26px; border-bottom: 1px solid var(--divider); font-size: 21px; }
+.editor:has([data-editor-size="large"]) .editor__form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.editor:has([data-editor-size="large"]) .editor__form > .editor__field,
+.editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin: 14px 26px 0; }
+.editor:has([data-editor-size="large"]) .editor__actions { margin: 14px 26px 20px; border: 0; padding: 0; }
+/* the one field that takes the leftover height: the text box is the modal's subject,
+   so it grows instead of leaving the tall frame with a fixed six-row hole in it */
+.editor:has([data-editor-size="large"]) [data-editor-grow] { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.editor:has([data-editor-size="large"]) [data-editor-grow] textarea { flex: 1; min-height: 0; }
+.media-entry__tabs { position: relative; align-self: center; display: grid; grid-template-columns: 1fr 1fr; width: min(320px, calc(100% - 36px)); margin: 15px auto; padding: 3px; border: 1px solid var(--divider); border-radius: 9px; background: var(--rail-bg); }
+.media-entry__tab-thumb { position: absolute; z-index: 0; top: 3px; left: 3px; width: calc((100% - 8px) / 2); height: 36px; border-radius: 6px; background: var(--active-bg); pointer-events: none; transition: transform var(--ease); }
+.media-entry__tabs button { position: relative; z-index: 1; min-height: 36px; border: 0; border-radius: 6px; background: transparent; color: var(--head-ink); font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background var(--ease), color var(--ease); }
+.media-entry__tabs button:hover:not([aria-selected="true"]) { background: var(--icon-hover-bg); color: var(--ink); }
+.media-entry__tabs button[aria-selected="true"] { background: transparent; color: var(--active-ink); }
+.media-entry__tabs[data-media-tab="library"] .media-entry__tab-thumb { transform: translateX(100%); }
+@media (prefers-reduced-motion: reduce) {
+  .media-entry__tab-thumb, .media-entry__tabs button { transition: none !important; }
+}
+.media-entry__panel { min-height: 0; flex: 1; padding: 0 26px; display: flex; flex-direction: column; }
+.media-entry__panel[hidden] { display: none; }
+.media-entry__drop { min-height: 270px; flex: 1; border: 2px dashed var(--divider); border-radius: 13px; background: color-mix(in srgb, var(--focus) 3%, var(--canvas)); display: grid; place-items: center; text-align: center; padding: 25px; }
+.media-entry__drop.is-dragging { border-color: var(--focus); background: color-mix(in srgb, var(--focus) 10%, var(--canvas)); }
+.media-entry__drop > div { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+.media-entry__drop [hidden] { display: none; }
+.media-entry__drop strong { font-size: 17px; }
+.media-entry__drop p, .media-entry__note { margin: 0; font-size: 12px; color: var(--head-ink); }
+.media-entry__drop p strong { font-size: inherit; color: var(--ink); font-weight: 650; }
+.media-entry__upload-icon { font-size: 36px; color: var(--focus); }
+.media-entry__upload-btn { margin-top: 5px; padding: 9px 15px; border: 1px solid var(--active-bg); border-radius: 9px; background: var(--active-bg); color: var(--active-ink); font-weight: 600; cursor: pointer; }
+.media-entry__upload-btn:hover { filter: brightness(1.12); box-shadow: 0 4px 12px #0002; }
+.media-entry__note { padding: 12px 0 0; }
+.media-entry__existing { color: var(--focus) !important; font-weight: 650; }
+.media-entry__file-icon { width: 54px; height: 54px; border-radius: 8px; display: grid; place-items: center; color: var(--focus); background: color-mix(in srgb, var(--focus) 12%, var(--canvas)); }
+.media-entry__file-icon svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.media-entry__panel--library { border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); overflow-y: auto; }
+.media-entry__panel--library [data-media-library-list].is-empty { display: grid; flex: 1; min-height: 0; place-items: center; }
+.media-entry__empty { width: min(440px, 100%); padding: 32px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.media-entry__empty-icon { width: 52px; height: 52px; flex: none; color: var(--focus); }
+.media-entry__empty-icon svg { display: block; width: 100%; height: 100%; }
+.media-entry__panel--library .media-entry__empty h3 { margin: 0; color: var(--ink); font-size: 17px; font-weight: 650; line-height: 1.25; text-transform: none; }
+.media-entry__empty p { margin: 0; color: var(--head-ink); font-size: 13px; line-height: 1.45; }
+.media-entry__panel--library h3 { margin: 17px 0 6px; color: var(--head-ink); font-size: 12px; text-transform: uppercase; }
+.media-entry__panel--library button { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 8px; border: 0; border-bottom: 1px solid var(--divider); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+.media-entry__panel--library button[aria-selected="true"] { border: 1px solid var(--focus); border-radius: 8px; background: color-mix(in srgb, var(--focus) 10%, var(--canvas)); }
+.media-entry__panel--library button:hover { background: var(--icon-hover-bg); }
+.media-entry__panel--library button small { display: block; margin-top: 3px; color: var(--head-ink); }
+.media-entry__readonly { padding: 12px; border: 1px solid var(--divider); border-radius: 9px; background: var(--icon-hover-bg); }
+.media-entry__readonly p { margin: 3px 0 0; color: var(--head-ink); font-size: 12px; }
+.media-error-dialog { width: min(410px, calc(100vw - 32px)); height: max-content; max-height: calc(100dvh - 32px); padding: 22px; border: 1px solid var(--divider); border-radius: 12px; background: var(--canvas); color: var(--ink); box-shadow: var(--shadow-dialog); }
+.media-error-dialog::backdrop { background: var(--backdrop); }
+.media-error-dialog h2 { margin: 0 0 10px; font-size: 18px; }
+.media-error-dialog p { margin: 0 0 18px; color: var(--head-ink); line-height: 1.45; }
+.media-error-dialog button { display: block; margin-left: auto; min-height: 38px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--active-bg); color: var(--active-ink); font-weight: 600; cursor: pointer; }
+.media-library { width: 100%; }
+.read[data-kind="media-library"] { max-width: 1060px; margin-inline: auto; }
+.read[data-kind="media-library"] .read__head { position: relative; margin-bottom: 8px; }
+.read[data-kind="media-library"] .read__head-top { position: absolute; right: 0; top: 0; z-index: 2; }
+.read[data-kind="media-library"] .read__row { min-height: 42px; padding-right: 100px; }
+.read[data-kind="media-library"] .read__title { font: 650 29px/1.15 ui-sans-serif, system-ui, sans-serif; letter-spacing: -.035em; }
+.media-library__intro { color: var(--head-ink); margin: 0 0 26px; line-height: 1.4; }
+.media-library__head-actions { display: flex; align-items: center; gap: 8px; position: relative; }
+.media-library__icon-btn { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--divider); border-radius: 9px; background: var(--canvas); color: var(--ink); cursor: pointer; }
+.media-library__icon-btn:hover, .media-library__sort > button:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.media-library button:focus-visible, .media-library__dialog button:focus-visible, .media-library__dialog input:focus-visible, .media-library__head-actions button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.media-library__icon-btn svg, .media-library__remove svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.media-library__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 13%, transparent); }
+.media-library__dot.is-connected { background: #17804d; box-shadow: 0 0 0 3px #17804d22; }
+.media-library__status { position: absolute; right: 0; top: 51px; z-index: 9; width: min(350px, calc(100vw - 95px)); padding: 18px; background: var(--canvas); border: 1px solid var(--divider); border-radius: 12px; box-shadow: var(--shadow-dialog); }
+.media-library__status[hidden], .media-library__status-row[hidden] { display: none; }
+.media-library__status:not([hidden]) { transform-origin: top right; animation: media-library-in 190ms cubic-bezier(.2,.8,.2,1) both; }
+.media-library__status.closing:not([hidden]) { animation: media-library-out 150ms ease-in both; }
+.media-library__status h2 { font-size: 16px; margin: 0 0 8px; }
+.media-library__status-row { display: flex; justify-content: space-between; gap: 15px; padding: 10px 0; border-bottom: 1px solid var(--divider); }
+.media-library__status-row:last-child, .media-library__status.is-unavailable .media-library__status-row { border-bottom: 0; }
+.media-library__status.is-unavailable .media-library__status-row { padding-bottom: 0; }
+.media-library__status-row > span { color: var(--head-ink); }
+.media-library__status-row strong { text-align: right; font-weight: 600; }
+.media-library__status-row .media-library__connection { display: inline-flex; align-items: center; justify-content: flex-end; gap: 7px; }
+.media-library__connection-icon { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.media-library__connection-icon--connected { color: #17804d; }
+.media-library__connection-icon--unavailable { color: var(--head-ink); }
+.media-library__connection[data-state="connected"] .media-library__connection-icon--unavailable,
+.media-library__connection[data-state="unavailable"] .media-library__connection-icon--connected { display: none; }
+.media-library__filters { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 15px 0; border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); }
+.media-library__filters { border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--focus) 28%, var(--divider)); }
+.media-library__chips { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.media-library__chips button { padding: 7px 11px; border: 1px solid var(--divider); border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; font-size: 12px; }
+.media-library__chips button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
+.media-library__chips > span { color: var(--head-ink); }
+#mediaResultCount { margin: 0 auto; color: var(--head-ink); font-size: 12px; }
+.media-library__sort { position: relative; }
+.media-library__sort > button { padding: 8px 12px; min-height: 36px; border: 1px solid var(--divider); border-radius: 8px; background: var(--canvas); color: var(--ink); cursor: pointer; }
+.media-library__sort > button { display: inline-flex; align-items: center; gap: 7px; }
+.media-library__sort > button svg { width: 17px; height: 17px; flex: none; color: var(--head-ink); }
+.media-library__sort [role="menu"] { position: absolute; right: 0; top: 42px; z-index: 5; min-width: 190px; padding: 5px; border: 1px solid var(--divider); border-radius: 9px; background: var(--canvas); box-shadow: var(--shadow-dialog); }
+.media-library__sort [role="menu"][hidden] { display: none; }
+.media-library__sort [role="menu"] button { display: block; width: 100%; padding: 9px; border: 0; border-radius: 6px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+.media-library__sort [role="menu"] button:hover, .media-library__sort [aria-checked="true"] { background: var(--icon-hover-bg); }
+.media-library__group { color: var(--head-ink); font-size: 12px; text-transform: uppercase; letter-spacing: .07em; margin: 28px 0 6px; }
+.media-library__file { display: grid; grid-template-columns: 42px minmax(0,1fr) 42px; gap: 13px; padding: 14px 8px; border-bottom: 1px solid var(--divider); align-items: center; }
+.media-library__file { border-bottom-color: color-mix(in srgb, var(--ink) 10%, transparent); }
+.media-library__file.is-unused { background: color-mix(in srgb, #a0763a 7%, transparent); border-left: 3px solid #c6a570; padding-left: 5px; }
+.media-library__file-icon { width: 42px; height: 42px; border-radius: 8px; display: grid; place-items: center; color: var(--focus); background: color-mix(in srgb, var(--focus) 11%, transparent); }
+.media-library__file-icon svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.media-library__file-main { min-width: 0; }
+.media-library__filename { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-library__meta, .media-library__unused { margin-top: 4px; color: var(--head-ink); font-size: 12px; }
+.media-library__uses { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+.media-library__uses a { color: var(--link); text-decoration: none; }
+.media-library__uses a:hover { text-decoration: underline; }
+.media-library__uses span { color: var(--head-ink); }
+.media-library__remove { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--danger); cursor: pointer; }
+.media-library__remove:hover { background: color-mix(in srgb, var(--danger) 11%, transparent); }
+.media-library__empty { text-align: center; color: var(--head-ink); padding: 55px 20px; }
+.media-library__empty[hidden] { display: none; }
+.media-library__dialog { width: min(490px, calc(100vw - 32px)); max-height: min(86vh, 46rem); padding: 22px; border: 1px solid var(--divider); border-radius: 12px; background: var(--canvas); color: var(--ink); box-shadow: var(--shadow-dialog); }
+.media-library__dialog::backdrop { background: var(--backdrop); }
+.media-library__dialog h2 { margin: 0 0 14px; font-size: 18px; }
+.media-library__dialog p { color: var(--head-ink); line-height: 1.45; }
+.media-library__options { display: grid; gap: 10px; margin: 20px 0; }
+.media-library__options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.media-library__options label { display: flex; gap: 9px; align-items: center; padding: 10px; border: 1px solid var(--divider); border-radius: 8px; }
+.media-library__options label:has(input:checked) { border-color: var(--focus); color: var(--focus); }
+.media-library__dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.media-library__dialog-actions button { min-height: 38px; padding: 0 16px; border: 1px solid var(--divider); border-radius: 9px; background: transparent; color: var(--ink); cursor: pointer; }
+.media-library__dialog-actions button:last-child { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+.media-library__dialog-actions #mediaConfirmRemove { background: var(--danger); border-color: var(--danger); color: #fff; }
+.media-library__dialog[open] { animation: media-library-in 190ms cubic-bezier(.2,.8,.2,1) both; }
+.media-library__dialog[open].closing { animation: media-library-out 150ms ease-in both; }
+.media-entry__readonly.is-missing [data-media-edit-availability] { color: var(--danger); }
+@keyframes media-library-in { from { opacity: 0; scale: .97; } to { opacity: 1; scale: 1; } }
+@keyframes media-library-out { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .97; } }
+@media (prefers-reduced-motion: reduce) { .media-library__dialog[open], .media-library__dialog[open].closing, .media-library__status:not([hidden]), .media-library__status.closing:not([hidden]), .editor[open]:has([data-entry-form="media"]), .editor[open].media-closing:has([data-entry-form="media"]) { animation: none; } }
+@media (max-width: 700px) { .media-library__options { grid-template-columns: repeat(2, minmax(0, 1fr)); } .media-library__sort { width: 100%; } .media-library__sort > button { width: 100%; text-align: left; } }
+@media (max-width: 650px) { .editor:has([data-editor-size="large"]) .editor__title { padding: 16px 18px; } .media-entry__panel { padding: 0 18px; } .editor:has([data-editor-size="large"]) .editor__form > .editor__field, .editor:has([data-editor-size="large"]) .editor__screen-mode-wrap { margin-inline: 18px; } .editor:has([data-editor-size="large"]) .editor__actions { margin-inline: 18px; } }
+.editor.is-loading {
+  width: min(490px, calc(100vw - 32px));
+  max-height: min(calc(100dvh - 40px), 46rem);
+}
+.editor.is-loading .editor__content { padding: 24px; }
+.editor__title {
+  margin: 0 0 16px; padding: 0 34px 14px 0;
+  font-size: 18px; font-weight: 640; letter-spacing: -.01em;
+  border-bottom: 1px solid var(--divider);
+}
+.editor__loading-title {
+  margin: 0 0 8px; padding: 0; border: 0;
+  font-size: 20px; line-height: 1.25;
+}
+.editor__loading {
+  display: flex; min-height: 80px; align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px;
+  color: var(--head-ink); text-align: center;
+  font: 400 14px/1.4 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__loading-spinner {
+  box-sizing: border-box; flex: 0 0 18px;
+  width: 18px; height: 18px;
+  border: 2px solid var(--divider); border-top-color: var(--active-bg);
+  border-radius: 50%; animation: editor-load-spin 800ms linear infinite;
+}
+.editor__loading-label { font: inherit; }
+@keyframes editor-load-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .editor__loading-spinner { animation: none; }
+}
+/* The dialog carries no x: the form's own Cancel, Escape and the backdrop are the
+   ways out, and chrome that repeats a control the form already has is noise. */
+.editor__field { margin: 0 0 12px; }
+/* The passage translation switch gets its own centered row above Book. */
+.editor__translation-row { display: flex; justify-content: center; margin: 0 0 8px; }
+.read__lang.editor__translation-toggle { margin: 0; }
+.editor__field > label {
+  display: block; margin-bottom: 5px;
+  font: 560 12.5px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
+}
+.editor__field input[type="text"], .editor__field input[type="number"],
+.editor__field input[type="search"],
+.editor__field input[type="date"], .editor__field select, .editor__field textarea {
+  width: 100%; min-height: 38px; padding: 8px 10px;
+  border: 1px solid var(--divider); border-radius: 9px;
+  background: var(--rail-bg); color: var(--ink);
+  font: 500 14px/1.35 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__field textarea { resize: none; }
+.editor__date-picker { position: relative; }
+.editor__date-controls {
+  position: relative; display: flex; align-items: center; gap: 8px; width: 100%;
+}
+.editor__date-trigger {
+  display: flex; flex: 1 1 0; align-items: center; justify-content: space-between;
+  min-width: 0; width: auto; min-height: 38px; padding: 8px 10px;
+  border: 1px solid var(--divider); border-radius: 9px;
+  background: var(--rail-bg); color: var(--ink);
+  font: 500 14px/1.35 ui-sans-serif, system-ui, sans-serif; text-align: left; cursor: pointer;
+}
+.editor__date-trigger::after { content: "▾"; margin-left: 12px; color: var(--head-ink); }
+.editor__date-trigger:hover, .editor__date-clear:hover { border-color: var(--focus); }
+.editor__date-trigger:focus-visible, .editor__date-clear:focus-visible,
+.editor__date-nav button:focus-visible, .editor__date-day:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px;
+}
+.editor__date-clear {
+  margin-top: 6px; padding: 3px 0; border: 0; border-bottom: 1px solid transparent;
+  background: none; color: var(--head-ink); font: 500 12px/1.3 ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+}
+.editor__date-calendar {
+  position: fixed; inset: auto; top: 0; left: 0; z-index: 20; margin: 0;
+  width: min(320px, calc(100vw - 64px)); max-height: calc(100vh - 16px);
+  overflow-y: auto; box-sizing: border-box;
+  padding: 12px; border: 1px solid var(--divider); border-radius: 11px;
+  background: var(--canvas); color: var(--ink); box-shadow: var(--shadow);
+}
+.editor__date-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.editor__date-nav h3 { margin: 0; color: var(--ink); font-size: 14px; font-weight: 650; }
+.editor__date-nav button {
+  display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid var(--divider);
+  border-radius: 8px; background: var(--rail-bg); color: var(--ink); font-size: 20px; cursor: pointer;
+}
+.editor__date-weekdays, .editor__date-row {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; text-align: center;
+}
+.editor__date-grid { display: grid; gap: 3px; margin-top: 3px; }
+.editor__date-weekdays { margin: 10px 0 4px; color: var(--head-ink); font-size: 11px; font-weight: 600; }
+.editor__date-row { margin-top: 0; }
+.editor__date-day, .editor__date-empty {
+  display: grid; width: 100%; min-width: 0; min-height: 0; aspect-ratio: 1;
+  padding: 0; place-items: center;
+}
+.editor__date-day {
+  border: 1px solid transparent; border-radius: 8px; background: transparent;
+  color: var(--ink); font: 500 13px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+}
+.editor__date-weekdays [data-date-sunday] { color: var(--active-bg); font-weight: 700; }
+.editor__date-day[data-date-sunday] {
+  background: color-mix(in srgb, var(--active-bg) 10%, var(--canvas));
+  color: var(--active-bg); font-weight: 700;
+}
+.editor__date-day:hover { border-color: var(--divider); background: var(--rail-bg); }
+.editor__date-day[data-date-sunday]:hover {
+  background: color-mix(in srgb, var(--active-bg) 18%, var(--canvas));
+}
+.editor__date-day[aria-selected="true"], .editor__date-day[aria-selected="true"]:hover {
+  border-color: var(--active-bg); background: var(--active-bg); color: var(--active-ink);
+}
+.editor__date-day[data-date-today]:not([aria-selected="true"]) { border-color: var(--focus); font-weight: 700; }
+.editor__field.is-invalid .editor__date-trigger { border-color: var(--danger); }
+/* The song pick is a search like the shell's, so it wears the same magnifier. */
+.editor__field input[type="search"] {
+  padding-left: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23555349' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8.6' cy='8.6' r='4.9'/%3E%3Cpath d='M12.4 12.4l4 4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: left 11px center; background-size: 15px;
+}
+.editor__field select {
+  appearance: none; -webkit-appearance: none;
+  padding-right: 34px;                          /* room for the chevron */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23555349' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+}
+.editor__field select:focus { background-position: right 12px center; }
+:root[data-theme="dark"] .editor__field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239C9A91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
+}
+.editor__field input[type="search"]::-webkit-search-cancel-button { display: none; }
+/* Chapter has its own row; the verse range stays together when there is room. */
+.editor__row { display: grid; gap: 10px; margin: 0 0 12px; }
+.editor__row--chapter { grid-template-columns: minmax(0, 1fr); }
+.editor__row--range { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.editor__row .editor__field { min-width: 0; margin: 0; }
+@media (max-width: 380px) {
+  .editor__row--range { grid-template-columns: minmax(0, 1fr); }
+}
+.editor__field input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--active-bg); }
+.editor__field input:focus, .editor__field select:focus, .editor__field textarea:focus {
+  outline: none; border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+.editor__field.is-invalid input, .editor__field.is-invalid select,
+.editor__field.is-invalid textarea,
+.editor__field.is-invalid .editor__picker-trigger { border-color: var(--danger); }
+.editor__help { margin: 5px 0 0; font-size: 12px; color: var(--head-ink); }
+.editor__error { margin: 5px 0 0; font-size: 12.5px; font-weight: 600; color: var(--danger); }
+.editor__actions {
+  display: flex; justify-content: flex-end; gap: 8px;
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--divider);
+}
+.editor__save, .editor__cancel, .editor__danger {
+  height: 38px; padding: 0 18px; border-radius: 9px;
+  font: 600 13.5px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+}
+.editor__save { border: 0; background: var(--active-bg); color: var(--active-ink); }
+.editor__cancel { border: 1px solid var(--divider); background: none; color: var(--ink); }
+/* The destructive answer is the same button as the others, in the danger colour:
+   a confirmation whose two answers are different sizes reads as a mistake. */
+.editor__danger { border: 1px solid var(--danger); background: none; color: var(--danger); }
+.editor__danger:not(:disabled):hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.editor__save:focus-visible, .editor__cancel:focus-visible, .editor__danger:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px;
+}
+.editor__save:disabled { background: var(--divider); color: var(--head-ink); cursor: not-allowed; }
+.editor__cancel:disabled, .editor__danger:disabled {
+  opacity: .5; cursor: not-allowed;
+}
+
+/* A hint rides inside a label without shouting: "(optional)", "all verses". */
+.editor__hint { font-weight: 400; color: var(--head-ink); }
+
+/* The project button on a Tata Ibadah (spec 006, slice 4). It rides with the date at
+   the top right of the page and opens the display in a window of its own; while this
+   browser is displaying this service the button becomes Stop projecting and the update
+   control appears beside it. */
+.read__head-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.read__project { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin: 0; }
+.read__project-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 14px; border-radius: 9px;
+  border: 1px solid var(--divider); background: none; color: var(--head-ink);
+  font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+  transition: border-color var(--ease), color var(--ease), background var(--ease);
+}
+.read__project-btn svg { width: 15px; height: 15px; flex: none; }
+.read__project-btn:hover {
+  color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg);
+}
+.read__project-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.read__project-btn[hidden] { display: none; }         /* author display beats [hidden] */
+.read__project[data-displaying="true"] .read__project-btn[data-project-open] {
+  color: var(--ink); border-color: var(--ink);
+}
+/* Project state drives the start/stop action styling (spec 018). */
+.read__project[data-displaying="false"] .read__project-btn[data-project-open] {
+  color: var(--active-ink); border-color: var(--active-bg); background: var(--active-bg);
+}
+.read__project[data-displaying="false"] .read__project-btn[data-project-open]:hover {
+  color: var(--active-ink); border-color: var(--active-bg); background: var(--active-bg);
+  filter: brightness(.94);
+}
+.read__project[data-displaying="true"] .read__project-btn[data-project-open] {
+  color: var(--danger); border-color: var(--danger); background: none;
+}
+.read__project[data-displaying="true"] .read__project-btn[data-project-open]:hover {
+  color: var(--danger); border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+/* ---------- clear control inside search and filter fields ---------- */
+.field-clear {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: none; color: var(--head-ink);
+  cursor: pointer; transition: background var(--ease), color var(--ease);
+}
+.panel__filter .field-clear, .ch__search .field-clear { right: 8px; }
+.search-home .field-clear { right: 58px; }
+.field-clear svg { width: 14px; height: 14px; }
+.field-clear:hover { background: var(--icon-hover-bg); color: var(--ink); }
+.field-clear:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.field-clear[hidden] { display: none; }   /* author display beats UA [hidden] */
+
+/* ---------- scroll body with sticky testament headers ---------- */
+.panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* the browser's own scroll anchoring drifts ~16px at mode switches because
+     sticky headers appear/disappear above the anchor; we manage anchoring */
+  overflow-anchor: none;
+  padding: 0 10px 20px;
+  /* no `scrollbar-width` here: the standard property would force Blink onto the
+     native bar (steppers included) for this list alone -- the shared block above
+     already covers engines that have no ::-webkit-scrollbar (spec 087) */
+}
+.group__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 10px 8px 7px;
+  background: var(--canvas);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: var(--head-ink);
+}
+/* separator between testaments — carried on the GROUP, not the sticky header,
+   so it scrolls away and never rides the pinned part (mini mode reuses it) */
+.group + .group {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid var(--divider);
+}
+/* A group the panel filter emptied takes its separator with it: otherwise the
+   next group's border floats above the list with nothing above it (spec 128).
+   The mini rail's 8px spacing loses to this rule's extra class. */
+.group.is-hidden + .group {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.group ul { margin: 0; padding: 0; list-style: none; }
+.group li + li { margin-top: 1px; }
+.book {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 14.5px;
+  text-decoration: none;
+  transition: background var(--ease);
+}
+.book:hover { background: var(--icon-hover-bg); }
+/* The row keeps its hover look while the pointer is on its own edit control. */
+#panelBody li:hover > a:not([aria-current="true"]),
+#chList li:hover > a:not([aria-current="true"]) { background: var(--icon-hover-bg); }
+.book[aria-current="true"] {
+  background: var(--sidebar-selected-bg);
+  color: var(--ink);
+}
+.book__n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 22px; }
+/* abbreviation — shown only in mini mode */
+.book__a { display: none; }
+/* ============================================================
+   Reading view — a chapter rendered in the stage
+   ============================================================ */
+/* Unified search starts as a quiet landing page; results dock near the top.
+   The main rail remains available in either state.
+   The field is the page's middle line, not the middle of the logo-and-field
+   block: three rows put the form's own box on the section's middle whatever the
+   logo measures, and the section fills the box the stage leaves it, so that
+   middle is the window's. */
+.search-home {
+  min-height: calc(100svh - var(--stage-pad-top) - var(--stage-pad-bottom));
+  display: grid;
+  align-items: stretch;
+  justify-items: center;
+}
+.search-home__inner {
+  width: min(100%, 610px); text-align: center;
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  justify-items: center;
+}
+/* the stage pads 40px above and 64px below (76 and 64 under the phone toolbar),
+   so the section's own middle is not the window's; the signed half-difference
+   moves the form onto it — a margin, because the correction turns negative at
+   the phone width and padding cannot */
+[data-home="landing"] .search-home__inner {
+  margin-top: calc(var(--stage-pad-bottom) - var(--stage-pad-top));
+}
+.search-home__logo { display: block; width: 96px; height: 96px; object-fit: contain; margin: 0 auto 26px; grid-row: 1; align-self: end; }
+.search-home__form { position: relative; width: 100%; grid-row: 2; }
+.search-home__input {
+  width: 100%; height: 56px; padding: 0 92px 0 22px;
+  border: 1px solid var(--divider); border-radius: 14px;
+  background: var(--canvas); color: var(--ink);
+  font: 400 16px/1.2 ui-sans-serif, system-ui, sans-serif;
+  box-shadow: var(--shadow);
+}
+.search-home__input::placeholder { color: var(--head-ink); }
+.search-home__input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.search-home__input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.search-home__submit {
+  position: absolute; right: 6px; top: 6px;
+  width: 44px; height: 44px; display: grid; place-items: center;
+  border: 0; border-radius: 9px; background: var(--active-bg); color: var(--active-ink);
+  cursor: pointer;
+}
+.search-home__submit svg { width: 20px; height: 20px; }
+.search-home__submit:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+[data-read="on"] .search-home { display: none; }
+.search-results[hidden], .search-home[hidden] { display: none; }
+[data-home="results"] .search-home { min-height: 0; padding: 6px 0 26px; }
+[data-home="results"] .search-home__logo { display: none; }
+[data-read="on"] .search-results { display: none; }
+.search-results { width: min(100%, 690px); margin: 0 auto; padding-bottom: 48px; }
+.search-results__intro { margin: 0 0 26px; color: var(--head-ink); font-size: 14px; }
+.result-group { margin: 0 0 30px; }
+.result-group__head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin: 0 0 8px;
+}
+.result-group__title { margin: 0; font-size: 18px; font-weight: 650; }
+.result-group__count { color: var(--head-ink); font-size: 13px; }
+.result-list { list-style: none; margin: 0; padding: 0; }
+.result-row {
+  display: block; width: 100%; padding: 14px 0; border: 0;
+  border-bottom: 1px solid var(--divider); border-radius: 0;
+  background: none; color: var(--ink); cursor: pointer;
+  font: inherit; text-align: left;
+  text-decoration: none;
+}
+.result-row:hover .result-row__title { text-decoration: underline; text-underline-offset: 3px; }
+.result-row:focus-visible, .result-more:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 3px;
+}
+.result-row__title { display: block; font-size: 16px; font-weight: 610; line-height: 1.35; }
+.result-row__meta { display: block; margin-top: 3px; font-size: 12px; color: var(--head-ink); }
+.result-row__excerpt {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden; margin-top: 6px; color: var(--head-ink);
+  font-size: 14px; line-height: 1.5;
+}
+.result-more {
+  display: inline-block;    /* the mockup's button box; anchors need it said */
+  margin: 12px 0 0; padding: 7px 0; border: 0; background: none;
+  color: var(--ink); font: 600 14px/1.4 ui-sans-serif, system-ui, sans-serif;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.result-empty { color: var(--head-ink); line-height: 1.6; }
+
+.stage__demo { transition: opacity var(--ease); }
+.read { display: none; }
+[data-read="on"] .stage__demo { display: none; }
+[data-read="on"] .read { display: block; }
+
+/* A run of text wider than the box that owns it breaks at the box's edge instead of
+   being painted past it (spec 137): a pasted link, a thousand-character title, a Bible
+   heading. `break-word`, not `anywhere`, so nothing about the layout's own measuring
+   changes — the title's flex row still gives the language toggle its line the way it
+   does today — and a run only breaks when its line box genuinely cannot hold it.
+   Deliberate one-line ellipses (`.book__n`, the media filenames) say `nowrap` and keep
+   clipping; the contents rows say `anywhere` and keep their three-line clamp. */
+.read,
+.search-results,
+.preview { overflow-wrap: break-word; }
+
+.read__head { margin-bottom: 30px; }
+/* the index header ("Sidebar · langkah pertama") renders through the demo's
+   generic .stage__demo p override: 16.5px / 1.65, weight 600, .12em tracking,
+   uppercase, ink at opacity .78. Match that actual computed style. */
+.read__eyebrow {
+  margin: 0 0 10px;
+  font-size: 16.5px;
+  font-weight: 600;
+  line-height: 1.65;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: .78;
+}
+/* title left, toggle flush right on one line; wraps only if it truly cannot
+   fit (~320px) — never overflows the viewport */
+.read__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+.read__title {
+  margin: 0;
+  min-width: 0;
+  font: 620 clamp(1.9rem, 1.2rem + 2vw, 2.7rem)/1.08 ui-serif, Georgia, 'Times New Roman', serif;
+  letter-spacing: -.02em;
+}
+.read__no {
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: inherit;
+  color: var(--head-ink);
+  margin-left: .35em;
+}
+
+/* language segmented control — the only header furniture.
+   margin-left:auto keeps it flush right on its own line when the header wraps */
+.read__lang {
+  display: inline-flex;
+  flex: none;
+  position: relative;
+  margin: 0 0 0 auto;
+  padding: 3px;
+  background: var(--rail-bg);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+}
+/* A single decorative thumb moves behind the two equal-width labels.
+   Without JS the selected anchor keeps its server-rendered background. */
+.read__lang-thumb { display: none; }
+.read__lang.is-enhanced .read__lang-thumb {
+  display: block;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc((100% - 8px) / 2);
+  height: 30px;
+  border-radius: 6px;
+  background: var(--active-bg);
+  pointer-events: none;
+  transition: transform var(--ease);
+}
+.read__lang.is-enhanced[data-edition="sim"] .read__lang-thumb {
+  transform: translateX(100%);
+}
+.read__lang.is-enhanced button,
+.read__lang.is-enhanced a { position: relative; transition: background var(--ease), color var(--ease); }
+.read__lang button,
+.read__lang a {
+  min-width: 52px; height: 30px;
+  padding: 0 12px;
+  font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .03em;
+  color: var(--head-ink);
+  background: none; border: 0; border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+}
+/* the pointer's own cue, matching the screen-mode switch (spec 083): an unselected option fills,
+   and the selected one never takes the fill -- the thumb behind it has to stay visible */
+.read__lang button:hover:not([aria-pressed="true"]),
+.read__lang a:hover:not([aria-pressed="true"]) {
+  color: var(--ink);
+  background: var(--icon-hover-bg);
+}
+/* anchors mirror the mockup's button content metrics (centered glyphs, no underline) */
+.read__lang a { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.read__lang button[aria-pressed="true"],
+.read__lang a[aria-pressed="true"] {
+  background: var(--active-bg);
+  color: var(--active-ink);
+  font-weight: 640;
+}
+.read__lang.is-enhanced button[aria-pressed="true"],
+.read__lang.is-enhanced a[aria-pressed="true"] { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  /* !important beats the shell-wide .01ms duration clamp: no transition at all */
+  .read__lang.is-enhanced .read__lang-thumb { transition: none !important; }
+}
+
+.read__body { margin-top: 8px; padding-bottom: var(--pad-top); }
+/* in read mode the stage's own bottom padding folds into the verse block's,
+   so the gap under the last verse == the gap above the header (40px) */
+[data-read="on"] .stage { padding-bottom: 0; }
+.v {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr);   /* text column can always shrink */
+  column-gap: .15rem;
+  margin: 0;
+  font: 400 clamp(1.06rem, 1rem + .3vw, 1.18rem)/1.78 ui-serif, Georgia, 'Times New Roman', serif;
+  padding: 1.6px 0;
+}
+.v[data-search-target="true"] {
+  scroll-margin-top: 24px;
+  background: var(--active-flash);
+  border-radius: 3px;
+}
+.v__n {
+  font: 590 11px/2.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .05em;
+  font-variant-numeric: tabular-nums;
+  color: var(--head-ink);
+  text-align: right;
+  padding-right: .9rem;
+  user-select: none;
+}
+/* Pericope titles: classic study-Bible treatment — italic serif in full ink,
+   clearly above verse text weight, still quieter than the big book title */
+.read__sec {
+  grid-column: 1 / -1;
+  margin: 32px 0 8px;
+  text-align: center;
+  font: italic 500 clamp(17px, 1rem + .5vw, 22px)/1.4 ui-serif, Georgia, 'Times New Roman', serif;
+  letter-spacing: .01em;
+  color: var(--ink);
+}
+.read__body > .v:first-child { margin-top: 0; }
+.read__body > .read__sec:first-child { margin-top: 8px; }
+/* The TB/SIM edition blocks wrap the same content; their first child must
+   keep the same collapsed top margin as a direct child of .read__body. */
+.read__ed > .v:first-child { margin-top: 0; }
+.read__ed > .read__sec:first-child { margin-top: 8px; }
+/* the TB/SIM toggle belongs to the bible reader only */
+.read[data-kind="song"] .read__lang,
+.read[data-kind="tatib"] .read__lang { display: none; }
+
+/* --- Tata Ibadah stage --- */
+/* item heads reuse .read__sec but read as an ORDER, not hymn pericopes:
+   left-aligned sans labels, numbered by JS to match the contents rail */
+.read[data-kind="tatib"] .read__sec {
+  text-align: left;
+  font: 640 clamp(15px, 14px + .3vw, 17px)/1.4 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .03em;
+  font-style: normal;
+  color: var(--ink);
+  margin: 30px 0 6px;
+  scroll-margin-top: 44px;
+}
+/* The date and Project action share the first Tata Ibadah header row. Remove
+   the eyebrow's general second-row spacing so its box centers with the button. */
+.read[data-kind="tatib"] .read__head-top .read__eyebrow { margin-bottom: 0; }
+/* The stage's entry-title links read as the heading they sit in -- ink in both
+   themes, no separate colour and no resting underline (spec 140 retires the
+   spec 056 colour rule). The underline is the whole affordance and appears
+   only on hover or keyboard focus, the same cue search results use. */
+.entry__jump { color: inherit; text-decoration: none; }
+.entry__jump:hover,
+.entry__jump:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.read[data-kind="tatib"] .tatib__tx {
+  margin: 0 0 4px;
+  font: 400 clamp(1.06rem, 1rem + .3vw, 1.18rem)/1.78 ui-serif, Georgia, 'Times New Roman', serif;
+}
+/* END_OF_SECTION: the OBS dock prints '--- END OF SECTION ---'; its text
+   field is a liturgist's private cue (often NEXT <name>) — shown small/dim
+   under the rule, never as content */
+.tatib__eos {
+  margin: 0;
+  border: 0;
+  position: relative;
+  scroll-margin-top: 44px;
+  /* The divider is a box like its entries (spec 055), with the rule centred
+     and the note tucked under it. Spec 068 sets the final 56px height below. */
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 52px;
+}
+.tatib__eos::before {
+  content: "";
+  display: block;
+  border-top: 2px solid var(--divider);
+}
+.tatib__eos::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 5px; height: 5px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--divider);
+}
+.tatib__eos .tatib__note { position: absolute; left: 0; right: 0; top: calc(50% + 7px); margin-top: 0; }
+.tatib__note {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  font: 500 11.5px/1.4 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--head-ink);
+}
+/* The selected-verse line under a song entry's heading (spec 054): quiet, tucked
+   close under the heading it qualifies. */
+.read__sub {
+  margin: -2px 0 8px;
+  font: 560 12.5px/1.5 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .04em;
+  color: var(--head-ink);
+}
+/* liturgist/jemaat speaker initials lead each line in the real texts */
+.tatib__sp {
+  font: 640 .82em/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .02em;
+  color: var(--head-ink);
+  margin-right: .15em;
+}
+/* Liturgy voices (spec 059), the same mapping as the projector. On a voiced line
+   the mark takes the line's colour, so a speaker's initials match their words. */
+.tatib__tx.is-join, .preview__line.is-join { color: var(--speaker-join); }
+.tatib__tx.is-leader, .preview__line.is-leader { color: var(--speaker-leader); }
+.is-join > .tatib__sp, .is-leader > .tatib__sp, .is-assembly > .tatib__sp { color: inherit; }
+.tatib__item { scroll-margin-top: 44px; }
+.entry__deleted-warning {
+  margin: 6px 0 12px;
+  font: 560 13px/1.45 ui-sans-serif, system-ui, sans-serif;
+  color: var(--danger);
+}
+.tatib__item + .tatib__item { margin-top: 2px; }
+/* heading-less items read as continuation of the section above: the TOC
+   quotes their first line, dimmed + italic so they look like prose, not nav */
+.songrow--cont .songrow__t { color: var(--head-ink); font-style: italic; }
+.tatib__flash {
+  animation: tatibFlash 1.3s var(--ease-timing) 1;
+}
+@keyframes tatibFlash {
+  0%, 30% { background: var(--active-flash); }
+  100% { background: transparent; }
+}
+/* A contents quicklink is never "current", so a reveal flashes it instead of
+   selecting it. The row tint holds long enough to be noticed before it fades;
+   the short-lived reading-stage flash keeps its own timing above. */
+.songrow.tatib__flash { animation: tatibRowFlash 2.6s linear 1; }
+@keyframes tatibRowFlash {
+  0%, 50% { background: var(--active-flash); }
+  100% { background: transparent; }
+}
+/* contents rail: END_OF_SECTION shows as a short rule, not a row */
+.toc__eos { display: flex; align-items: center; padding: 6px 18px; }
+.toc__eosline { flex: 1; border-top: 1px solid var(--divider); }
+
+/* chapter tiles with no text in this demo are visibly inactive.
+   Do NOT fade with opacity: head-ink at .5 composites to ~2:1 (fails 3:1);
+   the token colour alone still reads muted against live tiles. */
+.ch-num.no-data {
+  color: var(--head-ink);
+  cursor: default;
+}
+.ch-num.no-data:hover { background: none; color: var(--head-ink); }
+
+/* unreadable chapters in the rail get the same quiet look as the mini rail */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+[data-read="on"] .read__body { animation: fade-up 320ms cubic-bezier(.32, .72, .28, 1); }
+
+/* Below 1273px the third-level list replaces its parent. Start at the
+   parent's right edge and slide to the rail as the parent slides behind it;
+   the same moving edge carries it back on return. */
+@media (max-width: 1272px) {
+  :root[data-ch="open"][data-ch-mode="song"] .chapters { left: var(--rail-w); }
+}
+
+/* chapters rail needs its own shadow when floating on narrow screens */
+@media (max-width: 720px) {
+  /* Keep the translating parent's width stable, including Bible's book list:
+     its trailing edge must stay attached to the incoming child on phones. */
+  :root[data-section="alkitab"],
+  :root[data-section="kidung"] {
+    --panel-w: min(var(--nav-w), calc(100vw - var(--rail-w) - 2rem));
+  }
+  /* Match the TataIbadahItem drawer's mobile width: viewport minus rail + 12px. */
+  :root[data-section="tatib"] {
+    --nav-w: min(26rem, calc(100vw - var(--rail-w) - 12px));
+    --panel-w: var(--nav-w);
+  }
+  .chapters { box-shadow: var(--shadow); }
+  /* phone: the song list floats over the stage instead of squeezing it —
+     a full-width drawer the tapped song closes */
+  :root[data-ch="open"][data-ch-mode="song"] { --ch-w-shown: 0px; }
+  :root[data-ch-mode="song"] .chapters {
+    width: calc(100vw - var(--rail-w) - 12px);
+    max-width: 26rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* the verse-number gutter must not eat the text column here */
+  .v { grid-template-columns: 1.7rem minmax(0, 1fr); }
+  .v__n { padding-right: .45rem; }
+  .stage { padding-left: 14px; padding-right: 14px; }
+  .read__head { margin-bottom: 22px; }
+}
+
+.read { scroll-margin-top: 24px; }
+/* Simalungun name, dimmed, after the Indonesian one.
+   No max-width cap: the panel is sized so nothing ever ellipsizes. */
+.book__s {
+  flex: none;
+  overflow: visible;
+  white-space: nowrap;
+  font-size: 12.5px;
+  line-height: 22px;
+  color: var(--head-ink);
+}
+.book[aria-current="true"] .book__s { color: inherit; opacity: 1; }
+/* A today row leads Upcoming, and the badge is what says why (spec 132). The action
+   accent is the mark: forest green in light, royal blue in dark. Kept in step with
+   `.servicerow__today` in obs-dock.css — same numbers, other sheet. */
+.book__today {
+  flex: none;
+  align-self: center;
+  margin-left: auto;
+  padding: 1px 7px 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--active-bg);
+  color: var(--active-ink);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+.is-hidden { display: none !important; }
+
+/* ============================================================
+   Sidebar list empty states — the one block both columns use.
+   Centred in the list area (not the whole column, so the filter
+   strip above never pushes it off-centre), icon over a title over
+   a hint, and typed: a list with no rows invites the first one,
+   a filter that matched nothing offers another search (spec 129).
+   ============================================================ */
+.listempty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  text-align: center;
+  pointer-events: none;    /* the list beneath keeps its wheel and drags */
+}
+.listempty[hidden] { display: none; }
+.listempty__icon { display: none; color: var(--head-ink); opacity: .85; }
+.listempty[data-state="empty"] .listempty__icon[data-when="empty"],
+.listempty[data-state="filter"] .listempty__icon[data-when="filter"] { display: block; }
+.listempty__icon svg { display: block; width: 38px; height: 38px; }
+.listempty__title {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.listempty__hint {
+  margin: 0;
+  max-width: 26ch;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--head-ink);
+  text-wrap: balance;
+}
+/* the collapsed panel is a rail: no room for a two-line state */
+[data-nav="mini"] .panel .listempty { display: none; }
+
+.sr {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* ============================================================
+   Chapters rail — abbrev-like third column, opens beside books
+   ============================================================ */
+.chapters {
+  position: fixed;
+  top: 0; left: calc(var(--rail-w) + var(--books-w)); bottom: 0;
+  width: var(--col-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--rail-bg);
+  border-right: 1px solid var(--divider);
+  clip-path: inset(0 100% 0 0);
+  visibility: hidden;
+  z-index: 24;
+  transition: left var(--ease), clip-path var(--ease), background var(--ease),
+              box-shadow var(--ease), visibility 0s linear 200ms;
+}
+[data-ch="open"] .chapters {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  transition: left var(--ease), clip-path var(--ease), background var(--ease),
+              box-shadow var(--ease), visibility 0s;
+}
+/* The column changes role/width only while closed. Opening on desktop wipes
+   from its settled position; on phones it follows the retreating parent. */
+:root { --col-w: var(--ch-w); }
+:root[data-ch-mode="song"] { --col-w: var(--songsp-w); }
+
+/* top: collapse control (rail mode) or search + sort (song mode) */
+.ch__top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 12px;
+}
+.ch__tools {
+  flex: 1;
+  min-width: 0;
+  display: none;                  /* only the song list has a search header */
+  justify-content: center;
+}
+:root[data-ch-mode="song"] .ch__tools { display: flex; }
+/* in song mode the collapse button reads as "close", which is what it does */
+.ch__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.ch__search .filter-box { position: relative; flex: 1; min-width: 0; }
+.ch__search .filter-box > svg {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 15px; height: 15px;
+  color: var(--head-ink);
+  pointer-events: none;
+}
+.ch__search input {
+  width: 100%;
+  height: 38px;
+  padding: 0 38px 0 34px;
+  font: 400 14px/1 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  outline: none;
+  -webkit-appearance: textfield; appearance: textfield;
+  transition: border-color var(--ease), background var(--ease);
+}
+.ch__search input::placeholder { color: var(--head-ink); }
+.ch__search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.ch__search input:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+.ch__search[hidden] { display: none; }   /* author display beats UA [hidden] */
+/* one button, two glyphs inside: which order is active (A-Z vs recent) */
+.ch__sort {
+  flex: none;
+  position: relative;
+  width: 38px; height: 38px;
+  font-size: 13.3333px;      /* mirrors the mockup's button UA metrics */
+  line-height: normal;
+  display: grid; place-items: center;
+  background: var(--canvas);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  color: var(--icon);
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease);
+  text-decoration: none;
+}
+.ch__sort:hover { border-color: var(--head-ink); background: var(--icon-hover-bg); }
+.ch__sort[hidden] { display: none; }
+.ch__sort svg { width: 17px; height: 17px; }
+.ch__sort-mark {
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font: 700 9px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .02em;
+  color: var(--head-ink);
+}
+.ch__sort[data-order="title"] .ch__sort-mark::after { content: "AZ"; }
+.ch__sort[data-order="m"] .ch__sort-mark {
+  right: 4px; bottom: 3px;
+  width: 11px; height: 11px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+.ch__sort[data-order="m"] .ch__sort-mark::after {
+  content: "";
+  position: absolute;
+  left: calc(50% - .75px); bottom: 50%;
+  width: 1.5px; height: 4px;
+  background: currentColor;
+  transform: rotate(40deg);
+  transform-origin: 50% 100%;
+}
+/* The service-list search shares a mode switch with the song-list sort icon.
+   Both modes keep a visible icon; the pressed state names the template view. */
+.panel__filter .panel__mode { display: none; }
+:root[data-section="tatib"] .panel__filter .panel__mode { display: grid; }
+.panel__mode .panel__mode-template { display: none; }
+.panel__mode[aria-pressed="true"] .panel__mode-template { display: block; }
+.panel__mode[aria-pressed="true"] .panel__mode-dated { display: none; }
+.panel__mode[aria-pressed="true"] {
+  border-color: var(--focus);
+  color: var(--focus);
+}
+.panel__mode:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.ch__wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ch__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  padding: 0 0 8px;
+  scrollbar-width: none;
+}
+.ch__body::-webkit-scrollbar { display: none; }
+.ch__body ul {
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px;                      /* same 60px pitch as the rails */
+}
+/* song mode: left-aligned rows, citation then full title */
+:root[data-ch-mode="song"] .ch__body ul {
+  align-items: stretch;
+  gap: 1px;
+  padding: 0 10px;
+}
+.songrow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 14.5px;
+  text-decoration: none;
+  transition: background var(--ease);
+}
+.songrow:hover { background: var(--icon-hover-bg); }
+#chList li:hover > .songrow:not([aria-current="true"]) { background: var(--icon-hover-bg); }
+.songrow[aria-current="true"] { background: var(--sidebar-selected-bg); color: var(--ink); }
+.songrow__c {
+  flex: none;
+  font: 560 13px/1.4 ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  min-width: 3.4rem;
+}
+.songrow[aria-current="true"] .songrow__c { color: var(--ink); }
+/* A contents row is three lines of its own text, whatever it holds (spec 135): the box
+   clamps at three line boxes, and a line too wide for the pane wraps inside it instead
+   of running past it. */
+.songrow__t {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+/* A song that has a Bait line spends at most two lines on its heading, so the Bait
+   line is always drawn as the third (spec 135). */
+.songrow__t--song:has(.songrow__verses) .songrow__heading {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+/* Service-order songs: reference + title, with verse selection beneath (spec 059). */
+.songrow__t--song { flex: 1; font-style: normal; line-height: 20px; }
+.songrow__heading { display: block; color: var(--ink); }
+.songrow__reference { font-size: 12px; font-weight: 600; margin-right: 8px; }
+.songrow__title { font-size: 14px; font-weight: 400; }
+.songrow__verses { display: block; font-size: 12px; font-weight: 400; line-height: 17px; color: var(--head-ink); }
+/* Keep the smaller metadata legible against the selected row tint. */
+.songrow[aria-current="true"] .songrow__verses,
+:root[data-theme="dark"] .songrow__verses { color: var(--ink); }
+
+.ch-num {
+  width: var(--btn); height: var(--btn);
+  display: grid; place-items: center;
+  padding: 0;
+  border: 0; border-radius: 8px;
+  background: none;
+  color: var(--icon);
+  font: 590 13px/1 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+}
+.ch-num:hover { background: var(--icon-hover-bg); color: var(--ink); text-decoration: none; }
+.ch-num[aria-current="true"] { background: var(--sidebar-selected-bg); color: var(--ink); }
+
+/* One shared 44px collapse control: placed beside the search field in either
+   the books/services panel or the second-level list. */
+.ch__collapse {
+  flex: none;
+  width: var(--btn); height: var(--btn);
+  display: grid; place-items: center;
+  background: none; border: 0; border-radius: 8px;
+  color: var(--icon);
+  cursor: pointer;
+  transition: background var(--ease);
+}
+.ch__collapse:hover { background: var(--icon-hover-bg); }
+.ch__collapse svg { width: 20px; height: 20px; }
+/* in song mode there is nothing to collapse to: the button just closes */
+
+/* chapters scroll indicators: same furniture as the books mini rail */
+.ch__ind {
+  flex: none;
+  display: none;
+  place-items: center;
+  width: 100%; height: 26px;
+  padding: 0;
+  background: none; border: 0;
+  color: var(--head-ink);
+  cursor: pointer;
+  transition: color var(--ease);
+}
+.ch__ind:hover { color: var(--ink); }
+.ch__ind svg { width: 15px; height: 15px; }
+[data-ch="open"] .ch__ind.show { display: grid; }
+/* Kidung sidebars never show scroll chevrons */
+:root[data-ch-mode="song"] .ch__ind { display: none !important; }
+
+.stage {
+  /* the two vertical paddings, stated once: the landing search section measures
+     the box the stage leaves it, and the phone layout moves the top one */
+  --stage-pad-top: var(--pad-top);
+  --stage-pad-bottom: 64px;
+  margin-left: calc(var(--rail-w) + var(--books-w) + var(--ch-w-shown));
+  flex: 1;
+  min-width: 0;
+  padding: var(--stage-pad-top) clamp(24px, 5vw, 64px) var(--stage-pad-bottom);
+  transition: margin-left var(--ease);
+}
+/* one rule covers closed/open/mini and chapters: the --books-w / --ch-w-shown
+   tokens are 0 whenever a column is hidden, so both columns push in step */
+.stage__eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .55;
+}
+.stage__demo h1 {
+  margin: 0 0 12px;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  font-weight: 660;
+  letter-spacing: -.035em;
+  line-height: 1.08;
+}
+.stage__demo p {
+  margin: 0 0 28px;
+  max-width: 46ch;
+  font-size: 16.5px;
+  line-height: 1.65;
+  opacity: .78;
+}
+.hint {
+  display: inline-block;
+  padding: 9px 14px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  font-size: 14px;
+  opacity: .8;
+}
+kbd {
+  font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 3px 5px;
+}
+
+/* below tablet width there is nothing left to push: the panel reverts to a
+   floating overlay so the stage is not crushed to sliver width */
+@media (max-width: 720px) {
+  .panel { box-shadow: var(--shadow); }
+  .stage { padding-left: 18px; padding-right: 18px; }
+  .read__title { font-size: clamp(1.45rem, 6.5vw, 2.4rem); }
+  [data-nav="open"] .stage { margin-left: var(--rail-w); }
+}
+@media print {
+  .rail, .panel, .chapters, .search-home, .read__lang, .result-more {
+    display: none !important;
+  }
+  body { display: block; }
+  .stage { margin: 0 !important; width: 100%; padding: 0 !important; transition: none !important; }
+  .result-row { break-inside: avoid; }
+}
+
+/* Edition blocks (TB / SIM): the wrapper must not create a box of its own,
+   or margin collapsing shifts the first heading by 4px vs the mockup. */
+.read__ed { display: contents; }
+.read__ed[hidden] { display: none; }
+
+/* Maintenance notice (spec 003): standalone page, outside the shell. */
+.maintenance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px 16px;
+    background: var(--canvas);
+    color: var(--ink);
+}
+
+.maintenance__card {
+    max-width: 34rem;
+    padding: 48px 32px;
+    text-align: center;
+    background: var(--rail-bg);
+    border: 1px solid var(--divider);
+    border-radius: 16px;
+}
+
+.maintenance__logo {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+}
+
+.maintenance__title {
+    margin: 16px 0 12px;
+    font-size: 1.75rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.maintenance__lead {
+    margin: 0 0 8px;
+    font-size: 1.0625rem;
+}
+
+.maintenance__note {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--head-ink);
+}
+
+/* ---------- service entries (spec 006, amended by spec 055) ----------------- */
+
+/* The add controls belong to their item: hidden until that item is hovered or
+   something inside the controls takes focus, so the service reads as a service.
+   At rest the row collapses to zero height (spec 052) and keeps a 6px margin
+   (spec 055): the buttons live in an inner element clipped by a 0fr grid
+   track, so nothing is reserved between entries beyond the uniform rhythm.
+   The row must stay REACHABLE: it is revealed by the item above it (spec 037),
+   and once revealed its box keeps its height through the delayed hide, so the
+   pointer can travel onto it. A control at pointer-events: none cannot be
+   entered: the pointer leaves the item, the reveal drops, and the row is
+   unreachable unless the mouse jumps the whole way in one move. The hide is
+   delayed so crossing the item's edge does not blink the controls away.
+   REVEALED, the row brackets its buttons with equal 8px above and below
+   (spec 055): margin-block drops to 0 and the 8px padding appears, so the
+   gap to the entry boxes on either side is the same in every state. */
+.entry__add {
+  display: grid;
+  grid-template-rows: 0fr;
+  padding: 0;
+  margin: 6px 0;
+  opacity: 0;
+  transition: grid-template-rows 140ms ease 220ms, opacity 140ms ease 220ms,
+              padding 140ms ease 220ms, margin 140ms ease 220ms;
+}
+.entry__add-inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  min-height: 0; overflow: hidden;
+}
+/* The add row is not part of the item (spec 036): it starts below the item's box, so
+   hovering it never counts as hovering the item above. The padding below the buttons
+   appears with the row, so nothing is reserved at rest. */
+.tatib__item:hover + .entry__add,
+.tatib__eos:hover + .entry__add,
+.entry__add:hover,
+.entry__add:focus-within {
+  grid-template-rows: 1fr;
+  padding: 8px 0;
+  margin-block: 0;
+  opacity: 1;
+  transition-delay: 0s;
+}
+/* The add rows on either side of a hovered (or focused) item (spec 037). */
+.entry__add.is-revealed {
+  grid-template-rows: 1fr;
+  padding: 8px 0;
+  margin-block: 0;
+  opacity: 1;
+  transition-delay: 0s;
+}
+/* The start bar is a row too (spec 055): it collapses at rest and reveals
+   through `.is-revealed` (set by entries.js -- it precedes the first block, so
+   CSS alone cannot reveal it), its own hover, or keyboard focus. While open it
+   pulls up into the page head's own 30px margin, so it sits 8px under the
+   heading and 8px above the first words. */
+.entry__start {
+  display: grid;
+  grid-template-rows: 0fr;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  transition: grid-template-rows 140ms ease 220ms, opacity 140ms ease 220ms,
+              padding 140ms ease 220ms, margin-top 140ms ease 220ms;
+}
+.entry__start-inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  min-height: 0; overflow: hidden;
+}
+.entry__start.is-revealed,
+.entry__start:hover,
+.entry__start:focus-within {
+  grid-template-rows: 1fr;
+  padding: 8px 0;
+  margin-top: -30px;
+  opacity: 1;
+  transition-delay: 0s;
+}
+/* A touch device has no hover to reveal the rows with: show them outright. */
+@media (hover: none) and (pointer: coarse) {
+  .entry__add { grid-template-rows: 1fr; padding: 8px 0; margin-block: 0; opacity: 1; }
+  .entry__start { grid-template-rows: 1fr; padding: 8px 0; margin-top: -30px; opacity: 1; }
+}
+
+/* ---------- the entry controls (spec 032/033) ----------------------------- */
+
+/* The controls belong to their item: preview, Edit and Delete float at its
+   top-right, over the words, on a brief backing. They show while the item is
+   hovered, holds keyboard focus, or owns the open modal (spec 065), and always
+   where there is no hover. */
+.tatib__item, .tatib__eos { position: relative; }
+.entry__acts {
+  position: absolute; right: 8px; top: 8px;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px; border: 1px solid var(--divider); border-radius: 9px;
+  background: var(--canvas);
+  opacity: 0; transition: opacity var(--ease);
+}
+.tatib__item:hover .entry__acts,
+.tatib__eos:hover .entry__acts,
+.is-modal-origin .entry__acts,
+.entry__acts:has(:focus:not(.focus-restore-quiet)) { opacity: 1; }
+/* A touch device has no hover to reveal them with: show them outright. */
+@media (hover: none) and (pointer: coarse) { .entry__acts { opacity: 1; } }
+
+/* ---------- the hovered row (spec 034, boxed by spec 055) ------------------ */
+
+/* An entry that carries controls is a BOX that contains them (spec 055, replacing
+   the 44px band of spec 053). Its words centre on the box's centreline; the
+   controls float at the top-right and can overlap the first lines of a tall
+   entry. Spec 068 adds the restrained resting surface and padding below. */
+.tatib__item--acts {
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 52px; padding-top: 0;
+}
+/* The box owns its content's edges: the first flow child's top margin and the
+   last one's bottom margin are dropped, so the words centre on the box's
+   centreline (spec 055). Scoped past the stage rules that set those margins. */
+.read[data-kind="tatib"] .tatib__item--acts > :first-child { margin-top: 0; }
+.read[data-kind="tatib"] .tatib__item--acts > :last-child,
+.read[data-kind="tatib"] .tatib__item--acts > *:has(+ .entry__acts) { margin-bottom: 0; }
+/* Hovering an entry reads as one row: the whole item takes the shared hover fill,
+   bled into the gutter with a matching negative margin so no text moves. */
+.tatib__item, .tatib__eos { border-radius: 9px; transition: background var(--ease); }
+.tatib__item {
+  margin-left: -10px; margin-right: -10px;
+  padding-left: 10px; padding-right: 10px;
+}
+/* The approved entry surface (spec 068) uses an inset outline so the box's
+   dimensions and the neighbouring add-row gaps do not shift. Keep this base
+   selector weaker than the hover/focus selectors below. */
+.tatib__item--acts, .tatib__eos {
+  min-height: 56px;
+  padding: 8px 8px 8px 12px;
+  background: var(--tatib-entry-fill);
+  box-shadow: inset 0 0 0 1px var(--tatib-entry-outline);
+}
+.tatib__item--media { min-height: 80px; padding: 16px 16px 16px 64px; }
+@media (max-width: 520px) {
+  .tatib__item--media { padding-right: 12px; padding-left: 60px; }
+}
+/* The controls own a column at the item's right edge (spec 140): the entry
+   reserves it, so a title or a media name never runs under the buttons. The
+   column is 106px while the controls are icons and 264px once the pane is wide
+   enough for their labels -- the question is the pane's width, not the window's,
+   so it is asked of the pane as a container. */
+.read__body { container: stage-pane / inline-size; }
+.tatib__item--acts { padding-right: 106px; }
+@container stage-pane (min-width: 700px) {
+  .tatib__item--acts { padding-right: 264px; }
+}
+.read[data-kind="tatib"] .tatib__item--media .read__sec { margin: 0 0 3px; }
+.tatib__item--media .read__sub { margin: 0; color: var(--head-ink); }
+.entry__media-icon {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  width: 42px; height: 42px; border-radius: 8px;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--focus) 12%, var(--canvas));
+  color: var(--focus);
+}
+.entry__media-icon svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tatib__item--media.is-missing .entry__media-icon { color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--canvas)); }
+.tatib__item--media.is-unavailable .entry__media-icon { color: var(--head-ink); background: color-mix(in srgb, var(--head-ink) 9%, var(--canvas)); }
+.entry__media-availability { margin-left: 8px; font-weight: 600; }
+/* Quiet modal restoration keeps DOM focus without impersonating hover (spec 058).
+   Test the focused element, not old markers elsewhere in the entry. The entry
+   whose modal is open keeps its hover look behind the backdrop (spec 065). */
+.tatib__item:hover, .tatib__eos:hover,
+.tatib__item.is-modal-origin, .tatib__eos.is-modal-origin,
+.tatib__item:focus:not(.focus-restore-quiet),
+.tatib__eos:focus:not(.focus-restore-quiet),
+.tatib__item:has(:focus:not(.focus-restore-quiet)),
+.tatib__eos:has(:focus:not(.focus-restore-quiet)) {
+  background: var(--icon-hover-bg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tatib__item, .tatib__eos { transition: none; }
+}
+
+.preview {
+  width: min(44rem, calc(100vw - 32px)); max-height: calc(100vh - 48px);
+  padding: 0; border: 0; border-radius: 14px;
+  background: var(--canvas); color: var(--ink);
+  /* see .editor: the hairline edge rides in the shadow so no layout moves */
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
+  display: flex; flex-direction: column;
+}
+/* An author display rule beats the UA's rule for a CLOSED dialog: keep it hidden. */
+.preview:not([open]) { display: none; }
+.preview::backdrop { background: var(--backdrop); }
+/* The entry's identity, pinned above the scroller (spec 085): the header does not travel with
+   the body, and an entry with nothing to name renders no header at all. */
+.preview__head {
+  display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 14px 22px;
+  border-bottom: 1px solid var(--divider); background: var(--canvas);
+}
+.preview__head[hidden], .preview__title[hidden], .preview__versetabs[hidden] { display: none; }
+.preview__title {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 640 16px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+}
+.preview__versetabs { display: flex; margin-left: auto; min-width: 0; }
+.preview__head .preview__tabs { margin: 0; }
+@media (max-width: 560px) {
+  .preview__head { flex-wrap: wrap; padding: 12px 16px; }
+  .preview__versetabs { margin-left: 0; width: 100%; }
+}
+.preview__body { padding: 22px; overflow-y: auto; min-height: 0; }
+.preview__body:focus { outline: none; }
+.preview__body:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.preview.is-image-preview { max-width: calc(100vw - 32px); }
+.preview__image { display: flex; align-items: center; justify-content: center; min-height: 280px; }
+.preview__image img { display: block; max-width: 100%; max-height: calc(100vh - 145px); object-fit: contain; }
+.preview__image img[hidden], .preview__image-unavailable[hidden] { display: none; }
+.preview__image-unavailable { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; min-height: 280px; color: var(--head-ink); font-size: 13px; }
+.preview__image-unavailable svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.preview.is-pdf-preview { max-width: calc(100vw - 32px); transition: width 180ms ease; }
+.preview.is-pdf-preview .preview__body { overflow: hidden; padding-bottom: 0; }
+.preview__pdf-page { display: flex; justify-content: center; }
+.preview__pdf-page[hidden], .preview__pdf-controls[hidden], .preview__pdf-unavailable[hidden] { display: none; }
+.preview__pdf-page canvas { display: block; max-width: 100%; background: #fff; box-shadow: 0 3px 16px #0003; }
+.preview__pdf-controls { min-height: 74px; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--head-ink); font-size: 12px; }
+.preview__pdf-controls button { height: 32px; min-width: 32px; border: 1px solid var(--divider); border-radius: 6px; background: var(--canvas); color: var(--ink); }
+.preview__pdf-controls button:hover:not(:disabled) { background: var(--rail-bg); }
+.preview__pdf-controls button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.preview__pdf-unavailable { min-height: 270px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; color: var(--head-ink); font-size: 13px; }
+.preview__pdf-preparing { min-height: 270px; display: flex; align-items: center; justify-content: center; color: var(--head-ink); font-size: 13px; }
+.preview__pdf-preparing[hidden] { display: none; }
+.preview__pdf-unavailable svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.preview.is-audio-preview { width: min(620px, calc(100vw - 32px)); }
+.preview.is-audio-preview .preview__body { padding: 28px 26px; }
+.preview__audio { min-height: 48px; display: flex; align-items: center; }
+.preview__audio .audio-player { width: 100%; display: flex; align-items: center; gap: 16px; }
+.preview__audio .audio-player[hidden], .preview__audio-unavailable[hidden] { display: none; }
+.audio-player__play, .screen__audio-play { position: relative; flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; }
+.audio-player__play { border: 0; background: var(--active-bg); color: var(--active-ink); transition: filter 150ms ease; }
+.audio-player__play:hover { filter: brightness(1.12); }
+.audio-player__play:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.audio-player__play::before, .screen__audio-play::before { content: ''; position: absolute; left: 20px; top: 16px; border-left: 12px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+.audio-player__play[data-playing="true"]::before, .screen__audio-play[data-playing="true"]::before { left: 17px; top: 15px; width: 14px; height: 18px; border: 0; background: linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px, currentColor 9px); }
+.audio-player__timeline { flex: 1 1 auto; min-width: 0; }
+.audio-player__filename { margin-bottom: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
+.audio-player__seek { display: block; width: 100%; height: 14px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
+.audio-player__seek::-webkit-slider-runnable-track { height: 6px; border-radius: 9px; background: linear-gradient(90deg, var(--active-bg) var(--progress), var(--divider) var(--progress)); }
+.audio-player__seek::-moz-range-track { height: 6px; border-radius: 9px; background: var(--divider); }
+.audio-player__seek::-moz-range-progress { height: 6px; border-radius: 9px; background: var(--active-bg); }
+.audio-player__seek::-webkit-slider-thumb { appearance: none; width: 10px; height: 10px; border-radius: 50%; margin-top: -2px; background: var(--active-bg); opacity: 0; }
+.audio-player__seek::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--active-bg); opacity: 0; }
+.audio-player__seek:hover::-webkit-slider-thumb, .audio-player__seek:focus-visible::-webkit-slider-thumb, .audio-player__seek:hover::-moz-range-thumb, .audio-player__seek:focus-visible::-moz-range-thumb { opacity: 1; }
+.audio-player__seek:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.audio-player__times { display: flex; justify-content: space-between; margin-top: 7px; font-size: 12px; color: var(--head-ink); }
+.preview__audio-unavailable { width: 100%; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; color: var(--head-ink); font-size: 13px; }
+.preview__audio-unavailable svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 560px) { .preview.is-audio-preview .preview__body { padding: 24px 20px; } }
+.preview.is-video-preview { width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 48px); }
+.preview.is-video-preview .preview__body { padding: 22px; }
+.preview__video { width: 100%; }
+.preview__video-frame {
+  position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 16 / 9;
+  max-height: calc(100vh - 210px); overflow: hidden; background: #171613;
+}
+.preview__video-element { display: block; width: 100%; height: 100%; object-fit: contain; background: #171613; }
+.preview__video-element[hidden], .preview__video-unavailable[hidden] { display: none; }
+.preview__video-overlay-play, .preview__video-play {
+  position: relative; flex: 0 0 auto; border: 0; border-radius: 50%; background: #514f48;
+  color: #ddd8cd; cursor: pointer; transition: background 150ms ease, transform 120ms ease;
+}
+.preview__video-overlay-play { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; transform: translate(-50%, -50%); }
+.preview__video-overlay-play:hover, .preview__video-play:hover { background: #68635b; }
+.preview__video-overlay-play:active { transform: translate(-50%, -50%) scale(.94); }
+.preview__video-play:active { transform: scale(.94); }
+.preview__video-overlay-play:focus-visible, .preview__video-play:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.preview__video-overlay-play::before, .preview__video-play::before {
+  content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-42%, -50%);
+  border-left: 12px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+}
+.preview__video-overlay-play[data-playing="true"]::before, .preview__video-play[data-playing="true"]::before {
+  transform: translate(-50%, -50%); width: 14px; height: 18px; border: 0;
+  background: linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px, currentColor 9px);
+}
+.preview__video.is-playing .preview__video-overlay-play { opacity: 0; pointer-events: none; }
+.preview__video-frame:hover .preview__video-overlay-play { opacity: 1; pointer-events: auto; }
+.preview__video-controls { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.preview__video-play { width: 34px; height: 34px; }
+.preview__video-play::before { border-left-width: 9px; border-top-width: 6px; border-bottom-width: 6px; }
+.preview__video-play[data-playing="true"]::before { width: 11px; height: 14px; background: linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px, currentColor 7px); }
+.preview__video-seek { flex: 1 1 auto; min-width: 0; display: block; width: 100%; height: 18px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
+.preview__video-seek::-webkit-slider-runnable-track { height: 6px; border-radius: 9px; background: linear-gradient(90deg, var(--active-bg) var(--progress), var(--divider) var(--progress)); }
+.preview__video-seek::-moz-range-track { height: 6px; border-radius: 9px; background: var(--divider); }
+.preview__video-seek::-moz-range-progress { height: 6px; border-radius: 9px; background: var(--active-bg); }
+.preview__video-seek::-webkit-slider-thumb { appearance: none; width: 10px; height: 10px; border-radius: 50%; margin-top: -2px; background: var(--active-bg); opacity: 0; }
+.preview__video-seek::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--active-bg); opacity: 0; }
+.preview__video-seek:hover::-webkit-slider-thumb, .preview__video-seek:focus-visible::-webkit-slider-thumb, .preview__video-seek:hover::-moz-range-thumb, .preview__video-seek:focus-visible::-moz-range-thumb { opacity: 1; }
+.preview__video-seek:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.preview__video-meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; color: var(--head-ink); font-size: 12px; }
+.preview__video-filename { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preview__video-unavailable { min-height: 270px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; color: var(--head-ink); font-size: 13px; }
+.preview__video-unavailable svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 560px) {
+  .preview.is-video-preview .preview__body { padding: 16px; }
+  .preview__video-meta { font-size: 11px; }
+  .preview__video-controls { gap: 9px; }
+}
+@keyframes image-preview-in { from { opacity: 0; transform: translateY(7px) scale(.965); } to { opacity: 1; transform: none; } }
+@keyframes image-preview-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(5px) scale(.975); } }
+.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview,.is-pdf-preview)[open] { animation: image-preview-in 210ms cubic-bezier(.2,.8,.2,1) both; }
+.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview,.is-pdf-preview).is-closing[open] { animation: image-preview-out 170ms ease-in both; }
+@keyframes image-preview-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes image-preview-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview,.is-pdf-preview)[open]::backdrop { animation: image-preview-backdrop-in 210ms ease both; }
+.preview:is(.is-image-preview,.is-audio-preview,.is-video-preview,.is-pdf-preview).is-closing[open]::backdrop { animation: image-preview-backdrop-out 170ms ease both; }
+@media (prefers-reduced-motion: reduce) { .preview:is(.is-image-preview,.is-audio-preview,.is-video-preview)[open], .preview:is(.is-image-preview,.is-audio-preview,.is-video-preview).is-closing[open], .preview:is(.is-image-preview,.is-audio-preview,.is-video-preview)[open]::backdrop, .preview:is(.is-image-preview,.is-audio-preview,.is-video-preview).is-closing[open]::backdrop { animation: none; } }
+.preview__foot {
+  position: sticky; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 12px 22px; border-top: 1px solid var(--divider); background: var(--canvas);
+}
+.preview__foot[hidden], .preview__confirm-layer[hidden], .screen-mode[hidden],
+.preview__mode-readonly[hidden] { display: none; }
+.screen-mode {
+  box-sizing: border-box; position: relative; display: grid; align-items: stretch;
+  height: 42px; padding: 3px; border: 1px solid var(--divider); border-radius: 9px;
+  background: var(--rail-bg); font: 560 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__screen-mode-wrap { margin: 0 0 16px; text-align: center; }
+.editor__screen-mode { width: min(308px, 100%); margin: 0 auto; grid-template-columns: 1fr 1fr; }
+.screen-mode__thumb {
+  position: absolute; z-index: 0; top: 3px; bottom: 3px; left: 3px;
+  width: calc((100% - 6px) / 2); border-radius: 6px;
+  background: var(--active-bg); transition: left var(--ease), width var(--ease);
+}
+.editor__screen-mode[data-selected="single_screen"] .screen-mode__thumb {
+  left: calc(3px + (100% - 6px) / 2);
+}
+.editor__screen-mode-help { margin: 14px 0 0; color: var(--head-ink); font-size: 12px; }
+.preview__screen-mode { width: min(363px, 100%); grid-template-columns: minmax(0, 1fr) 53px minmax(0, 1fr); }
+.preview__screen-mode .screen-mode__thumb { width: calc((100% - 6px - 53px) / 2); }
+.preview__screen-mode[data-selected="custom"] .screen-mode__thumb {
+  left: calc((100% - 53px) / 2); width: 53px;
+}
+.preview__screen-mode[data-selected="single_screen"] .screen-mode__thumb {
+  left: calc(100% - 3px - (100% - 6px - 53px) / 2);
+}
+.screen-mode button, .screen-mode__custom {
+  position: relative; z-index: 1; min-width: 0; border: 0; border-radius: 6px;
+  background: transparent; color: var(--head-ink);
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  white-space: nowrap; font: inherit; transition: background var(--ease), color var(--ease);
+}
+.screen-mode button { cursor: pointer; }
+.screen-mode button:hover:not([aria-pressed="true"]) { color: var(--ink); background: var(--icon-hover-bg); }
+.screen-mode button[aria-pressed="true"],
+.preview__screen-mode[data-selected="custom"] .screen-mode__custom {
+  color: var(--active-ink);
+}
+.screen-mode svg { width: 16px; height: 16px; flex: none; }
+.screen-mode button:focus-visible, .screen-mode__custom:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px;
+}
+.screen-mode button:disabled { cursor: wait; }
+.preview__mode-readonly { margin: 0; color: var(--head-ink); font-size: 13px; }
+.preview__confirm-layer {
+  position: absolute; inset: 0; z-index: 2; display: grid; place-items: center;
+  background: var(--backdrop); padding: 16px;
+}
+.preview__confirm {
+  box-sizing: border-box; width: min(468px, 100%); padding: 22px;
+  border-radius: 12px; background: var(--canvas); color: var(--ink); box-shadow: var(--shadow);
+}
+.preview__confirm h3 { margin: 0 0 12px; font-size: 18px; }
+.preview__confirm p { margin: 0 0 22px; font-size: 14px; }
+.preview__confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.preview__confirm-actions button {
+  padding: 8px 12px; border: 1px solid var(--divider); border-radius: 8px;
+  background: var(--icon-hover-bg); color: var(--ink); cursor: pointer;
+  font: 560 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+}
+.preview__confirm-actions [data-confirm-accept] {
+  border-color: var(--active-bg); background: var(--active-bg); color: var(--active-ink);
+}
+.preview__confirm-actions button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (max-width: 420px) {
+  .preview__foot { padding-inline: 12px; }
+  .preview__screen-mode { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .screen-mode button, .screen-mode__custom, .screen-mode__thumb { transition: none; }
+}
+.preview__song, .preview__ref { margin: 0 0 12px; font: 640 16px/1.3 ui-sans-serif, system-ui, sans-serif; }
+.preview__tabs {
+  display: flex; width: max-content; max-width: 100%; gap: 4px;
+  justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto;
+  margin: 0 auto 10px;
+}
+.preview__tab {
+  box-sizing: border-box; flex: 0 0 30px; width: 30px; min-width: 30px; height: 30px;
+  display: grid; place-items: center; padding: 0;
+  border: 1px solid var(--divider); border-radius: 50%;
+  background: none; color: var(--ink); cursor: pointer;
+  font: 560 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.preview__tab[aria-selected="true"] {
+  background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg);
+}
+.preview__tab:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.preview__line {
+  margin: 0 0 6px;
+  font: 400 clamp(1.02rem, 1rem + .3vw, 1.15rem)/1.7 ui-serif, Georgia, 'Times New Roman', serif;
+}
+.preview__notice { color: var(--ink); font-size: 13px; }
+.preview__row { margin: 0; padding: 5px 2px; }
+.preview__blank-line { height: 12px; }
+.preview__gap {
+  position: relative; display: block; width: 100%; height: 18px; padding: 0;
+  border: 0; background: transparent; color: var(--active-bg); cursor: pointer;
+  text-align: center;
+}
+.preview__gap[hidden] { display: none; }
+.preview__gap::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%;
+  border-top: 1px solid transparent;
+}
+.preview__gap span {
+  position: relative; padding: 0 7px; background: transparent;
+  font-size: 11px; opacity: 0;
+}
+.preview__gap.is-set::before { border-color: var(--divider); }
+.preview__split.is-custom .preview__gap.is-set::before { border-color: var(--head-ink); }
+.preview__gap:not(.is-set):hover::before,
+.preview__gap:not(.is-set):focus-visible::before {
+  border-top: 0; height: 2px;
+  background: radial-gradient(circle, var(--active-bg) 1px, transparent 1.2px) left center / 6px 2px repeat-x;
+}
+.preview__split .preview__gap.is-set:hover::before,
+.preview__split .preview__gap.is-set:focus-visible::before {
+  border-color: var(--danger); border-style: solid;
+}
+.preview__gap.is-set:hover, .preview__gap.is-set:focus-visible { color: var(--danger); }
+.preview__gap:hover span, .preview__gap:focus-visible span {
+  opacity: 1; background: var(--canvas);
+}
+.preview__gap:disabled { cursor: default; }
+.preview__gap:disabled:hover span { opacity: 0; }
+.preview__panel[hidden] { display: none; }
+
+.entry__add-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  font: 500 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: var(--head-ink);
+  background: var(--canvas);
+  border: 1px dashed var(--divider);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color var(--ease), border-color var(--ease), background var(--ease);
+}
+.entry__add-btn:hover {
+  color: var(--ink);
+  border-color: var(--focus);
+  background: var(--icon-hover-bg);
+}
+.entry__add-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* An empty service is an invitation, not a void: the four kinds, big enough to
+   read as the starting point. It is the whole page when nothing is in it, so it
+   sits a quarter of the way down the reading area under the header rather than
+   stacked at the top of the column (spec 130). */
+.entry__empty {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  text-align: center;
+}
+/* the article takes the stage's height and the body takes the rest of it, so
+   the empty block has somewhere to sit that is not the top of the column (the
+   header is furniture, not part of the invitation). Its centre lands a quarter
+   of the way down that body, not halfway: the band it centres in is the body's
+   first half. Both margins come off — they are the page's header-to-content
+   gap, and here they would only bias the centre downwards. */
+.read[data-kind="tatib"]:has(.entry__empty) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.read[data-kind="tatib"]:has(.entry__empty) .read__head { margin-bottom: 0; }
+.read[data-kind="tatib"] .read__body:has(> .entry__empty) {
+  display: grid;
+  /* centred in here = the quarter mark; `min-content` keeps the band from being
+     shorter than the block, which at 1024×700 pushed it back over the header */
+  grid-template-rows: minmax(min-content, 50%);
+  align-content: start;
+  align-items: center;
+  justify-items: center;
+  flex: 1;
+  margin-top: 0;
+  padding-top: 12px;      /* a floor for the band's collapsed case: never flush */
+  padding-bottom: 0;      /* nothing follows the empty block to hold a gap for */
+  container-type: inline-size;   /* the tile row sizes against the column, not the window */
+}
+.entry__empty-title {
+  margin: 0;
+  font: 600 20px/1.3 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+}
+.entry__empty-hint { margin: 0; color: var(--head-ink); }
+/* one row of square tiles, the kind named by the glyph and the tooltip: the
+   labels were read once and the row reads as a toolbar from then on. Four tracks
+   since the Break kind retired (spec 131) -- a fifth empty track would leave the
+   four tiles off centre. A narrow reading column takes them 3 + 1 rather than
+   shrinking them. */
+.entry__empty-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 52px));
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+/* a reading column too narrow to give four tiles 44px each (238px of body) takes
+   them three and one at full size rather than shrinking them into dots */
+@container (max-width: 300px) {
+  .entry__empty-actions { grid-template-columns: repeat(3, 52px); }
+}
+.entry__empty-btn {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease);
+}
+.entry__empty-btn svg { width: 22px; height: 22px; max-width: 60%; max-height: 60%; flex: none; color: var(--head-ink); }
+.entry__empty-btn:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.entry__empty-btn:hover svg { color: var(--ink); }
+.entry__empty-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+
+.entry__ctrl {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  font: 500 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: var(--head-ink);
+  background: transparent;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color var(--ease), border-color var(--ease), background var(--ease);
+}
+.entry__ctrl svg { width: 13px; height: 13px; flex: none; }
+.entry__ctrl:hover { color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg); }
+/* Destructive reads as destructive at rest, not only under the pointer. */
+.entry__ctrl--danger { color: var(--danger); }
+.entry__ctrl--danger:hover {
+  color: var(--danger); border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+/* Where the pane is too narrow for their words the three controls read as icons
+   (spec 140); the label stays in the accessibility tree, only its box collapses.
+   From 700px of pane the labels return and the buttons keep their padding. */
+.entry__ctrl { gap: 0; padding: 5px 6px; }
+.entry__ctrl .entry__ctrl-label {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+@container stage-pane (min-width: 700px) {
+  .entry__ctrl { gap: 6px; padding: 5px 10px; }
+  .entry__ctrl .entry__ctrl-label {
+    position: static; width: auto; height: auto; margin: 0;
+    clip-path: none; white-space: normal;
+  }
+}
+
+/* ---------- the entry modals ---------------------------------------------- */
+
+/* A picker wears a select's chrome: the trigger is the closed control, the menu
+   the open one. The book and song pickers carry their own filter, so the menu is
+   a column -- the filter fixed at the top, the options scrolling under it. */
+.editor__picker { position: relative; min-width: 0; }
+.editor__picker-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-width: 0; width: 100%; min-height: 38px; padding: 8px 34px 8px 10px; text-align: left;
+  border: 1px solid var(--divider); border-radius: 9px;
+  background-color: var(--rail-bg); color: var(--ink);
+  font: 500 14px/1.35 ui-sans-serif, system-ui, sans-serif;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23555349' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+  cursor: pointer; transition: border-color var(--ease), box-shadow var(--ease);
+}
+.editor__picker-trigger [data-picker-label] {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+:root[data-theme="dark"] .editor__picker-trigger {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239C9A91' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5l4 4 4-4'/%3E%3C/svg%3E");
+}
+.editor__picker-trigger:hover,
+.editor__picker-trigger[aria-expanded="true"] { border-color: var(--focus); }
+.editor__picker-trigger:focus-visible {
+  outline: none; border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+.editor__picker-trigger:disabled { color: var(--head-ink); cursor: default; }
+.editor__picker-trigger:disabled:hover { border-color: var(--divider); }
+.editor__picker-menu {
+  position: fixed; z-index: 20;          /* over the dialog, capped to the viewport (spec 040) */
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 268px; padding: 8px;
+  background: var(--canvas); border: 1px solid var(--divider); border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+.editor__picker-menu[hidden] { display: none; }     /* author display beats [hidden] */
+.editor__picker-options { min-height: 0; overflow: auto; }
+.editor__picker-group[hidden] { display: none; }
+.editor__picker-options .editor__hint { margin: 6px 8px; }
+
+/* "No verses left after this one": the disabled to-verse's hover note. */
+.editor__end-wrap { position: relative; display: block; }
+.editor__end-wrap select:disabled { color: var(--head-ink); }
+.editor__end-tip {
+  position: absolute; z-index: 4; left: 0; right: 0; top: calc(100% + 6px);
+  padding: 7px 10px; border-radius: 8px;
+  background: var(--tip-bg); color: var(--tip-ink);
+  font: 500 12.5px/1.35 ui-sans-serif, system-ui, sans-serif;
+  opacity: 0; pointer-events: none; transition: opacity var(--ease);
+}
+.editor__end-wrap[data-empty]:hover .editor__end-tip,
+.editor__end-wrap[data-empty]:focus-within .editor__end-tip { opacity: 1; }
+.editor__songgroup-label {
+  margin: 0; padding: 8px 12px 4px;
+  font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--head-ink);
+}
+.editor__picker-option, .editor__songoption {
+  display: block; width: 100%; padding: 8px 12px; text-align: left;
+  font: 400 14px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+  background: transparent; border: 0; cursor: pointer;
+}
+.editor__songoption--book {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
+.editor__songoption--book[hidden] { display: none; }     /* author display beats [hidden] */
+.editor__songoption--book .book__n { flex: 1; }
+.editor__songoption--book .book__s[hidden] { display: none; }
+.editor__picker-option:hover, .editor__picker-option:focus-visible,
+.editor__songoption:hover, .editor__songoption:focus-visible {
+  background: var(--icon-hover-bg); outline: none;
+}
+.editor__verses {
+  display: flex; flex-wrap: wrap; gap: 10px 18px;
+  padding: 8px 10px;
+}
+.editor__picker-menu .editor__verses { border: 0; }        /* the menu is the box */
+.editor__verses > div { display: inline-flex; }
+.editor__verses label, .editor__verse {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 400 14px/1.2 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+  cursor: pointer;
+}
+.editor__confirm { display: grid; gap: 10px; padding: 4px 2px; }
+.editor__confirm-title {
+  margin: 0; font: 600 17px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+}
+
+/* ---------- reordering (spec 006, slice 3; spec 026) ------------------------ */
+
+/* Reordering saves at once; request feedback lives in the shared toast layer. */
+.ch__reorder { padding: 0 12px; }
+
+/* ---------- edit request feedback (spec 093) ------------------------------- */
+.edit-toasts {
+  position: fixed;
+  inset: auto 20px 20px auto;
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 40px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  background: transparent;
+  color: var(--ink);
+  z-index: 2147483647;
+}
+.edit-toasts::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.edit-toasts__stack { display: flex; flex-direction: column; gap: 10px; }
+.edit-toast {
+  --toast-accent: var(--head-ink);
+  --toast-tint: color-mix(in srgb, var(--toast-accent) 12%, var(--canvas));
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  width: 100%;
+  min-height: 64px;
+  padding: 13px 38px 13px 12px;
+  border: 1px solid var(--divider);
+  border-left: 3px solid var(--toast-accent);
+  border-radius: 10px;
+  background: var(--canvas);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 9%);
+  opacity: 0;
+  transition: opacity 140ms ease, border-left-color 180ms ease,
+    color 180ms ease, background-color 180ms ease;
+}
+.edit-toast.is-visible { opacity: 1; }
+.edit-toast.is-exiting { opacity: 0; }
+.edit-toast.is-pending { --toast-accent: #a57a31; }
+.edit-toast.is-success { --toast-accent: #2d8460; }
+.edit-toast.is-failure { --toast-accent: var(--danger); }
+html[data-theme="dark"] .edit-toast.is-pending { --toast-accent: #d5ad62; }
+html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
+.edit-toast__mark {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 18px;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--toast-tint);
+  color: var(--toast-accent);
+  font: 700 12px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.edit-toast__mark svg { width: 18px; height: 18px; overflow: visible; }
+.edit-toast__mark circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 30 14;
+  transform-origin: center;
+  animation: edit-toast-spin 800ms linear infinite;
+}
+@keyframes edit-toast-spin { to { transform: rotate(360deg); } }
+.edit-toast__copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.edit-toast__title {
+  font: 600 14px/1.25 ui-sans-serif, system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.edit-toast__message {
+  color: var(--head-ink);
+  font: 400 12.5px/1.35 ui-sans-serif, system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.edit-toast__dismiss {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--head-ink);
+  font: 400 16px/1 ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+}
+.edit-toast__dismiss:hover { background: var(--icon-hover-bg); color: var(--ink); }
+.edit-toast__dismiss:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+@media (max-width: 740px) {
+  .edit-toasts { inset: auto 12px 12px auto; max-height: calc(100vh - 24px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .edit-toast { transition: none; }
+  .edit-toast__mark circle { animation: none; stroke-dasharray: 44 0; }
+}
+
+/* The order is arranged where it is listed: each entry's row carries its own grip, and only
+   the icon is drawn -- no box, no arrows. It shows when the row is hovered or the grip has
+   focus (a keyboard reaches it by tabbing, then moves the row with the arrow keys), and it
+   stays up the whole time the mode is on. It keeps its pointer events at rest: a control
+   that cannot be entered cannot be reached. */
+.toc__grip {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; padding: 0;
+  color: var(--head-ink);
+  background: none; border: 0; border-radius: 6px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--ease), color var(--ease);
+}
+.toc__grip svg { width: 15px; height: 15px; }
+/* only the hovered row shows its handle -- and the keyboard's own focus, since a control no
+   one can see is a control no one can reach by tabbing to it */
+#chList li:hover .toc__grip,
+.toc__grip:focus-visible { opacity: 1; }
+.toc__grip:hover { color: var(--ink); }
+.toc__grip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+/* Every movable entry row is a mouse/pen drag target; the grip stays visible as the cue and
+   remains the only touch handle and keyboard control. */
+#chList li[data-move-row],
+#chList li[data-move-row] > .songrow { cursor: grab; }
+#chList.is-grabbing li[data-move-row],
+#chList.is-grabbing li[data-move-row] > .songrow { cursor: grabbing; }
+/* the grip sits over the row's right end: give the label room so nothing hides */
+:root[data-section="tatib"] #chList .songrow__t { padding-right: 30px; }
+/* The entry number reads as the row's index, so it centers on the whole row while the
+   text keeps its baseline. The drag copy lives outside #chList and must match. */
+:root[data-section="tatib"] #chList .songrow__c,
+.reorder__ghost .songrow__c { align-self: center; }
+/* The real row is the sole destination slot. Hide its contents, not its box;
+   its tint marks the space without a ring. */
+#chList li.is-dragging {
+  visibility: visible;
+  background: color-mix(in srgb, var(--active-bg) 18%, var(--canvas));
+  border-radius: 9px;
+  user-select: none;
+}
+#chList li.is-dragging > * { visibility: hidden; }
+/* Pointer capture can leave a row hovered during a grab. Suppress only that tint,
+   not the selected row's background or keyboard focus. */
+#chList.is-grabbing li:hover > .songrow:not([aria-current="true"]),
+#chList.is-grabbing .songrow:hover:not([aria-current="true"]),
+.reorder__ghost .songrow:hover:not([aria-current="true"]) {
+  background: transparent;
+}
+/* A visual copy tracks the pointer; the actual row is still the list's one slot. */
+.reorder__ghost {
+  position: fixed; z-index: 1000; box-sizing: border-box;
+  pointer-events: none; transition: none !important;
+  border-radius: 9px; background: var(--canvas); color: var(--ink);
+  box-shadow: var(--shadow);
+  opacity: .94;
+}
+.reorder__ghost .toc__grip { opacity: 1; cursor: grabbing; }
+
+/* The other rows morph as they change places; the fixed ghost above tracks the pointer
+   instantly rather than inheriting this animation. Reduced motion: instant. */
+@media (prefers-reduced-motion: no-preference) {
+  #chList li:not(.is-dragging) { transition: transform 160ms var(--ease-timing); }
+}
+
+/* Shorter while a drag is in flight. The rows are being pushed out of the way many times a
+   second, and a travel long enough to read as smooth on a single move reads as the list
+   lagging behind the hand when it restarts on every step. */
+@media (prefers-reduced-motion: no-preference) {
+   #chList.is-dragging li:not(.is-dragging) { transition: transform 60ms var(--ease-timing); }
+}
+/* Temporary media handoff */
+.media-library__file { grid-template-columns: 42px minmax(0, 1fr) 66px 42px; padding-inline: 12px; }
+.media-library__file.is-unused { padding-left: 9px; }
+.media-library__cloud { min-height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--head-ink); }
+.media-library__cloud small { font-size: 10px; white-space: nowrap; }
+.media-library__cloud-button, .media-handoff__action { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--divider); border-radius: 9px; color: var(--ink); background: var(--canvas); cursor: pointer; font-size: 21px; }
+.media-library__cloud-button:hover, .media-handoff__action:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.media-library__cloud-available { font-size: 22px; color: var(--focus); }
+.media-library__remove { border: 1px solid var(--divider); background: var(--canvas); }
+.media-library__remove:hover { border-color: var(--danger); }
+.media-library__uses a.is-past { color: var(--ink); }
+.media-handoff__ring { --progress: 0%; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: radial-gradient(closest-side, var(--canvas) 82%, transparent 85%), conic-gradient(var(--focus) var(--progress), var(--divider) var(--progress)); color: var(--ink); cursor: pointer; font-size: 19px; }
+.media-handoff__ring:hover { background: radial-gradient(closest-side, var(--icon-hover-bg) 82%, transparent 85%), conic-gradient(var(--focus) var(--progress), var(--divider) var(--progress)); }
+.media-transfer-rail { position: relative; font-size: 25px; line-height: 1; }
+.media-transfer-rail[hidden] { display: none; }
+.media-transfer-rail__dot { position: absolute; right: 4px; bottom: 3px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--canvas); background: #d7a833; }
+.media-transfer-rail__dot[data-state="completed"] { background: #17804d; }
+.media-transfer-rail__dot[data-state="failed"] { background: var(--danger); }
+.media-transfers__dialog { width: min(580px, calc(100vw - 32px)); }
+.media-transfers__row { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid var(--divider); }
+.media-transfers__mark { width: 32px; text-align: center; color: var(--focus); font-size: 22px; }
+.media-transfers__main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.media-transfers__main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-transfers__main span, .media-transfers__empty { color: var(--head-ink); font-size: 12px; }
+.media-transfers__divider { border: 0; border-top: 2px solid var(--divider); margin: 9px 0; }
+.service-media__dialog { width: min(680px, calc(100vw - 32px)); }
+.service-media__list { max-height: min(64dvh, 560px); overflow-y: auto; }
+.service-media__row { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--divider); }
+.service-media__icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--focus) 10%, transparent); color: var(--focus); font-size: 20px; }
+.service-media__main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.service-media__main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.service-media__main small { color: var(--head-ink); }
+.service-media__states { display: flex; align-items: center; gap: 11px; min-width: 116px; justify-content: flex-end; }
+.service-media__states > span { min-width: 22px; text-align: center; }
+.service-media__states [data-online-state] { color: var(--focus); }
+.service-media__states [data-local-state] { color: var(--focus); }
+.read__project { display: flex; align-items: center; gap: 8px; }
+@media (max-width: 600px) { .media-library__file { grid-template-columns: 40px minmax(0,1fr) 44px 38px; gap: 6px; } .media-library__cloud small { font-size: 9px; } }
+.media-handoff__ring { width: 40px; height: 40px; background: radial-gradient(closest-side, var(--canvas) 79%, transparent 81%), conic-gradient(var(--focus) var(--progress), var(--divider) var(--progress)); }
+.media-handoff__ring:hover { background: radial-gradient(closest-side, var(--icon-hover-bg) 79%, transparent 81%), conic-gradient(var(--focus) var(--progress), var(--divider) var(--progress)); }
+.media-handoff__retry { color: var(--head-ink); font-size: 22px; }
+.read[data-kind="tatib"] .read__project { flex-wrap: nowrap; flex: none; }
+.read[data-kind="tatib"] .read__project-btn { white-space: nowrap; }
+.read[data-kind="tatib"] .read__head-top .read__eyebrow { white-space: nowrap; }
+.read[data-kind="tatib"] .read__head-top { flex-wrap: wrap; row-gap: 8px; }
+.read[data-kind="tatib"] .read__project-btn { padding-inline: 10px; }
+@media (max-width: 600px) {
+  .read[data-kind="tatib"] .read__project { max-width: 100%; }
+}
+/* The way back to a closed projector window (spec 141): a square icon button in the
+   group, drawn only while this page's service is the one on air, and never on a
+   phone — the toolbar has no room for it. The group wraps inside a narrow pane so
+   the third control cannot cross the pane's edge. */
+.read__project-btn.read__project-btn--icon,
+.read[data-kind="tatib"] .read__project-btn--icon { width: 34px; padding: 0; justify-content: center; }
+.read__project-btn[data-project-window] { display: none; }
+@media (min-width: 721px) {
+  .read__project[data-displaying="true"] .read__project-btn[data-project-window] {
+    display: inline-flex;
+  }
+  .read[data-kind="tatib"] .read__project { flex-wrap: wrap; max-width: 100%; }
+}
+.media-transfer-rail #mediaTransferRailIcon svg { width: 22px; height: 22px; display: block; }
+.media-transfers__mark svg { width: 21px; height: 21px; }
+.service-media__states svg { width: 20px; height: 20px; display: block; }
+.service-media__states [data-online-state]:has(svg), .service-media__states [data-local-state]:has(svg) { display: grid; place-items: center; }
+.media-handoff__action svg { width: 19px; height: 19px; }
+.service-media__icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.media-library__cloud-button svg, .media-library__cloud-available svg { width: 21px; height: 21px; display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.service-media__states [data-local-state].is-missing { color: var(--danger); }
+.service-media__states [data-local-state].is-unavailable, .service-media__states [data-online-state].is-offline { color: var(--head-ink); }
+
+/* ============================================================
+   The drawer shell (spec 138)
+
+   Below 1272px there is no room to push: the two lists stop
+   taking width from the stage and become drawers resting behind
+   the rail, sliding out from under it. Below 720px the rail's
+   strip becomes the menu drawer and a toolbar carries the
+   control, the logo and the theme.
+   ============================================================ */
+
+/* the phone's toolbar: markup everywhere, drawn below 720px only */
+.topbar { display: none; }
+.rail__name { display: none; }
+
+/* A long press on a rail control must not paint a selection across the drawer
+   (spec 138): the strip's glyphs and the toolbar carry no text worth selecting,
+   and the highlight lands on the drawer behind them. */
+.rail, .topbar, .drawer-backdrop {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 1272px) {
+  /* the columns stop reserving width, so the stage is never pushed — the
+     tokens are zeroed on every state that could set one */
+  :root,
+  :root[data-nav],
+  :root[data-ch="open"],
+  :root[data-ch="open"][data-ch-mode="song"],
+  :root[data-section] {
+    --books-w: 0px; --ch-w-shown: 0px; --reserve-ch: 0px;
+  }
+  /* the rail stays in flow at this width, so the page still starts after it —
+     zeroing this would slide the reading column under the rail */
+  :root .stage { margin-left: var(--rail-w); transition: none; }
+
+  /* the rail paints above the drawers: a drawer at rest is behind it, and it
+     emerges from the rail's edge rather than from the window's */
+  .rail { z-index: 50; }
+
+  :root .panel,
+  :root .chapters {
+    left: var(--rail-w);
+    width: var(--panel-w);
+    max-width: none;
+    clip-path: none;
+    visibility: hidden;
+    transform: translateX(calc(-100% - var(--rail-w) - 1px));
+    box-shadow: none;
+    transition: transform var(--ease), box-shadow var(--ease), visibility 0s linear 200ms;
+  }
+  :root .panel { z-index: 40; }
+  :root .chapters { z-index: 41; }
+  :root[data-nav="open"] .panel,
+  :root[data-nav="mini"] .panel,
+  :root[data-ch="open"] .chapters {
+    clip-path: none;
+    visibility: visible;
+    transform: none;
+    box-shadow: var(--shadow);
+    transition: transform var(--ease), box-shadow var(--ease), visibility 0s;
+  }
+  /* the second level covers its parent exactly: same left, same width, one
+     layer up — a parent edge showing would read as a third column */
+  :root[data-ch="open"] .chapters { left: var(--rail-w); width: var(--panel-w); }
+  /* A level under an open child is not drawn at all: the stack reads as one
+     sheet, so a lower drawer is never exposed while the top one travels in or
+     out from under the rail. */
+  :root[data-ch="open"] .panel { visibility: hidden; }
+
+  /* the dimmed page behind the stack, and the page's own scroll held still */
+  :root[data-drawer-open] .drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(11, 13, 17, .34);
+  }
+  /* the page scrolls at the document, so that is what is held still */
+  :root[data-drawer-open] { overflow: hidden; }
+
+  .drawer-backdrop { display: none; }
+}
+
+@media (max-width: 720px) {
+  :root { --topbar-h: 58px; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    padding: 0 8px;
+    /* under the rail's stacking context (42): the rail's foot is positioned
+       into this bar and must paint above it. Neither covers the other — the
+       rail starts below the bar — and the drawers (43/44) start below it too. */
+    z-index: 41;
+    background: var(--rail-bg);
+    border-bottom: 1px solid var(--divider);
+  }
+  .topbar__control {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px; height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .topbar__control svg { width: 24px; height: 24px; }
+  .topbar__control[data-glyph="menu"] .topbar__icon--close,
+  .topbar__control[data-glyph="close"] .topbar__icon--menu { display: none; }
+  .topbar__logo {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px; height: 44px;
+    border-radius: 10px;
+  }
+  .topbar__logo img { display: block; border-radius: 50%; }
+
+  /* the rail is the menu drawer: full width, under the toolbar, off the left
+     edge when closed — by `left`, so its fixed foot stays anchored to the
+     viewport rather than to a transformed box */
+  .rail {
+    top: var(--topbar-h);
+    left: calc(-100vw - 2px);
+    width: 100vw;
+    z-index: 42;
+    transition: left var(--ease), box-shadow var(--ease);
+  }
+  :root[data-rail="open"] .rail { left: 0; box-shadow: var(--shadow); }
+  .rail__logo { display: none; }
+  /* the strip's centred icon column becomes a list of rows: the base button is
+     a 44px grid box with its glyph centred, so it has to become a flex row */
+  .rail { align-items: stretch; padding: 0; }
+  .rail__menu {
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 2px;
+    margin: 0;
+    padding: 10px 12px;
+    overflow-y: auto;
+  }
+  .rail__menu li { width: 100%; }
+  .rail__menu .rail__btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border-radius: 10px;
+  }
+  .rail__btn svg { flex: none; }
+  .rail__name {
+    display: block;
+    flex: 1;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .rail__btn[aria-current] .rail__name { color: currentColor; }
+
+  /* the foot moves into the toolbar's right end without leaving the rail */
+  .rail__foot {
+    position: fixed;
+    top: 0; right: 8px;
+    height: var(--topbar-h);
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    z-index: 46;
+    background: none;
+  }
+
+  /* drawers are the full window, under the toolbar, over the menu */
+  :root .panel { top: var(--topbar-h); left: 0; width: 100vw; z-index: 43; }
+  :root .chapters {
+    top: var(--topbar-h); left: 0; width: 100vw; max-width: none; z-index: 44;
+  }
+  :root[data-nav="open"] .panel,
+  :root[data-nav="mini"] .panel,
+  :root[data-ch="open"] .chapters { left: 0; width: 100vw; max-width: none; }
+  /* the song list's own rules pin it at the rail's edge with a 26rem cap above
+     this width; at four selectors deep they outrank the line above, so the
+     drawer's own geometry is stated at the same depth */
+  :root[data-ch="open"][data-ch-mode="song"] .chapters,
+  :root[data-ch="open"][data-ch-mode="chapter"] .chapters {
+    left: 0;
+    width: 100vw;
+    max-width: none;
+  }
+
+  /* the rail is a drawer here, so the page takes the whole window */
+  :root .stage {
+    margin-left: 0;
+    --stage-pad-top: calc(var(--topbar-h) + 18px);
+    padding-top: var(--stage-pad-top);
+  }
+
+  /* the Project control is the desktop's: the toolbar has no room for it */
+  [data-project-open] { display: none; }
+
+  /* a row keeps its name on one line and its date under it, clear of the
+     always-visible edit control */
+  .panel__body li .book {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    row-gap: 1px;
+    padding-right: 42px;
+  }
+  .panel__body li .book__n { grid-column: 1; }
+  .panel__body li .book__today { grid-column: 2; }
+  .panel__body li .book__s { grid-column: 1 / -1; }
+  .row-edit { opacity: 1; pointer-events: auto; }
+  /* the phone's drawers are touch-first: the order's handle is always drawn and
+     owns the gesture */
+  .toc__grip { opacity: 1; touch-action: none; }
+}
+
+/* A touch screen has no hover to give: the row's pencil is the same control the
+   entry pane and the add tiles already exempt from it. */
+@media (hover: none) and (pointer: coarse) {
+  .row-edit { opacity: 1; pointer-events: auto; }
+  /* The order's handle has no hover to reveal it on a touch screen, and the
+     gesture must belong to the handle rather than to the list's scroll — or a
+     drag dies as a scroll the moment the finger moves (spec 138). */
+  .toc__grip { opacity: 1; touch-action: none; }
+}

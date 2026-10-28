@@ -61,16 +61,13 @@ class TatibHoverE2ETests(StaticLiveServerTestCase):
         return page
 
     def _resting_background(self, page):
-        # Resolve the theme token through Chromium, including its alpha rounding.
-        return page.evaluate("""() => {
-            const probe = document.createElement('span');
-            probe.style.background = getComputedStyle(document.documentElement)
-                .getPropertyValue('--tatib-entry-fill');
-            document.body.appendChild(probe);
-            const color = getComputedStyle(probe).backgroundColor;
-            probe.remove();
-            return color;
-        }""")
+        # An entry draws no surface at rest (spec 142): the theme tokens that
+        # used to hold the fill and the ring are gone, so the resting colour is
+        # the canvas itself and Chromium reports a fully transparent colour.
+        # A constant, not a re-read of the element: some callers ask for it
+        # while the pointer is already ON the entry, and there the element
+        # reports the hover tint instead.
+        return 'rgba(0, 0, 0, 0)'
 
     def test_hovering_the_first_entry_moves_it_once_then_settles(self):
         page = self._page()
