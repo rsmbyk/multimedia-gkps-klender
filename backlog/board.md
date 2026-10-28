@@ -21,6 +21,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-154](./items/ITEM-154-add-bar.md) | The add bar opens over the seam, and nothing moves | The rows keep a 20px slot in the flow and draw their bar over it, so no entry moves when one opens; the seam is hinted at rest | chore | P1 | M | [143](../specs/143-add-bar/spec.md) | 2026-10-28 |
 
 ## Ready
 
