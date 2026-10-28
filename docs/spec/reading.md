@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-28
-**slices**: `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -633,3 +633,29 @@ break SHALL keep its 56px box, its 2px rule and its diamond.
 #### Scenario: every kind
 - WHEN a service holds text, scripture, song, media and section-break entries
 - THEN each draws no resting surface, and the media tile and the break's rule still identify them
+
+### R19 — A service's add rows open over the seam, and nothing moves
+
+A Tata Ibadah stage's add rows SHALL keep a fixed slot in the flow and draw their bar over that slot,
+so that opening or closing a row SHALL NOT move any block: no entry's top, no section break's
+position and no scroll height SHALL change on hover, on focus or while a modal is open. The bar
+SHALL be centred horizontally on the column and vertically on the seam, and its hit area SHALL be no
+wider than its buttons, so an entry's own preview, edit and delete controls stay reachable while the
+row is open. Each seam SHALL paint a 1px line, faint at rest and stronger while its row is open.
+Every row SHALL remain reachable by pointer, by a hover band of its own, and by keyboard focus.
+
+#### Scenario: opened
+- WHEN the pointer enters an entry, or deliberate focus lands inside it
+- THEN both rows around it open, and every block keeps its position and the page its height
+
+#### Scenario: the bar
+- WHEN a row is open
+- THEN its bar is centred on the column and on the seam, and the entry's own controls remain clickable
+
+#### Scenario: at rest
+- WHEN nothing is hovered
+- THEN each seam paints a faint line and no bar is drawn
+
+#### Scenario: keyboard
+- WHEN a row's first button takes focus by Tab
+- THEN the row opens and its buttons are reachable
