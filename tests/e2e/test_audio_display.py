@@ -1,5 +1,6 @@
 """Actual local audio playback in Preview and on the projector (spec 115)."""
 import io
+import re
 import unittest
 import wave
 from datetime import date
@@ -87,6 +88,51 @@ class AudioDisplayE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('Escape')
         expect(page.locator('#previewModal')).not_to_be_visible()
         page.close()
+
+    def test_preview_times_read_current_over_total_beside_the_bar(self):
+        """The times read `current / total`, right-aligned under the seek bar (spec 154)."""
+        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
+        row = page.locator('#ti-e' + str(self.entry.pk))
+        row.scroll_into_view_if_needed()
+        row.locator('[data-preview-open]').evaluate('(button) => button.click()')
+        expect(page.locator('.audio-player')).to_be_visible()
+        expect(page.locator('.audio-player__times')).to_have_text(re.compile(r'^\d+:\d\d\s*/\s*\d+:\d\d$'))
+        self._assert_times_are_one_right_aligned_pair(page)
+        page.keyboard.press('Space')
+        expect(page.locator('.audio-player__play')).to_have_attribute('data-playing', 'true')
+        page.locator('.audio-player__seek').fill('1')
+        page.wait_for_timeout(150)
+        self._assert_times_are_one_right_aligned_pair(page)
+        page.close()
+
+    def _assert_times_are_one_right_aligned_pair(self, page):
+        geometry = page.evaluate("""() => {
+          const box = (el) => { const r = el.getBoundingClientRect();
+            return {left: r.left, right: r.right, top: r.top, width: r.width}; };
+          const root = document.querySelector('#previewModal');
+          const times = root.querySelector('.audio-player__times');
+          return {
+            elapsed: box(root.querySelector('[data-audio-elapsed]')),
+            separator: box(times.querySelector('.audio-player__separator')),
+            total: box(root.querySelector('[data-audio-total]')),
+            seek: box(root.querySelector('.audio-player__seek')),
+          };
+        }""")
+        elapsed, separator = geometry['elapsed'], geometry['separator']
+        total, seek = geometry['total'], geometry['seek']
+        self.assertGreater(separator['width'], 0, 'the separator draws')
+        self.assertAlmostEqual(elapsed['top'], total['top'], delta=1,
+                               msg='the two times stand on one line')
+        self.assertLessEqual(separator['left'] - elapsed['right'], 10,
+                             '5px between the played time and the separator')
+        self.assertLessEqual(total['left'] - separator['right'], 10,
+                             '5px between the separator and the total')
+        self.assertGreater(total['left'], elapsed['left'],
+                           'the played time comes first, then the total')
+        self.assertAlmostEqual(total['right'], seek['right'], delta=1,
+                               msg="the pair ends on the seek bar's right edge")
+        self.assertGreater(elapsed['left'], seek['left'] + (seek['right'] - seek['left']) / 2,
+                           "the played time no longer sits at the bar's left end")
 
     def test_projector_space_navigation_and_reset(self):
         page = self._page(f'/projector?service={self.service.pk}')
