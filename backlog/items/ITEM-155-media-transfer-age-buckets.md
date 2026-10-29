@@ -1,6 +1,6 @@
 ---
 id: ITEM-155
-status: in-review
+status: done
 title: 'The Media Library and the transfer history group by age'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/146-media-and-transfer-age-buckets/spec.md
 branch: feat/146-media-and-transfer-age-buckets
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/421
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/417
-closed_at:
-closed_reason:
+closed_at: 2026-10-28
+closed_reason: merged into develop via #421
 bump: patch
 release_version:
 ---

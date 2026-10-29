@@ -31,7 +31,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-155](./items/ITEM-155-media-transfer-age-buckets.md) | The Media Library and the transfer history group by age | Three age buckets on the list, five on the transfers — one shared rule, the Tata Ibadah list's own labels | feat | P2 | M | [146](../specs/146-media-and-transfer-age-buckets/spec.md) | [#421](https://github.com/rsmbyk/multimedia-gkps-klender/pull/421) | 2026-10-28 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -58,6 +57,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-155](./items/ITEM-155-media-transfer-age-buckets.md) | The Media Library and the transfer history group by age | Three age buckets on the list, five on the transfers — one shared rule, the Tata Ibadah list's own labels | feat | P2 | M | [146](../specs/146-media-and-transfer-age-buckets/spec.md) | develop via [#421](https://github.com/rsmbyk/multimedia-gkps-klender/pull/421) | 2026-10-28 |
 | [ITEM-154](./items/ITEM-154-add-bar.md) | The add bar opens over the seam, and nothing moves | The rows keep a 20px slot in the flow and draw their bar over it, so no entry moves when one opens; the seam is hinted at rest | chore | P1 | M | [143](../specs/143-add-bar/spec.md) | develop via [#414](https://github.com/rsmbyk/multimedia-gkps-klender/pull/414) | 2026-10-28 |
 | [ITEM-152](./items/ITEM-152-entry-surface.md) | A service entry draws no box until it is pointed at | Drop the spec 068 fill and ring from every entry kind; hover, deliberate focus and an open modal still fill the row | chore | P2 | S | [142](../specs/142-entry-surface/spec.md) | develop via [#412](https://github.com/rsmbyk/multimedia-gkps-klender/pull/412) | 2026-10-28 |
 | [ITEM-151](./items/ITEM-151-stage-link-affordance.md) | The stage's entry links read as text until hovered | Every song and passage title is a green (or blue) line at rest; it becomes heading ink, underlined only on hover or keyboard focus | chore | P2 | S | [140](../specs/140-stage-link-affordance/spec.md) | develop via [#410](https://github.com/rsmbyk/multimedia-gkps-klender/pull/410) | 2026-10-27 |
