@@ -56,7 +56,7 @@ class ImageDisplayE2ETests(StaticLiveServerTestCase):
         self.playwright.stop()
         super().tearDown()
 
-    def _page(self, path, available=True):
+    def _page(self, path, available=True, pending=False):
         page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
         payload = _png()
 
@@ -66,7 +66,16 @@ class ImageDisplayE2ETests(StaticLiveServerTestCase):
             route.fulfill(status=200 if available else 404, headers=headers,
                           body=payload if available else b'')
 
-        page.route('http://127.0.0.1:63174/v1/files/' + self.image.sha256, serve)
+        self.held_routes = []
+
+        def hold(route):
+            # Answered by nothing until the case ends: the request stays in flight, so the
+            # screen stays pending. Aborted afterwards, or Playwright cancels the handler
+            # mid-close and prints a traceback that reads like a failure.
+            self.held_routes.append(route)
+
+        page.route('http://127.0.0.1:63174/v1/files/' + self.image.sha256,
+                   hold if pending else serve)
         page.goto(self.live_server_url + path)
         return page
 
@@ -103,6 +112,28 @@ class ImageDisplayE2ETests(StaticLiveServerTestCase):
         expect(projector.locator('.screen.is-active .screen__image-missing')).to_be_visible()
         self.assertEqual(projector.locator('.screen.is-active').inner_text().strip(), '')
         projector.close()
+
+    def test_projector_loaded_image_shows_no_placeholder(self):
+        page = self._page(f'/projector?service={self.service.pk}')
+        page.keyboard.press('Space')
+        page.keyboard.press('Control+ArrowRight')
+        page.wait_for_function("document.querySelector('.screen.is-active [data-media-image]')")
+        screen = page.locator('.screen.is-active')
+        expect(screen.locator('.screen__image')).to_be_visible()
+        expect(screen.locator('.screen__image-missing')).to_be_hidden()
+        page.close()
+
+    def test_a_pending_image_screen_paints_nothing(self):
+        page = self._page(f'/projector?service={self.service.pk}', pending=True)
+        page.keyboard.press('Space')
+        page.keyboard.press('Control+ArrowRight')
+        page.wait_for_function("document.querySelector('.screen.is-active [data-media-image]')")
+        screen = page.locator('.screen.is-active')
+        expect(screen.locator('.screen__image')).to_be_hidden()
+        expect(screen.locator('.screen__image-missing')).to_be_hidden()
+        for route in self.held_routes:
+            route.abort()
+        page.close()
 
     def test_projector_displays_image_only_on_its_screen(self):
         page = self._page(f'/projector?service={self.service.pk}')
