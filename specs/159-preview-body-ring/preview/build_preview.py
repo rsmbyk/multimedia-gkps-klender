@@ -1,0 +1,336 @@
+#!/usr/bin/env python3
+"""Regenerate the preview-body ring preview.
+
+The dialog and its player markup are the real ones — captured from a running page after the
+dialog has drawn its own content — and the stylesheets are FROZEN at the commit this slice was
+cut from, because the comparison has to keep showing the shipped ring in its "Now" panel after
+the fix lands in the working tree; linking the live stylesheet would turn Now into a second
+candidate.
+
+The two candidate rules are the only CSS this page adds. Everything else — the dialog box, the
+body's focus rule, the player, the type — is the product's own.
+
+    ~/Projects/multimedia-gkps-klender/.venv/bin/python \\
+      specs/159-preview-body-ring/preview/build_preview.py [url]
+
+Reads   http://127.0.0.1:63404/tatib/144/ by default (a service holding both an audio and a
+        video entry), or the URL given as the first argument
+Writes  preview.html + assets/{tokens,components,fonts}.css next to this file
+"""
+import pathlib
+import re
+import subprocess
+import sys
+
+from playwright.sync_api import sync_playwright
+
+REPO = pathlib.Path(__file__).resolve().parents[3]
+HERE = pathlib.Path(__file__).resolve().parent
+URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:63404/tatib/144/"
+FROZEN_AT = "24a6d6d2"  # develop, the commit this slice was cut from
+
+for name in ("tokens.css", "components.css", "fonts.css"):
+    blob = subprocess.run(
+        ["git", "-C", str(REPO), "show", f"{FROZEN_AT}:static/styles/design/{name}"],
+        capture_output=True, check=True,
+    ).stdout
+    (HERE / "assets").mkdir(exist_ok=True)
+    (HERE / "assets" / name).write_bytes(blob)
+
+
+def capture(page, kind):
+    """Open the first entry of this kind and read the dialog body it drew."""
+    wanted = {
+        "video": "s.textContent.includes('data-preview-video')",
+        "audio": "s.textContent.includes('data-preview-audio')",
+    }[kind]
+    entry = page.evaluate(
+        "() => { const s = [...document.querySelectorAll('script.entry__preview-src')]"
+        f".find(s => {wanted}); return s && s.dataset.previewFor; }}"
+    )
+    if not entry:
+        raise SystemExit(f"no {kind} entry on {URL}")
+    page.click(f'[data-preview-open][data-preview-for="{entry}"]')
+    page.wait_for_selector("dialog.preview[open]")
+    page.wait_for_timeout(400)
+    inner = page.eval_on_selector(".preview__body", "el => el.innerHTML")
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(400)
+    # nothing on this page may fetch: the media strip is not what the slice is about
+    inner = re.sub(r'\ssrc="[^"]*"', "", inner)
+
+    # reveal the player, keep the "unavailable" blocks hidden — this page has no companion,
+    # so showing them would put a product-error state into every frame of the preview
+    def drop_hidden(match):
+        return match.group(0) if "unavailable" in match.group("tag") else match.group("tag")
+    inner = re.sub(r'<(?P<tag>[^<>]*?)\s+hidden(?:="")?(?=[\s/>])', drop_hidden, inner)
+    return entry, inner
+
+
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    pg = browser.new_page(viewport={"width": 1512, "height": 900})
+    pg.goto(URL, wait_until="networkidle")
+    video_entry, video_markup = capture(pg, "video")
+    audio_entry, audio_markup = capture(pg, "audio")
+    browser.close()
+
+PAGE = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec 159 — a preview's play shortcut paints nothing on the dialog's edge</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/components.css">
+<style>
+  /* ---- page chrome: this page only, none of it is product CSS ---- */
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; padding: 32px 36px 96px;
+    background: var(--canvas); color: var(--ink);
+    font: 15px/1.55 ui-sans-serif, system-ui, sans-serif;
+  }
+  h1 { margin: 0 0 6px; font: 640 21px/1.3 ui-sans-serif, system-ui, sans-serif; }
+  .lede { margin: 0 0 22px; max-width: 84ch; color: var(--head-ink); }
+  .lede code, .steps code, td code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .bar { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-end; margin: 0 0 20px; }
+  .group { display: flex; flex-direction: column; gap: 6px; }
+  .group > span { font: 600 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--head-ink); }
+  .seg { display: flex; padding: 3px; gap: 3px; border: 1px solid var(--divider);
+    border-radius: 9px; background: var(--rail-bg); }
+  .seg button {
+    padding: 7px 15px; border: 0; border-radius: 6px; background: none; cursor: pointer;
+    font: 560 13px/1.2 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
+  }
+  .seg button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); }
+  .open {
+    padding: 9px 16px; border: 1px solid var(--divider); border-radius: 8px;
+    background: var(--canvas); color: var(--ink); cursor: pointer;
+    font: 560 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+  }
+  .open:hover { background: var(--rail-bg); }
+  .open:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  table.readout { border-collapse: collapse; margin: 0 0 22px; font-size: 13px; }
+  table.readout th, table.readout td { padding: 5px 16px 5px 0; text-align: left;
+    border-bottom: 1px solid var(--divider); vertical-align: baseline; }
+  table.readout th { width: 190px; font-weight: 600; color: var(--head-ink); }
+  table.readout td { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .steps { margin: 0; padding-left: 20px; max-width: 84ch; color: var(--head-ink); }
+  .steps li { margin: 4px 0; }
+  .note { margin: 18px 0 0; max-width: 84ch; color: var(--head-ink); font-size: 13px; }
+  hr.page { margin: 26px 0; border: 0; border-top: 1px solid var(--divider); }
+
+  /* ---- candidate A: the shortcut takes the ring away; a keyboard open keeps it until then ---- */
+  .preview__body.is-shortcut:focus-visible { outline: none; }
+  /* ---- candidate B: the body wears no ring until the reader Tabs to it ---- */
+  .preview__body.is-quiet:focus-visible { outline: none; }
+</style>
+</head>
+<body>
+<h1>A preview's play shortcut paints nothing on the dialog's edge</h1>
+<p class="lede">
+  Spec <code>159-preview-body-ring</code>, static preview. The dialog, the player and the body are the
+  product's own markup and the stylesheets are frozen at <code>__FROZEN__</code>, so the
+  <strong>Now</strong> panel keeps drawing the shipped ring. Only the two candidate rules at the foot of
+  the stylesheet are new. Open a panel, press <kbd>space</kbd>, and read the box underneath.
+</p>
+
+<div class="bar">
+  <div class="group"><span>Panel</span>
+    <div class="seg" id="modes">
+      <button type="button" data-mode="now" aria-pressed="true">Now</button>
+      <button type="button" data-mode="a" aria-pressed="false">A · shortcut clears it</button>
+      <button type="button" data-mode="b" aria-pressed="false">B · quiet until Tab</button>
+    </div>
+  </div>
+  <div class="group"><span>Entry</span>
+    <div class="seg" id="kinds">
+      <button type="button" data-kind="video" aria-pressed="true">Video</button>
+      <button type="button" data-kind="audio" aria-pressed="false">Audio</button>
+    </div>
+  </div>
+  <div class="group"><span>Open it</span>
+    <div class="seg" style="border:0;background:none;padding:0;gap:8px">
+      <button type="button" class="open" id="openPointer">With the pointer</button>
+      <button type="button" class="open" id="openKeyboard">With the keyboard</button>
+    </div>
+  </div>
+</div>
+
+<table class="readout">
+  <tr><th>Panel / entry</th><td id="rMode">Now · video</td></tr>
+  <tr><th>Opened by</th><td id="rOpen">—</td></tr>
+  <tr><th>Body <code>:focus-visible</code></th><td id="rFV">closed</td></tr>
+  <tr><th>Computed outline</th><td id="rOutline">—</td></tr>
+  <tr><th>Dialog box / body box</th><td id="rBox">—</td></tr>
+  <tr><th>Player</th><td id="rPlayer">paused</td></tr>
+</table>
+
+<hr class="page">
+
+<ol class="steps">
+  <li><strong>Pointer open, then space</strong> — "With the pointer", then <kbd>space</kbd>. Now paints
+    the 2px ring on the dialog's edge; A and B paint nothing.</li>
+  <li><strong>Keyboard open</strong> — "With the keyboard" (or Tab to an opener and press <kbd>Enter</kbd>).
+    Now and A paint the ring at once; B paints nothing until the reader Tabs.</li>
+  <li><strong>Tab to the body</strong> — press <kbd>Tab</kbd> until the body holds focus. Every panel
+    paints the ring here: that is the indicator this slice must not lose.</li>
+  <li><strong>Space twice</strong> — the player toggles on every press in every panel; only the ring
+    differs.</li>
+  <li><strong>Click inside the body</strong>, then <kbd>space</kbd> — Now keeps the ring it already had;
+    A and B paint none.</li>
+</ol>
+
+<p class="note">
+  What this page cannot show: the companion's media bytes. The players here are stubbed to toggle a
+  label, so nothing is decoded and nothing is fetched — the ring is the subject, and it is produced by
+  the browser's own focus rules, not by the stub.
+</p>
+
+<dialog class="preview" id="dlg" aria-label="Preview">
+  <div class="preview__body" id="body" tabindex="0"></div>
+</dialog>
+
+<template id="tpl-video">__VIDEO__</template>
+<template id="tpl-audio">__AUDIO__</template>
+
+<script>
+(function () {
+  'use strict';
+  var dlg = document.getElementById('dlg');
+  var body = document.getElementById('body');
+  var mode = 'now';
+  var kind = 'video';
+  var openedBy = '—';
+  var playing = false;
+
+  var rMode = document.getElementById('rMode');
+  var rOpen = document.getElementById('rOpen');
+  var rFV = document.getElementById('rFV');
+  var rOutline = document.getElementById('rOutline');
+  var rBox = document.getElementById('rBox');
+  var rPlayer = document.getElementById('rPlayer');
+
+  function box(el) {
+    var b = el.getBoundingClientRect();
+    return Math.round(b.width) + '×' + Math.round(b.height) + ' at (' + Math.round(b.x) + ', ' + Math.round(b.y) + ')';
+  }
+
+  function read() {
+    var cs = getComputedStyle(body);
+    rMode.textContent = ({now: 'Now', a: 'A · shortcut clears it', b: 'B · quiet until Tab'})[mode] + ' · ' + kind;
+    rOpen.textContent = openedBy;
+    rFV.textContent = dlg.open ? String(body.matches(':focus-visible')) : 'closed';
+    rOutline.textContent = cs.outlineStyle === 'none' ? 'none'
+      : cs.outlineWidth + ' ' + cs.outlineStyle + ' ' + cs.outlineOffset + ' ' + cs.outlineColor;
+    rBox.textContent = dlg.open ? box(dlg) + ' / ' + box(body) : '—';
+    rPlayer.textContent = playing ? 'playing' : 'paused';
+  }
+
+  function mount() {
+    var tpl = document.getElementById('tpl-' + kind);
+    body.innerHTML = tpl.innerHTML;
+    body.className = 'preview__body';
+    dlg.className = 'preview is-' + kind + '-preview';
+    playing = false;
+  }
+
+  function toggle() {
+    playing = !playing;
+    body.querySelectorAll('[data-' + kind + '-play]').forEach(function (b) {
+      b.dataset.playing = String(playing);
+      b.setAttribute('aria-label', (playing ? 'Pause ' : 'Play ') + kind);
+    });
+    var host = body.querySelector('.preview__video');
+    if (host) host.classList.toggle('is-playing', playing);
+    var seek = body.querySelector('[data-' + kind + '-seek]');
+    if (seek) seek.style.setProperty('--progress', playing ? '18%' : '2%');
+    read();
+  }
+
+  function open(by) {
+    mount();
+    openedBy = by;
+    if (by === 'keyboard') {
+      /* the real page's opener holds keyboard focus when showModal() runs */
+      document.getElementById('openKeyboard').focus();
+    }
+    dlg.showModal();
+    /* candidate B: the body is quiet from the start, until the reader Tabs */
+    if (mode === 'b') body.classList.add('is-quiet');
+    read();
+  }
+
+  function close() { dlg.close(); body.innerHTML = ''; openedBy = '—'; read(); }
+
+  dlg.addEventListener('keydown', function (event) {
+    if (event.key === 'Tab') {
+      /* the product's focus.js clears quiet markers on Tab, document-wide */
+      body.classList.remove('is-quiet', 'is-shortcut');
+      setTimeout(read, 0);
+      return;
+    }
+    if (event.key === ' ' && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey
+        && !event.target.closest('button, input, select, textarea, [contenteditable="true"]')) {
+      event.preventDefault();
+      /* candidate A: the shortcut takes the ring away, from here on */
+      if (mode === 'a') body.classList.add('is-shortcut');
+      toggle();
+      return;
+    }
+    setTimeout(read, 0);
+  });
+
+  dlg.addEventListener('cancel', function (event) { event.preventDefault(); close(); });
+  dlg.addEventListener('click', function (event) { if (event.target === dlg) close(); });
+  body.addEventListener('click', function (event) {
+    var control = event.target.closest('button, a, input, select, textarea, [tabindex], [contenteditable="true"]');
+    if (!control || control === body) body.focus({ preventScroll: true });
+    read();
+  });
+  body.addEventListener('focus', read);
+  body.addEventListener('blur', read);
+
+  document.getElementById('openPointer').addEventListener('click', function () { open('pointer'); });
+  document.getElementById('openKeyboard').addEventListener('click', function () {
+    open('keyboard');
+    /* a keyboard open means the key event is in flight: focus is marked visible at once */
+  });
+
+  document.getElementById('modes').addEventListener('click', function (event) {
+    var b = event.target.closest('[data-mode]');
+    if (!b) return;
+    var wasOpen = dlg.open;
+    if (wasOpen) close();
+    mode = b.dataset.mode;
+    this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    if (wasOpen) open(openedBy === '—' ? 'pointer' : openedBy);
+    read();
+  });
+
+  document.getElementById('kinds').addEventListener('click', function (event) {
+    var b = event.target.closest('[data-kind]');
+    if (!b) return;
+    var wasOpen = dlg.open;
+    if (wasOpen) close();
+    kind = b.dataset.kind;
+    this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    if (wasOpen) open(openedBy === '—' ? 'pointer' : openedBy);
+    read();
+  });
+
+  read();
+})();
+</script>
+</body>
+</html>
+"""
+
+html = (PAGE.replace("__FROZEN__", FROZEN_AT)
+        .replace("__VIDEO__", video_markup)
+        .replace("__AUDIO__", audio_markup))
+(HERE / "preview.html").write_text(html)
+print(f"wrote preview.html — video entry {video_entry}, audio entry {audio_entry}")
