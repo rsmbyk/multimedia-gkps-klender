@@ -2100,6 +2100,10 @@ kbd {
 .preview__body { padding: 22px; overflow-y: auto; min-height: 0; }
 .preview__body:focus { outline: none; }
 .preview__body:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+/* A key that operates the player is not the keyboard moving through the dialog (spec 159): the body
+   keeps focus — arrow-key scrolling depends on it — and only the ring goes. Cleared on Tab, on open
+   and on close, by preview.js. */
+.preview__body.is-shortcut:focus-visible { outline: none; }
 .preview.is-image-preview { max-width: calc(100vw - 32px); }
 .preview__image { display: flex; align-items: center; justify-content: center; min-height: 280px; }
 .preview__image img { display: block; max-width: 100%; max-height: calc(100vh - 145px); object-fit: contain; }

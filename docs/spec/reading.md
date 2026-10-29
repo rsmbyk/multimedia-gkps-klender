@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-29
-**slices**: `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1021,3 +1021,24 @@ a refusal caused by clearing every box of a song that has verses SHALL keep
 #### Scenario: the verses cannot be loaded
 - WHEN the verses request fails for a picked song
 - THEN the failure notice is shown and the field keeps the line it had
+
+### R31 — A preview's play shortcut leaves no focus ring on the dialog
+
+The Preview dialog's body SHALL draw its keyboard focus indicator — a 2px `--focus` ring inset 2px —
+whenever the reader reaches it with Tab, and SHALL paint nothing on it after a key that operates the
+player, which in an audio or video preview is the space bar. The body SHALL keep DOM focus while the
+ring is suppressed, so arrow-key scrolling and the guard at its edges are unchanged, and the ring SHALL
+return on the reader's next Tab. A preview opened from the keyboard SHALL show the ring until the first
+space press takes it away.
+
+#### Scenario: the play shortcut
+- WHEN a pointer opens an audio or a video preview and space is pressed
+- THEN the player toggles and no ring is painted on the body or on the dialog's edge
+
+#### Scenario: a keyboard open, then the shortcut
+- WHEN the preview was opened from the keyboard, so the ring is showing, and space is pressed
+- THEN the ring is gone, the body still holds focus, and playback toggled
+
+#### Scenario: a reader who navigates
+- WHEN the reader presses Tab inside the dialog, whatever was painted before
+- THEN the body's 2px `--focus` ring is drawn again once the body holds focus
