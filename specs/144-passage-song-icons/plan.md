@@ -1,6 +1,6 @@
 # Implementation Plan: a passage and a song carry their own kind mark
 
-**Slice**: `specs/144-passage-song-icons` · **Branch**: `feat/144-passage-song-icons` · **Bump**: `patch` (1.22.7 → 1.22.8)
+**Slice**: `specs/144-passage-song-icons` · **Branch**: `feat/144-passage-song-icons` · **Bump**: `patch` (1.22.8 → 1.22.9)
 **Spec**: [`spec.md`](./spec.md) · **Research**: [`research.md`](./research.md)
 **Data model**: [`data-model.md`](./data-model.md) — none, no migration
 **Contract**: [`contracts/stage-markup.md`](./contracts/stage-markup.md)

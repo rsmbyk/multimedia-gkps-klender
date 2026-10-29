@@ -48,7 +48,7 @@ Everything else checked by the method the plan declared:
 | --- | --- | --- | --- |
 | the card | `ITEM-155`, then `ITEM-156`, then `ITEM-158` | **`ITEM-160`** | slices 147 and 146 claimed 155, 156, 157 and finally 158 while this slice was in flight |
 | the capability requirement | `R22` | **`R24`** | slice 146 folded `R22` (Media Library age buckets) and `R23` (transfer history) |
-| the version | 1.22.5 | **1.22.8** | `develop` reached 1.22.7 through 145/147/146 |
+| the version | 1.22.5 | **1.22.9** | `develop` reached 1.22.8 through 145/147/146/148 — each one took the patch level the previous one had left |
 
 **Also fixed in the pack**: `preview/build_preview.py` now injects a mark only where the template has
 not drawn one, so the page can still be rebuilt after this slice ships (it would otherwise duplicate
