@@ -204,6 +204,7 @@
     if (imageHost) {
       var image = imageHost.querySelector('.screen__image');
       if (image) { image.hidden = true; image.removeAttribute('src'); }
+      imageHost.querySelector('.screen__image-missing').setAttribute('hidden', '');
     }
     imageHost = null;
   }
@@ -217,7 +218,7 @@
     var image = host.querySelector('.screen__image');
     var missing = host.querySelector('.screen__image-missing');
     image.hidden = true;
-    missing.hidden = true;
+    missing.setAttribute('hidden', '');
     imageController = new AbortController();
     var token = ++imageToken;
     window.GKPSMediaImage.load(host.dataset.mediaImage, imageController.signal)
@@ -229,7 +230,7 @@
         image.src = imageUrl;
         image.hidden = false;
       }).catch(function () {
-        if (token === imageToken && host === imageHost) missing.hidden = false;
+        if (token === imageToken && host === imageHost) missing.removeAttribute('hidden');
       });
   }
 
