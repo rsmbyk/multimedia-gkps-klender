@@ -10,7 +10,7 @@
   var files = [], uses = null, protectedFiles = new Set(), cloud = {}, jobs = [], token = '', retention = '30', connected = false;
   var types = new Set(), unusedOnly = false, sort = 'date-desc', pendingRemove = null;
   var $ = function (id) { return document.getElementById(id); };
-  var fmtSize = function (bytes) { return bytes < 1000000 ? Math.round(bytes / 1000) + ' KB' : (bytes / 1000000).toFixed(1) + ' MB'; };
+  var fmtSize = function (bytes) { return window.gkpsFormatSize(bytes); };
   var date = function (value) { return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value)); };
   /* the congregation's day, from the one rule this page shares with the transfer history (spec 146) */
   var todayJakarta = function () { return window.gkpsAgeBuckets.todayIso(); };

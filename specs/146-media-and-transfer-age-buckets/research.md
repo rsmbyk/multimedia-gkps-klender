@@ -138,7 +138,7 @@ question is "is it done yet".
 **Rationale.** Neither surface is new: the list exists and regroups, the dialog exists and gains headings.
 `VER-10` maps a new capability to `minor`; what ships here is a change to how two existing lists group
 their rows, which is the level spec 132 took for the same class of change (`1.20.10 → 1.20.11`). The new
-`R20`/`R21` requirements are the capability tree's bookkeeping of a behaviour change, not a new surface.
+`R22`/`R23` requirements are the capability tree's bookkeeping of a behaviour change, not a new surface.
 
 **Provenance.** `VER-10`; `CHANGELOG.md` 1.20.11; `specs/132-tatib-sidebar-date-buckets/spec.md`.
 

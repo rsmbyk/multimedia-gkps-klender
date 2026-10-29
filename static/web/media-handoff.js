@@ -16,7 +16,6 @@
   const glyph = name => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[name] + '</svg>';
   let token = '', connected = false, transfers = [], retrying = [], files = [], online = {}, session = null, source = 'library', lastCloudAt = 0;
   const $ = id => document.getElementById(id);
-  const fmt = n => n < 1000000 ? Math.round(n / 1000) + ' KB' : (n / 1000000).toFixed(1) + ' MB';
   const json = (url, options) => fetch(url, Object.assign({ cache: 'no-store' }, options || {})).then(async response => {
     const data = await response.json();
     if (!response.ok) throw Error(data.error || 'Transfer unavailable');

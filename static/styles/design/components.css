@@ -2750,7 +2750,7 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 .media-transfer-rail__dot[data-state="failed"] { background: var(--danger); }
 .media-transfers__dialog { width: min(580px, calc(100vw - 32px)); }
 .media-transfers__row { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid var(--divider); }
-.media-transfers__mark { width: 32px; text-align: center; color: var(--focus); font-size: 22px; }
+.media-transfers__mark { width: 32px; flex: none; text-align: center; color: var(--focus); font-size: 22px; }
 .media-transfers__main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .media-transfers__main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .media-transfers__main span, .media-transfers__empty { color: var(--head-ink); font-size: 12px; }

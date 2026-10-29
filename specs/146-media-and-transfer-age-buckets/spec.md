@@ -114,23 +114,23 @@ strings, drawn in the same case, and only the transfers' two extra buckets have 
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | The Media Library list groups its rows by upload age into three buckets, in this order and under these labels: `Last 30 days`, `Earlier this year`, `Older`. The shared labels are the Tata Ibadah list's own strings. | `reading/R20` |
-| FR-002 | A file's bucket is decided from its upload day and the present day: today through thirty days ago is `Last 30 days`; older than thirty days and in the present calendar year is `Earlier this year`; anything else is `Older`. | `reading/R20` |
-| FR-003 | The present day is the congregation's calendar day in `Asia/Jakarta`, as `reading/R9` requires, so a file uploaded at 06:00 WIB does not change bucket at 07:00. | `reading/R20` |
-| FR-004 | A bucket with no file draws neither a heading nor its spacing; the buckets drawn stay in the order of FR-001. | `reading/R20` |
-| FR-005 | Bucket headings are drawn only while the list is sorted by upload date; a size sort draws none. Ascending date order reverses the bucket order so the list still reads oldest first. | `reading/R20` |
-| FR-006 | The heading is the list's existing `h2.media-library__group` — same type, class, size, colour, weight, letter-spacing, case transform and margins — carrying its bucket key as `data-bucket` (`last-30-days`, `earlier-this-year`, `older`); the per-date heading and its day key are gone. | `reading/R20` |
-| FR-007 | The type chips and the `Unused` chip still filter the list; a bucket left with no visible row hides its heading, and clearing the chips restores both. | `reading/R20` |
-| FR-008 | A row is unchanged: icon, filename, `Type · full date · size` meta line, its service links or its `Unused · …` line, the cloud control and the remove button. | `reading/R20` |
-| FR-009 | The Transfers dialog groups its rows by age into five buckets, in this order and under these labels: `Last 24 hours` (started within the last 24 hours), `Last 7 days` (24 hours to 7 days), `Last 30 days` (7 to 30 days), `Earlier this year` (more than 30 days, present calendar year), `Older` (anything else). | `reading/R21` |
-| FR-010 | A transfer's bucket is decided by the instant it started, and the three rolling windows are measured from the moment the dialog draws, not from a calendar boundary. | `reading/R21` |
-| FR-011 | Active transfers still draw above finished ones; the bucket a transfer belongs to is its start time's, so an active row draws at the top of the bucket it started in. | `reading/R21` |
-| FR-012 | Inside a bucket, rows keep today's order: finished rows by end time newest first, ties by id newest first. | `reading/R21` |
-| FR-013 | A bucket heading in the dialog is an `h3.media-transfers__group` under the dialog's existing `h2`, drawn on the list's heading numbers (12px, `--head-ink`, uppercase through the stylesheet, letter-spacing `.07em`), and carrying its bucket key as `data-bucket` (`last-24-hours`, `last-7-days`, `last-30-days`, `earlier-this-year`, `older`). | `reading/R21` |
-| FR-014 | The rail's progress flyout keeps its own shape — active rows, then the seen divider — and draws no bucket headings. | `reading/R21` |
-| FR-015 | A transfer row is unchanged: direction glyph, name, and its state (`Completed`, `Cancelled`, `Failed`, or the percentage while active). No per-row date is added; the heading carries the age. | `reading/R21` |
-| FR-016 | The two surfaces compute their buckets through one shared browser rule, so the Media Library, the Transfers dialog and any later surface cannot drift apart, and the bucket keys are the ones FR-006 and FR-013 name. | `reading/R21` |
-| FR-017 | The empty states are unchanged, and a bucket heading is never drawn over an empty list. | `reading/R20`, `reading/R21` |
+| FR-001 | The Media Library list groups its rows by upload age into three buckets, in this order and under these labels: `Last 30 days`, `Earlier this year`, `Older`. The shared labels are the Tata Ibadah list's own strings. | `reading/R22` |
+| FR-002 | A file's bucket is decided from its upload day and the present day: today through thirty days ago is `Last 30 days`; older than thirty days and in the present calendar year is `Earlier this year`; anything else is `Older`. | `reading/R22` |
+| FR-003 | The present day is the congregation's calendar day in `Asia/Jakarta`, as `reading/R9` requires, so a file uploaded at 06:00 WIB does not change bucket at 07:00. | `reading/R22` |
+| FR-004 | A bucket with no file draws neither a heading nor its spacing; the buckets drawn stay in the order of FR-001. | `reading/R22` |
+| FR-005 | Bucket headings are drawn only while the list is sorted by upload date; a size sort draws none. Ascending date order reverses the bucket order so the list still reads oldest first. | `reading/R22` |
+| FR-006 | The heading is the list's existing `h2.media-library__group` — same type, class, size, colour, weight, letter-spacing, case transform and margins — carrying its bucket key as `data-bucket` (`last-30-days`, `earlier-this-year`, `older`); the per-date heading and its day key are gone. | `reading/R22` |
+| FR-007 | The type chips and the `Unused` chip still filter the list; a bucket left with no visible row hides its heading, and clearing the chips restores both. | `reading/R22` |
+| FR-008 | A row is unchanged: icon, filename, `Type · full date · size` meta line, its service links or its `Unused · …` line, the cloud control and the remove button. | `reading/R22` |
+| FR-009 | The Transfers dialog groups its rows by age into five buckets, in this order and under these labels: `Last 24 hours` (started within the last 24 hours), `Last 7 days` (24 hours to 7 days), `Last 30 days` (7 to 30 days), `Earlier this year` (more than 30 days, present calendar year), `Older` (anything else). | `reading/R23` |
+| FR-010 | A transfer's bucket is decided by the instant it started, and the three rolling windows are measured from the moment the dialog draws, not from a calendar boundary. | `reading/R23` |
+| FR-011 | Active transfers still draw above finished ones; the bucket a transfer belongs to is its start time's, so an active row draws at the top of the bucket it started in. | `reading/R23` |
+| FR-012 | Inside a bucket, rows keep today's order: finished rows by end time newest first, ties by id newest first. | `reading/R23` |
+| FR-013 | A bucket heading in the dialog is an `h3.media-transfers__group` under the dialog's existing `h2`, drawn on the list's heading numbers (12px, `--head-ink`, uppercase through the stylesheet, letter-spacing `.07em`), and carrying its bucket key as `data-bucket` (`last-24-hours`, `last-7-days`, `last-30-days`, `earlier-this-year`, `older`). | `reading/R23` |
+| FR-014 | The rail's progress flyout keeps its own shape — active rows, then the seen divider — and draws no bucket headings. | `reading/R23` |
+| FR-015 | A transfer row is unchanged: direction glyph, name, and its state (`Completed`, `Cancelled`, `Failed`, or the percentage while active). No per-row date is added; the heading carries the age. | `reading/R23` |
+| FR-016 | The two surfaces compute their buckets through one shared browser rule, so the Media Library, the Transfers dialog and any later surface cannot drift apart, and the bucket keys are the ones FR-006 and FR-013 name. | `reading/R23` |
+| FR-017 | The empty states are unchanged, and a bucket heading is never drawn over an empty list. | `reading/R22`, `reading/R23` |
 
 ### Key Entities
 

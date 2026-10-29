@@ -2,7 +2,7 @@
 
 **Slice**: `specs/146-media-and-transfer-age-buckets` · **Branch**: `feat/146-media-and-transfer-age-buckets`
 **Created**: 2026-10-28 · **Spec**: [`spec.md`](./spec.md) (Accepted at gate 1, 2026-10-28)
-**Card**: `ITEM-155` · **Bump**: `patch`
+**Card**: `ITEM-158` · **Bump**: `patch`
 
 ## Technical Context
 
@@ -43,9 +43,9 @@ static/web/media-handoff.js                   EDIT  group the rendered transfers
 static/styles/design/components.css           EDIT  .media-transfers__group beside .media-transfers__divider
 multimedia/web/templates/reading/base.html    EDIT  load age-buckets.js before its two callers
 tests/e2e/test_media_age_buckets.py           NEW   the browser acceptance for both surfaces
-backlog/board.md, backlog/items/ITEM-155-*.md  NEW/EDIT  the card, Ready → In progress → In review → Done
+backlog/board.md, backlog/items/ITEM-158-*.md  NEW/EDIT  the card, Ready → In progress → In review → Done
 VERSION, CHANGELOG.md                         EDIT  at delivery, patch level and one Changed line
-docs/spec/reading.md                          EDIT  at Fold: R20 (the list), R21 (the transfer history)
+docs/spec/reading.md                          EDIT  at Fold: R22 (the list), R23 (the transfer history)
 specs/146-media-and-transfer-age-buckets/     this pack
 ```
 

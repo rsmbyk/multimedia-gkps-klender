@@ -39,10 +39,10 @@ tests is one behaviour measured on two surfaces.
 
 - [X] T018 Re-run the preview probe (headings, numbers, 320px) and update `preview/README.md` if any number moved
 - [X] T019 `preview/README.md` and `quickstart.md` reviewed against what shipped; `specs/README.md` index row added
-- [X] T020 Board: card ITEM-155 to `In progress` at Implement, board row moved; `In review` and `Done` at delivery per C-SDD-BOARD
+- [X] T020 Board: card ITEM-158 to `In progress` at Implement, board row moved; `In review` and `Done` at delivery per C-SDD-BOARD
 - [X] T021 `manage.py test multimedia.web` green (353 tests); the three media-library browser tests that touch this area green; the full browser suites run at the push step
 - [ ] T022 Bump `VERSION` 1.22.4 → 1.22.5 and add the one `### Changed` line to `CHANGELOG.md` — **at delivery**, in the commit that closes the card (VER-04)
-- [X] T023 Fold `docs/spec/reading.md` — `R20` (the list's buckets) and `R21` (the transfer ladder) added, header dated
+- [X] T023 Fold `docs/spec/reading.md` — `R22` (the list's buckets) and `R23` (the transfer ladder) added, header dated
 
 ## Acceptance
 
