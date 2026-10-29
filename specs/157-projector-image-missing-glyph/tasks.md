@@ -73,7 +73,7 @@ the loaded case now covers the other half.
   under `## [Unreleased]` in `CHANGELOG.md`.
 - [X] T017 Fold: add R3 to `docs/spec/projector.md` and move the header's `last folded` and `slices`
   (SDD-23, `fold.md`).
-- [ ] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-164`'s state and set
+- [X] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-164`'s state and set
   `in-review`, write `pr:` and move the board row, and push that one commit (`C-BOARD-GIT`) — on the
   owner's word only (GIT-07).
 
