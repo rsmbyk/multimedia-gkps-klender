@@ -8,6 +8,12 @@ The local Media Library and the companion's transfer dialog. This file starts at
 media-library capability existed while the slices that built the surface landed (113, 117, 118), so
 their requirements are not folded here and the tree begins with the transfer dialog's drawing rules.
 
+**Known split, not yet resolved.** Spec 146's age grouping of this dialog folded into
+`reading/R22`–`R23` because this file did not exist when it landed, so the Media Library's behaviour
+currently lives in two capabilities. Moving those requirements here (renumbering them, or leaving
+`R<n>` in place as a cross-reference) is its own decision and is left to the pass that next touches
+the library.
+
 ### R1 — The Transfers dialog draws each boundary once, and scrolls inside its own frame
 
 At the boundary between the transfers that finished in the current session and the older ones, the

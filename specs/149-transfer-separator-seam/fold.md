@@ -13,6 +13,12 @@ The capability did not exist before this slice, so the delta is a single `added`
 modification of `docs/spec/reading.md` — the Transfers dialog belongs to the Media Library, not to the
 public reading surfaces that file describes.
 
+**Consequence for the tree, recorded rather than fixed here:** spec 146's age grouping of the same
+dialog already folded into `reading/R22`–`R23` (this file did not exist then), so the Media Library's
+behaviour now sits in two capabilities. `docs/spec/media-library.md` says so in its header; reconciling
+it means moving or cross-referencing those two requirements, which is a decision for the next pass over
+the library, not a side effect of this fold.
+
 ## Drift guard
 
 - **Files changed in this capability**: `multimedia/web/templates/reading/base.html` (one class on
