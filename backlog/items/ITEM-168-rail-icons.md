@@ -1,6 +1,6 @@
 ---
 id: ITEM-168
-status: in review
+status: done
 title: 'The rail names its sections with the marks the stage draws'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/151-rail-icons/spec.md
 branch: feat/151-rail-icons
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/441
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/439
-closed_at:
-closed_reason:
+closed_at: 2026-10-29
+closed_reason: merged into develop (#441)
 bump: patch
 release_version:
 ---
