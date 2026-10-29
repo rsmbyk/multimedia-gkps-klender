@@ -28,3 +28,9 @@ success criteria, 13/13 scenarios.**
 - 2026-10-29 — first run, against the artifacts above: 0 CRITICAL, 1 HIGH, 2 MEDIUM, 1 LOW. F-001 and
   F-002 applied as mechanical fixes; the spec, plan, research and checklist re-read afterwards; this
   report re-issued at 0 CRITICAL, 0 HIGH.
+- 2026-10-29 — implement: the seven cases ran **red** against the unmodified templates and failed for
+  their own reasons — the rail's Bible is two nodes where the mark has three; the rail's Tata Ibadah is
+  a `rect` plus the page's three rules; a song row draws the single flag's ellipse, not the pair's two
+  heads; `gkpsMediaIcon('audio')` is the beamed pair. The three geometry/ink cases passed before the
+  change, which is what they exist to protect. After the eight markup edits (7 inline SVGs, 2 JS map
+  entries) all seven pass, and `tests.e2e.test_stage_kind_marks` (11) passes untouched.

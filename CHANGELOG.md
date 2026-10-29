@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The main rail names its sections with the marks the stage already draws: the Bible is an open book
+  with a Latin cross above it — in the rail, in the Alkitab panel's empty state, on a passage row and on
+  the empty stage's Add Passage tile — the beamed note is one drawing on the rail, on a song row and on
+  the Add Song tile, and Tata Ibadah's document is a clipboard. An audio file no longer wears the song's
+  note: it draws a five-bar waveform in the stage's chip, the Media Library, the service-media dialog and
+  the upload preview, so a media file is never mistaken for a hymn. Every mark keeps its box — 24px in
+  the 44px rail button, 20px on a row, 23px in the 42px chip — and its own ink.
 - The Transfers dialog draws the boundary between the transfers that finished while you were not looking and the older ones once: the row above the seam no longer stacks its 1px border under the divider's 2px line, and the seam keeps 9px of space either side. A list taller than the dialog now scrolls inside it — the title stays put, the dialog's bottom padding survives, and no row paints over the page; before, nine rows ran 19px into that padding and fifteen painted 451px outside the dialog.
 - The Media Library list groups its files by age now — `Last 30 days`, `Earlier this year`, `Older` — instead of one heading per upload day, and the Transfers dialog groups its history into `Last 24 hours`, `Last 7 days`, `Last 30 days`, `Earlier this year` and `Older`, dated by when each transfer started. Both take the Tata Ibadah list's own windows and words, with the day taken in `Asia/Jakarta`; a size sort draws no heading, an ascending sort reverses the buckets so the list still reads oldest first, and the transfer rail's progress flyout keeps its shape and draws none. Active transfers still come first, inside the bucket their start time gives them.
 - A service entry no longer moves when its add row opens: each row keeps a 20px slot in the page and draws its bar on top of it, centred on a faint seam line, so the entry under the pointer stays where it is — it used to drop 31.6px, and a sweep of the pointer down the list accumulated 234.8px of movement. The bar is centred on the column, its hit area stops at its buttons so the entry's own controls stay clickable, and the gap between entries is 20px with the first seam matching it.

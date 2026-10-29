@@ -2,7 +2,8 @@
 
 **Spec**: `specs/151-rail-icons/spec.md`
 **Branch**: `feat/151-rail-icons`
-**Bump**: `minor`
+**Bump**: `patch` — the repo's own precedent for a mark-and-geometry change in this
+capability (spec 144, `bump: patch`); the plan first declared `minor`, and the closing report says so.
 **Preview**: `specs/151-rail-icons/preview/preview.html`
 
 ## Technical Context
@@ -108,7 +109,7 @@ only then does the markup change — one story at a time, in the order the tasks
 | US3 AC1 / AC2 (song row, tile) | `_entry_kind_icon.html`, `entries.js` | `test` → `test_the_rail_note_and_a_song_draw_one_path` | |
 | US3 AC3 (song vs audio on one stage) | `media-stage.js`, `_entry_kind_icon.html` | `manual` — the preview's stage column at 1:1, then `/tatib/<id>/` | the shapes differ; the test asserts the paths differ |
 | Edge: the missing / unavailable audio chip | `media-stage.js:20,26` | `inspection` — `renderRow` still chooses `missing` over the family and the chip keeps `--danger` | the waveform is the family mark, not the state |
-| Edge: ≤1272px rail (64px / 40px buttons) | `components.css:116` | `inspection` — resize the live page to 1024px: the glyphs scale with the 24-unit box; no authored size changes | |
+| Edge: ≤560px rail (64px / 40px buttons) | `tokens.css:114-116` | `inspection` — resize the live page to 1024px: the glyphs scale with the 24-unit box; no authored size changes | |
 | Edge: the phone menu drawer | `base.html` rail markup | `inspection` — 425px window: the same marks beside the names | |
 | SC-001 / SC-002 | as FR-009 / FR-002, FR-004 | `test` | |
 | SC-003 | as FR-007 | `test` | |

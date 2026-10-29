@@ -3,7 +3,7 @@
 **Slice**: `specs/151-rail-icons`
 **Branch**: `feat/151-rail-icons`
 **Created**: 2026-10-29
-**Status**: Draft — clarified 2026-10-29
+**Status**: Accepted (owner, gate 1, 2026-10-29)
 **Input**: "can you find a better icons to represent Bible, Songs, and Service Order? … first, the bible
 is represented as plain book today. maybe you can find something that can instantly tell people that it
 is bible. second, the service order icon looks like a file/document instead and people might think that
@@ -127,9 +127,9 @@ column, before and after; every value is identical.
 
 ### Edge Cases
 
-- **When** the window is narrower than 1272px and the rail is 64px with 40px buttons
-  (`tokens.css:116`) **Then** the marks draw at 20px and keep their proportions; the kind mark stays
-  20px.
+- **When** the window is 560px or narrower and the rail is 64px with 40px buttons
+  (`tokens.css:114-116`) **Then** the marks draw at 20px and keep their proportions; the kind mark
+  stays 20px.
 - **When** the rail is a phone's menu drawer **Then** the same marks sit beside the section names; no
   second artwork is introduced.
 - **When** an audio file is missing, unavailable, or the local library is disconnected **Then** the
@@ -215,9 +215,9 @@ flips the theme, so every candidate in §Clarifications is reachable by hand.
   in its available, missing (`--danger`) and unavailable states; the empty stage's four tiles must be
   seen in both themes.
 - **Motion**: none. The marks are static markup; the rail's existing transitions are untouched.
-- **Responsive**: at ≤1272px the rail is 64px and the buttons 40px (`tokens.css:116`), so the marks
-  draw at 20px; below 720px they sit beside the section names in the menu drawer. Both are reachable
-  by resizing the preview.
+- **Responsive**: at ≤560px the rail is 64px and the buttons 40px (`tokens.css:114-116`), so the
+  marks draw at 20px; below 720px the rail becomes the menu drawer (spec 138) and the marks sit beside
+  the section names. Both are reachable by resizing the preview.
 
 ## Assumptions
 
