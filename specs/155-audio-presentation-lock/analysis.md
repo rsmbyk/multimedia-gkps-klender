@@ -17,6 +17,11 @@
 **Metrics**: 10 requirements · 3 success criteria · 8 story scenarios · 5 edge cases (17 traceability
 rows) · 17 tasks (8 writing or driving tests) · coverage **100%** · CRITICAL **0**.
 
+**Amended after this analysis**: the spec's `Status` line took both gates, the "Pins that flip"
+subsection was added when `test_projector_space_navigation_and_reset` turned out to assert navigation
+away from a playing screen, and the checklist's 12 items were ticked — so the digests above predate
+those three edits, and `tasks.md`'s Phase 7 gained T018 when this record was written.
+
 `check_pack_consistency.py specs/155-audio-presentation-lock` → `COVERAGE 13/13`, `SPLIT 16/1/0`,
 `ASSIGNMENT 12/12`, `clean`. The split was re-derived after the regression row was added; the first run
 counted `15/1/0` and reported the video module as an orphan, which is why the plan now carries that row

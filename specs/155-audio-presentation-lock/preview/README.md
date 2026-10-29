@@ -45,5 +45,5 @@ precisely what the player does when the page's inputs arrive. A static page cann
 
 ## What is not a preview
 
-A screenshot, a static image and a recording are not previews. `after-playing.png` was taken only
-to read the layout back at 1440×900 while writing the spec.
+A screenshot, a static image and a recording are not previews, so none is kept in this folder: the
+evidence is the probe's own readout and the E2E cases.

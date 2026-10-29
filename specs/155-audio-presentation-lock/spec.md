@@ -3,7 +3,7 @@
 **Slice**: `specs/155-audio-presentation-lock`
 **Branch**: `feat/155-audio-presentation-lock`
 **Created**: 2026-10-29
-**Status**: Accepted at gate 1 (owner, 2026-10-29) — gate 2 pending
+**Status**: Accepted (owner, gate 1 and gate 2, 2026-10-29)
 **Input**: "when an audio is playing in projector window, navigation should be disabled (either from keyboard or mouse)" — corrected in the same session to "i think it should enter similar fullscreen behavior kind of just like the video so that you need to pause to return to the normal projector screen"
 
 ## What the projector does today
@@ -116,6 +116,16 @@ kills a recording.
 | FR-008 | When the browser refuses fullscreen, the recording plays on the normal projector screen and the navigation lock still holds while it plays. | `projector/R3` |
 | FR-009 | The display channel stays authoritative: a dock `hide`/`release`/`stop`, or a screen the dock names, still stops and releases the recording exactly as today. | `projector/R3` |
 | FR-010 | `c` (corner hide) and `t` (translation) keep their behaviour while a recording plays: neither moves the projected screen off its entry. | `projector/R3` |
+
+### Pins that flip
+
+`tests/e2e/test_audio_display.py::test_projector_space_navigation_and_reset` asserted that
+`Ctrl+ArrowRight` leaves a **playing** audio screen — the player count drops to 0. FR-001 forbids
+exactly that, so the case now pauses first and then navigates; its other claims are unchanged (Space
+toggles playback, a screen change releases the player, returning resets the clock to `0:00`).
+`::test_untitled_preview_and_projector_idle_display_off` is not changed by this slice: its final
+`stop`-broadcast assertion is already red on `develop` (card ITEM-140), and the case was re-run
+unchanged.
 
 ### Key Entities
 

@@ -39,10 +39,17 @@ def open_audio_screen(page, base, service):
         page.wait_for_timeout(250)
     for _ in range(40):
         if page.evaluate("() => Boolean(document.querySelector('.screen.is-active [data-media-audio]'))"):
-            return
+            break
         page.keyboard.press('Control+ArrowRight')
         page.wait_for_timeout(120)
-    raise SystemExit(f'no audio screen reachable on service {service}')
+    else:
+        raise SystemExit(f'no audio screen reachable on service {service}')
+    # the recording's bytes still have to arrive: the player only answers Space once its
+    # metadata has loaded, which is the moment `data-playing` first appears
+    page.wait_for_function("""() => {
+        const play = document.querySelector('.screen.is-active [data-audio-play]');
+        return Boolean(play) && play.dataset.playing !== undefined;
+    }""", timeout=30000)
 
 
 def playing_state(page):

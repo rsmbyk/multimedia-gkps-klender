@@ -1,8 +1,8 @@
 # projector
 
 **capability**: `projector`
-**last folded**: 2026-10-26
-**slices**: `136-remove-offline-library`
+**last folded**: 2026-10-29
+**slices**: `155-audio-presentation-lock`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song. This file starts at spec 136 — the projector's earlier behaviour
@@ -56,3 +56,31 @@ items SHALL show the empty state.
 #### Scenario: a service with no items
 - WHEN the projector opens for a service holding nothing
 - THEN it shows its empty state, naming no saved copy
+
+### R3 — A playing recording owns the projector screen until it pauses
+
+While an audio entry's recording plays, the projector SHALL hold the screen it is on: no page step,
+entry or bait jump, page boundary, mouse zone, corner-cue control or Go To SHALL move it, and the
+recording SHALL keep playing through any of them. The playing recording SHALL take the viewport, as a
+playing video does, so the corner cue and the mouse zones are off screen; the pause that gives the
+screen back SHALL keep the position playback had reached.
+
+#### Scenario: a key arrives while the recording plays
+- WHEN an arrow, page or home/end key arrives — plain, Shift or Ctrl — while a recording plays
+- THEN the projector stays on the recording's screen and the recording keeps playing
+
+#### Scenario: the pointer arrives while the recording plays
+- WHEN a mouse zone or a corner-cue control is clicked, or the Go To is asked for
+- THEN nothing moves, no panel opens, and the recording keeps playing
+
+#### Scenario: the screen is given back
+- WHEN the operator pauses, or the browser leaves fullscreen, or the recording ends
+- THEN the normal projector screen returns, paused, holding the position playback had reached
+
+#### Scenario: the browser refuses fullscreen
+- WHEN the fullscreen request is refused while the recording plays
+- THEN the recording plays on the normal projector screen and the screen stays locked until it pauses
+
+#### Scenario: the dock drives the projector
+- WHEN the display channel hides, stops or names another screen
+- THEN the recording stops and is released, as it did before this requirement
