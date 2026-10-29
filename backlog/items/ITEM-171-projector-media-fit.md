@@ -1,6 +1,6 @@
 ---
-id: ITEM-170
-status: ready
+id: ITEM-171
+status: in-review
 title: 'A small image or a PDF page fills the projector stage'
 type: feat
 priority: P1
@@ -9,15 +9,15 @@ created: 2026-10-29
 updated: 2026-10-29
 spec: specs/158-projector-media-fit/spec.md
 branch: feat/158-projector-media-fit
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/455
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/437
 closed_at:
 closed_reason:
-bump:
+bump: minor
 release_version:
 ---
 
-# ITEM-170: A small image or a PDF page fills the projector stage
+# ITEM-171: A small image or a PDF page fills the projector stage
 
 ## Summary
 
