@@ -26,12 +26,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-155](./items/ITEM-155-media-transfer-age-buckets.md) | The Media Library and the transfer history group by age | Three age buckets on the list, five on the transfers — one shared rule, the Tata Ibadah list's own labels | feat | P2 | M | [146](../specs/146-media-and-transfer-age-buckets/spec.md) | 2026-10-28 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-155](./items/ITEM-155-media-transfer-age-buckets.md) | The Media Library and the transfer history group by age | Three age buckets on the list, five on the transfers — one shared rule, the Tata Ibadah list's own labels | feat | P2 | M | [146](../specs/146-media-and-transfer-age-buckets/spec.md) | [#421](https://github.com/rsmbyk/multimedia-gkps-klender/pull/421) | 2026-10-28 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
