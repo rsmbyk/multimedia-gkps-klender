@@ -23,6 +23,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-164](./items/ITEM-164-audio-play-indicator.md) | The audio projector screen shows its play/pause control | A 48px control above the seek bar — triangle or two bars following the audio, hidden with the idle chrome, clickable | feat | P2 | S | [156](../specs/156-audio-play-indicator/spec.md) | 2026-10-29 |
+
 ## Ready
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
