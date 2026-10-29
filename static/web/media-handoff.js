@@ -32,6 +32,21 @@
     dialog.classList.add('closing');
     setTimeout(() => { dialog.close(); dialog.classList.remove('closing'); }, 150);
   }
+  /* The ladder's order first, then active-first and newest finished: the companion's own order lifts every
+     active row above every finished one, so an upload started days ago would print LAST 7 DAYS above
+     LAST 24 HOURS (spec 146, D4). */
+  function byAge(rows) {
+    const buckets = window.gkpsAgeBuckets, ladder = buckets.TRANSFER_BUCKETS.map(bucket => bucket.key);
+    return rows.slice().sort((a, b) => {
+      const ra = ladder.indexOf(buckets.transferKey(a)), rb = ladder.indexOf(buckets.transferKey(b));
+      if (ra !== rb) return ra - rb;
+      const activeA = a.status === 'active' ? 0 : 1, activeB = b.status === 'active' ? 0 : 1;
+      if (activeA !== activeB) return activeA - activeB;
+      const endedA = Date.parse(a.ended_at || a.started_at) || 0, endedB = Date.parse(b.ended_at || b.started_at) || 0;
+      if (endedA !== endedB) return endedB - endedA;
+      return (b.id || 0) - (a.id || 0);
+    });
+  }
   function renderTransfers() {
     const button = $('mediaTransferRail'), host = $('mediaTransfersList');
     if (!button || !host) return;
@@ -51,7 +66,7 @@
     if (!connected) { const p = document.createElement('p'); p.className = 'media-transfers__empty'; p.textContent = 'Local library unavailable on this computer.'; host.append(p); return; }
     if (!shown.length) { const p = document.createElement('p'); p.className = 'media-transfers__empty'; p.textContent = 'No transfers yet.'; host.append(p); return; }
     let separated = false;
-    shown.forEach(t => {
+    const draw = t => {
       if (source === 'rail' && !active.length && session && !session.seen.has(t.id) && !separated) {
         const divider = document.createElement('hr'); divider.className = 'media-transfers__divider'; host.append(divider); separated = true;
       }
@@ -61,6 +76,13 @@
       const name = document.createElement('strong'); name.textContent = t.name; main.append(name);
       const state = document.createElement('span'); state.textContent = t.status === 'active' ? Math.min(100, Math.round(100 * t.bytes_done / Math.max(1, t.size))) + '%' : t.status === 'completed' ? 'Completed' : t.status === 'cancelled' ? 'Cancelled' : 'Failed'; main.append(state);
       row.append(mark, main); host.append(row);
+    };
+    /* The rail is a progress popover, not the history: it keeps its active rows and its seen divider and
+       draws no age heading (spec 146, FR-014). */
+    if (source === 'rail') { shown.forEach(draw); return; }
+    window.gkpsAgeBuckets.group(byAge(shown), t => window.gkpsAgeBuckets.transferKey(t), window.gkpsAgeBuckets.TRANSFER_BUCKETS).forEach(bucket => {
+      const head = document.createElement('h3'); head.className = 'media-transfers__group'; head.dataset.bucket = bucket.key; head.textContent = bucket.label; host.append(head);
+      bucket.rows.forEach(draw);
     });
   }
   function renderService() {

@@ -81,3 +81,4 @@ the templates are in [`_templates/`](./_templates/).
 | [141](141-projector-window-reopen/spec.md) | A closed projector window can be reopened at the screen that is on air | Accepted |
 | [142](142-entry-surface/spec.md) | A service entry draws no box until it is pointed at | Accepted |
 | [143](143-add-bar/spec.md) | The add bar opens over the seam, and nothing moves | Accepted |
+| [146](146-media-and-transfer-age-buckets/spec.md) | The Media Library and the transfer history group by age | Accepted |
