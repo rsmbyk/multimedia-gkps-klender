@@ -27,12 +27,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-165](./items/ITEM-165-preview-body-ring.md) | Space paints the Preview dialog's focus ring when it plays or pauses | The dialog body holds focus on open, and the first key press flips its `:focus-visible` ring onto the modal's own edge in audio and video previews | fix | P2 | S | [159](../specs/159-preview-body-ring/spec.md) | 2026-10-29 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-165](./items/ITEM-165-preview-body-ring.md) | Space paints the Preview dialog's focus ring when it plays or pauses | The dialog body holds focus on open, and the first key press flips its `:focus-visible` ring onto the modal's own edge in audio and video previews | fix | P2 | S | [159](../specs/159-preview-body-ring/spec.md) | [#456](https://github.com/rsmbyk/multimedia-gkps-klender/pull/456) | 2026-10-29 |
 
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

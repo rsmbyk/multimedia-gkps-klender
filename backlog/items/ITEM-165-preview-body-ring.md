@@ -1,6 +1,6 @@
 ---
 id: ITEM-165
-status: ready
+status: in_review
 title: 'Space paints the Preview dialog''s focus ring when it plays or pauses'
 type: fix
 priority: P2
@@ -9,8 +9,8 @@ created: 2026-10-29
 updated: 2026-10-29
 spec: specs/159-preview-body-ring/spec.md
 branch: fix/159-preview-body-ring
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/456
+issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/457
 closed_at:
 closed_reason:
 bump: patch
