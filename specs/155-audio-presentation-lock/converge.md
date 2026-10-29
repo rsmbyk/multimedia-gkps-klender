@@ -51,7 +51,7 @@ audio helpers did not move the video's behaviour.
 
 `develop` had taken four slices since this branch was cut, including one on this very screen (spec 156's
 play/pause control). The merge resolved four documentation conflicts and one test conflict, renumbered
-the card to ITEM-170 and the version to 1.22.17, and folded the requirement as `R5`.
+the card to ITEM-172 and the version to 1.22.17, and folded the requirement as `R5`.
 
 | Gap | Type | Requirement | Evidence |
 | --- | --- | --- | --- |

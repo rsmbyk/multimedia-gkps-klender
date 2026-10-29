@@ -2,7 +2,7 @@
 
 **Spec**: `specs/155-audio-presentation-lock/spec.md`
 **Branch**: `feat/155-audio-presentation-lock`
-**Bump**: `patch` — 1.22.16 → 1.22.17
+**Bump**: `patch` — 1.22.17 → 1.22.19
 **Preview**: `specs/155-audio-presentation-lock/preview/` — live at `/projector?service=144`, probe `preview/probe_lock.py`
 
 ## Technical Context
@@ -103,11 +103,13 @@ element — is not painted.
 
 ### Reconciled with `develop` on 2026-10-29, before the merge
 
-- **The card was renumbered ITEM-164 → ITEM-170**: spec 157's card had already taken ITEM-164 on
-  develop (`9a318d8f chore(board): close ITEM-164 (157)`), so the file, its `id:`, the board row, the
-  pack's references and the tracker anchor (#442, retitled) all moved. Spec 156's own notes record that
-  its card was renumbered to ITEM-169 for the same reason, seen from the other side.
-- **The version became 1.22.17** — develop is 1.22.16 after four slices landed since this branch was cut.
+- **The card was renumbered twice, ITEM-164 → ITEM-170 → ITEM-172**: spec 157's card already held
+  ITEM-164 on develop (`9a318d8f`), so this card moved to ITEM-170 at the first merge; spec 162 then
+  landed ITEM-170 (`1efed672`), so it moved again to ITEM-172 — the file, its `id:`, the board row, the
+  pack's references and the tracker anchor (#442, retitled each time) all moved with it. Spec 156's
+  notes record the same collision from the other side, where its card became ITEM-169.
+- **The version became 1.22.19** — develop reached 1.22.17 while this branch waited, and slice 159 holds
+  1.22.18 and slice 158 holds 1.23.0 in flight, so the next free patch is 1.22.19.
 - **The requirement folded as `R5`, not `R3`**: develop had taken R3 (image placeholder, spec 157) and
   R4 (the audio screen's playback control, spec 156) in the meantime.
 - **Spec 156's control is what a pointer uses** (D005): it landed on the audio screen while this slice
