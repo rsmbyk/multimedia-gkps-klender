@@ -1,6 +1,6 @@
 ---
 id: ITEM-161
-status: in-review
+status: done
 title: 'The Media Library''s first refresh writes its references without the token'
 type: fix
 priority: P1
@@ -11,9 +11,9 @@ spec: specs/150-references-token-order/spec.md
 branch: fix/150-references-token-order
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/430
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/429
-closed_at:
+closed_at: 2026-10-28
 closed_reason:
-bump:
+bump: patch
 release_version:
 ---
 
