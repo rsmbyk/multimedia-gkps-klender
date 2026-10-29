@@ -1,6 +1,6 @@
 ---
 id: ITEM-159
-status: in-review
+status: done
 title: 'The Transfers list draws each boundary twice'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/149-transfer-separator-seam/spec.md
 branch: fix/149-transfer-separator-seam
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/425
 issue: 426
-closed_at:
-closed_reason:
+closed_at: 2026-10-28
+closed_reason: merged into develop (425)
 bump:
 release_version:
 ---
