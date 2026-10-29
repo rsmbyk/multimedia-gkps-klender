@@ -36,7 +36,7 @@
     var found = document.cookie.match(/(^|;\s*)csrftoken=([^;]+)/);
     return found ? decodeURIComponent(found[2]) : '';
   }
-  function formatSize(bytes) { return (bytes / 1000000).toFixed(1) + ' MB'; }
+  function formatSize(bytes) { return window.gkpsFormatSize(bytes); }
   function formatDate(value) {
     var date = new Date(value);
     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });

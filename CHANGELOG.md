@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A hymn-book song opened from the reading sidebar no longer flashes the song sort control beside "Filter songs…": the saved copy now follows the server's rule and offers the control only for a songbook that is not a hymn book, so the song filter keeps its width while the page settles. An ordinary songbook's song page still offers it.
 - A Tata Ibadah page's date header now reads as the same element as every other reading page's header — the shared size, weight, tracking, and colour a songbook header uses — instead of the 11px left behind when the media controls joined that row. When the stage is too narrow for both, the Project action wraps beneath the date rather than the date shrinking.
 - Opening or moving between chapters of a Bible book whose TB and SIM book translations share a name (Rut, Ezra, Nehemia, …) through the reading sidebar keeps the verse text on the stage; the two edition blocks no longer collapse into one hidden block, so a reload is no longer needed.
+- A media size now reads in the unit that still shows its number — `512 B`, `2 KB`, `12.3 KB`, `1 MB` — on the New media card, in a Media Library row and in the Media Library Total, drawn by one function; a file under 50 KB used to read `0.0 MB` on the card, one under 500 bytes read `0 KB` in the library, and the library rounded a 12,345-byte file to `12 KB`.
 
 ## [1.20.1] - 2026-10-21
 
