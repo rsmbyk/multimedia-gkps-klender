@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-29
-**slices**: `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -823,24 +823,24 @@ control's states and the page's title.
 
 ### R25 — A passage and a song carry a kind mark of their own
 
-A Tata Ibadah stage SHALL mark a passage row and a song row with a small decorative glyph — an open book
-for a passage, a single flagged note for a song — and SHALL NOT mark a text row, a section break or a
-media row. The glyph SHALL sit on the media chip's centre line and the row's title SHALL take the media
-title's column, so a media file, a passage and a song share one left rail: the mark centred, the words
-from 64px. The glyph SHALL be smaller than the 42px chip and SHALL carry no tint of its own, so a media
-file is never mistaken for a passage or a song. The mark SHALL be hidden from assistive technology, take
-no pointer, and add no height of its own; a song's title MAY take one more line where the narrower
-column wraps it.
+A Tata Ibadah stage SHALL mark a passage row and a song row with a small decorative glyph — the rail's
+Bible mark for a passage, the rail's beamed note for a song — and SHALL NOT mark a text row, a section
+break or a media row. The glyph SHALL sit on the media chip's centre line and the row's title SHALL
+take the media title's column, so a media file, a passage and a song share one left rail: the mark
+centred, the words from 64px. The glyph SHALL be smaller than the 42px chip and SHALL carry no tint of
+its own, so a media file is never mistaken for a passage or a song. The mark SHALL be hidden from
+assistive technology, take no pointer, and add no height of its own; a song's title MAY take one more
+line where the narrower column wraps it.
 
 #### Scenario: a passage
 - WHEN a service holds a passage entry
-- THEN its row draws a 20px open-book glyph, centred on the media chip's centre line, with the
-  reference starting on the media title's column
+- THEN its row draws a 20px open book with a Latin cross above it — the same path the rail's Alkitab
+  button draws — centred on the media chip's centre line, with the reference starting on the media
+  title's column
 
 #### Scenario: a song
 - WHEN a service holds a song entry
-- THEN its row draws a single flagged note, a different shape from the passage's, and its `Bait` line
-  keeps the same left edge as the title
+- THEN its row draws the rail's beamed pair, and its `Bait` line keeps the same left edge as the title
 
 #### Scenario: every other kind
 - WHEN the service also holds a text entry, a section break and a media file
@@ -936,3 +936,47 @@ verse tabs SHALL keep its 52px title band, its own rule and its body exactly whe
 #### Scenario: no verse tabs
 - WHEN a passage, text, image, audio, video or PDF preview opens
 - THEN the title band keeps its rule and the body sits directly under it, unchanged
+
+### R29 — The rail names its sections with the marks the stage draws
+
+The main rail SHALL draw one mark per section, and a section's mark SHALL be the same drawing wherever
+the product repeats it: the Bible — an open book with a Latin cross above it — on the rail, in the
+Alkitab panel's empty state, on a passage row and on the empty stage's Add Passage tile; the beamed
+note on the rail, in the Kidung panel's empty state, on a song row and on the Add Song tile; a
+clipboard — a board, a clip above it and three rule lines — on the Tata Ibadah rail button and in that
+panel's empty state.
+
+No rail mark SHALL reuse a media family's mark. An audio file SHALL draw a five-bar waveform in every
+place that mark is drawn (the stage's chip, the Media Library list, the service-media dialog and the
+upload preview), and the image, video, PDF and PowerPoint marks and the `missing` fallback SHALL keep
+their own shapes.
+
+Every mark SHALL be inline SVG painted with `currentColor`, carry no tint or fill of its own, be hidden
+from assistive technology, take no pointer, and sit in the box its surface already authors: 24px in
+the 44px rail button, 24px on an empty stage's tile, 20px on a stage row, 23px inside the 42px media
+chip. The rail SHALL keep its five destinations in their order, and the Search and Media Library marks
+SHALL NOT change.
+
+#### Scenario: the Bible, at every size
+- WHEN the rail, the Alkitab panel's empty state, a passage row and the Add Passage tile are drawn
+- THEN all four draw the same open book with a Latin cross, at 24px, 48px, 20px and 24px respectively
+
+#### Scenario: a song, at every size
+- WHEN the rail, the Kidung panel's empty state, a song row and the Add Song tile are drawn
+- THEN all four draw the same beamed pair
+
+#### Scenario: the service order
+- WHEN the Tata Ibadah rail button and that panel's empty state are drawn
+- THEN both draw a clipboard, and neither draws a page, a folder or a document
+
+#### Scenario: an audio file beside a song
+- WHEN a stage holds a song entry and an audio media file
+- THEN the song draws the beamed pair and the file draws the five-bar waveform
+
+#### Scenario: the other families
+- WHEN the Media Library lists an image, a video, a PDF, a PowerPoint or a file of unknown family
+- THEN each draws the mark it drew before this requirement
+
+#### Scenario: the theme
+- WHEN the theme changes
+- THEN every mark repaints with its own element's ink and needs no repaint of its own

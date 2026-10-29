@@ -39,7 +39,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
+| [ITEM-168](./items/ITEM-168-rail-icons.md) | The rail names its sections with the marks the stage draws | One mark per section, drawn wherever the product repeats it: a Bible with a cross, a clipboard for Tata Ibadah, the rail's own note on a song row — and audio files move to a waveform so no rail mark is a media family's | feat | P2 | S | [151](../specs/151-rail-icons/spec.md) | [#441](https://github.com/rsmbyk/multimedia-gkps-klender/pull/441) | 2026-10-29 |
+| [ITEM-165](./items/ITEM-165-transfer-scrollbar-edge.md) | The Transfers scrollbar floats inside the dialog and stops short of its bottom | The list starts at the dialog's content box, so the bar paints 22px short of the right border and 23px short of the bottom one; it moves to both edges and nothing else moves | fix | P2 | S | [152](../specs/152-transfer-scrollbar-edge/spec.md) | [#446](https://github.com/rsmbyk/multimedia-gkps-klender/pull/446) | 2026-10-29 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

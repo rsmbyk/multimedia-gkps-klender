@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The main rail names its sections with the marks the stage already draws: the Bible is an open book
+  with a Latin cross above it — in the rail, in the Alkitab panel's empty state, on a passage row and on
+  the empty stage's Add Passage tile — the beamed note is one drawing on the rail, on a song row and on
+  the Add Song tile, and Tata Ibadah's document is a clipboard. An audio file no longer wears the song's
+  note: it draws a five-bar waveform in the stage's chip, the Media Library, the service-media dialog and
+  the upload preview, so a media file is never mistaken for a hymn. Every mark keeps its box — 24px in
+  the 44px rail button, 20px on a row, 23px in the 42px chip — and its own ink.
 - The Transfers dialog's scrollbar is the dialog's own edge now: it runs against the right border and down to the bottom border, where it used to sit 22px inside the panel and stop 23px short of the bottom. The rows, the title, the age headings and the list's top do not move, the last row still keeps 22px above the border at the end of the scroll, and the dialog clips the bar to its rounded corner so nothing paints over it.
 - A song's verse tabs in the Preview dialog stand on a row of their own under the title now, so a long title takes the header's whole width before it ellipsizes — 660px at the 704px dialog, where it had 570px — and the header closes with one rule beneath them, 14px under the tabs, the lyrics still starting 22px below it. The dialog opens on its reading body instead of on verse tab `1`, so no tab carries a focus ring; `Tab` moves from the body to the selected tab and `Shift+Tab` back, and every preview without verse tabs — passage, text, image, audio, video, PDF — is unchanged.
 - The Transfers dialog draws the boundary between the transfers that finished while you were not looking and the older ones once: the row above the seam no longer stacks its 1px border under the divider's 2px line, and the seam keeps 9px of space either side. A list taller than the dialog now scrolls inside it — the title stays put, the dialog's bottom padding survives, and no row paints over the page; before, nine rows ran 19px into that padding and fifteen painted 451px outside the dialog.
