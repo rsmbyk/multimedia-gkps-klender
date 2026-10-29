@@ -17,7 +17,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-144](./items/ITEM-144-date-dependent-picker-e2e.md) | Five date-picker E2E tests fail when the nearest Sunday falls in the next month | `_fill` steps months from today while the picker opens on the nearest Sunday, so five editor tests time out on days that cross a month boundary; identical on develop | fix | P1 | S | — | 2026-10-26 |
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-156](./items/ITEM-156-media-entry-spacing-e2e.md) | The media-entry spacing E2E measures 19.98px where 12px is asserted | A text row sits ~20px below its media row and the test still expects 12px ± 1; identical on develop | fix | P1 | S | — | 2026-10-28 |
-| [ITEM-159](./items/ITEM-159-transfer-separator-seam.md) | The Transfers list draws each boundary twice | The session divider's 2px line stacks on the row's own 1px border 9px apart, and a list taller than the dialog paints over its bottom padding; the seam becomes one line and the list scrolls inside the dialog | fix | P2 | S | [149](../specs/149-transfer-separator-seam/spec.md) | 2026-10-28 |
 
 ## Speccing
 
@@ -55,6 +54,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
 | [ITEM-128](./items/ITEM-128-github-issues-anchor.md) | Anchor board cards on GitHub Issues | Declare the tracker mirror, add the `board:item` label, and record when and how an issue is created | chore | P2 | S | — | [#377](https://github.com/rsmbyk/multimedia-gkps-klender/pull/377) | 2026-10-24 |
 
+| [ITEM-159](./items/ITEM-159-transfer-separator-seam.md) | The Transfers list draws each boundary twice | The session divider's 2px line stacks on the row's own 1px border 9px apart, and a list taller than the dialog paints over its bottom padding; the seam becomes one line and the list scrolls inside the dialog | fix | P2 | S | [149](../specs/149-transfer-separator-seam/spec.md) | [#425](https://github.com/rsmbyk/multimedia-gkps-klender/pull/425) | 2026-10-28 |
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
