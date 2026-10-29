@@ -87,3 +87,4 @@ the templates are in [`_templates/`](./_templates/).
 | [147](147-transfer-icon-column/spec.md) | A long transfer name ellipsizes instead of moving the row | Accepted |
 | [148](148-media-library-refresh-flicker/spec.md) | The Media Library list holds still while it refreshes | Accepted |
 | [149](149-transfer-separator-seam/spec.md) | The Transfers list draws each boundary once | Accepted |
+| [150](150-references-token-order/spec.md) | The first refresh authenticates its references write | Accepted |

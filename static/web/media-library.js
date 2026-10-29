@@ -156,6 +156,8 @@
     var next = { files: [], uses: null, protected: new Set(), status: null, ready: false };
     return Promise.all([request('/status'), request('/files')]).then(function (results) {
       next.status = results[0]; next.files = results[1].files || [];
+      /* This refresh's own write must carry the token its own /status supplied. */
+      if (next.status && next.status.write_token) token = next.status.write_token;
       return fetch(page.dataset.referencesUrl, { credentials: 'same-origin' }).then(function (response) {
         if (!response.ok) throw new Error('Cannot load service references');
         return response.json();
