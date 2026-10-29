@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-162](./items/ITEM-162-projector-image-missing-glyph.md) | The projector paints its image-unavailable glyph beside every image | The placeholder `<svg>` starts with no `hidden` attribute and is toggled with `missing.hidden`, which does nothing on an SVG, so the glyph shows on every image screen and the picture sits 40px left of the page's middle | fix | P2 | S | [157](../specs/157-projector-image-missing-glyph/spec.md) | 2026-10-29 |
 
 ## In progress
 

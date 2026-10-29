@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — the projector's image placeholder</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/projector.css">
+<style>
+  /* Preview chrome only. Every rule the two boards are judged by comes from
+     assets/projector.css and assets/tokens.css, frozen at the base commit: the body carries
+     `projector`, so the page's own canvas, ink and face are the display's, and each board's
+     stage is a real `.projector__screen` at 1920×1200, scaled to fit two side by side. */
+  body.preview { height: auto; overflow: auto; background: #0b0a09; padding: 24px 32px 40px; }
+  .preview__head { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+  .preview__head h1 { margin: 0; color: var(--ink); font-size: 19px; font-weight: 700; }
+  .preview__head p { margin: 0; color: #8e8a80; font-size: 13px; font-weight: 400; }
+  .preview__controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .preview__controls button {
+    padding: 7px 13px; border: 1px solid #4a463f; border-radius: 6px; background: #211f1b;
+    color: #ddd8cd; font: inherit; font-size: 13px; font-weight: 400; cursor: pointer;
+  }
+  .preview__controls button[aria-pressed="true"] { background: #3a352d; border-color: #8e887b; color: #fff; }
+  .preview__controls button:hover { border-color: #8e887b; }
+  .boards { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .board { margin: 0; }
+  .board figcaption { margin: 0 0 8px; color: #ddd8cd; font-size: 13px; font-weight: 700; }
+  .board figcaption span { color: #8e8a80; font-weight: 400; }
+  .board__frame { position: relative; width: 864px; height: 540px; overflow: hidden; border: 1px solid #2a2722; border-radius: 6px; }
+  .board__stage { width: 1920px; height: 1200px; transform: scale(.45); transform-origin: top left; }
+  .readout { margin-top: 24px; border-collapse: collapse; font-size: 13px; font-weight: 400; color: #ddd8cd; }
+  .readout th, .readout td { padding: 6px 16px 6px 0; text-align: left; border-bottom: 1px solid #241f1a; }
+  .readout thead th { color: #8e8a80; font-weight: 400; }
+  .readout td { font-variant-numeric: tabular-nums; }
+  .readout td.same { color: #8e8a80; }
+  .readout td.diff { color: #ffd166; }
+  .note { margin: 14px 0 0; max-width: 1060px; color: #8e8a80; font-size: 12px; font-weight: 400; line-height: 1.6; }
+</style>
+</head>
+<body class="projector preview" data-showing="true">
+
+<div class="preview__head">
+  <h1>The projector's image placeholder</h1>
+  <p>both boards are the real screen markup at 1920×1200, scaled to 45% — every rule from the frozen <code>projector.css</code></p>
+</div>
+
+<div class="preview__controls" role="group" aria-label="Set both boards to a state">
+  <button type="button" data-outcome="loaded" aria-pressed="true">Image loaded</button>
+  <button type="button" data-outcome="failed" aria-pressed="false">Bytes failed (404)</button>
+  <button type="button" data-outcome="pending" aria-pressed="false">Before the fetch settles</button>
+</div>
+
+<div class="boards">
+  <figure class="board">
+    <figcaption>Today — develop <span>· <code>missing.hidden = true</code> on an <code>&lt;svg&gt;</code></span></figcaption>
+    <div class="board__frame">
+      <div class="board__stage" id="stage-today">
+        <main class="projector__screen">
+          <div class="projector__screens">
+            <section class="screen is-active" data-screen="0" aria-hidden="false">
+              <div class="screen__image-box" data-media-image="preview"><img class="screen__image" alt="" hidden><svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg></div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+  </figure>
+
+  <figure class="board">
+    <figcaption>This slice <span>· <code>hidden</code> in the markup, <code>setAttribute</code> in the script</span></figcaption>
+    <div class="board__frame">
+      <div class="board__stage" id="stage-slice">
+        <main class="projector__screen">
+          <div class="projector__screens">
+            <section class="screen is-active" data-screen="0" aria-hidden="false">
+              <div class="screen__image-box" data-media-image="preview"><img class="screen__image" alt="" hidden><svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg></div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+  </figure>
+</div>
+
+<table class="readout" id="readout">
+  <thead><tr><th>measured on the 1920×1200 stage</th><th>Today</th><th>This slice</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<p class="note">
+  The picture is a stand-in, not the library's own: a 1600×900 frame, so its natural size decides the
+  same thing a photograph's would. The four lines that set the state are
+  <code>projector.js</code>'s <code>renderImageScreen</code> — the left board runs them as shipped, the
+  right board runs them with the <code>hidden</code> attribute. Nothing else differs between the boards.
+</p>
+
+<script>
+(function () {
+  'use strict';
+  var SCALE = 0.45;
+  /* A neutral 1600×900 frame: the shape a photograph has, drawn here so the repo carries no stock art. */
+  var PHOTO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900">' +
+    '<rect width="1600" height="900" fill="#3f4a52"/>' +
+    '<rect x="0" y="640" width="1600" height="260" fill="#4b574f"/>' +
+    '<circle cx="1280" cy="220" r="96" fill="#c8cfc9" opacity=".55"/>' +
+    '<path d="M120 640 520 330l300 240 180-140 400 210z" fill="#2e363c" opacity=".8"/>' +
+    '<text x="800" y="470" fill="#c8cfc9" font-family="sans-serif" font-size="54" text-anchor="middle" opacity=".7">1600 × 900</text>' +
+    '</svg>');
+
+  var boards = [
+    {stage: document.getElementById('stage-today'), slice: false},
+    {stage: document.getElementById('stage-slice'), slice: true}
+  ];
+
+  function draw(board, outcome) {
+    var box = board.stage.querySelector('[data-media-image]');
+    var image = box.querySelector('.screen__image');
+    var missing = box.querySelector('.screen__image-missing');
+    image.hidden = true;
+    image.removeAttribute('src');
+    if (board.slice) {
+      missing.setAttribute('hidden', '');          /* what the slice's renderImageScreen does */
+    } else {
+      missing.hidden = true;                       /* what develop's renderImageScreen does */
+    }
+    if (outcome === 'loaded') {
+      image.src = PHOTO;
+      image.hidden = false;
+    } else if (outcome === 'failed') {
+      if (board.slice) missing.removeAttribute('hidden');
+      else missing.hidden = false;
+    }
+  }
+
+  function box(rect, stage) {
+    return {x: Math.round((rect.x - stage.x) / SCALE), y: Math.round((rect.y - stage.y) / SCALE),
+            w: Math.round(rect.width / SCALE), h: Math.round(rect.height / SCALE)};
+  }
+
+  function measure() {
+    return boards.map(function (board) {
+      var stage = board.stage.getBoundingClientRect();
+      var image = board.stage.querySelector('.screen__image');
+      var missing = board.stage.querySelector('.screen__image-missing');
+      var i = box(image.getBoundingClientRect(), stage);
+      var m = box(missing.getBoundingClientRect(), stage);
+      var middle = Math.round(stage.width / SCALE / 2);
+      return {
+        glyphDisplay: getComputedStyle(missing).display,
+        glyphHiddenAttr: missing.hasAttribute('hidden'),
+        glyph: m,
+        image: i,
+        imageCentre: i.w ? i.x + i.w / 2 : null,
+        stageMiddle: middle,
+        offset: i.w ? Math.round(i.x + i.w / 2 - middle) : null
+      };
+    });
+  }
+
+  function row(label, today, slice, compare) {
+    var same = compare ? today === slice : true;
+    return '<tr><th>' + label + '</th><td class="' + (same ? 'same' : 'diff') + '">' + today +
+           '</td><td class="' + (same ? 'same' : 'diff') + '">' + slice + '</td></tr>';
+  }
+
+  function readout() {
+    var m = measure();
+    var t = m[0], s = m[1];
+    var span = function (b) { return b.w && b.h ? b.w + '×' + b.h + ' at x ' + b.x + '–' + (b.x + b.w) + ', y ' + b.y + '–' + (b.y + b.h) : '— (no box in the flow)'; };
+    var centre = function (b) { return b.imageCentre === null ? 'nothing painted' : b.imageCentre + ' ÷ ' + b.stageMiddle; };
+    var offset = function (b) { return b.offset === null ? '—' : (b.offset > 0 ? '+' : '') + b.offset + 'px'; };
+    document.querySelector('#readout tbody').innerHTML = [
+      row('glyph computed <code>display</code>', t.glyphDisplay, s.glyphDisplay, true),
+      row('glyph carries <code>hidden</code>', String(t.glyphHiddenAttr), String(s.glyphHiddenAttr), true),
+      row('glyph box', span(t.glyph), span(s.glyph), true),
+      row('image box', span(t.image), span(s.image), true),
+      row('image centre ÷ stage middle', centre(t), centre(s), true),
+      row('image offset from the middle', offset(t), offset(s), true)
+    ].join('');
+    return m;
+  }
+
+  var current = 'loaded';
+  /* A picture that has just been given its src has no box until the bitmap decodes, and the readout
+     would then measure the glyph alone — the state's own numbers must wait for the decode. */
+  function apply(outcome) {
+    current = outcome;
+    document.querySelectorAll('.preview__controls button').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(button.dataset.outcome === outcome));
+    });
+    boards.forEach(function (board) { draw(board, outcome); });
+    if (outcome !== 'loaded') return Promise.resolve(readout());
+    return Promise.all(boards.map(function (board) {
+      return board.stage.querySelector('.screen__image').decode().catch(function () {});
+    })).then(readout);
+  }
+
+  document.querySelectorAll('.preview__controls button').forEach(function (button) {
+    button.addEventListener('click', function () { apply(button.dataset.outcome); });
+  });
+
+  window.__preview = {apply: apply, measure: function () { return apply(current); }};
+  apply('loaded');
+})();
+</script>
+</body>
+</html>
