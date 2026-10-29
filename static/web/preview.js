@@ -58,6 +58,12 @@
     }
   };
 
+  /* The body holds focus while a player is being operated (spec 159), so the ring is suppressed rather
+     than the focus — arrow-key scrolling still works. Cleared on Tab, on open and on close. */
+  function markShortcut(on) {
+    content.classList.toggle('is-shortcut', Boolean(on));
+  }
+
   function sizeImagePreview() {
     if (!imageSize || !modal.open) return;
     var width = Math.max(1, window.innerWidth - 32 - 44);
@@ -498,6 +504,7 @@
       var data = anchor && document.querySelector(
         '.entry__preview-src[data-preview-for="' + anchor + '"]');
       content.innerHTML = data ? data.textContent : '';
+      markShortcut(false);   /* a preview never inherits the last one's suppression (spec 159) */
       modal.classList.toggle('is-image-preview', Boolean(content.querySelector('[data-preview-image]')));
       modal.classList.toggle('is-audio-preview', Boolean(content.querySelector('[data-preview-audio]')));
       modal.classList.toggle('is-video-preview', Boolean(content.querySelector('[data-preview-video]')));
@@ -575,6 +582,7 @@
     if (nextMode) saveBreaks(null, nextMode);
   });
   modal.addEventListener('keydown', function (event) {
+    if (event.key === 'Tab') markShortcut(false);   /* the indicator returns to a reader who navigates */
     if (confirmLayer.hidden && modal.classList.contains('is-pdf-preview') && pdfDocument
         && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
       event.preventDefault();
@@ -586,6 +594,7 @@
         && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey
         && event.target !== content.querySelector('[data-audio-seek]')) {
       event.preventDefault();
+      markShortcut(true);
       if (audioPlayer) audioPlayer.toggle();
       return;
     }
@@ -593,6 +602,7 @@
         && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey
         && !event.shiftKey && !event.target.closest('button, input, select, textarea, [contenteditable="true"]')) {
       event.preventDefault();
+      markShortcut(true);
       if (videoPlayer) videoPlayer.toggle();
       return;
     }
@@ -642,6 +652,7 @@
     clearVideoPreview();
     clearPDFPreview();
     content.innerHTML = '';
+    markShortcut(false);
     head.hidden = true;
     headTitle.textContent = '';
     tabsHost.innerHTML = '';
