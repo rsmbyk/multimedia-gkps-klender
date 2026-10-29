@@ -2,7 +2,7 @@
 
 **capability**: `projector`
 **last folded**: 2026-10-29
-**slices**: `158-projector-media-fit`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**slices**: `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -135,7 +135,36 @@ does, and its `aria-label` SHALL read `Play audio` while paused and `Pause audio
 - WHEN the companion has no copy of the file, or the bytes are not audio
 - THEN the player stays hidden, the missing-file mark shows, and no control is painted
 
-### R5 — An image screen is fitted to the stage, above 1:1 as well as below
+### R5 — A playing recording owns the projector screen until it pauses
+
+While an audio entry's recording plays, the projector SHALL hold the screen it is on: no page step,
+entry or bait jump, page boundary, mouse zone, corner-cue control or Go To SHALL move it, and the
+recording SHALL keep playing through any of them. The playing recording SHALL take the viewport the way
+a playing video does — the audio screen's own box, not the page — so the corner cue and the mouse zones
+are off screen; that is the reading R4's "the page does not enter fullscreen" leaves room for. The pause
+that gives the screen back SHALL keep the position playback had reached.
+
+#### Scenario: a key arrives while the recording plays
+- WHEN an arrow, page or home/end key arrives — plain, Shift or Ctrl — while a recording plays
+- THEN the projector stays on the recording's screen and the recording keeps playing
+
+#### Scenario: the pointer arrives while the recording plays
+- WHEN a mouse zone or a corner-cue control is clicked, or the Go To is asked for
+- THEN nothing moves, no panel opens, and the recording keeps playing
+
+#### Scenario: the screen is given back
+- WHEN the operator pauses — from the control, `Space`, or the browser leaving fullscreen — or the recording ends
+- THEN the normal projector screen returns, paused, holding the position playback had reached
+
+#### Scenario: the browser refuses fullscreen
+- WHEN the fullscreen request is refused while the recording plays
+- THEN the recording plays on the normal projector screen and the screen stays locked until it pauses
+
+#### Scenario: the dock drives the projector
+- WHEN the display channel hides, releases or names another screen
+- THEN the recording stops and is released, as it did before this requirement
+
+### R6 — An image screen is fitted to the stage, above 1:1 as well as below
 
 A screen whose media is an image SHALL paint it at the scale `min(stage width / image width, stage
 height / image height)` — the smaller of the two ratios — whether that scale shrinks the image or
@@ -154,7 +183,7 @@ recomputed when the window's size changes. (spec 158)
 - WHEN the window narrows to a 960×672 stage
 - THEN the same 12×6 image re-fits to 960×480 without a reload
 
-### R6 — A PDF or PowerPoint page is fitted the same way
+### R7 — A PDF or PowerPoint page is fitted the same way
 
 A screen whose media is a PDF page or a slide SHALL paint it at the same smaller ratio, at the
 display's pixel ratio up to the painter's 6-megapixel cap. The reader's Preview dialog keeps its own
@@ -168,7 +197,7 @@ rule and never scales a page above 1:1. (spec 158)
 - WHEN the same page is opened in the reading page's Preview dialog
 - THEN it paints at its own size, never larger
 
-### R7 — `T` switches between fit width and fit height
+### R8 — `T` switches between fit width and fit height
 
 With a media screen showing, `T` SHALL switch to fit width — the media spans the stage's width and the
 excess height is clipped equally above and below — and a second `T` to fit height, the excess width
@@ -189,7 +218,7 @@ unaffected: `T` still flips a passage's TB/SIM. (spec 158)
 - WHEN `T` is pressed on a passage screen
 - THEN the translation flips TB/SIM, as before
 
-### R8 — The shortcut sheet names the key
+### R9 — The shortcut sheet names the key
 
 The projector's shortcut sheet SHALL carry a group naming images and PDFs, whose one row gives `T` for
 fit width and fit height, and the sheet SHALL keep the height it had (677 px at 1080p) so it still
@@ -199,7 +228,7 @@ fits a 1280×720 window. (spec 158)
 - WHEN `K` opens the sheet at 1280×720
 - THEN the Image and PDF group is inside the sheet's frame and the sheet is 677 px tall
 
-### R9 — The overflow is panned, by drag and by wheel
+### R10 — The overflow is panned, by drag and by wheel
 
 While a media screen's painted size exceeds the stage on either axis, a pointer drag on the screen SHALL
 pan the media within that overflow, and the mouse wheel SHALL pan it too — `deltaY` vertically, `deltaX`

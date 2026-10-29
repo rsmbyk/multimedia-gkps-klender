@@ -28,6 +28,10 @@ def _wav():
     return output.getvalue()
 
 
+DENY_FULLSCREEN = """Object.defineProperty(Element.prototype, 'requestFullscreen', {
+  configurable: true, value: function () { return Promise.reject(new Error('denied')); }});"""
+
+
 @tag('e2e')
 @unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -60,7 +64,7 @@ class AudioDisplayE2ETests(StaticLiveServerTestCase):
         self.playwright.stop()
         super().tearDown()
 
-    def _page(self, path, available=True, payload=None):
+    def _page(self, path, available=True, payload=None, init_script=None):
         page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
         body = _wav() if payload is None else payload
         def serve(route):
@@ -69,8 +73,15 @@ class AudioDisplayE2ETests(StaticLiveServerTestCase):
                                    'Content-Type': 'application/octet-stream'},
                           body=body if available else b'')
         page.route('http://127.0.0.1:63174/v1/files/' + self.media.sha256, serve)
+        if init_script:
+            page.add_init_script(init_script)
         page.goto(self.live_server_url + path)
         return page
+
+    def _open_projector_audio(self, page):
+        page.keyboard.press('Space')
+        page.keyboard.press('Control+ArrowRight')
+        expect(page.locator('.screen.is-active .screen__audio-player')).to_be_visible()
 
     def test_preview_plays_seeks_and_closes(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
@@ -141,12 +152,156 @@ class AudioDisplayE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.screen.is-active .screen__audio-player')).to_be_visible()
         page.keyboard.press('Space')
         expect(page.locator('.screen.is-active .screen__audio-play')).to_have_attribute('data-playing', 'true')
+        # Spec 155: a playing recording holds the screen, so the pause comes first.
+        page.keyboard.press('Space')
+        expect(page.locator('.screen.is-active .screen__audio-play')).to_have_attribute('data-playing', 'false')
         page.keyboard.press('Control+ArrowRight')
         expect(page.locator('.screen.is-active .screen__audio-player')).to_have_count(0)
         page.keyboard.press('Control+ArrowLeft')
         expect(page.locator('.screen.is-active .screen__audio-play')).to_have_attribute('data-playing', 'false')
         self.assertEqual(page.locator('.screen.is-active [data-audio-elapsed]').inner_text(), '0:00')
         page.close()
+
+    def test_projector_playing_audio_enters_fullscreen(self):
+        page = self._page(f'/projector?service={self.service.pk}')
+        self._open_projector_audio(page)
+        page.keyboard.press('Space')
+        page.wait_for_function('() => document.fullscreenElement !== null')
+        reading = page.evaluate("""() => {
+            const element = document.fullscreenElement;
+            const box = element.getBoundingClientRect();
+            const style = getComputedStyle(element);
+            return {
+              isAudioBox: element.matches('.screen.is-active .screen__audio-box'),
+              width: box.width, height: box.height, x: box.x, y: box.y,
+              viewport: [window.innerWidth, window.innerHeight],
+              background: style.backgroundColor,
+              cueInside: element.contains(document.getElementById('corner-cue')),
+            };
+        }""")
+        self.assertTrue(reading['isAudioBox'])
+        self.assertEqual([reading['width'], reading['height']], reading['viewport'])
+        self.assertEqual([reading['x'], reading['y']], [0, 0])
+        self.assertEqual(reading['background'], 'rgb(23, 22, 19)')
+        self.assertFalse(reading['cueInside'])
+        page.close()
+
+    def test_projector_playing_audio_locks_navigation(self):
+        page = self._page(f'/projector?service={self.service.pk}')
+        self._open_projector_audio(page)
+        page.keyboard.press('Space')
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'true')
+        current = page.locator('body').get_attribute('data-current-screen')
+        for key in ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp',
+                    'Home', 'End', 'Control+ArrowRight', 'Shift+ArrowRight']:
+            page.keyboard.press(key)
+            self.assertEqual(page.locator('body').get_attribute('data-current-screen'), current, key)
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'true')
+        page.close()
+
+    def test_projector_playing_audio_keeps_go_to_shut(self):
+        page = self._page(f'/projector?service={self.service.pk}')
+        self._open_projector_audio(page)
+        page.keyboard.press('Space')
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'true')
+        page.keyboard.press('g')
+        expect(page.locator('#projectorFind')).to_be_hidden()
+        page.keyboard.press('j')
+        self.assertNotIn('entry-list-open', page.locator('body').get_attribute('class'))
+        page.close()
+
+    def test_projector_playing_audio_ignores_pointer_navigation(self):
+        # A refused fullscreen leaves the zones painted, so the pointer guard is the one under test.
+        page = self._page(f'/projector?service={self.service.pk}', init_script=DENY_FULLSCREEN)
+        self._open_projector_audio(page)
+        page.keyboard.press('Space')
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'true')
+        current = page.locator('body').get_attribute('data-current-screen')
+        zone = page.locator('.mouse-zone--next')
+        zone.click(force=True)      # the first click belongs to the page's fullscreen attempt
+        zone.click(force=True)
+        self.assertEqual(page.locator('body').get_attribute('data-current-screen'), current)
+        page.locator('#cue-service').click(force=True)
+        self.assertNotIn('entry-list-open', page.locator('body').get_attribute('class'))
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'true')
+        page.close()
+
+    def test_projector_pausing_audio_returns_the_screen(self):
+        page = self._page(f'/projector?service={self.service.pk}')
+        self._open_projector_audio(page)
+        page.keyboard.press('Space')
+        page.wait_for_function('() => document.fullscreenElement !== null')
+        current = page.locator('body').get_attribute('data-current-screen')
+        # the clock starts counting a moment after the keypress (blob -> metadata -> play),
+        # so wait for the readout rather than for a number of milliseconds
+        page.wait_for_function("""() => {
+            const elapsed = document.querySelector('.screen.is-active [data-audio-elapsed]');
+            return elapsed && elapsed.textContent !== '0:00';
+        }""")
+        played = page.locator('.screen.is-active [data-audio-elapsed]').inner_text()
+        page.keyboard.press('Space')
+        page.wait_for_function('() => document.fullscreenElement === null')
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'false')
+        self.assertEqual(page.locator('body').get_attribute('data-current-screen'), current)
+        self.assertNotEqual(played, '0:00')
+        self.assertEqual(page.locator('.screen.is-active [data-audio-elapsed]').inner_text(), played)
+        page.keyboard.press('Control+ArrowRight')
+        self.assertNotEqual(page.locator('body').get_attribute('data-current-screen'), current)
+        page.close()
+
+    def test_projector_escape_leaves_fullscreen_and_pauses_audio(self):
+        page = self._page(f'/projector?service={self.service.pk}')
+        self._open_projector_audio(page)
+        page.keyboard.press('Space')
+        page.wait_for_function('() => document.fullscreenElement !== null')
+        current = page.locator('body').get_attribute('data-current-screen')
+        page.keyboard.down('Escape')
+        page.wait_for_timeout(1200)
+        page.keyboard.up('Escape')
+        page.wait_for_function('() => document.fullscreenElement === null')
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'false')
+        self.assertEqual(page.locator('body').get_attribute('data-current-screen'), current)
+        page.close()
+
+    def test_projector_audio_end_returns_the_screen(self):
+        page = self._page(f'/projector?service={self.service.pk}')
+        self._open_projector_audio(page)
+        page.keyboard.press('Space')
+        page.wait_for_function('() => document.fullscreenElement !== null')
+        page.evaluate("""() => {
+            const seek = document.querySelector('.screen.is-active [data-audio-seek]');
+            const box = seek.getBoundingClientRect();
+            seek.dispatchEvent(new PointerEvent('pointerdown', {clientX: box.left + box.width - 2,
+                clientY: box.top + box.height / 2, pointerId: 1, bubbles: true}));
+        }""")
+        page.wait_for_function('() => document.fullscreenElement === null', timeout=8000)
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'false')
+        page.close()
+
+    def test_projector_refused_fullscreen_still_locks_audio(self):
+        page = self._page(f'/projector?service={self.service.pk}', init_script=DENY_FULLSCREEN)
+        self._open_projector_audio(page)
+        page.keyboard.press('Space')
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'true')
+        self.assertIsNone(page.evaluate('document.fullscreenElement'))
+        current = page.locator('body').get_attribute('data-current-screen')
+        for key in ['ArrowRight', 'Control+ArrowRight', 'Home']:
+            page.keyboard.press(key)
+            self.assertEqual(page.locator('body').get_attribute('data-current-screen'), current, key)
+        page.keyboard.press('Space')
+        expect(page.locator('.screen.is-active [data-audio-play]')).to_have_attribute(
+            'data-playing', 'false')
+        page.keyboard.press('Control+ArrowRight')
+        self.assertNotEqual(page.locator('body').get_attribute('data-current-screen'), current)
 
     def test_projector_audio_control_is_painted_and_toggles(self):
         page = self._page(f'/projector?service={self.service.pk}')

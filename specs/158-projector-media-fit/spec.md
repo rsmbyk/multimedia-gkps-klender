@@ -148,18 +148,18 @@ fits, and the sheet still fits the window at 1280×720 and 1024×768.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | An image screen SHALL paint its image at the scale `min(stage width / image width, stage height / image height)` — above 1 as well as below — whole and centred on the stage. | `projector/R5` (new) |
-| FR-002 | A PDF or PowerPoint screen SHALL paint its page at the same scale, computed from the page's own size, and at the display's pixel ratio up to the painter's existing cap. | `projector/R6` (new) |
-| FR-003 | With a media screen showing, `T` SHALL switch to fit width (the media spans the stage's width, the excess height clipped equally above and below); a second `T` SHALL switch to fit height (the excess width clipped equally left and right); a third returns to fit width. | `projector/R7` (new) |
-| FR-004 | The default fit state SHALL be the one `T` is not currently in: entering a media screen adopts the fit whose scale is the smaller of the two. | `projector/R7` |
-| FR-005 | A media screen's fit state SHALL return to the default when a different entry's screen shows, and SHALL persist across the pages of one document. | `projector/R7` |
-| FR-006 | The projector SHALL re-fit the showing media when the window's size changes, keeping the chosen state. | `projector/R5`, `projector/R6` |
-| FR-007 | The shortcut sheet SHALL list `T` under a group naming images and PDFs, and SHALL keep its current height (677 px at 1080p) so it still fits a 1280×720 window. | `projector/R8` (new) |
+| FR-001 | An image screen SHALL paint its image at the scale `min(stage width / image width, stage height / image height)` — above 1 as well as below — whole and centred on the stage. | `projector/R6` (new) |
+| FR-002 | A PDF or PowerPoint screen SHALL paint its page at the same scale, computed from the page's own size, and at the display's pixel ratio up to the painter's existing cap. | `projector/R7` (new) |
+| FR-003 | With a media screen showing, `T` SHALL switch to fit width (the media spans the stage's width, the excess height clipped equally above and below); a second `T` SHALL switch to fit height (the excess width clipped equally left and right); a third returns to fit width. | `projector/R8` (new) |
+| FR-004 | The default fit state SHALL be the one `T` is not currently in: entering a media screen adopts the fit whose scale is the smaller of the two. | `projector/R8` |
+| FR-005 | A media screen's fit state SHALL return to the default when a different entry's screen shows, and SHALL persist across the pages of one document. | `projector/R8` |
+| FR-006 | The projector SHALL re-fit the showing media when the window's size changes, keeping the chosen state. | `projector/R6`, `projector/R7` |
+| FR-007 | The shortcut sheet SHALL list `T` under a group naming images and PDFs, and SHALL keep its current height (677 px at 1080p) so it still fits a 1280×720 window. | `projector/R9` (new) |
 | FR-008 | Every other screen kind SHALL behave as it does today: `T` still flips a passage's TB/SIM, and audio and video are unaffected by the fit. | — (no capability change) |
-| FR-009 | While a media screen's painted size exceeds the stage on either axis, a pointer drag on the screen SHALL pan the media within the overflow, and the mouse wheel SHALL pan it too — vertically by `deltaY`, horizontally by `deltaX` or `Shift`+`deltaY` — for an image and a PDF page alike. | `projector/R9` (new) |
-| FR-010 | The pan SHALL be clamped so a media edge never leaves the stage's edge, and SHALL start at the centre whenever the fit state or the screen changes. | `projector/R9` |
-| FR-011 | Panning SHALL NOT eat navigation: a press that moves no more than 4 px remains a click to the corner's mouse zones (entering fullscreen when windowed, then previous, next or show/hide words). | `projector/R9` |
-| FR-012 | While a media screen overflows, the pointer over the stage SHALL read `grab`, and `grabbing` while it drags. | `projector/R9` |
+| FR-009 | While a media screen's painted size exceeds the stage on either axis, a pointer drag on the screen SHALL pan the media within the overflow, and the mouse wheel SHALL pan it too — vertically by `deltaY`, horizontally by `deltaX` or `Shift`+`deltaY` — for an image and a PDF page alike. | `projector/R10` (new) |
+| FR-010 | The pan SHALL be clamped so a media edge never leaves the stage's edge, and SHALL start at the centre whenever the fit state or the screen changes. | `projector/R10` |
+| FR-011 | Panning SHALL NOT eat navigation: a press that moves no more than 4 px remains a click to the corner's mouse zones (entering fullscreen when windowed, then previous, next or show/hide words). | `projector/R10` |
+| FR-012 | While a media screen overflows, the pointer over the stage SHALL read `grab`, and `grabbing` while it drags. | `projector/R10` |
 
 ### Key Entities
 

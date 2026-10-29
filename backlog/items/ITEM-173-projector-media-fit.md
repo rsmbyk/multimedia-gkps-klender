@@ -1,5 +1,5 @@
 ---
-id: ITEM-172
+id: ITEM-173
 status: in-review
 title: 'A small image or a PDF page fills the projector stage'
 type: feat
@@ -17,7 +17,7 @@ bump: minor
 release_version:
 ---
 
-# ITEM-172: A small image or a PDF page fills the projector stage
+# ITEM-173: A small image or a PDF page fills the projector stage
 
 ## Summary
 
