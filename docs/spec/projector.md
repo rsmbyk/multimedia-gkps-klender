@@ -2,7 +2,7 @@
 
 **capability**: `projector`
 **last folded**: 2026-10-29
-**slices**: `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**slices**: `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song. This file starts at spec 136 — the projector's earlier behaviour
@@ -134,3 +134,33 @@ does, and its `aria-label` SHALL read `Play audio` while paused and `Pause audio
 #### Scenario: the local copy is missing
 - WHEN the companion has no copy of the file, or the bytes are not audio
 - THEN the player stays hidden, the missing-file mark shows, and no control is painted
+
+### R5 — A playing recording owns the projector screen until it pauses
+
+While an audio entry's recording plays, the projector SHALL hold the screen it is on: no page step,
+entry or bait jump, page boundary, mouse zone, corner-cue control or Go To SHALL move it, and the
+recording SHALL keep playing through any of them. The playing recording SHALL take the viewport the way
+a playing video does — the audio screen's own box, not the page — so the corner cue and the mouse zones
+are off screen; that is the reading R4's "the page does not enter fullscreen" leaves room for. The pause
+that gives the screen back SHALL keep the position playback had reached.
+
+#### Scenario: a key arrives while the recording plays
+- WHEN an arrow, page or home/end key arrives — plain, Shift or Ctrl — while a recording plays
+- THEN the projector stays on the recording's screen and the recording keeps playing
+
+#### Scenario: the pointer arrives while the recording plays
+- WHEN a mouse zone or a corner-cue control is clicked, or the Go To is asked for
+- THEN nothing moves, no panel opens, and the recording keeps playing
+
+#### Scenario: the screen is given back
+- WHEN the operator pauses — from the control, `Space`, or the browser leaving fullscreen — or the recording ends
+- THEN the normal projector screen returns, paused, holding the position playback had reached
+
+#### Scenario: the browser refuses fullscreen
+- WHEN the fullscreen request is refused while the recording plays
+- THEN the recording plays on the normal projector screen and the screen stays locked until it pauses
+
+#### Scenario: the dock drives the projector
+- WHEN the display channel hides, releases or names another screen
+- THEN the recording stops and is released, as it did before this requirement
+

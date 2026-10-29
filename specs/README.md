@@ -92,6 +92,7 @@ the templates are in [`_templates/`](./_templates/).
 | [152](152-transfer-scrollbar-edge/spec.md) | The Transfers scrollbar sits at the dialog's edges | Accepted |
 | [153](153-preview-tabs-row/spec.md) | The preview's verse tabs get their own row | Accepted |
 | [154](154-audio-times-inline/spec.md) | An audio preview reads its times as `current / total` | Draft |
+| [155](155-audio-presentation-lock/spec.md) | A playing recording owns the projector screen until it pauses | Accepted |
 | [156](156-audio-play-indicator/spec.md) | The audio projector screen shows its play/pause control | Accepted |
 | [157](157-projector-image-missing-glyph/spec.md) | The projector's image placeholder waits for the image to fail | Accepted |
 | [161](161-projector-empty-notice/spec.md) | The projector's empty notice leaves the stage when Go To shows a passage or a song | Accepted |
