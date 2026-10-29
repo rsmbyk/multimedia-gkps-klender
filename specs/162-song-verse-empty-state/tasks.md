@@ -64,5 +64,5 @@
 - [X] T012 The full verification run: the three targeted suites green (158 unit/web tests, 3 song
       E2Es), and `tests.e2e.test_entry_pickers` run as extra evidence — red on `develop` itself, see
       `converge.md`.
-- [ ] T013 `VERSION` 1.22.10 → 1.22.11 and the `## [Unreleased]` line in `CHANGELOG.md` (bump:
-      patch), in the delivery commit with the card's move to In review.
+- [X] T013 `VERSION` 1.22.15 → 1.22.16 and the `## [Unreleased]` line in `CHANGELOG.md` (bump:
+      patch), in the delivery commit with the card's move to In review (PR #453).
