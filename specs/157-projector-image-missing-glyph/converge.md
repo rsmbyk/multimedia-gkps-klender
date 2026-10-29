@@ -21,10 +21,11 @@ against what can be run before the merge.
 **The neighbouring modules.** `tests.e2e.test_audio_display`, `test_video_display` and `test_pdf_display`
 — 18 tests, 16 green, 2 red: `test_untitled_preview_and_projector_idle_display_off` and
 `test_navigation_and_display_off_stop_and_reset_video`, both on
-`body[data-showing]` staying `true` after display-off is asked. They are card `ITEM-140`'s, recorded on
-the board as identical on `develop`; `data-showing` is written at `projector.js:403` and `:1164`, neither
-of which this slice touches (the diff is `:204`, `:221` and `:233`). Not a gap between this code and this
-spec's requirements.
+`body[data-showing]` staying `true` after display-off is asked. They are card `ITEM-140`'s. Measured again on
+the base commit's own two files (`24a6d6d2`, this slice's changes reverted): both fail the same way,
+`Actual value: true`, in 19.1s — so they are `develop`'s and not this slice's. `data-showing` is written
+at `projector.js:403` and `:1164`, neither of which the diff touches (`:204`, `:221`, `:233`). Not a gap
+between this code and this spec's requirements.
 
 **The diff.** One attribute on the image box's placeholder (`projector.html:46`), two toggles
 (`projector.js:220`, `:232`) and one reset in `clearImageScreen` (`:205`). No CSS, no `media-image.js`, no
