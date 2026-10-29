@@ -2636,6 +2636,26 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('id="corner-cue"', html)
         self.assertIn('class="mouse-zones"', html)
 
+    def test_the_shortcuts_sheet_names_audio_and_video_in_groups_of_their_own(self):
+        sheet = self.html().split('<div class="sheet" id="key-list">', 1)[1].split('\n  </div>', 1)[0]
+        columns = [re.findall(r'<h3>([^<]+)</h3>', column)
+                   for column in sheet.split('<div class="stack">')[1:]]
+        self.assertEqual(columns, [['Service', 'Song', 'Passage'],
+                                   ['Library passage', 'Library Detour', 'Image and PDF',
+                                    'Audio', 'Video'],
+                                   ['Display', 'Find', 'While Finding', 'Fullscreen']])
+        rows = {heading: re.findall(r'class="fn">([^<]+)</span>', body)
+                for heading, body in re.findall(r'<h3>([^<]+)</h3>(.*?)</section>', sheet, re.S)}
+        self.assertEqual(rows['Audio'], ['Play/Pause'])
+        self.assertEqual(rows['Video'], ['Play/Pause'])
+        self.assertEqual(rows['Display'], ['Show or Hide Words', 'Show or Hide Corner',
+                                           'Keyboard Shortcuts'])
+        self.assertNotIn('Audio/Video Play/Pause', sheet)
+        bodies = dict(re.findall(r'<h3>([^<]+)</h3>(.*?)</section>', sheet, re.S))
+        for heading in ('Audio', 'Video'):
+            self.assertIn('class="k sp glyph" title="Space" aria-label="Space"', bodies[heading])
+            self.assertIn('class="space-mark"', bodies[heading])
+
     # --- what it shows ----------------------------------------------------
 
     def screens(self, html=None):

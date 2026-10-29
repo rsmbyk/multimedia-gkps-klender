@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-166](./items/ITEM-166-shortcuts-audio-video-groups.md) | The shortcuts sheet names Audio and Video on their own | Audio and video each get a group holding their Play/Pause row, and the combined row leaves Display | feat | P2 | S | [160](../specs/160-shortcuts-audio-video-groups/spec.md) | feat/160-shortcuts-audio-video-groups | 2026-10-29 |
 
 ## In review
 
