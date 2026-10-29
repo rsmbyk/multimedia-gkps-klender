@@ -1,8 +1,8 @@
 # projector
 
 **capability**: `projector`
-**last folded**: 2026-10-26
-**slices**: `136-remove-offline-library`
+**last folded**: 2026-10-29
+**slices**: `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song. This file starts at spec 136 — the projector's earlier behaviour
@@ -47,7 +47,11 @@ fails — a failure leaves the panel open with its rows and says the content cou
 
 The projector SHALL paint the screens the server sent with the page. It SHALL NOT read a saved
 service, wait for a library update, or promise a saved copy in its empty state; a service with no
-items SHALL show the empty state.
+items SHALL show the empty state. The empty state SHALL be painted only while the stage holds
+nothing: while a Go To detour is on the stage the empty notice SHALL NOT be painted and SHALL take no
+room in the stage's layout, so the detour is laid out in the full stage; closing the detour SHALL
+bring the notice back when the service still holds nothing. A re-read that ends with screens SHALL
+hide the notice in that same render, and one that ends with none SHALL leave it visible.
 
 #### Scenario: a service with items
 - WHEN the projector opens for a service
@@ -56,3 +60,38 @@ items SHALL show the empty state.
 #### Scenario: a service with no items
 - WHEN the projector opens for a service holding nothing
 - THEN it shows its empty state, naming no saved copy
+
+#### Scenario: a Go To passage or song over an empty service
+- WHEN a Go To detour paints over a service with no items
+- THEN the empty notice is not painted, takes no room, and the detour is fitted to the full stage
+- AND closing the detour brings the notice back
+
+#### Scenario: a re-read that brings the first screens
+- WHEN the page re-reads its service and the response carries screens
+- THEN the empty notice is hidden in the same render
+- AND a re-read that carries no screens leaves it visible
+
+### R3 — The projector's image placeholder appears only when the image fails
+
+An image screen SHALL paint its picture alone when the bytes arrive, and the unavailable glyph alone when
+the load fails; while the fetch has not settled it SHALL paint neither. The glyph SHALL be hidden by its
+`hidden` attribute — carried in the markup, as the audio, video, PDF and slides placeholders carry it, and
+toggled by the attribute rather than by the `hidden` property, which an SVG element does not have — so the
+element leaves the flex row and the picture alone is what the box centres. A screen that stops being
+active SHALL drop a failed state with it.
+
+#### Scenario: the bytes arrive
+- WHEN an image screen becomes the active one and its fetch resolves
+- THEN the picture is painted, the glyph is not, and the picture is centred on the stage's middle
+
+#### Scenario: the load fails
+- WHEN the fetch rejects, answers a non-image response or errors in the player
+- THEN the glyph alone is painted, 80×80, on the stage's middle
+
+#### Scenario: the fetch has not settled
+- WHEN an image screen is active and its bytes have not arrived
+- THEN neither the picture nor the glyph is painted
+
+#### Scenario: leaving a screen that failed
+- WHEN the operator moves to another screen and returns to the one that failed
+- THEN the screen is drawn from its own empty state and its own fetch decides what is painted
