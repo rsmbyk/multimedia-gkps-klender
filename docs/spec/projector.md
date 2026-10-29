@@ -82,5 +82,5 @@ screen back SHALL keep the position playback had reached.
 - THEN the recording plays on the normal projector screen and the screen stays locked until it pauses
 
 #### Scenario: the dock drives the projector
-- WHEN the display channel hides, stops or names another screen
+- WHEN the display channel hides, releases or names another screen
 - THEN the recording stops and is released, as it did before this requirement

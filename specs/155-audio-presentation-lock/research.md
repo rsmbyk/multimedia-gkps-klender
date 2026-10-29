@@ -54,11 +54,13 @@
 
 ## D004 — The dock channel and `c`/`t` stay live
 
-- **Decision**: `show` / `hide` / `release` / `stop` messages, the adopt path, the corner-hide key (`c`)
-  and the translation key (`t`) are not part of the lock.
+- **Decision**: `show` / `hide` / `release` / `flip` / `update` messages, the adopt path, the corner-hide
+  key (`c`) and the translation key (`t`) are not part of the lock.
 - **Rationale**: the channel is the authority that drives the projector from the dock (spec 119), and
-  the existing tests pin that a `stop` message stops and releases the recording
-  (`tests/e2e/test_audio_display.py::test_untitled_preview_and_projector_idle_display_off`). `c` and `t`
+  the code reads exactly those five message types (`static/web/projector.js:1390`). The one case that
+  broadcasts a `stop` (`tests/e2e/test_audio_display.py::test_untitled_preview_and_projector_idle_display_off`)
+  has never been satisfied — no handler exists, which is card ITEM-140 — so it is not a contract this
+  slice inherits. `c` and `t`
   change nothing about *which* screen is projected, and they are the operator's own display controls.
 - **Alternatives considered**: blocking every key while playing — it would make the dock's own stop
   path inconsistent with the local one and would leave `c` unusable for 5 minutes mid-recording.

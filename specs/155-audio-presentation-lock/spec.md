@@ -114,7 +114,7 @@ kills a recording.
 | FR-006 | Leaving fullscreen by the browser's own gesture pauses the recording; it never plays on under the normal page. | `projector/R3` |
 | FR-007 | When the recording reaches its end, the projector leaves fullscreen and returns to the normal screen, paused at the end. | `projector/R3` |
 | FR-008 | When the browser refuses fullscreen, the recording plays on the normal projector screen and the navigation lock still holds while it plays. | `projector/R3` |
-| FR-009 | The display channel stays authoritative: a dock `hide`/`release`/`stop`, or a screen the dock names, still stops and releases the recording exactly as today. | `projector/R3` |
+| FR-009 | The display channel stays authoritative: a dock `hide`/`release`, a `show` naming another screen, and an `update` still stop and release the recording exactly as today. | `projector/R3` |
 | FR-010 | `c` (corner hide) and `t` (translation) keep their behaviour while a recording plays: neither moves the projected screen off its entry. | `projector/R3` |
 
 ### Pins that flip
@@ -124,8 +124,9 @@ kills a recording.
 exactly that, so the case now pauses first and then navigates; its other claims are unchanged (Space
 toggles playback, a screen change releases the player, returning resets the clock to `0:00`).
 `::test_untitled_preview_and_projector_idle_display_off` is not changed by this slice: its final
-`stop`-broadcast assertion is already red on `develop` (card ITEM-140), and the case was re-run
-unchanged.
+`stop`-broadcast assertion fails because the page has never handled a `stop` message — it reads `show`,
+`hide`, `release`, `flip` and `update` only (`static/web/display.js:19`) — so that assertion is red on
+`develop` too (card ITEM-140), and the case was re-run unchanged.
 
 ### Key Entities
 
