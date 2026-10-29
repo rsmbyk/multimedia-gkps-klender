@@ -13,7 +13,7 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/435
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/434
 closed_at:
 closed_reason:
-bump:
+bump: patch
 release_version:
 ---
 

@@ -53,7 +53,7 @@
     <div class="audio-player__timeline">
       <div class="audio-player__filename">{{ item.preview.filename }}</div>
       <input class="audio-player__seek" data-audio-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek audio">
-      <div class="audio-player__times"><span data-audio-elapsed>0:00</span><span data-audio-total>0:00</span></div>
+      <div class="audio-player__times"><span data-audio-elapsed>0:00</span><span class="audio-player__separator">/</span><span data-audio-total>0:00</span></div>
     </div>
   </div>
   <div class="preview__audio-unavailable" role="status" hidden>

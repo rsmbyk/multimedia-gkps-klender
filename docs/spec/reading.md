@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-29
-**slices**: `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -874,7 +874,39 @@ or copy changes.
 - WHEN the `/status` read fails
 - THEN the page degrades as before — no write, one draw, the disconnected copy
 
-### R27 — The preview's header gives a song's verse tabs a row of their own
+### R27 — An audio file's Preview reads its times as `current / total`
+
+An audio file's Preview SHALL read its two times as one pair — the played time, a `/`, the total — on one
+line under the seek bar, right-aligned so the pair's right edge is the bar's right edge. The played time
+SHALL NOT sit at the bar's left end. Both numbers SHALL keep updating in place as the audio plays and as
+it is seeked, without the line moving or the pair's right edge shifting. The separator SHALL be text, so
+assistive technology reads one value rather than two adjacent numbers. Nothing else about the preview
+changes: the dialog's width, the 48px play button, the filename line, the 6px bar, the 7px gap above the
+line, the 12px type, `var(--head-ink)`, the unavailable state — and the projector's own audio bar
+(`.screen__audio-times`), which already read `current / total`.
+
+#### Scenario: the pair
+- WHEN an audio entry's Preview opens and the file's duration is known
+- THEN the line under the bar reads `0:00 / 5:02` — both numbers together, 5px either side of the slash,
+  the total's right edge on the seek bar's
+
+#### Scenario: playing and seeking
+- WHEN the audio plays, or the bar is seeked
+- THEN both numbers update in place and the pair's right edge does not move
+
+#### Scenario: read aloud
+- WHEN the line is read by assistive technology
+- THEN it is one value — played, then total — not two numbers run together
+
+#### Scenario: a long file
+- WHEN the duration runs past an hour
+- THEN the pair reads as the clock does elsewhere (`62:03`), still on one line and right-aligned
+
+#### Scenario: the file cannot be served
+- WHEN the local companion cannot serve the file
+- THEN the player stays hidden and the line is not drawn, as before
+
+### R28 — The preview's header gives a song's verse tabs a row of their own
 
 The entry preview's pinned header SHALL draw the entry's identity on a title band and, when the entry is a
 song with more than one shown verse, the verse tabs on a band of their own beneath it — a sibling of the

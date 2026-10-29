@@ -6,17 +6,17 @@
 
 | Capability | Operation | Requirement |
 | --- | --- | --- |
-| `reading` | added | `R27` — the preview's header gives a song's verse tabs a row of their own |
+| `reading` | added | `R28` — the preview's header gives a song's verse tabs a row of their own |
 
 ## Counts
 
-- `docs/spec/reading.md`: 26 → 27 requirements.
+- `docs/spec/reading.md`: 27 → 28 requirements.
 - Header: `last folded` 2026-10-28 → 2026-10-29; `153-preview-tabs-row` prepended to the slice list.
 
 ## Notes
 
 - The preview's identity header (spec 085) was never folded — it shipped before this file started at spec
-  126 — so R27 states the header as a whole: the title band, the tab band, the single rule, and the focus.
+  126 — so R28 states the header as a whole: the title band, the tab band, the single rule, and the focus.
   It supersedes nothing in this file.
 - No behaviour changed outside `reading`; no other capability was read, and none was touched.
 - Two behaviours were folded that the spec states as assumptions rather than as FRs: the titled band's

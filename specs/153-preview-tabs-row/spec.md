@@ -125,13 +125,13 @@ keys scroll the lyrics without a click first.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | A song's verse tab row SHALL be a sibling of the title band — the dialog's second child, before the body — and SHALL NOT be a descendant of `.preview__head`. | `new: reading/R27` |
-| FR-002 | The title band SHALL give the title the dialog's full content width (660px at a 704px dialog) and keep the single-line ellipsis. | `new: reading/R27` |
-| FR-003 | When the entry has verse tabs, the header SHALL draw exactly one rule, below the tab row; the title band SHALL draw none. When it has no tabs, the title band SHALL keep today's rule. | `new: reading/R27` |
-| FR-004 | On open, keyboard focus SHALL land on `#previewContent`; no verse tab SHALL receive the dialog's initial focus, by pointer or by keyboard. | `new: reading/R27` |
-| FR-005 | A preview without verse tabs SHALL be unchanged: header 704×52 and body top 52px at 1440, 358×52 and 52px at 390. | `new: reading/R27` |
-| FR-006 | The tab row SHALL keep the 30×30 circles, the 4px gap and the horizontal scroll when the tabs overflow. | `new: reading/R27` |
-| FR-007 | While a visible verse tab row is present and the dialog has no screen-mode footer, `Tab` on the body SHALL move focus to the selected tab and `Shift+Tab` on the selected tab SHALL return it to the body. Every other preview SHALL keep the browser's own order. | `new: reading/R27` |
+| FR-001 | A song's verse tab row SHALL be a sibling of the title band — the dialog's second child, before the body — and SHALL NOT be a descendant of `.preview__head`. | `new: reading/R28` |
+| FR-002 | The title band SHALL give the title the dialog's full content width (660px at a 704px dialog) and keep the single-line ellipsis. | `new: reading/R28` |
+| FR-003 | When the entry has verse tabs, the header SHALL draw exactly one rule, below the tab row; the title band SHALL draw none. When it has no tabs, the title band SHALL keep today's rule. | `new: reading/R28` |
+| FR-004 | On open, keyboard focus SHALL land on `#previewContent`; no verse tab SHALL receive the dialog's initial focus, by pointer or by keyboard. | `new: reading/R28` |
+| FR-005 | A preview without verse tabs SHALL be unchanged: header 704×52 and body top 52px at 1440, 358×52 and 52px at 390. | `new: reading/R28` |
+| FR-006 | The tab row SHALL keep the 30×30 circles, the 4px gap and the horizontal scroll when the tabs overflow. | `new: reading/R28` |
+| FR-007 | While a visible verse tab row is present and the dialog has no screen-mode footer, `Tab` on the body SHALL move focus to the selected tab and `Shift+Tab` on the selected tab SHALL return it to the body. Every other preview SHALL keep the browser's own order. | `new: reading/R28` |
 
 ### Key Entities
 
