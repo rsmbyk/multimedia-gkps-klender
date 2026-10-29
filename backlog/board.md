@@ -23,7 +23,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-164](./items/ITEM-164-audio-play-indicator.md) | The audio projector screen shows its play/pause control | A 48px control above the seek bar — triangle or two bars following the audio, hidden with the idle chrome, clickable | feat | P2 | S | [156](../specs/156-audio-play-indicator/spec.md) | 2026-10-29 |
 
 ## Ready
 
@@ -34,6 +33,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-164](./items/ITEM-164-audio-play-indicator.md) | The audio projector screen shows its play/pause control | A 48px control above the seek bar — triangle or two bars following the audio, hidden with the idle chrome, clickable | feat | P2 | S | [156](../specs/156-audio-play-indicator/spec.md) | [#448](https://github.com/rsmbyk/multimedia-gkps-klender/pull/448) | 2026-10-29 |
 
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

@@ -1,6 +1,6 @@
 ---
 id: ITEM-164
-status: speccing
+status: in-review
 title: 'The audio projector screen shows its play/pause control'
 type: feat
 priority: P2
@@ -9,8 +9,8 @@ created: 2026-10-29
 updated: 2026-10-29
 spec: specs/156-audio-play-indicator/spec.md
 branch: feat/156-audio-play-indicator
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/448
+issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/443
 closed_at:
 closed_reason:
 bump:
