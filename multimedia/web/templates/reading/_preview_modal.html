@@ -2,12 +2,13 @@
 The body scrolls; the footer stays visible. Esc and the overlay dismiss it.{% endcomment %}
 <dialog class="preview" id="previewModal" aria-label="Preview">
   {% comment %}The entry's own identity, pinned above the scroller: the payload in the page supplies
-  it and static/web/preview.js lifts it in here (spec 085). An entry with nothing to name -- an
-  untitled Text -- leaves this header hidden.{% endcomment %}
+  it and static/web/preview.js lifts it in here (spec 085). A song's verse tabs take a band of
+  their own under this one (spec 153), so a long title keeps the header's whole width. An entry with
+  nothing to name -- an untitled Text -- leaves the header hidden.{% endcomment %}
   <div class="preview__head" data-preview-head hidden>
     <span class="preview__title" id="previewTitle"></span>
-    <div class="preview__versetabs" data-preview-tabs-host hidden></div>
   </div>
+  <div class="preview__versetabs" data-preview-tabs-host hidden></div>
   <div class="preview__body" id="previewContent" tabindex="0"></div>
   <div class="preview__foot" data-screen-mode-footer hidden>
     <div class="screen-mode preview__screen-mode" role="group" aria-label="Screen mode" data-preview-screen-mode>

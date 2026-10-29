@@ -88,5 +88,6 @@ the templates are in [`_templates/`](./_templates/).
 | [148](148-media-library-refresh-flicker/spec.md) | The Media Library list holds still while it refreshes | Accepted |
 | [149](149-transfer-separator-seam/spec.md) | The Transfers list draws each boundary once | Accepted |
 | [150](150-references-token-order/spec.md) | The first refresh authenticates its references write | Accepted |
+| [153](153-preview-tabs-row/spec.md) | The preview's verse tabs get their own row | Accepted |
 | [154](154-audio-times-inline/spec.md) | An audio preview reads its times as `current / total` | Draft |
 | [161](161-projector-empty-notice/spec.md) | The projector's empty notice leaves the stage when Go To shows a passage or a song | Accepted |

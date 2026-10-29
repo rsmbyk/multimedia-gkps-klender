@@ -18,6 +18,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-159](./items/ITEM-159-known-red-e2e.md) | Three E2E tests are red on develop: two text-wrap assertions and an add-controls opacity | All three reproduce on unmodified develop in a detached worktree; a third-of-a-pixel wrap assertion, a 57-character title that never wraps, and controls visible without a hover | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-156](./items/ITEM-156-media-entry-spacing-e2e.md) | The media-entry spacing E2E measures 19.98px where 12px is asserted | A text row sits ~20px below its media row and the test still expects 12px ± 1; identical on develop | fix | P1 | S | — | 2026-10-28 |
+| [ITEM-163](./items/ITEM-163-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
 
 ## Speccing
 
@@ -28,6 +29,11 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+
+## In progress
+
+| ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## In review
 
@@ -195,6 +201,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-129](./items/ITEM-129-site-name-tab.md) | Name the site in the tab, and stop the index tab at the name | Reading tabs say `Multimedia GKPS Klender`; the index's tab is the name alone | fix | P2 | S | [127](../specs/127-site-name-tab/spec.md) | develop via [#378](https://github.com/rsmbyk/multimedia-gkps-klender/pull/378) | 2026-10-24 |
 | [ITEM-131](./items/ITEM-131-songbook-hymn-separator.md) | Separate the hymn songbooks from the rest of the Kidung panel | Hymn books first, one divider, the ordinary songbooks A–Z, no headings | feat | P2 | S | [128](../specs/128-songbook-hymn-separator/spec.md) | develop via [#380](https://github.com/rsmbyk/multimedia-gkps-klender/pull/380) | 2026-10-25 |
 | [ITEM-132](./items/ITEM-132-sidebar-empty-states.md) | Centre the sidebars' empty states | One centred glyph + title + hint per list, typed empty versus filter miss | fix | P2 | S | [129](../specs/129-sidebar-empty-states/spec.md) | develop via [#390](https://github.com/rsmbyk/multimedia-gkps-klender/pull/390) | 2026-10-25 |
+| [ITEM-162](./items/ITEM-162-preview-tabs-row.md) | A song's verse tabs squeeze the preview title and take the dialog's first focus | The head is one flex row, so a long title ellipsizes at 570 of 730px and the dialog's initial focus lands on tab `1`; the tabs get their own row under the header, and the body takes the focus | fix | P2 | S | [153](../specs/153-preview-tabs-row/spec.md) | develop via [#435](https://github.com/rsmbyk/multimedia-gkps-klender/pull/435) | 2026-10-29 |
 
 ## Archive
 

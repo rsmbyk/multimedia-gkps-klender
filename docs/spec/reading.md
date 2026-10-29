@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-29
-**slices**: `154-audio-times-inline`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -905,3 +905,34 @@ line, the 12px type, `var(--head-ink)`, the unavailable state — and the projec
 #### Scenario: the file cannot be served
 - WHEN the local companion cannot serve the file
 - THEN the player stays hidden and the line is not drawn, as before
+
+### R28 — The preview's header gives a song's verse tabs a row of their own
+
+The entry preview's pinned header SHALL draw the entry's identity on a title band and, when the entry is a
+song with more than one shown verse, the verse tabs on a band of their own beneath it — a sibling of the
+title band, never a child. The title SHALL take the header's whole content width before it ellipsizes on
+one line. The header SHALL draw exactly one rule: beneath the tab band when one is shown, otherwise beneath
+the title band as it always has. The dialog SHALL open with keyboard focus on its scrolling body, never on
+a verse tab; while a visible tab band is shown and no screen-mode footer is, `Tab` on the body SHALL move
+focus to the selected tab and `Shift+Tab` on that tab SHALL move it back to the body. A preview without
+verse tabs SHALL keep its 52px title band, its own rule and its body exactly where they are.
+
+#### Scenario: a long title
+- WHEN a song whose title is wider than the dialog opens
+- THEN the title fills the header's content width and ellipsizes once, and the tabs stand on the row below it
+
+#### Scenario: one rule
+- WHEN a song preview is drawn
+- THEN the title band draws no rule, the tab band draws one 14px under the tabs, and the lyrics start 22px below it
+
+#### Scenario: the first focus
+- WHEN any preview opens, by pointer or by keyboard
+- THEN focus is on the scrolling body and no verse tab carries a focus ring; a keyboard open paints the body's own ring
+
+#### Scenario: the tabs stay reachable
+- WHEN the body of a song preview has focus
+- THEN `Tab` moves to the selected verse tab and `Shift+Tab` on that tab returns to the body
+
+#### Scenario: no verse tabs
+- WHEN a passage, text, image, audio, video or PDF preview opens
+- THEN the title band keeps its rule and the body sits directly under it, unchanged
