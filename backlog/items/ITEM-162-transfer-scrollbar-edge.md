@@ -1,6 +1,6 @@
 ---
 id: ITEM-162
-status: in-progress
+status: in-review
 title: 'The Transfers scrollbar floats inside the dialog and stops short of its bottom'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-29
 updated: 2026-10-29
 spec: specs/152-transfer-scrollbar-edge/spec.md
 branch: feat/152-transfer-scrollbar-edge
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/446
 issue: 433
 closed_at:
 closed_reason:
