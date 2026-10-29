@@ -87,7 +87,7 @@ Both were applied before the run was repeated; the re-run is the clean one whose
   change. The module in full: `Ran 28 tests in 82.3s`, one failure —
   `test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen`, proven identical on unmodified
   `develop` under the same command and database (`19.8453369140625 != 12` there, `19.67…` on this
-  branch) and carded as ITEM-157; nothing else in the module fails.
+  branch) and carded as ITEM-156; nothing else in the module fails.
 - **2026-10-28 — T012's live readout, not taken**: the sampler gained its URL argument, but the compose
   `web` service serves the `develop` checkout and the companion admits only its configured origins
   (`local_media.py:447`), so a worktree server shows `Local library unavailable on this computer.` The

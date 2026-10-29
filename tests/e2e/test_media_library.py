@@ -144,6 +144,49 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + path)
         return page
 
+    TRANSFER_NAMES = (
+        'images (1).jpeg',
+        'side-view-silhouette-african-elephant-walking-across-green-ground-against-light-blue-sky'
+        '-stately-wild-bull-marching-proudly-481645534.webp',
+        'random.jpg',
+        'Sujud & Terima Kasih - JCC Worship [Official Music Video] - Ibadah Raya JCC Jakarta.webm',
+        'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx',
+        'images.jpeg',
+        'Invoice-AATTCSTN-0002.pdf',
+        'Receipt-2773-9204.png',
+        'Invoice-AATTCSTN-0002.pdf',
+    )
+
+    def transfers_page(self, width=1440):
+        """The library with the Transfers dialog open on nine finished uploads, two of them long."""
+        jobs = [{'id': index, 'direction': 'upload', 'sha256': f'{index:064d}', 'name': name,
+                 'size': 2048, 'bytes_done': 2048, 'status': 'completed', 'automatic': 0,
+                 'started_at': '2026-10-28T09:00:00+00:00',
+                 'ended_at': '2026-10-28T09:01:00+00:00'}
+                for index, name in enumerate(self.TRANSFER_NAMES, start=1)]
+        page = self.browser.new_page(viewport={'width': width, 'height': 900})
+        def companion(route):
+            url = route.request.url
+            if url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': 0, 'total_size': 0,
+                           'retention': '30', 'write_token': 'test-token'}
+            elif url.endswith('/transfers'):
+                payload = {'transfers': jobs, 'retrying': []}
+            elif url.endswith('/files') or url.endswith('/references'):
+                payload = {'files': []}
+            else:
+                payload = {'error': 'Not found'}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers={'Access-Control-Allow-Origin': self.live_server_url})
+        page.route('http://127.0.0.1:63174/**', companion)
+        page.goto(self.live_server_url + reverse('web-media-library'))
+        page.locator('#mediaTransfersButton').click()
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(len(jobs))
+        # the dialog's own 190ms scale-in would be measured mid-flight: 32px of column reads 31.38
+        page.evaluate("""() => Promise.all(document.querySelector('#mediaTransfersDialog')
+            .getAnimations().map(animation => animation.finished))""")
+        return page
+
     def test_disconnected_library_hides_local_inventory_details(self):
         page = self.page(reverse('web-media-library'))
         page.locator('#mediaStatusButton').click()
@@ -497,6 +540,72 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.locator('form[data-media-create] .editor__save').click()
         expect(page.locator('.tatib__item--media')).to_contain_text('notes.pdf')
 
+    def sample_companion(self, page, files):
+        """A connected companion whose reported size is the bytes the browser actually sent."""
+        header = {'Access-Control-Allow-Origin': self.live_server_url}
+        def companion(route):
+            url = route.request.url
+            body = route.request.post_data_buffer or b''
+            if url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': len(files),
+                           'total_size': sum(f['size'] for f in files),
+                           'retention': '30', 'write_token': 'test-token'}
+            elif url.endswith('/inspect'):
+                uploaded = {'sha256': 'c' * 64, 'name': 'images (1).jpeg', 'family': 'image',
+                            'size': len(body), 'reused': False}
+                payload = dict(uploaded, uploaded_at='2026-10-28T12:00:00+00:00',
+                               unused_since=None, delete_at=None)
+            else:
+                payload = {'files': files}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers=header)
+        page.route('http://127.0.0.1:63174/**', companion)
+        return page
+
+    def choose_bytes(self, page, count):
+        page.locator('[data-media-file]').set_input_files({
+            'name': 'images (1).jpeg', 'mimeType': 'image/jpeg', 'buffer': b'\xff' * count})
+
+    def test_media_size_reads_in_the_smallest_unit_that_shows_a_number(self):
+        page = self.sample_companion(
+            self.browser.new_page(viewport={'width': 1440, 'height': 900}),
+            [{'sha256': 'c' * 64, 'name': 'images (1).jpeg', 'family': 'image', 'size': 12345,
+              'uploaded_at': '2026-10-28T12:00:00+00:00', 'unused_since': None, 'delete_at': None}])
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('[data-entry-open="media"]').first.dispatch_event('click')
+        meta = page.locator('[data-media-selected-meta]')
+        self.choose_bytes(page, 12345)
+        expect(meta).to_have_text('Image · 12.3 KB')
+        self.choose_bytes(page, 512)
+        expect(meta).to_have_text('Image · 512 B')
+        self.choose_bytes(page, 1000000)
+        expect(meta).to_have_text('Image · 1 MB')
+        self.choose_bytes(page, 999999)
+        expect(meta).to_have_text('Image · 1 MB')
+        # The cap and the gigabyte boundary cannot be uploaded as a body; the shipped function is asked
+        # directly, so the whole unit chain is still asserted rather than assumed.
+        self.assertEqual(page.evaluate('window.gkpsFormatSize(200000000)'), '200 MB')
+        self.assertEqual(page.evaluate('window.gkpsFormatSize(1000000000)'), '1 GB')
+        self.assertEqual(page.evaluate('window.gkpsFormatSize(0)'), '0 B')
+        page.locator('[data-media-tab-button="library"]').click()
+        expect(page.locator('[data-media-hash] small').first).to_have_text('Image · 12.3 KB')
+
+    def test_media_library_row_and_total_use_the_chosen_label(self):
+        files = [
+            {'sha256': 'a' * 64, 'name': 'images (1).jpeg', 'family': 'image', 'size': 12345,
+             'uploaded_at': '2026-10-28T12:00:00+00:00', 'unused_since': None, 'delete_at': None},
+            {'sha256': 'b' * 64, 'name': 'edge.jpeg', 'family': 'image', 'size': 999999,
+             'uploaded_at': '2026-10-27T12:00:00+00:00', 'unused_since': None, 'delete_at': None},
+        ]
+        page = self.sample_companion(
+            self.browser.new_page(viewport={'width': 1440, 'height': 900}), files)
+        page.goto(self.live_server_url + reverse('web-media-library'))
+        rows = page.locator('.media-library__meta')
+        expect(rows.nth(0)).to_have_text('Image · 28 Oktober 2026 · 12.3 KB')
+        expect(rows.nth(1)).to_have_text('Image · 27 Oktober 2026 · 1 MB')
+        page.locator('#mediaStatusButton').click()
+        expect(page.locator('#mediaTotalSize')).to_have_text('1 MB')
+
     def test_service_entry_distinguishes_disconnected_and_missing(self):
         page = self.page(reverse('web-tatib-service', args=[self.service.pk]))
         row = page.locator('.tatib__item--media')
@@ -589,6 +698,68 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         form.locator('.editor__save').click()
         expect(page.locator('.tatib__item--media')).to_contain_text('Changed title')
         expect(page.locator('.tatib__item--media')).to_contain_text('service.pdf')
+
+    def test_every_transfer_row_shares_one_icon_column(self):
+        page = self.transfers_page()
+        marks = page.evaluate("""() => [...document.querySelectorAll(
+            '#mediaTransfersList .media-transfers__mark')]
+            .map(mark => Math.round(mark.getBoundingClientRect().width * 100) / 100)""")
+        self.assertEqual(set(marks), {32.0}, 'the mark column is not one 32px column')
+        edges = page.evaluate("""() => {
+            const rows = [...document.querySelectorAll('#mediaTransfersList .media-transfers__row')];
+            const lefts = selector => rows.map(row => row.querySelector(selector).getBoundingClientRect().left);
+            return {glyph: lefts('.media-transfers__mark svg'),
+                    name: lefts('.media-transfers__main strong'),
+                    label: lefts('.media-transfers__main span')};
+        }""")
+        for key, values in edges.items():
+            spread = max(values) - min(values)
+            self.assertLessEqual(
+                spread, 0.5,
+                f'{key} left edges differ by {spread:.1f}px: {sorted(round(v, 1) for v in values)}')
+
+    def test_a_long_transfer_name_still_ellipsizes_at_the_pinned_column(self):
+        page = self.transfers_page()
+        rows = page.evaluate("""() => [...document.querySelectorAll('#mediaTransfersList .media-transfers__row')]
+            .map(row => {
+                const name = row.querySelector('strong');
+                return {name: name.textContent, scroll: name.scrollWidth, client: name.clientWidth,
+                        height: row.getBoundingClientRect().height};
+            })""")
+        long_rows = [row for row in rows if row['scroll'] > row['client']]
+        self.assertEqual(len(long_rows), 2, 'the two long names no longer truncate')
+        for row in long_rows:
+            # the list's 534px − 8px of row padding − 32px of mark − the 12px gap
+            self.assertEqual(row['client'], 482, row['name'])
+            self.assertEqual(round(row['height']), 72, row['name'])
+
+    def test_the_icon_column_holds_in_a_narrow_dialog(self):
+        page = self.transfers_page(width=420)
+        dialog = page.locator('#mediaTransfersDialog').bounding_box()
+        self.assertEqual(round(dialog['width']), 382,
+                         'a 420px window renders the dialog at 382px')
+        rows = page.evaluate("""() => {
+            const dialog = document.querySelector('#mediaTransfersDialog').getBoundingClientRect();
+            return [...document.querySelectorAll('#mediaTransfersList .media-transfers__row')].map(row => {
+                const name = row.querySelector('strong');
+                const mark = row.querySelector('.media-transfers__mark').getBoundingClientRect();
+                return {scroll: name.scrollWidth, client: name.clientWidth,
+                        mark: Math.round(mark.width * 100) / 100,
+                        glyph: row.querySelector('.media-transfers__mark svg').getBoundingClientRect().left,
+                        name_left: name.getBoundingClientRect().left,
+                        overflow: row.getBoundingClientRect().right - dialog.right};
+            });
+        }""")
+        self.assertEqual({row['mark'] for row in rows}, {32.0}, 'the mark column collapsed')
+        self.assertLessEqual(max(row['glyph'] for row in rows) - min(row['glyph'] for row in rows), 0.5)
+        self.assertLessEqual(max(row['name_left'] for row in rows) - min(row['name_left'] for row in rows),
+                             0.5)
+        self.assertLessEqual(max(row['overflow'] for row in rows), 0, 'a row is wider than the dialog')
+        truncating = [row for row in rows if row['scroll'] > row['client']]
+        self.assertEqual(len(truncating), 3, 'the narrow dialog no longer truncates three names')
+        for row in truncating:
+            self.assertEqual(row['client'], 284, 'the text column is not what the layout reserves')
+
 
     # ---- spec 148: the file list holds still while it refreshes ----
 

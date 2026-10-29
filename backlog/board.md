@@ -16,13 +16,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-144](./items/ITEM-144-date-dependent-picker-e2e.md) | Five date-picker E2E tests fail when the nearest Sunday falls in the next month | `_fill` steps months from today while the picker opens on the nearest Sunday, so five editor tests time out on days that cross a month boundary; identical on develop | fix | P1 | S | — | 2026-10-26 |
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
-| [ITEM-157](./items/ITEM-157-media-entry-spacing-e2e.md) | The media-entry spacing E2E pins a 12px gap the row no longer has | The case measures 19.85px on unmodified develop — the slot spec 143's add bar reserves — so the assertion, not the row, is stale | fix | P1 | S | — | 2026-10-28 |
+| [ITEM-156](./items/ITEM-156-media-entry-spacing-e2e.md) | The media-entry spacing E2E measures 19.98px where 12px is asserted | A text row sits ~20px below its media row and the test still expects 12px ± 1; identical on develop | fix | P1 | S | — | 2026-10-28 |
 
 ## Speccing
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-
 ## Ready
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
@@ -32,6 +31,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -53,12 +53,14 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
 | [ITEM-128](./items/ITEM-128-github-issues-anchor.md) | Anchor board cards on GitHub Issues | Declare the tracker mirror, add the `board:item` label, and record when and how an issue is created | chore | P2 | S | — | [#377](https://github.com/rsmbyk/multimedia-gkps-klender/pull/377) | 2026-10-24 |
-| [ITEM-156](./items/ITEM-156-media-library-refresh-jolt.md) | The Media Library list jumps while it refreshes | Every refresh drew the list twice — the first pass without service references, so rows shrank from 119/101/123px to 97px and the list below the first row jumped up 22px and back | fix | P2 | S | [148](../specs/148-media-library-refresh-flicker/spec.md) | [#424](https://github.com/rsmbyk/multimedia-gkps-klender/pull/424) | 2026-10-28 |
+| [ITEM-158](./items/ITEM-158-media-library-refresh-jolt.md) | The Media Library list jumps while it refreshes | Every refresh drew the list twice — the first pass without service references, so rows shrank from 119/101/123px to 97px and the list below the first row jumped up 22px and back | fix | P2 | S | [148](../specs/148-media-library-refresh-flicker/spec.md) | [#424](https://github.com/rsmbyk/multimedia-gkps-klender/pull/424) | 2026-10-28 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-155](./items/ITEM-155-transfer-icon-column.md) | A long transfer name ellipsizes instead of moving the icon column | The 32px mark shrinks to 21px on an over-long name, so the glyph sits 5.5px and the text 11px left of the other rows | fix | P2 | S | [147](../specs/147-transfer-icon-column/spec.md) | develop via [#420](https://github.com/rsmbyk/multimedia-gkps-klender/pull/420) | 2026-10-29 |
+| [ITEM-157](./items/ITEM-157-media-size-precision.md) | A media size reads in the unit that still shows its number | One label replaces two formulas: `0.0 MB` for any file under 50 KB and `0 KB` for anything under 500 B become `512 B` · `12.3 KB` · `1 MB` | fix | P1 | S | [145](../specs/145-media-size-precision/spec.md) | develop via [#419](https://github.com/rsmbyk/multimedia-gkps-klender/pull/419) | 2026-10-28 |
 | [ITEM-154](./items/ITEM-154-add-bar.md) | The add bar opens over the seam, and nothing moves | The rows keep a 20px slot in the flow and draw their bar over it, so no entry moves when one opens; the seam is hinted at rest | chore | P1 | M | [143](../specs/143-add-bar/spec.md) | develop via [#414](https://github.com/rsmbyk/multimedia-gkps-klender/pull/414) | 2026-10-28 |
 | [ITEM-152](./items/ITEM-152-entry-surface.md) | A service entry draws no box until it is pointed at | Drop the spec 068 fill and ring from every entry kind; hover, deliberate focus and an open modal still fill the row | chore | P2 | S | [142](../specs/142-entry-surface/spec.md) | develop via [#412](https://github.com/rsmbyk/multimedia-gkps-klender/pull/412) | 2026-10-28 |
 | [ITEM-151](./items/ITEM-151-stage-link-affordance.md) | The stage's entry links read as text until hovered | Every song and passage title is a green (or blue) line at rest; it becomes heading ink, underlined only on hover or keyboard focus | chore | P2 | S | [140](../specs/140-stage-link-affordance/spec.md) | develop via [#410](https://github.com/rsmbyk/multimedia-gkps-klender/pull/410) | 2026-10-27 |

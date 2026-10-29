@@ -2,7 +2,7 @@
 
 **Spec**: `specs/148-media-library-refresh-flicker/spec.md`
 **Branch**: `feat/148-media-library-refresh-flicker`
-**Bump**: `patch`
+**Bump**: `patch` (1.22.6 → 1.22.7, on `develop` after 145 and 147)
 **Preview**: live at `http://localhost:63404/media-library/`, sampled by
 `specs/148-media-library-refresh-flicker/preview/frame_sampler.py` (`preview/README.md`)
 
@@ -96,7 +96,7 @@ templates, the references view or the companion; no retry loop for a failed refe
 | FR-002 no row changes position during a refresh | `static/web/media-library.js:146` | `test` → `…::test_a_library_refresh_never_moves_a_row` | per-row spread of `top` is 0px across every sampled frame |
 | FR-003 first load draws once complete; a failed references read draws once with the placeholder | `static/web/media-library.js:146-159` | `test` → `…::test_the_library_list_is_drawn_once_per_refresh` and `…::test_a_failed_references_request_draws_the_placeholder_once` | held route for the first; a 500 for the second |
 | FR-004 the 2s poll keeps re-reading and stays visually inert | `static/web/media-library.js:161`, `static/web/media-handoff.js:155` | `test` → `…::test_the_status_poll_leaves_the_list_where_it_is` | waits one poll interval, compares row tops |
-| FR-005 nothing else changes | `static/web/media-library.js` (diff), `media-handoff.js`, templates, CSS (all untouched) | `inspection` — the diff touches `refresh()` only; `test` → the module's existing cases re-run (`…::test_library_filter_sort_and_dialogs`, `…::test_connected_library_shows_file_and_status_details`, `…::test_connection_icon_tracks_status_refresh`, `…::test_disconnected_library_hides_local_inventory_details`, `…::test_empty_library_keeps_tall_create_modal_and_quiet_empty_state`) | SC-005; `…::test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen` fails identically on `develop` (ITEM-157) |
+| FR-005 nothing else changes | `static/web/media-library.js` (diff), `media-handoff.js`, templates, CSS (all untouched) | `inspection` — the diff touches `refresh()` only; `test` → the module's existing cases re-run (`…::test_library_filter_sort_and_dialogs`, `…::test_connected_library_shows_file_and_status_details`, `…::test_connection_icon_tracks_status_refresh`, `…::test_disconnected_library_hides_local_inventory_details`, `…::test_empty_library_keeps_tall_create_modal_and_quiet_empty_state`) | SC-005; `…::test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen` fails identically on `develop` (ITEM-156) |
 | US1 AC1 Share online does not move the list | `static/web/media-library.js:82` → `refresh()` | `test` → `…::test_clicking_share_online_never_moves_a_library_row` | begin endpoint stubbed to `{online: true}` |
 | US1 AC2 / AC3 Remove-cancelled and Save setting do not move the list | `static/web/media-library.js:90`, `:139` → `refresh()` | `test` → `…::test_a_library_refresh_never_moves_a_row` | one invariant, two triggers; the assertion names the trigger |
 | US1 AC4 the first load appears once, complete | `static/web/media-library.js:146` | `test` → `…::test_the_library_list_is_drawn_once_per_refresh` | list height after the first draw equals its settled height |
@@ -153,7 +153,7 @@ specs/148-media-library-refresh-flicker/
 static/web/media-library.js                  refresh()'s control flow (one draw, state applied late)
 tests/e2e/test_media_library.py              six new cases in MediaLibraryE2ETests
 docs/spec/reading.md                         R22 at Fold
-backlog/items/ITEM-156-media-library-refresh-jolt.md   card
+backlog/items/ITEM-158-media-library-refresh-jolt.md   card
 backlog/board.md                             the card's row
 specs/README.md                              the spec's index row, at Accept
 VERSION, CHANGELOG.md                        patch bump and one line, at delivery

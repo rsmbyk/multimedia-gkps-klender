@@ -76,20 +76,22 @@ references read still shows it — once.
   templates, `media-handoff.js` and the references view are unchanged (FR-005). The module in full:
   `Ran 28 tests in 82.3s`, one failure —
   `test_media_entry_has_roomy_spacing_and_wraps_on_narrow_screen`, which fails identically on
-  unmodified `develop` (`19.85` vs the pinned `12`) and is carded as ITEM-157. The unchanged re-run
+  unmodified `develop` (`19.85` vs the pinned `12`) and is carded as ITEM-156. The unchanged re-run
   named above — `test_library_filter_sort_and_dialogs`,
   `test_connected_library_shows_file_and_status_details`, `test_connection_icon_tracks_status_refresh`,
   `test_disconnected_library_hides_local_inventory_details`,
   `test_empty_library_keeps_tall_create_modal_and_quiet_empty_state` — all pass.
 - [X] T015 The spec's index row is in `specs/README.md`, naming 148 and `Accepted`.
-- [X] T016 `VERSION` `1.22.4` → `1.22.5`, and one `### Fixed` line under `## [Unreleased]` in
+- [X] T016 `VERSION` `1.22.6` → `1.22.7` (145 and 147 landed 1.22.6 on `develop` first), and one `### Fixed` line under `## [Unreleased]` in
   `CHANGELOG.md`.
 - [X] T017 Fold: R22 added to `docs/spec/reading.md`, the header's `last folded` and `slices` moved
   (`fold.md`).
-- [ ] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-156`'s state — if the
+- [ ] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-158`'s state — if the
   owner has moved it to `Ready`, set `in-review`, write `pr:` and move the board row, and push that one
   commit (`C-BOARD-GIT`); if it is still in `Backlog`, stop and say so, because `Ready` is the owner's
-  move and not the agent's.
+  move and not the agent's. *Done after the report, on the owner's word: pushed, drafted, the card moved
+  to `In review` and the PR marked ready; the card was renumbered `ITEM-156 → ITEM-158` when `develop`
+  took the id for the spacing-E2E card.*
 
 ## Phase 6 — Convergence
 

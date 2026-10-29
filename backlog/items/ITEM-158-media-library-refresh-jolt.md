@@ -1,5 +1,5 @@
 ---
-id: ITEM-156
+id: ITEM-158
 status: in-review
 title: 'The Media Library list jumps while it refreshes'
 type: fix
@@ -17,7 +17,7 @@ bump:
 release_version:
 ---
 
-# ITEM-156: The Media Library list jumps while it refreshes
+# ITEM-158: The Media Library list jumps while it refreshes
 
 ## Summary
 
@@ -46,4 +46,5 @@ rebuild (`:94`).
 ## Links
 
 - Spec: [148](../specs/148-media-library-refresh-flicker/spec.md)
-- Related items: ITEM-145, ITEM-146, ITEM-147 (other slices touching this page)
+- Related items: ITEM-145, ITEM-146, ITEM-147 (other slices touching this page); ITEM-156 is the
+  media-entry spacing E2E this slice found red on develop

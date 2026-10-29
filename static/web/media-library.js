@@ -10,7 +10,7 @@
   var files = [], uses = null, protectedFiles = new Set(), cloud = {}, jobs = [], token = '', retention = '30', connected = false;
   var types = new Set(), unusedOnly = false, sort = 'date-desc', pendingRemove = null;
   var $ = function (id) { return document.getElementById(id); };
-  var fmtSize = function (bytes) { return bytes < 1000000 ? Math.round(bytes / 1000) + ' KB' : (bytes / 1000000).toFixed(1) + ' MB'; };
+  var fmtSize = function (bytes) { return window.gkpsFormatSize(bytes); };
   var date = function (value) { return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value)); };
   var todayJakarta = function () { var parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date()); var get = function (name) { return parts.find(function (part) { return part.type === name; }).value; }; return get('year') + '-' + get('month') + '-' + get('day'); };
   function request(path, options) {
