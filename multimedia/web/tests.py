@@ -1248,6 +1248,28 @@ class ServiceEntryViewTests(TestCase):
         self.assertContains(response, 'data-verses-trigger')
         self.assertContains(response, 'data-verses-summary')
 
+    def _verse_less_song(self):
+        return songs.Song.objects.create(book=self.songbook, number=901, title='Kosong')
+
+    def test_an_edit_form_for_a_verse_less_song_states_it_in_the_markup(self):
+        """The server's own fragment says it, before any script runs (spec 162)."""
+        entry = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=1, kind=tatib.ServiceEntryKind.SONG,
+            song=self._verse_less_song(), verses=[])
+        html = self.client.get(reverse('web-entry-edit', args=[entry.pk])).content.decode()
+        self.assertIn('This song has no verses', html)
+        self.assertNotIn('Pick a song first', html)
+
+    def test_an_edit_form_keeps_the_verses_an_entry_stored(self):
+        """Stored numbers stay choices even when the song has none, so the entry is saveable."""
+        entry = tatib.ServiceEntry.objects.create(
+            tatib=self.tatib, order_number=1, kind=tatib.ServiceEntryKind.SONG,
+            song=self._verse_less_song(), verses=[1, 2])
+        html = self.client.get(reverse('web-entry-edit', args=[entry.pk])).content.decode()
+        self.assertNotIn('This song has no verses', html)
+        self.assertIn('name="verses" value="1"', html)
+        self.assertIn('name="verses" value="2"', html)
+
     def test_only_a_text_title_says_optional(self):
         self.assertContains(self.client.get(self.new_url('text')), 'Title <span class="editor__hint">(optional)</span>')
         break_form = self.client.get(self.new_url('section_break')).content.decode()

@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A song entry now says `This song has no verses` when the picked song carries none, instead of `Pick a song first` — the line it shows when nothing is picked at all — and the field stays shut; a save refusal for that song reads `This song has no verses: pick another song.`, while clearing a song's own boxes still asks for one to be kept.
 - The audio projector screen paints its play/pause control: the 48px circle was in the markup but 0×0, because its size and its two marks live in a stylesheet the page does not load. It now sits above the seek bar with a triangle while paused and two bars while playing, hides with the idle chrome — keeping its height so the bar does not move — and takes a click, which no longer spends its first press on fullscreen.
 - An image on the projector no longer shows the unavailable-image glyph beside it: the placeholder now appears only when the bytes fail, and nothing is painted while they are still arriving, so the picture alone is centred — it sat 40px left of the middle on a 1920-wide display.
 - An audio file's Preview reads its two times as one `current / total` pair now, right-aligned under the seek bar: the played time sits beside the total, 5px either side of a slash, with the total's right edge on the bar's. It used to stand 456.4px away at the bar's left end, and the line's own text was two numbers with nothing between them (`0:000:10`).

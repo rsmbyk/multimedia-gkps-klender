@@ -205,7 +205,7 @@
       <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
               data-verses-trigger aria-haspopup="true" aria-expanded="false"
               aria-controls="entry-verses-menu"{% if form.verses.errors %} aria-invalid="true"{% endif %}>
-        <span data-verses-summary>Pick a song first</span>
+        <span data-verses-summary>{% if form.song_has_no_verses %}This song has no verses{% else %}Pick a song first{% endif %}</span>
       </button>
       <div class="editor__picker-menu" id="entry-verses-menu" hidden>
         <div class="editor__verses" id="entry-verses" data-verses>{{ form.verses }}</div>

@@ -2,8 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-29
-**slices**: `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
-
+**slices**: `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -980,3 +979,45 @@ SHALL NOT change.
 #### Scenario: the theme
 - WHEN the theme changes
 - THEN every mark repaints with its own element's ink and needs no repaint of its own
+
+### R30 — A song entry names a song that has no verses
+
+The song entry's Verses field SHALL tell a picked song that carries no verses apart from no song picked at
+all: with no song picked the field reads `Pick a song first`, and with a song picked whose live verses are
+empty it reads `This song has no verses`. The second line SHALL be in the server's own form fragment, not
+only written by the page's script, and the field SHALL stay disabled there — an empty verse menu is not
+offered — because there is nothing to choose.
+
+The other lines SHALL stay as they are: `All verses` when every verse is included, `Verses n, …` when some
+are, and `No verses: keep at least one` when a song's boxes were all cleared. A refusal caused by the
+chosen song carrying no verses SHALL name the song — `This song has no verses: pick another song.` — while
+a refusal caused by clearing every box of a song that has verses SHALL keep
+`Keep at least one verse in the service.`
+
+#### Scenario: a song with no verses is picked
+- WHEN a song whose live verses are empty is picked in the song entry
+- THEN the Verses field reads `This song has no verses`, its trigger is disabled, and no checkbox is drawn
+
+#### Scenario: nothing is picked
+- WHEN the song entry opens with no song chosen
+- THEN the Verses field reads `Pick a song first`
+
+#### Scenario: the first paint of an edit
+- WHEN the server renders the form of a stored song entry whose song has no live verses
+- THEN its markup carries `This song has no verses` before any script runs
+
+#### Scenario: the stored verses survive
+- WHEN an entry stores verse numbers the song no longer carries
+- THEN those numbers remain choices, the field is not in the no-verses state, and the entry stays saveable
+
+#### Scenario: saving a verse-less song
+- WHEN Save is pressed with a song that carries no verses chosen
+- THEN the field's error reads `This song has no verses: pick another song.` and nothing is written
+
+#### Scenario: clearing a song's boxes
+- WHEN every box of a song that has verses is cleared and Save is pressed
+- THEN the error reads `Keep at least one verse in the service.`
+
+#### Scenario: the verses cannot be loaded
+- WHEN the verses request fails for a picked song
+- THEN the failure notice is shown and the field keeps the line it had
