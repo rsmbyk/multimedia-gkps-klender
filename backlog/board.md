@@ -21,6 +21,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-174](./items/ITEM-174-drawer-backdrop-pointer-events.md) | The drawer backdrop stays over the page and swallows every pointer in the browser suite | `<div id="drawerBackdrop" class="drawer-backdrop">` is left covering the reading page, so `item.hover()` and rail clicks time out across `test_entry_pickers` (21), `test_entry_preview` (3) and `test_immediate_editor_open` (2); identical on `3e005688^` | fix | P1 | M | — | 2026-10-29 |
 | [ITEM-175](./items/ITEM-175-section-break-divider-box.md) | The section-break divider measures 8px where its test expects 0px | `test_the_divider_takes_the_same_box_as_the_entries` reads `['8px', '8px']` against `['0px', '0px']`; identical on `3e005688^` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-163](./items/ITEM-163-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
+| [ITEM-176](./items/ITEM-176-media-dialog-file-picker-cancel.md) | Closing the file picker closes the New media dialog | The input's own `cancel` bubbles to the dialog, whose listener reads every `cancel` as its Escape; the typed title, the chosen file and the tab go with the picker | fix | P1 | S | [163](../specs/163-media-dialog-file-picker-cancel/spec.md) | 2026-10-29 |
 
 ## Speccing
 

@@ -1,6 +1,9 @@
 """Browser acceptance for the local Media Library shell and media entry picker."""
 from datetime import date, datetime, timezone
 import json
+import os
+import shutil
+import tempfile
 import time
 import unittest
 from types import SimpleNamespace
@@ -216,6 +219,75 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.locator('[data-media-tab-button="library"]').click()
         expect(page.locator('form[data-media-create] .editor__save')).to_be_disabled()
         expect(page.locator('[data-media-library-list]')).to_contain_text('unavailable')
+
+    def open_media_form(self, page):
+        page.locator('[data-entry-open="media"]').first.dispatch_event('click')
+        expect(page.locator('form[data-media-create]')).to_be_visible()
+
+    def dismiss_the_picker(self, page):
+        """Send what a browser sends at the file input when the person closes the picker
+        without choosing — or re-picks the file already chosen: `cancel`, bubbling, not
+        cancelable (MDN, `HTMLInputElement: cancel event`).
+
+        The wait is past the 165ms the dialog takes to finish closing when the input's
+        event dismisses it, so a case that passes here cannot be passing mid-motion."""
+        page.locator('input[data-media-file]').dispatch_event(
+            'cancel', {'bubbles': True, 'cancelable': False})
+        page.wait_for_timeout(400)
+
+    def local_media_file(self, name='swatch.png'):
+        """A real file on disk — the page measures its size and sends it to the companion,
+        which this module stubs, so only the name and the non-empty size matter."""
+        folder = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, folder, True)
+        path = os.path.join(folder, name)
+        with open(path, 'wb') as handle:
+            handle.write(b'\x89PNG\r\n\x1a\n' + b'\x00' * 64)
+        return path
+
+    def test_dismissing_the_file_picker_leaves_the_new_media_dialog_open(self):
+        page = self.connected_page(reverse('web-tatib-service', args=[self.service.pk]))
+        self.open_media_form(page)
+        page.locator('form[data-media-create] [name="title"]').fill('Closing hymn')
+        self.dismiss_the_picker(page)
+        dialog = page.locator('#editorModal')
+        self.assertTrue(dialog.evaluate('modal => modal.open'))
+        expect(page.locator('form[data-media-create]')).to_be_visible()
+        self.assertEqual(page.locator('form[data-media-create] [name="title"]').input_value(),
+                         'Closing hymn')
+        expect(page.locator('form[data-media-create] [data-media-prompt]')).to_be_visible()
+        expect(page.locator('form[data-media-create] .editor__save')).to_be_disabled()
+
+    def test_a_dismissed_picker_keeps_the_chosen_file(self):
+        page = self.connected_page(reverse('web-tatib-service', args=[self.service.pk]))
+        self.open_media_form(page)
+        page.set_input_files('input[data-media-file]', self.local_media_file())
+        expect(page.locator('[data-media-selected-name]')).to_have_text('swatch.png')
+        expect(page.locator('form[data-media-create] .editor__save')).to_be_enabled()
+        self.dismiss_the_picker(page)
+        self.assertTrue(page.locator('#editorModal').evaluate('modal => modal.open'))
+        expect(page.locator('[data-media-selected-name]')).to_have_text('swatch.png')
+        expect(page.locator('form[data-media-create] .editor__save')).to_be_enabled()
+
+    def test_a_picker_dismissal_keeps_the_library_selection(self):
+        page = self.connected_page(reverse('web-tatib-service', args=[self.service.pk]))
+        self.open_media_form(page)
+        page.locator('[data-media-tab-button="library"]').click()
+        selected = page.locator('[data-media-hash]').first
+        selected.click()
+        expect(selected).to_have_attribute('aria-selected', 'true')
+        self.dismiss_the_picker(page)
+        self.assertTrue(page.locator('#editorModal').evaluate('modal => modal.open'))
+        self.assertEqual(page.locator('.media-entry__tabs').get_attribute('data-media-tab'), 'library')
+        expect(page.locator('[data-media-hash]').first).to_have_attribute('aria-selected', 'true')
+        expect(page.locator('[data-media-hash]').first).to_be_visible()
+
+    def test_escape_still_closes_the_new_media_dialog(self):
+        page = self.connected_page(reverse('web-tatib-service', args=[self.service.pk]))
+        self.open_media_form(page)
+        page.locator('#editorModal').press('Escape')
+        page.wait_for_timeout(400)
+        self.assertFalse(page.locator('#editorModal').evaluate('modal => modal.open'))
 
     def test_empty_library_keeps_tall_create_modal_and_quiet_empty_state(self):
         page = self.empty_connected_page(reverse('web-tatib-service', args=[self.service.pk]))
