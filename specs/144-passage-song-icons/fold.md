@@ -7,7 +7,7 @@
 
 | Type | Requirement | Change |
 | --- | --- | --- |
-| `added` | `R24` | A passage and a song carry a decorative 20px glyph — open book, flagged note — on the media chip's centre line, with the title on the media title's 64px column; no other kind is marked, the mark is hidden from assistive technology and takes no pointer, and a song's title may take one more line where the narrower column wraps it. |
+| `added` | `R25` | A passage and a song carry a decorative 20px glyph — open book, flagged note — on the media chip's centre line, with the title on the media title's 64px column; no other kind is marked, the mark is hidden from assistive technology and takes no pointer, and a song's title may take one more line where the narrower column wraps it. |
 
 ## Drift guard
 
@@ -19,6 +19,6 @@
   `slices`.
 - **Declared no behaviour change**: no — one requirement added, none modified or removed.
 - **Not touched, on purpose**: the sidebar's service list, the OBS dock's entry list, the projector and
-  the preview modal — `R24` scopes the mark to the stage (FR-008).
+  the preview modal — `R25` scopes the mark to the stage (FR-008).
 
 <!-- A changed file with no delta is CRITICAL; Fold refuses to complete. -->
