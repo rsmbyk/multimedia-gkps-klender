@@ -47,6 +47,23 @@ audio helpers did not move the video's behaviour.
 
 **Outcome**: Converged — nothing remains.
 
+## Pass 3 — 2026-10-29, after merging `develop`
+
+`develop` had taken four slices since this branch was cut, including one on this very screen (spec 156's
+play/pause control). The merge resolved four documentation conflicts and one test conflict, renumbered
+the card to ITEM-170 and the version to 1.22.17, and folded the requirement as `R5`.
+
+| Gap | Type | Requirement | Evidence |
+| --- | --- | --- | --- |
+| D005 assumed the audio screen had no control; spec 156 landed one, so the fullscreen state is not keyboard-only. | `contradicts` | FR-005 | `research.md` D005 rewritten; `spec.md`'s assumptions and UI/UX now name the 48 × 48 control, and spec 156's own two cases stay green under the takeover. |
+
+Re-run on the merged tree (`tests.e2e.test_audio_display tests.e2e.test_video_display`, fresh database):
+**24 cases, 2 failures** — the same pair as pass 1 (`test_untitled_preview_and_projector_idle_display_off`
+and `test_navigation_and_display_off_stop_and_reset_video`, both ITEM-140's `stop` broadcast). The eight
+new cases, the rewritten pin and spec 156's two control cases are green.
+
+**Outcome**: Converged — the one finding is a documented reconciliation, not a code gap.
+
 ## Accepted gaps
 
 | Gap | Type | Severity | Accepted on |

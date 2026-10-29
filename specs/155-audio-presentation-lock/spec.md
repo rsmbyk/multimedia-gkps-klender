@@ -106,16 +106,16 @@ kills a recording.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | While an audio entry's recording is playing, no page-change key moves the projector: `ArrowLeft`/`ArrowRight`/`ArrowUp`/`ArrowDown`, `PageUp`/`PageDown`, `Home`/`End`, in plain, `Shift` and `Ctrl` forms. | `projector/R3` |
-| FR-002 | The same lock covers the pointer: the three mouse zones and the cue's next, bait and entry-list controls change nothing while the recording plays. | `projector/R3` |
-| FR-003 | The Go To shortcuts (`g`, `j`) do not open while the recording plays. | `projector/R3` |
-| FR-004 | Playing a recording makes the audio box the fullscreen element, filling the viewport, so the corner cue and the mouse zones are off screen. | `projector/R3` |
-| FR-005 | `Space` pauses the recording; the audio box leaves fullscreen and the normal projector screen returns with the position kept. | `projector/R3` |
-| FR-006 | Leaving fullscreen by the browser's own gesture pauses the recording; it never plays on under the normal page. | `projector/R3` |
-| FR-007 | When the recording reaches its end, the projector leaves fullscreen and returns to the normal screen, paused at the end. | `projector/R3` |
-| FR-008 | When the browser refuses fullscreen, the recording plays on the normal projector screen and the navigation lock still holds while it plays. | `projector/R3` |
-| FR-009 | The display channel stays authoritative: a dock `hide`/`release`, a `show` naming another screen, and an `update` still stop and release the recording exactly as today. | `projector/R3` |
-| FR-010 | `c` (corner hide) and `t` (translation) keep their behaviour while a recording plays: neither moves the projected screen off its entry. | `projector/R3` |
+| FR-001 | While an audio entry's recording is playing, no page-change key moves the projector: `ArrowLeft`/`ArrowRight`/`ArrowUp`/`ArrowDown`, `PageUp`/`PageDown`, `Home`/`End`, in plain, `Shift` and `Ctrl` forms. | `projector/R5` |
+| FR-002 | The same lock covers the pointer: the three mouse zones and the cue's next, bait and entry-list controls change nothing while the recording plays. | `projector/R5` |
+| FR-003 | The Go To shortcuts (`g`, `j`) do not open while the recording plays. | `projector/R5` |
+| FR-004 | Playing a recording makes the audio box the fullscreen element, filling the viewport, so the corner cue and the mouse zones are off screen. | `projector/R5` |
+| FR-005 | `Space` pauses the recording; the audio box leaves fullscreen and the normal projector screen returns with the position kept. | `projector/R5` |
+| FR-006 | Leaving fullscreen by the browser's own gesture pauses the recording; it never plays on under the normal page. | `projector/R5` |
+| FR-007 | When the recording reaches its end, the projector leaves fullscreen and returns to the normal screen, paused at the end. | `projector/R5` |
+| FR-008 | When the browser refuses fullscreen, the recording plays on the normal projector screen and the navigation lock still holds while it plays. | `projector/R5` |
+| FR-009 | The display channel stays authoritative: a dock `hide`/`release`, a `show` naming another screen, and an `update` still stop and release the recording exactly as today. | `projector/R5` |
+| FR-010 | `c` (corner hide) and `t` (translation) keep their behaviour while a recording plays: neither moves the projected screen off its entry. | `projector/R5` |
 
 ### Pins that flip
 
@@ -152,7 +152,8 @@ measured on the slice's live preview at 1440×900:
 - **Layout / position**: `.screen__audio-box:fullscreen` is `display:flex` filling `100vw ×
   100vh`; the player stays centred — `.screen__audio-player` at x 470→970, y 415→485 (500×69.9).
 - **Size / spacing**: the player keeps its `min(500px, 60vw)` width; the seek bar keeps its 6px
-  height and 30px top margin; the time line keeps `16px` and its 12px top margin.
+  height and 30px top margin; the time line keeps `16px` and its 12px top margin; spec 156's
+  play/pause control sits above the bar at its 48 × 48 and keeps that box in the takeover.
 - **Colour / typography**: the fullscreen background is `#171613`; the seek fill `#8e887b` on
   `#34312b`; the times `#8e887b` — the values the screen already uses.
 - **States**: playing (fullscreen, cue absent) · paused (normal screen, cue back) · idle after
@@ -169,10 +170,12 @@ measured on the slice's live preview at 1440×900:
   active; an audio entry has no picture to watch, so its playback is the fact worth guarding.
 - **`Space` stays the pause control**, as it is today on an audio screen; the lock removes nothing
   from it. `Escape` keeps the app's existing hold-to-exit gesture.
-- **No visible play/pause control is added to the fullscreen state.** The video's own fullscreen
-  hides its play button, and the projector's audio screen has never drawn one (`.screen__audio-play`
-  is a 0×0 box outside `components.css`'s shared rule); a mouse operator pauses with `Space`.
-  Raised for the owner rather than invented.
+- **The takeover adds no control of its own; spec 156's control is what a pointer uses.** When this
+  spec was drafted the projector's audio screen drew no control (`.screen__audio-play` was a 0×0 box
+  outside `components.css`'s shared rule), so the fullscreen state was keyboard-only. Spec 156 landed a
+  48×48 play/pause control on that screen while this slice was in flight, and the takeover shows it: a
+  mouse operator pauses by clicking it, which exits fullscreen like `Space` does. Nothing here paints a
+  second control.
 - **The preview dialog's audio player is out of scope** — it is a dialog with its own close button,
   not a projected screen.
 

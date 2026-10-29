@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="id" data-read="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rail icons — proposal (spec 151)</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<style>
+  html, body { margin: 0; height: auto; }
+  body { display: block; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); }
+  .bar {
+    position: sticky; top: 0; z-index: 60;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+    padding: 10px 18px; border-bottom: 1px solid var(--divider);
+    background: color-mix(in srgb, var(--rail-bg) 94%, var(--canvas));
+  }
+  .bar h1 { margin: 0; font: 650 14px/1.2 var(--font-sans); letter-spacing: -.01em; }
+  .bar .sub { color: var(--head-ink); font: 500 12px/1.3 var(--font-sans); }
+  .bar .grow { flex: 1; }
+  .grp { display: flex; align-items: center; gap: 5px; }
+  .grp span { color: var(--head-ink); font: 600 11px/1 var(--font-sans); text-transform: uppercase; letter-spacing: .07em; }
+  .grp button, .bar > button {
+    padding: 6px 10px; border: 1px solid var(--divider); border-radius: 7px;
+    background: var(--canvas); color: var(--ink); font: 600 12px/1 var(--font-sans); cursor: pointer;
+  }
+  .grp button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
+  .split { width: 1px; height: 22px; background: var(--divider); margin: 0 2px; }
+
+  .wrap { padding: 26px 26px 90px; }
+  .demos { display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  figure.demo { margin: 0; }
+  figure.demo figcaption {
+    margin: 0 0 9px; font: 650 12px/1 var(--font-sans); letter-spacing: .08em;
+    text-transform: uppercase; color: var(--head-ink);
+  }
+  figure.demo figcaption small { margin-left: 8px; font: 500 11px/1 var(--font-sans);
+    letter-spacing: 0; text-transform: none; color: var(--head-ink); opacity: .75; }
+  .frame {
+    display: flex; width: 502px; height: 780px; overflow: auto; position: relative;
+    scrollbar-gutter: stable;
+    border: 1px solid var(--divider); border-radius: 12px; background: var(--canvas);
+  }
+  .frame .rail { position: sticky; top: 0; height: 780px; flex: 0 0 var(--rail-w); }
+  .frame .read { display: block; flex: 0 0 420px; width: 420px; box-sizing: border-box; padding: 0 0 0 20px; }
+  .frame .read__body { container-type: inline-size; }
+
+  .strip { margin-top: 46px; display: flex; gap: 34px; align-items: flex-start; flex-wrap: wrap; }
+  .strip .cell { text-align: center; }
+  .strip .cell svg { width: 34px; height: 34px; display: block; margin: 0 auto 8px;
+    fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .strip .cell b { display: block; font: 600 12px/1.3 var(--font-sans); }
+  .strip .cell small { display: block; color: var(--head-ink); font: 500 11px/1.3 var(--font-sans); }
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>Rail icons</h1><span class="sub">spec 151 · the rail and the stage, 1:1</span>
+  <span class="grow"></span>
+  <div class="grp" data-slot="bible"><span>Alkitab</span>
+    <button data-v="open" aria-pressed="true">open + cross</button>
+    <button data-v="closed" aria-pressed="false">closed + cross</button></div>
+  <div class="grp" data-slot="tatib"><span>Tata Ibadah</span>
+    <button data-v="clipboard" aria-pressed="true">clipboard</button>
+    <button data-v="steps" aria-pressed="false">steps</button></div>
+  <div class="grp" data-slot="song"><span>Kidung</span>
+    <button data-v="pair" aria-pressed="true">beamed pair</button>
+    <button data-v="single" aria-pressed="false">single note</button></div>
+  <div class="grp" data-slot="audio"><span>Audio media</span>
+    <button data-v="waveform" aria-pressed="true">waveform</button>
+    <button data-v="speaker" aria-pressed="false">speaker</button></div>
+  <span class="split"></span><button id="theme" type="button">Dark</button>
+</div>
+
+<div class="wrap">
+  <div class="demos">
+    <figure class="demo"><figcaption>Now — develop<small>scrolls inside</small></figcaption>
+      <div class="frame" id="frameNow"></div></figure>
+    <figure class="demo"><figcaption>Proposed<small>scrolls inside</small></figcaption>
+      <div class="frame" id="frameProposed"></div></figure>
+  </div>
+
+  <div class="strip" id="strip"></div>
+</div>
+
+<template id="railSrc"><aside class="rail" aria-label="Main navigation">
+
+  <a class="rail__logo" href="/" aria-label="GKPS Klender — home">
+    <img src="assets/gkps.png" alt="" width="40" height="40">
+  </a>
+
+  <ul class="rail__menu">
+    <!-- SEARCH: keeps the last result set (upgraded to it in reading.js) -->
+    <li>
+      <a class="rail__btn" id="railSearch" href="/"
+         data-tip="Search" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>
+        </svg>
+        <span class="rail__name">Search</span>
+      </a>
+    </li>
+    <!-- ALKITAB -->
+    <li>
+      <a class="rail__btn" data-tip="Alkitab"
+         aria-label="Alkitab" data-panel="alkitab"
+         aria-expanded="false"
+         aria-controls="panel chapters" href="/bible/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/>
+          <path d="M12 6.6v13.6"/>
+        </svg>
+        <span class="rail__name">Alkitab</span>
+      </a>
+    </li>
+
+    <!-- KIDUNG -->
+    <li>
+      <a class="rail__btn" data-tip="Kidung"
+         aria-label="Kidung" data-panel="kidung"
+         aria-expanded="false"
+         aria-controls="panel chapters" href="/songs/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 17.4V5.6l10.2-2v11.6"/>
+          <circle cx="6.7" cy="17.4" r="2.4"/>
+          <circle cx="16.9" cy="15.2" r="2.4"/>
+        </svg>
+        <span class="rail__name">Kidung</span>
+      </a>
+    </li>
+
+    <!-- TATA IBADAH -->
+    <li>
+      <a class="rail__btn" data-tip="Tata Ibadah"
+         aria-label="Tata Ibadah" data-panel="tatib"
+         aria-expanded="true"
+         aria-controls="panel chapters" href="/tatib/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"/>
+          <path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"/>
+        </svg>
+        <span class="rail__name">Tata Ibadah</span>
+      </a>
+    </li>
+    <li><a class="rail__btn" id="railMediaLibrary" href="/media-library/" data-tip="Media Library" aria-label="Media Library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7V5.8c0-1 .8-1.8 1.8-1.8h5.1l2 2h6.3c1 0 1.8.8 1.8 1.8v1.3"/><path d="M3.5 9.1h17l-1.5 10.1c-.1.6-.7 1.1-1.3 1.1H6.3c-.6 0-1.2-.5-1.3-1.1L3.5 9.1Z"/><path d="M8 13h8M8.7 16h6.6"/></svg><span class="rail__name">Media Library</span></a></li>
+  </ul>
+
+  <div class="rail__foot">
+    <button class="rail__btn media-transfer-rail" type="button" id="mediaTransferRail" data-tip="Transfer progress" aria-label="Transfer progress" hidden><span id="mediaTransferRailIcon" aria-hidden="true">⇄</span><span class="media-transfer-rail__dot" id="mediaTransferRailDot" data-state="active"></span></button>
+    <button class="rail__btn rail__theme" type="button" id="themeBtn"
+            data-tip="System mode" aria-label="System mode">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"/>
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/>
+      </svg>
+      <svg class="system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="13" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+      </svg>
+    </button>
+  </div>
+</aside></template>
+<template id="readSrc"><article class="read" id="read" lang="id" tabindex="-1" data-kind="tatib">
+  <header class="read__head">
+   <div class="read__head-top">
+    <p class="read__eyebrow" id="readEyebrow">20 Oktober 2026</p>
+    
+<div class="read__project" data-project-group data-display-channel="gkps-service-display">
+  <button type="button" class="read__project-btn" id="serviceMediaButton" aria-label="Media files">Media files</button>
+  <button type="button" class="read__project-btn read__project-btn--icon" data-project-window
+          data-projector-url="/projector" data-project-service="144"
+          aria-label="Open projector window" title="Open projector window">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.5" y="6.6" width="9.6" height="9" rx="1.6"/>
+      <path d="M12.6 4.2h3.8v3.8M16.4 4.2 9.9 10.7"/>
+    </svg>
+  </button>
+  <button type="button" class="read__project-btn" data-project-open
+          data-projector-url="/projector?service=144" data-project-service="144"
+          data-label-project="Project" data-label-stop="Stop projecting"
+          aria-label="Project" title="Project">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+      <circle cx="6.7" cy="9.7" r="1.7"/>
+      <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+    </svg>
+    <span data-project-label>Project</span>
+  </button>
+</div>
+<dialog class="media-library__dialog service-media__dialog" id="serviceMediaDialog" aria-label="Media files"><h2>Media files</h2><div class="service-media__list"><div class="service-media__row" data-media-sha="ecff386f781b87299834d87735804efafc56ffb3de82265da7ec67e40fdf000f" data-media-family="video" data-media-past="true"><div class="service-media__icon"></div><div class="service-media__main"><strong>YTDown.com_YouTube_Media_POC6Z86ChhA_Satu-Satunya-Live-Connect-Worship-ft-Faith-Yeshua-Abraham_001_1080p.mp4</strong><small>Video · 73.3 MB</small></div><div class="service-media__states"><span data-download-action></span><span data-online-state title="Checking online availability">−</span><span data-local-state title="Checking this computer">−</span></div></div><div class="service-media__row" data-media-sha="5cced97edf39ffe2bdf90bbf50880c236ae25b6ab7b7449b55860e74c2cd0888" data-media-family="image" data-media-past="true"><div class="service-media__icon"></div><div class="service-media__main"><strong>images.jpeg</strong><small>Image · 14.1 KB</small></div><div class="service-media__states"><span data-download-action></span><span data-online-state title="Checking online availability">−</span><span data-local-state title="Checking this computer">−</span></div></div><div class="service-media__row" data-media-sha="ce5151f33d3ce6e034ad0aa969071859982f43d16bf5d0d0b657848b4065560f" data-media-family="pdf" data-media-past="true"><div class="service-media__icon"></div><div class="service-media__main"><strong>Receipt-2773-9204.png</strong><small>Pdf · 82.8 KB</small></div><div class="service-media__states"><span data-download-action></span><span data-online-state title="Checking online availability">−</span><span data-local-state title="Checking this computer">−</span></div></div><div class="service-media__row" data-media-sha="aa6451bbae4732be80f48c7281702fa6ad9aef38e26b5994c62fe421a959fc6d" data-media-family="audio" data-media-past="true"><div class="service-media__icon"></div><div class="service-media__main"><strong>Sujud &amp; Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3</strong><small>Audio · 11.6 MB</small></div><div class="service-media__states"><span data-download-action></span><span data-online-state title="Checking online availability">−</span><span data-local-state title="Checking this computer">−</span></div></div></div><div class="media-library__dialog-actions"><button type="button" data-transfer-close>Close</button></div></dialog>
+
+
+<script type="text/template" class="entry__preview-src" data-preview-for="e7">
+<p class="preview__ref">Kisah Para Rasul 1:1</p><p class="preview__line">1  Hai Teofilus, dalam bukuku yang pertama aku menulis tentang segala sesuatu yang dikerjakan dan diajarkan Yesus,</p></script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e26">
+
+
+<div class="preview__video" data-preview-video="ecff386f781b87299834d87735804efafc56ffb3de82265da7ec67e40fdf000f">
+  <div class="preview__video-frame">
+    <video class="preview__video-element" playsinline preload="metadata" hidden></video>
+    <button type="button" class="preview__video-overlay-play" data-video-play aria-label="Play video"></button>
+  </div>
+  <div class="preview__video-controls">
+    <button type="button" class="preview__video-play" data-video-play aria-label="Play video"></button>
+    <input class="preview__video-seek" data-video-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek video">
+  </div>
+  <div class="preview__video-meta"><span class="preview__video-filename">YTDown.com_YouTube_Media_POC6Z86ChhA_Satu-Satunya-Live-Connect-Worship-ft-Faith-Yeshua-Abraham_001_1080p.mp4</span><span><span data-video-elapsed>0:00</span> / <span data-video-total>0:00</span></span></div>
+</div>
+<div class="preview__video-unavailable" role="status" hidden>
+  <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m20 17 12 7-12 7zM12 5l24 38"/></svg>
+  <span>Video unavailable on this computer</span>
+</div>
+</script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e5">
+
+<p class="preview__ref">images.jpeg</p>
+<div class="preview__image" data-preview-image="5cced97edf39ffe2bdf90bbf50880c236ae25b6ab7b7449b55860e74c2cd0888">
+  <img alt="images.jpeg" hidden>
+  <div class="preview__image-unavailable" role="status">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>
+    <span>Image unavailable on this computer</span>
+  </div>
+</div>
+</script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e6">
+<p class="preview__song">Buku Ende HKBP — aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa</p><div class="preview__tabs" role="tablist"><button type="button" role="tab" class="preview__tab" aria-selected="true">1</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">2</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">3</button></div><div class="preview__panels"><div class="preview__panel" role="tabpanel"><p class="preview__line">(1) Sangap di jahowa na sun timbul i</p><p class="preview__line">Balga ni holongNa ndang tarasam i</p><p class="preview__line">Dilehon AnakNa na sasada i</p><p class="preview__line">Manobus hita jolma pardosa i</p><p class="preview__line">Puji ma Debata ale manisia</p><p class="preview__line">Las roham las roham somba ma Debata</p><p class="preview__line">Dapothon Jahowa na sun timbul i</p><p class="preview__line">Marhite AnakNa Tuhan Jesus i</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">(2) Tung so hasuhatan do basaNa i</p><p class="preview__line">Marhite AnakNa nilehonNa i</p><p class="preview__line">MudarNa durus do di hau silang i</p><p class="preview__line">Rara pe dosanta ias dibaen i</p><p class="preview__line">Puji ma Debata ale manisia</p><p class="preview__line">Las roham las roham somba ma Debata</p><p class="preview__line">Dapothon Jahowa na sun timbul i</p><p class="preview__line">Marhite AnakNa Tuhan Jesus i</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">(3) Balga situtu pambaenMi Debata</p><p class="preview__line">Tung so hasuhatan holong ni rohaM</p><p class="preview__line">Tu jolma pardosa asi do rohaM</p><p class="preview__line">Diungkap Ho dalan lao tu banuaM</p><p class="preview__line">Puji ma Debata ale manisia</p><p class="preview__line">Las roham las roham somba ma Debata</p><p class="preview__line">Dapothon Jahowa na sun timbul i</p><p class="preview__line">Marhite AnakNa Tuhan Jesus i</p></div></div></script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e4">
+
+<p class="preview__ref">Receipt-2773-9204.png</p>
+<div class="preview__pdf" data-preview-pdf="ce5151f33d3ce6e034ad0aa969071859982f43d16bf5d0d0b657848b4065560f">
+  <div class="preview__pdf-page"><canvas aria-label="PDF page"></canvas></div>
+  <div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous PDF page">←</button><span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next PDF page">→</button></div>
+  <div class="preview__pdf-unavailable" role="status" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg><span>PDF unavailable on this computer</span></div>
+</div>
+</script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e3">
+
+<div class="preview__split" data-screen-breaks="null" data-default-screen-mode="multi_line" data-screen-state-signature="e062f3b65aeb7e975c777cebc0ea57f5835f128d66101237ec8a3b62334dd973" data-text-signature="820d8b1779bd54ef901bfa356f3851fb6c31ad353853cfd0f3e7634b82887f15" data-save-url="/editor/entry/3/screen-breaks/" data-can-edit="true">
+  
+  
+  <div class="preview__rows">
+  
+    <p class="preview__line preview__row">VOTUM, INTROITUS, DOA
+</p>
+    <button type="button" class="preview__gap" data-break-after="1" data-multi-boundary="true" aria-label="Add screen break after line 1"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi.
+</p>
+    <button type="button" class="preview__gap" data-break-after="2" data-multi-boundary="false" aria-label="Add screen break after line 2"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Amin.
+</p>
+    <button type="button" class="preview__gap" data-break-after="4" data-multi-boundary="false" aria-label="Add screen break after line 4"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="6" data-multi-boundary="true" aria-label="Add screen break after line 6"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="7" data-multi-boundary="true" aria-label="Add screen break after line 7"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Aku mau bersyukur kepada Tuhan dengan segenap hati, dalam lingkungan orang-orang benar dan dalam jemaah.
+</p>
+    <button type="button" class="preview__gap" data-break-after="8" data-multi-boundary="false" aria-label="Add screen break after line 8"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Besar perbuatan-perbuatan Tuhan, layak diselidiki oleh semua orang yang menyukainya.
+</p>
+    <button type="button" class="preview__gap" data-break-after="10" data-multi-boundary="false" aria-label="Add screen break after line 10"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="12" data-multi-boundary="true" aria-label="Add screen break after line 12"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="13" data-multi-boundary="true" aria-label="Add screen break after line 13"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Agung dan bersemarak pekerjaan-Nya, dan keadilan-Nya tetap untuk selamanya.
+</p>
+    <button type="button" class="preview__gap" data-break-after="14" data-multi-boundary="false" aria-label="Add screen break after line 14"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Diberikan-Nya rezeki kepada orang-orang yang takut akan Dia. Ia ingat untuk selama-lamanya akan perjanjian-Nya.
+</p>
+    <button type="button" class="preview__gap" data-break-after="16" data-multi-boundary="false" aria-label="Add screen break after line 16"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="18" data-multi-boundary="true" aria-label="Add screen break after line 18"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="19" data-multi-boundary="true" aria-label="Add screen break after line 19"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Kekuatan perbuatan-Nya diberitakan-Nya kepada umat-Nya, dengan memberikan kepada mereka milik pusaka bangsa-bangsa.
+</p>
+    <button type="button" class="preview__gap" data-break-after="20" data-multi-boundary="false" aria-label="Add screen break after line 20"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Perbuatan tangan-Nya ialah kebenaran dan keadilan, segala titah-Nya teguh, kokoh untuk seterusnya dan selamanya, dilakukan dalam kebenaran dan kejujuran.
+</p>
+    <button type="button" class="preview__gap" data-break-after="22" data-multi-boundary="false" aria-label="Add screen break after line 22"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="24" data-multi-boundary="true" aria-label="Add screen break after line 24"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="25" data-multi-boundary="true" aria-label="Add screen break after line 25"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Permulaan hikmat adalah takut akan TUHAN, semua orang yang melakukannya berakal budi yang baik. Puji-pujian kepada-Nya tetap untuk selamanya.
+</p>
+    <button type="button" class="preview__gap" data-break-after="26" data-multi-boundary="false" aria-label="Add screen break after line 26"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Haleluya,Haleluya,Haleluya.
+</p>
+    <button type="button" class="preview__gap" data-break-after="28" data-multi-boundary="false" aria-label="Add screen break after line 28"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> (Menyanyikan) Haleluya, Haleluya, Haleluya.
+</p>
+    <button type="button" class="preview__gap" data-break-after="30" data-multi-boundary="false" aria-label="Add screen break after line 30"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="32" data-multi-boundary="true" aria-label="Add screen break after line 32"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="33" data-multi-boundary="true" aria-label="Add screen break after line 33"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Marilah kita berdoa.
+</p>
+    <button type="button" class="preview__gap" data-break-after="34" data-multi-boundary="false" aria-label="Add screen break after line 34"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Ya Tuhan Allah Maha Adil yang bertakhta di sorga....
+</p>
+    <button type="button" class="preview__gap" data-break-after="36" data-multi-boundary="false" aria-label="Add screen break after line 36"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="38" data-multi-boundary="true" aria-label="Add screen break after line 38"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="39" data-multi-boundary="true" aria-label="Add screen break after line 39"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader">NEXT PENGAMPUNAN DOSAEdit
+</p>
+    <button type="button" class="preview__gap" data-break-after="40" data-multi-boundary="true" aria-label="Add screen break after line 40"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="41" data-multi-boundary="true" aria-label="Add screen break after line 41"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader">PENGAMPUNAN DOSA
+</p>
+    <button type="button" class="preview__gap" data-break-after="42" data-multi-boundary="true" aria-label="Add screen break after line 42"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Marilah kita bangkit berdiri!
+</p>
+    <button type="button" class="preview__gap" data-break-after="43" data-multi-boundary="false" aria-label="Add screen break after line 43"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Marilah datang kepada Tuhan dengan segala kerendahan hati untuk mengaku kelemahan dan dosa kita...
+</p>
+    <button type="button" class="preview__gap" data-break-after="45" data-multi-boundary="false" aria-label="Add screen break after line 45"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Ampuni kami Tuhan, jika dalam kesulitan, kami sering bersungut-sungut pada-Mu. Biarlah Engkau tetap menjadi pembela dan penolong kami.
+</p>
+    <button type="button" class="preview__gap" data-break-after="47" data-multi-boundary="false" aria-label="Add screen break after line 47"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="49" data-multi-boundary="true" aria-label="Add screen break after line 49"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="50" data-multi-boundary="true" aria-label="Add screen break after line 50"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Bernyanyi reff Kidung Jemaat No. 33
+</p>
+    <button type="button" class="preview__gap" data-break-after="51" data-multi-boundary="false" aria-label="Add screen break after line 51"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Aku datanglah, Tuhan-Mu, pada-Mu
+</p>
+    <button type="button" class="preview__gap" data-break-after="53" data-multi-boundary="false" aria-label="Add screen break after line 53"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Dalam darah-Mu kudus, sucikan diriku
+</p>
+    <button type="button" class="preview__gap" data-break-after="55" data-multi-boundary="false" aria-label="Add screen break after line 55"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="57" data-multi-boundary="true" aria-label="Add screen break after line 57"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="58" data-multi-boundary="true" aria-label="Add screen break after line 58"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Ya Tuhan, kami datang ke hadapan-Mu di Bait-Mu ini...
+</p>
+    <button type="button" class="preview__gap" data-break-after="59" data-multi-boundary="false" aria-label="Add screen break after line 59"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Ampuni kami jika dalam kehidupan bergereja kami tidak peka pada perjuangan dan kesulitan yang mereka hadapi. Kami tidak menopang mereka dalam kesusahan yang mereka.
+</p>
+    <button type="button" class="preview__gap" data-break-after="61" data-multi-boundary="false" aria-label="Add screen break after line 61"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="63" data-multi-boundary="true" aria-label="Add screen break after line 63"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="64" data-multi-boundary="true" aria-label="Add screen break after line 64"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Bernyanyi reff Kidung Jemaat No. 33
+</p>
+    <button type="button" class="preview__gap" data-break-after="65" data-multi-boundary="false" aria-label="Add screen break after line 65"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Aku datanglah, Tuhan-Mu, pada-Mu
+</p>
+    <button type="button" class="preview__gap" data-break-after="67" data-multi-boundary="false" aria-label="Add screen break after line 67"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Dalam darah-Mu kudus, sucikan diriku.
+</p>
+    <button type="button" class="preview__gap" data-break-after="69" data-multi-boundary="false" aria-label="Add screen break after line 69"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="71" data-multi-boundary="true" aria-label="Add screen break after line 71"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="72" data-multi-boundary="true" aria-label="Add screen break after line 72"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Tuhan, Ampuni kami atas segala dosa dan kesalahan kami dan tolong kami agar dapat memperbaiki kesalahan kami...
+</p>
+    <button type="button" class="preview__gap" data-break-after="73" data-multi-boundary="false" aria-label="Add screen break after line 73"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Di dalam nama Tuhan Yesus Kristus kami berdoa. Amin.
+</p>
+    <button type="button" class="preview__gap" data-break-after="75" data-multi-boundary="false" aria-label="Add screen break after line 75"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="77" data-multi-boundary="true" aria-label="Add screen break after line 77"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="78" data-multi-boundary="true" aria-label="Add screen break after line 78"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Menyanyikan “Kasih”
+</p>
+    <button type="button" class="preview__gap" data-break-after="79" data-multi-boundary="false" aria-label="Add screen break after line 79"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Kasih pasti lemah lembut Kasih pasti memaafkan
+</p>
+    <button type="button" class="preview__gap" data-break-after="81" data-multi-boundary="false" aria-label="Add screen break after line 81"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Kasih pasti murah hati kasihMu, kasihMu, Tuhan…
+</p>
+    <button type="button" class="preview__gap" data-break-after="83" data-multi-boundary="false" aria-label="Add screen break after line 83"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Preview
+</p>
+    <button type="button" class="preview__gap" data-break-after="85" data-multi-boundary="true" aria-label="Add screen break after line 85"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="86" data-multi-boundary="true" aria-label="Add screen break after line 86"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="87" data-multi-boundary="true" aria-label="Add screen break after line 87"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Dengarkanlah dan percayailah firman Allah, janji tentang pengampunan dosa... Kemuliaan bagi Allah di tempat yang mahatinggi.
+</p>
+    <button type="button" class="preview__gap" data-break-after="88" data-multi-boundary="false" aria-label="Add screen break after line 88"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Amin.
+</p>
+    <button type="button" class="preview__gap" data-break-after="90" data-multi-boundary="false" aria-label="Add screen break after line 90"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="92" data-multi-boundary="true" aria-label="Add screen break after line 92"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="93" data-multi-boundary="true" aria-label="Add screen break after line 93"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">NEXT PENGAKUAN DAN TEKAD MINGGU SAHABATEdit
+</p>
+    <button type="button" class="preview__gap" data-break-after="94" data-multi-boundary="true" aria-label="Add screen break after line 94"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="95" data-multi-boundary="true" aria-label="Add screen break after line 95"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">PENGAKUAN DAN TEKAD MINGGU SAHABAT KHUSUS
+</p>
+    <button type="button" class="preview__gap" data-break-after="96" data-multi-boundary="true" aria-label="Add screen break after line 96"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Jemaat yang dikasihi Tuhan, melalui Minggu Sahabat Khusus, kita diingatkan bahwa semua warga jemaat adalah bersaudara dan satu dalam Kristus... seperti yang tertulis dalam 1 Korintus 12:4-11+18. Ada rupa-rupa karunia, tetapi satu Roh.
+</p>
+    <button type="button" class="preview__gap" data-break-after="97" data-multi-boundary="false" aria-label="Add screen break after line 97"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-leader">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="99" data-multi-boundary="true" aria-label="Add screen break after line 99"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="100" data-multi-boundary="true" aria-label="Add screen break after line 100"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Dan ada rupa-rupa pelayanan, tetapi satu Tuhan.
+</p>
+    <button type="button" class="preview__gap" data-break-after="101" data-multi-boundary="false" aria-label="Add screen break after line 101"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="103" data-multi-boundary="true" aria-label="Add screen break after line 103"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="104" data-multi-boundary="true" aria-label="Add screen break after line 104"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Dan ada berbagai-bagai perbuatan ajaib, tetapi Allah adalah satu yang mengerjakan semuanya dalam semua orang.
+</p>
+    <button type="button" class="preview__gap" data-break-after="105" data-multi-boundary="false" aria-label="Add screen break after line 105"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Tetapi kepada tiap-tiap orang dikaruniakan penyataan Roh untuk kepentingan bersama.
+</p>
+    <button type="button" class="preview__gap" data-break-after="107" data-multi-boundary="false" aria-label="Add screen break after line 107"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="109" data-multi-boundary="true" aria-label="Add screen break after line 109"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="110" data-multi-boundary="true" aria-label="Add screen break after line 110"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Sebab kepada yang seorang Roh memberikan karunia untuk berkata-kata dengan hikmat, dan kepada yang lain Roh yang sama memberikan karunia berkata-kata dengan pengetahuan.
+</p>
+    <button type="button" class="preview__gap" data-break-after="111" data-multi-boundary="false" aria-label="Add screen break after line 111"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Kepada yang seorang Roh yang sama memberikan iman, dan kepada yang lain Ia memberikan karunia untuk menyembuhkan.
+</p>
+    <button type="button" class="preview__gap" data-break-after="113" data-multi-boundary="false" aria-label="Add screen break after line 113"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="115" data-multi-boundary="true" aria-label="Add screen break after line 115"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="116" data-multi-boundary="true" aria-label="Add screen break after line 116"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Kepada yang seorang Roh memberikan kuasa untuk mengadakan mujizat, dan kepada yang lain Ia memberikan karunia untuk bernubuat, dan kepada yang lain lagi Ia memberikan karunia untuk membedakan bermacam-macam roh.
+</p>
+    <button type="button" class="preview__gap" data-break-after="117" data-multi-boundary="false" aria-label="Add screen break after line 117"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Kepada yang seorang Ia memberikan karunia untuk berkata-kata dengan bahasa roh, dan kepada yang lain Ia memberikan karunia untuk menafsirkan bahasa roh itu.
+</p>
+    <button type="button" class="preview__gap" data-break-after="119" data-multi-boundary="false" aria-label="Add screen break after line 119"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="121" data-multi-boundary="true" aria-label="Add screen break after line 121"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="122" data-multi-boundary="true" aria-label="Add screen break after line 122"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Tetapi semuanya ini dikerjakan oleh Roh yang satu dan yang sama, yang memberikan karunia kepada tiap-tiap orang secara khusus, seperti yang dikehendaki-Nya.
+</p>
+    <button type="button" class="preview__gap" data-break-after="123" data-multi-boundary="false" aria-label="Add screen break after line 123"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Tetapi Allah telah memberikan kepada anggota, masing-masing secara khusus, suatu tempat pada tubuh, seperti yang dikehendaki-Nya.
+</p>
+    <button type="button" class="preview__gap" data-break-after="125" data-multi-boundary="false" aria-label="Add screen break after line 125"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly">Edit
+</p>
+    <button type="button" class="preview__gap" data-break-after="127" data-multi-boundary="true" aria-label="Add screen break after line 127"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-assembly">Delete
+</p>
+    <button type="button" class="preview__gap" data-break-after="128" data-multi-boundary="true" aria-label="Add screen break after line 128"><span data-break-label>Add break</span></button>
+  
+    <p class="preview__line preview__row is-leader"><span class="tatib__sp">L.</span> Dengan demikian, Tuhan memberikan kepada semua orang karunia-karunia rohani; kepada yatim-piatu, janda, duda, lansia, disabilitas dan kepada kita semua...
+</p>
+    <button type="button" class="preview__gap" data-break-after="129" data-multi-boundary="false" aria-label="Add screen break after line 129"><span data-break-label>Add break</span></button>
+  
+    <div class="preview__blank-line" aria-label="Blank line"></div>
+    
+  
+    <p class="preview__line preview__row is-assembly"><span class="tatib__sp">J.</span> Amin.</p>
+    
+  
+  </div>
+</div>
+</script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e1">
+
+
+<div class="preview__audio" data-preview-audio="aa6451bbae4732be80f48c7281702fa6ad9aef38e26b5994c62fe421a959fc6d">
+  <div class="audio-player" hidden>
+    <button type="button" class="audio-player__play" data-audio-play aria-label="Play audio"></button>
+    <div class="audio-player__timeline">
+      <div class="audio-player__filename">Sujud &amp; Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3</div>
+      <input class="audio-player__seek" data-audio-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek audio">
+      <div class="audio-player__times"><span data-audio-elapsed>0:00</span><span data-audio-total>0:00</span></div>
+    </div>
+  </div>
+  <div class="preview__audio-unavailable" role="status" hidden>
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg>
+    <span>Audio unavailable on this computer</span>
+  </div>
+</div>
+</script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e9">
+<p class="preview__song">HAL 7 — Porini Dong Marribu Hali</p><div class="preview__tabs" role="tablist"><button type="button" role="tab" class="preview__tab" aria-selected="true">1</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">2</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">3</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">4</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">5</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">6</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">7</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">8</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">9</button></div><div class="preview__panels"><div class="preview__panel" role="tabpanel"><p class="preview__line">Porini dong maribu hali, paraloling ni sorangkin</p><p class="preview__line">Bois ni gogoh inggananni, mamuji Naibatanta in,</p><p class="preview__line">Ibaen malasni uhurhin, hinorhon ni pambaen-Ni in.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ai ambit ondos ma sorangku, bai ujung ni dunia on,</p><p class="preview__line">sagala jolma arahonku, mamuji Naibata tongtong.</p><p class="preview__line">Talup do gok ni uhurhin, hubaen pasangap Tuhan in.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ulang ma modom ho tonduyhu, sai puho ho, sai hehe ma.</p><p class="preview__line">Pongkut ma ho bani horjamu, sai puji Tuhan Naibata.</p><p class="preview__line">Sai baen ma gok ni pandeimin, laho mamuji Tuhan in.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Tarima kasih ma uhurhu, Bamu o Naibata tongtong.</p><p class="preview__line">Ibahen dearni layak-Mu, binere-Mu hubangku on.</p><p class="preview__line">Ai ipatudu Ham tongtong ganup na porlu bangku on.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Hupuji pakon Ham, o Jesus, ibaen parholong ateiMu.</p><p class="preview__line">Mardingat darohMu madurus, pakon ganupan layak-Mu.</p><p class="preview__line">Mambahen haluahon on, hubai pardousa banggal on.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ham pe homa, Tonduy Napansing, sai jalo Ham ma dodingkon.</p><p class="preview__line">Margogoh anjaha matunggung do Ham, mangapoh uhurhon</p><p class="preview__line">Ia hubaen na dear in, halani gogoh-Mu do in.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ai ise do mamasu-masu, au on o Naibata, lang Ham?</p><p class="preview__line">Pamatang rap pakon tonduyhu, sai iparmudu-mudu Ham</p><p class="preview__line">Jaha lumbang uhur-Mu in mangidah pardousaonkin.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Sai layakMu do pujionku sadokah na manggoluh au.</p><p class="preview__line">Sai Goran-Mu pasangaponku sadokah na marhosah au</p><p class="preview__line">Ronsi rotap ni hosahkin, sai pujionku Ham ijin.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Sai jalo ma, ale Tuhanku, pamujingkon na hurang in.</p><p class="preview__line">Paima das au on hu surga, ianan na gok dear in,</p><p class="preview__line">Marlaksa hali ma ijin, dodingkononku Tuhankin.</p></div></div></script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e10">
+<p class="preview__song">HAL 1 — Jahowa Sihol Pujionku</p><div class="preview__tabs" role="tablist"><button type="button" role="tab" class="preview__tab" aria-selected="true">1</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">2</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">3</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">4</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">5</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">6</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">7</button></div><div class="preview__panels"><div class="preview__panel" role="tabpanel"><p class="preview__line">Jahowa sihol pujionku, ai Ham do Naibata sitompa au.</p><p class="preview__line">Sai suruh Tonduy-Mu hu bangku, mangajar au mamuji goran-Mu.</p><p class="preview__line">Marhiteihitei Jesus AnakMu, ase dear dodingku hu Bamu.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Bai Anak-Mu bobahon ahu ase Bamu iboban au homa.</p><p class="preview__line">Sorapkon Tonduy-Mu hubangku, manogu au bai dalan na torsa.</p><p class="preview__line">Ase tongtong gok damei uhurhin, janah mesek mamuji Goran-Mu.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Sai holong atei-Mu Jahowa, papandei au mamuji Goran-Mu.</p><p class="preview__line">Sai ulang asal puas hata, ningon botul mamuji hu Bamu.</p><p class="preview__line">Ham Bapa, Anak pakon Tonduy-Mu, doskon najongjong au i lobei-Mu.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Tonggokku na lang tarpajojor, Tonduy Napansing patalarhon in</p><p class="preview__line">Au gabe anak-Mu goranon, Tonduy homa do mangkatahon in.</p><p class="preview__line">Ase ibagas Kristus Anak-Mu boi au mardilo Bapa hu Bamu.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ai Tonduy-Mu do mangajarhon martonggo au domu bai rosuh-Mu</p><p class="preview__line">Sirsir do tong Ham manangihon tonggokku marhiteihon Anak-Mu</p><p class="preview__line">Ibagas Jesus jaloonku do, mardapot-dapot pasu-pasu-Mu.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Sonin ma au marolob-olob, marhamegahon malas uhurhin.</p><p class="preview__line">Ai ra do Ham mamparuhurhon, na husuhutkon hu Bamu ijin.</p><p class="preview__line">Pasu-pasu-Mu sai sirnip do in, lobih humbani panagamankin.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ibagas Kristus au manean, ai pitah Ia hasiholankin.</p><p class="preview__line">Marhitei Jesus sai saud  ma Amen,  na hupindohon rapkon Tonduy in.</p><p class="preview__line">Hupuji Ham ronsi sadokahniin, ai Ham tumang do hamegahonkin.</p></div></div></script>
+<script type="text/template" class="entry__preview-src" data-preview-for="e8">
+<p class="preview__song">HAL 7 — Porini Dong Marribu Hali</p><div class="preview__tabs" role="tablist"><button type="button" role="tab" class="preview__tab" aria-selected="true">1</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">2</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">3</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">4</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">5</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">6</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">7</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">8</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">9</button></div><div class="preview__panels"><div class="preview__panel" role="tabpanel"><p class="preview__line">Porini dong maribu hali, paraloling ni sorangkin</p><p class="preview__line">Bois ni gogoh inggananni, mamuji Naibatanta in,</p><p class="preview__line">Ibaen malasni uhurhin, hinorhon ni pambaen-Ni in.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ai ambit ondos ma sorangku, bai ujung ni dunia on,</p><p class="preview__line">sagala jolma arahonku, mamuji Naibata tongtong.</p><p class="preview__line">Talup do gok ni uhurhin, hubaen pasangap Tuhan in.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ulang ma modom ho tonduyhu, sai puho ho, sai hehe ma.</p><p class="preview__line">Pongkut ma ho bani horjamu, sai puji Tuhan Naibata.</p><p class="preview__line">Sai baen ma gok ni pandeimin, laho mamuji Tuhan in.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Tarima kasih ma uhurhu, Bamu o Naibata tongtong.</p><p class="preview__line">Ibahen dearni layak-Mu, binere-Mu hubangku on.</p><p class="preview__line">Ai ipatudu Ham tongtong ganup na porlu bangku on.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Hupuji pakon Ham, o Jesus, ibaen parholong ateiMu.</p><p class="preview__line">Mardingat darohMu madurus, pakon ganupan layak-Mu.</p><p class="preview__line">Mambahen haluahon on, hubai pardousa banggal on.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ham pe homa, Tonduy Napansing, sai jalo Ham ma dodingkon.</p><p class="preview__line">Margogoh anjaha matunggung do Ham, mangapoh uhurhon</p><p class="preview__line">Ia hubaen na dear in, halani gogoh-Mu do in.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Ai ise do mamasu-masu, au on o Naibata, lang Ham?</p><p class="preview__line">Pamatang rap pakon tonduyhu, sai iparmudu-mudu Ham</p><p class="preview__line">Jaha lumbang uhur-Mu in mangidah pardousaonkin.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Sai layakMu do pujionku sadokah na manggoluh au.</p><p class="preview__line">Sai Goran-Mu pasangaponku sadokah na marhosah au</p><p class="preview__line">Ronsi rotap ni hosahkin, sai pujionku Ham ijin.</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">Sai jalo ma, ale Tuhanku, pamujingkon na hurang in.</p><p class="preview__line">Paima das au on hu surga, ianan na gok dear in,</p><p class="preview__line">Marlaksa hali ma ijin, dodingkononku Tuhankin.</p></div></div></script>
+
+   </div>
+   <div class="read__row">
+    <h1 class="read__title"><span id="readName">Ibadah Minggu</span> <span class="read__no" id="readNo"></span></h1>
+    
+   </div>
+  </header>
+  <div class="read__body" id="readBody">
+
+<div class="entry__start" data-entry-start role="group" aria-label="Add at the start of this Tata Ibadah">
+  <span class="entry__start-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+  </span>
+</div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--scripture" id="ti-e7" data-anchor="e7" data-entry-pk="7">
+
+<h2 class="read__sec"><span class="entry__kind-icon" aria-hidden="true" data-kind-icon="scripture"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.6C10.3 5.2 7.9 4.6 4.5 4.8v13.4c3.4-.2 5.8.4 7.5 1.8 1.7-1.4 4.1-2 7.5-1.8V4.8c-3.4-.2-5.8.4-7.5 1.8z"/><path d="M12 6.6v13.4"/></svg></span>
+<a class="entry__jump" href="/bible/44/1/?v=1" data-entry-jump title="Open Kisah Para Rasul 1:1" aria-label="Open Kisah Para Rasul 1:1">Kisah Para Rasul 1:1</a></h2>
+
+
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e7" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="7">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="7">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e7" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--media" id="ti-e26" data-anchor="e26" data-entry-pk="26" data-media-hash="ecff386f781b87299834d87735804efafc56ffb3de82265da7ec67e40fdf000f" data-media-family="video">
+<span class="entry__media-icon" aria-hidden="true" data-media-icon="video"></span>
+<h2 class="read__sec"><span >YTDown.com_YouTube_Media_POC6Z86ChhA_Satu-Satunya-Live-Connect-Worship-ft-Faith-Yeshua-Abraham_001_1080p.mp4</span></h2>
+
+<p class="read__sub">Video</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e26" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="26">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="26">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e26" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--media" id="ti-e5" data-anchor="e5" data-entry-pk="5" data-media-hash="5cced97edf39ffe2bdf90bbf50880c236ae25b6ab7b7449b55860e74c2cd0888" data-media-family="image">
+<span class="entry__media-icon" aria-hidden="true" data-media-icon="image"></span>
+<h2 class="read__sec"><span >images.jpeg</span></h2>
+
+<p class="read__sub">Image</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e5" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="5">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="5">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e5" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--song" id="ti-e6" data-anchor="e6" data-entry-pk="6">
+
+<h2 class="read__sec"><span class="entry__kind-icon" aria-hidden="true" data-kind-icon="song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.9 17.4V5.9c0-.5.3-.9.8-1l6.1-1.3"/><path d="M10.9 5.9c3 .8 4.6 2.7 4.4 5.5"/><ellipse cx="8.4" cy="17.3" rx="2.5" ry="2.1"/></svg></span>
+<a class="entry__jump" href="/songs/1817/" data-entry-jump title="Open aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa" aria-label="Open aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa</a></h2>
+
+<p class="read__sub">Bait 1-3</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e6" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="6">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="6">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e6" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--media" id="ti-e4" data-anchor="e4" data-entry-pk="4" data-media-hash="ce5151f33d3ce6e034ad0aa969071859982f43d16bf5d0d0b657848b4065560f" data-media-family="pdf">
+<span class="entry__media-icon" aria-hidden="true" data-media-icon="pdf"></span>
+<h2 class="read__sec"><span >Receipt-2773-9204.png</span></h2>
+
+<p class="read__sub">PDF</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e4" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="4">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="4">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e4" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts" id="ti-e3" data-anchor="e3" data-clipped="true" data-entry-pk="3">
+
+
+
+
+<p class="tatib__tx">VOTUM, INTROITUS, DOA
+</p>
+<p class="tatib__tx is-leader"><span class="tatib__sp">L.</span> Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi.
+</p>
+<p class="tatib__tx">…</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e3" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="3">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="3">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e3" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--media" id="ti-e1" data-anchor="e1" data-entry-pk="1" data-media-hash="aa6451bbae4732be80f48c7281702fa6ad9aef38e26b5994c62fe421a959fc6d" data-media-family="audio">
+<span class="entry__media-icon" aria-hidden="true" data-media-icon="audio"></span>
+<h2 class="read__sec"><span >Sujud &amp; Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3</span></h2>
+
+<p class="read__sub">Audio</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e1" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="1">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="1">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e1" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--song" id="ti-e9" data-anchor="e9" data-entry-pk="9">
+
+<h2 class="read__sec"><span class="entry__kind-icon" aria-hidden="true" data-kind-icon="song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.9 17.4V5.9c0-.5.3-.9.8-1l6.1-1.3"/><path d="M10.9 5.9c3 .8 4.6 2.7 4.4 5.5"/><ellipse cx="8.4" cy="17.3" rx="2.5" ry="2.1"/></svg></span>
+<a class="entry__jump" href="/songs/7/" data-entry-jump title="Open HAL 7 — Porini Dong Marribu Hali" aria-label="Open HAL 7 — Porini Dong Marribu Hali">HAL 7 — Porini Dong Marribu Hali</a></h2>
+
+<p class="read__sub">Bait 1-9</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e9" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="9">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="9">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e9" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--song" id="ti-e10" data-anchor="e10" data-entry-pk="10">
+
+<h2 class="read__sec"><span class="entry__kind-icon" aria-hidden="true" data-kind-icon="song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.9 17.4V5.9c0-.5.3-.9.8-1l6.1-1.3"/><path d="M10.9 5.9c3 .8 4.6 2.7 4.4 5.5"/><ellipse cx="8.4" cy="17.3" rx="2.5" ry="2.1"/></svg></span>
+<a class="entry__jump" href="/songs/1/" data-entry-jump title="Open HAL 1 — Jahowa Sihol Pujionku" aria-label="Open HAL 1 — Jahowa Sihol Pujionku">HAL 1 — Jahowa Sihol Pujionku</a></h2>
+
+<p class="read__sub">Bait 1-7</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e10" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="10">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="10">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e10" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--song" id="ti-e8" data-anchor="e8" data-entry-pk="8">
+
+<h2 class="read__sec"><span class="entry__kind-icon" aria-hidden="true" data-kind-icon="song"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.9 17.4V5.9c0-.5.3-.9.8-1l6.1-1.3"/><path d="M10.9 5.9c3 .8 4.6 2.7 4.4 5.5"/><ellipse cx="8.4" cy="17.3" rx="2.5" ry="2.1"/></svg></span>
+<a class="entry__jump" href="/songs/7/" data-entry-jump title="Open HAL 7 — Porini Dong Marribu Hali" aria-label="Open HAL 7 — Porini Dong Marribu Hali">HAL 7 — Porini Dong Marribu Hali</a></h2>
+
+<p class="read__sub">Bait 1-9</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="e8" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="8">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="8">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e8" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-e15" data-anchor="e15" data-entry-pk="15"><span class="entry__acts">
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="15">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="e15" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-e14" data-anchor="e14" data-entry-pk="14"><span class="entry__acts">
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="14">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="e14" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-e12" data-anchor="e12" data-entry-pk="12"><span class="entry__acts">
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="12">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="e12" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-e13" data-anchor="e13" data-entry-pk="13"><span class="entry__acts">
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="13">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="e13" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-e16" data-anchor="e16" data-entry-pk="16"><span class="entry__acts">
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="16">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="e16" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-e17" data-anchor="e17" data-entry-pk="17"><span class="entry__acts">
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="17">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="e17" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="144">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="144">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="144">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="144">+ Media</button>
+</span></div>
+
+
+
+</div>
+ </article></template>
+<script>
+const G = {
+  bible: {
+    closed: `<path d="M5 4.4c0-1 .8-1.8 1.8-1.8h10.4c1 0 1.8.8 1.8 1.8v15.4c0 1-.8 1.8-1.8 1.8H6.8c-1 0-1.8-.8-1.8-1.8z"/><path d="M8 2.6v18.8"/><path d="M13.2 7.1v6.4M11.2 9.5h4"/>`,
+    open: `<path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/><path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/>`,
+    shipped: '<path d="M12 6.6C10.3 5.2 7.9 4.6 4.5 4.8v13.4c3.4-.2 5.8.4 7.5 1.8 1.7-1.4 4.1-2 7.5-1.8V4.8c-3.4-.2-5.8.4-7.5 1.8z"/><path d="M12 6.6v13.4"/>'
+  },
+  tatib: {
+    clipboard: `<rect x="4.6" y="3.4" width="14.8" height="17.2" rx="2"/><rect x="8.6" y="1.9" width="6.8" height="3.4" rx="1.4"/><path d="M8.2 9.6h7.6M8.2 13h7.6M8.2 16.4h4.8"/>`,
+    steps: `<path d="M6.4 4.2v15.6"/><circle cx="6.4" cy="6.2" r="1.5"/><circle cx="6.4" cy="12" r="1.5"/><circle cx="6.4" cy="17.8" r="1.5"/><path d="M10.6 6.2h9M10.6 12h6.6M10.6 17.8h9"/>`
+  },
+  song: {
+    pair: `<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>`,
+    single: `<path d="M10.9 17.4V5.9c0-.5.3-.9.8-1l6.1-1.3"/><path d="M10.9 5.9c3 .8 4.6 2.7 4.4 5.5"/><ellipse cx="8.4" cy="17.3" rx="2.5" ry="2.1"/>`
+  },
+  audio: {
+    waveform: `<path d="M3.6 10.2v3.6M7.2 7.2v9.6M10.8 4.4v15.2M14.4 7.2v9.6M18 10.2v3.6"/>`,
+    speaker: `<path d="M4.6 9.2h3.2L12.4 5v14L7.8 14.8H4.6z"/><path d="M15.6 9.2a4 4 0 0 1 0 5.6M18 6.8a7.6 7.6 0 0 1 0 10.4"/>`,
+    now: `<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>`
+  }
+};
+const FAMILY = {
+  image: `<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3.5 3.5 2.5-2.5 5 5"/>`,
+  video: `<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M7 5l3 5m4-5 3 5"/><path d="m10 12 5 3-5 3z"/>`,
+  pdf: `<path d="M6 2h8l5 5v15H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v5h5M8 16h8M8 19h6"/>`,
+  slides: `<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M12 18v3m-4 0h8M7 9h10M7 12h7"/>`,
+  missing: ``
+};
+const SVG = (paths) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths + '</svg>';
+const choose = { bible: 'open', tatib: 'clipboard', song: 'pair', audio: 'waveform' };
+
+function shell(frame, proposed) {
+  frame.replaceChildren();
+  const rail = document.getElementById('railSrc').content.cloneNode(true).firstElementChild;
+  const read = document.getElementById('readSrc').content.cloneNode(true).firstElementChild;
+  if (proposed) {
+    rail.querySelector('[data-panel="alkitab"] svg').innerHTML = G.bible[choose.bible];
+    rail.querySelector('[data-panel="tatib"] svg').innerHTML = G.tatib[choose.tatib];
+    rail.querySelector('[data-panel="kidung"] svg').innerHTML = G.song[choose.song];
+  }
+  read.querySelectorAll('.entry__kind-icon[data-kind-icon="song"] svg').forEach(svg => {
+    svg.innerHTML = proposed ? G.song[choose.song] : G.song.single;   // shipped mark
+  });
+  if (proposed && choose.bible === 'open') {
+    read.querySelectorAll('.entry__kind-icon[data-kind-icon="scripture"] svg').forEach(svg => {
+      svg.innerHTML = G.bible.open;   // the rail's Bible is the passage's own mark
+    });
+  }
+  read.querySelectorAll('.entry__media-icon[data-media-icon]').forEach(span => {
+    const family = span.dataset.mediaIcon;
+    const mark = family === 'audio'
+      ? (proposed ? G.audio[choose.audio] : G.audio.now)
+      : (FAMILY[family] || FAMILY.missing);
+    span.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + mark + '</svg>';
+  });
+  frame.append(rail, read);
+}
+
+function strip() {
+  const scripture = choose.bible === 'open' ? G.bible.open : G.bible.shipped;
+  const rows = [
+    ['Alkitab rail', G.bible[choose.bible], '24px'],
+    ['passage entry', scripture, '20px, kind mark'],
+    ['Add Passage tile', scripture, '24px'],
+    ['Kidung rail', G.song[choose.song], '24px'],
+    ['song entry', G.song[choose.song], '20px, kind mark'],
+    ['Add Song tile', G.song[choose.song], '24px'],
+    ['audio media', G.audio[choose.audio], '23px, family chip'],
+    ['Tata Ibadah rail', G.tatib[choose.tatib], '24px']
+  ];
+  document.getElementById('strip').replaceChildren(...rows.map(([name, paths, size]) => {
+    const cell = document.createElement('div'); cell.className = 'cell';
+    cell.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg><b>' + name + '</b><small>' + size + '</small>';
+    return cell;
+  }));
+}
+
+document.querySelectorAll('.grp').forEach(grp => {
+  grp.addEventListener('click', event => {
+    const button = event.target.closest('button'); if (!button) return;
+    choose[grp.dataset.slot] = button.dataset.v;
+    grp.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+    shell(document.getElementById('frameProposed'), true);
+    strip();
+  });
+});
+
+const theme = document.getElementById('theme');
+theme.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme !== 'dark';
+  document.documentElement.dataset.theme = dark ? 'dark' : '';
+  theme.textContent = dark ? 'Light' : 'Dark';
+});
+if (matchMedia('(prefers-color-scheme: dark)').matches) theme.click();
+
+shell(document.getElementById('frameNow'), false);
+shell(document.getElementById('frameProposed'), true);
+strip();
+</script>
+</body>
+</html>

@@ -18,22 +18,29 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-159](./items/ITEM-159-known-red-e2e.md) | Three E2E tests are red on develop: two text-wrap assertions and an add-controls opacity | All three reproduce on unmodified develop in a detached worktree; a third-of-a-pixel wrap assertion, a 57-character title that never wraps, and controls visible without a hover | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-156](./items/ITEM-156-media-entry-spacing-e2e.md) | The media-entry spacing E2E measures 19.98px where 12px is asserted | A text row sits ~20px below its media row and the test still expects 12px ± 1; identical on develop | fix | P1 | S | — | 2026-10-28 |
+| [ITEM-163](./items/ITEM-163-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
 
 ## Speccing
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+
 ## Ready
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
+## In progress
+
+| ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-164](./items/ITEM-164-audio-presentation-lock.md) | A playing recording owns the projector screen until it pauses | Playing audio takes the screen fullscreen like video does, and no key or click moves the projector until the recording is paused | feat | P1 | S | [155](../specs/155-audio-presentation-lock/spec.md) | [#438](https://github.com/rsmbyk/multimedia-gkps-klender/pull/438) | 2026-10-29 |
-
+| [ITEM-170](./items/ITEM-170-audio-presentation-lock.md) | A playing recording owns the projector screen until it pauses | Playing audio takes the screen fullscreen like video does, and no key or click moves the projector until the recording is paused | feat | P1 | S | [155](../specs/155-audio-presentation-lock/spec.md) | [#438](https://github.com/rsmbyk/multimedia-gkps-klender/pull/438) | 2026-10-29 |
+| [ITEM-165](./items/ITEM-165-transfer-scrollbar-edge.md) | The Transfers scrollbar floats inside the dialog and stops short of its bottom | The list starts at the dialog's content box, so the bar paints 22px short of the right border and 23px short of the bottom one; it moves to both edges and nothing else moves | fix | P2 | S | [152](../specs/152-transfer-scrollbar-edge/spec.md) | [#446](https://github.com/rsmbyk/multimedia-gkps-klender/pull/446) | 2026-10-29 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
 | [ITEM-016](./items/ITEM-016-editor-focus-cleanup.md) | Clear stale row-edit visibility after modal close | Fix pointer-close focus/hover state across reading modals and sidebars | fix | P1 | M | [014](../specs/014-editor-focus-cleanup/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -59,8 +66,14 @@ Other columns stay in workflow order — the row that has waited longest first.
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
+| [ITEM-169](./items/ITEM-169-audio-play-indicator.md) | The audio projector screen shows its play/pause control | The control the audio screen carried was 0×0 — its size and marks live in a stylesheet the page does not load — and the pointer zones and the fullscreen gesture would have eaten its click; it now paints at 48px above the seek bar, follows the audio's mark, hides with the idle chrome and takes a click | feat | P2 | S | [156](../specs/156-audio-play-indicator/spec.md) | develop via [#448](https://github.com/rsmbyk/multimedia-gkps-klender/pull/448) | 2026-10-29 |
+| [ITEM-168](./items/ITEM-168-rail-icons.md) | The rail names its sections with the marks the stage draws | One mark per section, drawn wherever the product repeats it: a Bible with a cross, a clipboard for Tata Ibadah, the rail's own note on a song row — and audio files move to a waveform so no rail mark is a media family's | feat | P2 | S | [151](../specs/151-rail-icons/spec.md) | develop via [#441](https://github.com/rsmbyk/multimedia-gkps-klender/pull/441) | 2026-10-29 |
+| [ITEM-165](./items/ITEM-165-transfer-scrollbar-edge.md) | The Transfers scrollbar floats inside the dialog and stops short of its bottom | The list starts at the dialog's content box, so the bar paints 22px short of the right border and 23px short of the bottom one; it moves to both edges and nothing else moves | fix | P2 | S | [152](../specs/152-transfer-scrollbar-edge/spec.md) | develop via [#446](https://github.com/rsmbyk/multimedia-gkps-klender/pull/446) | 2026-10-29 |
+| [ITEM-164](./items/ITEM-164-projector-image-missing-glyph.md) | The projector paints its image-unavailable glyph beside every image | The placeholder `<svg>` starts with no `hidden` attribute and is toggled with `missing.hidden`, which does nothing on an SVG, so the glyph shows on every image screen and the picture sits 40px left of the page's middle | fix | P2 | S | [157](../specs/157-projector-image-missing-glyph/spec.md) | develop via [#447](https://github.com/rsmbyk/multimedia-gkps-klender/pull/447) | 2026-10-29 |
 | [ITEM-159](./items/ITEM-159-transfer-separator-seam.md) | The Transfers list draws each boundary twice | The session divider's 2px line stacks on the row's own 1px border 9px apart, and a list taller than the dialog paints over its bottom padding; the seam becomes one line and the list scrolls inside the dialog | fix | P2 | S | [149](../specs/149-transfer-separator-seam/spec.md) | develop via [#425](https://github.com/rsmbyk/multimedia-gkps-klender/pull/425) | 2026-10-28 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-167](./items/ITEM-167-projector-empty-notice.md) | The projector's empty notice stays under a Go To passage or song | The notice is a sibling of the stage, so a Go To detour paints its words above the empty-service sentence; it hides while a detour shows and returns when the detour closes | fix | P1 | S | [161](../specs/161-projector-empty-notice/spec.md) | develop via [#444](https://github.com/rsmbyk/multimedia-gkps-klender/pull/444) | 2026-10-29 |
+| [ITEM-163](./items/ITEM-163-audio-times-inline.md) | The audio preview splits its two times to the bar's ends | The played time stood at the seek bar's left end and the total at its right, 456.4px apart; they now read as one `current / total` pair, right-aligned under the bar | fix | P2 | S | [154](../specs/154-audio-times-inline/spec.md) | develop via [#432](https://github.com/rsmbyk/multimedia-gkps-klender/pull/432) | 2026-10-29 |
 | [ITEM-161](./items/ITEM-161-references-token-order.md) | The Media Library's first refresh writes its references without the token | Spec 148 deferred `/status` to the end of the refresh, so the first `POST /v1/references` carried an empty token, the companion answered 403 and the one draw showed the placeholder on every row; the E2E stub accepted any token, so six cases stayed green | fix | P1 | S | [150](../specs/150-references-token-order/spec.md) | develop via [#430](https://github.com/rsmbyk/multimedia-gkps-klender/pull/430) | 2026-10-28 |
 | [ITEM-160](./items/ITEM-160-kind-mark.md) | A passage or a song carries its own kind mark | Only a media row was marked on the stage; the passage and song rows now carry a 20px glyph on the media chip's centre line and the media title's column | feat | P2 | S | [144](../specs/144-passage-song-icons/spec.md) | develop via [#428](https://github.com/rsmbyk/multimedia-gkps-klender/pull/428) | 2026-10-28 |
 | [ITEM-158](./items/ITEM-158-media-library-refresh-jolt.md) | The Media Library list jumps while it refreshes | Every refresh drew the list twice — the first pass without service references, so rows shrank from 119/101/123px to 97px and the list below the first row jumped up 22px and back | fix | P2 | S | [148](../specs/148-media-library-refresh-flicker/spec.md) | develop via [#424](https://github.com/rsmbyk/multimedia-gkps-klender/pull/424) | 2026-10-28 |
@@ -193,6 +206,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-129](./items/ITEM-129-site-name-tab.md) | Name the site in the tab, and stop the index tab at the name | Reading tabs say `Multimedia GKPS Klender`; the index's tab is the name alone | fix | P2 | S | [127](../specs/127-site-name-tab/spec.md) | develop via [#378](https://github.com/rsmbyk/multimedia-gkps-klender/pull/378) | 2026-10-24 |
 | [ITEM-131](./items/ITEM-131-songbook-hymn-separator.md) | Separate the hymn songbooks from the rest of the Kidung panel | Hymn books first, one divider, the ordinary songbooks A–Z, no headings | feat | P2 | S | [128](../specs/128-songbook-hymn-separator/spec.md) | develop via [#380](https://github.com/rsmbyk/multimedia-gkps-klender/pull/380) | 2026-10-25 |
 | [ITEM-132](./items/ITEM-132-sidebar-empty-states.md) | Centre the sidebars' empty states | One centred glyph + title + hint per list, typed empty versus filter miss | fix | P2 | S | [129](../specs/129-sidebar-empty-states/spec.md) | develop via [#390](https://github.com/rsmbyk/multimedia-gkps-klender/pull/390) | 2026-10-25 |
+| [ITEM-162](./items/ITEM-162-preview-tabs-row.md) | A song's verse tabs squeeze the preview title and take the dialog's first focus | The head is one flex row, so a long title ellipsizes at 570 of 730px and the dialog's initial focus lands on tab `1`; the tabs get their own row under the header, and the body takes the focus | fix | P2 | S | [153](../specs/153-preview-tabs-row/spec.md) | develop via [#435](https://github.com/rsmbyk/multimedia-gkps-klender/pull/435) | 2026-10-29 |
 
 ## Archive
 

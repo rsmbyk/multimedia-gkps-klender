@@ -2,7 +2,7 @@
 
 **capability**: `projector`
 **last folded**: 2026-10-29
-**slices**: `155-audio-presentation-lock`, `136-remove-offline-library`
+**slices**: `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song. This file starts at spec 136 — the projector's earlier behaviour
@@ -47,7 +47,11 @@ fails — a failure leaves the panel open with its rows and says the content cou
 
 The projector SHALL paint the screens the server sent with the page. It SHALL NOT read a saved
 service, wait for a library update, or promise a saved copy in its empty state; a service with no
-items SHALL show the empty state.
+items SHALL show the empty state. The empty state SHALL be painted only while the stage holds
+nothing: while a Go To detour is on the stage the empty notice SHALL NOT be painted and SHALL take no
+room in the stage's layout, so the detour is laid out in the full stage; closing the detour SHALL
+bring the notice back when the service still holds nothing. A re-read that ends with screens SHALL
+hide the notice in that same render, and one that ends with none SHALL leave it visible.
 
 #### Scenario: a service with items
 - WHEN the projector opens for a service
@@ -57,13 +61,88 @@ items SHALL show the empty state.
 - WHEN the projector opens for a service holding nothing
 - THEN it shows its empty state, naming no saved copy
 
-### R3 — A playing recording owns the projector screen until it pauses
+#### Scenario: a Go To passage or song over an empty service
+- WHEN a Go To detour paints over a service with no items
+- THEN the empty notice is not painted, takes no room, and the detour is fitted to the full stage
+- AND closing the detour brings the notice back
+
+#### Scenario: a re-read that brings the first screens
+- WHEN the page re-reads its service and the response carries screens
+- THEN the empty notice is hidden in the same render
+- AND a re-read that carries no screens leaves it visible
+
+### R3 — The projector's image placeholder appears only when the image fails
+
+An image screen SHALL paint its picture alone when the bytes arrive, and the unavailable glyph alone when
+the load fails; while the fetch has not settled it SHALL paint neither. The glyph SHALL be hidden by its
+`hidden` attribute — carried in the markup, as the audio, video, PDF and slides placeholders carry it, and
+toggled by the attribute rather than by the `hidden` property, which an SVG element does not have — so the
+element leaves the flex row and the picture alone is what the box centres. A screen that stops being
+active SHALL drop a failed state with it.
+
+#### Scenario: the bytes arrive
+- WHEN an image screen becomes the active one and its fetch resolves
+- THEN the picture is painted, the glyph is not, and the picture is centred on the stage's middle
+
+#### Scenario: the load fails
+- WHEN the fetch rejects, answers a non-image response or errors in the player
+- THEN the glyph alone is painted, 80×80, on the stage's middle
+
+#### Scenario: the fetch has not settled
+- WHEN an image screen is active and its bytes have not arrived
+- THEN neither the picture nor the glyph is painted
+
+#### Scenario: leaving a screen that failed
+- WHEN the operator moves to another screen and returns to the one that failed
+- THEN the screen is drawn from its own empty state and its own fetch decides what is painted
+
+### R4 — The audio screen carries its playback control
+
+An audio entry's screen SHALL paint its play/pause control above the seek bar: a 48 × 48 circle whose
+mark follows the audio — a play triangle while paused or ended, two bars while playing — at full opacity
+whenever the screen's chrome is up. When the chrome settles into its idle state the control SHALL hide the
+way the bar dims, leaving its 48px of height reserved so the bar does not move; any pointer move or key
+press SHALL bring it back with the bar and the times. The seek bar and the times keep their own dimming
+(`.52` and `.4`) and their boxes.
+
+The control SHALL be reachable by the pointer: no pointer zone may cover it, and the page's windowed
+fullscreen reservation SHALL NOT consume its click. Clicking it SHALL toggle playback exactly as `Space`
+does, and its `aria-label` SHALL read `Play audio` while paused and `Pause audio` while playing.
+
+#### Scenario: an audio screen at rest
+- WHEN an audio entry is showing and nothing has played
+- THEN a 48 × 48 play triangle sits 30px above the seek bar, and the times read `0:00 / <total>`
+
+#### Scenario: playback starts and stops
+- WHEN the audio plays
+- THEN the mark becomes two bars
+- WHEN it pauses or reaches its end
+- THEN the triangle returns
+
+#### Scenario: the chrome settles while playing
+- WHEN the audio plays and the chrome has been idle for 3.5 s
+- THEN the control is hidden and takes no pointer, the bar is `.52` and the times are `.4`, and the bar has not moved
+- WHEN the pointer moves or a key is pressed
+- THEN the control returns at full strength with the mark for the state the audio is in
+
+#### Scenario: the control is pressed
+- WHEN the control is clicked on a windowed projector
+- THEN the audio toggles and the page does not enter fullscreen
+- WHEN anything else on the projected page is clicked
+- THEN it enters fullscreen as before
+
+#### Scenario: the local copy is missing
+- WHEN the companion has no copy of the file, or the bytes are not audio
+- THEN the player stays hidden, the missing-file mark shows, and no control is painted
+
+### R5 — A playing recording owns the projector screen until it pauses
 
 While an audio entry's recording plays, the projector SHALL hold the screen it is on: no page step,
 entry or bait jump, page boundary, mouse zone, corner-cue control or Go To SHALL move it, and the
-recording SHALL keep playing through any of them. The playing recording SHALL take the viewport, as a
-playing video does, so the corner cue and the mouse zones are off screen; the pause that gives the
-screen back SHALL keep the position playback had reached.
+recording SHALL keep playing through any of them. The playing recording SHALL take the viewport the way
+a playing video does — the audio screen's own box, not the page — so the corner cue and the mouse zones
+are off screen; that is the reading R4's "the page does not enter fullscreen" leaves room for. The pause
+that gives the screen back SHALL keep the position playback had reached.
 
 #### Scenario: a key arrives while the recording plays
 - WHEN an arrow, page or home/end key arrives — plain, Shift or Ctrl — while a recording plays
@@ -74,7 +153,7 @@ screen back SHALL keep the position playback had reached.
 - THEN nothing moves, no panel opens, and the recording keeps playing
 
 #### Scenario: the screen is given back
-- WHEN the operator pauses, or the browser leaves fullscreen, or the recording ends
+- WHEN the operator pauses — from the control, `Space`, or the browser leaving fullscreen — or the recording ends
 - THEN the normal projector screen returns, paused, holding the position playback had reached
 
 #### Scenario: the browser refuses fullscreen
@@ -84,3 +163,4 @@ screen back SHALL keep the position playback had reached.
 #### Scenario: the dock drives the projector
 - WHEN the display channel hides, releases or names another screen
 - THEN the recording stops and is released, as it did before this requirement
+

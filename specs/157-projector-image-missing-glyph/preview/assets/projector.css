@@ -1,0 +1,537 @@
+/* The new service projector (spec 006, slice 4).
+   What the congregation sees. It rides the product's own DARK palette -- the warm
+   near-black canvas and the off-white ink, with the accent for the header -- rather
+   than a page's theme, because a display is not a page: the projector page pins
+   data-theme="dark" and never follows the operator's light/dark choice.
+
+   The face is the current projector's ("CMG Sans"), with the face the rest of the OBS
+   surfaces use ("Source Sans Pro") behind it: neither ships with the repo, so both
+   come from the machine, and the order keeps the projector looking as it always has.
+
+   Spec 091 adds quiet corner controls for the operator's mirrored display. */
+
+/* This page is standalone: it loads tokens.css and this file, NOT the product's
+   components.css, so the design system's border-box reset does not reach it. Without
+   this rule `.projector__screen { height: 100%; padding: 64px }` resolves as
+   content-box on the UA default -- a 928px-tall box on an 800px window, whose bottom
+   64px (and the words that fitted into it) hang off the screen. The fitting below
+   measures that box, so it fitted words into space that was not there and the last
+   line was cut off. The current projector never hit this: its loop measures the
+   WINDOW and subtracts the inset (its 72). */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body.projector { height: 100%; }
+
+body.projector {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "CMG Sans", "Source Sans 3", sans-serif;
+  font-weight: 700;
+  line-height: 1.37;
+  overflow: hidden;                       /* a display does not scroll */
+  position: relative;
+  --whisper: #6E6A62;
+  --on: #E8E4DC;
+  --quiet: #8E8A80;
+  /* The header is its own colour, bright enough to read from the back of the room
+     (13:1 on this canvas). It is a display colour, not a product token: the app's
+     dark accent sat too close to the words to carry a heading. */
+  --display-head: #FFD166;
+  /* The design system's --ease carries its own duration, so it cannot go inside a
+     shorthand that also names one: `transition: opacity 220ms var(--ease)` parses as
+     duration + 200ms DELAY. The timing curve alone lives here (and now in tokens.css as
+     --ease-timing, for the app's own shorthands). */
+  --display-ease: cubic-bezier(.32, .72, .28, 1);
+}
+
+/* The projector stage keeps room at the edges for overscan and a 64px HUD band. */
+.projector__screen {
+  height: 100%;
+  padding: 32px 32px 64px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+/* Screens stack in one box; the header starts at the top and the words fill the rest. */
+.projector__screens { position: relative; flex: 1; width: 100%; overflow: hidden; }
+
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: stretch; justify-content: flex-start;
+  text-align: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity 220ms var(--display-ease), transform 220ms var(--display-ease),
+              visibility 0s 220ms;
+}
+.screen.is-active {
+  opacity: 1; visibility: visible;
+  transition: opacity 220ms var(--display-ease), transform 220ms var(--display-ease),
+              visibility 0s;
+}
+
+/* A section break shows nothing at all -- it is the operator's own note. */
+.screen.is-blank.is-active { opacity: 1; visibility: visible; }
+.screen__image-box { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.screen__image { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+.screen__image[hidden], .screen__image-missing[hidden] { display: none; }
+.screen__image-missing { width: 80px; height: 80px; color: #3b3933; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+.screen__pdf-box { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.screen__pdf-page { display: block; max-width: 100%; max-height: 100%; background: #fff; box-shadow: 0 3px 16px #0003; }
+.screen__pdf-page[hidden], .screen__pdf-missing[hidden] { display: none; }
+.screen__pdf-missing { width: 80px; height: 80px; color: #3b3933; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+body.pdf-unavailable #corner-cue { visibility: hidden; }
+.screen__audio-box { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.screen__audio-player { width: min(500px, 60vw); display: flex; flex-direction: column; align-items: center; }
+.screen__audio-player[hidden] { display: none; }
+.screen__audio-play { display: block; background: #514f48; color: #ddd8cd; transition: opacity 260ms ease; }
+.screen__audio-play:hover { background: #656158; }
+.screen__audio-seek { position: relative; width: 100%; height: 6px; margin-top: 30px; border-radius: 8px; background: #34312b; cursor: pointer; touch-action: none; transition: opacity 260ms ease; }
+.screen__audio-fill { display: block; width: var(--progress, 0%); height: 100%; border-radius: inherit; background: #8e887b; }
+.screen__audio-fill::after { content: ''; position: absolute; left: var(--progress, 0%); top: -2px; width: 10px; height: 10px; transform: translateX(-50%); border-radius: 50%; background: #8e887b; opacity: 0; }
+.screen__audio-seek:hover .screen__audio-fill::after { opacity: 1; }
+.screen__audio-times { margin-top: 12px; font-size: 16px; color: #8e887b; transition: opacity 260ms ease; }
+.screen__audio-box.is-idle .screen__audio-play { opacity: 0; pointer-events: none; }
+.screen__audio-box.is-idle .screen__audio-seek { opacity: .52; }
+.screen__audio-box.is-idle .screen__audio-times { opacity: .4; }
+@media (prefers-reduced-motion: reduce) { .screen__audio-play, .screen__audio-seek, .screen__audio-times { transition: none; } }
+
+.screen__video-box {
+  position: relative; z-index: 3; width: 100%; flex: 1 1 auto; min-height: 0;
+  display: flex; align-items: center; justify-content: center; pointer-events: none;
+}
+.screen__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #171613; pointer-events: none; }
+.screen__video[hidden], .screen__video-missing[hidden] { display: none; }
+.screen__video-play {
+  position: relative; z-index: 1; display: block; flex: 0 0 58px; width: 58px; height: 58px;
+  border-radius: 50%; background: #514f48; color: #ddd8cd; cursor: pointer; pointer-events: auto;
+  transition: background 150ms ease, opacity 220ms ease, transform 120ms ease;
+}
+.screen__video-play:hover { background: #68635b; }
+.screen__video-play:active { transform: scale(.94); }
+.screen__video-play::before {
+  content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-42%, -50%);
+  border-left: 12px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+}
+.screen__video-play[data-playing="true"]::before {
+  transform: translate(-50%, -50%); width: 14px; height: 18px; border: 0;
+  background: linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px, currentColor 9px);
+}
+.screen__video-controls { display: none; }
+.screen__video-missing { width: 80px; height: 80px; color: #3b3933; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+.screen__video-box.is-idle .screen__video-play { opacity: 0; pointer-events: none; }
+.screen__video-box:fullscreen {
+  position: relative; z-index: 2147483647; display: block; width: 100vw; height: 100vh;
+  flex: none; background: #171613; pointer-events: auto;
+}
+.screen__video-box:fullscreen .screen__video { width: 100%; height: 100%; }
+.screen__video-box:fullscreen .screen__video-play { display: none; }
+.screen__video-box:fullscreen .screen__video-controls {
+  position: absolute; z-index: 2; left: 32px; right: 32px; bottom: calc(5vh - 9px);
+  height: 18px; display: flex; align-items: center; gap: 14px; color: #8e887b;
+  opacity: 1; transition: opacity 200ms ease;
+}
+.screen__video-seek { position: relative; flex: 1 1 auto; min-width: 0; height: 18px; cursor: pointer; pointer-events: auto; touch-action: none; }
+.screen__video-seek::before { content: ''; position: absolute; inset: 6px 0; border-radius: 8px; background: #34312b; }
+.screen__video-fill { position: absolute; left: 0; top: 6px; width: var(--progress, 0%); height: 6px; border-radius: 8px; background: #8e887b; }
+.screen__video-fill::after { content: ''; position: absolute; left: 100%; top: 50%; width: 10px; height: 10px; transform: translate(-50%, -50%); border-radius: 50%; background: #8e887b; opacity: 0; }
+.screen__video-seek:hover .screen__video-fill::after { opacity: 1; }
+.screen__video-time { flex: 0 0 auto; font-size: 16px; line-height: 18px; white-space: nowrap; }
+.screen__video-box.is-idle:fullscreen .screen__video-controls { opacity: 0; pointer-events: none; }
+@media (max-width: 640px) { .screen__video-box:fullscreen .screen__video-controls { left: 20px; right: 20px; gap: 10px; } }
+@media (prefers-reduced-motion: reduce) { .screen__video-play, .screen__video-controls { transition: none; } }
+
+/* Space turns the display off: the screen goes quiet and keeps the operator's place.
+   The words fade rather than vanish, and fade back in on the way on. The transition
+   is declared HERE, with visibility held back until the fade has finished: applied
+   instantly, `visibility: hidden` makes the browser skip the opacity transition
+   altogether and the words simply disappear. */
+body.projector[data-showing="false"] .screen.is-active {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms var(--display-ease), visibility 0s 200ms;
+}
+
+/* ---------- the morphs ------------------------------------------------------
+   Moving between screens and turning the display on are short, quiet moves: the
+   arriving screen fades and rises into place while the one it replaces fades out the
+   other way, so the eye is led rather than startled. Nothing here is load-bearing:
+   with reduced motion every move is instant. */
+
+.screen.is-in { animation: screenIn 240ms var(--display-ease); }
+.screen.is-out { animation: screenOut 200ms var(--display-ease) forwards; }
+
+.projector__screens[data-move="prev"] .screen.is-in { animation-name: screenInBack; }
+.projector__screens[data-move="prev"] .screen.is-out { animation-name: screenOutBack; }
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes screenInBack {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes screenOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-12px); }
+}
+@keyframes screenOutBack {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(12px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen, .screen.is-active { transition: none; }
+  .screen.is-in, .screen.is-out { animation: none; }
+}
+
+.screen__head {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0 0 1em;
+  padding: 0;
+  text-align: center;
+  color: var(--display-head);             /* the header reads apart from the words */
+  white-space: pre-wrap;                  /* a reference and its title stack */
+  overflow-wrap: break-word;
+  font-size: 123.60679775px;
+  font-weight: 700;
+  line-height: 1.37;
+}
+
+/* The size lives on the container so the fitting can drive it; the lines inherit it.
+   Declared on the line itself, it would win over the container's inline style and the
+   fitting would quietly do nothing -- the words then ran past the edge of the screen. */
+.screen__lines {
+  flex: 1 1 auto; min-height: 0; width: 100%; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  margin: 0; text-align: center; font-size: 200px;
+}
+
+/* A screen's own lines are separate lines, not one wrapped paragraph, so they get a
+   little air between them -- and only there: a wrapped row keeps the line-height alone,
+   or two lines of a text entry would read as one continuous column. In `em`, so the gap
+   travels with the fitted size, and the fitting measures it (the ink's box spans from
+   the first line's top to the last line's bottom, gap included). */
+.screen__line + .screen__line { margin-top: 0.45em; }
+
+.screen__line {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;              /* a single long word breaks rather than
+                                             running off the screen */
+  text-wrap: balance;                     /* rows of a wrapped passage read as a block
+                                             rather than as a ragged last line */
+  font-size: inherit;
+  font-weight: 700;
+  line-height: 1.37;
+}
+
+/* Liturgy voices (spec 059). The screen faces the congregation: their own lines keep
+   the off-white, a joined line they also say is readable but marked, and a leader line
+   is only a cue, so it sits behind both. */
+.screen__line.is-join { color: var(--speaker-join); }
+.screen__line.is-leader { color: var(--speaker-leader); }
+
+.projector__empty {
+  margin: 0;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--head-ink);
+}
+
+/* Spec 091: quiet operator controls, mirrored from the accepted preview. */
+body.projector .cue[hidden], body.projector .keys[hidden] { display: none; }
+.projector-find-dismiss {
+  position: absolute; inset: 0; z-index: 7; width: 100%; height: 100%;
+  padding: 0; border: 0; background: transparent; cursor: pointer;
+}
+.projector-find-dismiss[hidden] { display: none; }
+.projector-find {
+  position: absolute; z-index: 8; left: 32px; bottom: 58px;
+  width: min(400px, calc(100vw - 64px)); max-height: min(560px, calc(100vh - 90px));
+  overflow: auto; padding: 16px;
+  background: var(--canvas); border: 1px solid #3a372f; border-radius: 10px;
+  box-shadow: 0 16px 48px #0005; color: var(--on);
+  font-size: 11px; font-weight: 400;
+}
+.projector-find[hidden] { display: none; }
+body.projector.find-open .projector-find { animation: projectorListIn 180ms var(--display-ease) both; }
+body.projector.find-closing .projector-find { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
+.projector-find label { display: block; margin-bottom: 8px; color: var(--quiet); }
+.projector-find input { width: 100%; padding: 8px 42px 8px 10px; border: 1px solid #4a463f;
+  border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
+.projector-find input:focus-visible { border-color: var(--on); }
+.projector-search-field { position: relative; }
+.projector-search-field input::-webkit-search-cancel-button { display: none; }
+.projector-search-clear {
+  position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
+  display: grid; place-items: center; width: 26px; height: 26px; padding: 0;
+  border: 0; border-radius: 50%; background: none; color: var(--quiet); cursor: pointer;
+}
+.projector-search-clear svg { width: 14px; height: 14px; }
+.projector-search-clear:hover { background: #36322b; color: var(--on); }
+.projector-search-clear:focus-visible { outline: 2px solid var(--on); outline-offset: 1px; }
+.projector-search-clear[hidden] { display: none; }
+.projector-find__row { display: flex; align-items: center; gap: 9px; width: 100%; margin-top: 6px; padding: 8px;
+  border: 0; border-radius: 4px; background: #2a2722; color: var(--on);
+  text-align: left; font: inherit; cursor: pointer; }
+.projector-find__row:hover { background: #36322b; }
+.projector-find__row:disabled { opacity: .6; cursor: default; }
+.projector-find__suggestion { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.projector-find__edition { color: var(--quiet); }
+.projector-find__count { flex: none; color: var(--quiet); }
+/* Spec 136: the Go To's loading state — the chosen row's count becomes a spinner, and
+   a second spinner sits left of the shortcuts button while a chapter or song is fetched. */
+.projector-find__row.is-loading { cursor: progress; }
+.projector-find__row.is-loading .projector-find__count { display: none; }
+.projector-find__spinner,
+.cue-loading {
+  box-sizing: border-box; flex: none; border-radius: 50%;
+  border: 2px solid var(--whisper); border-top-color: var(--quiet);
+  animation: goto-load-spin 800ms linear infinite;
+}
+.projector-find__spinner { width: 12px; height: 12px; }
+.cue-loading {
+  position: absolute; z-index: 5; right: 74px; bottom: 25px;
+  width: 14px; height: 14px;
+}
+@keyframes goto-load-spin { to { transform: rotate(360deg); } }
+.projector-find input:disabled { color: var(--quiet); cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .projector-find__spinner, .cue-loading { animation: none; }
+}
+.projector-find__footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px;
+  color: var(--quiet); font-size: 10px; }
+  .cue {
+    position: absolute; left: 32px; right: calc(66px + 10vw); bottom: 20px;
+    display: flex; align-items: center; height: 24px;
+    margin: 0; padding: 0;
+    font-size: 16px; font-weight: 550; line-height: 1; color: #514d47; letter-spacing: 0.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* Keep every cue part in the same 24px alignment box. Inline text and buttons
+     otherwise use different font baselines even though the parent is centered. */
+  .cue > .cue-separator, .cue > #cue-prefix, .cue > .cue-baits,
+  .cue > .cue-progress, .cue > .cue-next {
+    display: inline-flex; align-items: center; height: 24px; line-height: 1;
+  }
+  .cue > #cue-prefix { gap: .2em; }
+  .cue.cue--fit-text > #cue-prefix, .cue.cue--fit-text > #cue-next { flex: none; }
+  .cue-running { display: block; position: relative; overflow: hidden; white-space: nowrap; }
+  .cue-running:hover, .cue-running.is-running { color: #817d74; }
+  .cue-next.on .cue-running { color: var(--on); }
+  .cue-running__still { display: block; white-space: nowrap; }
+  .cue-running__moving { display: none; width: max-content; white-space: nowrap; }
+  .cue-running.is-running .cue-running__still { display: none; }
+  .cue-running.is-running .cue-running__moving { display: block; }
+  @media (prefers-reduced-motion: reduce) {
+    .cue-running .cue-running__moving { display: none !important; }
+    .cue-running .cue-running__still { display: block !important; }
+  }
+  /* The font's visible capitals sit 1px above the centered SVG artwork.
+     Adjust the lettering, keeping the HUD and its hit areas centered. */
+  #cue-prefix > span, #cue-prefix > i, #cue-next-name { transform: translateY(1px); }
+  .cue > .cue-separator, .cue > .cue-progress { padding-top: 2px; }
+  .cue-separator { color: var(--whisper); }
+  .cue .on { color: var(--on); }
+  .cue-service {
+    appearance: none; display: inline-flex; align-items: center; justify-content: center;
+    flex: 0 0 24px; width: 24px; height: 24px; margin: 0; padding: 0;
+    border: 0; border-radius: 5px; background: none; color: inherit; cursor: pointer;
+    transition: color 120ms ease, background-color 120ms ease;
+  }
+  .cue-service svg { display: block; width: 19px; height: 19px; }
+  .cue-service:hover { color: #817d74; background: #2a2722; }
+  .cue-service[aria-expanded="true"], .cue-service:active { color: var(--on); background: #2a2722; }
+  .cue-service:focus-visible { outline: 1px solid var(--on); outline-offset: 3px; }
+  .cue-separator { margin: 0 .42em 0 .32em; }
+  .entry-list-dismiss {
+    position: absolute; inset: 0; z-index: 6; width: 100%; height: 100%;
+    padding: 0; border: 0; background: rgba(8, 7, 5, .28);
+    color: var(--quiet); cursor: pointer;
+  }
+  .entry-list-dismiss[hidden] { display: none; }
+  body.projector.entry-list-open .entry-list-dismiss { animation: projectorBackdropIn 180ms var(--display-ease) both; }
+  body.projector.entry-list-closing .entry-list-dismiss { animation: projectorBackdropOut 180ms var(--display-ease) both; }
+  .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; scroll-padding-top: 68px; background: var(--canvas); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
+  .entry-list { max-width: calc(100vw - 64px); max-height: min(560px, calc(100vh - 90px)); }
+  /* Match the app's shared scrollbar; this standalone page does not load components.css. */
+  @supports not selector(::-webkit-scrollbar) {
+    .entry-list { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+  }
+  .entry-list::-webkit-scrollbar { width: 5px; height: 5px; }
+  .entry-list::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  .entry-list::-webkit-scrollbar-track, .entry-list::-webkit-scrollbar-corner { background: transparent; }
+  .entry-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+  .entry-list::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+  .entry-list[hidden] { display: none; }
+  body.projector.entry-list-open .entry-list { animation: projectorListIn 180ms var(--display-ease) both; }
+  body.projector.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
+  .entry-list__header { position: sticky; top: 0; z-index: 1; padding: 10px 16px 9px; background: var(--canvas); }
+  .entry-list__heading { display: block; margin-bottom: 8px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
+  .entry-list__search { width: 100%; padding: 7px 42px 7px 9px; border: 1px solid #4a463f; border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
+  .entry-list__search:focus-visible { border-color: var(--quiet); }
+  .entry-list__results { padding-bottom: 10px; }
+  .entry-list__empty { padding: 9px 16px; color: var(--quiet); }
+  .entry-list__item { display: grid; grid-template-columns: 26px 1fr; gap: 8px; width: 100%; min-height: 37px; align-items: center; padding: 7px 16px; border: 0; background: none; color: var(--on); text-align: left; font: inherit; cursor: pointer; }
+  .entry-list__item[aria-current="true"] { box-shadow: inset 2px 0 var(--quiet); }
+  .entry-list__item:hover, .entry-list__item:focus-visible { background: #26231f; color: var(--ink); outline: none; }
+  .entry-list__item[data-active="true"] { background: #36322b; color: var(--ink); }
+  .entry-list__number { color: var(--quiet); font-variant-numeric: tabular-nums; }
+  .entry-list__item[aria-current="true"] .entry-list__number { color: var(--on); }
+  .entry-list__meta { display: block; margin-top: 2px; color: var(--quiet); font-size: 10px; }
+  .cue-baits { display: inline-flex; align-items: center; gap: .36em; margin: 0 .42em 0 .36em; }
+  .cue-baits[hidden] { display: none; }
+  .cue-bait, .cue-next, .cue-translation {
+    appearance: none; border: 0; margin: 0; padding: 0;
+    background: transparent; color: inherit; font: inherit; line-height: inherit;
+    transition: color 140ms ease, opacity 140ms ease;
+  }
+  .cue-bait, .cue-translation { display: inline-flex; align-items: center; height: 24px; padding-top: 2px; }
+  .cue-bait { cursor: pointer; }
+  .cue-bait[aria-pressed="true"] { color: var(--on); }
+  .cue-bait:hover { color: #817d74; }
+  .cue-bait[aria-pressed="true"]:hover, .cue-bait:active { color: var(--on); }
+  .cue-translation { cursor: pointer; }
+  .cue-translation:hover { color: #817d74; }
+  .cue-translation.flash { color: var(--on); }
+  .cue-translation:active { color: var(--on); }
+  .cue-progress { color: var(--on); }
+  .cue-progress:not(:empty)::before { content: "·"; margin: 0 .42em 0 .32em; color: var(--whisper); }
+  .cue-next {
+    display: inline-flex; align-items: center; gap: .18em; margin-left: .26em;
+    cursor: url("./cursor-right.svg") 16 16, e-resize; white-space: nowrap;
+  }
+  .cue-next:hover { color: #817d74; }
+  .cue-next.on, .cue-next:active { color: var(--on); }
+  .cue-bait:focus-visible, .cue-next:focus-visible, .cue-translation:focus-visible { outline: 1px solid var(--on); outline-offset: 3px; }
+  .mouse-zones {
+    position: absolute; inset: 0 0 64px; z-index: 2;
+    display: grid; grid-template-columns: 40% 20% 40%;
+  }
+  .mouse-zone { background: transparent; }
+  .mouse-zone--previous { cursor: url("./cursor-left.svg") 16 16, w-resize; }
+  .mouse-zone--next { cursor: url("./cursor-right.svg") 16 16, e-resize; }
+  .mouse-zone--display { cursor: url("./cursor-hide.svg") 16 16, pointer; }
+  body.projector.words-hidden .mouse-zone--display { cursor: url("./cursor-show.svg") 16 16, pointer; }
+  body.projector.fullscreen-available:not(.is-fullscreen) .projector__screen,
+  body.projector.fullscreen-available:not(.is-fullscreen) .mouse-zone {
+    cursor: url("./cursor-fullscreen.svg") 16 16, zoom-in;
+  }
+  body.projector.keys-open .mouse-zones, body.projector.entry-list-open .mouse-zones,
+  body.projector.keys-closing .mouse-zones, body.projector.entry-list-closing .mouse-zones,
+  body.projector.find-open .mouse-zones, body.projector.find-closing .mouse-zones { pointer-events: none; }
+  body.projector.keys-open .cue, body.projector.keys-closing .cue { pointer-events: none; }
+  body.projector.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open):not(.find-closing) .cue,
+  body.projector.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open):not(.find-closing) .keys {
+    opacity: 0; visibility: hidden; pointer-events: none;
+  }
+  .keys {
+    position: absolute; right: 32px; bottom: 20px;
+    margin: 0; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer;
+    color: #514d47; line-height: 0; z-index: 5;
+    transition: color 120ms ease, background-color 120ms ease, transform 120ms ease,
+      opacity 180ms ease, visibility 0s linear 180ms;
+  }
+  .keys svg { display: block; width: 34px; height: 24px; }
+  .keys:hover { color: #817d74; }
+  body.projector.keys-open .keys, .keys:active { color: var(--on); }
+  .keys:active { transform: scale(0.96); }
+  body.projector.cursor-hidden, body.projector.cursor-hidden * { cursor: none !important; }
+  .cue { z-index: 5; transition: opacity 180ms ease, visibility 0s linear 180ms; }
+  body.projector:not(.controls-idle) .cue,
+  body.projector:not(.controls-idle) .keys { transition-delay: 0s; }
+  body.projector.keys-open::before, body.projector.keys-closing::before {
+    content: "";
+    position: absolute; inset: 0; z-index: 1;
+    background: rgba(8, 7, 5, 0.62);
+    cursor: pointer;
+  }
+  body.projector.keys-open::before { animation: projectorBackdropIn 180ms var(--display-ease) both; }
+  body.projector.keys-closing::before { animation: projectorBackdropOut 180ms var(--display-ease) both; }
+  .sheet {
+    position: absolute; left: 50%; top: 50%; z-index: 4;
+    transform: translate(-50%, -50%);
+    display: none; gap: 32px;
+    max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); overflow: auto;
+    padding: 20px 24px;
+    background: var(--canvas);
+    border: 1px solid #3a372f; border-radius: 10px;
+    box-shadow: 0 16px 48px #0005;
+    font-size: 14px; font-weight: 400; letter-spacing: 0; line-height: 1.25;
+    color: var(--whisper);
+  }
+  body.projector.keys-open .sheet { display: flex; animation: projectorSheetIn 180ms var(--display-ease) both; }
+  body.projector.keys-closing .sheet { display: flex; pointer-events: none; animation: projectorSheetOut 180ms var(--display-ease) both; }
+  @keyframes projectorBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes projectorBackdropOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes projectorSheetIn {
+    from { opacity: 0; transform: translate(-50%, -50%) translateY(8px) scale(.985); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  @keyframes projectorSheetOut {
+    from { opacity: 1; transform: translate(-50%, -50%); }
+    to { opacity: 0; transform: translate(-50%, -50%) translateY(8px) scale(.985); }
+  }
+  @keyframes projectorListIn {
+    from { opacity: 0; transform: translateY(6px) scale(.99); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes projectorListOut {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(6px) scale(.99); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.projector.keys-open::before, body.projector.keys-closing::before,
+    body.projector.keys-open .sheet, body.projector.keys-closing .sheet,
+    body.projector.entry-list-open .entry-list-dismiss, body.projector.entry-list-closing .entry-list-dismiss,
+    body.projector.entry-list-open .entry-list, body.projector.entry-list-closing .entry-list,
+    body.projector.find-open .projector-find, body.projector.find-closing .projector-find { animation: none; }
+  }
+  .stack { display: flex; flex-direction: column; gap: 24px; }
+  .group h3 {
+    margin: 0 0 4px;
+    font-size: 14px; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--quiet);
+  }
+  .row {
+    display: flex; align-items: center; gap: 20px;
+    margin: 0; padding: 3px 0;
+  }
+  .row + .row { border-top: 1px solid #ffffff08; }
+  .combo { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+  .chord { display: inline-flex; gap: 4px; }
+  .or { color: var(--quiet); font-size: 14px; font-weight: 650; }
+  .k {
+    --u: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: var(--u); min-width: var(--u); height: var(--u); padding: 0;
+    border: 1px solid #4a463f; border-radius: 5px;
+    background: #2a2722; color: var(--on);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    font-size: 14px; font-weight: 400; line-height: 1;
+  }
+  .k.glyph { font-size: 16px; font-weight: 400; font-family: "DejaVu Sans", sans-serif; }
+  .arrow-mark { display: block; width: 14px; height: 14px; line-height: 0; }
+  .arrow-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .key-symbol, .shift-mark { display: block; width: 14px; height: 14px; line-height: 0; }
+  .key-symbol svg, .shift-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .space-mark { display: inline-block; transform: scaleX(1.3); }
+  .cue-arrow { display: inline-block; width: .8em; height: .8em; line-height: 0; }
+  .cue-arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .k.nav { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); font-size: 12px; }
+  .k.w { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.w:not(.glyph) { font-size: 12px; }
+  .k.ww { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.bk { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.sp { width: calc(var(--u) * 3); min-width: calc(var(--u) * 3); font-size: 12px; }
+  .k.sp.glyph { font-size: 16px; }
+  .fn { white-space: nowrap; color: var(--on); }
+  .keys:focus-visible { outline: 1px solid var(--on); outline-offset: 6px; border-radius: 3px; }

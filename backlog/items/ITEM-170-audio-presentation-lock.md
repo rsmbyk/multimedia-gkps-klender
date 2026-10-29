@@ -1,5 +1,5 @@
 ---
-id: ITEM-164
+id: ITEM-170
 status: in-review
 title: A playing recording owns the projector screen until it pauses
 type: feat
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-164: A playing recording owns the projector screen until it pauses
+# ITEM-170: A playing recording owns the projector screen until it pauses
 
 ## Summary
 

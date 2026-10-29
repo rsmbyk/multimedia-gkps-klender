@@ -66,17 +66,21 @@
   path inconsistent with the local one and would leave `c` unusable for 5 minutes mid-recording.
 - **Provenance**: research (code read of `projector.js:1380-1420`, `:1245-1274`).
 
-## D005 — No visible play/pause control in the fullscreen state
+## D005 — No control of our own in the fullscreen state; spec 156's control is what a pointer uses
 
-- **Decision**: the takeover adds no control. `Space` pauses; a held `Escape` exits fullscreen and
-  pauses.
-- **Rationale**: the video's own fullscreen hides its play button (`.screen__video-box:fullscreen
-  .screen__video-play { display: none }`, `projector.css:129`), and the projector's audio screen never
-  drew one (`.screen__audio-play` gets its 48×48 size from `components.css:2118`, which the projector
-  page does not load — measured 0×0 on `develop`). A control that exists only in one media type's
-  fullscreen is a second reflex for the same operator.
+- **Decision**: the takeover paints nothing new. `Space` pauses; a held `Escape` exits fullscreen and
+  pauses; spec 156's play/pause control keeps working inside the fullscreen box and pauses on click,
+  which exits fullscreen by the same path.
+- **Rationale**: at gate 1 the projector's audio screen drew no control at all (`.screen__audio-play`
+  got its 48×48 from `components.css:2118`, which the projector page does not load — measured 0×0 on
+  `develop`), so the question was whether to paint one. The owner chose no new control, matching the
+  video's own fullscreen, which hides its play button (`.screen__video-box:fullscreen
+  .screen__video-play { display: none }`, `projector.css`). Spec 156 then landed the control on that
+  screen while this slice was in flight, which removes the mouse-only dead end this note originally
+  recorded; the takeover simply keeps it visible.
 - **Alternatives considered**: a centred 58px play/pause button in fullscreen (the size of the video's
-  own play affordance) — offered to the owner at gate 1 and not taken; a click anywhere to toggle —
-  the seek bar already owns clicks on that surface.
+  own play affordance) — offered to the owner at gate 1 and not taken, and now redundant; a click
+  anywhere in the takeover to toggle — the seek bar already owns clicks on that surface.
 - **Provenance**: owner decision at gate 1, 2026-10-29 (choice: "Accept as drafted — no visible
-  control; Space pauses, held Escape exits (matches video)").
+  control; Space pauses, held Escape exits (matches video)"), reconciled on 2026-10-29 with spec 156
+  (R4), which merged first and paints the control.
