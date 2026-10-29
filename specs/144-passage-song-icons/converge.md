@@ -46,7 +46,7 @@ Everything else checked by the method the plan declared:
 
 | what | from | to | why |
 | --- | --- | --- | --- |
-| the card | `ITEM-155`, then `ITEM-156` | **`ITEM-158`** | slices 147 and 146 claimed 155, 156 and 157 first |
+| the card | `ITEM-155`, then `ITEM-156`, then `ITEM-158` | **`ITEM-160`** | slices 147 and 146 claimed 155, 156, 157 and finally 158 while this slice was in flight |
 | the capability requirement | `R22` | **`R24`** | slice 146 folded `R22` (Media Library age buckets) and `R23` (transfer history) |
 | the version | 1.22.5 | **1.22.8** | `develop` reached 1.22.7 through 145/147/146 |
 

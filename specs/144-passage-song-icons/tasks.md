@@ -34,7 +34,7 @@ first.
 ## Phase 5 — Polish
 
 - [X] T014 Regenerate `preview/preview.html`, `preview/compare.html` and the shots; correct `preview/README.md`'s table if any number moved (`specs/144-passage-song-icons/preview/`)
-- [X] T015 Card `ITEM-158` (status, spec, branch), its board row, and the `specs/README.md` index row (`backlog/`, `specs/README.md`)
+- [X] T015 Card `ITEM-160` (status, spec, branch), its board row, and the `specs/README.md` index row (`backlog/`, `specs/README.md`)
 - [X] T016 Bump `VERSION` 1.22.7 → **1.22.8** and append the `## [Unreleased]` line — *a passage and a song now carry a mark of their own, in the media row's own column* (`VERSION`, `CHANGELOG.md`)
 - [X] T017 Fold `docs/spec/reading.md`: one requirement added (the kind mark), with its scenarios (`docs/spec/reading.md`)
 
