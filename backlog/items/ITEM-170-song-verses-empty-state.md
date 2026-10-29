@@ -1,6 +1,6 @@
 ---
 id: ITEM-170
-status: in-review
+status: done
 title: 'The song entry says "Pick a song first" when a song with no verses is already picked'
 type: fix
 priority: P1
@@ -11,8 +11,8 @@ spec: specs/162-song-verse-empty-state/spec.md
 branch: fix/162-song-verse-empty-state
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/453
 issue: 452
-closed_at:
-closed_reason:
+closed_at: 2026-10-29
+closed_reason: merged into develop (453)
 bump: patch
 release_version:
 ---
