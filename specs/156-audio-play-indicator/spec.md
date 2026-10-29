@@ -123,11 +123,11 @@ two bars; click again: it pauses.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | The audio screen SHALL paint its play/pause control above the seek bar at 48×48, at full opacity, whenever the audio player is showing. | `projector/R3` (new) |
-| FR-002 | The control's mark SHALL follow the audio — a triangle while paused or ended, two bars while playing — drawn with the same geometry and colours the app's own audio player uses. | `projector/R3` (new) |
-| FR-003 | The idle state SHALL hide the control the way it dims the rest of the chrome — opacity 0 and no pointer — while its 48px of height stays reserved, and any pointer move or key press SHALL bring it back with the bar and the times. | `projector/R3` (new) |
-| FR-004 | Clicking the control SHALL toggle playback, and `Space` SHALL keep toggling it; the control's `aria-label` SHALL keep reading `Play audio` / `Pause audio`. | `projector/R3` (new) |
-| FR-005 | A click on the control SHALL reach it: the pointer zones SHALL NOT cover it, and the windowed fullscreen reservation SHALL NOT consume its click. | `projector/R3` (new) |
+| FR-001 | The audio screen SHALL paint its play/pause control above the seek bar at 48×48, at full opacity, whenever the audio player is showing. | `projector/R4` (new) |
+| FR-002 | The control's mark SHALL follow the audio — a triangle while paused or ended, two bars while playing — drawn with the same geometry and colours the app's own audio player uses. | `projector/R4` (new) |
+| FR-003 | The idle state SHALL hide the control the way it dims the rest of the chrome — opacity 0 and no pointer — while its 48px of height stays reserved, and any pointer move or key press SHALL bring it back with the bar and the times. | `projector/R4` (new) |
+| FR-004 | Clicking the control SHALL toggle playback, and `Space` SHALL keep toggling it; the control's `aria-label` SHALL keep reading `Play audio` / `Pause audio`. | `projector/R4` (new) |
+| FR-005 | A click on the control SHALL reach it: the pointer zones SHALL NOT cover it, and the windowed fullscreen reservation SHALL NOT consume its click. | `projector/R4` (new) |
 | FR-006 | Nothing else SHALL change: no other screen, no preview player, no seek-bar or times geometry, no endpoint, no copy, no markup outside the audio line. | `projector/R1`, `projector/R2` |
 
 ### Key Entities

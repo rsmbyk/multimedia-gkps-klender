@@ -6,8 +6,8 @@
 
 ## Phase 1 — Setup
 
-- [X] T001 Cut the slice: `git worktree add ../multimedia-gkps-klender-156 -b feat/156-audio-play-indicator develop`; confirm 156 and ITEM-164 are free across the open branches (`151`…`155` hold their own).
-- [X] T002 Write the card `backlog/items/ITEM-164-audio-play-indicator.md`, its `Speccing` row in `backlog/board.md`, and the `specs/README.md` index row.
+- [X] T001 Cut the slice: `git worktree add ../multimedia-gkps-klender-156 -b feat/156-audio-play-indicator develop`; spec 156 was free across the open branches. The card number was not: slice 155 claimed ITEM-164 while this slice was in flight, so the card was renumbered to **ITEM-169** at delivery.
+- [X] T002 Write the card `backlog/items/ITEM-169-audio-play-indicator.md`, its `Speccing` row in `backlog/board.md`, and the `specs/README.md` index row.
 
 ## Phase 2 — Foundational
 
@@ -35,7 +35,7 @@
 - [X] T009 `specs/156-audio-play-indicator/preview/measure.py`: read the control, bar, times and player boxes in paused / playing / idle / returned at 1920×1200, 1280×800 and 640×480; record them in `plan.md` and the spec's `## UI/UX`.
 - [X] T010 Run `manage.py test tests.e2e.test_audio_display` on a throwaway database (`gkps156`) and record that `test_untitled_preview_and_projector_idle_display_off` is red on `develop` too (ITEM-140).
 - [X] T011 Inspection rows from `plan.md`: FR-006 (diff scope), SC-004 (geometry table re-read), ended, reduced motion, 1280/640.
-- [X] T012 Fold `projector/R3` into `docs/spec/projector.md` (header, requirement, five scenarios) and write `fold.md`.
+- [X] T012 Fold `projector/R4` into `docs/spec/projector.md` (header, requirement, five scenarios) and write `fold.md`.
 - [ ] T013 Delivery, after the push: `VERSION` 1.22.10 → 1.22.11, one `## [Unreleased]` changelog line, the card `done` with `bump: patch` and its board row moved, then the PR body.
 
 ## Phase 6 — Convergence

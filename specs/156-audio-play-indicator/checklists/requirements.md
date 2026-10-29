@@ -15,7 +15,7 @@ Fit / coverage
       ended, missing file, reduced motion? [Completeness, Spec §UI/UX, §Edge Cases]
 
 Shape / risk
-- [x] CHK006 Does each FR name the capability it changes, including the new `projector/R3`? [Traceability,
+- [x] CHK006 Does each FR name the capability it changes, including the new `projector/R4`? [Traceability,
       Spec §Requirements]
 - [x] CHK007 Is "the same mark the app's audio player uses" pinned to a named source, so the port is
       checkable rather than interpretive? [Clarity, Spec §FR-002, §Assumptions]

@@ -87,7 +87,7 @@ specs/156-audio-play-indicator/
 static/styles/design/projector.css   the control's box, mark, states; the box above the zones
 static/web/projector.js              one early return in the fullscreen click guard
 tests/e2e/test_audio_display.py      two cases
-backlog/items/ITEM-164-audio-play-indicator.md   the card
+backlog/items/ITEM-169-audio-play-indicator.md   the card
 backlog/board.md                     the card's row
 ```
 

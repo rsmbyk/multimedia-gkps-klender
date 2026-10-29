@@ -1,5 +1,5 @@
 ---
-id: ITEM-164
+id: ITEM-169
 status: in-review
 title: 'The audio projector screen shows its play/pause control'
 type: feat
@@ -17,7 +17,7 @@ bump:
 release_version:
 ---
 
-# ITEM-164: The audio projector screen shows its play/pause control
+# ITEM-169: The audio projector screen shows its play/pause control
 
 ## Summary
 

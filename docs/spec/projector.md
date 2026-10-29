@@ -57,7 +57,7 @@ items SHALL show the empty state.
 - WHEN the projector opens for a service holding nothing
 - THEN it shows its empty state, naming no saved copy
 
-### R3 — The audio screen carries its playback control
+### R4 — The audio screen carries its playback control
 
 An audio entry's screen SHALL paint its play/pause control above the seek bar: a 48 × 48 circle whose
 mark follows the audio — a play triangle while paused or ended, two bars while playing — at full opacity
