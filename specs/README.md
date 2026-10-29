@@ -88,3 +88,4 @@ the templates are in [`_templates/`](./_templates/).
 | [148](148-media-library-refresh-flicker/spec.md) | The Media Library list holds still while it refreshes | Accepted |
 | [149](149-transfer-separator-seam/spec.md) | The Transfers list draws each boundary once | Accepted |
 | [150](150-references-token-order/spec.md) | The first refresh authenticates its references write | Accepted |
+| [155](155-audio-presentation-lock/spec.md) | A playing recording owns the projector screen until it pauses | Draft |

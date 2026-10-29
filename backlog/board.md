@@ -18,6 +18,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-159](./items/ITEM-159-known-red-e2e.md) | Three E2E tests are red on develop: two text-wrap assertions and an add-controls opacity | All three reproduce on unmodified develop in a detached worktree; a third-of-a-pixel wrap assertion, a 57-character title that never wraps, and controls visible without a hover | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-156](./items/ITEM-156-media-entry-spacing-e2e.md) | The media-entry spacing E2E measures 19.98px where 12px is asserted | A text row sits ~20px below its media row and the test still expects 12px ± 1; identical on develop | fix | P1 | S | — | 2026-10-28 |
+| [ITEM-164](./items/ITEM-164-audio-presentation-lock.md) | A playing recording owns the projector screen until it pauses | Playing audio takes the screen fullscreen like video does, and no key or click moves the projector until the recording is paused | feat | P1 | S | [155](../specs/155-audio-presentation-lock/spec.md) | 2026-10-29 |
 
 ## Speccing
 
