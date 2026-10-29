@@ -27,6 +27,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-165](./items/ITEM-165-preview-body-ring.md) | Space paints the Preview dialog's focus ring when it plays or pauses | The dialog body holds focus on open, and the first key press flips its `:focus-visible` ring onto the modal's own edge in audio and video previews | fix | P2 | S | [159](../specs/159-preview-body-ring/spec.md) | 2026-10-29 |
 
 ## In review
 
