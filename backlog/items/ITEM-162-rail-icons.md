@@ -9,7 +9,7 @@ created: 2026-10-29
 updated: 2026-10-29
 spec: specs/151-rail-icons/spec.md
 branch: feat/151-rail-icons
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/441
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/439
 closed_at:
 closed_reason:
