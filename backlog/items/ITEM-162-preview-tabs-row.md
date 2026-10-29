@@ -1,6 +1,6 @@
 ---
 id: ITEM-162
-status: in-review
+status: done
 title: 'A song''s verse tabs squeeze the preview title and take the dialog''s first focus'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/153-preview-tabs-row/spec.md
 branch: fix/153-preview-tabs-row
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/435
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/434
-closed_at:
-closed_reason:
+closed_at: 2026-10-29
+closed_reason: merged into develop (#435)
 bump: patch
 release_version:
 ---
