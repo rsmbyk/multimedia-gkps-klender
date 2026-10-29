@@ -167,7 +167,12 @@ class ServiceEntry(models.Model):
             if not self.song_id:
                 errors['song'] = 'A song entry needs a song.'
             elif not self.verses:
-                errors['verses'] = 'Keep at least one verse in the service.'
+                # Two causes, two sentences: a song with nothing in it cannot be brought
+                # into the service at all, which is not the same as clearing its boxes.
+                if self.song.verse_set.filter(is_deleted=False).exists():
+                    errors['verses'] = 'Keep at least one verse in the service.'
+                else:
+                    errors['verses'] = 'This song has no verses: pick another song.'
         if self.kind == ServiceEntryKind.MEDIA:
             if not self.media_id:
                 errors['media'] = 'A media entry needs a file reference.'

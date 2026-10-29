@@ -68,10 +68,10 @@ arrow cases in `tests/e2e/test_entry_preview.py` are unchanged and green.
   template, no `tabindex`, no `media-audio.js` / `media-video.js`, no geometry token, no copy.
 - [X] T012 `specs/README.md` — the index row for 159, `Accepted`. Done at gate 1, when the spec was
   accepted, rather than here.
-- [X] T013 Fold: add R27 to `docs/spec/reading.md` and move the header's `last folded` and `slices`.
+- [X] T013 Fold: add R31 to `docs/spec/reading.md` and move the header's `last folded` and `slices`.
 - [X] T014 `VERSION` `1.22.10` → `1.22.11` and one `### Fixed` line under `## [Unreleased]` in
   `CHANGELOG.md`, in the pre-merge commit.
-- [ ] T015 Delivery, after the report: open the PR as a draft, then read `ITEM-165`'s state — it is in
+- [ ] T015 Delivery, after the report: open the PR as a draft, then read `ITEM-171`'s state — it is in
   `Ready`, so set `in-review`, write `pr:` and move the board row, and push that one commit
   (`C-BOARD-GIT`).
 

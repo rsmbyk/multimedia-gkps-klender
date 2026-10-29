@@ -4,7 +4,7 @@
 **Branch**: `fix/159-preview-body-ring`
 **Created**: 2026-10-29
 **Status**: Accepted (owner, gate 1, 2026-10-29)
-**Input**: the owner's report — *"why is there that ring on the edge of the modal when you play/pause the audio or song with space key"* — and card ITEM-165.
+**Input**: the owner's report — *"why is there that ring on the edge of the modal when you play/pause the audio or song with space key"* — and card ITEM-171.
 
 ## What the page does today
 
@@ -108,10 +108,10 @@ overflows.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | A key that operates a preview's player SHALL leave no focus indicator on the preview's body, and therefore none on the dialog's edge — including clearing one the dialog drew as it opened. | `new: reading` → R27 |
-| FR-002 | The body's keyboard indicator SHALL remain available: reachable by Tab, `2px` solid `--focus` at offset `-2px`, unchanged in geometry and colour from today. | `new: reading` → R27 |
-| FR-003 | The body SHALL keep the behaviour it was made focusable for: arrow keys scroll a body that overflows, and the edge guard at its top and bottom still swallows them. | `new: reading` → R27 |
-| FR-004 | Nothing else changes: the player's toggle, the seek bar, the header tabs, the pointer click that focuses the body, Escape, and the image and PDF previews' behaviour. | `new: reading` → R27 |
+| FR-001 | A key that operates a preview's player SHALL leave no focus indicator on the preview's body, and therefore none on the dialog's edge — including clearing one the dialog drew as it opened. | `new: reading` → R31 |
+| FR-002 | The body's keyboard indicator SHALL remain available: reachable by Tab, `2px` solid `--focus` at offset `-2px`, unchanged in geometry and colour from today. | `new: reading` → R31 |
+| FR-003 | The body SHALL keep the behaviour it was made focusable for: arrow keys scroll a body that overflows, and the edge guard at its top and bottom still swallows them. | `new: reading` → R31 |
+| FR-004 | Nothing else changes: the player's toggle, the seek bar, the header tabs, the pointer click that focuses the body, Escape, and the image and PDF previews' behaviour. | `new: reading` → R31 |
 
 ### Key Entities
 
@@ -175,8 +175,9 @@ for.
   that a non-scrolling body needs no indicator is a different change and stays out of this slice.
 - **The image and PDF previews are untouched.** They carry the same body rule and have no space
   shortcut, so nothing in this slice moves them.
-- **The capability number is R27, provisional.** `reading` folds through R26 as of 2026-10-28; other
-  slices in flight may claim R27 first, and the number is re-checked when this one folds.
+- **The capability number is R31.** `reading` folds through R30 as of 2026-10-29; other slices in
+  flight may claim R31 first, and the number is re-checked when this one folds — it was R27 when this
+  spec was written and moved twice before the merge.
 
 ## Clarifications
 

@@ -1,5 +1,5 @@
 ---
-id: ITEM-165
+id: ITEM-171
 status: in_review
 title: 'Space paints the Preview dialog''s focus ring when it plays or pauses'
 type: fix
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-165: Space paints the Preview dialog's focus ring when it plays or pauses
+# ITEM-171: Space paints the Preview dialog's focus ring when it plays or pauses
 
 ## Summary
 

@@ -2072,7 +2072,9 @@ kbd {
 .preview:not([open]) { display: none; }
 .preview::backdrop { background: var(--backdrop); }
 /* The entry's identity, pinned above the scroller (spec 085): the header does not travel with
-   the body, and an entry with nothing to name renders no header at all. */
+   the body, and an entry with nothing to name renders no header at all. A song's verse tabs take a
+   band of their own under it (spec 153): the row that used to squeeze the title is now the header's
+   closing line, and the title gets the whole width. */
 .preview__head {
   display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 14px 22px;
   border-bottom: 1px solid var(--divider); background: var(--canvas);
@@ -2082,11 +2084,18 @@ kbd {
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font: 640 16px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
 }
-.preview__versetabs { display: flex; margin-left: auto; min-width: 0; }
-.preview__head .preview__tabs { margin: 0; }
+/* `margin: 0` is load-bearing: as a column-flex item of the dialog, the header's old
+   `margin-left: auto` would shrink the band to max-content and push it to the right edge. */
+.preview__versetabs {
+  display: flex; margin: 0; width: 100%; padding: 0 22px 14px;
+  border-bottom: 1px solid var(--divider); background: var(--canvas);
+}
+/* The rule moves onto the tab band only when there is one: every other preview keeps its own. */
+.preview__head:has(+ .preview__versetabs:not([hidden])) { border-bottom: 0; }
+.preview__versetabs .preview__tabs { margin: 0; }
 @media (max-width: 560px) {
-  .preview__head { flex-wrap: wrap; padding: 12px 16px; }
-  .preview__versetabs { margin-left: 0; width: 100%; }
+  .preview__head { padding: 12px 16px; }
+  .preview__versetabs { padding: 0 16px 12px; }
 }
 .preview__body { padding: 22px; overflow-y: auto; min-height: 0; }
 .preview__body:focus { outline: none; }
@@ -2135,7 +2144,7 @@ kbd {
 .audio-player__seek::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--active-bg); opacity: 0; }
 .audio-player__seek:hover::-webkit-slider-thumb, .audio-player__seek:focus-visible::-webkit-slider-thumb, .audio-player__seek:hover::-moz-range-thumb, .audio-player__seek:focus-visible::-moz-range-thumb { opacity: 1; }
 .audio-player__seek:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.audio-player__times { display: flex; justify-content: space-between; margin-top: 7px; font-size: 12px; color: var(--head-ink); }
+.audio-player__times { display: flex; justify-content: flex-end; align-items: baseline; gap: 5px; margin-top: 7px; font-size: 12px; color: var(--head-ink); }
 .preview__audio-unavailable { width: 100%; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; color: var(--head-ink); font-size: 13px; }
 .preview__audio-unavailable svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 @media (max-width: 560px) { .preview.is-audio-preview .preview__body { padding: 24px 20px; } }
@@ -2765,7 +2774,10 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 .media-transfer-rail__dot { position: absolute; right: 4px; bottom: 3px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--canvas); background: #d7a833; }
 .media-transfer-rail__dot[data-state="completed"] { background: #17804d; }
 .media-transfer-rail__dot[data-state="failed"] { background: var(--danger); }
-.media-transfers__dialog { width: min(580px, calc(100vw - 32px)); }
+/* `overflow: clip` (spec 152): the list reaches the bottom-right corner, and without clipping the
+   scrollbar's last pixels paint over the 12px radius. Clip follows the rounded border and, unlike
+   `hidden`, does not make the dialog a scroll container a focus move could scroll. */
+.media-transfers__dialog { width: min(580px, calc(100vw - 32px)); overflow: clip; }
 /* Only while open: `display` here would otherwise out-rank the UA's `dialog:not([open]) { display: none }`. */
 .media-transfers__dialog[open] { display: flex; flex-direction: column; }
 .media-transfers__row { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid var(--divider); }
@@ -2778,7 +2790,15 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
    9px under the 2px divider, and the list — not the dialog — absorbs a taller set of rows, so the
    dialog's 22px bottom padding survives a list that outgrows it. */
 .media-transfers__row:has(+ .media-transfers__divider) { border-bottom-width: 0; }
-.media-transfers__list { min-height: 0; overflow-y: auto; }
+/* The bar is the dialog's edge (spec 152): the list is the scroll container, and the engine paints its
+   scrollbar against the list's box — which sits at the dialog's *content* box, 22px of padding plus the
+   1px border inside the dialog's edge. Taking that padding back as a negative margin on the right and
+   the bottom widens the box out to the border, and padding the content by the same 22px leaves every
+   row, heading and title exactly where it was. The 22px also carries spec 149's end-of-scroll gap: a
+   scroll container's bottom padding is part of its scrollable area, so the last row still ends 22px
+   above the dialog's border when the list is scrolled to its end. The top is deliberately not extended
+   — that would put the scroll area over the `Transfers` title. */
+.media-transfers__list { min-height: 0; overflow-y: auto; margin: 0 -22px -22px; padding: 0 22px 22px; }
 /* The transfer history's age headings — the Media Library list's own numbers (spec 146, FR-013), tuned for
    a 22px-padded dialog: 20px of air above a shelf, 4px above the first. */
 .media-transfers__group { margin: 20px 0 2px; color: var(--head-ink); font-size: 12px; text-transform: uppercase; letter-spacing: .07em; }

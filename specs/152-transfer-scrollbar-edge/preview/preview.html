@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transfers dialog — the scrollbar at the dialog's edge</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<style>
+  /* Preview chrome only. Nothing here touches a product class. */
+  html, body { margin: 0; }
+  body { display: block; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); }
+  .bar {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+    padding: 11px 20px;
+    background: color-mix(in srgb, var(--rail-bg) 92%, var(--canvas));
+    border-bottom: 1px solid var(--divider);
+  }
+  .bar strong { font-size: 14px; }
+  .bar .note, .bar .knob { font: 500 12px/1.35 var(--font-sans); color: var(--head-ink); }
+  .bar .spacer { flex: 1; }
+  .bar button {
+    padding: 6px 11px; border: 1px solid var(--divider); border-radius: 8px;
+    background: var(--canvas); color: var(--ink);
+    font: 600 12px/1 var(--font-sans); cursor: pointer;
+  }
+  .bar button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
+  .page { width: min(1240px, 100vw - 40px); margin: 0 auto; padding: 26px 0 90px; }
+  .lede { max-width: 74ch; margin: 0 0 22px; font: 400 13.5px/1.55 var(--font-sans); color: var(--head-ink); }
+  .lede code { font-size: 12.5px; }
+  .pair { display: grid; grid-template-columns: repeat(2, 580px); gap: 40px; align-items: start; }
+  @media (max-width: 1260px) { .pair { grid-template-columns: minmax(0, 1fr); justify-items: start; } }
+  .col > h2 {
+    margin: 0 0 3px; font: 640 12px/1.2 var(--font-sans); letter-spacing: .04em; text-transform: uppercase;
+    color: var(--head-ink);
+  }
+  .col > h2 b { color: var(--focus); }
+  .col > p { margin: 0 0 12px; font: 400 12.5px/1.5 var(--font-sans); color: var(--head-ink); }
+  /* A non-modal <dialog> is absolutely positioned by the UA sheet; the product centers it
+     with showModal(). Placing it in the flow is the only thing this page overrides. */
+  .col dialog { position: static; inset: auto; margin: 0; }
+  .metrics { width: 100%; margin-top: 26px; border-collapse: collapse; font: 400 13px/1.5 var(--font-sans); }
+  .metrics caption { text-align: left; padding-bottom: 8px; font-weight: 660; font-size: 13px; }
+  .metrics th, .metrics td { padding: 8px 18px 8px 0; border-bottom: 1px solid var(--divider); text-align: left; vertical-align: top; }
+  .metrics thead th { font-weight: 640; color: var(--head-ink); font-size: 12px; letter-spacing: .03em; text-transform: uppercase; }
+  .metrics th:first-child { width: 46%; color: var(--ink); font-weight: 520; }
+  .metrics td { font-variant-numeric: tabular-nums; font-weight: 560; }
+  .metrics tr.bite td { color: var(--focus); }
+  .detail { margin-top: 22px; }
+  .detail h3 { margin: 0 0 6px; font: 640 12px/1.2 var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--head-ink); }
+  .detail h3 b { color: var(--focus); }
+  .inspector { margin-top: 26px; font: 400 12px/1.5 var(--font-sans); color: var(--head-ink); }
+  .inspector summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+  /* Two rows: the list no longer overflows, so no bar is drawn. */
+  [data-rows="2"] .row-extra { display: none; }
+</style>
+<style>
+  /* THE DELTA — the one rule this slice adds, and nothing else. Scoped to the After column so
+     one page can carry both states; in the working tree it is unscoped.
+
+     The list already is the scroll container (spec 149). It is a plain child of the dialog, so it
+     starts at the dialog's *content* box, 22px inside the padding edge, and the engine paints the
+     bar against that edge. Giving it the dialog's padding back as a negative margin and padding its
+     own content by the same 22px moves only the list's box — and with it the bar — out to the
+     dialog's inner edge, and leaves every row, heading and title exactly where it was. */
+  .pvue-after .media-transfers__list { margin: 0 -22px -22px; padding: 0 22px 22px; }
+
+  /* 2. The dialog clips its own content to its rounded border: with the bar's lane now running
+        into the bottom-right corner, an unclipped child paints the bar over the radius. */
+  .pvue-after .media-transfers__dialog { overflow: clip; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <strong>Transfers — the scrollbar at the dialog's edge</strong>
+  <span class="note">spec 152 · static preview · the real <code>.media-transfers</code> markup, tokens and stylesheets</span>
+  <span class="spacer"></span>
+  <span class="knob" id="viewport"></span>
+  <button type="button" id="rowsBtn" aria-pressed="false">2 rows</button>
+  <button type="button" id="themeBtn">Dark</button>
+</div>
+
+<div class="page">
+  <p class="lede">
+    The Transfers dialog as the Media Library opens it: fifteen completed transfers under their age
+    headings, so the list overflows the dialog's <code>max-height</code> and the engine paints the
+    app's 5px bar. Left is <code>develop</code> @ <code>24a6d6d2</code>; right is the same markup with
+    the two rules below. Look at the bar's right edge and its bottom end against the dialog's border.
+  </p>
+
+  <div class="pair">
+    <div class="col" id="today">
+      <h2>Today — <b>develop</b></h2>
+      <p>bar 22px inside the dialog, ending 22px above its bottom border</p>
+      <dialog open class="media-library__dialog media-transfers__dialog">
+        <h2>Transfers</h2>
+        <div class="media-transfers__list">
+          <h3 class="media-transfers__group" data-bucket="today">Last 24 hours</h3>
+          <div class="media-transfers__row"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>images (1).jpeg</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>side-view-silhouette-african-elephant-walking-across-grass.jpg</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>random.jpg</strong><span>Completed</span></div></div>
+          <h3 class="media-transfers__group row-extra" data-bucket="month">Last 30 days</h3>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>Dengan Hati &amp; Terima Kasih - JCC Worship [Official].mp4</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>images.jpeg</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>Invoice-AATTCSTN-0002.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>Receipt-2773-9204.png</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-9.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-10.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-11.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-12.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-13.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-14.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-15.pdf</strong><span>Completed</span></div></div>
+        </div>
+      </dialog>
+    </div>
+
+    <div class="col pvue-after" id="after">
+      <h2>After — <b>the one rule</b></h2>
+      <p>bar against the dialog's border, top to bottom</p>
+      <dialog open class="media-library__dialog media-transfers__dialog">
+        <h2>Transfers</h2>
+        <div class="media-transfers__list">
+          <h3 class="media-transfers__group" data-bucket="today">Last 24 hours</h3>
+          <div class="media-transfers__row"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>images (1).jpeg</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>side-view-silhouette-african-elephant-walking-across-grass.jpg</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>random.jpg</strong><span>Completed</span></div></div>
+          <h3 class="media-transfers__group row-extra" data-bucket="month">Last 30 days</h3>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>Dengan Hati &amp; Terima Kasih - JCC Worship [Official].mp4</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>images.jpeg</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>Invoice-AATTCSTN-0002.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>Receipt-2773-9204.png</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-9.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-10.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-11.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-12.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-13.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-14.pdf</strong><span>Completed</span></div></div>
+          <div class="media-transfers__row row-extra"><span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/></svg></span><div class="media-transfers__main"><strong>worship-15.pdf</strong><span>Completed</span></div></div>
+        </div>
+      </dialog>
+    </div>
+  </div>
+
+  <table class="metrics" id="metrics">
+    <caption>Measured in this page, at this viewport</caption>
+    <thead><tr><th>Distance</th><th>Today</th><th>After</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="detail">
+    <h3>Look closely — <b>the bar's right edge</b></h3>
+    <p class="lede" style="margin:0">The number this slice is about is painted, not in the DOM: the page
+    can report the list's box, only the probe can read the bar. Run
+    <code>preview/probe.py</code> for the painted gap in both columns (it opens this file in a headed
+    Chromium, because the headless one paints overlay scrollbars and no bar at all).</p>
+  </div>
+
+  <details class="inspector">
+    <summary>What this page is, and what it is not</summary>
+    <p>The two dialogs are the product's own markup — <code>.media-library__dialog</code>,
+    <code>.media-transfers__dialog</code>, <code>.media-transfers__list</code>, the real rows and age
+    headings — drawn with <code>assets/</code>: copies of <code>static/styles/design/{fonts,tokens,
+    components}.css</code> as of <code>24a6d6d2</code>. The After column adds one scoped rule, which
+    is the whole of the slice.</p>
+    <p>It is not the app: the rows are written into the page rather than fetched from the companion,
+    and the dialog is placed in the flow instead of being opened with <code>showModal()</code>. The
+    live check is the same dialog on the running dev server (see the README).</p>
+  </details>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const rowsBtn = document.getElementById('rowsBtn');
+  const themeBtn = document.getElementById('themeBtn');
+  const viewport = document.getElementById('viewport');
+
+  function measure(col) {
+    const dialog = col.querySelector('dialog');
+    const list = col.querySelector('.media-transfers__list');
+    const row = col.querySelector('.media-transfers__row');
+    const title = dialog.querySelector('h2');
+    const group = col.querySelector('.media-transfers__group');
+    const d = dialog.getBoundingClientRect(), l = list.getBoundingClientRect();
+    const r = row.getBoundingClientRect(), t = title.getBoundingClientRect(), g = group.getBoundingClientRect();
+    const cs = getComputedStyle(dialog);
+    const border = parseFloat(cs.borderRightWidth);
+    return {
+      'dialog border box right': Math.round(d.right * 10) / 10,
+      'list box right': Math.round(l.right * 10) / 10,
+      'list right edge inside the dialog border box': Math.round((d.right - l.right) * 10) / 10,
+      'scrollbar lane (offsetWidth − clientWidth)': list.offsetWidth - list.clientWidth,
+      'scrolls': list.scrollHeight > list.clientHeight + 1,
+      'row content left': Math.round((r.left - d.left) * 10) / 10,
+      'row content right': Math.round((d.right - r.right) * 10) / 10,
+      'title left': Math.round((t.left - d.left) * 10) / 10,
+      'age heading left': Math.round((g.left - d.left) * 10) / 10,
+      'list bottom → dialog bottom border': Math.round((d.bottom - l.bottom) * 10) / 10
+    };
+  }
+
+  function table() {
+    const a = measure(document.getElementById('today'));
+    const b = measure(document.getElementById('after'));
+    const body = document.querySelector('#metrics tbody');
+    body.replaceChildren();
+    Object.keys(a).forEach(key => {
+      const tr = document.createElement('tr');
+      if (key === 'scrolls') { tr.innerHTML = `<th>${key}</th><td>${a[key] ? 'yes' : 'no'}</td><td>${b[key] ? 'yes' : 'no'}</td>`; }
+      else {
+        const same = a[key] === b[key];
+        tr.innerHTML = `<th>${key}</th><td>${a[key]}${key.includes('right edge') ? 'px' : ''}</td><td${same ? '' : ' class="bite"'} style="${same ? '' : 'color:var(--focus);font-weight:640'}">${b[key]}${key.includes('right edge') ? 'px' : ''}</td>`;
+      }
+      body.append(tr);
+    });
+  }
+
+  rowsBtn.addEventListener('click', () => {
+    const two = root.dataset.rows === '2';
+    root.dataset.rows = two ? '15' : '2';
+    rowsBtn.textContent = two ? '2 rows' : '15 rows';
+    rowsBtn.setAttribute('aria-pressed', String(!two));
+    table();
+  });
+  themeBtn.addEventListener('click', () => {
+    const dark = root.dataset.theme === 'dark';
+    root.dataset.theme = dark ? 'light' : 'dark';
+    themeBtn.textContent = dark ? 'Dark' : 'Light';
+    table();
+  });
+  const size = () => { viewport.textContent = `${innerWidth} × ${innerHeight}`; table(); };
+  addEventListener('resize', size);
+  size();
+</script>
+</body>
+</html>

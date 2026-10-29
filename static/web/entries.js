@@ -62,7 +62,7 @@
   // whole target, so the label rides in a screen-reader span (the accessible
   // name) and in the tooltip. Same markup as tatib.html.
   var EMPTY_ADD_ICONS = {
-    scripture: '<path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"/><path d="M12 6.6v13.6"/>',
+    scripture: '<path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/><path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/>',
     song: '<path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>',
     text: '<path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/>',
     media: '<rect x="3.2" y="5.2" width="17.6" height="13.6" rx="2.4"/><path d="M10.4 9.2v5.6l4.6-2.8z"/>'
@@ -660,7 +660,7 @@
 
   /* ---------- the song pick and its verse checklist ------------------------- */
 
-  function verseSummary(picker, box) {
+  function verseSummary(picker, box, songPicked) {
     if (!picker) return;
     var trigger = picker.querySelector('[data-verses-trigger]');
     var summary = picker.querySelector('[data-verses-summary]');
@@ -670,7 +670,8 @@
       .sort(function (a, b) { return a - b; });
     if (!trigger || !summary) return;
     if (!boxes.length) {
-      summary.textContent = 'Pick a song first';
+      /* No boxes is two states: nothing picked, and a song with nothing in it (spec 162). */
+      summary.textContent = songPicked ? 'This song has no verses' : 'Pick a song first';
       trigger.disabled = true;
     } else if (checked.length === boxes.length) {
       summary.textContent = 'All verses';
@@ -736,7 +737,7 @@
         })
         .then(function (data) {
           renderVerses(box, data.verses || []);
-          verseSummary(versesPicker, box);
+          verseSummary(versesPicker, box, !!hidden.value);
           placeMenu(box.closest('.editor__picker-menu'));
         })
         .catch(function () {
@@ -767,8 +768,8 @@
       closeMenus(scope);
       loadVerses(option.dataset.song);
     });
-    box.addEventListener('change', function () { verseSummary(versesPicker, box); });
-    verseSummary(versesPicker, box);              /* editing: the boxes are already there */
+    box.addEventListener('change', function () { verseSummary(versesPicker, box, !!hidden.value); });
+    verseSummary(versesPicker, box, !!hidden.value);   /* editing: the boxes are already there */
   }
 
   /* ---------- the text form's Save guard ------------------------------------ */

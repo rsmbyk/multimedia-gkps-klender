@@ -204,6 +204,7 @@
     if (imageHost) {
       var image = imageHost.querySelector('.screen__image');
       if (image) { image.hidden = true; image.removeAttribute('src'); }
+      imageHost.querySelector('.screen__image-missing').setAttribute('hidden', '');
     }
     imageHost = null;
   }
@@ -217,7 +218,7 @@
     var image = host.querySelector('.screen__image');
     var missing = host.querySelector('.screen__image-missing');
     image.hidden = true;
-    missing.hidden = true;
+    missing.setAttribute('hidden', '');
     imageController = new AbortController();
     var token = ++imageToken;
     window.GKPSMediaImage.load(host.dataset.mediaImage, imageController.signal)
@@ -229,7 +230,7 @@
         image.src = imageUrl;
         image.hidden = false;
       }).catch(function () {
-        if (token === imageToken && host === imageHost) missing.hidden = false;
+        if (token === imageToken && host === imageHost) missing.removeAttribute('hidden');
       });
   }
 
@@ -306,6 +307,14 @@
 
   function screens() {
     return [].slice.call(stage.querySelectorAll('.screen[data-screen]'));
+  }
+  /* The empty-service notice is the stage's sibling (projector.html), so it is not one of the
+     screens `render` toggles: it follows what the stage holds — a service screen, or a Go To
+     detour painted over an empty service — from one place, so no path paints over it. */
+  function syncEmptyNotice() {
+    var notice = screen.querySelector('.projector__empty');
+    if (!notice) return;
+    notice.hidden = Boolean(detour) || screens().length > 0;
   }
   function read() {
     try {
@@ -401,6 +410,9 @@
     body.dataset.currentScreen = String(current);
     body.dataset.showing = showing ? 'true' : 'false';
     body.classList.toggle('words-hidden', !showing);
+    /* Before anything is fitted: the notice's band is part of the stage only while the notice
+       is painted, so the fit below must measure the stage it will actually live in. */
+    syncEmptyNotice();
     if (active && !detour) {
       applyPassageTranslation(active);
       fit(active);
@@ -907,7 +919,9 @@
   });
 
   // In windowed mode, any click on the projected page is reserved for the
-  // fullscreen gesture. Capture it before the mouse zones can navigate.
+  // fullscreen gesture. Capture it before the mouse zones can navigate — except
+  // on the audio screen's play control, which is a control and not a gesture
+  // (spec 156): its first click starts the audio, not the fullscreen.
   document.addEventListener('click', function (event) {
     if (document.fullscreenElement || fullscreenDenied || !document.fullscreenEnabled ||
         !document.documentElement.requestFullscreen) return;
@@ -915,6 +929,7 @@
         body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing') ||
         !findPanel.hidden) return;
     if (!event.target.closest('#projectorScreen, .mouse-zones')) return;
+    if (event.target.closest('[data-audio-play]')) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     enterFullscreen();
@@ -1161,6 +1176,9 @@
     });
     detourNode.classList.add('is-active');
     body.dataset.showing = 'true';
+    /* The notice goes first: hiding it returns its band to the stage, and the fitting below
+       measures that stage. */
+    syncEmptyNotice();
     fit(detourNode); renderCue();
   }
   function renderDetourCue() {
@@ -1426,8 +1444,7 @@
         screenData = JSON.parse(freshScreens.textContent) || [];
         current = Math.max(0, Number(screenIndex) || 0);
         previousIndex = current;
-        var empty = screen.querySelector('.projector__empty');
-        if (empty) empty.hidden = screens().length > 0;
+        syncEmptyNotice();
         if (done) done(current);
       })
       .catch(function () { /* keep showing what we have */ });

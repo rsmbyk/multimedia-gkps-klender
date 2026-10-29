@@ -325,12 +325,13 @@
   }
 
   /* The entry's identity leaves the scroller for the dialog's header (spec 085): whatever the
-     payload renders as its reference or heading, and a song's verse tabs with it. An entry with
-     nothing to name -- an untitled Text -- keeps the headerless dialog it has always had. */
+     payload renders as its reference or heading, and a song's verse tabs with it -- into a band of
+     their own under the header since spec 153, so the title keeps the header's whole width. An
+     entry with nothing to name -- an untitled Text -- keeps the headerless dialog it has always had. */
   function liftIdentity() {
     var identity = content.querySelector('.preview__ref, .preview__song');
     var tabs = content.querySelector('.preview__tabs');
-    head.hidden = !identity && !tabs;
+    head.hidden = !identity;
     headTitle.textContent = identity ? identity.textContent : '';
     headTitle.hidden = !identity;
     if (identity) identity.remove();
@@ -517,6 +518,11 @@
         origin = opener.closest('.tatib__item, .tatib__eos');
         if (origin) origin.classList.add('is-modal-origin');
       }
+      /* The dialog opens on what is read, not on a control (spec 153): the verse tabs used to be its
+         first focusable descendant, so showModal() landed on tab 1 and painted its ring. The scroller
+         already takes that focus wherever there are no tabs, and its arrow/PageUp/PageDown handling
+         lives there. */
+      content.focus({ preventScroll: true });
       if (modal.classList.contains('is-image-preview')) loadImagePreview();
       if (modal.classList.contains('is-audio-preview')) loadAudioPreview();
       if (modal.classList.contains('is-video-preview')) loadVideoPreview();
@@ -599,6 +605,23 @@
       markShortcut(true);
       if (videoPlayer) videoPlayer.toggle();
       return;
+    }
+    if (confirmLayer.hidden && event.key === 'Tab' && tabsHost && !tabsHost.hidden && footer.hidden) {
+      /* The verse tabs sit before the scroller in the dialog's own order, and the scroller is its last
+         focusable element: the two ends of the reading loop hand focus to each other, so the tabs stay
+         one Tab away from the body the dialog opens on (spec 153). No other preview's order changes. */
+      var selectedTab = tabsHost.querySelector('.preview__tab[aria-selected="true"]')
+        || tabsHost.querySelector('.preview__tab');
+      if (!event.shiftKey && document.activeElement === content) {
+        event.preventDefault();
+        if (selectedTab) selectedTab.focus();
+        return;
+      }
+      if (event.shiftKey && document.activeElement === selectedTab) {
+        event.preventDefault();
+        content.focus({ preventScroll: true });
+        return;
+      }
     }
     if (confirmLayer.hidden) return;
     if (event.key === 'Escape') {

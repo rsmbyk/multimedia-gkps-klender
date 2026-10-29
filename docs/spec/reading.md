@@ -2,8 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-29
-**slices**: `159-preview-body-ring`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
-
+**slices**: `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -823,24 +822,24 @@ control's states and the page's title.
 
 ### R25 — A passage and a song carry a kind mark of their own
 
-A Tata Ibadah stage SHALL mark a passage row and a song row with a small decorative glyph — an open book
-for a passage, a single flagged note for a song — and SHALL NOT mark a text row, a section break or a
-media row. The glyph SHALL sit on the media chip's centre line and the row's title SHALL take the media
-title's column, so a media file, a passage and a song share one left rail: the mark centred, the words
-from 64px. The glyph SHALL be smaller than the 42px chip and SHALL carry no tint of its own, so a media
-file is never mistaken for a passage or a song. The mark SHALL be hidden from assistive technology, take
-no pointer, and add no height of its own; a song's title MAY take one more line where the narrower
-column wraps it.
+A Tata Ibadah stage SHALL mark a passage row and a song row with a small decorative glyph — the rail's
+Bible mark for a passage, the rail's beamed note for a song — and SHALL NOT mark a text row, a section
+break or a media row. The glyph SHALL sit on the media chip's centre line and the row's title SHALL
+take the media title's column, so a media file, a passage and a song share one left rail: the mark
+centred, the words from 64px. The glyph SHALL be smaller than the 42px chip and SHALL carry no tint of
+its own, so a media file is never mistaken for a passage or a song. The mark SHALL be hidden from
+assistive technology, take no pointer, and add no height of its own; a song's title MAY take one more
+line where the narrower column wraps it.
 
 #### Scenario: a passage
 - WHEN a service holds a passage entry
-- THEN its row draws a 20px open-book glyph, centred on the media chip's centre line, with the
-  reference starting on the media title's column
+- THEN its row draws a 20px open book with a Latin cross above it — the same path the rail's Alkitab
+  button draws — centred on the media chip's centre line, with the reference starting on the media
+  title's column
 
 #### Scenario: a song
 - WHEN a service holds a song entry
-- THEN its row draws a single flagged note, a different shape from the passage's, and its `Bait` line
-  keeps the same left edge as the title
+- THEN its row draws the rail's beamed pair, and its `Bait` line keeps the same left edge as the title
 
 #### Scenario: every other kind
 - WHEN the service also holds a text entry, a section break and a media file
@@ -874,7 +873,156 @@ or copy changes.
 - WHEN the `/status` read fails
 - THEN the page degrades as before — no write, one draw, the disconnected copy
 
-### R27 — A preview's play shortcut leaves no focus ring on the dialog
+### R27 — An audio file's Preview reads its times as `current / total`
+
+An audio file's Preview SHALL read its two times as one pair — the played time, a `/`, the total — on one
+line under the seek bar, right-aligned so the pair's right edge is the bar's right edge. The played time
+SHALL NOT sit at the bar's left end. Both numbers SHALL keep updating in place as the audio plays and as
+it is seeked, without the line moving or the pair's right edge shifting. The separator SHALL be text, so
+assistive technology reads one value rather than two adjacent numbers. Nothing else about the preview
+changes: the dialog's width, the 48px play button, the filename line, the 6px bar, the 7px gap above the
+line, the 12px type, `var(--head-ink)`, the unavailable state — and the projector's own audio bar
+(`.screen__audio-times`), which already read `current / total`.
+
+#### Scenario: the pair
+- WHEN an audio entry's Preview opens and the file's duration is known
+- THEN the line under the bar reads `0:00 / 5:02` — both numbers together, 5px either side of the slash,
+  the total's right edge on the seek bar's
+
+#### Scenario: playing and seeking
+- WHEN the audio plays, or the bar is seeked
+- THEN both numbers update in place and the pair's right edge does not move
+
+#### Scenario: read aloud
+- WHEN the line is read by assistive technology
+- THEN it is one value — played, then total — not two numbers run together
+
+#### Scenario: a long file
+- WHEN the duration runs past an hour
+- THEN the pair reads as the clock does elsewhere (`62:03`), still on one line and right-aligned
+
+#### Scenario: the file cannot be served
+- WHEN the local companion cannot serve the file
+- THEN the player stays hidden and the line is not drawn, as before
+
+### R28 — The preview's header gives a song's verse tabs a row of their own
+
+The entry preview's pinned header SHALL draw the entry's identity on a title band and, when the entry is a
+song with more than one shown verse, the verse tabs on a band of their own beneath it — a sibling of the
+title band, never a child. The title SHALL take the header's whole content width before it ellipsizes on
+one line. The header SHALL draw exactly one rule: beneath the tab band when one is shown, otherwise beneath
+the title band as it always has. The dialog SHALL open with keyboard focus on its scrolling body, never on
+a verse tab; while a visible tab band is shown and no screen-mode footer is, `Tab` on the body SHALL move
+focus to the selected tab and `Shift+Tab` on that tab SHALL move it back to the body. A preview without
+verse tabs SHALL keep its 52px title band, its own rule and its body exactly where they are.
+
+#### Scenario: a long title
+- WHEN a song whose title is wider than the dialog opens
+- THEN the title fills the header's content width and ellipsizes once, and the tabs stand on the row below it
+
+#### Scenario: one rule
+- WHEN a song preview is drawn
+- THEN the title band draws no rule, the tab band draws one 14px under the tabs, and the lyrics start 22px below it
+
+#### Scenario: the first focus
+- WHEN any preview opens, by pointer or by keyboard
+- THEN focus is on the scrolling body and no verse tab carries a focus ring; a keyboard open paints the body's own ring
+
+#### Scenario: the tabs stay reachable
+- WHEN the body of a song preview has focus
+- THEN `Tab` moves to the selected verse tab and `Shift+Tab` on that tab returns to the body
+
+#### Scenario: no verse tabs
+- WHEN a passage, text, image, audio, video or PDF preview opens
+- THEN the title band keeps its rule and the body sits directly under it, unchanged
+
+### R29 — The rail names its sections with the marks the stage draws
+
+The main rail SHALL draw one mark per section, and a section's mark SHALL be the same drawing wherever
+the product repeats it: the Bible — an open book with a Latin cross above it — on the rail, in the
+Alkitab panel's empty state, on a passage row and on the empty stage's Add Passage tile; the beamed
+note on the rail, in the Kidung panel's empty state, on a song row and on the Add Song tile; a
+clipboard — a board, a clip above it and three rule lines — on the Tata Ibadah rail button and in that
+panel's empty state.
+
+No rail mark SHALL reuse a media family's mark. An audio file SHALL draw a five-bar waveform in every
+place that mark is drawn (the stage's chip, the Media Library list, the service-media dialog and the
+upload preview), and the image, video, PDF and PowerPoint marks and the `missing` fallback SHALL keep
+their own shapes.
+
+Every mark SHALL be inline SVG painted with `currentColor`, carry no tint or fill of its own, be hidden
+from assistive technology, take no pointer, and sit in the box its surface already authors: 24px in
+the 44px rail button, 24px on an empty stage's tile, 20px on a stage row, 23px inside the 42px media
+chip. The rail SHALL keep its five destinations in their order, and the Search and Media Library marks
+SHALL NOT change.
+
+#### Scenario: the Bible, at every size
+- WHEN the rail, the Alkitab panel's empty state, a passage row and the Add Passage tile are drawn
+- THEN all four draw the same open book with a Latin cross, at 24px, 48px, 20px and 24px respectively
+
+#### Scenario: a song, at every size
+- WHEN the rail, the Kidung panel's empty state, a song row and the Add Song tile are drawn
+- THEN all four draw the same beamed pair
+
+#### Scenario: the service order
+- WHEN the Tata Ibadah rail button and that panel's empty state are drawn
+- THEN both draw a clipboard, and neither draws a page, a folder or a document
+
+#### Scenario: an audio file beside a song
+- WHEN a stage holds a song entry and an audio media file
+- THEN the song draws the beamed pair and the file draws the five-bar waveform
+
+#### Scenario: the other families
+- WHEN the Media Library lists an image, a video, a PDF, a PowerPoint or a file of unknown family
+- THEN each draws the mark it drew before this requirement
+
+#### Scenario: the theme
+- WHEN the theme changes
+- THEN every mark repaints with its own element's ink and needs no repaint of its own
+
+### R30 — A song entry names a song that has no verses
+
+The song entry's Verses field SHALL tell a picked song that carries no verses apart from no song picked at
+all: with no song picked the field reads `Pick a song first`, and with a song picked whose live verses are
+empty it reads `This song has no verses`. The second line SHALL be in the server's own form fragment, not
+only written by the page's script, and the field SHALL stay disabled there — an empty verse menu is not
+offered — because there is nothing to choose.
+
+The other lines SHALL stay as they are: `All verses` when every verse is included, `Verses n, …` when some
+are, and `No verses: keep at least one` when a song's boxes were all cleared. A refusal caused by the
+chosen song carrying no verses SHALL name the song — `This song has no verses: pick another song.` — while
+a refusal caused by clearing every box of a song that has verses SHALL keep
+`Keep at least one verse in the service.`
+
+#### Scenario: a song with no verses is picked
+- WHEN a song whose live verses are empty is picked in the song entry
+- THEN the Verses field reads `This song has no verses`, its trigger is disabled, and no checkbox is drawn
+
+#### Scenario: nothing is picked
+- WHEN the song entry opens with no song chosen
+- THEN the Verses field reads `Pick a song first`
+
+#### Scenario: the first paint of an edit
+- WHEN the server renders the form of a stored song entry whose song has no live verses
+- THEN its markup carries `This song has no verses` before any script runs
+
+#### Scenario: the stored verses survive
+- WHEN an entry stores verse numbers the song no longer carries
+- THEN those numbers remain choices, the field is not in the no-verses state, and the entry stays saveable
+
+#### Scenario: saving a verse-less song
+- WHEN Save is pressed with a song that carries no verses chosen
+- THEN the field's error reads `This song has no verses: pick another song.` and nothing is written
+
+#### Scenario: clearing a song's boxes
+- WHEN every box of a song that has verses is cleared and Save is pressed
+- THEN the error reads `Keep at least one verse in the service.`
+
+#### Scenario: the verses cannot be loaded
+- WHEN the verses request fails for a picked song
+- THEN the failure notice is shown and the field keeps the line it had
+
+### R31 — A preview's play shortcut leaves no focus ring on the dialog
 
 The Preview dialog's body SHALL draw its keyboard focus indicator — a 2px `--focus` ring inset 2px —
 whenever the reader reaches it with Tab, and SHALL paint nothing on it after a key that operates the

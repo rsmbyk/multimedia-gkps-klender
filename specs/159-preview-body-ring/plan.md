@@ -144,8 +144,8 @@ specs/159-preview-body-ring/
 static/styles/design/components.css          one declaration beside :2093
 static/web/preview.js                        markShortcut() + four call sites
 tests/e2e/test_preview_body_ring.py          five cases
-docs/spec/reading.md                         R27 at Fold
-backlog/items/ITEM-165-preview-body-ring.md  card
+docs/spec/reading.md                         R31 at Fold
+backlog/items/ITEM-171-preview-body-ring.md  card
 backlog/board.md                             the card's row
 specs/README.md                              the spec's index row
 VERSION, CHANGELOG.md                        patch bump and one line, at delivery
