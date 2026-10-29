@@ -1,0 +1,27 @@
+/* Bundled typefaces (spec 119).
+ *
+ * Both faces ship in the repository — no machine install, no external CDN, no
+ * network at service time. Licences sit beside the files in assets/fonts/.
+ *
+ *   CMG Sans                the projector's display face; Bold 700 only, which is the
+ *                           only weight the display uses.
+ *   Source Sans 3           the caption overlay's face (chosen for its narrow
+ *                           metrics), and the projector's fallback. Variable, so
+ *                           400-900 come from one file.
+ */
+
+@font-face {
+  font-family: "CMG Sans";
+  src: url("../../../../static/assets/fonts/CMGSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("../../../../static/assets/fonts/SourceSans3.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
