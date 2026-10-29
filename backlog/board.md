@@ -61,7 +61,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
 | [ITEM-128](./items/ITEM-128-github-issues-anchor.md) | Anchor board cards on GitHub Issues | Declare the tracker mirror, add the `board:item` label, and record when and how an issue is created | chore | P2 | S | — | [#377](https://github.com/rsmbyk/multimedia-gkps-klender/pull/377) | 2026-10-24 |
-| [ITEM-162](./items/ITEM-162-preview-tabs-row.md) | A song's verse tabs squeeze the preview title and take the dialog's first focus | The head is one flex row, so a long title ellipsizes at 570 of 730px and the dialog's initial focus lands on tab `1`; the tabs get their own row under the header, and the body takes the focus | fix | P2 | S | [153](../specs/153-preview-tabs-row/spec.md) | [#435](https://github.com/rsmbyk/multimedia-gkps-klender/pull/435) | 2026-10-29 |
 
 ## Done
 
@@ -201,6 +200,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-129](./items/ITEM-129-site-name-tab.md) | Name the site in the tab, and stop the index tab at the name | Reading tabs say `Multimedia GKPS Klender`; the index's tab is the name alone | fix | P2 | S | [127](../specs/127-site-name-tab/spec.md) | develop via [#378](https://github.com/rsmbyk/multimedia-gkps-klender/pull/378) | 2026-10-24 |
 | [ITEM-131](./items/ITEM-131-songbook-hymn-separator.md) | Separate the hymn songbooks from the rest of the Kidung panel | Hymn books first, one divider, the ordinary songbooks A–Z, no headings | feat | P2 | S | [128](../specs/128-songbook-hymn-separator/spec.md) | develop via [#380](https://github.com/rsmbyk/multimedia-gkps-klender/pull/380) | 2026-10-25 |
 | [ITEM-132](./items/ITEM-132-sidebar-empty-states.md) | Centre the sidebars' empty states | One centred glyph + title + hint per list, typed empty versus filter miss | fix | P2 | S | [129](../specs/129-sidebar-empty-states/spec.md) | develop via [#390](https://github.com/rsmbyk/multimedia-gkps-klender/pull/390) | 2026-10-25 |
+| [ITEM-162](./items/ITEM-162-preview-tabs-row.md) | A song's verse tabs squeeze the preview title and take the dialog's first focus | The head is one flex row, so a long title ellipsizes at 570 of 730px and the dialog's initial focus lands on tab `1`; the tabs get their own row under the header, and the body takes the focus | fix | P2 | S | [153](../specs/153-preview-tabs-row/spec.md) | develop via [#435](https://github.com/rsmbyk/multimedia-gkps-klender/pull/435) | 2026-10-29 |
 
 ## Archive
 
