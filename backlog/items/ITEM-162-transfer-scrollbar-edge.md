@@ -13,7 +13,7 @@ pr:
 issue: 433
 closed_at:
 closed_reason:
-bump:
+bump: patch
 release_version:
 ---
 
