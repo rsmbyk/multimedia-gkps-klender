@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-28
-**slices**: `145-media-size-precision`, `147-transfer-icon-column`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -704,3 +704,90 @@ SHALL draw every size through one function.
 #### Scenario: every surface
 - WHEN the same file is drawn on the card, in its library row and in the library Total
 - THEN all three print the same string
+
+### R22 — The Media Library list groups by age, not by upload day
+
+The Media Library's list SHALL group its rows into three age buckets, in this order and under these
+labels: `Last 30 days` (uploaded today or up to thirty days ago), `Earlier this year` (older than
+thirty days and in the present calendar year) and `Older` (anything older). These SHALL be the Tata
+Ibadah list's own windows and words (`R9`), and the present day SHALL be the congregation's, in
+`Asia/Jakarta`. A bucket holding no visible row SHALL draw neither a heading nor its spacing.
+
+A row SHALL keep its own full date — `Image · 28 Oktober 2026 · 7 KB` — so the heading only says how
+old the group is. The heading SHALL be the list's existing `h2.media-library__group`, unchanged in
+type, size, weight, colour, tracking and margins, carrying its bucket key as `data-bucket`
+(`last-30-days`, `earlier-this-year`, `older`); the per-upload-day heading SHALL be gone.
+
+Headings SHALL be drawn only while the list is sorted by upload date: a size sort SHALL draw none, and
+an ascending date sort SHALL reverse the bucket order so the list still reads oldest first. The type
+chips and the `Unused` chip SHALL still filter the list, and a bucket they empty SHALL hide its
+heading. The list SHALL have no `Upcoming` and no today bucket: an upload's timestamp is never in the
+future, and a file uploaded today is the newest row of `Last 30 days`.
+
+#### Scenario: the three buckets
+- WHEN the list opens over files uploaded today, twelve days ago, forty days ago and last year
+- THEN the headings run `Last 30 days`, `Earlier this year`, `Older`, in that order, each over its own rows
+
+#### Scenario: the edges
+- WHEN a file was uploaded exactly thirty days ago
+- THEN it sits under `Last 30 days`
+- AND a file uploaded one day earlier, in the same calendar year, sits under `Earlier this year`
+
+#### Scenario: early January
+- WHEN today is early in January and a file was uploaded in the last days of December
+- THEN it sits under `Last 30 days`, because the window is days, not months
+
+#### Scenario: the sort
+- WHEN the list is sorted by upload date ascending, or by file size
+- THEN an ascending list draws its buckets oldest first, and a size sort draws no heading at all
+
+#### Scenario: a filtered bucket
+- WHEN a type chip or `Unused` leaves a bucket with no visible row
+- THEN that bucket's heading and its spacing are not drawn, and clearing the chip restores them
+
+#### Scenario: the row
+- WHEN a row is read
+- THEN it shows the same icon, filename, full date, size, service links or unused line, cloud control and remove button as before
+
+### R23 — The transfer history groups by age, with today and the last week split out
+
+The Transfers dialog SHALL group its rows into five age buckets, in this order and under these labels:
+`Last 24 hours`, `Last 7 days`, `Last 30 days`, `Earlier this year` and `Older`. A transfer's bucket
+SHALL be decided by the instant it started, and the first three rungs SHALL be rolling windows measured
+from the moment the dialog draws: under twenty-four hours, under seven days, under thirty days. Beyond
+thirty days the congregation's calendar year in `Asia/Jakarta` SHALL separate `Earlier this year` from
+`Older`. A bucket holding no row SHALL draw no heading.
+
+Active transfers SHALL still draw above finished ones, inside the bucket their start time gives them; a
+finished row SHALL be ordered by its end time, newest first, ties by id newest first. A heading SHALL be
+an `h3.media-transfers__group` under the dialog's own `h2`, carrying its bucket key as `data-bucket`
+(`last-24-hours`, `last-7-days`, `last-30-days`, `earlier-this-year`, `older`), and drawn on the list's
+heading numbers. A row SHALL keep its direction glyph, its name and its state — `Completed`, `Cancelled`,
+`Failed`, or the percentage while active — and SHALL NOT print its own date: the heading carries the age.
+The transfer rail's progress flyout SHALL keep its own shape, its active rows and its seen divider, and
+SHALL draw no bucket headings.
+
+#### Scenario: the five rungs
+- WHEN the dialog opens over transfers started two hours, three days, twelve days, forty-five days and a year ago
+- THEN the headings run `Last 24 hours`, `Last 7 days`, `Last 30 days`, `Earlier this year`, `Older`, in that order
+
+#### Scenario: the edges
+- WHEN a transfer started exactly twenty-four hours ago
+- THEN it sits under `Last 7 days`, not `Last 24 hours`
+- AND one started exactly thirty days ago sits under `Earlier this year`
+
+#### Scenario: a running transfer
+- WHEN a transfer is still active
+- THEN it draws above the finished rows of the bucket its start time gives it
+
+#### Scenario: the rail
+- WHEN the dialog is opened from the transfer rail
+- THEN its rows and its seen divider are drawn, and no age heading is
+
+#### Scenario: an undatable row
+- WHEN a transfer's start time cannot be read
+- THEN it is drawn under `Older` rather than dropped from the history
+
+#### Scenario: the empty history
+- WHEN the companion is unavailable or holds no transfer
+- THEN the dialog draws its existing empty state and no heading
