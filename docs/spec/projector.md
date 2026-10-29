@@ -2,7 +2,7 @@
 
 **capability**: `projector`
 **last folded**: 2026-10-29
-**slices**: `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**slices**: `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song. This file starts at spec 136 — the projector's earlier behaviour
@@ -95,3 +95,42 @@ active SHALL drop a failed state with it.
 #### Scenario: leaving a screen that failed
 - WHEN the operator moves to another screen and returns to the one that failed
 - THEN the screen is drawn from its own empty state and its own fetch decides what is painted
+
+### R4 — The audio screen carries its playback control
+
+An audio entry's screen SHALL paint its play/pause control above the seek bar: a 48 × 48 circle whose
+mark follows the audio — a play triangle while paused or ended, two bars while playing — at full opacity
+whenever the screen's chrome is up. When the chrome settles into its idle state the control SHALL hide the
+way the bar dims, leaving its 48px of height reserved so the bar does not move; any pointer move or key
+press SHALL bring it back with the bar and the times. The seek bar and the times keep their own dimming
+(`.52` and `.4`) and their boxes.
+
+The control SHALL be reachable by the pointer: no pointer zone may cover it, and the page's windowed
+fullscreen reservation SHALL NOT consume its click. Clicking it SHALL toggle playback exactly as `Space`
+does, and its `aria-label` SHALL read `Play audio` while paused and `Pause audio` while playing.
+
+#### Scenario: an audio screen at rest
+- WHEN an audio entry is showing and nothing has played
+- THEN a 48 × 48 play triangle sits 30px above the seek bar, and the times read `0:00 / <total>`
+
+#### Scenario: playback starts and stops
+- WHEN the audio plays
+- THEN the mark becomes two bars
+- WHEN it pauses or reaches its end
+- THEN the triangle returns
+
+#### Scenario: the chrome settles while playing
+- WHEN the audio plays and the chrome has been idle for 3.5 s
+- THEN the control is hidden and takes no pointer, the bar is `.52` and the times are `.4`, and the bar has not moved
+- WHEN the pointer moves or a key is pressed
+- THEN the control returns at full strength with the mark for the state the audio is in
+
+#### Scenario: the control is pressed
+- WHEN the control is clicked on a windowed projector
+- THEN the audio toggles and the page does not enter fullscreen
+- WHEN anything else on the projected page is clicked
+- THEN it enters fullscreen as before
+
+#### Scenario: the local copy is missing
+- WHEN the companion has no copy of the file, or the bytes are not audio
+- THEN the player stays hidden, the missing-file mark shows, and no control is painted
