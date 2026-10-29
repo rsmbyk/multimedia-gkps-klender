@@ -6,7 +6,7 @@
 
 ## Phase 1 — Setup
 
-- [X] T001 `backlog/items/ITEM-155-media-size-precision.md` + its `Speccing` board row
+- [X] T001 `backlog/items/ITEM-157-media-size-precision.md` + its `Speccing` board row
 - [X] T002 `specs/145-media-size-precision/` pack and `preview/README.md`
 
 ## Phase 2 — Foundational
@@ -38,7 +38,7 @@
 
 - [X] T010 `CHANGELOG.md` line under `## [Unreleased]`, `VERSION` → `1.22.5`
 - [X] T011 board row to `Done`, card closed with the merge reference
-- [X] T012 `docs/spec/reading.md` folded with `R20`
+- [X] T012 `docs/spec/reading.md` folded with `R21`
 
 ## Phase N+1 — Convergence
 

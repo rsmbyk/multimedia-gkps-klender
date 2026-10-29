@@ -75,10 +75,10 @@ the strings are identical, produced by one function.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | A media size SHALL be drawn in the largest decimal unit in which its value is at least 1 — `B` · `KB` (1,000 B) · `MB` (1,000 KB) · `GB` (1,000 MB) — and a non-empty file SHALL never read as zero. | `reading/R20` |
-| FR-002 | A value SHALL carry one decimal only when it is not a whole number at one decimal (`2 KB`, `12.3 KB`, `868.4 KB`), and SHALL be promoted to the next unit when rounding would print `1000`. | `reading/R20` |
-| FR-003 | The New media card, a Media Library row, the Media Library Total and any later size label SHALL be drawn by one function, `window.gkpsFormatSize`, loaded once per page. | `reading/R20` |
-| FR-004 | Sizes below 1 KB SHALL be printed as whole bytes with the `B` suffix. | `reading/R20` |
+| FR-001 | A media size SHALL be drawn in the largest decimal unit in which its value is at least 1 — `B` · `KB` (1,000 B) · `MB` (1,000 KB) · `GB` (1,000 MB) — and a non-empty file SHALL never read as zero. | `reading/R21` |
+| FR-002 | A value SHALL carry one decimal only when it is not a whole number at one decimal (`2 KB`, `12.3 KB`, `868.4 KB`), and SHALL be promoted to the next unit when rounding would print `1000`. | `reading/R21` |
+| FR-003 | The New media card, a Media Library row, the Media Library Total and any later size label SHALL be drawn by one function, `window.gkpsFormatSize`, loaded once per page. | `reading/R21` |
+| FR-004 | Sizes below 1 KB SHALL be printed as whole bytes with the `B` suffix. | `reading/R21` |
 
 ### Key Entities
 

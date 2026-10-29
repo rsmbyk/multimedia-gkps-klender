@@ -1,5 +1,5 @@
 ---
-id: ITEM-155
+id: ITEM-157
 status: done
 title: 'A media size reads in the unit that still shows its number'
 type: fix
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-155: A media size reads in the unit that still shows its number
+# ITEM-157: A media size reads in the unit that still shows its number
 
 ## Summary
 

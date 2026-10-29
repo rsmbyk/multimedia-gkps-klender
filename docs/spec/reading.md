@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-28
-**slices**: `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `145-media-size-precision`, `147-transfer-icon-column`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -660,7 +660,32 @@ Every row SHALL remain reachable by pointer, by a hover band of its own, and by 
 - WHEN a row's first button takes focus by Tab
 - THEN the row opens and its buttons are reachable
 
-### R20 — A media size reads in the unit that still shows its number
+### R20 — A transfer row keeps its icon column, and a long name ellipsizes
+
+A row of the Transfers dialog SHALL keep a 32px column for its direction glyph, and that column SHALL
+NOT be narrowed by the row's content. A name wider than the text column SHALL end in an ellipsis
+inside the column the row reserves — the list's width less its padding, the 32px mark and the 12px gap
+— and SHALL NOT change the row's width, its height, or the mark's width. Every row's name and status
+label SHALL share one left edge, in every list the dialog draws and at every window width it is drawn
+at.
+
+#### Scenario: a list that mixes lengths
+- WHEN the dialog draws rows whose names both fit and overrun the text column
+- THEN every glyph shares one left edge, and every name and status label shares one left edge
+
+#### Scenario: a long name
+- WHEN a name is wider than the text column
+- THEN it ends in an ellipsis, the row keeps its 72px height on a 1440px window, and the mark stays 32px
+
+#### Scenario: a narrow window
+- WHEN the window narrows until the dialog shrinks (580px → 382px at a 420px window)
+- THEN the text column absorbs the loss (482px → 284px) and neither the mark nor the two left edges move
+
+#### Scenario: the rail's own list
+- WHEN the same rows are drawn from the rail rather than the library button
+- THEN the geometry is the same, because one renderer draws both
+
+### R21 — A media size reads in the unit that still shows its number
 
 Every size the product prints SHALL be drawn in the largest decimal unit in which its value is at least
 one — `B`, `KB` (1,000 B), `MB` (1,000 KB), `GB` (1,000 MB) — so that a non-empty file never reads as

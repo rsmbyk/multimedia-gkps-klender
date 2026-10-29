@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Every row of the Transfers dialog now keeps its icon column: a file name too long for the dialog used to pay for its own overflow by squeezing that 32px column down to the width of its glyph, so those rows' icons sat 5.5px and their names and status labels 11px left of every other row. The column is fixed at 32px and the name ends in an ellipsis inside the space the row reserves, from the 580px dialog down to the 382px one a 420px window gives.
 - A Tata Ibadah service that is on air now offers the way back to its projector window: a square control beside **Stop projecting** reopens it on the screen that is on air — or brings an already-open window forward without loading it again — so closing the window no longer forces a release and a restart from the first screen, and a playing video is not restarted by the control that was meant to bring it forward. The control is drawn only while this page's service is the live one, never on a phone, and the group wraps inside a narrow pane rather than crossing its edge.
 - The projector page adopts the service and screen the browser left on air again: an undeclared variable left behind when the offline library was removed made the hand-over stop before it painted, so a `/projector` window opened without a service — the way back to a closed projector — came up blank instead of on the screen that was on air.
 - A long title or body now wraps inside its pane on every reading page instead of running past it — a 64-character service or song title, a Bible pericope heading or verse, a pasted link in a text entry, a search result and a Preview line — and the page no longer scrolls sideways; the rows that truncate on purpose, the sidebar's service and songbook rows, the media filenames and a contents row's three lines, still end `…`.
@@ -44,9 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A hymn-book song opened from the reading sidebar no longer flashes the song sort control beside "Filter songs…": the saved copy now follows the server's rule and offers the control only for a songbook that is not a hymn book, so the song filter keeps its width while the page settles. An ordinary songbook's song page still offers it.
 - A Tata Ibadah page's date header now reads as the same element as every other reading page's header — the shared size, weight, tracking, and colour a songbook header uses — instead of the 11px left behind when the media controls joined that row. When the stage is too narrow for both, the Project action wraps beneath the date rather than the date shrinking.
 - Opening or moving between chapters of a Bible book whose TB and SIM book translations share a name (Rut, Ezra, Nehemia, …) through the reading sidebar keeps the verse text on the stage; the two edition blocks no longer collapse into one hidden block, so a reload is no longer needed.
-
-### Fixed
-
 - A media size now reads in the unit that still shows its number — `512 B`, `2 KB`, `12.3 KB`, `1 MB` — on the New media card, in a Media Library row and in the Media Library Total, drawn by one function; a file under 50 KB used to read `0.0 MB` on the card, one under 500 bytes read `0 KB` in the library, and the library rounded a 12,345-byte file to `12 KB`.
 
 ## [1.20.1] - 2026-10-21
