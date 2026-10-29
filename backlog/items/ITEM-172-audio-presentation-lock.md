@@ -1,6 +1,6 @@
 ---
 id: ITEM-172
-status: in-review
+status: done
 title: A playing recording owns the projector screen until it pauses
 type: feat
 priority: P1
@@ -11,10 +11,10 @@ spec: 155-audio-presentation-lock
 branch: feat/155-audio-presentation-lock
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/438
 issue: 442
-closed_at:
-closed_reason:
+closed_at: 2026-10-29
+closed_reason: merged into develop (PR [#438](https://github.com/rsmbyk/multimedia-gkps-klender/pull/438))
 bump: patch
-release_version:
+release_version: 1.22.19
 ---
 
 # ITEM-172: A playing recording owns the projector screen until it pauses
