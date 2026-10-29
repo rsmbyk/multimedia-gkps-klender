@@ -16,6 +16,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-144](./items/ITEM-144-date-dependent-picker-e2e.md) | Five date-picker E2E tests fail when the nearest Sunday falls in the next month | `_fill` steps months from today while the picker opens on the nearest Sunday, so five editor tests time out on days that cross a month boundary; identical on develop | fix | P1 | S | — | 2026-10-26 |
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
+| [ITEM-156](./items/ITEM-156-media-library-refresh-jolt.md) | The Media Library list jumps while it refreshes | Every refresh draws the list twice — the first pass without service references, so rows shrink from 119/101/123px to 97px and the list below the first row jumps up 22px and back | fix | P2 | S | [148](../specs/148-media-library-refresh-flicker/spec.md) | 2026-10-28 |
+| [ITEM-157](./items/ITEM-157-media-entry-spacing-e2e.md) | The media-entry spacing E2E pins a 12px gap the row no longer has | The case measures 19.85px on unmodified develop — the slot spec 143's add bar reserves — so the assertion, not the row, is stale | fix | P1 | S | — | 2026-10-28 |
 
 ## Speccing
 

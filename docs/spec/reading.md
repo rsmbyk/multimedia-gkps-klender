@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-28
-**slices**: `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `148-media-library-refresh-flicker`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -659,3 +659,32 @@ Every row SHALL remain reachable by pointer, by a hover band of its own, and by 
 #### Scenario: keyboard
 - WHEN a row's first button takes focus by Tab
 - THEN the row opens and its buttons are reachable
+
+### R22 — The Media Library's file list is drawn once per refresh, and holds still
+
+The Media Library page SHALL draw its file list once per refresh — on the first load, on **Share
+online**, on **Remove**, on a saved setting, and on every later re-read — and SHALL NOT draw an
+intermediate state in which a file's known service references are replaced by the one-line `Service
+uses unavailable` placeholder. No row SHALL change position during a refresh: every frame from the
+triggering action to the settled list shows each row where it finally sits. The page SHALL NOT draw
+the list before its references are known; when that read fails it SHALL draw once, with `Service uses
+unavailable`, and keep it. The 2s status poll SHALL keep re-reading the companion and SHALL stay
+visually inert while the data has not changed. Nothing else about the page changes: the files and
+their order, the rows' markup and heights, the filters, the sort, the Unused toggle, the cloud
+control's states and the page's title.
+
+#### Scenario: a refresh from an action
+- WHEN the owner clicks Share online, opens Remove and cancels, or saves a Media Library setting
+- THEN the list is drawn once, and every row's top has a single value from the click to the settled list
+
+#### Scenario: the first load
+- WHEN the page opens
+- THEN the list appears once, already carrying its service references, and never grows after it appears
+
+#### Scenario: references unavailable
+- WHEN the references read fails
+- THEN the list is drawn once with `Service uses unavailable` and stays where it is
+
+#### Scenario: a running transfer
+- WHEN a transfer is running and the 2s poll re-reads the companion
+- THEN the list is redrawn from the same data and no row moves
