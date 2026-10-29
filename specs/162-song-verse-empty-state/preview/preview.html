@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — a song with no verses is named (slice 162)</title>
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<style>
+  /* Preview chrome only. Nothing here is product style: the sheets below are the
+     real dialog (`.editor`) and the real form fragment, laid out side by side
+     instead of stacked as fixed-position dialogs. */
+  body { margin: 0; padding: 28px 32px 60px; background: var(--canvas); color: var(--ink);
+         font-family: var(--font-ui, system-ui, sans-serif); display: block; }
+  h1 { font-size: 19px; margin: 0 0 6px; }
+  .preview-lede { margin: 0 0 26px; color: var(--head-ink); font-size: 14px; max-width: 74ch; }
+  .preview-row { border-top: 1px solid var(--divider); padding: 20px 0 26px; }
+  .preview-row > header h2 { font-size: 15px; margin: 0; }
+  .preview-row > header p { margin: 2px 0 14px; font-size: 13px; color: var(--head-ink); }
+  .preview-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;
+                   align-items: start; }
+  .preview-pair figure { margin: 0; }
+  .preview-pair figcaption { font-size: 12px; letter-spacing: .04em; text-transform: uppercase;
+                              color: var(--head-ink); margin-bottom: 8px; }
+  .preview-sheet { position: static; width: min(30rem, 100%); max-height: none; }
+  .preview-sheet[data-state="song-without-verses"] .editor__picker-trigger[disabled],
+  .preview-sheet[data-state="save-refusal"] .editor__picker-trigger[disabled] { opacity: 1; }
+  @media (max-width: 860px) { .preview-pair { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+  <h1>A song with no verses is named, not mistaken for no song</h1>
+  <p class="preview-lede">Slice 162 · static preview built from the app's own rendered form
+  (<code>/editor/entry/new/?kind=song&amp;tatib=149</code>) and its own stylesheets. Compare the
+  <strong>Verses</strong> field in each pair. The dialog is laid out inline here; in the product it
+  is the same <code>&lt;dialog class="editor"&gt;</code>.</p>
+  
+    <section class="preview-row" data-state="no-song">
+      <header>
+        <h2>No song picked</h2>
+        <p>Reach it: open New song — nothing else</p>
+      </header>
+      <div class="preview-pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <div class="editor preview-sheet" open data-state="no-song">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" action="/editor/entry/new/save/?tatib=149" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="VZRdgdIfO6rM5biX1CNChhISMnv5rHvID8zqi2P0KqWi4K72KZTxOyl7Tqjzlfnd">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu">
+        <span data-picker-label>Choose a song</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger disabled aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu">
+        <span data-verses-summary>Pick a song first</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses><div id="id_verses"></div></div>
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
+</div>
+        </figure>
+        <figure>
+          <figcaption>Proposed</figcaption>
+          <div class="editor preview-sheet" open data-state="no-song">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" action="/editor/entry/new/save/?tatib=149" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="VZRdgdIfO6rM5biX1CNChhISMnv5rHvID8zqi2P0KqWi4K72KZTxOyl7Tqjzlfnd">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu">
+        <span data-picker-label>Choose a song</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger disabled aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu">
+        <span data-verses-summary>Pick a song first</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses><div id="id_verses"></div></div>
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
+</div>
+        </figure>
+      </div>
+    </section>
+    <section class="preview-row" data-state="song-with-verses">
+      <header>
+        <h2>A song with verses — KJ 152</h2>
+        <p>Reach it: pick KJ 152 Ada Kuasa</p>
+      </header>
+      <div class="preview-pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <div class="editor preview-sheet" open data-state="song-with-verses">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" action="/editor/entry/new/save/?tatib=149" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="VZRdgdIfO6rM5biX1CNChhISMnv5rHvID8zqi2P0KqWi4K72KZTxOyl7Tqjzlfnd">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu">
+        <span data-picker-label>KJ 152 Ada Kuasa</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu">
+        <span data-verses-summary>All verses</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses><div id="id_verses"><div><label class="editor__verse"><input type="checkbox" name="verses" value="1" checked> <span>1</span></label></div><div><label class="editor__verse"><input type="checkbox" name="verses" value="2" checked> <span>2</span></label></div><div><label class="editor__verse"><input type="checkbox" name="verses" value="3" checked> <span>3</span></label></div></div></div>
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
+</div>
+        </figure>
+        <figure>
+          <figcaption>Proposed</figcaption>
+          <div class="editor preview-sheet" open data-state="song-with-verses">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" action="/editor/entry/new/save/?tatib=149" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="VZRdgdIfO6rM5biX1CNChhISMnv5rHvID8zqi2P0KqWi4K72KZTxOyl7Tqjzlfnd">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu">
+        <span data-picker-label>KJ 152 Ada Kuasa</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu">
+        <span data-verses-summary>All verses</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses><div id="id_verses"><div><label class="editor__verse"><input type="checkbox" name="verses" value="1" checked> <span>1</span></label></div><div><label class="editor__verse"><input type="checkbox" name="verses" value="2" checked> <span>2</span></label></div><div><label class="editor__verse"><input type="checkbox" name="verses" value="3" checked> <span>3</span></label></div></div></div>
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
+</div>
+        </figure>
+      </div>
+    </section>
+    <section class="preview-row" data-state="song-without-verses">
+      <header>
+        <h2>A song with no verses — lagu kosong</h2>
+        <p>Reach it: pick lagu kosong (no verse stored)</p>
+      </header>
+      <div class="preview-pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <div class="editor preview-sheet" open data-state="song-without-verses">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" action="/editor/entry/new/save/?tatib=149" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="VZRdgdIfO6rM5biX1CNChhISMnv5rHvID8zqi2P0KqWi4K72KZTxOyl7Tqjzlfnd">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu">
+        <span data-picker-label>lagu kosong</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger disabled aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu">
+        <span data-verses-summary>Pick a song first</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses><div id="id_verses"></div></div>
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
+</div>
+        </figure>
+        <figure>
+          <figcaption>Proposed</figcaption>
+          <div class="editor preview-sheet" open data-state="song-without-verses">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" action="/editor/entry/new/save/?tatib=149" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="VZRdgdIfO6rM5biX1CNChhISMnv5rHvID8zqi2P0KqWi4K72KZTxOyl7Tqjzlfnd">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu">
+        <span data-picker-label>lagu kosong</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger disabled aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu">
+        <span data-verses-summary>This song has no verses</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses><div id="id_verses"></div></div>
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
+</div>
+        </figure>
+      </div>
+    </section>
+    <section class="preview-row" data-state="save-refusal">
+      <header>
+        <h2>Save pressed on that song</h2>
+        <p>Reach it: pick lagu kosong, press Save</p>
+      </header>
+      <div class="preview-pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <div class="editor preview-sheet" open data-state="save-refusal">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" action="/editor/entry/new/save/?tatib=149" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="VZRdgdIfO6rM5biX1CNChhISMnv5rHvID8zqi2P0KqWi4K72KZTxOyl7Tqjzlfnd">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu">
+        <span data-picker-label>lagu kosong</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger disabled aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu">
+        <span data-verses-summary>Pick a song first</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses><div id="id_verses"></div></div>
+      </div>
+    </div>
+    <p class="editor__error" role="alert">Keep at least one verse in the service.</p>
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
+</div>
+        </figure>
+        <figure>
+          <figcaption>Proposed</figcaption>
+          <div class="editor preview-sheet" open data-state="save-refusal">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" action="/editor/entry/new/save/?tatib=149" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="VZRdgdIfO6rM5biX1CNChhISMnv5rHvID8zqi2P0KqWi4K72KZTxOyl7Tqjzlfnd">
+  
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu">
+        <span data-picker-label>lagu kosong</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger disabled aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu">
+        <span data-verses-summary>This song has no verses</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses><div id="id_verses"></div></div>
+      </div>
+    </div>
+    <p class="editor__error" role="alert">This song has no verses: pick another song.</p>
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>
+</div>
+        </figure>
+      </div>
+    </section>
+</body>
+</html>

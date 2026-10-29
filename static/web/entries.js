@@ -660,7 +660,7 @@
 
   /* ---------- the song pick and its verse checklist ------------------------- */
 
-  function verseSummary(picker, box) {
+  function verseSummary(picker, box, songPicked) {
     if (!picker) return;
     var trigger = picker.querySelector('[data-verses-trigger]');
     var summary = picker.querySelector('[data-verses-summary]');
@@ -670,7 +670,8 @@
       .sort(function (a, b) { return a - b; });
     if (!trigger || !summary) return;
     if (!boxes.length) {
-      summary.textContent = 'Pick a song first';
+      /* No boxes is two states: nothing picked, and a song with nothing in it (spec 162). */
+      summary.textContent = songPicked ? 'This song has no verses' : 'Pick a song first';
       trigger.disabled = true;
     } else if (checked.length === boxes.length) {
       summary.textContent = 'All verses';
@@ -736,7 +737,7 @@
         })
         .then(function (data) {
           renderVerses(box, data.verses || []);
-          verseSummary(versesPicker, box);
+          verseSummary(versesPicker, box, !!hidden.value);
           placeMenu(box.closest('.editor__picker-menu'));
         })
         .catch(function () {
@@ -767,8 +768,8 @@
       closeMenus(scope);
       loadVerses(option.dataset.song);
     });
-    box.addEventListener('change', function () { verseSummary(versesPicker, box); });
-    verseSummary(versesPicker, box);              /* editing: the boxes are already there */
+    box.addEventListener('change', function () { verseSummary(versesPicker, box, !!hidden.value); });
+    verseSummary(versesPicker, box, !!hidden.value);   /* editing: the boxes are already there */
   }
 
   /* ---------- the text form's Save guard ------------------------------------ */

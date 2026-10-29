@@ -243,8 +243,18 @@ class ServiceEntryTests(TestCase):
             self._entry(kind=tatib.ServiceEntryKind.SONG, verses=[1])
 
     def test_a_song_entry_keeps_at_least_one_verse(self):
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ValidationError) as caught:
             self._entry(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[])
+        self.assertEqual(caught.exception.message_dict['verses'],
+                         ['Keep at least one verse in the service.'])
+
+    def test_a_song_entry_with_no_verses_names_the_song(self):
+        """A song that carries no verse is the cause; say so instead of 'keep one' (spec 162)."""
+        empty = songs.Song.objects.create(book=self.songbook, number=901, title='Kosong')
+        with self.assertRaises(ValidationError) as caught:
+            self._entry(kind=tatib.ServiceEntryKind.SONG, song=empty, verses=[])
+        self.assertEqual(caught.exception.message_dict['verses'],
+                         ['This song has no verses: pick another song.'])
 
     def test_a_text_entry_needs_its_text(self):
         # an empty text entry has nothing to show; the header alone is not one

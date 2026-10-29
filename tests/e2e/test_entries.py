@@ -62,6 +62,8 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         # a one-verse song: its checklist has nothing to choose, so it stays shut
         self.solo = songs.Song.objects.create(book=songbook, number=90, title='Bait Tunggal')
         songs.Verse.objects.create(song=self.solo, number=1, lyric='satu')
+        # a song with no verses at all: the field has to say so (spec 162)
+        self.verse_less = songs.Song.objects.create(book=songbook, number=901, title='Kosong')
         if self._testMethodName == 'test_editing_a_hymn_song_shows_its_reference':
             tatib.ServiceEntry.objects.create(
                 tatib=self.service, order_number=1, kind=tatib.ServiceEntryKind.SONG,
@@ -308,6 +310,34 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         self._close_browser()
         saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
         self.assertEqual(saved.verses, [1])
+
+    def test_a_song_with_no_verses_is_named_and_cannot_be_saved(self):
+        page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
+        page.locator('.entry__empty-btn', has_text='Add Song').click()
+        page.wait_for_selector('dialog[open]')
+        trigger = page.locator('[data-verses-trigger]')
+        # nothing picked yet: the neutral line, unchanged
+        expect(trigger).to_have_text('Pick a song first')
+        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        page.fill('#entry-song-search', 'kosong')
+        page.wait_for_selector('#entry-song-options [data-song]')
+        page.locator('#entry-song-options [data-song]').first.click()
+        # the song carries no verse: the field says which nothing this is, and offers no menu
+        expect(trigger).to_have_text('This song has no verses')
+        expect(trigger).to_be_disabled()
+        self.assertEqual(page.locator('#entry-verses input[type=checkbox]').count(), 0)
+        # disabled means no empty menu either, however the click arrives
+        page.evaluate("document.querySelector('[data-verses-trigger]').click()")
+        expect(page.locator('#entry-verses-menu')).to_be_hidden()
+        self.assertEqual(round(trigger.bounding_box()['height']), 38)
+        self.assertLess(page.locator('[data-verses-summary]').bounding_box()['height'], 19.5)
+        # saving anyway names the song, not the missing checks
+        page.click('.editor__save')
+        error = page.locator('dialog[open] .editor__error')
+        error.first.wait_for()
+        expect(error.first).to_have_text('This song has no verses: pick another song.')
+        self._close_browser()                       # the ORM runs outside Playwright's loop
+        self.assertFalse(tatib.ServiceEntry.objects.filter(tatib=self.service).exists())
 
     def test_text_save_requires_content_and_does_not_resize(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
