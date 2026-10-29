@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — the verse tabs get their own row</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<style>
+  /* Preview chrome only. Nothing here touches a product class. */
+  html, body { margin: 0; }
+  body { display: block; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); }
+  .bar {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+    padding: 11px 20px;
+    background: color-mix(in srgb, var(--rail-bg) 92%, var(--canvas));
+    border-bottom: 1px solid var(--divider);
+  }
+  .bar strong { font-size: 14px; }
+  .bar .note, .bar .knob { font: 500 12px/1.35 var(--font-sans); color: var(--head-ink); }
+  .bar .spacer { flex: 1; }
+  .bar button, .focus button {
+    padding: 6px 11px; border: 1px solid var(--divider); border-radius: 8px;
+    background: var(--canvas); color: var(--ink);
+    font: 600 12px/1 var(--font-sans); cursor: pointer;
+  }
+  .page { width: min(1240px, 100vw - 40px); margin: 0 auto; padding: 26px 0 90px; }
+  .lede { max-width: 78ch; margin: 0 0 22px; font: 400 13.5px/1.55 var(--font-sans); color: var(--head-ink); }
+  .lede code { font-size: 12.5px; }
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 704px)); gap: 32px; align-items: start; }
+  @media (max-width: 1500px) { .pair { grid-template-columns: minmax(0, 1fr); } }
+  .col > h2 {
+    margin: 0 0 3px; font: 640 12px/1.2 var(--font-sans); letter-spacing: .04em; text-transform: uppercase;
+    color: var(--head-ink);
+  }
+  .col > h2 b { color: var(--focus); }
+  .col > p { margin: 0 0 12px; font: 400 12.5px/1.5 var(--font-sans); color: var(--head-ink); }
+  /* A non-modal <dialog> is absolutely positioned by the UA sheet; the product centres it
+     with showModal(). Placing it in the flow is the only thing this page overrides. */
+  .col dialog { position: static; inset: auto; margin: 0; }
+  .section { margin: 40px 0 6px; font: 640 13px/1.2 var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
+  .metrics { width: 100%; margin-top: 26px; border-collapse: collapse; font: 400 13px/1.5 var(--font-sans); }
+  .metrics caption { text-align: left; padding-bottom: 8px; font-weight: 660; font-size: 13px; }
+  .metrics th, .metrics td { padding: 8px 18px 8px 0; border-bottom: 1px solid var(--divider); text-align: left; vertical-align: top; }
+  .metrics thead th { font-weight: 640; color: var(--head-ink); font-size: 12px; letter-spacing: .03em; text-transform: uppercase; }
+  .metrics th:first-child { width: 46%; color: var(--ink); font-weight: 520; }
+  .metrics td { font-variant-numeric: tabular-nums; font-weight: 560; }
+  .focus { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 10px 0 0; }
+  .readout { font: 500 12.5px/1.4 var(--font-mono, ui-monospace, monospace); color: var(--head-ink); }
+  .readout b { color: var(--focus); font-weight: 620; }
+</style>
+<style>
+  /* THE DELTA — the rules this slice adds, and nothing else. Scoped to the After column so one
+     page can carry both states; in the working tree they are unscoped. The placement itself is
+     markup, not CSS: the tab host is a sibling after .preview__head in the After variant. */
+
+  /* 1. The tab host is a band of its own under the header's title row. Recommended: the header
+        rule falls BELOW the tabs, so title and tabs read as one header block and the rule opens
+        the lyrics — `data-rule="above"` flips the line to sit between the two for comparison. */
+  .pvue-after .preview__versetabs {
+    display: flex; margin: 0; width: 100%; padding: 0 22px 14px;
+    border-bottom: 1px solid var(--divider); background: var(--canvas);
+  }
+  .pvue-after .preview__versetabs[hidden] { display: none; }
+  .pvue-after .preview__versetabs .preview__tabs { margin: 0; }
+  .pvue-after .preview__head { flex-wrap: nowrap; }
+  /* the rule moves onto the tab band only when there is one: every other preview keeps it */
+  .pvue-after .preview__head:has(+ .preview__versetabs:not([hidden])) { border-bottom: 0; }
+
+  [data-rule="above"] .pvue-after .preview__versetabs { padding: 12px 22px 0; border-bottom: 0; }
+  [data-rule="above"] .pvue-after .preview__head:has(+ .preview__versetabs:not([hidden])) {
+    border-bottom: 1px solid var(--divider);
+  }
+
+  @media (max-width: 560px) {
+    .pvue-after .preview__head { padding: 12px 16px; }
+    .pvue-after .preview__versetabs { padding: 0 16px 12px; }
+    [data-rule="above"] .pvue-after .preview__versetabs { padding: 10px 16px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <strong>The preview's verse tabs get their own row</strong>
+  <span class="note">spec 153 · static preview · the real <code>.preview</code> markup, tokens and stylesheets</span>
+  <span class="spacer"></span>
+  <span class="knob" id="viewport"></span>
+  <button type="button" id="ruleBtn" aria-pressed="false">Rule above the tabs</button>
+  <button type="button" id="themeBtn">Dark</button>
+</div>
+
+<div class="page">
+  <p class="lede">
+    Both columns carry the same payload the Tata Ibadah pane hands the dialog for the song in the
+    report: <code>.preview__song</code> (a 730px title) and three verse tabs. <b>Today</b> lifts both into
+    the header, so they share one row. <b>After</b> lifts only the title; the tabs become a sibling band
+    under the header, and the title takes the header's whole content width.
+    The dialog takes the product's own <code>width: min(44rem, 100vw - 32px)</code> — 704px at the
+    viewport above.
+  </p>
+
+  <div class="pair">
+    <div class="col" id="colNow">
+      <h2>Today — <b>develop</b></h2>
+      <p>Title and verse tabs in one flex row: the title ellipsizes at 570px of its 730px string, and the
+        tabs sit at the row's right edge.</p>
+      <div data-build="song" data-variant="now"></div>
+    </div>
+    <div class="col pvue-after" id="colAfter">
+      <h2>After — <b>spec 153</b></h2>
+      <p>The header holds the title alone at the full 660px content width; the tabs take their own
+        band under it, left-aligned on the title's line, and the header rule falls below them.
+        <b>Rule above the tabs</b> moves the line between the two, for comparison.</p>
+      <div data-build="song" data-variant="after"></div>
+    </div>
+  </div>
+
+  <table class="metrics" id="metrics">
+    <caption>Measured on this page, at the viewport above</caption>
+    <thead><tr><th>What</th><th>Today</th><th>After</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2 class="section">A preview with no verse tabs — passage</h2>
+  <p class="lede">
+    The same two variants with a passage payload: no tabs, so the After variant's tab band is hidden.
+    Nothing may move between the columns — this is the state every other entry kind keeps.
+  </p>
+  <div class="pair">
+    <div class="col" id="colNowPassage">
+      <div data-build="passage" data-variant="now"></div>
+    </div>
+    <div class="col pvue-after" id="colAfterPassage">
+      <div data-build="passage" data-variant="after"></div>
+    </div>
+  </div>
+
+  <h2 class="section">What takes the dialog's first focus</h2>
+  <p class="lede">
+    Click a button, or focus it and press <kbd>Enter</kbd> — the button opens the dialog exactly as
+    <code>static/web/preview.js</code> does (<code>showModal()</code>, then an explicit focus in the After
+    variant). The readout names the element that ended up with focus, and whether it paints a ring.
+    <code>Tab</code> then walks from the body to the selected verse tab, and <code>Shift+Tab</code>
+    back — the dialog's reading loop, which <code>preview.js</code> keeps in place.
+  </p>
+  <div class="focus">
+    <button type="button" id="focusNow">Today's dialog</button>
+    <span class="readout" id="focusNowRead">not opened yet</span>
+  </div>
+  <div class="focus">
+    <button type="button" id="focusAfter">The After dialog</button>
+    <span class="readout" id="focusAfterRead">not opened yet</span>
+  </div>
+</div>
+
+<template id="payload-song">
+<p class="preview__song">Buku Ende HKBP — aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa581. Sangap di Jahowa</p><div class="preview__tabs" role="tablist"><button type="button" role="tab" class="preview__tab" aria-selected="true">1</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">2</button><button type="button" role="tab" class="preview__tab" aria-selected="false" tabindex="-1">3</button></div><div class="preview__panels"><div class="preview__panel" role="tabpanel"><p class="preview__line">(1) Sangap di jahowa na sun timbul i</p><p class="preview__line">Balga ni holongNa ndang tarasam i</p><p class="preview__line">Dilehon AnakNa na sasada i</p><p class="preview__line">Manobus hita jolma pardosa i</p><p class="preview__line">Puji ma Debata ale manisia</p><p class="preview__line">Las roham las roham somba ma Debata</p><p class="preview__line">Dapothon Jahowa na sun timbul i</p><p class="preview__line">Marhite AnakNa Tuhan Jesus i</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">(2) Tung so hasuhatan do basaNa i</p><p class="preview__line">Marhite AnakNa nilehonNa i</p><p class="preview__line">MudarNa durus do di hau silang i</p><p class="preview__line">Rara pe dosanta ias dibaen i</p><p class="preview__line">Puji ma Debata ale manisia</p><p class="preview__line">Las roham las roham somba ma Debata</p><p class="preview__line">Dapothon Jahowa na sun timbul i</p><p class="preview__line">Marhite AnakNa Tuhan Jesus i</p></div><div class="preview__panel" role="tabpanel" hidden><p class="preview__line">(3) Balga situtu pambaenMi Debata</p><p class="preview__line">Tung so hasuhatan holong ni rohaM</p><p class="preview__line">Tu jolma pardosa asi do rohaM</p><p class="preview__line">Diungkap Ho dalan lao tu banuaM</p><p class="preview__line">Puji ma Debata ale manisia</p><p class="preview__line">Las roham las roham somba ma Debata</p><p class="preview__line">Dapothon Jahowa na sun timbul i</p><p class="preview__line">Marhite AnakNa Tuhan Jesus i</p></div></div>
+</template>
+
+<template id="payload-passage">
+<p class="preview__ref">Kisah Para Rasul 1:1</p><p class="preview__line">1  Hai Teofilus, dalam bukuku yang pertama aku menulis tentang segala sesuatu yang dikerjakan dan diajarkan Yesus,</p>
+</template>
+
+<script>
+(function () {
+  'use strict';
+  var SRC = { song: '#payload-song', passage: '#payload-passage' };
+
+  /* The dialog's own anatomy, as preview.js builds it from the template and the payload. */
+  function buildDialog(kind, variant) {
+    var dlg = document.createElement('dialog');
+    dlg.className = 'preview';
+    dlg.setAttribute('aria-label', 'Preview');
+
+    var head = document.createElement('div');
+    head.className = 'preview__head';
+    head.setAttribute('data-preview-head', '');
+    var title = document.createElement('span');
+    title.className = 'preview__title';
+    head.appendChild(title);
+
+    var tabsHost = document.createElement('div');
+    tabsHost.className = 'preview__versetabs';
+    tabsHost.setAttribute('data-preview-tabs-host', '');
+    if (variant === 'now') head.appendChild(tabsHost);
+
+    var body = document.createElement('div');
+    body.className = 'preview__body';
+    body.tabIndex = 0;
+    body.innerHTML = document.querySelector(SRC[kind]).innerHTML;
+
+    var identity = body.querySelector('.preview__ref, .preview__song');
+    var tabs = body.querySelector('.preview__tabs');
+    if (identity) { title.textContent = identity.textContent; identity.remove(); }
+    if (tabs) tabsHost.appendChild(tabs);
+    tabsHost.hidden = !tabs;
+
+    dlg.appendChild(head);
+    if (variant === 'after') dlg.appendChild(tabsHost);
+    dlg.appendChild(body);
+    return dlg;
+  }
+
+  function mount(host) {
+    var dlg = buildDialog(host.dataset.build, host.dataset.variant);
+    dlg.setAttribute('open', '');
+    host.appendChild(dlg);
+    return dlg;
+  }
+
+  var mounted = {};
+  document.querySelectorAll('[data-build]').forEach(function (host) {
+    mounted[host.parentElement.id] = mount(host);
+  });
+
+  function box(el) {
+    return el ? el.getBoundingClientRect() : null;
+  }
+
+  function read(dlg) {
+    var head = dlg.querySelector('.preview__head');
+    var title = dlg.querySelector('.preview__title');
+    var host = dlg.querySelector('.preview__versetabs');
+    var tabs = dlg.querySelector('.preview__tabs');
+    var firstTab = dlg.querySelector('.preview__tab');
+    var body = dlg.querySelector('.preview__body');
+    var d = box(dlg);
+    var h = box(head);
+    var t = box(title);
+    var b = box(body);
+    var tabRow = tabs ? box(tabs) : null;
+    var tab = firstTab ? box(firstTab) : null;
+    return {
+      dialog: d && { w: d.width, h: d.height, top: d.top },
+      head: h && { w: h.width, h: h.height, bottom: h.bottom, relBottom: h.bottom - d.top },
+      title: t && {
+        w: t.width,
+        scroll: title.scrollWidth,
+        ellipsized: title.scrollWidth > title.clientWidth + 1,
+      },
+      tabs: tabRow ? { top: tabRow.top, h: tabRow.height, left: tabRow.left, relTop: tabRow.top - d.top } : null,
+      tabsInsideHead: !!(host && head.contains(host)),
+      tabsHidden: host ? host.hidden : null,
+      firstTab: tab && { left: tab.left, w: tab.width, h: tab.height },
+      body: b && { top: b.top, h: b.height, relTop: b.top - d.top },
+      dialogLeft: d && d.left,
+    };
+  }
+
+  function px(n) { return (Math.round(n * 10) / 10).toFixed(1) + 'px'; }
+
+  function drawMetrics() {
+    var now = read(mounted.colNow);
+    var after = read(mounted.colAfter);
+    var rows = [
+      ['Dialog box', px(now.dialog.w) + ' × ' + px(now.dialog.h), px(after.dialog.w) + ' × ' + px(after.dialog.h)],
+      ['Header box', px(now.head.w) + ' × ' + px(now.head.h), px(after.head.w) + ' × ' + px(after.head.h)],
+      ['Title box', px(now.title.w) + (now.title.ellipsized ? ' (ellipsized from ' + now.title.scroll + 'px)' : ''),
+        px(after.title.w) + (after.title.ellipsized ? ' (ellipsized from ' + after.title.scroll + 'px)' : '')],
+      ['Tabs inside the header', now.tabsInsideHead ? 'yes' : 'no', after.tabsInsideHead ? 'yes' : 'no'],
+      ['Tab row: top from the dialog top', now.tabs ? px(now.tabs.relTop) : '—', after.tabs ? px(after.tabs.relTop) : '—'],
+      ['First tab: left from the dialog left', now.firstTab ? px(now.firstTab.left - now.dialogLeft) : '—',
+        after.firstTab ? px(after.firstTab.left - after.dialogLeft) : '—'],
+      ['Body: top from the dialog top', px(now.body.relTop), px(after.body.relTop)],
+    ];
+    document.querySelector('#metrics tbody').innerHTML = rows.map(function (row) {
+      return '<tr><th>' + row[0] + '</th><td>' + row[1] + '</td><td>' + row[2] + '</td></tr>';
+    }).join('');
+
+    var passage = [read(mounted.colNowPassage), read(mounted.colAfterPassage)];
+    document.querySelector('#metrics tbody').insertAdjacentHTML('beforeend',
+      '<tr><th>Passage header (no tabs)</th><td>' + px(passage[0].head.w) + ' × ' + px(passage[0].head.h)
+      + '</td><td>' + px(passage[1].head.w) + ' × ' + px(passage[1].head.h) + '</td></tr>' +
+      '<tr><th>Passage body: top from the dialog top</th><td>' + px(passage[0].body.relTop)
+      + '</td><td>' + px(passage[1].body.relTop) + '</td></tr>');
+  }
+
+  function drawViewport() {
+    document.querySelector('#viewport').textContent =
+      window.innerWidth + '×' + window.innerHeight + ' · dpr ' + window.devicePixelRatio;
+  }
+
+  window.measurePreview = function () {
+    return { now: read(mounted.colNow), after: read(mounted.colAfter), theme: document.documentElement.dataset.theme };
+  };
+
+  /* The two demo dialogs: the same markup, opened the way the pane opens them. */
+  var demos = {
+    now: buildDialog('song', 'now'),
+    after: buildDialog('song', 'after'),
+  };
+  document.body.appendChild(demos.now);
+  document.body.appendChild(demos.after);
+
+  function openDemo(which) {
+    var dlg = demos[which];
+    if (dlg.open) dlg.close();
+    dlg.showModal();
+    var body = dlg.querySelector('.preview__body');
+    if (which === 'after') body.focus({ preventScroll: true });
+    requestAnimationFrame(function () {
+      var a = document.activeElement;
+      var name = a.tagName.toLowerCase() + (a.className ? '.' + a.className.split(' ')[0] : '');
+      var clean = window.matchMedia('(forced-colors: active)').matches ? ':focus' : ':focus-visible';
+      var readout = document.querySelector(which === 'now' ? '#focusNowRead' : '#focusAfterRead');
+      readout.innerHTML = 'focus on <b>' + name + '</b>' + (a.matches(clean) ? ' · ring' : ' · no ring');
+    });
+  }
+  document.querySelector('#focusNow').addEventListener('click', function () { openDemo('now'); });
+  document.querySelector('#focusAfter').addEventListener('click', function () { openDemo('after'); });
+  [demos.now, demos.after].forEach(function (dlg) {
+    dlg.addEventListener('click', function (event) { if (event.target === dlg) dlg.close(); });
+    /* preview.js's own loop, copied: Tab from the body reaches the selected tab, Shift+Tab
+       from that tab returns to the body. */
+    dlg.addEventListener('keydown', function (event) {
+      if (event.key !== 'Tab') return;
+      var host = dlg.querySelector('.preview__versetabs');
+      var body = dlg.querySelector('.preview__body');
+      var selected = host.querySelector('.preview__tab[aria-selected="true"]')
+        || host.querySelector('.preview__tab');
+      if (host.hidden || !selected) return;
+      if (!event.shiftKey && document.activeElement === body) {
+        event.preventDefault(); selected.focus();
+      } else if (event.shiftKey && document.activeElement === selected) {
+        event.preventDefault(); body.focus({ preventScroll: true });
+      }
+    });
+  });
+
+  document.querySelector('#ruleBtn').addEventListener('click', function (event) {
+    var above = document.documentElement.dataset.rule !== 'above';
+    document.documentElement.dataset.rule = above ? 'above' : 'below';
+    event.currentTarget.setAttribute('aria-pressed', above ? 'true' : 'false');
+    event.currentTarget.textContent = above ? 'Rule below the tabs' : 'Rule above the tabs';
+    drawMetrics();
+  });
+
+  document.querySelector('#themeBtn').addEventListener('click', function (event) {
+    var dark = document.documentElement.dataset.theme !== 'dark';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    event.currentTarget.textContent = dark ? 'Light' : 'Dark';
+  });
+
+  drawViewport();
+  drawMetrics();
+  window.addEventListener('resize', function () {
+    drawViewport();
+    drawMetrics();
+  });
+})();
+</script>
+</body>
+</html>
