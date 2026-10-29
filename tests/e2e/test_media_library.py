@@ -127,6 +127,49 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + path)
         return page
 
+    TRANSFER_NAMES = (
+        'images (1).jpeg',
+        'side-view-silhouette-african-elephant-walking-across-green-ground-against-light-blue-sky'
+        '-stately-wild-bull-marching-proudly-481645534.webp',
+        'random.jpg',
+        'Sujud & Terima Kasih - JCC Worship [Official Music Video] - Ibadah Raya JCC Jakarta.webm',
+        'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx',
+        'images.jpeg',
+        'Invoice-AATTCSTN-0002.pdf',
+        'Receipt-2773-9204.png',
+        'Invoice-AATTCSTN-0002.pdf',
+    )
+
+    def transfers_page(self, width=1440):
+        """The library with the Transfers dialog open on nine finished uploads, two of them long."""
+        jobs = [{'id': index, 'direction': 'upload', 'sha256': f'{index:064d}', 'name': name,
+                 'size': 2048, 'bytes_done': 2048, 'status': 'completed', 'automatic': 0,
+                 'started_at': '2026-10-28T09:00:00+00:00',
+                 'ended_at': '2026-10-28T09:01:00+00:00'}
+                for index, name in enumerate(self.TRANSFER_NAMES, start=1)]
+        page = self.browser.new_page(viewport={'width': width, 'height': 900})
+        def companion(route):
+            url = route.request.url
+            if url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': 0, 'total_size': 0,
+                           'retention': '30', 'write_token': 'test-token'}
+            elif url.endswith('/transfers'):
+                payload = {'transfers': jobs, 'retrying': []}
+            elif url.endswith('/files') or url.endswith('/references'):
+                payload = {'files': []}
+            else:
+                payload = {'error': 'Not found'}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers={'Access-Control-Allow-Origin': self.live_server_url})
+        page.route('http://127.0.0.1:63174/**', companion)
+        page.goto(self.live_server_url + reverse('web-media-library'))
+        page.locator('#mediaTransfersButton').click()
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(len(jobs))
+        # the dialog's own 190ms scale-in would be measured mid-flight: 32px of column reads 31.38
+        page.evaluate("""() => Promise.all(document.querySelector('#mediaTransfersDialog')
+            .getAnimations().map(animation => animation.finished))""")
+        return page
+
     def test_disconnected_library_hides_local_inventory_details(self):
         page = self.page(reverse('web-media-library'))
         page.locator('#mediaStatusButton').click()
@@ -572,3 +615,65 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         form.locator('.editor__save').click()
         expect(page.locator('.tatib__item--media')).to_contain_text('Changed title')
         expect(page.locator('.tatib__item--media')).to_contain_text('service.pdf')
+
+    def test_every_transfer_row_shares_one_icon_column(self):
+        page = self.transfers_page()
+        marks = page.evaluate("""() => [...document.querySelectorAll(
+            '#mediaTransfersList .media-transfers__mark')]
+            .map(mark => Math.round(mark.getBoundingClientRect().width * 100) / 100)""")
+        self.assertEqual(set(marks), {32.0}, 'the mark column is not one 32px column')
+        edges = page.evaluate("""() => {
+            const rows = [...document.querySelectorAll('#mediaTransfersList .media-transfers__row')];
+            const lefts = selector => rows.map(row => row.querySelector(selector).getBoundingClientRect().left);
+            return {glyph: lefts('.media-transfers__mark svg'),
+                    name: lefts('.media-transfers__main strong'),
+                    label: lefts('.media-transfers__main span')};
+        }""")
+        for key, values in edges.items():
+            spread = max(values) - min(values)
+            self.assertLessEqual(
+                spread, 0.5,
+                f'{key} left edges differ by {spread:.1f}px: {sorted(round(v, 1) for v in values)}')
+
+    def test_a_long_transfer_name_still_ellipsizes_at_the_pinned_column(self):
+        page = self.transfers_page()
+        rows = page.evaluate("""() => [...document.querySelectorAll('#mediaTransfersList .media-transfers__row')]
+            .map(row => {
+                const name = row.querySelector('strong');
+                return {name: name.textContent, scroll: name.scrollWidth, client: name.clientWidth,
+                        height: row.getBoundingClientRect().height};
+            })""")
+        long_rows = [row for row in rows if row['scroll'] > row['client']]
+        self.assertEqual(len(long_rows), 2, 'the two long names no longer truncate')
+        for row in long_rows:
+            # the list's 534px − 8px of row padding − 32px of mark − the 12px gap
+            self.assertEqual(row['client'], 482, row['name'])
+            self.assertEqual(round(row['height']), 72, row['name'])
+
+    def test_the_icon_column_holds_in_a_narrow_dialog(self):
+        page = self.transfers_page(width=420)
+        dialog = page.locator('#mediaTransfersDialog').bounding_box()
+        self.assertEqual(round(dialog['width']), 382,
+                         'a 420px window renders the dialog at 382px')
+        rows = page.evaluate("""() => {
+            const dialog = document.querySelector('#mediaTransfersDialog').getBoundingClientRect();
+            return [...document.querySelectorAll('#mediaTransfersList .media-transfers__row')].map(row => {
+                const name = row.querySelector('strong');
+                const mark = row.querySelector('.media-transfers__mark').getBoundingClientRect();
+                return {scroll: name.scrollWidth, client: name.clientWidth,
+                        mark: Math.round(mark.width * 100) / 100,
+                        glyph: row.querySelector('.media-transfers__mark svg').getBoundingClientRect().left,
+                        name_left: name.getBoundingClientRect().left,
+                        overflow: row.getBoundingClientRect().right - dialog.right};
+            });
+        }""")
+        self.assertEqual({row['mark'] for row in rows}, {32.0}, 'the mark column collapsed')
+        self.assertLessEqual(max(row['glyph'] for row in rows) - min(row['glyph'] for row in rows), 0.5)
+        self.assertLessEqual(max(row['name_left'] for row in rows) - min(row['name_left'] for row in rows),
+                             0.5)
+        self.assertLessEqual(max(row['overflow'] for row in rows), 0, 'a row is wider than the dialog')
+        truncating = [row for row in rows if row['scroll'] > row['client']]
+        self.assertEqual(len(truncating), 3, 'the narrow dialog no longer truncates three names')
+        for row in truncating:
+            self.assertEqual(row['client'], 284, 'the text column is not what the layout reserves')
+
