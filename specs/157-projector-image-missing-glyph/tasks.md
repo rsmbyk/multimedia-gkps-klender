@@ -67,13 +67,13 @@ the loaded case now covers the other half.
 - [X] T013 Run `tests.e2e.test_audio_display`, `tests.e2e.test_video_display`,
   `tests.e2e.test_pdf_display`: unchanged. Covers SC-005.
 - [X] T014 Add the spec's index row to `specs/README.md`, naming 157 and `Accepted`.
-- [X] T015 Move `ITEM-162` to `Ready` on `backlog/board.md` (gate 1 accepted) and record the anchor issue
+- [X] T015 Move `ITEM-164` to `Ready` on `backlog/board.md` (gate 1 accepted) and record the anchor issue
   in its `issue:` field (BRD-10).
 - [X] T016 Bump `VERSION` `1.22.10` → the next patch as read at delivery, and add one `### Fixed` line
   under `## [Unreleased]` in `CHANGELOG.md`.
 - [X] T017 Fold: add R3 to `docs/spec/projector.md` and move the header's `last folded` and `slices`
   (SDD-23, `fold.md`).
-- [ ] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-162`'s state and set
+- [ ] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-164`'s state and set
   `in-review`, write `pr:` and move the board row, and push that one commit (`C-BOARD-GIT`) — on the
   owner's word only (GIT-07).
 

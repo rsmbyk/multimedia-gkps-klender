@@ -161,7 +161,7 @@ multimedia/web/templates/reading/projector.html   one attribute on the image box
 static/web/projector.js                           the attribute toggle (:220, :232) and the clear (:198-209)
 tests/e2e/test_image_display.py                   two cases, and one keyword on _page
 docs/spec/projector.md                            R3 at Fold
-backlog/items/ITEM-162-projector-image-missing-glyph.md   card
+backlog/items/ITEM-164-projector-image-missing-glyph.md   card
 backlog/board.md                                  the card's row
 specs/README.md                                   the spec's index row, at Accept
 VERSION, CHANGELOG.md                             patch bump and one line, at delivery

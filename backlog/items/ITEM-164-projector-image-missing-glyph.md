@@ -1,5 +1,5 @@
 ---
-id: ITEM-162
+id: ITEM-164
 status: in-review
 title: 'The projector paints its image-unavailable glyph beside every image'
 type: fix
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-162: The projector paints its image-unavailable glyph beside every image
+# ITEM-164: The projector paints its image-unavailable glyph beside every image
 
 ## Summary
 
@@ -33,6 +33,9 @@ the glyph stays.
 
 ## Notes
 
+- **Renumbered from `ITEM-162` on 2026-10-29.** Slice 153 landed `ITEM-162-preview-tabs-row` on `develop`
+  while this card was open, so the ID was taken and this one moved to the next free number. The anchor
+  issue is the same one, retitled.
 - The symptom, measured on the reported screenshot at 1920×1200: the image spans x 520–1319 and the
   glyph's drawing x 1330–1389, both centred on y 583.5/584 — one flex row, `align-items: center`. The
   glyph's 80px box is part of that row, so the picture itself sits **40px left of the page's middle**.
