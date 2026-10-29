@@ -3,7 +3,7 @@
 **Slice**: `specs/155-audio-presentation-lock`
 **Branch**: `feat/155-audio-presentation-lock`
 **Created**: 2026-10-29
-**Status**: Draft
+**Status**: Accepted at gate 1 (owner, 2026-10-29) — gate 2 pending
 **Input**: "when an audio is playing in projector window, navigation should be disabled (either from keyboard or mouse)" — corrected in the same session to "i think it should enter similar fullscreen behavior kind of just like the video so that you need to pause to return to the normal projector screen"
 
 ## What the projector does today
