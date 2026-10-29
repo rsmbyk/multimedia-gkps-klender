@@ -32,7 +32,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-160](./items/ITEM-160-kind-mark.md) | A passage or a song carries its own kind mark | Only a media row is marked on the stage; the passage and song rows get a 20px glyph on the media chip's centre line and the media title's column | feat | P2 | S | [144](../specs/144-passage-song-icons/spec.md) | [#428](https://github.com/rsmbyk/multimedia-gkps-klender/pull/428) | 2026-10-28 |
 
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -60,6 +59,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-160](./items/ITEM-160-kind-mark.md) | A passage or a song carries its own kind mark | Only a media row was marked on the stage; the passage and song rows now carry a 20px glyph on the media chip's centre line and the media title's column | feat | P2 | S | [144](../specs/144-passage-song-icons/spec.md) | develop via [#428](https://github.com/rsmbyk/multimedia-gkps-klender/pull/428) | 2026-10-28 |
 | [ITEM-158](./items/ITEM-158-media-library-refresh-jolt.md) | The Media Library list jumps while it refreshes | Every refresh drew the list twice — the first pass without service references, so rows shrank from 119/101/123px to 97px and the list below the first row jumped up 22px and back | fix | P2 | S | [148](../specs/148-media-library-refresh-flicker/spec.md) | develop via [#424](https://github.com/rsmbyk/multimedia-gkps-klender/pull/424) | 2026-10-28 |
 | [ITEM-158](./items/ITEM-158-media-transfer-age-buckets.md) | The Media Library and the transfer history group by age | Three age buckets on the list, five on the transfers — one shared rule, the Tata Ibadah list's own labels | feat | P2 | M | [146](../specs/146-media-and-transfer-age-buckets/spec.md) | develop via [#421](https://github.com/rsmbyk/multimedia-gkps-klender/pull/421) | 2026-10-28 |
 | [ITEM-155](./items/ITEM-155-transfer-icon-column.md) | A long transfer name ellipsizes instead of moving the icon column | The 32px mark shrinks to 21px on an over-long name, so the glyph sits 5.5px and the text 11px left of the other rows | fix | P2 | S | [147](../specs/147-transfer-icon-column/spec.md) | develop via [#420](https://github.com/rsmbyk/multimedia-gkps-klender/pull/420) | 2026-10-29 |

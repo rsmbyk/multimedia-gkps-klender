@@ -1,6 +1,6 @@
 ---
 id: ITEM-160
-status: in-review
+status: done
 title: 'A passage or a song carries its own kind mark'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/144-passage-song-icons/spec.md
 branch: feat/144-passage-song-icons
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/428
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/427
-closed_at:
-closed_reason:
+closed_at: 2026-10-28
+closed_reason: merged into develop (428)
 bump: patch
 release_version:
 ---
