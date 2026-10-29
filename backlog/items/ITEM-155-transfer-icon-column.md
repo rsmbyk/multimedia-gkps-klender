@@ -1,19 +1,19 @@
 ---
 id: ITEM-155
-status: in-review
+status: done
 title: 'A long transfer name ellipsizes instead of moving the icon column'
 type: fix
 priority: P2
 effort: S
 created: 2026-10-28
-updated: 2026-10-28
+updated: 2026-10-29
 spec: specs/147-transfer-icon-column/spec.md
 branch: feat/147-transfer-icon-column
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/420
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/416
-closed_at:
-closed_reason:
-bump:
+closed_at: 2026-10-29
+closed_reason: merged into develop (420)
+bump: patch
 release_version:
 ---
 
