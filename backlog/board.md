@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-170](./items/ITEM-170-song-verses-empty-state.md) | The song entry says "Pick a song first" when a song with no verses is already picked | A picked song with no verses is named as such in the Verses field; the save refusal names it too | fix | P1 | S | [162](../specs/162-song-verse-empty-state/spec.md) | 2026-10-29 |
 
 ## In progress
 

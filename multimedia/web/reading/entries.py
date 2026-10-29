@@ -143,6 +143,16 @@ class SongEntryForm(ServiceEntryForm):
             chosen = getattr(self.instance, 'song_id', None)
         return self.fields['song'].queryset.filter(pk=chosen).first() if chosen else None
 
+    @property
+    def song_has_no_verses(self):
+        """A song is picked and it carries no verses at all (spec 162).
+
+        The field's only other "nothing here" state is no song picked, and the two must not
+        read alike; this is the one of them the server can be wrong about, because the
+        fragment it renders already names the song.
+        """
+        return self.song is not None and not self.fields['verses'].choices
+
     def clean_verses(self):
         return sorted(int(number) for number in self.cleaned_data.get('verses') or [])
 
