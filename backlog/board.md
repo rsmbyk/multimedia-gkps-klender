@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-162](./items/ITEM-162-transfer-scrollbar-edge.md) | The Transfers scrollbar floats inside the dialog and stops short of its bottom | The list starts at the dialog's content box, so the bar paints 22px short of the right border and 23px short of the bottom one; it moves to both edges and nothing else moves | fix | P2 | S | [152](../specs/152-transfer-scrollbar-edge/spec.md) | 2026-10-29 |
 
 ## In progress
 
