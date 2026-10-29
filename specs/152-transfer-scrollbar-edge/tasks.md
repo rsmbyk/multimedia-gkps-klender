@@ -37,7 +37,7 @@
 ## Phase 5 — Polish
 
 - [X] T011 Run the targeted suites green: `tests.e2e.test_media_library` (whole module) and `tests.test_design_tokens`
-- [X] T012 Card ITEM-164, its board row (`Ready` → `In progress`) and the `specs/README.md` index row — re-check `spec:`, `branch:` and `issue:` against what exists
+- [X] T012 Card ITEM-165, its board row (`Ready` → `In progress`) and the `specs/README.md` index row — re-check `spec:`, `branch:` and `issue:` against what exists
 - [X] T013 Bump `VERSION` 1.22.10 → 1.22.11 and write the `CHANGELOG.md` line under `## [Unreleased]`
 - [X] T014 Fold `docs/spec/media-library.md` — `R1` is modified, not added
 

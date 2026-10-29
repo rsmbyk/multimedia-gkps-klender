@@ -1,5 +1,5 @@
 ---
-id: ITEM-164
+id: ITEM-165
 status: in-review
 title: 'The Transfers scrollbar floats inside the dialog and stops short of its bottom'
 type: fix
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-164: The Transfers scrollbar floats inside the dialog and stops short of its bottom
+# ITEM-165: The Transfers scrollbar floats inside the dialog and stops short of its bottom
 
 ## Summary
 
