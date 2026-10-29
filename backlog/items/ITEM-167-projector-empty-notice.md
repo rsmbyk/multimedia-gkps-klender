@@ -1,6 +1,6 @@
 ---
 id: ITEM-167
-status: backlog
+status: in-review
 title: 'The projector''s empty notice stays under a Go To passage or song'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-10-29
 updated: 2026-10-29
 spec: specs/161-projector-empty-notice/spec.md
 branch: fix/161-projector-empty-notice
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/444
+issue: 440
 closed_at:
 closed_reason:
 bump:

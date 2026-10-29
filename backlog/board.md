@@ -18,7 +18,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-159](./items/ITEM-159-known-red-e2e.md) | Three E2E tests are red on develop: two text-wrap assertions and an add-controls opacity | All three reproduce on unmodified develop in a detached worktree; a third-of-a-pixel wrap assertion, a 57-character title that never wraps, and controls visible without a hover | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-156](./items/ITEM-156-media-entry-spacing-e2e.md) | The media-entry spacing E2E measures 19.98px where 12px is asserted | A text row sits ~20px below its media row and the test still expects 12px ± 1; identical on develop | fix | P1 | S | — | 2026-10-28 |
-| [ITEM-167](./items/ITEM-167-projector-empty-notice.md) | The projector's empty notice stays under a Go To passage or song | The notice is a sibling of the stage, so a Go To detour paints its words above the empty-service sentence; it hides while a detour shows and returns when the detour closes | fix | P1 | S | [161](../specs/161-projector-empty-notice/spec.md) | 2026-10-29 |
 
 ## Speccing
 
@@ -56,6 +55,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-119](./items/ITEM-119-obs-dock.md) | OBS dock: one state for dock, projector, and overlay | Run Service Entries from one dock; `/projector` and `/obs/source/overlay` render the shared browser-local state | feat | P1 | L | [119](../specs/119-obs-dock/spec.md) | [#367](https://github.com/rsmbyk/multimedia-gkps-klender/pull/367) | 2026-10-20 |
 | [ITEM-122](./items/ITEM-122-saved-reading-parity.md) | Match saved reading views to refreshed pages | Fix immediate saved-render labels, headings, references, and actions | fix | P1 | M | [122](../specs/122-saved-reading-parity/spec.md) | [#370](https://github.com/rsmbyk/multimedia-gkps-klender/pull/370) | 2026-10-21 |
 | [ITEM-128](./items/ITEM-128-github-issues-anchor.md) | Anchor board cards on GitHub Issues | Declare the tracker mirror, add the `board:item` label, and record when and how an issue is created | chore | P2 | S | — | [#377](https://github.com/rsmbyk/multimedia-gkps-klender/pull/377) | 2026-10-24 |
+| [ITEM-167](./items/ITEM-167-projector-empty-notice.md) | The projector's empty notice stays under a Go To passage or song | The notice is a sibling of the stage, so a Go To detour paints its words above the empty-service sentence; it hides while a detour shows and returns when the detour closes | fix | P1 | S | [161](../specs/161-projector-empty-notice/spec.md) | [#444](https://github.com/rsmbyk/multimedia-gkps-klender/pull/444) | 2026-10-29 |
 
 ## Done
 
