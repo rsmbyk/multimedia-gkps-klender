@@ -53,7 +53,8 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
                                     'test_the_library_list_is_drawn_once_per_refresh',
                                     'test_a_known_reference_never_shows_the_placeholder',
                                     'test_a_failed_references_request_draws_the_placeholder_once',
-                                    'test_the_status_poll_leaves_the_list_where_it_is'):
+                                    'test_the_status_poll_leaves_the_list_where_it_is',
+                                    'test_the_first_refresh_writes_its_references_with_the_token'):
             # spec 148: one file used by two past services — a tall row, removable, not protected
             self.referenced_media = MediaIdentity.objects.create(
                 sha256='c' * 64, byte_count=4096, family='pdf', display_filename='notes.pdf')
@@ -963,7 +964,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
       requestAnimationFrame(sample);
     })();"""
 
-    def _sampled_library(self, media, references=None, extra_row=False):
+    def _sampled_library(self, media, references=None, extra_row=False, capture=None):
         """A connected library page that records every frame of its file list."""
         inventory = [{'sha256': media.pk, 'name': media.display_filename,
                       'family': media.family, 'size': media.byte_count,
@@ -982,7 +983,13 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
                            'write_token': 'test-token'}
             elif url.endswith('/settings'):
                 payload = {'retention': '30'}
-            elif url.endswith('/files') or url.endswith('/references'):
+            elif url.endswith('/files'):
+                payload = {'files': inventory}
+            elif url.endswith('/references'):
+                if route.request.headers.get('x-gkps-media-token') != 'test-token':
+                    return route.fulfill(status=403, content_type='application/json',
+                                         body=json.dumps({'error': 'Not authorized.'}),
+                                         headers={'Access-Control-Allow-Origin': self.live_server_url})
                 payload = {'files': inventory}
             else:
                 payload = {'error': 'Not found'}
@@ -991,6 +998,11 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
 
         page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
         page.route('http://127.0.0.1:63174/**', companion)
+        if capture is not None:
+            def record(request):
+                if request.method == 'POST' and request.url.endswith('/references'):
+                    capture.append({'token': request.headers.get('x-gkps-media-token', '')})
+            page.on('request', record)
         if references is not None:
             page.route('**/media-library/references/', references)
         page.add_init_script(self.SAMPLER)
@@ -1106,6 +1118,19 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.media-library__unused').first).to_contain_text(
             'Service uses unavailable')
         self._assert_no_row_moved(page, 'a failed references read')
+        page.close()
+
+    def test_the_first_refresh_writes_its_references_with_the_token(self):
+        captured = []
+        page = self._sampled_library(self.referenced_media, capture=captured)
+        self.assertTrue(captured, 'the page never wrote its references')
+        self.assertEqual(captured[0]['token'], 'test-token',
+                         'the first references write carried %r' % captured[0]['token'])
+        frames = [frame for frame in page.evaluate('() => window.__samples') if frame['rows']]
+        self.assertTrue(frames, 'the list never drew a row')
+        placeholders = [frame['placeholder'] for frame in frames]
+        self.assertEqual(placeholders, [0] * len(placeholders),
+                         'the first draw showed "Service uses unavailable" for a file with references')
         page.close()
 
     def test_the_status_poll_leaves_the_list_where_it_is(self):

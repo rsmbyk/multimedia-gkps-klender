@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-28
-**slices**: `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `150-references-token-order`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -820,3 +820,23 @@ control's states and the page's title.
 #### Scenario: a running transfer
 - WHEN a transfer is running and the 2s poll re-reads the companion
 - THEN the list is redrawn from the same data and no row moves
+
+### R25 — The Media Library's references write carries its own refresh's token
+
+The Media Library page SHALL send its service-references write with the write token supplied by the same
+refresh's `/status` response, so that the first refresh after the page opens is authenticated and its list
+is drawn once, already carrying its references. The token SHALL be in place before the write is sent, and
+the head controls SHALL still be applied once, from that same response. No endpoint, payload, header name
+or copy changes.
+
+#### Scenario: the first refresh
+- WHEN the page opens and its first refresh runs
+- THEN the references write carries that refresh's token, and the list is drawn once with its references
+
+#### Scenario: a later refresh
+- WHEN any later refresh runs
+- THEN it still writes with its own token and still draws once
+
+#### Scenario: the token cannot be had
+- WHEN the `/status` read fails
+- THEN the page degrades as before — no write, one draw, the disconnected copy
