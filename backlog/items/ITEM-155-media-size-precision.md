@@ -1,6 +1,6 @@
 ---
 id: ITEM-155
-status: in-review
+status: done
 title: 'A media size reads in the unit that still shows its number'
 type: fix
 priority: P1
@@ -11,8 +11,8 @@ spec: specs/145-media-size-precision/spec.md
 branch: feat/145-media-size-precision
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/419
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/418
-closed_at:
-closed_reason:
+closed_at: 2026-10-28
+closed_reason: merged into develop (419)
 bump: patch
 release_version:
 ---
