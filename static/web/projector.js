@@ -919,7 +919,9 @@
   });
 
   // In windowed mode, any click on the projected page is reserved for the
-  // fullscreen gesture. Capture it before the mouse zones can navigate.
+  // fullscreen gesture. Capture it before the mouse zones can navigate — except
+  // on the audio screen's play control, which is a control and not a gesture
+  // (spec 156): its first click starts the audio, not the fullscreen.
   document.addEventListener('click', function (event) {
     if (document.fullscreenElement || fullscreenDenied || !document.fullscreenEnabled ||
         !document.documentElement.requestFullscreen) return;
@@ -927,6 +929,7 @@
         body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing') ||
         !findPanel.hidden) return;
     if (!event.target.closest('#projectorScreen, .mouse-zones')) return;
+    if (event.target.closest('[data-audio-play]')) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     enterFullscreen();
