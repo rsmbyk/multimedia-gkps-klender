@@ -150,19 +150,26 @@
   $('mediaUnusedFilter').addEventListener('click', function () { unusedOnly = !unusedOnly; this.setAttribute('aria-pressed', String(unusedOnly)); render(); });
   $('mediaSortButton').addEventListener('click', function () { $('mediaSortMenu').hidden = !$('mediaSortMenu').hidden; this.setAttribute('aria-expanded', String(!$('mediaSortMenu').hidden)); });
   page.querySelectorAll('[data-media-sort]').forEach(function (button) { button.addEventListener('click', function () { sort = button.dataset.mediaSort; $('mediaSortLabel').textContent = button.textContent; $('mediaSortButton').setAttribute('aria-label', 'Sort files: ' + button.textContent); page.querySelectorAll('[data-media-sort]').forEach(function (option) { option.setAttribute('aria-checked', String(option === button)); }); $('mediaSortMenu').hidden = true; $('mediaSortButton').setAttribute('aria-expanded', 'false'); render(); }); });
+  /* One refresh draws once: assemble the whole state first, then apply it with a
+     single render, so no frame shows a file whose references are not known yet. */
   function refresh() {
+    var next = { files: [], uses: null, protected: new Set(), status: null, ready: false };
     return Promise.all([request('/status'), request('/files')]).then(function (results) {
-      files = results[1].files || []; uses = null; setStatus(results[0]); render();
+      next.status = results[0]; next.files = results[1].files || [];
       return fetch(page.dataset.referencesUrl, { credentials: 'same-origin' }).then(function (response) {
         if (!response.ok) throw new Error('Cannot load service references');
         return response.json();
       }).then(function (references) {
-        uses = references.uses || {}; protectedFiles = new Set(references.protected || []);
-        return write('/references', 'POST', { hashes: Object.keys(uses), protected: references.protected || [] }).then(function (synced) {
-          files = synced.files || []; render(); return true;
+        next.uses = references.uses || {}; next.protected = new Set(references.protected || []);
+        return write('/references', 'POST', { hashes: Object.keys(next.uses), protected: references.protected || [] }).then(function (synced) {
+          next.files = synced.files || []; next.ready = true;
         });
-      }).catch(function () { uses = null; render(); return false; });
-    }).catch(function () { files = []; uses = null; setStatus(null); render(); return false; });
+      }).catch(function () { next.uses = null; next.protected = new Set(); });
+    }).catch(function () { next.files = []; next.uses = null; next.status = null; next.ready = false; }).then(function () {
+      files = next.files; uses = next.uses; protectedFiles = next.protected;
+      setStatus(next.status); render();
+      return next.ready;
+    });
   }
   refresh();
   document.addEventListener('media:status', function (event) {
