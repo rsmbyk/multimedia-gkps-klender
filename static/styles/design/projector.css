@@ -73,6 +73,16 @@ body.projector {
 
 /* A section break shows nothing at all -- it is the operator's own note. */
 .screen.is-blank.is-active { opacity: 1; visibility: visible; }
+/* A media screen fitted to the stage (spec 158) carries its own px size, so the caps
+   that keep an image at 1:1 must step aside, the element must not be flex-shrunk back,
+   and the excess the fit leaves is clipped here rather than scrolled. */
+.screen.is-fitted .screen__image,
+.screen.is-fitted .screen__pdf-page { max-width: none; max-height: none; flex: none; }
+.screen.is-fitted .screen__image-box,
+.screen.is-fitted .screen__pdf-box { overflow: hidden; }
+/* The pointer says the media can be dragged exactly when it overflows. */
+body.projector.media-overflow .mouse-zone { cursor: grab; }
+body.projector.media-overflow .mouse-zone:active { cursor: grabbing; }
 .screen__image-box { width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
 .screen__image { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
 .screen__image[hidden], .screen__image-missing[hidden] { display: none; }

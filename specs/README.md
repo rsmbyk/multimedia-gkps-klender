@@ -94,4 +94,5 @@ the templates are in [`_templates/`](./_templates/).
 | [154](154-audio-times-inline/spec.md) | An audio preview reads its times as `current / total` | Draft |
 | [156](156-audio-play-indicator/spec.md) | The audio projector screen shows its play/pause control | Accepted |
 | [157](157-projector-image-missing-glyph/spec.md) | The projector's image placeholder waits for the image to fail | Accepted |
+| [158](158-projector-media-fit/spec.md) | A small image or PDF page fills the stage | Accepted |
 | [161](161-projector-empty-notice/spec.md) | The projector's empty notice leaves the stage when Go To shows a passage or a song | Accepted |

@@ -59,6 +59,17 @@
   var pdfPage = 1;
   var pdfEnterFromEnd = false;
 
+  /* ---------- fitting a media screen to the stage (spec 158) ------------------
+     The fit is the smaller of the stage's two ratios, above 1 as well as below; `T`
+     takes the other ratio instead, and the excess either leaves is panned by dragging
+     or with the wheel. It belongs to the active media host: another entry starts at
+     the fit again, another page of the same document keeps it. */
+  var fitHost = null;
+  var fitState = 'fit';                 // 'fit' | 'width' | 'height'
+  var fitOwn = null;                    // the media's own size: pixels for an image, points for a page
+  var fitPan = {x: 0, y: 0};
+  var fitOverflow = {x: 0, y: 0};
+
   function audioActivity() {
     if (!audioHost) return;
     audioHost.classList.remove('is-idle');
@@ -203,10 +214,95 @@
     imageUrl = null;
     if (imageHost) {
       var image = imageHost.querySelector('.screen__image');
+      clearFit(imageHost, image);
       if (image) { image.hidden = true; image.removeAttribute('src'); }
       imageHost.querySelector('.screen__image-missing').setAttribute('hidden', '');
     }
     imageHost = null;
+  }
+
+  /* The fitted size is written in px: `object-fit` can fill a box but it cannot express
+     fit width (which is the fit's other state), and the pan needs a number to clamp. */
+  function beginFit(host) {
+    if (host === fitHost) return;
+    fitHost = host; fitState = 'fit'; fitPan = {x: 0, y: 0};
+  }
+
+  function fitScale(box, own) {
+    var byWidth = box.width / own.w;
+    var byHeight = box.height / own.h;
+    return fitState === 'width' ? byWidth : fitState === 'height' ? byHeight
+      : Math.min(byWidth, byHeight);
+  }
+
+  function applyFit(host, element, size, box) {
+    var screen = host.closest('.screen');
+    if (screen) screen.classList.add('is-fitted');
+    setFitOverflow(size, box);
+    applyPan(element);
+  }
+
+  function fitMedia(host, element, natural) {
+    beginFit(host);
+    fitOwn = natural;
+    var box = host.getBoundingClientRect();
+    var scale = fitScale(box, natural);
+    var size = {w: Math.floor(natural.w * scale), h: Math.floor(natural.h * scale)};
+    element.style.width = size.w + 'px';
+    element.style.height = size.h + 'px';
+    applyFit(host, element, size, box);
+    return size;
+  }
+
+  function setFitOverflow(size, box) {
+    fitOverflow = {x: Math.max(0, (size.w - box.width) / 2),
+                   y: Math.max(0, (size.h - box.height) / 2)};
+    body.classList.toggle('media-overflow', Boolean(fitOverflow.x || fitOverflow.y));
+  }
+
+  /* Half the overflow each way: the media is centred in its box, so that is the travel
+     that brings either of its edges to the stage's edge, and no further. */
+  function applyPan(element) {
+    fitPan.x = Math.min(fitOverflow.x, Math.max(-fitOverflow.x, fitPan.x));
+    fitPan.y = Math.min(fitOverflow.y, Math.max(-fitOverflow.y, fitPan.y));
+    element.style.transform = fitPan.x || fitPan.y
+      ? 'translate(' + Math.round(fitPan.x) + 'px,' + Math.round(fitPan.y) + 'px)' : '';
+  }
+
+  function clearFit(host, element) {
+    var screen = host && host.closest && host.closest('.screen');
+    if (screen) screen.classList.remove('is-fitted');
+    if (element) {
+      element.style.width = '';
+      element.style.height = '';
+      element.style.transform = '';
+    }
+    if (host === fitHost) {
+      fitHost = null; fitState = 'fit'; fitOwn = null; fitPan = {x: 0, y: 0};
+    }
+    fitOverflow = {x: 0, y: 0};
+    body.classList.remove('media-overflow');
+  }
+
+  /* `T`: the fit is one of the two states, so this always offers the other one, and the
+     pan starts again from the centre. */
+  function toggleFit() {
+    var host = imageHost || pdfHost;
+    if (!host || !fitOwn) return;
+    var box = host.getBoundingClientRect();
+    var defaultState = box.width / fitOwn.w < box.height / fitOwn.h ? 'width' : 'height';
+    fitState = (fitState === 'fit' ? defaultState : fitState) === 'width' ? 'height' : 'width';
+    fitPan = {x: 0, y: 0};
+    if (imageHost) refitImage();
+    else if (pdfDocument) paintPDFScreen();
+  }
+
+  function refitImage() {
+    if (!imageHost) return;
+    var image = imageHost.querySelector('.screen__image');
+    if (image && image.naturalWidth) {
+      fitMedia(imageHost, image, {w: image.naturalWidth, h: image.naturalHeight});
+    }
   }
 
   function renderImageScreen(active) {
@@ -229,6 +325,7 @@
         imageUrl = result.url;
         image.src = imageUrl;
         image.hidden = false;
+        fitMedia(host, image, {w: result.width, h: result.height});
       }).catch(function () {
         if (token === imageToken && host === imageHost) missing.removeAttribute('hidden');
       });
@@ -244,6 +341,7 @@
     pdfDocument = null;
     if (pdfHost) {
       var canvas = pdfHost.querySelector('canvas');
+      clearFit(pdfHost, canvas);
       canvas.hidden = true;
       canvas.width = canvas.height = 0;
     }
@@ -257,17 +355,22 @@
     pdfPaintController = new AbortController();
     var signal = pdfPaintController.signal;
     var token = ++pdfToken;
+    var host = pdfHost;
     var previous = pdfHost.querySelector('canvas');
     var canvas = previous.cloneNode(false);
     previous.replaceWith(canvas);
     var missing = pdfHost.querySelector('.screen__pdf-missing');
     var bounds = pdfHost.getBoundingClientRect();
-    window.GKPSMediaPDF.paint(pdfDocument, pdfPage, canvas, bounds.width, bounds.height, signal)
-      .then(function () {
-        if (signal.aborted || token !== pdfToken) return;
+    beginFit(pdfHost);
+    window.GKPSMediaPDF.paint(pdfDocument, pdfPage, canvas, bounds.width, bounds.height, signal,
+      {fit: fitState, upscale: true})
+      .then(function (size) {
+        if (signal.aborted || token !== pdfToken || host !== pdfHost) return;
         canvas.hidden = false;
         missing.setAttribute('hidden', '');
         body.classList.remove('pdf-unavailable');
+        fitOwn = size.own;
+        applyFit(host, canvas, {w: Math.floor(size.width), h: Math.floor(size.height)}, bounds);
         renderCue();
       }).catch(function () {
         if (signal.aborted || token !== pdfToken) return;
@@ -303,7 +406,10 @@
       body.classList.add('pdf-unavailable');
     });
   }
-  window.addEventListener('resize', function () { if (pdfDocument && pdfHost) paintPDFScreen(); });
+  window.addEventListener('resize', function () {
+    refitImage();
+    if (pdfDocument && pdfHost) paintPDFScreen();
+  });
 
   function screens() {
     return [].slice.call(stage.querySelectorAll('.screen[data-screen]'));
@@ -894,7 +1000,73 @@
     if (!event.target.closest('.cue-translation')) return;
     event.stopPropagation(); if (!body.classList.contains('keys-open') && !body.classList.contains('entry-list-open')) flipTranslation();
   });
+  /* ---------- panning a fitted media screen (spec 158) -----------------------
+     The pointer rides the corner's own zones, which already cover the stage: a press
+     that moves more than 4 px pans and eats the click, a press that does not is still
+     their click. Capture waits for the threshold — taken on press, it would retarget
+     the click to the zones and navigation would stop. */
+  var mouseZones = document.querySelector('.mouse-zones');
+  var panDrag = null;
+  var suppressClick = false;
+
+  function mediaOverflows() { return Boolean(fitOverflow.x || fitOverflow.y); }
+  function panElement() {
+    if (imageHost) return imageHost.querySelector('.screen__image');
+    if (pdfHost) return pdfHost.querySelector('.screen__pdf-page');
+    return null;
+  }
+  function layersOpen() {
+    return body.classList.contains('keys-open') || body.classList.contains('entry-list-open')
+      || body.classList.contains('find-open') || !findPanel.hidden;
+  }
+
+  if (mouseZones) {
+    mouseZones.addEventListener('pointerdown', function (event) {
+      if (event.button !== 0 || !showing || !mediaOverflows() || layersOpen()) return;
+      panDrag = {id: event.pointerId, x: event.clientX, y: event.clientY,
+                 start: {x: fitPan.x, y: fitPan.y}, moved: false};
+    });
+
+    mouseZones.addEventListener('pointermove', function (event) {
+      if (!panDrag || event.pointerId !== panDrag.id) return;
+      var dx = event.clientX - panDrag.x;
+      var dy = event.clientY - panDrag.y;
+      if (!panDrag.moved) {
+        if (Math.abs(dx) + Math.abs(dy) < 4) return;
+        panDrag.moved = true;
+        try { mouseZones.setPointerCapture(event.pointerId); } catch (error) { /* no capture */ }
+      }
+      var element = panElement();
+      if (!element) return;
+      fitPan.x = panDrag.start.x + dx;
+      fitPan.y = panDrag.start.y + dy;
+      applyPan(element);
+      event.preventDefault();
+    });
+
+    function endPan(event) {
+      if (!panDrag || event.pointerId !== panDrag.id) return;
+      if (panDrag.moved) suppressClick = true;
+      try { mouseZones.releasePointerCapture(panDrag.id); } catch (error) { /* not captured */ }
+      panDrag = null;
+    }
+    mouseZones.addEventListener('pointerup', endPan);
+    mouseZones.addEventListener('pointercancel', endPan);
+
+    /* The wheel pans and never navigates: with nothing overflowing it is left alone. */
+    mouseZones.addEventListener('wheel', function (event) {
+      if (!showing || !mediaOverflows() || layersOpen()) return;
+      var element = panElement();
+      if (!element) return;
+      event.preventDefault();
+      fitPan.x -= event.deltaX + (event.shiftKey ? event.deltaY : 0);
+      fitPan.y -= event.shiftKey ? 0 : event.deltaY;
+      applyPan(element);
+    }, {passive: false});
+  }
+
   document.addEventListener('click', function (event) {
+    if (suppressClick) { suppressClick = false; return; }
     if (body.classList.contains('keys-closing') || body.classList.contains('entry-list-closing') ||
         body.classList.contains('find-closing')) return;
     if (body.classList.contains('keys-open')) {
@@ -1268,7 +1440,11 @@
       if (!hide) revealControls();
       return;
     }
-    if (!event.ctrlKey && !event.shiftKey && key === 't') { event.preventDefault(); flipTranslation(); return; }
+    if (!event.ctrlKey && !event.shiftKey && key === 't') {
+      event.preventDefault();
+      if (imageHost || pdfHost) toggleFit(); else flipTranslation();
+      return;
+    }
     if (!event.ctrlKey && event.key === ' ') {
       event.preventDefault();
       if (audioHost && audioPlayer) { if (!event.repeat) audioPlayer.toggle(); }

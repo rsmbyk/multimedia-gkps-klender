@@ -84,6 +84,45 @@ class PDFDisplayE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + path)
         return page
 
+    def _projector(self, available=True):
+        """The projector, stepped to the PDF entry (Space shows, Ctrl+→ steps entries)."""
+        page = self._page(f'/projector?service={self.service.pk}', available=available)
+        page.keyboard.press('Space')
+        page.keyboard.press('Control+ArrowRight')
+        return page
+
+    def _assert_page(self, page, width, height):
+        """The painted page, measured once pdf.js has drawn it (spec 158)."""
+        page.wait_for_function(
+            "() => { const c = document.querySelector('.screen.is-active .screen__pdf-page');"
+            " return Boolean(c) && !c.hidden && c.style.width !== ''; }")
+        page.wait_for_function(
+            "([w]) => { const c = document.querySelector('.screen.is-active .screen__pdf-page');"
+            " return Math.abs(c.getBoundingClientRect().width - w) < 2; }", arg=[width])
+        box = page.locator('.screen.is-active .screen__pdf-page').bounding_box()
+        self.assertAlmostEqual(box['width'], width, delta=1.5, msg=f'painted width {box["width"]}')
+        self.assertAlmostEqual(box['height'], height, delta=1.5, msg=f'painted height {box["height"]}')
+        return box
+
+    def test_projector_enlarges_a_pdf_page_to_the_stage(self):
+        """FR-002, SC-002: a 300×400 pt page fills the 1376×804 stage at 603×804."""
+        page = self._projector()
+        self._assert_page(page, 603, 804)          # 1376/300 < 804/400
+        page.close()
+
+    def test_projector_t_toggles_the_page_fit_and_keeps_it_across_pages(self):
+        """FR-003/FR-004/FR-005, SC-005: T takes the other ratio, a page turn keeps it."""
+        page = self._projector()
+        self._assert_page(page, 603, 804)          # the fit: height-bound
+        page.keyboard.press('t')
+        self._assert_page(page, 1376, 1834)        # fit width: 1376/300, cut 515 each side
+        page.keyboard.press('ArrowRight')          # page 2 is 500×300, still fit width
+        self._assert_page(page, 1376, 825)         # 1376/500
+        page.keyboard.press('Control+ArrowRight')  # closing text
+        page.keyboard.press('Control+ArrowRight')  # the untitled PDF: another entry, another fit
+        self._assert_page(page, 603, 804)
+        page.close()
+
     def test_preview_turns_pages_and_follows_landscape_size(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
         row = page.locator('#ti-e' + str(self.entry.pk))

@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-170](./items/ITEM-170-projector-media-fit.md) | A small image or a PDF page fills the projector stage | Media smaller than the stage is enlarged to the fit that shows all of it; `T` switches fit width / fit height; the overflow is panned | feat | P1 | S | [158](../specs/158-projector-media-fit/spec.md) | 2026-10-29 |
 
 ## In progress
 
@@ -206,7 +207,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-129](./items/ITEM-129-site-name-tab.md) | Name the site in the tab, and stop the index tab at the name | Reading tabs say `Multimedia GKPS Klender`; the index's tab is the name alone | fix | P2 | S | [127](../specs/127-site-name-tab/spec.md) | develop via [#378](https://github.com/rsmbyk/multimedia-gkps-klender/pull/378) | 2026-10-24 |
 | [ITEM-131](./items/ITEM-131-songbook-hymn-separator.md) | Separate the hymn songbooks from the rest of the Kidung panel | Hymn books first, one divider, the ordinary songbooks A–Z, no headings | feat | P2 | S | [128](../specs/128-songbook-hymn-separator/spec.md) | develop via [#380](https://github.com/rsmbyk/multimedia-gkps-klender/pull/380) | 2026-10-25 |
 | [ITEM-132](./items/ITEM-132-sidebar-empty-states.md) | Centre the sidebars' empty states | One centred glyph + title + hint per list, typed empty versus filter miss | fix | P2 | S | [129](../specs/129-sidebar-empty-states/spec.md) | develop via [#390](https://github.com/rsmbyk/multimedia-gkps-klender/pull/390) | 2026-10-25 |
-| [ITEM-162](./items/ITEM-162-preview-tabs-row.md) | A song's verse tabs squeeze the preview title and take the dialog's first focus | The head is one flex row, so a long title ellipsizes at 570 of 730px and the dialog's initial focus lands on tab `1`; the tabs get their own row under the header, and the body takes the focus | fix | P2 | S | [153](../specs/153-preview-tabs-row/spec.md) | develop via [#435](https://github.com/rsmbyk/multimedia-gkps-klender/pull/435) | 2026-10-29 |
+| [ITEM-170](./items/ITEM-162-preview-tabs-row.md) | A song's verse tabs squeeze the preview title and take the dialog's first focus | The head is one flex row, so a long title ellipsizes at 570 of 730px and the dialog's initial focus lands on tab `1`; the tabs get their own row under the header, and the body takes the focus | fix | P2 | S | [153](../specs/153-preview-tabs-row/spec.md) | develop via [#435](https://github.com/rsmbyk/multimedia-gkps-klender/pull/435) | 2026-10-29 |
 
 ## Archive
 

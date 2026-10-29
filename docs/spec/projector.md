@@ -2,10 +2,10 @@
 
 **capability**: `projector`
 **last folded**: 2026-10-29
-**slices**: `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**slices**: `158-projector-media-fit`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
-paints a passage or a song. This file starts at spec 136 — the projector's earlier behaviour
+paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
 (specs 006, 091, 119) is recorded in those slices and is folded as a slice touches it.
 
 ### R1 — The Go To searches a page-memory index and fetches the content it paints
@@ -134,3 +134,89 @@ does, and its `aria-label` SHALL read `Play audio` while paused and `Pause audio
 #### Scenario: the local copy is missing
 - WHEN the companion has no copy of the file, or the bytes are not audio
 - THEN the player stays hidden, the missing-file mark shows, and no control is painted
+
+### R5 — An image screen is fitted to the stage, above 1:1 as well as below
+
+A screen whose media is an image SHALL paint it at the scale `min(stage width / image width, stage
+height / image height)` — the smaller of the two ratios — whether that scale shrinks the image or
+enlarges it, with the whole image visible and centred and its aspect kept. The scale SHALL be
+recomputed when the window's size changes. (spec 158)
+
+#### Scenario: an image smaller than the stage
+- WHEN a 182×277 image shows on a 1856×1104 stage
+- THEN it paints 725×1104, not 182×277
+
+#### Scenario: an image larger than the stage
+- WHEN a 600×300 image shows on a 1376×804 stage
+- THEN it paints 1376×688 — the same rule below 1
+
+#### Scenario: the window changes size
+- WHEN the window narrows to a 960×672 stage
+- THEN the same 12×6 image re-fits to 960×480 without a reload
+
+### R6 — A PDF or PowerPoint page is fitted the same way
+
+A screen whose media is a PDF page or a slide SHALL paint it at the same smaller ratio, at the
+display's pixel ratio up to the painter's 6-megapixel cap. The reader's Preview dialog keeps its own
+rule and never scales a page above 1:1. (spec 158)
+
+#### Scenario: a Letter page on a wide stage
+- WHEN a 612×792 pt page shows on a 1856×1104 stage
+- THEN its canvas is 853×1104
+
+#### Scenario: the dialog is left alone
+- WHEN the same page is opened in the reading page's Preview dialog
+- THEN it paints at its own size, never larger
+
+### R7 — `T` switches between fit width and fit height
+
+With a media screen showing, `T` SHALL switch to fit width — the media spans the stage's width and the
+excess height is clipped equally above and below — and a second `T` to fit height, the excess width
+clipped equally left and right. The default fit is one of the two (the smaller ratio), so the first
+press always offers the other. A media screen's fit SHALL return to the default when another entry's
+screen shows, and SHALL persist across the pages of one document. Every other screen kind SHALL be
+unaffected: `T` still flips a passage's TB/SIM. (spec 158)
+
+#### Scenario: the two states
+- WHEN `T` is pressed on a fitted 182×277 image at a 1856×1104 stage
+- THEN it paints 1856×2824, cut 860 above and below; a second press returns it to 725×1104
+
+#### Scenario: a page turn keeps it, another entry does not
+- WHEN a PDF is at fit width and the operator steps to page 2
+- THEN page 2 is still fit width; stepping to the next entry shows that entry at its fit
+
+#### Scenario: a passage still flips
+- WHEN `T` is pressed on a passage screen
+- THEN the translation flips TB/SIM, as before
+
+### R8 — The shortcut sheet names the key
+
+The projector's shortcut sheet SHALL carry a group naming images and PDFs, whose one row gives `T` for
+fit width and fit height, and the sheet SHALL keep the height it had (677 px at 1080p) so it still
+fits a 1280×720 window. (spec 158)
+
+#### Scenario: the sheet on a 720p window
+- WHEN `K` opens the sheet at 1280×720
+- THEN the Image and PDF group is inside the sheet's frame and the sheet is 677 px tall
+
+### R9 — The overflow is panned, by drag and by wheel
+
+While a media screen's painted size exceeds the stage on either axis, a pointer drag on the screen SHALL
+pan the media within that overflow, and the mouse wheel SHALL pan it too — `deltaY` vertically, `deltaX`
+or `Shift`+`deltaY` horizontally. The pan SHALL be clamped so a media edge never leaves the stage's edge,
+SHALL start at the centre whenever the fit or the screen changes, and SHALL never eat the corner's click:
+a press that moves no more than 4 px is still a click (enter fullscreen when windowed, then previous,
+next or show/hide words). While the media overflows the pointer over the stage SHALL read `grab`, and
+`grabbing` while it drags. With nothing overflowing the wheel is inert. (spec 158)
+
+#### Scenario: dragging a zoomed page
+- WHEN the fit-width image is dragged upwards on a 1856×1104 stage
+- THEN it follows the pointer and stops with its top edge on the stage's top edge
+
+#### Scenario: the wheel
+- WHEN the wheel is rolled over a zoomed page
+- THEN the page pans on that axis and stops at the same ends
+
+#### Scenario: a press that does not move
+- WHEN the operator presses and releases within 4 px on a zoomed page
+- THEN the corner's zone still receives its click and no pan is recorded
