@@ -1,6 +1,7 @@
 """Browser acceptance for the local Media Library shell and media entry picker."""
 from datetime import date, datetime, timezone
 import json
+import time
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -44,9 +45,25 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
                                             kind=ServiceEntryKind.TEXT, text='Opening words')
                 ServiceEntry.objects.create(tatib=self.service, order_number=3,
                                             kind=ServiceEntryKind.SECTION_BREAK)
-        if self._testMethodName == 'test_share_online_from_fresh_library_page_sends_csrf_token':
+        if self._testMethodName in ('test_share_online_from_fresh_library_page_sends_csrf_token',):
             self.share_media = MediaIdentity.objects.create(
                 sha256='a' * 64, byte_count=2048, family='pdf', display_filename='notes.pdf')
+        if self._testMethodName in ('test_a_library_refresh_never_moves_a_row',
+                                    'test_clicking_share_online_never_moves_a_library_row',
+                                    'test_the_library_list_is_drawn_once_per_refresh',
+                                    'test_a_known_reference_never_shows_the_placeholder',
+                                    'test_a_failed_references_request_draws_the_placeholder_once',
+                                    'test_the_status_poll_leaves_the_list_where_it_is'):
+            # spec 148: one file used by two past services — a tall row, removable, not protected
+            self.referenced_media = MediaIdentity.objects.create(
+                sha256='c' * 64, byte_count=4096, family='pdf', display_filename='notes.pdf')
+            for service_date, name in ((date(2026, 10, 18), 'Ibadah Minggu'),
+                                       (date(2026, 10, 11), 'Ibadah Pemuda')):
+                service = TataIbadah.objects.create(name=name, date=service_date, is_active=True)
+                ServiceEntry.objects.create(tatib=service, order_number=1,
+                                            kind=ServiceEntryKind.MEDIA,
+                                            media=self.referenced_media,
+                                            media_filename='notes.pdf', title='')
         self.playwright = sync_playwright().start()
         try:
             self.browser = self.playwright.chromium.launch()
@@ -743,3 +760,186 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         for row in truncating:
             self.assertEqual(row['client'], 284, 'the text column is not what the layout reserves')
 
+
+    # ---- spec 148: the file list holds still while it refreshes ----
+
+    SAMPLER = """(function () {
+      if (window.__sampling) return;
+      window.__sampling = true;
+      window.__samples = [];
+      window.__draws = 0;      // frames whose list differed from the one before: a draw that showed
+      window.__sig = null;     // the signature of the last list drawn
+      function sample() {
+        var list = document.getElementById('mediaFileList');
+        if (list) {
+          var rows = [].slice.call(list.querySelectorAll('.media-library__file'));
+          var tops = rows.map(function (row) {
+            return Math.round(row.getBoundingClientRect().top * 100) / 100;
+          });
+          var listHeight = Math.round(list.getBoundingClientRect().height * 100) / 100;
+          var signature = rows.length + '|' + tops.join(',') + '|' + listHeight;
+          if (window.__sig === null) { window.__sig = signature; }
+          else if (signature !== window.__sig) { window.__sig = signature; window.__draws += 1; }
+          window.__samples.push({
+            rows: rows.length,
+            tops: tops,
+            placeholder: list.querySelectorAll('.media-library__unused').length,
+            listHeight: listHeight
+          });
+        }
+        requestAnimationFrame(sample);
+      }
+      requestAnimationFrame(sample);
+    })();"""
+
+    def _sampled_library(self, media, references=None, extra_row=False):
+        """A connected library page that records every frame of its file list."""
+        inventory = [{'sha256': media.pk, 'name': media.display_filename,
+                      'family': media.family, 'size': media.byte_count,
+                      'uploaded_at': '2026-10-28T09:00:00+00:00',
+                      'unused_since': None, 'delete_at': None}]
+        if extra_row:
+            inventory.append({'sha256': 'd' * 64, 'name': 'poster.png', 'family': 'image',
+                              'size': 1024, 'uploaded_at': '2026-10-27T09:00:00+00:00',
+                              'unused_since': None, 'delete_at': None})
+
+        def companion(route):
+            url = route.request.url
+            if url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': len(inventory),
+                           'total_size': media.byte_count, 'retention': '30',
+                           'write_token': 'test-token'}
+            elif url.endswith('/settings'):
+                payload = {'retention': '30'}
+            elif url.endswith('/files') or url.endswith('/references'):
+                payload = {'files': inventory}
+            else:
+                payload = {'error': 'Not found'}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers={'Access-Control-Allow-Origin': self.live_server_url})
+
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        page.route('http://127.0.0.1:63174/**', companion)
+        if references is not None:
+            page.route('**/media-library/references/', references)
+        page.add_init_script(self.SAMPLER)
+        page.goto(self.live_server_url + reverse('web-media-library'))
+        expect(page.locator('.media-library__filename').first).to_have_text('notes.pdf')
+        page.wait_for_timeout(300)
+        return page
+
+    def _reset_sampler(self, page):
+        page.evaluate('() => { window.__samples = []; window.__draws = 0; window.__sig = null; }')
+
+    def _assert_no_row_moved(self, page, label):
+        frames = page.evaluate('() => window.__samples')
+        self.assertTrue(frames, 'the sampler recorded no frame while ' + label)
+        settled = frames[-1]
+        self.assertGreater(settled['rows'], 0, 'the list never drew a row while ' + label)
+        spread = [0.0] * settled['rows']
+        for frame in frames:
+            if frame['rows'] != settled['rows']:
+                continue
+            for index, top in enumerate(frame['tops']):
+                spread[index] = max(spread[index], abs(top - settled['tops'][index]))
+        self.assertEqual(spread, [0.0] * settled['rows'],
+                         'rows moved while ' + label + ': ' + repr(spread))
+
+    @staticmethod
+    def _cancel_remove(page):
+        page.locator('.media-library__remove').first.click()
+        expect(page.locator('#mediaRemoveDialog')).to_be_visible()
+        page.keyboard.press('Escape')
+        expect(page.locator('#mediaRemoveDialog')).not_to_be_visible()
+
+    @staticmethod
+    def _save_settings(page):
+        page.locator('#mediaSettingsButton').click()
+        page.locator('#mediaSaveSettings').click()
+        expect(page.locator('#mediaSettingsDialog')).not_to_be_visible()
+
+    def test_a_library_refresh_never_moves_a_row(self):
+        page = self._sampled_library(self.referenced_media, extra_row=True)
+        for label, trigger in (('a cancelled remove', self._cancel_remove),
+                               ('a saved setting', self._save_settings)):
+            self._reset_sampler(page)
+            trigger(page)
+            page.wait_for_timeout(500)
+            self._assert_no_row_moved(page, label)
+        page.close()
+
+    def test_clicking_share_online_never_moves_a_library_row(self):
+        page = self._sampled_library(self.referenced_media, extra_row=True)
+        share = page.locator('.media-library__cloud-button[title="Share online"]').first
+        expect(share).to_be_visible()
+        self._reset_sampler(page)
+        with patch('multimedia.web.reading.views.media_handoff.begin_share',
+                   return_value=(None, SimpleNamespace(
+                       expires_at=datetime(2026, 10, 28, tzinfo=timezone.utc)))):
+            share.click()
+            page.wait_for_timeout(600)
+        self._assert_no_row_moved(page, 'Share online')
+        page.close()
+
+    def test_the_library_list_is_drawn_once_per_refresh(self):
+        page = self._sampled_library(self.referenced_media, extra_row=True)
+        self._reset_sampler(page)
+        self._cancel_remove(page)
+        page.wait_for_timeout(500)
+        # a cancelled remove changes nothing about the library, so a correct page draws the same
+        # picture twice: what this catches is the extra pass that draws a different one
+        self.assertLessEqual(page.evaluate('() => window.__draws'), 1,
+                             'one refresh drew the file list more than once')
+
+        page.evaluate('() => { window.__samples = []; window.__sig = null; }')
+        page.reload()
+        page.wait_for_timeout(800)
+        frames = [frame for frame in page.evaluate('() => window.__samples') if frame['rows']]
+        self.assertTrue(frames, 'the first load never drew a row')
+        self.assertEqual(frames[0]['listHeight'], frames[-1]['listHeight'],
+                         'the first load drew a short list and then grew it')
+        self.assertEqual(max(f['listHeight'] for f in frames), frames[-1]['listHeight'],
+                         'the list grew after it first appeared')
+        page.close()
+
+    def test_a_known_reference_never_shows_the_placeholder(self):
+        media = self.referenced_media
+
+        def held(route):
+            time.sleep(0.2)
+            route.continue_()
+
+        page = self._sampled_library(media, references=held)
+        frames = page.evaluate('() => window.__samples')
+        self.assertTrue(frames)
+        placeholders = [frame['placeholder'] for frame in frames if frame['rows']]
+        self.assertEqual(placeholders, [0] * len(placeholders),
+                         'a file with known references showed "Service uses unavailable"')
+        page.close()
+
+    def test_a_failed_references_request_draws_the_placeholder_once(self):
+        def broken(route):
+            route.fulfill(status=500, body='{}', content_type='application/json')
+
+        page = self._sampled_library(self.referenced_media, references=broken,
+                                     extra_row=True)
+        expect(page.locator('.media-library__unused').first).to_contain_text(
+            'Service uses unavailable')
+        self._reset_sampler(page)
+        self._save_settings(page)
+        page.wait_for_timeout(500)
+        # the degraded state is one picture either way, so this counts visible draws: the guarded
+        # failure is a page that redraws it repeatedly or moves a row, not the pass count itself
+        self.assertLessEqual(page.evaluate('() => window.__draws'), 1,
+                             'a failed references read redrew the file list')
+        expect(page.locator('.media-library__unused').first).to_contain_text(
+            'Service uses unavailable')
+        self._assert_no_row_moved(page, 'a failed references read')
+        page.close()
+
+    def test_the_status_poll_leaves_the_list_where_it_is(self):
+        page = self._sampled_library(self.referenced_media, extra_row=True)
+        self._reset_sampler(page)
+        page.wait_for_timeout(2500)  # one 2s poll
+        self._assert_no_row_moved(page, 'a status poll')
+        page.close()

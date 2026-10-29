@@ -84,3 +84,4 @@ the templates are in [`_templates/`](./_templates/).
 | [145](145-media-size-precision/spec.md) | A media size reads in the unit that still shows its number | Accepted |
 | [146](146-media-and-transfer-age-buckets/spec.md) | The Media Library and the transfer history group by age | Accepted |
 | [147](147-transfer-icon-column/spec.md) | A long transfer name ellipsizes instead of moving the row | Accepted |
+| [148](148-media-library-refresh-flicker/spec.md) | The Media Library list holds still while it refreshes | Accepted |
