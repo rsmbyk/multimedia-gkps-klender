@@ -39,7 +39,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-164](./items/ITEM-164-projector-image-missing-glyph.md) | The projector paints its image-unavailable glyph beside every image | The placeholder `<svg>` starts with no `hidden` attribute and is toggled with `missing.hidden`, which does nothing on an SVG, so the glyph shows on every image screen and the picture sits 40px left of the page's middle | fix | P2 | S | [157](../specs/157-projector-image-missing-glyph/spec.md) | [#447](https://github.com/rsmbyk/multimedia-gkps-klender/pull/447) | 2026-10-29 |
 
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |
@@ -66,6 +65,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
+| [ITEM-164](./items/ITEM-164-projector-image-missing-glyph.md) | The projector paints its image-unavailable glyph beside every image | The placeholder `<svg>` starts with no `hidden` attribute and is toggled with `missing.hidden`, which does nothing on an SVG, so the glyph shows on every image screen and the picture sits 40px left of the page's middle | fix | P2 | S | [157](../specs/157-projector-image-missing-glyph/spec.md) | develop via [#447](https://github.com/rsmbyk/multimedia-gkps-klender/pull/447) | 2026-10-29 |
 | [ITEM-159](./items/ITEM-159-transfer-separator-seam.md) | The Transfers list draws each boundary twice | The session divider's 2px line stacks on the row's own 1px border 9px apart, and a list taller than the dialog paints over its bottom padding; the seam becomes one line and the list scrolls inside the dialog | fix | P2 | S | [149](../specs/149-transfer-separator-seam/spec.md) | develop via [#425](https://github.com/rsmbyk/multimedia-gkps-klender/pull/425) | 2026-10-28 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-163](./items/ITEM-163-audio-times-inline.md) | The audio preview splits its two times to the bar's ends | The played time stood at the seek bar's left end and the total at its right, 456.4px apart; they now read as one `current / total` pair, right-aligned under the bar | fix | P2 | S | [154](../specs/154-audio-times-inline/spec.md) | develop via [#432](https://github.com/rsmbyk/multimedia-gkps-klender/pull/432) | 2026-10-29 |

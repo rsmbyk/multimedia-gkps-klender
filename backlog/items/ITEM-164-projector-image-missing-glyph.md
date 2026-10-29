@@ -1,6 +1,6 @@
 ---
 id: ITEM-164
-status: in-review
+status: done
 title: 'The projector paints its image-unavailable glyph beside every image'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/157-projector-image-missing-glyph/spec.md
 branch: fix/157-projector-image-missing-glyph
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/447
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/436
-closed_at:
-closed_reason:
+closed_at: 2026-10-29
+closed_reason: merged into develop (PR #447)
 bump: patch
 release_version:
 ---
