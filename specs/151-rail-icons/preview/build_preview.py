@@ -31,9 +31,9 @@ GLYPHS = {
         "closed": ('<path d="M5 4.4c0-1 .8-1.8 1.8-1.8h10.4c1 0 1.8.8 1.8 1.8v15.4c0 1-.8 1.8-1.8 1.8H6.8'
                    'c-1 0-1.8-.8-1.8-1.8z"/><path d="M8 2.6v18.8"/>'
                    '<path d="M13.2 7.1v6.4M11.2 9.5h4"/>'),
-        "open": ('<path d="M12 9.2c-1.7-1.4-4-2-7.3-1.8v10.8c3.3-.2 5.6.4 7.3 1.8 1.7-1.4 4-2 '
-                 '7.3-1.8V7.4C16 7.2 13.7 7.8 12 9.2z"/><path d="M12 9.2v10.8"/>'
-                 '<path d="M12 2.4v4.3M10.2 4.2h3.6"/>'),
+        "open": ('<path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 '
+                 '6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/><path d="M12 9.6v10.4"/>'
+                 '<path d="M12 2.6v4.6M10.1 4.5h3.8"/>'),
     },
     "tatib": {
         "clipboard": ('<rect x="4.6" y="3.4" width="14.8" height="17.2" rx="2"/>'
@@ -147,8 +147,8 @@ page = f"""<!doctype html>
   <h1>Rail icons</h1><span class="sub">spec 151 · the rail and the stage, 1:1</span>
   <span class="grow"></span>
   <div class="grp" data-slot="bible"><span>Alkitab</span>
-    <button data-v="closed" aria-pressed="true">closed + cross</button>
-    <button data-v="open" aria-pressed="false">open + cross</button></div>
+    <button data-v="open" aria-pressed="true">open + cross</button>
+    <button data-v="closed" aria-pressed="false">closed + cross</button></div>
   <div class="grp" data-slot="tatib"><span>Tata Ibadah</span>
     <button data-v="clipboard" aria-pressed="true">clipboard</button>
     <button data-v="steps" aria-pressed="false">steps</button></div>
@@ -178,7 +178,8 @@ page = f"""<!doctype html>
 const G = {{
   bible: {{
     closed: `{GLYPHS["bible"]["closed"]}`,
-    open: `{GLYPHS["bible"]["open"]}`
+    open: `{GLYPHS["bible"]["open"]}`,
+    shipped: '<path d="M12 6.6C10.3 5.2 7.9 4.6 4.5 4.8v13.4c3.4-.2 5.8.4 7.5 1.8 1.7-1.4 4.1-2 7.5-1.8V4.8c-3.4-.2-5.8.4-7.5 1.8z"/><path d="M12 6.6v13.4"/>'
   }},
   tatib: {{
     clipboard: `{GLYPHS["tatib"]["clipboard"]}`,
@@ -202,7 +203,7 @@ const FAMILY = {{
   missing: `{FAMILY.get("missing", "")}`
 }};
 const SVG = (paths) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths + '</svg>';
-const choose = {{ bible: 'closed', tatib: 'clipboard', song: 'pair', audio: 'waveform' }};
+const choose = {{ bible: 'open', tatib: 'clipboard', song: 'pair', audio: 'waveform' }};
 
 function shell(frame, proposed) {{
   frame.replaceChildren();
@@ -216,6 +217,11 @@ function shell(frame, proposed) {{
   read.querySelectorAll('.entry__kind-icon[data-kind-icon="song"] svg').forEach(svg => {{
     svg.innerHTML = proposed ? G.song[choose.song] : G.song.single;   // shipped mark
   }});
+  if (proposed && choose.bible === 'open') {{
+    read.querySelectorAll('.entry__kind-icon[data-kind-icon="scripture"] svg').forEach(svg => {{
+      svg.innerHTML = G.bible.open;   // the rail's Bible is the passage's own mark
+    }});
+  }}
   read.querySelectorAll('.entry__media-icon[data-media-icon]').forEach(span => {{
     const family = span.dataset.mediaIcon;
     const mark = family === 'audio'
@@ -227,11 +233,16 @@ function shell(frame, proposed) {{
 }}
 
 function strip() {{
+  const scripture = choose.bible === 'open' ? G.bible.open : G.bible.shipped;
   const rows = [
-    ['Alkitab rail', G.bible[choose.bible], '24px rail'],
-    ['Tata Ibadah rail', G.tatib[choose.tatib], '24px rail'],
-    ['Kidung + song entry', G.song[choose.song], '24px rail · 20px mark'],
-    ['audio media', G.audio[choose.audio], '22px chip']
+    ['Alkitab rail', G.bible[choose.bible], '24px'],
+    ['passage entry', scripture, '20px, kind mark'],
+    ['Add Passage tile', scripture, '24px'],
+    ['Kidung rail', G.song[choose.song], '24px'],
+    ['song entry', G.song[choose.song], '20px, kind mark'],
+    ['Add Song tile', G.song[choose.song], '24px'],
+    ['audio media', G.audio[choose.audio], '23px, family chip'],
+    ['Tata Ibadah rail', G.tatib[choose.tatib], '24px']
   ];
   document.getElementById('strip').replaceChildren(...rows.map(([name, paths, size]) => {{
     const cell = document.createElement('div'); cell.className = 'cell';
