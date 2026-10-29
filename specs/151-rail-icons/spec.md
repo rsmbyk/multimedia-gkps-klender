@@ -149,15 +149,15 @@ column, before and after; every value is identical.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | The rail's Alkitab/Bibel destination, and the Alkitab panel's own empty state, SHALL draw an open book with a Latin cross above it. | `new: reading` → R27 |
+| FR-001 | The rail's Alkitab/Bibel destination, and the Alkitab panel's own empty state, SHALL draw an open book with a Latin cross above it. | `new: reading` → R29 |
 | FR-002 | A passage entry's kind mark and the empty stage's Add Passage tile SHALL draw the same path as FR-001 — the rail's mark at 20px on the row and 24px on the tile — and no other open book SHALL remain in the product. | `modified: reading` → R25 |
-| FR-003 | The rail's Tata Ibadah/Agenda destination, and that panel's own empty state, SHALL draw a clipboard — board, clip above it, three rule lines — and SHALL NOT draw a page, folder or document silhouette. | `new: reading` → R27 |
+| FR-003 | The rail's Tata Ibadah/Agenda destination, and that panel's own empty state, SHALL draw a clipboard — board, clip above it, three rule lines — and SHALL NOT draw a page, folder or document silhouette. | `new: reading` → R29 |
 | FR-004 | The rail's Kidung/Doding destination, a song entry's kind mark and the empty stage's Add Song tile SHALL draw one and the same beamed-pair path. | `modified: reading` → R25 |
-| FR-005 | An audio media file's family mark SHALL be a waveform of five rounded bars, in every place that mark is drawn: stage chip, Media Library list, service-media dialog, upload preview. | `new: reading` → R27 |
-| FR-006 | The image, video, PDF and PowerPoint family marks, and the `missing` fallback, SHALL NOT change. | `new: reading` → R27 |
+| FR-005 | An audio media file's family mark SHALL be a waveform of five rounded bars, in every place that mark is drawn: stage chip, Media Library list, service-media dialog, upload preview. | `new: reading` → R29 |
+| FR-006 | The image, video, PDF and PowerPoint family marks, and the `missing` fallback, SHALL NOT change. | `new: reading` → R29 |
 | FR-007 | Every mark SHALL keep today's box: a rail glyph 24 × 24 inside its 44 × 44 button; a stage kind mark 20 × 20 at the media chip's centre line with the title on the 64px column; a media chip 42 × 42 with a 23 × 23 glyph; the empty stage's tiles 24px. No row's height, padding or title column SHALL change. | `modified: reading` → R25 |
-| FR-008 | Every mark SHALL be inline SVG painted with `currentColor`, carry no new colour token or tint, keep `aria-hidden="true"`, and add no pointer target. | `new: reading` → R27 |
-| FR-009 | The rail SHALL keep five destinations and their order; the Search and Media Library marks SHALL NOT change. | `new: reading` → R27 |
+| FR-008 | Every mark SHALL be inline SVG painted with `currentColor`, carry no new colour token or tint, keep `aria-hidden="true"`, and add no pointer target. | `new: reading` → R29 |
+| FR-009 | The rail SHALL keep five destinations and their order; the Search and Media Library marks SHALL NOT change. | `new: reading` → R29 |
 
 ### Key Entities
 

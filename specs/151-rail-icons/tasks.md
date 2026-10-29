@@ -95,7 +95,7 @@ All seven cases live in one new file because they all read the same page; they a
 
 - [X] T022 Regenerate the preview (`build_preview.py`) so it draws the implemented paths, and replace
   its `GLYPHS` table with the shipped strings.
-- [X] T023 `inspection` — `docs/spec/reading.md` R25 and the new R27 are folded (Converge → Fold), with
+- [X] T023 `inspection` — `docs/spec/reading.md` R25 and the new R29 are folded (Converge → Fold), with
   the capabilities' before/after counts in `fold.md`.
 - [X] T024 `VERSION` minor bump, `CHANGELOG.md` entry, board card `ITEM-…` closed by its own PR, and the
   slice's PR body written from the spec.

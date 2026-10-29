@@ -6,7 +6,7 @@
 
 | Capability | Operations | Before | After |
 | --- | --- | --- | --- |
-| `reading` | `modified` R25 · `added` R27 | 26 requirements | 27 requirements |
+| `reading` | `modified` R25 · `added` R29 | 28 requirements | 29 requirements |
 
 ## `reading` — modified R25
 
@@ -17,7 +17,7 @@ no pointer and no added height is unchanged, and the scenarios say the row's mar
 
 The complete replacement block is in `docs/spec/reading.md`, which is the authority.
 
-## `reading` — added R27
+## `reading` — added R29
 
 **The rail names its sections with the marks the stage draws.** One drawing per section, repeated
 wherever the product draws it (rail, panel empty state, stage row, empty-stage tile); no rail mark
