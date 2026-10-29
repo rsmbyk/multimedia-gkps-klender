@@ -82,9 +82,9 @@ references read still shows it — once.
   `test_disconnected_library_hides_local_inventory_details`,
   `test_empty_library_keeps_tall_create_modal_and_quiet_empty_state` — all pass.
 - [X] T015 The spec's index row is in `specs/README.md`, naming 148 and `Accepted`.
-- [X] T016 `VERSION` `1.22.6` → `1.22.7` (145 and 147 landed 1.22.6 on `develop` first), and one `### Fixed` line under `## [Unreleased]` in
+- [X] T016 `VERSION` `1.22.7` → `1.22.8` (145, 146 and 147 landed 1.22.6–1.22.7 on `develop` first), and one `### Fixed` line under `## [Unreleased]` in
   `CHANGELOG.md`.
-- [X] T017 Fold: R22 added to `docs/spec/reading.md`, the header's `last folded` and `slices` moved
+- [X] T017 Fold: R24 added to `docs/spec/reading.md`, the header's `last folded` and `slices` moved
   (`fold.md`).
 - [ ] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-158`'s state — if the
   owner has moved it to `Ready`, set `in-review`, write `pr:` and move the board row, and push that one

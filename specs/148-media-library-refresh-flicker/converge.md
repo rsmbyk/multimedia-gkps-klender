@@ -42,6 +42,7 @@ two identifiers moved:
 - **The card**: `develop` had taken `ITEM-156` for the media-entry spacing E2E — the same failure this
   slice found and carded. That duplicate card was dropped, this slice's card renumbered
   `ITEM-158`, and its anchor issue (#423) renamed to match, keeping its number.
-- **The bump**: `develop` reached `1.22.6`, so this slice's patch lands as `1.22.7`.
-- **The capability number** stood: `R20` and `R21` are 145's and 147's, `R22` is this slice's.
+- **The bump**: `develop` reached `1.22.7` (145, 146, 147), so this slice's patch lands as `1.22.8`.
+- **The capability number moved**: `develop` had already folded `R20`–`R23` (145, 146 and 147), so this
+  slice's requirement is `R24`, not the `R22` it was drafted as. It is a new number, never a reuse.
 - **The test module** kept both sides' cases: the transfer-icon cases from 147, then this slice's six.

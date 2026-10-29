@@ -12,7 +12,8 @@
   var $ = function (id) { return document.getElementById(id); };
   var fmtSize = function (bytes) { return window.gkpsFormatSize(bytes); };
   var date = function (value) { return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value)); };
-  var todayJakarta = function () { var parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date()); var get = function (name) { return parts.find(function (part) { return part.type === name; }).value; }; return get('year') + '-' + get('month') + '-' + get('day'); };
+  /* the congregation's day, from the one rule this page shares with the transfer history (spec 146) */
+  var todayJakarta = function () { return window.gkpsAgeBuckets.todayIso(); };
   function request(path, options) {
     return fetch(endpoint + path, Object.assign({ mode: 'cors', cache: 'no-store' }, options || {})).then(function (response) {
       return response.json().then(function (data) { if (!response.ok) throw new Error(data.error || 'Local library unavailable'); return data; });
@@ -97,14 +98,20 @@
     $('mediaResultCount').textContent = shown.length + ' of ' + files.length + ' files shown';
     $('mediaEmpty').hidden = !!shown.length;
     $('mediaEmpty').textContent = !connected ? 'Local library unavailable on this computer.' : unusedOnly && !uses ? 'Service uses unavailable.' : files.length ? 'No files match these filters.' : 'No files on this computer yet.';
-    var group = null;
-    shown.forEach(function (file) {
-      if (sort.startsWith('date')) {
-        var label = date(file.uploaded_at);
-        if (label !== group) { group = label; list.appendChild(node('h2', 'media-library__group', label)); }
-      }
-      list.appendChild(row(file));
-    });
+    if (sort.startsWith('date')) {
+      /* Age, not the calendar day: the same buckets the Tata Ibadah list draws, in the direction the sort
+         runs, so an ascending list still reads oldest first (spec 146, FR-005). */
+      var buckets = window.gkpsAgeBuckets;
+      var ladder = sort.endsWith('desc') ? buckets.FILE_BUCKETS : buckets.FILE_BUCKETS.slice().reverse();
+      buckets.group(shown, function (file) { return buckets.fileKey(file); }, ladder).forEach(function (bucket) {
+        var head = node('h2', 'media-library__group', bucket.label);
+        head.dataset.bucket = bucket.key;
+        list.appendChild(head);
+        bucket.rows.forEach(function (file) { list.appendChild(row(file)); });
+      });
+    } else {
+      shown.forEach(function (file) { list.appendChild(row(file)); });
+    }
     if (connected) setStatus({ write_token: token, retention: retention });
   }
   function openDialog(dialog) { dialog.showModal(); }

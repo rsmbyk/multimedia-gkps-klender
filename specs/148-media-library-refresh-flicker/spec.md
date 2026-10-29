@@ -126,11 +126,11 @@ may contain a `.media-library__unused` line inside a row whose file has referenc
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | A refresh SHALL draw the file list at most once. It SHALL NOT draw an intermediate state in which a file's known service references are replaced by the `Service uses unavailable` placeholder. | `new: reading` → R22 |
-| FR-002 | No row SHALL change position during a refresh: every frame from the triggering action to the settled list shows the same row tops as the settled list. | `new: reading` → R22 |
-| FR-003 | The page's first load SHALL draw the list once, already carrying its references; when the references request fails, it SHALL draw once with the placeholder and keep it. | `new: reading` → R22 |
-| FR-004 | The 2s status poll SHALL keep re-reading the companion and SHALL remain visually inert while the data has not changed. | `new: reading` → R22 |
-| FR-005 | Nothing else about the page changes: the files and their order, the rows' markup and heights, the filters, the sort, the Unused toggle, the cloud control's states, the dialogs, the requests made to the companion, and the page's document title. | `new: reading` → R22 |
+| FR-001 | A refresh SHALL draw the file list at most once. It SHALL NOT draw an intermediate state in which a file's known service references are replaced by the `Service uses unavailable` placeholder. | `new: reading` → R24 |
+| FR-002 | No row SHALL change position during a refresh: every frame from the triggering action to the settled list shows the same row tops as the settled list. | `new: reading` → R24 |
+| FR-003 | The page's first load SHALL draw the list once, already carrying its references; when the references request fails, it SHALL draw once with the placeholder and keep it. | `new: reading` → R24 |
+| FR-004 | The 2s status poll SHALL keep re-reading the companion and SHALL remain visually inert while the data has not changed. | `new: reading` → R24 |
+| FR-005 | Nothing else about the page changes: the files and their order, the rows' markup and heights, the filters, the sort, the Unused toggle, the cloud control's states, the dialogs, the requests made to the companion, and the page's document title. | `new: reading` → R24 |
 
 ### Key Entities
 

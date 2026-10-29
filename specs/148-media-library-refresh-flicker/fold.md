@@ -7,10 +7,10 @@
 
 | Type | Requirement | Change |
 | --- | --- | --- |
-| `added` | `R22` | The Media Library page draws its file list once per refresh and holds still: no intermediate pass without the service references, no row moves during a refresh, the first load appears complete in one draw, a failed references read still draws the placeholder once, and the 2s poll stays visually inert. Four scenarios: a refresh from an action, the first load, references unavailable, a running transfer. |
+| `added` | `R24` | The Media Library page draws its file list once per refresh and holds still: no intermediate pass without the service references, no row moves during a refresh, the first load appears complete in one draw, a failed references read still draws the placeholder once, and the 2s poll stays visually inert. Four scenarios: a refresh from an action, the first load, references unavailable, a running transfer. |
 
-**Before**: `reading` held 19 requirements (R1…R19). **After**: 20 (R1…R22 — R20 and R21 are held by
-in-flight slices 145 and 146 and are not folded here).
+**Before**: `reading` held 23 requirements (R1…R23 — 145, 146 and 147 folded theirs first).
+**After**: 24 (R1…R24; the number was R22 until 146 took R22 and R23 on `develop`).
 
 ## Drift guard
 
