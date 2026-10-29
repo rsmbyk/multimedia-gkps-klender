@@ -91,3 +91,4 @@ the templates are in [`_templates/`](./_templates/).
 | [153](153-preview-tabs-row/spec.md) | The preview's verse tabs get their own row | Accepted |
 | [154](154-audio-times-inline/spec.md) | An audio preview reads its times as `current / total` | Draft |
 | [157](157-projector-image-missing-glyph/spec.md) | The projector's image placeholder waits for the image to fail | Accepted |
+| [161](161-projector-empty-notice/spec.md) | The projector's empty notice leaves the stage when Go To shows a passage or a song | Accepted |

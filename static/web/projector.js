@@ -308,6 +308,14 @@
   function screens() {
     return [].slice.call(stage.querySelectorAll('.screen[data-screen]'));
   }
+  /* The empty-service notice is the stage's sibling (projector.html), so it is not one of the
+     screens `render` toggles: it follows what the stage holds — a service screen, or a Go To
+     detour painted over an empty service — from one place, so no path paints over it. */
+  function syncEmptyNotice() {
+    var notice = screen.querySelector('.projector__empty');
+    if (!notice) return;
+    notice.hidden = Boolean(detour) || screens().length > 0;
+  }
   function read() {
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
@@ -402,6 +410,9 @@
     body.dataset.currentScreen = String(current);
     body.dataset.showing = showing ? 'true' : 'false';
     body.classList.toggle('words-hidden', !showing);
+    /* Before anything is fitted: the notice's band is part of the stage only while the notice
+       is painted, so the fit below must measure the stage it will actually live in. */
+    syncEmptyNotice();
     if (active && !detour) {
       applyPassageTranslation(active);
       fit(active);
@@ -1162,6 +1173,9 @@
     });
     detourNode.classList.add('is-active');
     body.dataset.showing = 'true';
+    /* The notice goes first: hiding it returns its band to the stage, and the fitting below
+       measures that stage. */
+    syncEmptyNotice();
     fit(detourNode); renderCue();
   }
   function renderDetourCue() {
@@ -1427,8 +1441,7 @@
         screenData = JSON.parse(freshScreens.textContent) || [];
         current = Math.max(0, Number(screenIndex) || 0);
         previousIndex = current;
-        var empty = screen.querySelector('.projector__empty');
-        if (empty) empty.hidden = screens().length > 0;
+        syncEmptyNotice();
         if (done) done(current);
       })
       .catch(function () { /* keep showing what we have */ });

@@ -2060,6 +2060,100 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         page = self._page(f'/projector?service={self.other.pk}')
         self.assertIn('no items', page.locator('.projector__empty').inner_text())
         self.assertNotIn('offline', page.locator('.projector__empty').inner_text().lower())
+        self.assertTrue(page.locator('.projector__empty').is_visible())
+        self.assertFalse(page.locator('.projector__empty').evaluate('(el) => el.hidden'))
+
+    def _notice_state(self, page):
+        """The empty notice and the stage it shares the screen with."""
+        return page.evaluate("""() => {
+          const notice = document.querySelector('.projector__empty');
+          const stage = document.getElementById('projectorScreens');
+          const detour = document.querySelector('.projector-detour');
+          return {
+            display: getComputedStyle(notice).display,
+            hidden: notice.hidden,
+            noticeHeight: notice.getBoundingClientRect().height,
+            stageHeight: stage.getBoundingClientRect().height,
+            detourActive: detour ? detour.classList.contains('is-active') : false,
+          };
+        }""")
+
+    def _add_first_entry(self):
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            def add_entry():
+                try:
+                    tatib.ServiceEntry.objects.create(
+                        tatib=self.other, order_number=1, kind=tatib.ServiceEntryKind.TEXT,
+                        title='Berita', text='Ayat untuk layar kosong')
+                finally:
+                    connections.close_all()
+            pool.submit(add_entry).result()
+
+    def _broadcast_update(self, page):
+        """Another tab posts the update a broadcast never delivers to its sender."""
+        sender = page.context.new_page()
+        sender.goto(self.live_server_url + '/api/')
+        sender.evaluate("""() => {
+          const channel = new BroadcastChannel('gkps-service-display');
+          channel.postMessage({type: 'update'});
+          channel.close();
+        }""")
+        sender.close()
+
+    def test_the_empty_notice_leaves_the_stage_for_a_goto_passage(self):
+        page = self._page(f'/projector?service={self.other.pk}')
+        before = self._notice_state(page)
+        self.assertEqual(before['display'], 'block')
+        self.assertGreater(before['noticeHeight'], 0)
+        self.assertFalse(before['detourActive'])
+
+        self._open_matius_5(page)
+
+        after = self._notice_state(page)
+        self.assertTrue(after['detourActive'], 'the passage must be on the stage')
+        self.assertEqual(after['display'], 'none')
+        self.assertTrue(after['hidden'])
+        self.assertEqual(page.locator('.projector__empty').bounding_box(), None)
+        self.assertAlmostEqual(after['stageHeight'] - before['stageHeight'],
+                               before['noticeHeight'], delta=1)
+        self.assertIn('ayat 1', page.locator('.projector-detour').inner_text())
+
+    def test_closing_the_detour_brings_the_empty_notice_back(self):
+        page = self._page(f'/projector?service={self.other.pk}')
+        self._open_matius_5(page)
+        self.assertEqual(self._notice_state(page)['display'], 'none')
+
+        page.keyboard.press('Escape')
+        page.wait_for_function(
+            "!document.querySelector('.projector-detour').classList.contains('is-active')")
+
+        state = self._notice_state(page)
+        self.assertEqual(state['display'], 'block')
+        self.assertFalse(state['hidden'])
+        self.assertTrue(page.locator('.projector__empty').is_visible())
+
+    def test_a_reread_with_screens_hides_the_empty_notice(self):
+        page = self._page(f'/projector?service={self.other.pk}')
+        self.assertEqual(self._notice_state(page)['display'], 'block')
+        self._add_first_entry()
+
+        with page.expect_request(lambda request: f'/projector?service={self.other.pk}' in request.url):
+            self._broadcast_update(page)
+        page.wait_for_function(
+            "document.querySelectorAll('#projectorScreens .screen[data-screen]').length > 0")
+
+        self.assertEqual(self._notice_state(page)['display'], 'none')
+        self.assertIn('Ayat untuk layar kosong', page.locator('#projectorScreens').inner_text())
+
+    def test_a_reread_without_screens_keeps_the_empty_notice(self):
+        page = self._page(f'/projector?service={self.other.pk}')
+
+        with page.expect_request(lambda request: f'/projector?service={self.other.pk}' in request.url):
+            self._broadcast_update(page)
+        page.wait_for_timeout(600)
+
+        self.assertEqual(page.locator('#projectorScreens .screen[data-screen]').count(), 0)
+        self.assertEqual(self._notice_state(page)['display'], 'block')
 
     def test_the_reading_shell_carries_no_offline_control(self):
         page = self._page('/home/')
