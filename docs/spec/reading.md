@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-29
-**slices**: `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1042,3 +1042,28 @@ space press takes it away.
 #### Scenario: a reader who navigates
 - WHEN the reader presses Tab inside the dialog, whatever was painted before
 - THEN the body's 2px `--focus` ring is drawn again once the body holds focus
+
+### R32 — A dialog's `cancel` answers only the dialog's own dismissal
+
+An editor dialog SHALL close on a `cancel` event only when that event's target is the dialog itself. A
+`cancel` whose target is a descendant SHALL NOT close it — the New media form's file input fires one when
+the person closes the file picker without choosing, or re-picks the file already chosen — and the form
+SHALL keep its tab, its chosen file, its typed title, its note and its Save state. Dismissing the dialog
+itself SHALL keep closing it with its existing motion, and the other editor forms SHALL be unaffected.
+Nothing about the dialog's frame, its markup or its copy changes.
+
+#### Scenario: the picker is dismissed with nothing chosen
+- WHEN the New media dialog is open on Upload and the person closes the file picker without a file
+- THEN the dialog stays open, the upload prompt is still shown and Save is still disabled
+
+#### Scenario: the picker is dismissed with a file chosen
+- WHEN a file has been chosen and the person closes the picker again
+- THEN the dialog stays open and still shows that file, its name, its size and its note, with Save enabled
+
+#### Scenario: the dialog is dismissed
+- WHEN Escape is pressed while the New media dialog has focus
+- THEN it closes with its 150ms closing motion, as before
+
+#### Scenario: the dialog is on the Media Library tab
+- WHEN a row is selected there and a `cancel` arrives from the file input
+- THEN the dialog stays open on that tab with that row still selected

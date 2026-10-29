@@ -17,6 +17,10 @@
       setTimeout(function () { nativeClose(returnValue); editorDialog.classList.remove('media-closing'); }, 150);
     };
     editorDialog.addEventListener('cancel', function (event) {
+      /* The file input fires `cancel` itself when the picker is dismissed without a choice
+         (or the same file is re-picked), and that event bubbles up to this listener. Only the
+         dialog's own dismissal may close it; a descendant's cancel is not ours to answer. */
+      if (event.target !== editorDialog) return;
       if (editorDialog.querySelector('form[data-entry-form="media"]')) {
         event.preventDefault(); editorDialog.close();
       }
