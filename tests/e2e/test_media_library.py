@@ -597,7 +597,9 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
           const listBox = list.getBoundingClientRect();
           const title = dialog.querySelector('h2').getBoundingClientRect().top;
           const border = parseFloat(style.borderBottomWidth);
-          const innerBottom = box.bottom - border - parseFloat(style.paddingBottom);
+          /* Spec 152: the list's box reaches the dialog's inner border, and the 22px the last row keeps
+             above the border at the end of the scroll is the list's own bottom padding. */
+          const innerBottom = box.bottom - border;
           list.scrollTop = list.scrollHeight;
           const rows = [...list.querySelectorAll('.media-transfers__row')];
           const last = rows[rows.length - 1].getBoundingClientRect();
@@ -605,7 +607,7 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
             scrolls: list.scrollHeight > list.clientHeight + 1,
             dialogScrolls: dialog.scrollHeight > dialog.clientHeight + 1,
             past: Math.round((listBox.bottom - innerBottom) * 10) / 10,
-            endGap: Math.round((innerBottom - last.bottom + parseFloat(style.paddingBottom)) * 10) / 10,
+            endGap: Math.round((innerBottom - last.bottom) * 10) / 10,
             inside: last.bottom <= innerBottom + 0.5,
             titleHeld: dialog.querySelector('h2').getBoundingClientRect().top === title,
             scrolled: list.scrollTop,
@@ -615,10 +617,10 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         }""")
         self.assertTrue(measured['scrolls'], 'the list itself scrolls')
         self.assertFalse(measured['dialogScrolls'], 'the dialog does not scroll its title away')
-        self.assertLessEqual(measured['past'], 0.5, 'the list paints past the dialog padding')
+        self.assertLessEqual(measured['past'], 0.5, 'the list paints past the dialog border')
         self.assertTrue(measured['inside'], 'a row paints outside the dialog')
         self.assertAlmostEqual(measured['endGap'], 22, delta=0.5,
-                               msg='the last row ends the dialog padding above its border')
+                               msg='the last row ends 22px above the dialog border')
         self.assertTrue(measured['titleHeld'], 'the title moved while the list scrolled')
         self.assertGreater(measured['scrolled'], 0)
         page.close()
@@ -647,6 +649,118 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         self.assertLess(measured['height'], 700, 'the dialog took its max height for two rows')
         self.assertEqual(measured['borders'], ['1px', '1px'])
         self.assertEqual(measured['heights'][0], measured['heights'][1])
+        page.close()
+
+    # Spec 152 — the bar meets the dialog's right and bottom edges; nothing else moves.
+
+    def test_the_transfer_list_reaches_the_dialog_edges(self):
+        jobs = [self.transfer_job(index, f'worship-{index}.pdf') for index in range(1, 16)]
+        page = self.transfer_list_page(jobs)
+        page.locator('#mediaTransfersButton').click()
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(15)
+        page.wait_for_timeout(400)   # the dialog scales in over 190ms; measure it at rest
+
+        measured = page.evaluate("""() => {
+          const dialog = document.querySelector('#mediaTransfersDialog');
+          const list = document.querySelector('#mediaTransfersList');
+          const style = getComputedStyle(dialog);
+          const d = dialog.getBoundingClientRect(), l = list.getBoundingClientRect();
+          const round = v => Math.round(v * 10) / 10;
+          return {
+            right: round(d.right - l.right - parseFloat(style.borderRightWidth)),
+            bottom: round(d.bottom - l.bottom - parseFloat(style.borderBottomWidth)),
+            left: round(l.left - d.left - parseFloat(style.borderLeftWidth)),
+            overflow: style.overflow,
+            scrolls: list.scrollHeight > list.clientHeight + 1,
+          };
+        }""")
+        self.assertAlmostEqual(measured['right'], 0, delta=0.6,
+                               msg='the bar does not reach the dialog\'s right border')
+        self.assertAlmostEqual(measured['bottom'], 0, delta=0.6,
+                               msg='the bar\'s lane stops short of the dialog\'s bottom border')
+        self.assertAlmostEqual(measured['left'], 0, delta=0.6,
+                               msg='the list no longer spans the dialog\'s inner width')
+        self.assertEqual(measured['overflow'], 'clip', 'the dialog does not clip to its rounded border')
+        self.assertTrue(measured['scrolls'], 'the list is no longer the scroll container')
+        page.close()
+
+    def test_the_transfer_content_keeps_its_insets(self):
+        jobs = [self.transfer_job(index, f'worship-{index}.pdf') for index in range(1, 16)]
+        page = self.transfer_list_page(jobs)
+        page.locator('#mediaTransfersButton').click()
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(15)
+        page.wait_for_timeout(400)
+
+        measured = page.evaluate("""() => {
+          const dialog = document.querySelector('#mediaTransfersDialog');
+          const list = document.querySelector('#mediaTransfersList');
+          const row = list.querySelector('.media-transfers__row');
+          const d = dialog.getBoundingClientRect(), r = row.getBoundingClientRect();
+          const bar = list.offsetWidth - list.clientWidth;
+          return {left: Math.round((r.left - d.left) * 10) / 10,
+                  right: Math.round((d.right - r.right) * 10) / 10, bar,
+                  separator: getComputedStyle(row).borderBottomWidth};
+        }""")
+        self.assertAlmostEqual(measured['left'], 23, delta=0.6, msg='the row text moved off its 23px inset')
+        self.assertAlmostEqual(measured['right'], 23 + measured['bar'], delta=0.6,
+                               msg='the row content does not keep clear of the bar')
+        self.assertEqual(measured['separator'], '1px', 'the row separator is not the same line')
+        page.close()
+
+    def test_a_short_transfer_list_has_no_reserved_gutter(self):
+        jobs = [self.transfer_job(index, f'notes-{index}.pdf') for index in range(1, 3)]
+        page = self.transfer_list_page(jobs)
+        page.locator('#mediaTransfersButton').click()
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(2)
+        page.wait_for_timeout(400)
+
+        measured = page.evaluate("""() => {
+          const dialog = document.querySelector('#mediaTransfersDialog');
+          const list = document.querySelector('#mediaTransfersList');
+          const row = list.querySelector('.media-transfers__row');
+          const d = dialog.getBoundingClientRect(), r = row.getBoundingClientRect();
+          return {bar: list.offsetWidth - list.clientWidth,
+                  right: Math.round((d.right - r.right) * 10) / 10,
+                  height: Math.round(d.getBoundingClientRect ? d.height : 0)};
+        }""")
+        self.assertEqual(measured['bar'], 0, 'a short list reserves a scrollbar lane')
+        self.assertAlmostEqual(measured['right'], 23, delta=0.6,
+                               msg='a short list moved its rows inward')
+        page.close()
+
+    def test_the_dialog_frame_and_scroll_end_do_not_move(self):
+        jobs = [self.transfer_job(index, f'worship-{index}.pdf') for index in range(1, 16)]
+        page = self.transfer_list_page(jobs)
+        page.locator('#mediaTransfersButton').click()
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(15)
+        page.wait_for_timeout(400)
+
+        measured = page.evaluate("""() => {
+          const dialog = document.querySelector('#mediaTransfersDialog');
+          const list = document.querySelector('#mediaTransfersList');
+          const title = dialog.querySelector('h2');
+          const group = list.querySelector('.media-transfers__group');
+          const d = dialog.getBoundingClientRect(), t = title.getBoundingClientRect();
+          const l = list.getBoundingClientRect();
+          list.scrollTop = list.scrollHeight;
+          const rows = [...list.querySelectorAll('.media-transfers__row')];
+          const last = rows[rows.length - 1].getBoundingClientRect();
+          const result = {
+            titleLeft: Math.round((t.left - d.left) * 10) / 10,
+            titleToList: Math.round((l.top - t.bottom) * 10) / 10,
+            groupLeft: group ? Math.round((group.getBoundingClientRect().left - d.left) * 10) / 10 : null,
+            endGap: Math.round((d.bottom - last.bottom) * 10) / 10,
+            scrolled: list.scrollTop,
+          };
+          list.scrollTop = 0;
+          return result;
+        }""")
+        self.assertAlmostEqual(measured['titleLeft'], 23, delta=0.6, msg='the title moved')
+        self.assertAlmostEqual(measured['titleToList'], 14, delta=0.6, msg='the list moved off the title')
+        self.assertAlmostEqual(measured['groupLeft'], 23, delta=0.6, msg='the age heading moved')
+        self.assertGreater(measured['scrolled'], 0, 'the list did not scroll')
+        self.assertAlmostEqual(measured['endGap'], 23, delta=1,
+                               msg='the last row no longer keeps the dialog\'s 22px padding above its border')
         page.close()
 
     def test_connection_icon_tracks_status_refresh(self):

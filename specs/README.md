@@ -88,6 +88,10 @@ the templates are in [`_templates/`](./_templates/).
 | [148](148-media-library-refresh-flicker/spec.md) | The Media Library list holds still while it refreshes | Accepted |
 | [149](149-transfer-separator-seam/spec.md) | The Transfers list draws each boundary once | Accepted |
 | [150](150-references-token-order/spec.md) | The first refresh authenticates its references write | Accepted |
+| [151](151-rail-icons/spec.md) | The rail says what each section is, and its marks are the stage's own | Accepted |
+| [152](152-transfer-scrollbar-edge/spec.md) | The Transfers scrollbar sits at the dialog's edges | Accepted |
 | [153](153-preview-tabs-row/spec.md) | The preview's verse tabs get their own row | Accepted |
 | [154](154-audio-times-inline/spec.md) | An audio preview reads its times as `current / total` | Draft |
 | [156](156-audio-play-indicator/spec.md) | The audio projector screen shows its play/pause control | Accepted |
+| [157](157-projector-image-missing-glyph/spec.md) | The projector's image placeholder waits for the image to fail | Accepted |
+| [161](161-projector-empty-notice/spec.md) | The projector's empty notice leaves the stage when Go To shows a passage or a song | Accepted |
