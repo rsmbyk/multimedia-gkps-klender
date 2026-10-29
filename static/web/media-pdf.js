@@ -39,13 +39,20 @@
   function loadSlides(sha, signal) {
     return loadFrom('http://127.0.0.1:63174/v1/slides/', sha, signal);
   }
-  async function paint(document, number, canvas, availableWidth, availableHeight, signal) {
+  async function paint(document, number, canvas, availableWidth, availableHeight, signal, options) {
     if (signal && signal.aborted) throw aborted();
     var page = await document.getPage(number);
     try {
       if (signal && signal.aborted) throw aborted();
       var source = page.getViewport({scale: 1});
-      var scale = Math.min(1, availableWidth / source.width, availableHeight / source.height);
+      /* `fit` picks the ratio the caller asked for; without `upscale` the scale never
+         passes 1:1, which is what the reader's dialog still expects (spec 158 D002). */
+      var fit = (options && options.fit) || 'contain';
+      var byWidth = availableWidth / source.width;
+      var byHeight = availableHeight / source.height;
+      var scale = fit === 'width' ? byWidth : fit === 'height' ? byHeight
+        : Math.min(byWidth, byHeight);
+      if (!(options && options.upscale)) scale = Math.min(1, scale);
       var viewport = page.getViewport({scale: scale});
       var pixelRatio = Math.min(window.devicePixelRatio || 1, 2,
         Math.sqrt(6000000 / (viewport.width * viewport.height)));
@@ -58,7 +65,8 @@
       if (signal) signal.addEventListener('abort', function () { render.cancel(); }, {once: true});
       await render.promise;
       if (signal && signal.aborted) throw aborted();
-      return {width: viewport.width, height: viewport.height};
+      return {width: viewport.width, height: viewport.height,
+              own: {w: source.width, h: source.height}};
     } finally {
       page.cleanup();
     }

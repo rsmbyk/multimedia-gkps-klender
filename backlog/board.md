@@ -39,6 +39,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-173](./items/ITEM-173-projector-media-fit.md) | A small image or a PDF page fills the projector stage | Media smaller than the stage is enlarged to the fit that shows all of it; `T` switches fit width / fit height; the overflow is panned | feat | P1 | S | [158](../specs/158-projector-media-fit/spec.md) | [#455](https://github.com/rsmbyk/multimedia-gkps-klender/pull/455) | 2026-10-29 |
 | [ITEM-172](./items/ITEM-172-audio-presentation-lock.md) | A playing recording owns the projector screen until it pauses | Playing audio takes the screen fullscreen like video does, and no key or click moves the projector until the recording is paused | feat | P1 | S | [155](../specs/155-audio-presentation-lock/spec.md) | [#438](https://github.com/rsmbyk/multimedia-gkps-klender/pull/438) | 2026-10-29 |
 | [ITEM-165](./items/ITEM-165-transfer-scrollbar-edge.md) | The Transfers scrollbar floats inside the dialog and stops short of its bottom | The list starts at the dialog's content box, so the bar paints 22px short of the right border and 23px short of the bottom one; it moves to both edges and nothing else moves | fix | P2 | S | [152](../specs/152-transfer-scrollbar-edge/spec.md) | [#446](https://github.com/rsmbyk/multimedia-gkps-klender/pull/446) | 2026-10-29 |
 
