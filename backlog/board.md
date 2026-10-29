@@ -16,6 +16,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-141](./items/ITEM-141-bible-edition-preference-e2e.md) | The bible edition-preference E2E cannot find the SIM verse text | The scenario waits for `Garam ni dunia.` and the element is absent after the unavailable chapter; identical on develop | fix | P1 | S | — | 2026-10-25 |
 | [ITEM-144](./items/ITEM-144-date-dependent-picker-e2e.md) | Five date-picker E2E tests fail when the nearest Sunday falls in the next month | `_fill` steps months from today while the picker opens on the nearest Sunday, so five editor tests time out on days that cross a month boundary; identical on develop | fix | P1 | S | — | 2026-10-26 |
 | [ITEM-153](./items/ITEM-153-touch-controls-e2e.md) | The touch-controls E2E cannot reach the preview control | `test_touch_controls_remain_visible_after_dismissal` retries its tap 62 times and errors "element is not visible"; the same failure on unmodified develop, so the touch behaviour is unproven | fix | P1 | S | — | 2026-10-28 |
+| [ITEM-159](./items/ITEM-159-known-red-e2e.md) | Three E2E tests are red on develop: two text-wrap assertions and an add-controls opacity | All three reproduce on unmodified develop in a detached worktree; a third-of-a-pixel wrap assertion, a 57-character title that never wraps, and controls visible without a hover | fix | P1 | S | — | 2026-10-28 |
 | [ITEM-156](./items/ITEM-156-media-entry-spacing-e2e.md) | The media-entry spacing E2E measures 19.98px where 12px is asserted | A text row sits ~20px below its media row and the test still expects 12px ± 1; identical on develop | fix | P1 | S | — | 2026-10-28 |
 
 ## Speccing
@@ -26,6 +27,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-158](./items/ITEM-158-kind-mark.md) | A passage or a song carries its own kind mark | Only a media row is marked on the stage; the passage and song rows get a 20px glyph on the media chip's centre line and the media title's column | feat | P2 | S | [144](../specs/144-passage-song-icons/spec.md) | 2026-10-28 |
 
 ## In review
 
