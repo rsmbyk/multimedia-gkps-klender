@@ -2749,12 +2749,19 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 .media-transfer-rail__dot[data-state="completed"] { background: #17804d; }
 .media-transfer-rail__dot[data-state="failed"] { background: var(--danger); }
 .media-transfers__dialog { width: min(580px, calc(100vw - 32px)); }
+/* Only while open: `display` here would otherwise out-rank the UA's `dialog:not([open]) { display: none }`. */
+.media-transfers__dialog[open] { display: flex; flex-direction: column; }
 .media-transfers__row { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid var(--divider); }
 .media-transfers__mark { width: 32px; flex: none; text-align: center; color: var(--focus); font-size: 22px; }
 .media-transfers__main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .media-transfers__main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .media-transfers__main span, .media-transfers__empty { color: var(--head-ink); font-size: 12px; }
 .media-transfers__divider { border: 0; border-top: 2px solid var(--divider); margin: 9px 0; }
+/* One line at the seam (spec 149): the row above the divider drops the border that would stack
+   9px under the 2px divider, and the list — not the dialog — absorbs a taller set of rows, so the
+   dialog's 22px bottom padding survives a list that outgrows it. */
+.media-transfers__row:has(+ .media-transfers__divider) { border-bottom-width: 0; }
+.media-transfers__list { min-height: 0; overflow-y: auto; }
 /* The transfer history's age headings — the Media Library list's own numbers (spec 146, FR-013), tuned for
    a 22px-padded dialog: 20px of air above a shelf, 4px above the first. */
 .media-transfers__group { margin: 20px 0 2px; color: var(--head-ink); font-size: 12px; text-transform: uppercase; letter-spacing: .07em; }

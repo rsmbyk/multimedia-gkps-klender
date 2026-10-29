@@ -453,7 +453,7 @@
 {% include 'reading/_editor_modal.html' %}
 <dialog class="media-error-dialog" id="mediaErrorDialog" aria-labelledby="mediaErrorTitle"><h2 id="mediaErrorTitle">File not supported</h2><p id="mediaErrorMessage"></p><button type="button" id="mediaErrorClose">OK</button></dialog>
 {% include 'reading/_preview_modal.html' %}
-<dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList"></div></dialog>
+<dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList" class="media-transfers__list"></div></dialog>
 <div class="edit-toasts" id="editToastHost" popover="manual"
      aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
 <script src="{% static 'web/focus.js' %}"></script>

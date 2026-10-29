@@ -57,6 +57,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
+| [ITEM-159](./items/ITEM-159-transfer-separator-seam.md) | The Transfers list draws each boundary twice | The session divider's 2px line stacks on the row's own 1px border 9px apart, and a list taller than the dialog paints over its bottom padding; the seam becomes one line and the list scrolls inside the dialog | fix | P2 | S | [149](../specs/149-transfer-separator-seam/spec.md) | develop via [#425](https://github.com/rsmbyk/multimedia-gkps-klender/pull/425) | 2026-10-28 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-158](./items/ITEM-158-media-library-refresh-jolt.md) | The Media Library list jumps while it refreshes | Every refresh drew the list twice — the first pass without service references, so rows shrank from 119/101/123px to 97px and the list below the first row jumped up 22px and back | fix | P2 | S | [148](../specs/148-media-library-refresh-flicker/spec.md) | develop via [#424](https://github.com/rsmbyk/multimedia-gkps-klender/pull/424) | 2026-10-28 |
 | [ITEM-158](./items/ITEM-158-media-transfer-age-buckets.md) | The Media Library and the transfer history group by age | Three age buckets on the list, five on the transfers — one shared rule, the Tata Ibadah list's own labels | feat | P2 | M | [146](../specs/146-media-and-transfer-age-buckets/spec.md) | develop via [#421](https://github.com/rsmbyk/multimedia-gkps-klender/pull/421) | 2026-10-28 |
