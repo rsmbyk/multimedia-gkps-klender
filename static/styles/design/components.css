@@ -2006,9 +2006,22 @@ kbd {
   padding: 8px 8px 8px 12px;
 }
 .tatib__item--media { min-height: 80px; padding: 16px 16px 16px 64px; }
+/* A passage or a song carries a 20px kind mark where the media chip sits (spec 144): the
+   chip's centre line is 13 + 42/2 = 34px from the row's edge, so a 20px glyph starts at
+   24px, and the title takes the media title's own 64px column. One left rail, four kinds;
+   the chip is 2.1x the mark's box and accent-tinted, so it still reads as the heavier mark. */
+.tatib__item--scripture, .tatib__item--song { padding-left: 64px; }
 @media (max-width: 520px) {
   .tatib__item--media { padding-right: 12px; padding-left: 60px; }
+  .tatib__item--scripture, .tatib__item--song { padding-left: 60px; }
 }
+.entry__kind-icon {
+  position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  color: var(--head-ink); pointer-events: none;
+}
+.entry__kind-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 /* The controls own a column at the item's right edge (spec 140): the entry
    reserves it, so a title or a media name never runs under the buttons. The
    column is 106px while the controls are icons and 264px once the pane is wide
