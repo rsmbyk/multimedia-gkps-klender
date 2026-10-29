@@ -35,3 +35,11 @@ same gap analysis F3 recorded before code, not a new one.
 - Not folded, accepted: nothing about the keys, because the sheet's description of them is what R3
   states and the behaviour itself is unchanged — the E2E cases prove the behaviour, and they run at
   the push step.
+
+## Delivery split
+
+`tasks.md`'s T010 stays open by design: `VERSION` (1.22.10 → 1.22.11) and the `CHANGELOG.md` line
+landed in the Fold commit with the card set `in-progress`, and the card's `In review` move, its
+`pr:`, `done`, `closed_at`, `closed_reason` and the board's `Done` row happen at the push and the
+closing chore, where the PR number exists and the merge is fact. A card claiming a merge before one
+happened would be the defect BRD-05 names.
