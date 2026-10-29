@@ -96,6 +96,12 @@ body.pdf-unavailable #corner-cue { visibility: hidden; }
 .screen__audio-box.is-idle .screen__audio-seek { opacity: .52; }
 .screen__audio-box.is-idle .screen__audio-times { opacity: .4; }
 @media (prefers-reduced-motion: reduce) { .screen__audio-play, .screen__audio-seek, .screen__audio-times { transition: none; } }
+/* Spec 155: a playing recording takes the screen the way a playing video does — the
+   audio box fills the viewport, so the corner cue and the mouse zones are off screen. */
+.screen__audio-box:fullscreen {
+  position: relative; z-index: 2147483647; display: flex; width: 100vw; height: 100vh;
+  flex: none; background: #171613;
+}
 
 .screen__video-box {
   position: relative; z-index: 3; width: 100%; flex: 1 1 auto; min-height: 0;

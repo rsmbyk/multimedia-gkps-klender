@@ -49,7 +49,10 @@
     }
     function toggle() {
       if (!ready) return;
-      if (audio.paused) audio.play().catch(fail);
+      if (audio.paused) {
+        if (options && options.onPlayRequest) options.onPlayRequest();
+        audio.play().catch(fail);
+      }
       else audio.pause();
     }
     function fail() { if (options && options.onError) options.onError(); }
@@ -78,6 +81,7 @@
     update();
     return {
       audio: audio, toggle: toggle,
+      pause: function () { audio.pause(); },
       setUrl: function (url) { audio.src = url; audio.load(); },
       stop: function () { audio.pause(); audio.removeAttribute('src'); audio.load(); ready = false; }
     };

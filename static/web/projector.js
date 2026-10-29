@@ -43,6 +43,8 @@
   var audioUrl = null;
   var audioToken = 0;
   var audioIdleTimer = null;
+  var audioWasFullscreen = false;
+  var audioFullscreenToken = 0;
   var videoHost = null;
   var videoController = null;
   var videoPlayer = null;
@@ -87,6 +89,40 @@
   document.addEventListener('pointerdown', videoActivity);
   document.addEventListener('keydown', videoActivity);
 
+  /* Spec 155: a playing recording takes the screen the way a playing video does —
+     the audio box becomes the fullscreen element, so the corner cue and the mouse
+     zones are off screen and the only way back is to pause. */
+  function audioPlaying() {
+    return Boolean(audioHost && audioPlayer && !audioPlayer.audio.paused);
+  }
+  function requestAudioFullscreen(host) {
+    if (!host || !host.requestFullscreen) return;
+    var token = ++audioFullscreenToken;
+    var request;
+    try { request = host.requestFullscreen(); }
+    catch (error) { return; }
+    Promise.resolve(request).then(function () {
+      if (token !== audioFullscreenToken || host !== audioHost || !audioPlaying())
+        exitAudioFullscreen(host);
+    }).catch(function () { /* The recording remains playable in the normal projector area. */ });
+  }
+  function exitAudioFullscreen(host) {
+    audioFullscreenToken++;
+    var currentFullscreen = document.fullscreenElement;
+    if (currentFullscreen && (currentFullscreen === host
+        || currentFullscreen.classList.contains('screen__audio-box'))) {
+      document.exitFullscreen().catch(function () {});
+    }
+  }
+  function syncAudioFullscreen() {
+    var isAudioFullscreen = Boolean(audioHost && document.fullscreenElement === audioHost);
+    /* Leaving the fullscreen screen by Escape (or any browser gesture) pauses the
+       recording, so it never plays on under the normal projector page. */
+    if (audioWasFullscreen && !isAudioFullscreen && audioPlaying()) audioPlayer.pause();
+    audioWasFullscreen = isAudioFullscreen;
+    if (isAudioFullscreen) audioActivity();
+  }
+
   function clearAudioScreen() {
     audioToken++;
     clearTimeout(audioIdleTimer);
@@ -117,7 +153,12 @@
       audioPlayer = window.GKPSMediaAudio.attach(host, {
         onReady: function () { if (token === audioToken) player.hidden = false; },
         onError: function () { if (token === audioToken) { clearAudioScreen(); missing.removeAttribute('hidden'); } },
-        onPlayback: audioActivity
+        onPlayRequest: function () { if (token === audioToken) requestAudioFullscreen(host); },
+        onPlayback: function (playing) {
+          if (token !== audioToken) return;
+          audioActivity();
+          if (!playing) exitAudioFullscreen(host);
+        }
       });
       audioPlayer.setUrl(url);
     }).catch(function () {
@@ -830,12 +871,14 @@
     event.stopPropagation(); setKeysOpen(!body.classList.contains('keys-open'));
   });
   cueService.addEventListener('click', function (event) {
-    event.stopPropagation(); setEntryListOpen(!body.classList.contains('entry-list-open'));
+    event.stopPropagation(); if (audioPlaying()) return;
+    setEntryListOpen(!body.classList.contains('entry-list-open'));
   });
   entryDismiss.addEventListener('click', function (event) {
     event.stopPropagation(); setEntryListOpen(false);
   });
   function chooseEntryList(index) {
+    if (audioPlaying()) return;
     if (!entries[index]) return;
     leaveDetour(); moveTo(entries[index].start);
     setEntryListOpen(false);
@@ -866,6 +909,7 @@
   });
   cueNext.addEventListener('click', function (event) {
     event.stopPropagation();
+    if (audioPlaying()) return;
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
     if (detour) leaveDetour(); else moveEntry(1);
   });
@@ -873,6 +917,7 @@
     var bait = event.target.closest('.cue-bait');
     if (!bait) return;
     event.stopPropagation();
+    if (audioPlaying()) return;
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
     if (detour && detour.kind === 'song') {
       detour.index = detour.baits[Number(bait.dataset.baitIndex)].start; renderDetour();
@@ -896,6 +941,8 @@
     if (!findPanel.hidden) return;
     var zone = event.target.closest('.mouse-zone');
     if (!zone) return;
+    /* Spec 155: the playing recording owns the screen until it pauses. */
+    if (audioPlaying()) return;
     if (!document.fullscreenElement && !fullscreenDenied && document.fullscreenEnabled &&
         document.documentElement.requestFullscreen) {
       enterFullscreen();
@@ -1225,6 +1272,22 @@
       event.stopImmediatePropagation();
       return;
     }
+    /* Spec 155: while a recording plays, no key moves the projector off its screen —
+       not the page steps, not the entry or bait jumps, not the Go To. Space pauses,
+       which is what gives the screen back. */
+    if (audioPlaying()) {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+           'PageUp', 'PageDown', 'Home', 'End'].includes(event.key)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey &&
+          ['g', 'j'].includes(event.key.toLowerCase())) {
+        event.preventDefault();
+        return;
+      }
+    }
     if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.repeat) {
       if (event.key.toLowerCase() === 'k') {
         event.preventDefault(); setKeysOpen(!body.classList.contains('keys-open')); return;
@@ -1319,6 +1382,7 @@
   }
   document.addEventListener('fullscreenchange', syncFullscreenCursor);
   document.addEventListener('fullscreenchange', syncVideoFullscreen);
+  document.addEventListener('fullscreenchange', syncAudioFullscreen);
   syncFullscreenCursor();
   var escapeHoldTimer;
   document.addEventListener('keydown', function (event) {
