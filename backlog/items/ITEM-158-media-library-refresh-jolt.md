@@ -1,6 +1,6 @@
 ---
 id: ITEM-158
-status: in-review
+status: done
 title: 'The Media Library list jumps while it refreshes'
 type: fix
 priority: P2
@@ -11,9 +11,9 @@ spec: specs/148-media-library-refresh-flicker/spec.md
 branch: feat/148-media-library-refresh-flicker
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/424
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/423
-closed_at:
+closed_at: 2026-10-28
 closed_reason:
-bump:
+bump: patch
 release_version:
 ---
 
