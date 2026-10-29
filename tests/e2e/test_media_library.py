@@ -460,6 +460,177 @@ class MediaLibraryE2ETests(StaticLiveServerTestCase):
         page.keyboard.press('Escape')
         expect(rail).not_to_be_visible()
 
+    def transfer_job(self, job_id, name, status='completed', ended_at='2026-10-28T09:00:00+00:00'):
+        return {'id': job_id, 'direction': 'upload', 'sha256': f'{job_id:064d}',
+                'name': name, 'size': 1000, 'bytes_done': 1000, 'status': status,
+                'automatic': 0, 'started_at': '2026-10-28T08:59:00+00:00',
+                'ended_at': ended_at if status == 'completed' else None}
+
+    def finished_jobs(self, jobs, finished):
+        """The same jobs, with the ones that were active now completed just now."""
+        return [dict(job, status='completed', bytes_done=job['size'],
+                     ended_at=finished if job['status'] == 'active' else job['ended_at'])
+                for job in jobs]
+
+    def transfer_list_page(self, jobs):
+        page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+        state = {'jobs': list(jobs)}
+
+        def companion(route):
+            url = route.request.url
+            if url.endswith('/status'):
+                payload = {'connection': 'connected', 'file_count': 0, 'total_size': 0,
+                           'retention': '30', 'write_token': 'test-token'}
+            elif url.endswith('/transfers'):
+                payload = {'transfers': state['jobs'], 'retrying': []}
+            elif url.endswith('/files') or url.endswith('/references'):
+                payload = {'files': []}
+            else:
+                payload = {'error': 'Not found'}
+            route.fulfill(status=200, content_type='application/json', body=json.dumps(payload),
+                          headers={'Access-Control-Allow-Origin': self.live_server_url})
+
+        page.route('http://127.0.0.1:63174/**', companion)
+        page._transfer_state = state
+        page.goto(self.live_server_url + reverse('web-media-library'))
+        return page
+
+    SEAM_PROBE = """() => {
+      const list = document.querySelector('#mediaTransfersList');
+      const rows = [...list.querySelectorAll('.media-transfers__row')];
+      const divider = list.querySelector('.media-transfers__divider');
+      if (!divider) return { dividers: 0, rows: rows.length };
+      const before = divider.previousElementSibling;
+      const border = parseFloat(getComputedStyle(before).borderBottomWidth);
+      const dividerBox = divider.getBoundingClientRect();
+      const beforeBox = before.getBoundingClientRect();
+      let near = parseFloat(getComputedStyle(divider).borderTopWidth) > 0 ? 1 : 0;
+      rows.forEach(row => {
+        const width = parseFloat(getComputedStyle(row).borderBottomWidth);
+        const gap = dividerBox.top - row.getBoundingClientRect().bottom;
+        if (width > 0 && gap >= -1 && gap <= 20) near += 1;
+      });
+      return {
+        dividers: list.querySelectorAll('.media-transfers__divider').length,
+        rows: rows.length,
+        border,
+        dividerBorder: parseFloat(getComputedStyle(divider).borderTopWidth),
+        near,
+        above: Math.round((dividerBox.top - (beforeBox.bottom - border)) * 10) / 10,
+        below: Math.round((rows[rows.indexOf(before) + 1].getBoundingClientRect().top - dividerBox.bottom) * 10) / 10,
+      };
+    }"""
+
+    def test_the_session_seam_draws_one_line(self):
+        jobs = [self.transfer_job(1, 'images (1).jpeg', status='active'),
+                self.transfer_job(2, 'elephant.webp', status='active')]
+        jobs += [self.transfer_job(index, f'service-{index}.pdf') for index in range(3, 10)]
+        page = self.transfer_list_page(jobs)
+        rail = page.locator('#mediaTransferRail')
+        expect(rail).to_be_visible()
+        rail.click()
+        expect(page.locator('#mediaTransfersList')).to_contain_text('100%')
+
+        page._transfer_state['jobs'] = self.finished_jobs(jobs, datetime.now(timezone.utc).isoformat())
+        expect(page.locator('#mediaTransfersList')).to_contain_text('Completed')
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(9)
+
+        seam = page.evaluate(self.SEAM_PROBE)
+        self.assertEqual(seam['dividers'], 1)
+        self.assertEqual(seam['rows'], 9)
+        self.assertEqual(seam['border'], 0, 'the row above the seam keeps its own border')
+        self.assertEqual(seam['dividerBorder'], 2)
+        self.assertEqual(seam['near'], 1, 'two boundaries are drawn at the seam')
+
+        page.keyboard.press('Escape')
+        page.locator('#mediaTransfersButton').click()
+        expect(page.locator('#mediaTransfersDialog')).to_be_visible()
+        self.assertEqual(page.locator('#mediaTransfersList .media-transfers__divider').count(), 0,
+                         'a dialog opened from the media library draws no session seam')
+        page.keyboard.press('Escape')
+
+    def test_the_seam_keeps_equal_space_either_side(self):
+        jobs = [self.transfer_job(1, 'images (1).jpeg', status='active')]
+        jobs += [self.transfer_job(index, f'service-{index}.pdf') for index in range(2, 10)]
+        page = self.transfer_list_page(jobs)
+        page.locator('#mediaTransferRail').click()
+        page._transfer_state['jobs'] = self.finished_jobs(jobs, datetime.now(timezone.utc).isoformat())
+        expect(page.locator('#mediaTransfersList .media-transfers__divider')).to_have_count(1)
+
+        seam = page.evaluate(self.SEAM_PROBE)
+        self.assertEqual(seam['above'], 9, 'the seam sits 9px under the row above')
+        self.assertEqual(seam['below'], 9, 'and 9px above the row below')
+        page.close()
+
+    def test_a_long_transfer_list_scrolls_inside_the_dialog(self):
+        jobs = [self.transfer_job(index, f'worship-{index}.pdf') for index in range(1, 16)]
+        page = self.transfer_list_page(jobs)
+        page.locator('#mediaTransfersButton').click()
+        dialog = page.locator('#mediaTransfersDialog')
+        expect(dialog).to_be_visible()
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(15)
+        page.wait_for_timeout(400)   # the dialog scales in over 190ms; measure it at rest
+
+        measured = page.evaluate("""() => {
+          const dialog = document.querySelector('#mediaTransfersDialog');
+          const list = document.querySelector('#mediaTransfersList');
+          const style = getComputedStyle(dialog);
+          const box = dialog.getBoundingClientRect();
+          const listBox = list.getBoundingClientRect();
+          const title = dialog.querySelector('h2').getBoundingClientRect().top;
+          const border = parseFloat(style.borderBottomWidth);
+          const innerBottom = box.bottom - border - parseFloat(style.paddingBottom);
+          list.scrollTop = list.scrollHeight;
+          const rows = [...list.querySelectorAll('.media-transfers__row')];
+          const last = rows[rows.length - 1].getBoundingClientRect();
+          const result = {
+            scrolls: list.scrollHeight > list.clientHeight + 1,
+            dialogScrolls: dialog.scrollHeight > dialog.clientHeight + 1,
+            past: Math.round((listBox.bottom - innerBottom) * 10) / 10,
+            endGap: Math.round((innerBottom - last.bottom + parseFloat(style.paddingBottom)) * 10) / 10,
+            inside: last.bottom <= innerBottom + 0.5,
+            titleHeld: dialog.querySelector('h2').getBoundingClientRect().top === title,
+            scrolled: list.scrollTop,
+          };
+          list.scrollTop = 0;
+          return result;
+        }""")
+        self.assertTrue(measured['scrolls'], 'the list itself scrolls')
+        self.assertFalse(measured['dialogScrolls'], 'the dialog does not scroll its title away')
+        self.assertLessEqual(measured['past'], 0.5, 'the list paints past the dialog padding')
+        self.assertTrue(measured['inside'], 'a row paints outside the dialog')
+        self.assertAlmostEqual(measured['endGap'], 22, delta=0.5,
+                               msg='the last row ends the dialog padding above its border')
+        self.assertTrue(measured['titleHeld'], 'the title moved while the list scrolled')
+        self.assertGreater(measured['scrolled'], 0)
+        page.close()
+
+    def test_a_short_transfer_list_keeps_its_natural_height(self):
+        jobs = [self.transfer_job(index, f'notes-{index}.pdf') for index in range(1, 3)]
+        page = self.transfer_list_page(jobs)
+        page.locator('#mediaTransfersButton').click()
+        expect(page.locator('#mediaTransfersList .media-transfers__row')).to_have_count(2)
+
+        measured = page.evaluate("""() => {
+          const dialog = document.querySelector('#mediaTransfersDialog');
+          const list = document.querySelector('#mediaTransfersList');
+          const rows = [...list.querySelectorAll('.media-transfers__row')];
+          return {
+            dividers: list.querySelectorAll('.media-transfers__divider').length,
+            clientHeight: list.clientHeight,
+            scrollHeight: list.scrollHeight,
+            height: Math.round(dialog.getBoundingClientRect().height),
+            borders: rows.map(row => getComputedStyle(row).borderBottomWidth),
+            heights: rows.map(row => Math.round(row.getBoundingClientRect().height)),
+          };
+        }""")
+        self.assertEqual(measured['dividers'], 0, 'two completed transfers carry no seam')
+        self.assertEqual(measured['clientHeight'], measured['scrollHeight'], 'a two-row list scrolls')
+        self.assertLess(measured['height'], 700, 'the dialog took its max height for two rows')
+        self.assertEqual(measured['borders'], ['1px', '1px'])
+        self.assertEqual(measured['heights'][0], measured['heights'][1])
+        page.close()
+
     def test_connection_icon_tracks_status_refresh(self):
         page = self.connection_drops_after_settings_save_page(reverse('web-media-library'))
         page.locator('#mediaSettingsButton').click()

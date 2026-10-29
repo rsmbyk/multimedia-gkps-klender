@@ -83,3 +83,4 @@ the templates are in [`_templates/`](./_templates/).
 | [143](143-add-bar/spec.md) | The add bar opens over the seam, and nothing moves | Accepted |
 | [145](145-media-size-precision/spec.md) | A media size reads in the unit that still shows its number | Accepted |
 | [147](147-transfer-icon-column/spec.md) | A long transfer name ellipsizes instead of moving the row | Accepted |
+| [149](149-transfer-separator-seam/spec.md) | The Transfers list draws each boundary once | Accepted |
