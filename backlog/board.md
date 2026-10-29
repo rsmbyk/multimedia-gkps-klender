@@ -21,7 +21,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-174](./items/ITEM-174-drawer-backdrop-pointer-events.md) | The drawer backdrop stays over the page and swallows every pointer in the browser suite | `<div id="drawerBackdrop" class="drawer-backdrop">` is left covering the reading page, so `item.hover()` and rail clicks time out across `test_entry_pickers` (21), `test_entry_preview` (3) and `test_immediate_editor_open` (2); identical on `3e005688^` | fix | P1 | M | — | 2026-10-29 |
 | [ITEM-175](./items/ITEM-175-section-break-divider-box.md) | The section-break divider measures 8px where its test expects 0px | `test_the_divider_takes_the_same_box_as_the_entries` reads `['8px', '8px']` against `['0px', '0px']`; identical on `3e005688^` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-163](./items/ITEM-163-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
-| [ITEM-176](./items/ITEM-176-media-dialog-file-picker-cancel.md) | Closing the file picker closes the New media dialog | The input's own `cancel` bubbles to the dialog, whose listener reads every `cancel` as its Escape; the typed title, the chosen file and the tab go with the picker | fix | P1 | S | [163](../specs/163-media-dialog-file-picker-cancel/spec.md) | 2026-10-29 |
 
 ## Speccing
 
@@ -42,6 +41,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-176](./items/ITEM-176-media-dialog-file-picker-cancel.md) | Closing the file picker closes the New media dialog | The input's own `cancel` bubbles to the dialog, whose listener reads every `cancel` as its Escape; the typed title, the chosen file and the tab go with the picker | fix | P1 | S | [163](../specs/163-media-dialog-file-picker-cancel/spec.md) | [#462](https://github.com/rsmbyk/multimedia-gkps-klender/pull/462) | 2026-10-29 |
 | [ITEM-165](./items/ITEM-165-transfer-scrollbar-edge.md) | The Transfers scrollbar floats inside the dialog and stops short of its bottom | The list starts at the dialog's content box, so the bar paints 22px short of the right border and 23px short of the bottom one; it moves to both edges and nothing else moves | fix | P2 | S | [152](../specs/152-transfer-scrollbar-edge/spec.md) | [#446](https://github.com/rsmbyk/multimedia-gkps-klender/pull/446) | 2026-10-29 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

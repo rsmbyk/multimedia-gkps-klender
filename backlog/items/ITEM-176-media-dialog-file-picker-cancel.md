@@ -1,6 +1,6 @@
 ---
 id: ITEM-176
-status: backlog
+status: in-review
 title: 'Closing the file picker closes the New media dialog'
 type: fix
 priority: P1
@@ -8,8 +8,8 @@ effort: S
 created: 2026-10-29
 updated: 2026-10-29
 spec: specs/163-media-dialog-file-picker-cancel/spec.md
-branch:
-pr:
+branch: fix/163-media-dialog-file-picker-cancel
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/462
 issue:
 closed_at:
 closed_reason:
