@@ -51,7 +51,7 @@ GLYPHS = {
                    '<ellipse cx="8.4" cy="17.3" rx="2.5" ry="2.1"/>'),
     },
     "audio": {
-        "waveform": '<path d="M4.2 10v4M7.6 7.2v9.6M11 4.6v14.8M14.4 7.6v8.8M17.8 10.2v3.6"/>',
+        "waveform": '<path d="M3.6 10.2v3.6M7.2 7.2v9.6M10.8 4.4v15.2M14.4 7.2v9.6M18 10.2v3.6"/>',
         "speaker": ('<path d="M4.6 9.2h3.2L12.4 5v14L7.8 14.8H4.6z"/>'
                     '<path d="M15.6 9.2a4 4 0 0 1 0 5.6M18 6.8a7.6 7.6 0 0 1 0 10.4"/>'),
         # today's audio mark, for the "Now" column and the before/after difference

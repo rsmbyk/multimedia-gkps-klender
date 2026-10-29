@@ -31,9 +31,11 @@ destinations: Search, Alkitab/Bibel, Kidung/Doding, Tata Ibadah/Agenda, Media Li
 Four facts sit behind the report.
 
 1. **The Bible carries no Bible's own sign.** The rail's Alkitab mark is an open book and nothing else.
-   The product draws *three different* open books: the rail's (`base.html:88-92`), a stage passage's
-   kind mark (`_entry_kind_icon.html`, `M12 6.6C10.3 5.2 …`), and the empty stage's Add Passage tile
-   (`entries.js:65`, `M12 6.6S10.1 4.2 …`). One idea, three drawings, none of them a Bible.
+   The product draws *two different* open books, in four copies: the rail's (`base.html:88-92`), the
+   Alkitab panel's empty state (`base.html:256-261`) and the empty stage's Add Passage tile
+   (`tatib.html:198-202`, `entries.js:65`) share one drawing (`M12 6.6S10.1 4.2 …`), while a stage
+   passage's kind mark uses the other (`_entry_kind_icon.html`, `M12 6.6C10.3 5.2 …`). None of them is
+   a Bible.
 2. **The service order's mark is a document.** A rounded page with three rule lines is the shape the
    product also uses for a PDF (`media-stage.js:8`), so the rail competes with its own media family —
    and the report reads it as a file manager.
@@ -147,9 +149,9 @@ column, before and after; every value is identical.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | The rail's Alkitab/Bibel destination SHALL draw an open book with a Latin cross above it. | `new: reading` → R27 |
+| FR-001 | The rail's Alkitab/Bibel destination, and the Alkitab panel's own empty state, SHALL draw an open book with a Latin cross above it. | `new: reading` → R27 |
 | FR-002 | A passage entry's kind mark and the empty stage's Add Passage tile SHALL draw the same path as FR-001 — the rail's mark at 20px on the row and 24px on the tile — and no other open book SHALL remain in the product. | `modified: reading` → R25 |
-| FR-003 | The rail's Tata Ibadah/Agenda destination SHALL draw a clipboard — board, clip above it, three rule lines — and SHALL NOT draw a page, folder or document silhouette. | `new: reading` → R27 |
+| FR-003 | The rail's Tata Ibadah/Agenda destination, and that panel's own empty state, SHALL draw a clipboard — board, clip above it, three rule lines — and SHALL NOT draw a page, folder or document silhouette. | `new: reading` → R27 |
 | FR-004 | The rail's Kidung/Doding destination, a song entry's kind mark and the empty stage's Add Song tile SHALL draw one and the same beamed-pair path. | `modified: reading` → R25 |
 | FR-005 | An audio media file's family mark SHALL be a waveform of five rounded bars, in every place that mark is drawn: stage chip, Media Library list, service-media dialog, upload preview. | `new: reading` → R27 |
 | FR-006 | The image, video, PDF and PowerPoint family marks, and the `missing` fallback, SHALL NOT change. | `new: reading` → R27 |
@@ -199,8 +201,9 @@ flips the theme, so every candidate in §Clarifications is reachable by hand.
     24px in the rail, 20px on a row, 24px on the Add Song tile.
   - **Tata Ibadah** — clipboard. Board `4.6,3.4 → 19.4,20.6` (r 2), clip `8.6,1.9 → 15.4,5.3` (r 1.4),
     rules at `y = 9.6`, `13`, `16.4` (the third 4.8 units shorter). 24px.
-  - **Audio media** — waveform. Five bars on the chip's centre line, `y` extents `10–14`, `7.2–16.8`,
-    `4.6–19.4`, `7.6–16.9`, `10.2–13.8` at `x = 4.2, 7.6, 11, 14.4, 17.8`. 23px in the chip.
+  - **Audio media** — waveform. Five bars at `x = 3.6, 7.2, 10.8, 14.4, 18`, `y` extents `10.2–13.8`,
+    `7.2–16.8`, `4.4–19.6`, `7.2–16.8`, `10.2–13.8` — the outer bars short, the middle one full height,
+    so the mark fills the chip the way the other four families do. 23px in the chip.
 - **Size / spacing**: the marks are the only thing that changes; every box in the table above is the
   shipped one. The stage's `Add Text` and `Add Media` tiles keep their own glyphs.
 - **Colour / typography**: rail marks `currentColor` (the button's own ink, `--active-ink` when
@@ -226,9 +229,9 @@ flips the theme, so every candidate in §Clarifications is reachable by hand.
   alternatives). The closed book with a Latin cross was the other candidate and is rejected because
   the owner wants the passage's own mark to be the Bible's mark, and a closed book cannot also be an
   open one.
-- **The cross is a Latin cross, not a plus**: its bar is 4.6 units against a 6.2-unit stem. At 20px on
-  a row the cross resolves — the preview's 4× view of the row shows four countable arms — so the
-  mark's 20px box is kept rather than enlarged.
+- **The cross is a Latin cross, not a plus**: a 3.8-unit bar on a 4.6-unit stem, 1.9 units above the
+  bar and 2.7 below. At 20px on a row the cross resolves — the preview's 4× view of the row shows four
+  countable arms — so the mark's 20px box is kept rather than enlarged.
 - **The song keeps the beamed pair, and the audio file moves** (owner decision). The pair is already
   the rail's mark and the Add Song tile's mark; moving the row to it makes three places agree. A
   waveform is also the more literal mark for a *file* than for a hymn.
