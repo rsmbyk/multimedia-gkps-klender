@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A passage row and a song row on the Tata Ibadah stage now carry a mark of their own — a small grey open book for a passage, a single note for a song — sitting on the media chip's centre line and with the title starting on the media filenames' own column, so the stage holds one left rail and a file is never mistaken for a passage or a song. The mark is decorative, takes no pointer and adds no height; a song title may take one more line at a narrow reading pane, where the media column is 250px.
 - The projector's Go To now searches a small index held in the page itself, so its suggestions appear as you type without a request; choosing a passage or a song fetches it — the whole chapter in both editions, or the whole song — while the panel refuses every key, click and dismissal and shows a loading indicator on the chosen row and beside the shortcuts button. A step that leaves the loaded chapter fetches the next one under the same lock, and the page's Update re-reads the index so a song added mid-service is findable.
 
 ### Changed

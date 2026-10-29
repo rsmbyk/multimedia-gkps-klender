@@ -124,8 +124,8 @@ specs/150-references-token-order/
 ```
 static/web/media-library.js                  one assignment in refresh() (:157)
 tests/e2e/test_media_library.py              the stub's token check, one new case
-docs/spec/reading.md                         R25 at Fold
-backlog/items/ITEM-160-references-token-order.md   card
+docs/spec/reading.md                         R26 at Fold
+backlog/items/ITEM-161-references-token-order.md   card
 backlog/board.md                             the card's row
 specs/README.md                              the spec's index row, at Accept
 VERSION, CHANGELOG.md                        patch bump and one line, at delivery

@@ -26,7 +26,7 @@ rows) · 13 tasks (7 writing or driving tests) · coverage **100%** · CRITICAL 
 | F1 | note | FR-002's evidence is spec 148's six cases rather than new ones: this slice changes *when* a value exists, and their assertions already state the outcome. Only the stub under them changes. | Kept: the six keep their wording, so a red points at the fix rather than at rewritten tests (FR-004). |
 | F2 | low | SC-001 cannot be measured on the branch — the compose page serves `develop` and a worktree server is refused by the companion's origin allow-list. | Accepted as the pack's one `manual` row, with the exact commands in `quickstart.md`; spec 148 recorded the same limitation. |
 | F3 | low | The new case asserts the header on the page's `/references` request; a page that sent the token *after* a failed first attempt would still pass it if it recovered on the same write. | Accepted: the stub's 403 makes a first attempt without the token visible in the draw as well (US1 AC2 asserts the first draw carries the references), so the two assertions together pin the first attempt. |
-| F4 | none | `docs/spec/reading.md` states the one-draw rule as R24; this slice's authentication rule is folded as R25 rather than as a modification of R24, because it can fail alone. | Recorded: Fold adds R25 (T011); R24 stays as accepted. |
+| F4 | none | `docs/spec/reading.md` states the one-draw rule as R24; this slice's authentication rule is folded as R26 rather than as a modification of R24, because it can fail alone. | Recorded: Fold adds R26 (T011); R24 stays as accepted. |
 
 No mechanical fixes were needed beyond the split line and the symbol list (both corrected before this
 run — the declared split now counts the same rows the table holds, and all ten symbols the plan names are
@@ -65,7 +65,7 @@ assigned in `tasks.md`).
 
 - **2026-10-28 — first run**, on the accepted spec and the plan: `COVERAGE 8/8`, split and assignment
   corrected before the clean run above, four findings — one note (FR-002 evidenced by 148's cases), two low
-  (the live readout is post-merge; the new case's single-attempt reading), one none (R25 rather than a
+  (the live readout is post-merge; the new case's single-attempt reading), one none (R26 rather than a
   modification of R24). The digest line is the post-fix run and reports `clean`.
 - **2026-10-28 — implement, T004's red run**: against the unmodified `static/web/media-library.js` with the
   stricter stub, the new case failed on the header (`'' != 'test-token'`) and three spec-148 cases failed on

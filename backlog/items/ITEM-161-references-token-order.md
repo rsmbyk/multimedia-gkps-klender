@@ -1,5 +1,5 @@
 ---
-id: ITEM-160
+id: ITEM-161
 status: in-review
 title: 'The Media Library''s first refresh writes its references without the token'
 type: fix
@@ -17,7 +17,7 @@ bump:
 release_version:
 ---
 
-# ITEM-160: The Media Library's first refresh writes its references without the token
+# ITEM-161: The Media Library's first refresh writes its references without the token
 
 ## Summary
 

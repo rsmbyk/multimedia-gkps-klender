@@ -60,8 +60,8 @@ untouched.
 - [X] T009 Add the spec's index row to `specs/README.md`, naming 150 and `Accepted`.
 - [X] T010 Bump `VERSION` `1.22.9` → `1.22.10` and add one `### Fixed` line under `## [Unreleased]` in
   `CHANGELOG.md`.
-- [X] T011 Fold: add R25 to `docs/spec/reading.md` and move the header's `last folded` and `slices`.
-- [ ] T012 Delivery, after the report: open the PR as a draft, then read `ITEM-160`'s state — if the owner
+- [X] T011 Fold: add R26 to `docs/spec/reading.md` and move the header's `last folded` and `slices`.
+- [ ] T012 Delivery, after the report: open the PR as a draft, then read `ITEM-161`'s state — if the owner
   has moved it to `Ready`, set `in-review`, write `pr:` and move the board row, and push that one commit
   (`C-BOARD-GIT`); if it is still in `Backlog`, stop and say so.
 

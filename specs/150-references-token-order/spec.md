@@ -102,9 +102,9 @@ with 403; they must fail before the fix and pass after it.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | A refresh SHALL authenticate its own references write: the token from that refresh's `/status` response SHALL be in place before the write is sent. | `new: reading` → R25 |
+| FR-001 | A refresh SHALL authenticate its own references write: the token from that refresh's `/status` response SHALL be in place before the write is sent. | `new: reading` → R26 |
 | FR-002 | The refresh SHALL still draw the list at most once, with its references — the behaviour R24 states — and the head controls SHALL still be applied from the same response. | `reading/R24` |
-| FR-003 | The E2E companion stub SHALL refuse a references write that carries no valid `X-GKPS-Media-Token` with the companion's own 403 body. | `new: reading` → R25 |
+| FR-003 | The E2E companion stub SHALL refuse a references write that carries no valid `X-GKPS-Media-Token` with the companion's own 403 body. | `new: reading` → R26 |
 | FR-004 | Nothing else changes: no markup, CSS, endpoint, payload, row geometry or copy; the six spec-148 cases keep their assertions. | `reading/R24` |
 
 ### Key Entities
@@ -139,7 +139,7 @@ transient it fixes is the one R24 measured, and the live route is where it is re
   authorized.'}`, the reply at `local_media.py:515`, so a future failure reads the same in both places.
 - **No other surface changes.** No markup, CSS, endpoint, payload or copy; the fix is two lines of
   ordering plus the stub's check.
-- **The capability number is R25.** `R24` is this page's one-draw requirement from spec 148; this is the
+- **The capability number is R26.** `R24` is this page's one-draw requirement from spec 148; this is the
   authentication half of it, stated separately because it can fail alone.
 
 ## Clarifications

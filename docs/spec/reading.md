@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-28
-**slices**: `150-references-token-order`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
@@ -821,7 +821,40 @@ control's states and the page's title.
 - WHEN a transfer is running and the 2s poll re-reads the companion
 - THEN the list is redrawn from the same data and no row moves
 
-### R25 — The Media Library's references write carries its own refresh's token
+### R25 — A passage and a song carry a kind mark of their own
+
+A Tata Ibadah stage SHALL mark a passage row and a song row with a small decorative glyph — an open book
+for a passage, a single flagged note for a song — and SHALL NOT mark a text row, a section break or a
+media row. The glyph SHALL sit on the media chip's centre line and the row's title SHALL take the media
+title's column, so a media file, a passage and a song share one left rail: the mark centred, the words
+from 64px. The glyph SHALL be smaller than the 42px chip and SHALL carry no tint of its own, so a media
+file is never mistaken for a passage or a song. The mark SHALL be hidden from assistive technology, take
+no pointer, and add no height of its own; a song's title MAY take one more line where the narrower
+column wraps it.
+
+#### Scenario: a passage
+- WHEN a service holds a passage entry
+- THEN its row draws a 20px open-book glyph, centred on the media chip's centre line, with the
+  reference starting on the media title's column
+
+#### Scenario: a song
+- WHEN a service holds a song entry
+- THEN its row draws a single flagged note, a different shape from the passage's, and its `Bait` line
+  keeps the same left edge as the title
+
+#### Scenario: every other kind
+- WHEN the service also holds a text entry, a section break and a media file
+- THEN none of them draws a mark, and a text row keeps its own 12px edge
+
+#### Scenario: a deleted target
+- WHEN a song's songbook or an included verse was deleted
+- THEN the row still draws its song mark, because the mark states the kind, not the availability
+
+#### Scenario: pointed at, and in the dark
+- WHEN the row is hovered, or a modal opened from it is up, in either theme
+- THEN the mark keeps the stage's meta ink and stays legible on the hover fill
+
+### R26 — The Media Library's references write carries its own refresh's token
 
 The Media Library page SHALL send its service-references write with the write token supplied by the same
 refresh's `/status` response, so that the first refresh after the page opens is authenticated and its list
