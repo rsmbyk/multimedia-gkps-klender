@@ -72,7 +72,7 @@ the normal screen.
 
 - [x] T014 `VERSION` 1.22.10 → 1.22.11 and the `CHANGELOG.md` line, in the same commit as the card's
       `bump: patch`.
-- [ ] T015 `backlog/items/ITEM-164-audio-presentation-lock.md` — `status: in review`, `pr:` once the PR
+- [x] T015 `backlog/items/ITEM-164-audio-presentation-lock.md` — `status: in review`, `pr:` once the PR
       number exists; board row moved to `In review` with the PR link.
 - [x] T016 FR-010 read back by inspection: the keydown guard lists no `c` or `t`, and both handlers sit
       below it reading nothing from the audio state.
