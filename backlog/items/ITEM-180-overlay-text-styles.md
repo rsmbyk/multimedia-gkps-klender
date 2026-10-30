@@ -1,6 +1,6 @@
 ---
 id: ITEM-180
-status: in-review
+status: done
 title: The overlay reads by kind: a passage is a quotation card, a liturgy is a script panel
 type: feat
 priority: P1
@@ -11,8 +11,8 @@ spec: specs/180-overlay-text-styles/spec.md
 branch: feat/180-overlay-text-styles
 pr: 472
 issue: 471
-closed_at:
-closed_reason:
+closed_at: 2026-10-30
+closed_reason: merged into develop (#472)
 bump: minor
 release_version:
 ---
