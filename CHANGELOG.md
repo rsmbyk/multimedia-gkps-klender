@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The operator dock fills whatever panel it is given: the page used to cap itself at 560px and centre in the window, leaving a strip of background on both sides of an OBS dock the operator had widened — it now takes the panel's whole width, and the picker's rows run with it (1424px of a 1440px dock, its date on the row's right edge). The picker stays one column at every size, its bucket heads still stick, and nothing below 560px moves: a narrow OBS dock paints exactly as it did.
 - A playing recording now owns the projector screen the way a playing video does: its own screen fills the viewport, the corner cue and the mouse zones are off screen, and no arrow, page, home/end, entry jump, mouse zone, cue control or Go To moves the projector until the recording is paused. A stray `ArrowRight` used to jump to the next screen and tear the player down, so a 5:02 recording two seconds in came back at `0:00`. `Space` pauses and returns the normal screen at the position playback had reached, leaving fullscreen by the browser's own gesture pauses it too, the end of the recording returns on its own, and a browser that refuses fullscreen keeps the screen locked while the recording plays.
 - The main rail names its sections with the marks the stage already draws: the Bible is an open book
   with a Latin cross above it — in the rail, in the Alkitab panel's empty state, on a passage row and on

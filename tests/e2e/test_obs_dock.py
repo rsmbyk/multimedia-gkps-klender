@@ -237,3 +237,62 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
         self.assertEqual(adopted.url.split('?')[0], self.live_server_url + '/projector')
         self.assertEqual(first.url.split('?')[0], self.live_server_url + '/projector')
         context.close()
+
+    # ---------- the panel's own width (spec 164) ------------------------------
+
+    def _panel(self, page, widths):
+        """The dock's box at each width, and the body's horizontal overflow."""
+        boxes = []
+        for width in widths:
+            page.set_viewport_size({'width': width, 'height': 900})
+            boxes.append(page.evaluate("""() => {
+                const box = document.querySelector('.dock').getBoundingClientRect();
+                return {width: document.documentElement.clientWidth,
+                        x: box.x, w: box.width,
+                        overflow: document.documentElement.scrollWidth
+                                  - document.documentElement.clientWidth};
+            }"""))
+        return boxes
+
+    def test_the_dock_fills_whatever_width_it_is_given(self):
+        # An OBS dock panel is 300px in one layout and a second monitor in another,
+        # so the panel is the page at every width: no cap, no centring.
+        context = self._context()
+        dock = self._open(context, '/obs/dock')
+        dock.wait_for_selector('.servicerow')
+
+        for box in self._panel(dock, (320, 420, 560, 720, 900, 1440, 1920, 2560)):
+            self.assertAlmostEqual(box['x'], 0, delta=0.5, msg=f"panel starts at {box['x']} at {box['width']}px")
+            self.assertAlmostEqual(box['w'], box['width'], delta=0.5,
+                                   msg=f"panel is {box['w']} of {box['width']}px")
+            self.assertEqual(box['overflow'], 0, f"horizontal overflow at {box['width']}px")
+        context.close()
+
+    def test_a_wide_dock_keeps_the_picker_in_one_column(self):
+        # One column at every width — the bucket list does not fan out — but the
+        # rows fill the panel instead of sitting in a capped, centred strip.
+        context = self._context()
+        dock = self._open(context, '/obs/dock')
+        dock.wait_for_selector('.servicerow')
+
+        for width in (560, 900, 1440, 1920):
+            dock.set_viewport_size({'width': width, 'height': 900})
+            boxes = dock.evaluate("""() => {
+                const body = document.getElementById('pickBody');
+                const style = getComputedStyle(body);
+                const secs = [...body.querySelectorAll('section')];
+                return {display: style.display,
+                        contentW: body.clientWidth - parseFloat(style.paddingLeft)
+                                  - parseFloat(style.paddingRight),
+                        rowW: body.querySelector('.servicerow').getBoundingClientRect().width,
+                        xs: secs.map(s => Math.round(s.getBoundingClientRect().x)),
+                        head: getComputedStyle(body.querySelector('.group__head')).position};
+            }""")
+            self.assertEqual(boxes['display'], 'block', f"single column at {width}px")
+            self.assertEqual(len(set(boxes['xs'])), 1, f"buckets stacked at {width}px: {boxes['xs']}")
+            self.assertAlmostEqual(boxes['rowW'], boxes['contentW'], delta=0.5,
+                                   msg=f"row is {boxes['rowW']} of {boxes['contentW']}px at {width}px")
+            self.assertAlmostEqual(boxes['rowW'], width - 16, delta=1,
+                                   msg=f"row spans {boxes['rowW']} of {width}px")
+            self.assertEqual(boxes['head'], 'sticky')
+        context.close()
