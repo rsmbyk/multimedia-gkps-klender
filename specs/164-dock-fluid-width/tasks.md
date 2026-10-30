@@ -36,4 +36,4 @@ concurrently.
 
 Pass 1 (2026-10-29): 19 rows checked by their declared method, no `missing`, no `partial`, no
 `contradicts`, no `unrequested` — converged on the first pass. See `converge.md`; `reading/R33` folded
-in `fold.md`. Delivery is PR #464; the card's `Done` move waits for the merge, in the closing pass.
+in `fold.md`. Delivery is PR #464, merged into `develop` as `6a1f6562`; the card closed on 2026-10-30.

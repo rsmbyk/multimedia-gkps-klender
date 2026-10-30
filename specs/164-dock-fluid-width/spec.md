@@ -3,7 +3,7 @@
 **Slice**: `specs/164-dock-fluid-width`
 **Branch**: `fix/164-dock-fluid-width`
 **Created**: 2026-10-29
-**Status**: Draft — gate 1 pending
+**Status**: Accepted (owner, gate 1, 2026-10-29)
 **Input**: the owner's report — *"the dock view does not fill the entire width. you never know the size of the dock"* — and *"keep the one column for picker"* after the first pass.
 
 ## What the page does today
