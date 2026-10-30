@@ -154,6 +154,27 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
                   name: n.value, caret: n.selectionStart};
         }""")
 
+    def test_a_choice_and_its_options_are_one_block(self):
+        """No entry bar in the seam, and the option reads a step below its choice.
+
+        An option belongs to the row above it; a full add bar between them made the pair
+        look like two entries that happened to be adjacent.
+        """
+        self.open_template()
+        seam = self.page.evaluate("""() => {
+          const choice = document.querySelector('#read .tatib__item--choice');
+          const next = choice.nextElementSibling;
+          const option = document.querySelector('#read .tatib__item--option');
+          const title = choice.querySelector('.read__sec');
+          return {nextIsAddBar: !!(next && next.classList.contains('entry__add')),
+                  optionTitleSize: parseFloat(getComputedStyle(option.querySelector('.read__sec')).fontSize),
+                  choiceTitleSize: parseFloat(getComputedStyle(title).fontSize),
+                  optionRule: getComputedStyle(option).borderLeftWidth};
+        }""")
+        self.assertFalse(seam['nextIsAddBar'], 'an add bar sits between the choice and its option')
+        self.assertLess(seam['optionTitleSize'], seam['choiceTitleSize'])
+        self.assertEqual(seam['optionRule'], '1px')
+
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()
         self.page.click('[data-generate-open]')

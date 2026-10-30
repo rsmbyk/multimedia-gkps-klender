@@ -129,7 +129,7 @@
 {% endif %}
 </section>
 {% endif %}
-{% if editor_enabled %}
+{% if editor_enabled and not item.suppress_add %}
 <div class="entry__add" data-entry-after="{{ item.after_marker|default:item.anchor }}" role="group" aria-label="Add after this item"><span class="entry__add-inner">
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
   <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>

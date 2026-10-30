@@ -1434,6 +1434,12 @@ def _tatib_stage(service):
         if following != parent:
             item['add_option_for'] = parent
             item['add_option_kind'] = item.get('kind')
+    # No add bar between a choice and the first of its options: an option belongs to the
+    # row above it, and a full entry bar in that seam reads as "these are two entries".
+    for index, item in enumerate(items[:-1]):
+        nxt = items[index + 1]
+        if item.get('options') and nxt.get('option_of') == item.get('pk'):
+            item['suppress_add'] = True
     return items, toc
 
 

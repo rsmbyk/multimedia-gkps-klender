@@ -172,9 +172,19 @@
 }
 #read .slot__state { margin: 3px 0 0; color: var(--head-ink); font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; }
 
-/* an option sits inside its choice's block, behind the same rule the preview drew */
-#read .choice__options, #read .tatib__item--option { }
-#read .tatib__item--option { margin-left: 8px; padding-left: 24px; border-left: 1px solid var(--divider); }
+/* An option is a child row, not an entry of its own: no card, no minimum height, the
+   choice's title at 17px and the option reading a step below it, on the rule the preview
+   drew around the group. */
+#read .tatib__item--option {
+  margin: 0 0 0 8px; padding: 4px 0 4px 24px;
+  min-height: 0; border-radius: 0;
+  border-left: 1px solid var(--divider);
+}
+#read .tatib__item--option .read__sec {
+  margin: 0; font: 600 13px/1.35 ui-sans-serif, system-ui, sans-serif;
+}
+#read .tatib__item--option .read__sub { margin: 2px 0 0; font: 400 12px/1.4 ui-sans-serif, system-ui, sans-serif; }
+#read .tatib__item--option .read__sec .entry__kind-icon { width: 14px; height: 14px; }
 
 /* Add option reads as a quiet control under the options, not a slot-level action */
 /* the control lives in the last option's row, whose own indent already places it */
