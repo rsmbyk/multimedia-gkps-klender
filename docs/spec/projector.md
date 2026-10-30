@@ -2,7 +2,7 @@
 
 **capability**: `projector`
 **last folded**: 2026-10-29
-**slices**: `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**slices**: `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -249,3 +249,30 @@ next or show/hide words). While the media overflows the pointer over the stage S
 #### Scenario: a press that does not move
 - WHEN the operator presses and releases within 4 px on a zoomed page
 - THEN the corner's zone still receives its click and no pan is recorded
+
+### R11 — A media entry ends on the built-in rest every other kind ends on
+
+A media entry SHALL contribute its media screen followed by exactly one built-in rest — the blank screen
+of spec 058's rule, which is not a section break and never becomes a row in the order — for every family:
+image, audio, video, PDF and PowerPoint. A media entry whose file does not resolve SHALL contribute one
+screen, that rest, and SHALL NOT gain a second. The rest SHALL carry `blank: true`, an empty `header` and
+`lines`, and no family payload key, `bait`, `bait_rest`, `split`, `split_total` or `translation`; the
+entry's `start` SHALL be unchanged and its `end` SHALL name the rest. The media screen's own payload and
+paint, the fit and pan rules (R6–R10) and the audio and video lock (R5) SHALL be unchanged, and the dock
+SHALL list the rest under the media row and step onto it. (spec 165)
+
+#### Scenario: a picture ends on a rest
+- WHEN a service holding one image entry builds its screens
+- THEN the image is one screen, a blank is the next, and the entry's range covers both
+
+#### Scenario: four pictures in a row
+- WHEN four image entries follow one another
+- THEN each picture is followed by a rest, and no step goes from one picture to the next
+
+#### Scenario: an entry whose file is gone
+- WHEN a media entry has no file attached
+- THEN it contributes one blank screen, and no second rest after it
+
+#### Scenario: a service that ends on a picture
+- WHEN the last entry of a service is a media entry
+- THEN its rest is the service's last screen, so the display can be left blank by stepping
