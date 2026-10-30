@@ -26,13 +26,16 @@ body.obs-dock {
   -webkit-font-smoothing: antialiased;
 }
 
+/* The panel is the page, at whatever size the dock is given: an OBS dock panel is
+ * a few hundred pixels wide in one layout and a second monitor in another, and the
+ * browser preview is wider than either. So the dock never caps itself and never
+ * centres inside a guessed width — one column, filled edge to edge. */
 .dock {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 560px;
   height: 100%;
-  margin: 0 auto;
+  margin: 0;
   background: var(--rail-bg);
   overflow: clip;
   outline: none;                      /* the panel is the keyboard's home, not a target */
