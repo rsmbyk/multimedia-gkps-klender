@@ -41,6 +41,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-166](./items/ITEM-166-shortcuts-audio-video-groups.md) | The shortcuts sheet names Audio and Video on their own | Audio and video each get a group holding their Play/Pause row, and the combined row leaves Display | feat | P2 | S | [160](../specs/160-shortcuts-audio-video-groups/spec.md) | [#477](https://github.com/rsmbyk/multimedia-gkps-klender/pull/477) | 2026-10-30 |
 
 ## Done
 

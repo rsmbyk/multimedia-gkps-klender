@@ -98,6 +98,7 @@ the templates are in [`_templates/`](./_templates/).
 | [158](158-projector-media-fit/spec.md) | A small image or PDF page fills the stage | Accepted |
 | [161](161-projector-empty-notice/spec.md) | The projector's empty notice leaves the stage when Go To shows a passage or a song | Accepted |
 | [159](159-preview-body-ring/spec.md) | A preview's play shortcut paints nothing on the dialog's edge | Accepted |
+| [160](160-shortcuts-audio-video-groups/spec.md) | Audio and video name their play/pause key | Accepted |
 | [163](163-media-dialog-file-picker-cancel/spec.md) | Dismissing the file picker leaves the New media dialog open | Accepted |
 | [164](164-dock-fluid-width/spec.md) | The dock fills whatever panel it is given | Accepted |
 | [167](167-tata-ibadah-templates/spec.md) | A Tata Ibadah is a service or a template | Accepted |

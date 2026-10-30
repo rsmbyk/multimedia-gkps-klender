@@ -2,7 +2,7 @@
 
 **capability**: `projector`
 **last folded**: 2026-10-29
-**slices**: `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**slices**: `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -276,3 +276,30 @@ SHALL list the rest under the media row and step onto it. (spec 165)
 #### Scenario: a service that ends on a picture
 - WHEN the last entry of a service is a media entry
 - THEN its rest is the service's last screen, so the display can be left blank by stepping
+
+### R12 — The shortcuts sheet names audio and video in groups of their own
+
+The projector's shortcuts sheet SHALL group its rows by the subject the keys act on, and audio and
+video SHALL each carry a group of their own: a heading `Audio` and a heading `Video`, each holding one
+`Play/Pause` row on the Space chord. The sheet SHALL NOT carry a combined `Audio/Video Play/Pause`
+row, and `Display` SHALL hold only `Show or Hide Words`, `Show or Hide Corner` and `Keyboard
+Shortcuts`.
+
+The two groups SHALL sit at the end of the sheet's middle column, after the groups it already carries,
+so that the sheet's box keeps the height its tallest column sets. Every other group, row, label and chord SHALL stay as it
+was, and the rows SHALL keep their 34px pitch.
+
+Space SHALL keep its meaning: it toggles the audio or the video that is showing, toggles the words
+when neither is, and does nothing while the sheet is open.
+
+#### Scenario: the sheet is opened
+- WHEN K opens the shortcuts sheet
+- THEN `Audio` and `Video` each head one `Play/Pause` row, and no combined row exists
+
+#### Scenario: a window shorter than the sheet
+- WHEN the window is 1280×720
+- THEN the sheet's 676px box still fits inside the 688px the window allows, and nothing scrolls
+
+#### Scenario: Space with media showing
+- WHEN an audio or video entry is on screen and Space is pressed
+- THEN that media toggles play/pause once, and the words do not change
