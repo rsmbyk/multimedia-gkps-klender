@@ -1121,12 +1121,15 @@ def _tatib_stage(service):
 
 
 def _screen_lines(text, voiced=False):
-    """A body's lines as the display shows them: the line as written, and its speaker
-    voice when the body is a liturgy text (spec 059). Songs and passages pass no voice."""
+    """A body's lines as the display shows them: the line as written, its speaker voice
+    when the body is a liturgy text (spec 059), and the speaker's mark apart from the
+    words it introduces (spec 165), so the overlay can hang a wrapped line under the
+    words. Songs and passages pass no voice and no mark."""
     raw_lines = (text or '').split('\n')
     if not voiced:
-        return [{'text': raw, 'voice': ''} for raw in raw_lines]
-    return [{'text': line.line, 'voice': line.voice} for line in voices.voice_lines(raw_lines)]
+        return [{'text': raw, 'voice': '', 'mark': '', 'words': raw} for raw in raw_lines]
+    return [{'text': line.line, 'voice': line.voice, 'mark': line.mark, 'words': line.text}
+            for line in voices.voice_lines(raw_lines)]
 
 
 def _line_pairs(text, voiced=False, breaks=None):
@@ -1137,7 +1140,9 @@ def _line_pairs(text, voiced=False, breaks=None):
     """
     screens, pair = [], []
     for index, raw in enumerate(_screen_lines(text, voiced), 1):
-        line = {'text': raw['text'].strip(), 'voice': raw['voice']}
+        line = {'text': raw['text'].strip(), 'voice': raw['voice'],
+                'mark': (raw.get('mark') or '').strip(),
+                'words': (raw.get('words') or raw['text']).strip()}
         if not line['text']:
             if pair:
                 screens.append(pair)
@@ -1184,8 +1189,9 @@ def _scripture_screens(entry):
     for verse in verses:
         reference = f'{book} {entry.chapter}:{verse.verse}'.strip()
         heading = f'{reference}\n{verse.title}' if verse.title else reference
+        text = verse.text.strip()
         screens.append({'blank': False, 'header': heading,
-                        'lines': [{'text': verse.text.strip(), 'voice': ''}]})
+                        'lines': [{'text': text, 'voice': '', 'mark': '', 'words': text}]})
     return screens
 
 

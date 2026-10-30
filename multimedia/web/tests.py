@@ -2887,6 +2887,19 @@ class ServiceProjectorTests(TestCase):
         self.assertNotIn('Kidung Jemaat', screens[0])         # the words alone: no citation
         self.assertNotIn('screen__head', screens[0])
 
+    def test_a_voiced_line_carries_its_mark_and_words_apart(self):
+        """Spec 180: the overlay hangs a wrapped line under its words, so the mark and the
+        words travel beside the full line the projector paints."""
+        self.make(1, kind=tatib.ServiceEntryKind.TEXT, title='Salam',
+                  text='L. Kasih karunia Tuhan beserta kita semua\nJ. Amin.')
+        lines = reading_views._projector_data(self.tatib)['screens'][0]['lines']
+        self.assertEqual(lines[0]['text'], 'L. Kasih karunia Tuhan beserta kita semua')
+        self.assertEqual(lines[0]['mark'], 'L.')
+        self.assertEqual(lines[0]['words'], 'Kasih karunia Tuhan beserta kita semua')
+        self.assertEqual(lines[0]['voice'], 'leader')
+        self.assertEqual(lines[1]['mark'], 'J.')
+        self.assertEqual(lines[1]['words'], 'Amin.')
+
     def test_a_blank_line_holds_a_line_alone(self):
         self.make(1, kind=tatib.ServiceEntryKind.TEXT, text='satu\ndua\n\ntiga')
         screens = self.screens()

@@ -1,0 +1,122 @@
+[
+ {
+  "order": 1,
+  "index": 0,
+  "action": "show",
+  "label": "passage · first screen",
+  "verdict": "panel",
+  "kind": "passage",
+  "text": "KISAH PARA RASUL 1:1 · Roh Kudus dijanjikan · Hai Teofilus, dalam bukuku yang pertama aku ",
+  "file": "seq/01-screen-000-show.jpg"
+ },
+ {
+  "order": 2,
+  "index": 1,
+  "action": "screen",
+  "label": "rest after the passage",
+  "verdict": "nothing",
+  "kind": "",
+  "text": "",
+  "file": "seq/02-screen-001-screen.jpg"
+ },
+ {
+  "order": 3,
+  "index": 2,
+  "action": "screen",
+  "label": "media · image",
+  "verdict": "nothing",
+  "kind": "",
+  "text": "",
+  "file": "seq/03-screen-002-screen.jpg"
+ },
+ {
+  "order": 4,
+  "index": 4,
+  "action": "screen",
+  "label": "song · first lyric",
+  "verdict": "caption",
+  "kind": "song",
+  "text": "(1) Sangap di jahowa na sun timbul i · Balga ni holongNa ndang tarasam i",
+  "file": "seq/04-screen-004-screen.jpg"
+ },
+ {
+  "order": 5,
+  "index": 18,
+  "action": "screen",
+  "label": "rest after the song",
+  "verdict": "nothing",
+  "kind": "",
+  "text": "",
+  "file": "seq/05-screen-018-screen.jpg"
+ },
+ {
+  "order": 6,
+  "index": 19,
+  "action": "screen",
+  "label": "media · PDF",
+  "verdict": "nothing",
+  "kind": "",
+  "text": "",
+  "file": "seq/06-screen-019-screen.jpg"
+ },
+ {
+  "order": 7,
+  "index": 20,
+  "action": "screen",
+  "label": "text · first screen",
+  "verdict": "panel",
+  "kind": "liturgy",
+  "text": "VOTUM, INTROITUS, DOA · L. · Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh ",
+  "file": "seq/07-screen-020-screen.jpg"
+ },
+ {
+  "order": 8,
+  "index": 21,
+  "action": "screen",
+  "label": "text · the answer",
+  "verdict": "panel",
+  "kind": "liturgy",
+  "text": "J. · Amin.",
+  "file": "seq/08-screen-021-screen.jpg"
+ },
+ {
+  "order": 9,
+  "index": 84,
+  "action": "screen",
+  "label": "rest after the text",
+  "verdict": "nothing",
+  "kind": "",
+  "text": "",
+  "file": "seq/09-screen-084-screen.jpg"
+ },
+ {
+  "order": 10,
+  "index": 86,
+  "action": "screen",
+  "label": "song · first lyric",
+  "verdict": "caption",
+  "kind": "song",
+  "text": "Porini dong maribu hali, paraloling ni sorangkin · Bois ni gogoh inggananni, mamuji Naibat",
+  "file": "seq/10-screen-086-screen.jpg"
+ },
+ {
+  "order": 11,
+  "index": 4,
+  "action": "hide",
+  "label": "the dock hides the words",
+  "verdict": "nothing",
+  "kind": "",
+  "text": "",
+  "file": "seq/11-screen-004-hide.jpg"
+ },
+ {
+  "order": 12,
+  "index": 4,
+  "action": "release",
+  "label": "the display is released",
+  "verdict": "nothing",
+  "kind": "",
+  "text": "",
+  "file": "seq/12-screen-004-release.jpg"
+ }
+]

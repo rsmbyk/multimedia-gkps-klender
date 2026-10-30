@@ -102,8 +102,9 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
         dock.locator('.entryrow').first.click()
 
     def _caption(self, overlay):
-        overlay.wait_for_selector('.obs-overlay__caption')
-        return overlay.locator('.obs-overlay__caption').inner_text()
+        """The overlay's words, whatever its kind paints them with (spec 165)."""
+        overlay.wait_for_selector('.obs-overlay__plate, .obs-overlay__caption')
+        return overlay.locator('.obs-overlay__stage').inner_text()
 
     # ---------- the tests -----------------------------------------------------
 
@@ -202,13 +203,14 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
         dock.wait_for_function(
             "() => JSON.parse(localStorage.getItem('gkps-display')).screen === 2")
         overlay.wait_for_function(
-            "() => ((document.querySelector('.obs-overlay__caption') || {}).textContent || '')"
+            "() => document.getElementById('overlayStage').textContent"
             ".includes('Tuhan, dengarkanlah')")
 
         # Space: words off everywhere, the place kept.
         dock.keyboard.press(' ')
         self._wait_state(dock, self.service.pk, on=False)
-        self.assertEqual(overlay.locator('.obs-overlay__caption').count(), 0)
+        overlay.wait_for_function(
+            "() => document.getElementById('overlayStage').children.length === 0")
         self.assertEqual(
             projector.evaluate("document.body.classList.contains('words-hidden')"), True)
 

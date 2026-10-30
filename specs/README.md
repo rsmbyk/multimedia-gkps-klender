@@ -100,3 +100,4 @@ the templates are in [`_templates/`](./_templates/).
 | [159](159-preview-body-ring/spec.md) | A preview's play shortcut paints nothing on the dialog's edge | Accepted |
 | [163](163-media-dialog-file-picker-cancel/spec.md) | Dismissing the file picker leaves the New media dialog open | Accepted |
 | [164](164-dock-fluid-width/spec.md) | The dock fills whatever panel it is given | Accepted |
+| [180](180-overlay-text-styles/spec.md) | The overlay reads by kind: a song keeps the caption, a passage a quotation card, a liturgy a script panel | Accepted |
