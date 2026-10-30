@@ -2254,6 +2254,20 @@ kbd {
   outline: 2px solid var(--focus); outline-offset: 2px;
 }
 .screen-mode button:disabled { cursor: wait; }
+/* the kind of a fill-in or a choice (spec 167): four equal cells, the chosen one filled */
+.editor__kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.editor__kind {
+  height: 34px; padding: 0 6px; border: 1px solid var(--divider); border-radius: 8px;
+  background: none; color: var(--head-ink); cursor: pointer;
+  font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: border-color var(--ease), background var(--ease), color var(--ease);
+}
+.editor__kind:hover { border-color: var(--focus); }
+.editor__kind[aria-pressed="true"] {
+  background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
+}
+.editor__kind:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .preview__mode-readonly { margin: 0; color: var(--head-ink); font-size: 13px; }
 .preview__confirm-layer {
   position: absolute; inset: 0; z-index: 2; display: grid; place-items: center;

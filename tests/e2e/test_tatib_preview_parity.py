@@ -66,6 +66,23 @@ GENERATE = """() => {
 }"""
 
 
+KINDS = """() => {
+  const g = document.querySelector('[data-slot-kinds], .kind-pick');
+  if (!g) return null;
+  const cs = el => getComputedStyle(el);
+  const chips = [].slice.call(g.querySelectorAll('button'));
+  return {
+    order: chips.map(b => b.textContent.trim()),
+    pressed: chips.map(b => b.getAttribute('aria-pressed')),
+    height: +chips[0].getBoundingClientRect().height.toFixed(1),
+    radius: cs(chips[0]).borderRadius,
+    font: cs(chips[0]).fontSize + '/' + cs(chips[0]).fontWeight,
+    gap: cs(g).gap,
+    columns: cs(g).gridTemplateColumns.split(' ').length,
+    width: +g.getBoundingClientRect().width.toFixed(1),
+  };
+}"""
+
 NEW_MODAL = """() => {
   const sw = document.querySelector('[data-tatib-kinds], [data-kind-switch]');
   const cs = el => getComputedStyle(el);
@@ -182,6 +199,34 @@ class PreviewParityTests(StaticLiveServerTestCase):
             self.assertEqual(mine['text'], theirs['text'])
             self.assertAlmostEqual(mine['box']['w'], theirs['box']['w'], delta=1)
         self.assertAlmostEqual(live['frame']['h'], preview['frame']['h'], delta=2)
+
+    def test_the_kind_picker_matches_the_preview(self):
+        """Four equal cells, in the spec's order, the first one chosen.
+
+        The product drew its own controls here while the preview drew text pills, so the
+        markup alone can look right and still land as browser-default buttons.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(400)
+        # the add bar reveals on hover; the click is made on the button itself
+        self.page.eval_on_selector('[data-entry-open="fill_in"]', 'el => el.click()')
+        self.page.wait_for_selector('[data-slot-kinds]', timeout=8000)
+        live = self.page.evaluate(KINDS)
+        self.page.goto(PREVIEW.as_uri())
+        self.page.wait_for_timeout(400)
+        self.page.evaluate("() => document.getElementById('fillinModal').showModal()")
+        self.page.wait_for_timeout(300)
+        preview = self.page.evaluate(KINDS)
+
+        self.assertEqual(live['order'], preview['order'])
+        self.assertEqual(live['pressed'][0], 'true')
+        self.assertEqual(preview['pressed'][0], 'true')
+        self.assertEqual(live['height'], preview['height'])
+        self.assertEqual(live['radius'], preview['radius'])
+        self.assertEqual(live['font'], preview['font'])
+        self.assertEqual(live['gap'], preview['gap'])
+        self.assertEqual(live['columns'], preview['columns'])
+        self.assertAlmostEqual(live['width'], preview['width'], delta=1)
 
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))

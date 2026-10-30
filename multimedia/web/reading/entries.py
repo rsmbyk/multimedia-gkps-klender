@@ -202,7 +202,10 @@ class SlotForm(ServiceEntryForm):
     fill-in becomes the entry the operator picks, a choice becomes one of its options.
     """
 
+    # Text is the default the preview shows selected: a slot always has a kind, and the
+    # form must never open with none of the four pressed.
     fill_kind = forms.TypedChoiceField(choices=tatib_models.SlotKind.choices, coerce=int,
+                                       initial=tatib_models.SlotKind.TEXT,
                                        widget=forms.HiddenInput)
 
     class Meta(ServiceEntryForm.Meta):
