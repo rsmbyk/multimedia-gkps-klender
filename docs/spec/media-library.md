@@ -1,8 +1,8 @@
 # media-library
 
 **capability**: `media-library`
-**last folded**: 2026-10-29
-**slices**: `152-transfer-scrollbar-edge`, `149-transfer-separator-seam`
+**last folded**: 2026-10-30
+**slices**: `152-transfer-scrollbar-edge`, `149-transfer-separator-seam`, `166-slides-render-fidelity`
 
 The local Media Library and the companion's transfer dialog. This file starts at spec 149: no
 media-library capability existed while the slices that built the surface landed (113, 117, 118), so
@@ -46,3 +46,56 @@ instead of painting over it.
   last row still 22px above the dialog's border.
 - **Given** the same dialog, **Then** every row's text, an age heading and the title sit on the x they
   sat on before, and the list's top is still 14px below the title.
+
+### R2 — A converted deck keeps the deck's own layout
+
+A PowerPoint file SHALL be converted by an Impress that places text where the deck places it — 25.2 or
+newer — and each family a deck names SHALL be drawn in a proportional face: `Calibri` and `Calibri
+Light` in Carlito, `Cambria` in Caladea, `Arial` in Liberation Sans, `Arial Narrow` in Liberation Sans
+Narrow, `Times New Roman` in Liberation Serif, `Courier New` in Liberation Mono. A family with no free
+metric equivalent SHALL be drawn in a proportional substitute, and no proportional family SHALL be
+drawn in a monospaced one. A build of the image SHALL fail when one is. The conversion command, its
+120-second ceiling, its 2 GB memory and 400 MB file limits and its private LibreOffice profile SHALL
+stay as they are. (spec 166)
+
+**Scenarios**
+
+- **Given** a deck set in Calibri and Times New Roman, **When** it is converted, **Then** every word on
+  its pages lands within 1 pt of the same deck converted by LibreOffice 25.2 with the same mapping, and
+  no page embeds a monospaced face.
+- **Given** the reported bulletin of 16 slides, **When** page 1 is converted, **Then** its title ink
+  measures 477 × 199 px at 96 dpi — the reference's own box — and page 3's words are within 0.7 pt.
+- **Given** the same deck's offering page, **When** its band is converted, **Then** the band holds five
+  words, each amount on its label's line at x 475.45 and x 785.56, and nothing is clipped by the edge.
+- **Given** a deck that sets a run in `Courier New`, **When** it is converted, **Then** that run is still
+  monospaced — the rule refuses a mono answer to a proportional request, not the face itself.
+
+### R3 — A derivative is named after the renderer that made it
+
+The PDF of a deck SHALL be keyed on the renderer's identity — its LibreOffice version, its converter
+revision and its font inventory — so that a rebuilt image, a newer LibreOffice or an added font produces
+a new PDF on the next request, while an unchanged renderer converts a deck once and shares that one
+conversion between concurrent requests. If the font inventory cannot be read, the version and the
+revision SHALL still key it. (spec 166)
+
+**Scenarios**
+
+- **Given** a deck already converted, **When** a font is added or the LibreOffice version changes,
+  **Then** the next request converts again and the page shows the new render.
+- **Given** neither changes, **When** the same deck is requested twice, **Then** it is converted once.
+- **Given** a derivative produced by an older renderer, **When** the new one is written, **Then** the
+  library's own record — the deck's SHA, name, family, references and deadline — is unchanged.
+
+### R4 — The operator can add the faces only Office has
+
+The companion SHALL read a host directory mounted read-only at `/usr/share/fonts/operator`, re-scanned
+when the companion starts, so a face that ships only with Microsoft Office joins the renderer's
+inventory without rebuilding the image or changing code. Absent or empty, the companion SHALL convert
+exactly as it does without it. (spec 166)
+
+**Scenarios**
+
+- **Given** a font file in that directory, **When** the companion starts, **Then** the family is
+  available to the converter and the identity changes, so a deck converted before it is converted again.
+- **Given** no such directory, **When** the companion starts, **Then** it starts as before and the
+  substitute faces are used.

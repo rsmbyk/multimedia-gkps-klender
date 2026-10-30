@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-10-29
-**slices**: `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1067,3 +1067,37 @@ Nothing about the dialog's frame, its markup or its copy changes.
 #### Scenario: the dialog is on the Media Library tab
 - WHEN a row is selected there and a `cancel` arrives from the file input
 - THEN the dialog stays open on that tab with that row still selected
+
+### R33 — The dock fills whatever size it is given
+
+The operator dock's panel SHALL take the dock viewport's full width and height at every width of 320px
+and up: no maximum width and no horizontal auto margin, so no strip of background is left beside it, and
+the page SHALL NOT scroll horizontally at any width.
+
+The picker SHALL stay a single column at every width: its body keeps block layout, no rule lays its age
+buckets out side by side, and every row SHALL span the picker body's content width — the panel's width
+less the body's 8px side padding — with its name at the row's left padding and its date right-aligned on
+its right padding. A bucket head SHALL keep sticking to the top of the picker's scroller, as at the
+narrow width it was drawn for.
+
+No other metric SHALL change: the head's padding, the row's 40px minimum height and 10px padding, the
+`Today` and `On screen` badges, the transport's 40px arrows and the 5px scrollbar keep their values, and
+every box at a width of 560px or less SHALL be identical to the dock spec 119 delivered. The runner is
+not re-flowed by this requirement: it already filled the panel, and its entries are a sequence.
+
+#### Scenario: a wide dock
+- WHEN `/obs/dock` opens in a 1440px dock
+- THEN the panel is 1440 wide with its left edge at 0
+- AND each picker row is 1424 wide, its name at the row's left padding and its date at its right
+
+#### Scenario: four buckets in a wide dock
+- WHEN the picker holds four age buckets in a 1920px dock
+- THEN the buckets are stacked in one column, not laid out side by side
+
+#### Scenario: a narrow dock
+- WHEN the same page opens in a 420px dock
+- THEN the panel is 420 wide and every box is where it was before this requirement
+
+#### Scenario: the scroller
+- WHEN the picker is scrolled past a bucket's rows
+- THEN that bucket's head stays at the top of the scroller

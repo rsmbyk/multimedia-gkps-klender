@@ -1195,6 +1195,10 @@ def _scripture_screens(entry):
     return screens
 
 
+_MEDIA_SCREEN_KEYS = {'image': 'image_sha256', 'audio': 'audio_sha256', 'video': 'video_sha256',
+                      'pdf': 'pdf_sha256', 'slides': 'slides_sha256'}
+
+
 def _blank_screen():
     """A built-in rest. It is not a section break and is never stored."""
     return {'blank': True, 'header': '', 'lines': []}
@@ -1238,23 +1242,14 @@ def _projector_data(service):
             group = [_blank_screen()]
             entry_type, label, untitled = 'break', row.title or '', False
         elif row.kind == tatib_models.ServiceEntryKind.MEDIA:
-            if row.media_id and row.media.family == 'image':
-                group = [{'blank': False, 'header': '', 'lines': [],
-                          'image_sha256': row.media_id}]
-            elif row.media_id and row.media.family == 'audio':
-                group = [{'blank': False, 'header': '', 'lines': [],
-                          'audio_sha256': row.media_id}]
-            elif row.media_id and row.media.family == 'video':
-                group = [{'blank': False, 'header': '', 'lines': [],
-                          'video_sha256': row.media_id}]
-            elif row.media_id and row.media.family == 'pdf':
-                group = [{'blank': False, 'header': '', 'lines': [],
-                          'pdf_sha256': row.media_id}]
-            elif row.media_id and row.media.family == 'slides':
-                group = [{'blank': False, 'header': '', 'lines': [],
-                          'slides_sha256': row.media_id}]
-            else:
-                group = [_blank_screen()]
+            # The family decides the screen's one payload key; the rest is the built-in
+            # blank every other entry kind ends on (spec 058), so a picture, a recording,
+            # a page or a deck never runs straight into the next entry. An entry whose
+            # file is gone is already one rest, so it gains no second.
+            key = _MEDIA_SCREEN_KEYS.get(row.media.family) if row.media_id else None
+            screen = ({'blank': False, 'header': '', 'lines': [], key: row.media_id}
+                      if key else None)
+            group = [screen, _blank_screen()] if screen else [_blank_screen()]
             entry_type, label, untitled = 'media', row.citation(), not bool(row.title)
         elif row.kind == tatib_models.ServiceEntryKind.SCRIPTURE:
             group = _scripture_screens(row) + [_blank_screen()]

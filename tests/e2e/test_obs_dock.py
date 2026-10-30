@@ -45,6 +45,15 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.other, order_number=1, kind=tatib.ServiceEntryKind.TEXT,
             title='Salam', text='Damai di bumi bagi manusia')
+        # Spec 164: one service whose only entry is a picture, so its group's rest is reachable
+        # without another kind's screens in the way. Dated oldest, so the picker's order holds.
+        self.media_service = tatib.TataIbadah.objects.create(
+            name='Media Minggu', date=date(2026, 10, 11), is_active=True)
+        self.media = tatib.MediaIdentity.objects.create(
+            sha256='1' * 64, byte_count=120, family='image', display_filename='slide.png')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.media_service, order_number=1, kind=tatib.ServiceEntryKind.MEDIA,
+            media=self.media, media_filename='slide.png', title='Opening image')
 
         self._playwright = sync_playwright().start()
         try:
@@ -154,6 +163,29 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
             'Ibadah Minggu')
         context.close()
 
+    def test_a_media_entry_lists_and_steps_its_rest(self):
+        """Spec 164: the media entry's inner list shows its rest and the transport lands on it."""
+        context = self._context()
+        dock = self._open(context, '/obs/dock')
+        self._open_service(dock, 'Media Minggu')
+        self._project_first_entry(dock)
+        self._wait_state(dock, self.media_service.pk)
+
+        rows = dock.evaluate(
+            "() => [...document.querySelectorAll('.entryli')].map(li =>"
+            " [...li.querySelectorAll('.screenerow')].map(row => row.innerText.trim()))")
+        self.assertEqual(rows[0][:2], ['IMAGE', 'Rest'])
+
+        # One press past the picture is the entry's own rest, and the projector paints it blank.
+        dock.keyboard.press('ArrowDown')
+        dock.wait_for_function(
+            "() => JSON.parse(localStorage.getItem('gkps-display')).screen === 1")
+        projector = self._open(context, '/projector')
+        projector.wait_for_function(
+            "() => { const el = document.querySelector('.screen.is-active');"
+            " return el && el.classList.contains('is-blank'); }")
+        context.close()
+
     def test_keyboard_steps_screens_and_space_pauses_and_resumes(self):
         context = self._context()
         dock = self._open(context, '/obs/dock')
@@ -238,4 +270,63 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
                 page.locator('.screen.is-active .screen__lines').inner_text())
         self.assertEqual(adopted.url.split('?')[0], self.live_server_url + '/projector')
         self.assertEqual(first.url.split('?')[0], self.live_server_url + '/projector')
+        context.close()
+
+    # ---------- the panel's own width (spec 164) ------------------------------
+
+    def _panel(self, page, widths):
+        """The dock's box at each width, and the body's horizontal overflow."""
+        boxes = []
+        for width in widths:
+            page.set_viewport_size({'width': width, 'height': 900})
+            boxes.append(page.evaluate("""() => {
+                const box = document.querySelector('.dock').getBoundingClientRect();
+                return {width: document.documentElement.clientWidth,
+                        x: box.x, w: box.width,
+                        overflow: document.documentElement.scrollWidth
+                                  - document.documentElement.clientWidth};
+            }"""))
+        return boxes
+
+    def test_the_dock_fills_whatever_width_it_is_given(self):
+        # An OBS dock panel is 300px in one layout and a second monitor in another,
+        # so the panel is the page at every width: no cap, no centring.
+        context = self._context()
+        dock = self._open(context, '/obs/dock')
+        dock.wait_for_selector('.servicerow')
+
+        for box in self._panel(dock, (320, 420, 560, 720, 900, 1440, 1920, 2560)):
+            self.assertAlmostEqual(box['x'], 0, delta=0.5, msg=f"panel starts at {box['x']} at {box['width']}px")
+            self.assertAlmostEqual(box['w'], box['width'], delta=0.5,
+                                   msg=f"panel is {box['w']} of {box['width']}px")
+            self.assertEqual(box['overflow'], 0, f"horizontal overflow at {box['width']}px")
+        context.close()
+
+    def test_a_wide_dock_keeps_the_picker_in_one_column(self):
+        # One column at every width — the bucket list does not fan out — but the
+        # rows fill the panel instead of sitting in a capped, centred strip.
+        context = self._context()
+        dock = self._open(context, '/obs/dock')
+        dock.wait_for_selector('.servicerow')
+
+        for width in (560, 900, 1440, 1920):
+            dock.set_viewport_size({'width': width, 'height': 900})
+            boxes = dock.evaluate("""() => {
+                const body = document.getElementById('pickBody');
+                const style = getComputedStyle(body);
+                const secs = [...body.querySelectorAll('section')];
+                return {display: style.display,
+                        contentW: body.clientWidth - parseFloat(style.paddingLeft)
+                                  - parseFloat(style.paddingRight),
+                        rowW: body.querySelector('.servicerow').getBoundingClientRect().width,
+                        xs: secs.map(s => Math.round(s.getBoundingClientRect().x)),
+                        head: getComputedStyle(body.querySelector('.group__head')).position};
+            }""")
+            self.assertEqual(boxes['display'], 'block', f"single column at {width}px")
+            self.assertEqual(len(set(boxes['xs'])), 1, f"buckets stacked at {width}px: {boxes['xs']}")
+            self.assertAlmostEqual(boxes['rowW'], boxes['contentW'], delta=0.5,
+                                   msg=f"row is {boxes['rowW']} of {boxes['contentW']}px at {width}px")
+            self.assertAlmostEqual(boxes['rowW'], width - 16, delta=1,
+                                   msg=f"row spans {boxes['rowW']} of {width}px")
+            self.assertEqual(boxes['head'], 'sticky')
         context.close()

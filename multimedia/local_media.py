@@ -31,6 +31,32 @@ from pypdf import PdfReader
 MAX_BYTES = 200_000_000
 PORT = 63174
 
+# Bumped when the converter's command or its export filter changes, so a derivative made by the old
+# one is not mistaken for this one's. The renderer's own identity — its version and its fonts — is
+# read at run time (see converter_identity).
+CONVERTER_REVISION = '1'
+
+
+def font_inventory():
+    """Every family the renderer can see.
+
+    A font added to the image or mounted by the operator changes where text lands exactly as much as a
+    LibreOffice upgrade does, so the derivative's identity has to carry it.
+    """
+    try:
+        output = subprocess.run(['fc-list', ':', 'family'], capture_output=True,
+                                text=True, timeout=10, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        return ''
+    return '\n'.join(sorted({name.strip() for line in output.splitlines()
+                             for name in line.split(',') if name.strip()}))
+
+
+def converter_identity(version):
+    """What decides a render: the renderer's version, its command revision, and its fonts."""
+    return f'{version}\n{CONVERTER_REVISION}\n{font_inventory()}'
+
+
 
 class InvalidMedia(ValueError):
     pass
@@ -359,7 +385,7 @@ class LocalLibrary:
                     raise InvalidMedia('PowerPoint conversion is unavailable.') from exc
             else:
                 version = 'test-converter'
-            key = hashlib.sha256(version.encode()).hexdigest()[:16]
+            key = hashlib.sha256(converter_identity(version).encode()).hexdigest()[:16]
             target = self.derived_dir / f'{sha}-{key}.pdf'
             if target.is_file() and _valid_display_pdf(target):
                 return target

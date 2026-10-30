@@ -57,6 +57,9 @@ services:
       GKPS_MEDIA_ALLOWED_ORIGINS: "${GKPS_MEDIA_PRODUCTION_ORIGIN:?Set GKPS_MEDIA_PRODUCTION_ORIGIN in the project .env},http://localhost:${WEB_PORT:-63404},http://127.0.0.1:${WEB_PORT:-63404}"
     volumes:
       - media_library_data:/var/lib/gkps-media
+      # Fonts that ship only with Office (Britannic Bold, Berlin Sans FB Demi) cannot be built into
+      # this image; the operator drops them here once and the converter draws the deck in them.
+      - ${GKPS_FONTS_DIR:-$HOME/.local/share/gkps-fonts}:/usr/share/fonts/operator:ro
     restart: unless-stopped
 
 volumes:
