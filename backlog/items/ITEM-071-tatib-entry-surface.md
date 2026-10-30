@@ -1,17 +1,18 @@
 ---
 id: ITEM-071
-status: in_review
+status: done
 title: Subtle surface for Tata Ibadah entries
 type: chore
 priority: P2
 effort: S
 created: 2026-10-13
-updated: 2026-10-13
+updated: 2026-10-12
 spec: ../../specs/068-tatib-entry-surface/spec.md
 branch: chore/068-entry-surface
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/322
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-12
+closed_reason: merged into develop (PR #322)
 bump: patch
 release_version: 1.6.7
 ---

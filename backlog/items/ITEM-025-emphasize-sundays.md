@@ -1,6 +1,6 @@
 ---
 id: ITEM-025
-status: in_review
+status: done
 title: 'Make Sundays more prominent in the Tata Ibadah date picker'
 type: chore
 priority: P2
@@ -10,8 +10,9 @@ updated: 2026-10-08
 spec: specs/023-emphasize-sundays/spec.md
 branch: feat/026-live-projection-editing
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-08
+closed_reason: merged into develop (PR #275)
 bump: patch
 release_version: 1.0.0
 ---

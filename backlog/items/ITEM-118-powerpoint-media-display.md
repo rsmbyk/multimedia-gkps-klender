@@ -1,17 +1,18 @@
 ---
 id: ITEM-118
-status: in_review
+status: done
 title: 'Display PowerPoint slides in Preview and projector'
 type: feat
 priority: P1
 effort: L
 created: 2026-10-19
-updated: 2026-10-20
+updated: 2026-10-19
 spec: specs/118-powerpoint-media-display/spec.md
 branch: feat/118-powerpoint-media-display
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/366
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-19
+closed_reason: merged into develop (PR #366)
 bump: minor
 release_version: 1.19.0
 ---

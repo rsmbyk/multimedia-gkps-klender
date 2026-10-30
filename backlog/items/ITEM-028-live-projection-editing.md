@@ -1,6 +1,6 @@
 ---
 id: ITEM-028
-status: in_review
+status: done
 title: 'Keep editing while projecting, and follow every change'
 type: feat
 priority: P1
@@ -10,8 +10,9 @@ updated: 2026-10-08
 spec: specs/026-live-projection-editing/spec.md
 branch: feat/026-live-projection-editing
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-08
+closed_reason: merged into develop (PR #275)
 bump: minor
 release_version: 1.0.0
 ---
