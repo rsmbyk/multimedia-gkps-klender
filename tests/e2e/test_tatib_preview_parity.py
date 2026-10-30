@@ -306,6 +306,27 @@ class PreviewParityTests(StaticLiveServerTestCase):
         self.assertEqual([label['text'] for label in labels],
                          ['Fill in the entries', 'Name and date'])
 
+    def test_the_step_digit_is_drawn_in_the_bundled_face(self):
+        """The badge's numeral must not depend on the machine's UI font.
+
+        ui-sans-serif resolves differently on every platform, and a correction that centres
+        a digit in one font puts it a pixel high in the next -- which is what the owner saw.
+        Source Sans 3 ships in the repository, so its metrics are the same everywhere.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(400)
+        self.page.click('[data-generate-open]')
+        self.page.wait_for_selector('.generate__step-mark', timeout=8000)
+        families = self.page.evaluate("""() => [].slice.call(document.querySelectorAll('.generate__step-mark')).map(m => {
+          const cs = getComputedStyle(m);
+          const m2 = new DOMMatrixReadOnly(getComputedStyle(m.querySelector('i')).transform);
+          return {family: cs.fontFamily.split(',')[0].replace(/["']/g, ''), ty: +m2.m42.toFixed(2)};
+        })""")
+        self.assertEqual(len(families), 2)
+        for badge in families:
+            self.assertEqual(badge['family'], 'Source Sans 3', badge)
+            self.assertLessEqual(abs(badge['ty']), 1, badge)
+
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         self.page.wait_for_timeout(400)

@@ -36,6 +36,13 @@
 /* The digit's transform is computed from the font's own ink box in generate.js --
    a fixed lift in CSS is only right for one font at one device-pixel ratio. */
 .generate__steps li .generate__step-mark { text-indent: 0; }
+/* The digit is drawn in the face the app ships rather than the machine's: ui-sans-serif
+   resolves to a different font on every platform, and the correction that centres a digit
+   in one is wrong in the next -- the owner's browser showed it. Source Sans 3 travels
+   with the repository, so its metrics are the same everywhere. */
+.generate__steps li .generate__step-mark {
+  font-family: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+}
 .generate__steps li .generate__step-mark i { display: block; font-style: inherit; line-height: 1; }
 .generate__steps li .generate__step-mark svg { display: block; width: 10px; height: 10px; }
 .generate__steps li[aria-current="step"] { color: var(--ink); }

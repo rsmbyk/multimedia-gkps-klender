@@ -199,6 +199,7 @@ body { margin: 0; background: var(--canvas); color: var(--ink); }
 }
 .generate__steps li { display: flex; align-items: center; gap: 6px; }
 .generate__steps li .generate__step-mark {
+  font-family: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
   display: grid; place-items: center; width: 18px; height: 18px; flex: none;
   /* The list tracks its labels at .09em; inside an 18px circle that trailing space alone
      shifts a lone digit ~0.47px left, so the badge opts out. */
