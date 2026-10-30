@@ -1324,10 +1324,14 @@ def _tatib_stage(service):
                                     'citation': option.citation(),
                                     'title': option.title, 'meta': meta,
                                     'preview': option_preview})
+            slot_state = ''
+            if row.kind == tatib_models.ServiceEntryKind.CHOICE:
+                slot_state = (f'{len(options)} option' + ('' if len(options) == 1 else 's')
+                              if options else 'No options yet')
             items.append({'eos': False, 'anchor': anchor, 'entry': True, 'pk': row.pk,
                           'kind': kind_key, 'kind_label': row.get_kind_display(),
                           'slot': True, 'slot_kind': slot_kind, 'slot_label': label,
-                          'options': options,
+                          'slot_state': slot_state, 'options': options,
                           'title': title, 'subtitle': '', 'paras': [], 'clipped': False,
                           'note': '', 'preview': None, 'option_of': row.parent_id,
                           'after_marker': anchor})
@@ -1415,6 +1419,16 @@ def _tatib_stage(service):
                     'song_label': song_label, 'song_reference': song_reference,
                     'song_title': song_title, 'verse_line': verse_line,
                     'txt': filter_text})
+    # "+ Add option" belongs under the last option of its choice, not under the choice's
+    # title: an option is its own row, so only the final one knows that it is last.
+    for index, item in enumerate(items):
+        parent = item.get('option_of')
+        if not parent:
+            continue
+        following = items[index + 1].get('option_of') if index + 1 < len(items) else None
+        if following != parent:
+            item['add_option_for'] = parent
+            item['add_option_kind'] = item.get('kind')
     return items, toc
 
 

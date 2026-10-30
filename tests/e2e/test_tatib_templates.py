@@ -111,7 +111,7 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         buttons = self.page.locator('[data-entry-open]').first.locator('xpath=..').locator(
             '[data-entry-open]')
         labels = [buttons.nth(index).inner_text().strip() for index in range(6)]
-        self.assertEqual(labels, ['+ Passage', '+ Song', '+ Text', '+ Media',
+        self.assertEqual(labels, ['+ Text', '+ Song', '+ Passage', '+ Media',
                                   '+ Fill-in', '+ Choice'])
         self.assertEqual(self.page.locator('[data-project-window]').count(), 0)
         self.assertEqual(self.page.locator('[data-project-open]').count(), 0)
