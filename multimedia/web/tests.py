@@ -786,11 +786,14 @@ class EditorViewTests(TestCase):
         self.assertEqual(self.service.name, 'Ibadah Minggu IV')
         self.assertTrue(self.service.is_active)
 
+        # Spec 167: a normal Tata Ibadah never loses its date through an edit. The type
+        # is chosen once, so the empty date is refused and the row keeps what it had.
         response = self.client.post(self.save_url('tatib', inactive_service.pk), {
             'name': 'Inactive service edited', 'date': '', 'is_active': 'on'})
-        self.assertEqual(response.status_code, 200, response.content[:400])
+        self.assertEqual(response.status_code, 400, response.content[:400])
         inactive_service.refresh_from_db()
-        self.assertEqual(inactive_service.name, 'Inactive service edited')
+        self.assertEqual(inactive_service.name, 'Inactive service')
+        self.assertEqual(inactive_service.date, date(2026, 8, 30))
         self.assertFalse(inactive_service.is_active)
 
     # --- the gates ---

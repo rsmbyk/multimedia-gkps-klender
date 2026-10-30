@@ -138,10 +138,14 @@ def _editor_fragment_context(kind, form, pk, target=None):
     return {
         'form': form,
         'kind': kind,
-        'title': editors.form_title(kind, pk),
+        'title': editors.form_title(kind, pk, target),
         'save_url': reverse('web-editor-save' if pk else 'web-editor-save-new', kwargs=kwargs),
         'target_id': pk or '',
         'book_id': target.pk if kind == 'song' and not pk and target else '',
+        'is_template': getattr(form, 'is_template', False),
+        'hide_date_clear': getattr(form, 'hide_date_clear', False),
+        'copy_url': (reverse('web-tatib-copy', args=[pk])
+                     if kind == 'tatib' and pk else ''),
     }
 
 
@@ -300,10 +304,20 @@ def _entry_song_reference_filter(query):
     return reference_filter
 
 
+def _entry_parent(request, tatib):
+    """The choice an option belongs to, from the query string (spec 167)."""
+    raw = request.GET.get('parent') or request.POST.get('parent')
+    if not raw:
+        return None
+    return tatib_models.ServiceEntry.objects.filter(
+        pk=raw, tatib=tatib, kind=tatib_models.ServiceEntryKind.CHOICE).first() or None
+
+
 def entry_form(request, kind=None, pk=None):
     """The modal's form fragment: one per kind, or the existing entry's own."""
     if not editors.editors_allowed(request):
         return HttpResponseForbidden('Editing is restricted.')
+    parent = None
     if pk is not None:
         entry = get_object_or_404(tatib_models.ServiceEntry, pk=pk)
         kind = entry_forms.kind_name(entry.kind)
@@ -312,9 +326,21 @@ def entry_form(request, kind=None, pk=None):
     else:
         kind = request.GET.get('kind')          # the new form names its kind in the query
         tatib = get_object_or_404(tatib_models.TataIbadah, pk=request.GET.get('tatib'))
-        form = entry_forms.build_entry_form(kind, tatib=tatib)
+        parent = _entry_parent(request, tatib)
+        if parent is not None:
+            # An option is its choice's own kind: the URL names the parent, not the kind.
+            kind = entry_forms.kind_name(parent.fill_kind)
+            form = entry_forms.build_entry_form(kind, tatib=tatib)
+        else:
+            form = entry_forms.build_entry_form(kind, tatib=tatib)
     if form is None:
         raise Http404('Unknown kind.')
+    if pk is None and kind in ('fill_in', 'choice'):
+        return render(request, 'reading/_slot_form.html', {
+            'form': form, 'kind': kind, 'tatib': tatib,
+            'title': entry_forms.entry_title(kind),
+            'save_url': reverse('web-entry-save-new') + f'?tatib={tatib.pk}',
+        })
     books, book_edition = _entry_book_options(form, kind)
     return render(request, 'reading/_entry_form.html', {
         'form': form, 'kind': kind, 'entry': None if pk is None else entry,
@@ -325,7 +351,8 @@ def entry_form(request, kind=None, pk=None):
         'after': request.GET.get('after') if pk is None else None,
         'save_url': reverse('web-entry-save' if pk else 'web-entry-save-new',
                             kwargs={'pk': pk} if pk else {})
-                    + ('' if pk else f'?tatib={tatib.pk}'),
+                    + ('' if pk else f'?tatib={tatib.pk}'
+                       + (f'&parent={parent.pk}' if parent is not None else '')),
     })
 
 
@@ -495,7 +522,17 @@ def entry_save(request, pk=None):
             tatib_models.TataIbadah, pk=request.GET.get('tatib')))
     if form is None:
         raise Http404('Unknown kind.')
+    if entry is None:
+        parent = _entry_parent(request, form.tatib)
+        if parent is not None:
+            form.instance.parent = parent
     if not form.is_valid():
+        if entry is None and kind in ('fill_in', 'choice'):
+            return render(request, 'reading/_slot_form.html', {
+                'form': form, 'kind': kind, 'tatib': form.tatib,
+                'title': entry_forms.entry_title(kind),
+                'save_url': reverse('web-entry-save-new') + f'?tatib={form.tatib.pk}',
+            }, status=400)
         books, book_edition = _entry_book_options(form, kind)
         return render(request, 'reading/_entry_form.html', {
             'form': form, 'kind': kind, 'entry': entry,
@@ -526,6 +563,15 @@ def entry_save(request, pk=None):
                     model.objects.filter(tatib=form.tatib).update(
                         order_number=F('order_number') + 1)
                 form.instance.order_number = 1
+            elif parent is not None:
+                # An option sits under its choice, after the last one it already has.
+                anchor_row = parent.options.order_by('-order_number').first() or parent
+                for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
+                    model.objects.filter(tatib=form.tatib,
+                                         order_number__gt=anchor_row.order_number).update(
+                                             order_number=F('order_number') + 1)
+                form.instance.parent = parent
+                form.instance.order_number = anchor_row.order_number + 1
             elif marker is not None:
                 # Insert AFTER the clicked element, never before it, shifting both tables.
                 for model in (tatib_models.TataIbadahItem, tatib_models.ServiceEntry):
@@ -594,6 +640,220 @@ def entry_delete(request, pk):
     return JsonResponse({'ok': True})
 
 
+
+def _order_with_slot_blocks(moved, current_entries, named):
+    """The new order, with every choice followed by its options (spec 167).
+
+    A choice and its options are one block: dragging the choice away from them would
+    leave them rendering under another entry, so an option named on its own follows its
+    choice, and an option the client left out is placed by the parent anyway.
+    """
+    placed = set()
+    order = []
+    for entry in moved:
+        if entry.pk in placed:
+            continue
+        if entry.kind == tatib_models.ServiceEntryKind.CHOICE:
+            order.append(entry)
+            placed.add(entry.pk)
+            for option in entry.options.order_by('order_number', 'pk'):
+                if option.pk not in placed:
+                    order.append(option)
+                    placed.add(option.pk)
+            continue
+        if entry.parent_id in named and entry.parent_id not in placed:
+            continue                    # its choice has not been placed yet: it will be
+        order.append(entry)
+        placed.add(entry.pk)
+    order.extend(entry for entry in current_entries if entry.pk not in placed)
+    return order
+
+
+class _GenerateError(Exception):
+    """A slot that cannot be resolved at Create; the transaction rolls back on it."""
+
+
+def _slot_value(slot, entry):
+    """What a generate row shows once its slot is settled: the same facts the page prints."""
+    kind_key = entry_forms.kind_name(entry.kind)
+    label = f'{slot.get_kind_display()} · {entry_forms.SLOT_LABELS.get(kind_key, kind_key)}'
+    meta = ''
+    if entry.kind == tatib_models.ServiceEntryKind.SONG and entry.verses:
+        meta = 'Bait ' + format_verses(entry.verses)
+    elif entry.kind == tatib_models.ServiceEntryKind.MEDIA and entry.media_id:
+        meta = entry.media.get_family_display()
+    return {'label': label, 'title': slot.title, 'line': entry.citation(), 'meta': meta}
+
+
+def _copy_entry(source, service, order):
+    """One ordinary entry, copied field for field into another Tata Ibadah."""
+    return tatib_models.ServiceEntry.objects.create(
+        tatib=service, kind=source.kind, order_number=order,
+        title=source.title, text=source.text,
+        default_screen_mode=source.default_screen_mode,
+        screen_breaks=source.screen_breaks, screen_breaks_reset=source.screen_breaks_reset,
+        book_translation=source.book_translation, chapter=source.chapter,
+        verse_start=source.verse_start, verse_end=source.verse_end,
+        song=source.song, verses=list(source.verses or []),
+        media=source.media, media_filename=source.media_filename)
+
+
+def _copy_slot(source, service, order):
+    """A fill-in or a choice, copied with its kind and its target (never into a service)."""
+    return tatib_models.ServiceEntry.objects.create(
+        tatib=service, kind=source.kind, order_number=order,
+        title=source.title, fill_kind=source.fill_kind)
+
+
+def entry_validate(request):
+    """Bind a slot's form and answer the row's value; write nothing (spec 167, D003)."""
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    slot_pk = request.POST.get('entry') or request.GET.get('entry')
+    slot = get_object_or_404(tatib_models.ServiceEntry, pk=slot_pk)
+    if slot.kind not in (tatib_models.ServiceEntryKind.FILL_IN,
+                         tatib_models.ServiceEntryKind.CHOICE):
+        return JsonResponse({'error': 'That entry is not a slot.'}, status=400)
+    if slot.fill_kind is None:
+        return JsonResponse({'error': 'This slot has no kind.'}, status=400)
+    kind = entry_forms.kind_name(slot.fill_kind)
+    form = entry_forms.build_entry_form(kind, data=request.POST, tatib=slot.tatib)
+    if form is None:
+        raise Http404('Unknown kind.')
+    if not form.is_valid():
+        # The same fragment the save endpoint answers on error: the modal swaps it in,
+        # so a slot's field errors read exactly like an ordinary entry's.
+        books, book_edition = _entry_book_options(form, kind)
+        return render(request, 'reading/_entry_form.html', {
+            'form': form, 'kind': kind, 'entry': None,
+            'title': entry_forms.entry_title(kind), 'tatib': slot.tatib,
+            'books': books, 'book_edition': book_edition,
+            'song': getattr(form, 'song', None),
+            'song_label': _entry_song_option_label(getattr(form, 'song', None)),
+            'after': None,
+            'save_url': (reverse('web-entry-validate') + f'?entry={slot.pk}'),
+        }, status=400)
+    entry = form.save(commit=False)
+    entry.tatib = slot.tatib
+    data = {key: value for key, value in request.POST.items()
+            if key != 'csrfmiddlewaretoken'}
+    return JsonResponse({'ok': True, 'value': _slot_value(slot, entry), 'data': data})
+
+
+def tatib_generate(request, service_id):
+    """Create the dated service from a template, in one transaction (spec 167, FR-018)."""
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    template = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    if template.kind != tatib_models.TataIbadahKind.TEMPLATE:
+        return JsonResponse({'error': 'Only a template generates a Tata Ibadah.'}, status=400)
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except (UnicodeDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid request.'}, status=400)
+    if not isinstance(payload, dict):
+        return JsonResponse({'error': 'Invalid request.'}, status=400)
+    name = (payload.get('name') or '').strip()
+    if not name:
+        return JsonResponse({'error': 'The Tata Ibadah needs a name.'}, status=400)
+    try:
+        import datetime as _datetime
+        day = _datetime.date.fromisoformat(payload.get('date') or '')
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'The Tata Ibadah needs a date.'}, status=400)
+    slots = {}
+    for item in payload.get('slots') or []:
+        try:
+            slots[int(item['entry'])] = item
+        except (KeyError, TypeError, ValueError):
+            return JsonResponse({'error': 'Invalid slot.'}, status=400)
+    slot_rows = list(template.service_entries.filter(
+        kind__in=[tatib_models.ServiceEntryKind.FILL_IN, tatib_models.ServiceEntryKind.CHOICE]))
+    if set(slots) != {row.pk for row in slot_rows}:
+        return JsonResponse({'error': 'Every fill-in and choice must be settled.'}, status=400)
+    try:
+        with transaction.atomic():
+            service = tatib_models.TataIbadah.objects.create(name=name, date=day)
+            order = 0
+            for row_kind, row in _ordered_service_rows(template):
+                if row_kind != 'legacy' and row.parent_id:
+                    continue            # an option arrives with its choice
+                order += 1
+                if row_kind == 'legacy':
+                    tatib_models.TataIbadahItem.objects.create(
+                        tatib=service, item_type=row.item_type, title=row.title,
+                        text=row.text, order_number=order)
+                    continue
+                if row.kind in (tatib_models.ServiceEntryKind.FILL_IN,
+                                tatib_models.ServiceEntryKind.CHOICE):
+                    slot = slots.get(row.pk) or {}
+                    if row.kind == tatib_models.ServiceEntryKind.CHOICE:
+                        option = row.options.filter(pk=slot.get('option')).first()
+                        if option is None:
+                            raise _GenerateError(
+                                f'“{row.title or row.get_kind_display()}” has no chosen option.')
+                        _copy_entry(option, service, order)
+                    else:
+                        kind_name = entry_forms.kind_name(row.fill_kind)
+                        form = entry_forms.build_entry_form(
+                            kind_name, data=slot.get('data') or {}, tatib=service)
+                        if form is None or not form.is_valid():
+                            raise _GenerateError(
+                                f'“{row.title or row.get_kind_display()}” is not settled.')
+                        entry = form.save(commit=False)
+                        entry.tatib = service
+                        entry.kind = row.fill_kind
+                        entry.fill_kind = None
+                        entry.parent = None
+                        entry.order_number = order
+                        entry.save()
+                    continue
+                _copy_entry(row, service, order)
+    except _GenerateError as exc:
+        return JsonResponse({'error': str(exc)}, status=400)
+    return JsonResponse({'id': service.pk,
+                         'url': reverse('web-tatib-service', args=[service.pk])}, status=201)
+
+
+def tatib_copy_as_template(request, service_id):
+    """Clone a Tata Ibadah into a template, converting nothing (spec 167, FR-021)."""
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    source = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    with transaction.atomic():
+        copy = tatib_models.TataIbadah.objects.create(name=source.name)
+        order = 0
+        for row_kind, row in _ordered_service_rows(source):
+            if row_kind != 'legacy' and row.parent_id:
+                continue                # an option is copied under its choice
+            order += 1
+            if row_kind == 'legacy':
+                tatib_models.TataIbadahItem.objects.create(
+                    tatib=copy, item_type=row.item_type, title=row.title,
+                    text=row.text, order_number=order)
+                continue
+            if row.kind in (tatib_models.ServiceEntryKind.FILL_IN,
+                            tatib_models.ServiceEntryKind.CHOICE):
+                new = _copy_slot(row, copy, order)
+                if row.kind == tatib_models.ServiceEntryKind.CHOICE:
+                    for option in row.options.order_by('order_number', 'pk'):
+                        order += 1
+                        child = _copy_entry(option, copy, order)
+                        child.parent = new
+                        child.save(update_fields=['parent'])
+                continue
+            _copy_entry(row, copy, order)
+    return JsonResponse({'id': copy.pk,
+                         'url': reverse('web-tatib-service', args=[copy.pk]) + '?mode=template'},
+                        status=201)
+
+
 def entry_reorder(request):
     """The running order, saved in one POST (spec 006, slice 3).
 
@@ -639,10 +899,8 @@ def entry_reorder(request):
     with transaction.atomic():
         _compact_service_order(service)
         current_entries = list(service.service_entries.order_by('order_number', 'pk'))
-        by_pk = {entry.pk: entry for entry in current_entries}
         positions = [entry.order_number for entry in current_entries]
-        order = [by_pk[entry.pk] for entry in moved]
-        order.extend(entry for entry in current_entries if entry.pk not in seen)
+        order = _order_with_slot_blocks(moved, current_entries, seen)
         for entry, position in zip(order, positions):
             entry.order_number = position
         if order:
@@ -840,7 +1098,7 @@ def _tatib_groups(mode, selected_service=None):
     if mode == 'template':
         # Mirrors the mockup's Indonesian locale collation for these names:
         # case- and diacritic-folded, with the '|' separator ignored.
-        templates = sorted(services.filter(date__isnull=True),
+        templates = sorted(services.filter(kind=tatib_models.TataIbadahKind.TEMPLATE),
                            key=lambda service: search_lib.normalize(service.name).replace('|', ''))
         rows = [{'id': service.pk, 'name': service.name, 'date_display': '',
                  'current': service.pk == selected_id}
@@ -850,7 +1108,8 @@ def _tatib_groups(mode, selected_service=None):
         # The dated list reads as a schedule, not a calendar: the four age buckets of
         # spec 132, in their fixed order, each drawn only while it holds rows.
         groups = []
-        dated = services.filter(date__isnull=False).order_by('-date', '-created_at')
+        dated = (services.filter(kind=tatib_models.TataIbadahKind.SERVICE)
+                 .order_by('-date', '-created_at'))
         today = date_buckets.present_day()
         for key, label, rows in date_buckets.groups(dated, today):
             groups.append({'key': key, 'label': label, 'services': [
@@ -1039,6 +1298,44 @@ def _tatib_stage(service):
         anchor = f'e{row.pk}'
         title, body = row.resolve()
         kind_key = entry_forms.kind_name(row.kind)
+        if kind_key in ('fill_in', 'choice'):
+            # A slot (spec 167): a kind line and its title; a choice keeps its options as
+            # ordinary child rows drawn directly under it.
+            text_count += 1
+            slot_kind = (tatib_models.SlotKind(row.fill_kind).name.lower()
+                         if row.fill_kind is not None else '')
+            label = f'{row.get_kind_display()} · {entry_forms.SLOT_LABELS.get(slot_kind, "")}'.strip(' ·')
+            options = []
+            if row.kind == tatib_models.ServiceEntryKind.CHOICE:
+                for option in row.options.order_by('order_number', 'pk'):
+                    option_kind = entry_forms.kind_name(option.kind)
+                    option_preview = (None if option.target_deleted
+                                      else _entry_preview(option, option_kind)
+                                      if option_kind in ('scripture', 'song')
+                                      else _text_preview(option)
+                                      if option_kind == 'text' and (option.text or '').strip()
+                                      else None)
+                    meta = ''
+                    if option_kind == 'song' and option.verses:
+                        meta = 'Bait ' + format_verses(option.verses)
+                    elif option_kind == 'media' and option.media_id:
+                        meta = option.media.get_family_display()
+                    options.append({'pk': option.pk, 'anchor': f'e{option.pk}',
+                                    'citation': option.citation(),
+                                    'title': option.title, 'meta': meta,
+                                    'preview': option_preview})
+            items.append({'eos': False, 'anchor': anchor, 'entry': True, 'pk': row.pk,
+                          'kind': kind_key, 'kind_label': row.get_kind_display(),
+                          'slot': True, 'slot_kind': slot_kind, 'slot_label': label,
+                          'options': options,
+                          'title': title, 'subtitle': '', 'paras': [], 'clipped': False,
+                          'note': '', 'preview': None, 'option_of': row.parent_id,
+                          'after_marker': anchor})
+            toc.append({'eos': False, 'anchor': anchor, 'n': text_count,
+                        'label': title or label, 'label_lines': [title or label],
+                        'titled': bool(title), 'pk': row.pk, 'entry': True,
+                        'txt': f'{label} {title}'})
+            continue
         if kind_key == 'section_break':
             # One divider for both shapes: a section_break entry draws the same rule as
             # a legacy END_OF_SECTION row, carrying its own controls. A break has no
@@ -1061,6 +1358,7 @@ def _tatib_stage(service):
             verse_line = 'Bait ' + format_verses(row.verses)
         block = {'entry': True, 'anchor': anchor, 'pk': row.pk, 'kind': kind_key,
                  'kind_label': row.get_kind_display(), 'title': title,
+                 'option_of': row.parent_id,
                  'deleted_target': deleted_target, 'subtitle': verse_line,
                  'paras': paras, 'clipped': clipped,
                  'note': row.title if row.kind == tatib_models.ServiceEntryKind.SECTION_BREAK else ''}
@@ -1335,6 +1633,10 @@ def service_projector(request):
     adopt = request.GET.get('service')
     if adopt:
         service = get_object_or_404(tatib_models.TataIbadah, pk=adopt)
+        if service.kind == tatib_models.TataIbadahKind.TEMPLATE:
+            # A template is incomplete by design: the display shows what it shows with
+            # no service at all, never the skeleton (spec 167, FR-012).
+            service = None
     if service is not None:
         projector = _projector_data(service)
         page_title = f'{service.name} — display'
@@ -1360,7 +1662,7 @@ def obs_dock(request):
     state lives in this browser (web/display.js) and never reaches the server.
     """
     services = list(tatib_models.TataIbadah.objects
-                    .filter(is_active=True, date__isnull=False)
+                    .filter(is_active=True, kind=tatib_models.TataIbadahKind.SERVICE)
                     .order_by('-date', '-created_at'))
     today = date_buckets.present_day()
     groups = []
@@ -1912,7 +2214,8 @@ class TatibView(TemplateView):
         if override in ('dated', 'template'):
             mode = override
         elif service is not None:
-            mode = 'dated' if service.date else 'template'
+            mode = ('template' if service.kind == tatib_models.TataIbadahKind.TEMPLATE
+                    else 'dated')
         else:
             mode = 'dated'
         items, toc = [], []
@@ -1935,8 +2238,15 @@ class TatibView(TemplateView):
             'tatib_mode_label': ('Show dated Tata Ibadah' if mode == 'template'
                                  else 'Show Tata Ibadah templates'),
             'service_id': service.pk if service else None,
+            'service': service,
             'projector_url': (f'/projector?service={service.pk}'
-                              if service else ''),
+                              if service and service.kind == tatib_models.TataIbadahKind.SERVICE
+                              else ''),
+            'is_template': (service is not None
+                            and service.kind == tatib_models.TataIbadahKind.TEMPLATE),
+            'generate_url': (reverse('web-tatib-generate', args=[service.pk])
+                             if service is not None
+                             and service.kind == tatib_models.TataIbadahKind.TEMPLATE else ''),
             'toc_items': toc,
             'items': items,
             'has_entries': any(block.get('entry') for block in items),

@@ -1,0 +1,70 @@
+<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">
+{% if item.preview.kind == 'image' %}
+<p class="preview__ref">{{ item.preview.title }}</p>
+<div class="preview__image" data-preview-image="{{ item.preview.sha256 }}">
+  <img alt="{{ item.preview.title }}" hidden>
+  <div class="preview__image-unavailable" role="status">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>
+    <span>Image unavailable on this computer</span>
+  </div>
+</div>
+{% elif item.preview.kind == 'audio' %}
+{% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
+<div class="preview__audio" data-preview-audio="{{ item.preview.sha256 }}">
+  <div class="audio-player" hidden>
+    <button type="button" class="audio-player__play" data-audio-play aria-label="Play audio"></button>
+    <div class="audio-player__timeline">
+      <div class="audio-player__filename">{{ item.preview.filename }}</div>
+      <input class="audio-player__seek" data-audio-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek audio">
+      <div class="audio-player__times"><span data-audio-elapsed>0:00</span><span class="audio-player__separator">/</span><span data-audio-total>0:00</span></div>
+    </div>
+  </div>
+  <div class="preview__audio-unavailable" role="status" hidden>
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg>
+    <span>Audio unavailable on this computer</span>
+  </div>
+</div>
+{% elif item.preview.kind == 'video' %}
+{% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
+<div class="preview__video" data-preview-video="{{ item.preview.sha256 }}">
+  <div class="preview__video-frame">
+    <video class="preview__video-element" playsinline preload="metadata" hidden></video>
+    <button type="button" class="preview__video-overlay-play" data-video-play aria-label="Play video"></button>
+  </div>
+  <div class="preview__video-controls">
+    <button type="button" class="preview__video-play" data-video-play aria-label="Play video"></button>
+    <input class="preview__video-seek" data-video-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek video">
+  </div>
+  <div class="preview__video-meta"><span class="preview__video-filename">{{ item.preview.filename }}</span><span><span data-video-elapsed>0:00</span> / <span data-video-total>0:00</span></span></div>
+</div>
+<div class="preview__video-unavailable" role="status" hidden>
+  <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m20 17 12 7-12 7zM12 5l24 38"/></svg>
+  <span>Video unavailable on this computer</span>
+</div>
+{% elif item.preview.kind == 'pdf' %}
+<p class="preview__ref">{{ item.preview.title }}</p>
+<div class="preview__pdf" data-preview-pdf="{{ item.preview.sha256 }}">
+  <div class="preview__pdf-page"><canvas aria-label="PDF page"></canvas></div>
+  <div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous PDF page">←</button><span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next PDF page">→</button></div>
+  <div class="preview__pdf-unavailable" role="status" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg><span>PDF unavailable on this computer</span></div>
+</div>
+{% elif item.preview.kind == 'slides' %}
+<p class="preview__ref">{{ item.preview.title }}</p>
+<div class="preview__pdf" data-preview-slides="{{ item.preview.sha256 }}">
+  <div class="preview__pdf-preparing" role="status">Preparing slides…</div>
+  <div class="preview__pdf-page"><canvas aria-label="PowerPoint slide"></canvas></div>
+  <div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous slide">←</button><span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next slide">→</button></div>
+  <div class="preview__pdf-unavailable" role="status" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="3"/><path d="M13 15h22M13 33h22M17 25l5-5 4 4 5-5M12 5l27 38"/></svg><span>PowerPoint unavailable on this computer</span></div>
+</div>
+{% elif item.preview.kind == 'editable_text' %}
+<div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-default-screen-mode="{{ item.preview.default_screen_mode }}" data-screen-state-signature="{{ item.preview.screen_state_signature }}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">
+  {% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
+  {% if item.preview.reset_notice %}<p class="preview__notice" role="status">Text lines changed, so the custom breaks were reset.</p>{% endif %}
+  <div class="preview__rows">
+  {% for line in item.preview.lines %}
+    {% if line.present %}<p class="preview__line preview__row{% if line.voice %} is-{{ line.voice }}{% endif %}">{% if line.mark %}<span class="tatib__sp">{{ line.mark }}</span> {% endif %}{{ line.text }}</p>{% else %}<div class="preview__blank-line" aria-label="Blank line"></div>{% endif %}
+    {% if line.can_break_after %}<button type="button" class="preview__gap" data-break-after="{{ line.index }}" data-multi-boundary="{% if line.multi_boundary %}true{% else %}false{% endif %}" aria-label="Add screen break after line {{ line.index }}"><span data-break-label>Add break</span></button>{% endif %}
+  {% endfor %}
+  </div>
+</div>
+{% elif item.preview.kind == 'song' %}<p class="preview__song">{{ item.preview.heading }}</p>{% if item.preview.verses|length > 1 %}<div class="preview__tabs" role="tablist">{% for verse in item.preview.verses %}<button type="button" role="tab" class="preview__tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% if not forloop.first %} tabindex="-1"{% endif %}>{{ verse.number }}</button>{% endfor %}</div>{% endif %}<div class="preview__panels">{% for verse in item.preview.verses %}<div class="preview__panel" role="tabpanel"{% if not forloop.first %} hidden{% endif %}>{% for line in verse.lines %}<p class="preview__line">{{ line }}</p>{% endfor %}</div>{% endfor %}</div>{% else %}{% if item.preview.reference %}<p class="preview__ref">{{ item.preview.reference }}</p>{% endif %}{% for para in item.preview.paras %}<p class="preview__line{% if para.voice %} is-{{ para.voice }}{% endif %}">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>{% endfor %}{% endif %}</script>

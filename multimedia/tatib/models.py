@@ -5,8 +5,17 @@ from multimedia.bible import models as bible_models
 from multimedia.songs import models as song_models
 
 
+class TataIbadahKind(models.IntegerChoices):
+    """A service is dated and projects; a template is dated never and generates (spec 167)."""
+
+    SERVICE = 0
+    TEMPLATE = 1
+
+
 class TataIbadah(models.Model):
     name = models.CharField(max_length=64)
+    kind = models.SmallIntegerField(choices=TataIbadahKind.choices,
+                                    default=TataIbadahKind.SERVICE)
     date = models.DateField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
@@ -16,6 +25,41 @@ class TataIbadah(models.Model):
 
     class Meta:
         ordering = ('-date', '-created_at')
+        constraints = [models.CheckConstraint(
+            check=(models.Q(kind=TataIbadahKind.SERVICE, date__isnull=False)
+                   | models.Q(kind=TataIbadahKind.TEMPLATE, date__isnull=True)),
+            name='tatib_kind_matches_date')]
+
+    def clean(self):
+        errors = self._type_errors()
+        if errors:
+            raise ValidationError(errors)
+
+    def _type_errors(self):
+        errors = {}
+        if self.kind == TataIbadahKind.TEMPLATE and self.date is not None:
+            errors['date'] = 'A template has no date.'
+        if self.kind == TataIbadahKind.SERVICE and self.date is None:
+            errors['date'] = 'A normal Tata Ibadah needs a date.'
+        if not self._state.adding and self.pk:
+            stored = (type(self).objects.filter(pk=self.pk)
+                      .values_list('kind', flat=True).first())
+            if stored is not None and stored != self.kind:
+                errors['kind'] = 'A Tata Ibadah never changes its type.'
+        return errors
+
+    def save(self, *args, **kwargs):
+        """The type is chosen once. A writer that has no word for it keeps the old rule:
+        a create with no date is a template, so the API and the old editors stay correct."""
+        if self._state.adding:
+            if self.date is None:
+                self.kind = TataIbadahKind.TEMPLATE
+        else:
+            errors = self._type_errors()
+            if errors:
+                raise ValidationError(errors)
+        super().save(*args, **kwargs)
+
 
 
 class TataIbadahItemType(models.IntegerChoices):
@@ -92,6 +136,18 @@ class ServiceEntryKind(models.IntegerChoices):
     SONG = 2
     SECTION_BREAK = 3
     MEDIA = 4
+    FILL_IN = 5, 'Fill-in'
+    CHOICE = 6, 'Choice'
+
+
+class SlotKind(models.IntegerChoices):
+    """What a fill-in or a choice resolves to: the four kinds an operator can add."""
+
+    TEXT = 0
+    SCRIPTURE = 1
+    SONG = 2
+    MEDIA = 4
+
 
 
 class TextScreenMode(models.TextChoices):
@@ -140,6 +196,14 @@ class ServiceEntry(models.Model):
     media = models.ForeignKey(MediaIdentity, models.PROTECT, null=True, blank=True)
     media_filename = models.CharField(max_length=255, blank=True)
 
+    # A slot (spec 167): a fill-in or a choice lives on a template, names the kind it will
+    # resolve to, and holds no content of its own. A choice's options are ordinary entries
+    # of that kind, each pointing back at the choice through ``parent``.
+    fill_kind = models.SmallIntegerField(choices=SlotKind.choices, null=True, blank=True)
+    parent = models.ForeignKey('self', models.CASCADE, null=True, blank=True,
+                               related_name='options')
+
+
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     class Meta:
@@ -150,6 +214,10 @@ class ServiceEntry(models.Model):
 
     def clean(self):
         errors = {}
+        if self.kind in (ServiceEntryKind.FILL_IN, ServiceEntryKind.CHOICE):
+            errors.update(self._slot_errors())
+        elif self.parent_id:
+            errors.update(self._option_errors())
         if self.screen_breaks is not None:
             from multimedia.tatib.screen_breaks import valid_breaks
             if self.kind != ServiceEntryKind.TEXT or not valid_breaks(
@@ -189,6 +257,34 @@ class ServiceEntry(models.Model):
         if errors:
             raise ValidationError(errors)
 
+    def _slot_errors(self):
+        """A fill-in or a choice: a template's word for work still to come (spec 167)."""
+        errors = {}
+        if not self.tatib_id or self.tatib.kind != TataIbadahKind.TEMPLATE:
+            errors['kind'] = 'A fill-in or a choice exists only on a template.'
+        if self.fill_kind is None:
+            errors['fill_kind'] = 'Choose the kind this entry resolves to.'
+        if self.parent_id:
+            errors['parent'] = 'A fill-in or a choice cannot be an option.'
+        if ((self.text or '').strip() or self.song_id or self.book_translation_id
+                or self.media_id or (self.media_filename or '').strip()):
+            errors['text'] = 'A fill-in holds no content of its own.'
+        return errors
+
+    def _option_errors(self):
+        """An option is an ordinary entry of its choice's kind, in the same Tata Ibadah."""
+        errors = {}
+        parent = self.parent
+        if parent.kind != ServiceEntryKind.CHOICE:
+            errors['parent'] = "Only a choice holds options."
+        elif parent.tatib_id != self.tatib_id:
+            errors['parent'] = "An option belongs to its choice's Tata Ibadah."
+        elif self.kind != parent.fill_kind:
+            errors['kind'] = 'An option must be the kind its choice resolves to.'
+        if self.fill_kind is not None:
+            errors['fill_kind'] = 'An option is an ordinary entry.'
+        return errors
+
     def citation(self):
         """The heading a person would read out for this entry."""
         if self.kind == ServiceEntryKind.SCRIPTURE:
@@ -220,6 +316,9 @@ class ServiceEntry(models.Model):
             return '', ''
         if self.kind == ServiceEntryKind.MEDIA:
             return self.citation(), ''
+        if self.kind in (ServiceEntryKind.FILL_IN, ServiceEntryKind.CHOICE):
+            # A slot never projects -- it only ever appears on a template's page.
+            return self.title, ''
         return self.title, self.text
 
     @property

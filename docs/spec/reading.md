@@ -1101,3 +1101,86 @@ not re-flowed by this requirement: it already filled the panel, and its entries 
 #### Scenario: the scroller
 - WHEN the picker is scrolled past a bucket's rows
 - THEN that bucket's head stays at the top of the scroller
+
+### R34 — A Tata Ibadah is a service or a template
+
+Every Tata Ibadah SHALL carry a type — Normal or Template — chosen when it is created and never changed
+afterwards. A Normal one SHALL carry a date and a Template SHALL carry none; the pairing SHALL hold in the
+model, in every writing endpoint and in the database, and no edit SHALL change a record's type. The New Tata
+Ibadah modal SHALL carry the switcher (Normal selected), ask for the date only on a Normal, and offer no
+control that empties it; the Edit modal SHALL name the type instead of offering the choice. The panel SHALL
+choose its list from the type: dated services by date, templates under Templates. Rows that existed before
+this requirement SHALL keep the type they behaved as — a date meant Normal — and no entry is converted.
+
+#### Scenario: creating both types
+- WHEN the New Tata Ibadah modal opens
+- THEN it offers Normal and Template, and Normal is selected
+- AND choosing Template hides the date field and saves a template with no date
+
+#### Scenario: an edit cannot move the type
+- WHEN a Normal Tata Ibadah's date is cleared in the Edit modal and Save is pressed
+- THEN the save is refused and the date it had is kept
+
+### R35 — A template carries fill-ins and choices
+
+A template's add rows SHALL offer `+ Fill-in` and `+ Choice` after the four kind buttons, past a hairline; a
+Normal Tata Ibadah SHALL NOT offer either, and every writing endpoint SHALL refuse both on one. A fill-in
+SHALL be a title/note and one kind — passage, song, text or media — with no content of its own. A choice
+SHALL be a title, one kind, and an ordered list of options, each a complete entry of that kind added from the
+choice's own row as an indented child row. A choice may hold no options: the template is allowed to be
+unfinished, and such a choice cannot be settled at generation.
+
+#### Scenario: adding an option
+- WHEN a choice row's `+ Add option` is pressed
+- THEN that kind's New modal opens, and the saved entry appears under the choice in its own order
+
+#### Scenario: an option of the wrong kind
+- WHEN a text entry is attached to a song choice
+- THEN the save is refused
+
+### R36 — A template creates a dated service in two steps
+
+A template's page SHALL replace the projector controls with **Use template**, and that button SHALL open a
+modal showing the order view-only: ordinary entries muted and inert, every fill-in and choice live. A fill-in
+SHALL be settled by **Set**, which opens that kind's New modal and only validates — nothing is written to the
+template — and a choice by **Choose**, which lists its options with their Preview. **Next** SHALL stay
+disabled until every slot is settled, with the count on screen; step 2 SHALL be the normal Tata Ibadah form,
+the name prefilled and the date at the nearest Sunday; **Create** SHALL ask for confirmation and SHALL create
+the service in one transaction, copying the template's order with each slot replaced in place and each
+legacy row copied as a legacy row. Generating or abandoning SHALL leave the template byte-identical.
+
+#### Scenario: a settled order
+- WHEN every fill-in and choice is settled and **Next** is pressed
+- THEN the form asks for a name and a date, and **Create** makes the service
+
+#### Scenario: a choice with no options
+- WHEN a choice has no options
+- THEN its control is disabled and labelled `No options`, and **Next** stays disabled
+
+### R37 — Any Tata Ibadah copies as a template
+
+The Edit modal SHALL offer **Copy as template** for a Normal service and a template alike, after a
+confirmation that names the consequence. The copy SHALL keep the name and every entry in order as ordinary
+editable entries — nothing is converted to a fill-in or a choice — and a template source SHALL also bring
+its fill-ins, choices and options. The copy SHALL have no date and SHALL be a template, and the app SHALL
+land on it with the panel on Templates.
+
+#### Scenario: copying a service
+- WHEN a dated service is copied as a template
+- THEN the copy is undated, its entries keep their kinds and order, and it opens under Templates
+
+### R38 — A template never reaches a screen, and its media is kept but not fetched
+
+A Template SHALL never be projectable: its page carries no projector control, the projector route SHALL
+answer the empty display for its id, and the operator dock's list SHALL omit it. A file referenced by a
+template SHALL count as used, so it is never auto-deleted however old it is, and it SHALL NOT be
+auto-downloaded: only files referenced by an active service dated today or later enter the download
+manifest, so a template's file waits for the dated service that uses it.
+
+#### Scenario: projecting a template
+- WHEN `/projector?service=<template id>` is opened
+- THEN it shows the empty display, never the template's order
+
+#### Scenario: a template's media file
+- WHEN a file is referenced only by templates
+- THEN it is never auto-deleted and it does not enter the download manifest

@@ -20,6 +20,8 @@ KINDS = {
     'scripture': tatib_models.ServiceEntryKind.SCRIPTURE,
     'song': tatib_models.ServiceEntryKind.SONG,
     'media': tatib_models.ServiceEntryKind.MEDIA,
+    'fill_in': tatib_models.ServiceEntryKind.FILL_IN,
+    'choice': tatib_models.ServiceEntryKind.CHOICE,
 }
 """The kinds that can be written. The section break is retired (spec 131): its stored rows
 still render, project, reorder and delete, but no form is built for it, so every endpoint
@@ -47,6 +49,10 @@ class ServiceEntryForm(forms.ModelForm):
     def __init__(self, *args, tatib=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.tatib = tatib or (self.instance.tatib if self.instance.pk else None)
+        if self.tatib is not None and not self.instance.pk:
+            # The model's own rules read the Tata Ibadah (a slot is template-only), and
+            # model validation runs before the form's save().
+            self.instance.tatib = self.tatib
 
     def save(self, commit=True):
         entry = super().save(commit=False)
@@ -189,17 +195,52 @@ class MediaEntryForm(ServiceEntryForm):
         return value
 
 
+class SlotForm(ServiceEntryForm):
+    """A fill-in or a choice: a title and the kind it will resolve to (spec 167).
+
+    Both kinds hold no content; the difference is what generation does with them -- a
+    fill-in becomes the entry the operator picks, a choice becomes one of its options.
+    """
+
+    fill_kind = forms.TypedChoiceField(choices=tatib_models.SlotKind.choices, coerce=int,
+                                       widget=forms.HiddenInput)
+
+    class Meta(ServiceEntryForm.Meta):
+        fields = ['kind', 'title', 'fill_kind']
+
+    def clean(self):
+        cleaned = super().clean()
+        if self.tatib is not None and self.tatib.kind != tatib_models.TataIbadahKind.TEMPLATE:
+            raise ValidationError('A fill-in or a choice exists only on a template.')
+        return cleaned
+
+
+class FillInEntryForm(SlotForm):
+    pass
+
+
+class ChoiceEntryForm(SlotForm):
+    pass
+
+
 FORMS = {
     'text': TextEntryForm,
     'scripture': ScriptureEntryForm,
     'song': SongEntryForm,
     'media': MediaEntryForm,
+    'fill_in': FillInEntryForm,
+    'choice': ChoiceEntryForm,
 }
 
 
 TITLES = {
     'text': 'text', 'scripture': 'passage',
     'song': 'song', 'media': 'media',
+    'fill_in': 'fill-in', 'choice': 'choice',
+}
+
+SLOT_LABELS = {
+    'text': 'Text', 'scripture': 'Passage', 'song': 'Song', 'media': 'Media',
 }
 
 
