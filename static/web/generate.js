@@ -115,6 +115,56 @@
   var openChooser = null;
   var chooserOpener = null;
 
+  /* The step badge centres its digit by the glyph's ink, not by the line box: a lining
+     figure sits high in its line box and `1` carries a wide left bearing, and how far off
+     that is depends on the font -- so it is measured here instead of guessed in CSS (a
+     constant nudge is only right for one font at one device-pixel ratio). Canvas reports
+     the ink box of the same text in the same font, and the line box's baseline comes from
+     the font's own ascent and descent. */
+  function centreDigit(mark) {
+    var text = (mark.textContent || '').trim();
+    if (!text || mark.querySelector('svg')) {
+      // the check is drawn symmetric about its own box, so it needs no lift -- and it must
+      // not inherit the numeral's, which is still on the element from the step before
+      mark.style.transform = '';
+      return;
+    }
+    var style = getComputedStyle(mark);
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    if (!context || !context.measureText) return;
+    context.font = style.fontStyle + ' ' + style.fontWeight + ' ' + style.fontSize
+      + ' ' + style.fontFamily;
+    var metrics = context.measureText(text);
+    var size = parseFloat(style.fontSize);
+    if (!size || metrics.actualBoundingBoxAscent === undefined) return;
+
+    var inkLeft = metrics.actualBoundingBoxLeft || 0;
+    var inkRight = metrics.actualBoundingBoxRight || 0;
+    var inkAscent = metrics.actualBoundingBoxAscent || 0;
+    var inkDescent = metrics.actualBoundingBoxDescent || 0;
+    var fontAscent = metrics.fontBoundingBoxAscent || inkAscent;
+    var fontDescent = metrics.fontBoundingBoxDescent || inkDescent;
+
+    // line-height is 1: the box is the font size, the baseline sits half-leading down
+    var halfLeading = (size - (fontAscent + fontDescent)) / 2;
+    var baseline = halfLeading + fontAscent;
+    var inkCentreY = baseline - (inkAscent - inkDescent) / 2;
+    /* Vertically the ink box is what the eye centres. Horizontally it is not: `1` is a
+       narrow stem with a flag reaching left, so centring its ink box pushes the stem right
+       and the numeral reads off-centre. The font centres each digit in its own advance, so
+       the advance is left alone. */
+    var dx = 0;
+    var dy = (size / 2) - inkCentreY;
+    if (!isFinite(dx) || !isFinite(dy)) return;
+    mark.style.transform = 'translate(' + dx.toFixed(2) + 'px,' + dy.toFixed(2) + 'px)';
+  }
+
+  function centreSteps() {
+    Array.prototype.forEach.call(document.querySelectorAll('.generate__steps li span i'),
+                                 centreDigit);
+  }
+
   function slotOf(row) { return row.dataset.slotRow; }
 
   function csrfToken() {
@@ -188,6 +238,7 @@
         : item.dataset.step;
       if (item.dataset.step === String(step)) item.setAttribute('aria-current', 'step');
       else item.removeAttribute('aria-current');
+      centreDigit(mark);
     });
     nextButton.hidden = step === 2;
     backButton.hidden = step !== 2;
@@ -313,4 +364,6 @@
   }
 
   if (sync()) refresh();
+  centreSteps();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(centreSteps);
 })();

@@ -27,17 +27,10 @@
   box-sizing: border-box; letter-spacing: 0;
   border: 1px solid var(--divider); border-radius: 50%; font-size: 10.5px;
 }
-/* The digit is centred by its ink, not by the line box: a lining figure sits high and,
-   in `1`, with a wide left bearing. Both corrections are constants of the font at this
-   size, so they hold at every device-pixel ratio -- gating them on min-resolution left
-   1.25x (a half-pixel box) drawing the digit a pixel high. Measured ink offset from the
-   circle's centre with these values: 0.0 / -0.39 / -0.33 / -0.25 / -0.5 CSS px at
-   1x, 1.25x, 1.5x, 2x, 3x. */
-.generate__steps li span { text-indent: .03em; }
-.generate__steps li span i {
-  display: block; font-style: inherit; line-height: 1;
-  transform: translateY(.4px);
-}
+/* The digit's transform is computed from the font's own ink box in generate.js --
+   a fixed lift in CSS is only right for one font at one device-pixel ratio. */
+.generate__steps li span { text-indent: 0; }
+.generate__steps li span i { display: block; font-style: inherit; line-height: 1; }
 .generate__steps li span svg { display: block; width: 10px; height: 10px; }
 .generate__steps li[aria-current="step"] { color: var(--ink); }
 .generate__steps li[aria-current="step"] span,

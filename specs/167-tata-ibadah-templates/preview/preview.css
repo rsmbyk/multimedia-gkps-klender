@@ -205,17 +205,8 @@ body { margin: 0; background: var(--canvas); color: var(--ink); }
   box-sizing: border-box; letter-spacing: 0;
   border: 1px solid var(--divider); border-radius: 50%; font-size: 10.5px;
 }
-/* Centred by its ink, not by the line box: a lining figure sits high and, in `1`, with a
-   wide left bearing. Both are constants of the font at this size, so they hold at every
-   device-pixel ratio -- scoping them to min-resolution left 1.25x (an 18px box is 22.5
-   device px there) drawing the digit a pixel high. Measured ink offset from the circle's
-   centre with these values: 0.0 / -0.39 / -0.33 / -0.25 / -0.5 CSS px at 1x, 1.25x, 1.5x,
-   2x, 3x. */
-.generate__steps li span { text-indent: .03em; }
-.generate__steps li span i {
-  display: block; font-style: inherit; line-height: 1;
-  transform: translateY(.4px);
-}
+.generate__steps li span { text-indent: 0; }
+.generate__steps li span i { display: block; font-style: inherit; line-height: 1; }
 .generate__steps li span svg { display: block; width: 10px; height: 10px; }
 .generate__steps li[data-done] span i { transform: none; }
 .generate__steps li[aria-current="step"] { color: var(--ink); }

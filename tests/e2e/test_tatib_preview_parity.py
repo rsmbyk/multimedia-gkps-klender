@@ -256,38 +256,28 @@ class PreviewParityTests(StaticLiveServerTestCase):
         style = lambda rows: [row.split(' | ', 1)[1] for row in rows]
         self.assertEqual(style(live), style(preview))
 
-    def test_the_step_digit_is_centred_at_every_scale(self):
-        """The badge's optical correction must not depend on the device-pixel ratio.
+    def test_the_step_digit_is_centred_in_its_circle(self):
+        """No fixed lift in CSS: the digit is placed from the font's measured ink box.
 
-        Scoped to min-resolution it vanished at 1.25x, where an 18px badge is 22.5 device
-        pixels and the digit drew a pixel high -- the one scale a designer's second screen
-        is most likely to be at.
+        A constant nudge is only right for one font at one device-pixel ratio -- the one
+        that shipped first was a pixel low at 1x and a pixel high at 1.25x.
         """
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         self.page.wait_for_timeout(400)
         self.page.click('[data-generate-open]')
         self.page.wait_for_selector('.generate__steps li span i', timeout=8000)
-        live = self.page.evaluate("""() => {
-          const i = document.querySelector('.generate__steps li span i');
-          const span = i.parentElement;
+        marks = self.page.evaluate("""() => [].slice.call(document.querySelectorAll('.generate__steps li span i')).map(i => {
           const m = new DOMMatrixReadOnly(getComputedStyle(i).transform);
-          return {ty: +m.m42.toFixed(2), indent: getComputedStyle(span).textIndent, lineHeight: getComputedStyle(i).lineHeight};
-        }""")
-        self.assertAlmostEqual(live['ty'], 0.4, delta=0.01,
-                               msg=f"no optical lift at this scale: {live}")
-        self.assertNotEqual(live['indent'], '0px')
-
-        self.page.goto(PREVIEW.as_uri())
-        self.page.wait_for_timeout(400)
-        self.page.click('[data-surface="generate"]')
-        self.page.wait_for_timeout(400)
-        preview = self.page.evaluate("""() => {
-          const i = document.querySelector('.generate__steps li span i');
-          const m = new DOMMatrixReadOnly(getComputedStyle(i).transform);
-          return {ty: +m.m42.toFixed(2), indent: getComputedStyle(i.parentElement).textIndent};
-        }""")
-        self.assertEqual(live['ty'], preview['ty'])
-        self.assertEqual(live['indent'], preview['indent'])
+          const circle = i.parentElement.getBoundingClientRect();
+          const box = i.getBoundingClientRect();
+          return {dy: +m.m42.toFixed(2), dx: +m.m41.toFixed(2),
+                  boxCentreDelta: +((box.y + box.height / 2) - (circle.y + circle.height / 2)).toFixed(2)};
+        })""")
+        self.assertEqual(len(marks), 2)
+        for mark in marks:
+            self.assertLessEqual(abs(mark['dy']), 1, mark)
+            self.assertLessEqual(abs(mark['dx']), 1, mark)
+            self.assertLessEqual(abs(mark['boxCentreDelta']), 0.6, mark)
 
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
