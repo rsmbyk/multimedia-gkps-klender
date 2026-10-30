@@ -41,11 +41,11 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-166](./items/ITEM-166-shortcuts-audio-video-groups.md) | The shortcuts sheet names Audio and Video on their own | Audio and video each get a group holding their Play/Pause row, and the combined row leaves Display | feat | P2 | S | [160](../specs/160-shortcuts-audio-video-groups/spec.md) | [#477](https://github.com/rsmbyk/multimedia-gkps-klender/pull/477) | 2026-10-30 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
+| [ITEM-166](./items/ITEM-166-shortcuts-audio-video-groups.md) | The shortcuts sheet names Audio and Video on their own | Audio and video each get a group holding their Play/Pause row, and the combined row leaves Display | feat | P2 | S | [160](../specs/160-shortcuts-audio-video-groups/spec.md) | develop via [#477](https://github.com/rsmbyk/multimedia-gkps-klender/pull/477) | 2026-10-30 |
 | [ITEM-181](./items/ITEM-181-tata-ibadah-templates.md) | A Tata Ibadah is a service or a template | The type is chosen when the record is created, a template carries fill-in and choice entries, generates a dated service in two steps, can be copied from any service, and never projects | feat | P1 | L | [167](../specs/167-tata-ibadah-templates/spec.md) | develop via [#474](https://github.com/rsmbyk/multimedia-gkps-klender/pull/474) | 2026-10-30 |
 | [ITEM-179](./items/ITEM-179-slides-render-fidelity.md) | A converted deck is drawn in a monospaced face and reflows every slide | Calibri, Calibri Light, Britannic Bold and Berlin Sans FB Demi all resolve to Liberation Mono in the media image, and LibreOffice 7.4 re-wraps what the fonts alone would not | fix | P1 | M | [166](../specs/166-slides-render-fidelity/spec.md) | develop via [#469](https://github.com/rsmbyk/multimedia-gkps-klender/pull/469) | 2026-10-30 |
 | [ITEM-180](./items/ITEM-180-overlay-text-styles.md) | The overlay reads by kind: a passage is a quotation card, a liturgy is a script panel | The caption suits a lyric and not a reading: a passage loses its reference and a liturgy its title, so a passage gets a centred card naming its reference and a liturgy a left-aligned panel carrying its title and speaker turns, while songs keep the bare caption | feat | P1 | S | [180](../specs/180-overlay-text-styles/spec.md) | develop via [#472](https://github.com/rsmbyk/multimedia-gkps-klender/pull/472) | 2026-10-30 |
