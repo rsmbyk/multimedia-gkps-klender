@@ -690,7 +690,10 @@ li:hover > .row-edit,
 /* The passage translation switch gets its own centered row above Book. */
 .editor__translation-row { display: flex; justify-content: center; margin: 0 0 8px; }
 .read__lang.editor__translation-toggle { margin: 0; }
-.editor__field > label {
+/* A field's label is a <label> when it names one control and a .editor__label when it
+   names a group (the fill-in's kind, spec 167): both read the same. */
+.editor__field > label,
+.editor__field > .editor__label {
   display: block; margin-bottom: 5px;
   font: 560 12.5px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--head-ink);
 }

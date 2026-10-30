@@ -83,6 +83,13 @@ KINDS = """() => {
   };
 }"""
 
+LABELS = """() => {
+  const cs = el => getComputedStyle(el);
+  return [].slice.call(document.querySelectorAll('#editorModal .editor__field > label, #editorModal .editor__field > .editor__label, #fillinModal .editor__field > label'))
+    .map(l => [l.textContent.trim(), cs(l).fontSize, cs(l).fontWeight, cs(l).display,
+               cs(l).marginBottom, cs(l).color].join(' | '));
+}"""
+
 NEW_MODAL = """() => {
   const sw = document.querySelector('[data-tatib-kinds], [data-kind-switch]');
   const cs = el => getComputedStyle(el);
@@ -227,6 +234,27 @@ class PreviewParityTests(StaticLiveServerTestCase):
         self.assertEqual(live['gap'], preview['gap'])
         self.assertEqual(live['columns'], preview['columns'])
         self.assertAlmostEqual(live['width'], preview['width'], delta=1)
+
+    def test_every_field_label_reads_the_same(self):
+        """A group's label (Kind) is drawn like a control's label (Title or note).
+
+        The kind group labels itself with a span rather than a <label>, so it only looks
+        right if the rule covers both.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(400)
+        self.page.eval_on_selector('[data-entry-open="fill_in"]', 'el => el.click()')
+        self.page.wait_for_selector('[data-slot-kinds]', timeout=8000)
+        live = self.page.evaluate(LABELS)
+        self.page.goto(PREVIEW.as_uri())
+        self.page.wait_for_timeout(400)
+        self.page.evaluate("() => document.getElementById('fillinModal').showModal()")
+        self.page.wait_for_timeout(300)
+        preview = self.page.evaluate(LABELS)
+
+        self.assertEqual(len(live), len(preview), live)
+        style = lambda rows: [row.split(' | ', 1)[1] for row in rows]
+        self.assertEqual(style(live), style(preview))
 
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
