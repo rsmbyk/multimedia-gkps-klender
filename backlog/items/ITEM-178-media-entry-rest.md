@@ -1,6 +1,6 @@
 ---
 id: ITEM-178
-status: in_progress
+status: in_review
 title: 'A media entry ends on a rest like every other entry'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-10-29
 updated: 2026-10-29
 spec: specs/165-media-entry-rest/spec.md
 branch: feat/165-media-entry-rest
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/466
 issue:
 closed_at:
 closed_reason:
