@@ -1,0 +1,74 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Spec 166 — a converted deck keeps the deck's layout</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 24px auto 64px; max-width: 1120px; font: 15px/1.5 system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 36px 0 8px; }
+  p.lede { margin: 0 0 24px; opacity: .75; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  .pair figure { margin: 0; }
+  .pair img { width: 100%; display: block; border: 1px solid #0003; border-radius: 4px; }
+  figcaption { font-size: 13px; opacity: .72; margin-top: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0 0; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #0002; vertical-align: top; }
+  th { font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  code { font-family: ui-monospace, monospace; font-size: .92em; }
+</style>
+<h1>Spec 166 — a converted deck keeps the deck's own layout</h1>
+<p class="lede">Static preview. Left: the PDF the app serves today for
+<em>Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx</em> (converted by the media image on
+2026-10-25). Right: the same page converted by the proposed converter — LibreOffice 25.2 with the
+deck's own faces mapped to metric-compatible ones. Both rendered at 96 dpi by <code>pdftoppm</code>.</p>
+
+<h2>Page 1 — the cover</h2>
+<div class="pair">
+  <figure><img src="page-01-today.jpg" alt="page 1 as served today"><figcaption>Today: the mono fallback
+  wraps the title into a narrow column; its ink box measures <strong>300 × 275 px</strong> at (177, 53)
+  where the deck draws <strong>477 × 199 px</strong> at (95, 91).</figcaption></figure>
+  <figure><img src="page-01-after.jpg" alt="page 1 after the change"><figcaption>Proposed: ink box
+  <strong>477 × 199 px</strong> at (95, 90) — one pixel above the reference.</figcaption></figure>
+</div>
+
+<h2>Page 2 — the offering tables</h2>
+<div class="pair">
+  <figure><img src="page-02-today.jpg" alt="page 2 as served today"><figcaption>Today: cell text wraps,
+  rows grow, and the band's two amounts fall onto lines of their own — <strong>12 words</strong> in the
+  band where the deck has <strong>5</strong>.</figcaption></figure>
+  <figure><img src="page-02-after.jpg" alt="page 2 after the change"><figcaption>Proposed: the amounts sit
+  at <strong>x 475.45</strong> and <strong>x 785.56</strong> — the same coordinates the reference render
+  puts them at.</figcaption></figure>
+</div>
+
+<h2>Page 3 — the service schedule</h2>
+<div class="pair">
+  <figure><img src="page-03-today.jpg" alt="page 3 as served today"><figcaption>Today: the table's own
+  words land up to <strong>250.7 pt</strong> from their place (≈ 26 % of the page width).</figcaption></figure>
+  <figure><img src="page-03-after.jpg" alt="page 3 after the change"><figcaption>Proposed: every word
+  within <strong>0.7 pt</strong> of the reference.</figcaption></figure>
+</div>
+
+<h2>Page 10 — the monthly giving table</h2>
+<div class="pair">
+  <figure><img src="page-10-today.jpg" alt="page 10 as served today"><figcaption>Today: 60 rows spaced by
+  the mono face's taller lines; the column drifts by <strong>240.1 pt</strong>.</figcaption></figure>
+  <figure><img src="page-10-after.jpg" alt="page 10 after the change"><figcaption>Proposed: the rows sit
+  on the reference's rhythm; the remaining difference is the missing Office faces, not layout.</figcaption></figure>
+</div>
+
+<h2>Measured</h2>
+<table>
+  <thead><tr><th>Face the deck names</th><th>Runs</th><th>Resolves to, today</th><th>Resolves to, proposed</th></tr></thead>
+  <tbody>
+    <tr><td>Calibri</td><td class="num">630</td><td><strong>Liberation Mono</strong></td><td>Carlito</td></tr>
+    <tr><td>Calibri Light</td><td class="num">theme</td><td><strong>Liberation Mono</strong></td><td>Carlito</td></tr>
+    <tr><td>Times New Roman</td><td class="num">324</td><td>Liberation Serif</td><td>Liberation Serif</td></tr>
+    <tr><td>Britannic Bold</td><td class="num">52</td><td><strong>Liberation Mono</strong></td><td>Noto Sans Bold</td></tr>
+    <tr><td>Berlin Sans FB Demi</td><td class="num">6</td><td><strong>Liberation Mono</strong></td><td>Noto Sans Bold</td></tr>
+  </tbody>
+</table>
+<p style="font-size:13px;opacity:.7;margin-top:8px">Britannic Bold and Berlin Sans FB Demi ship with
+Office and are absent from every machine here, so the proposed column substitutes them; supplying them
+(as the operator can) is what closes the rest.</p>

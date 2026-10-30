@@ -41,6 +41,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-178](./items/ITEM-178-slides-render-fidelity.md) | A converted deck is drawn in a monospaced face and reflows every slide | Calibri, Calibri Light, Britannic Bold and Berlin Sans FB Demi all resolve to Liberation Mono in the media image, and LibreOffice 7.4 re-wraps what the fonts alone would not | fix | P1 | M | [166](../specs/166-slides-render-fidelity/spec.md) | [#469](https://github.com/rsmbyk/multimedia-gkps-klender/pull/469) | 2026-10-30 |
 | [ITEM-165](./items/ITEM-165-transfer-scrollbar-edge.md) | The Transfers scrollbar floats inside the dialog and stops short of its bottom | The list starts at the dialog's content box, so the bar paints 22px short of the right border and 23px short of the bottom one; it moves to both edges and nothing else moves | fix | P2 | S | [152](../specs/152-transfer-scrollbar-edge/spec.md) | [#446](https://github.com/rsmbyk/multimedia-gkps-klender/pull/446) | 2026-10-29 |
 
 | [ITEM-015](./items/ITEM-015-songbook-language-removal.md) | Remove songbook language and merge duplicates | Remove language from the songbook model/API and merge same-name books without losing songs or references | feat | P1 | L | [013](../specs/013-songbook-language-removal/spec.md) | [#275](https://github.com/rsmbyk/multimedia-gkps-klender/pull/275) | 2026-10-08 |

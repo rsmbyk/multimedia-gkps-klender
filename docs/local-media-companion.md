@@ -78,6 +78,34 @@ inventory is received.
 The first version stores images, audio, video, PDF, PPT, and PPTX files. It does
 not render file contents in Preview, the projector, or OBS.
 
+## PowerPoint conversion and fonts
+
+A PowerPoint file is converted to a PDF by the companion's own LibreOffice when
+the projector first asks for it. How faithful that is depends on two things in
+the image: the LibreOffice version, and the faces the deck is set in. Both ship
+with the image, so nothing needs installing for the usual decks — Calibri,
+Cambria, Arial and Times New Roman are drawn in metric-compatible substitutes
+(Carlito, Caladea, Liberation), which keep every word where the deck puts it.
+
+Some decks also use fonts that ship only with Microsoft Office — `Britannic
+Bold` and `Berlin Sans FB Demi` are the usual two. They cannot be included in
+the image, but they can be supplied once on each computer:
+
+1. Put the font files in `~/.local/share/gkps-fonts` (or in the directory
+   `GKPS_FONTS_DIR` names, if your `.env` sets it).
+2. Restart the companion: `docker compose up -d media`.
+
+The companion re-scans that directory on start, and a deck converted before the
+fonts arrived is converted again the next time it is projected — the derivative
+is keyed on the renderer's version and its fonts, not on the file alone. If the
+directory is missing or empty, conversion works as before.
+
+To see what the image currently draws for each family, run:
+
+```sh
+docker compose exec media python -m multimedia.slide_fonts
+```
+
 ## Temporary online sharing with Cloudflare R2
 
 Create a private R2 Standard bucket and an R2 S3 API token restricted to that
