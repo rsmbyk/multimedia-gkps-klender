@@ -1,6 +1,6 @@
 ---
-id: ITEM-178
-status: in-review
+id: ITEM-179
+status: done
 title: 'A converted deck is drawn in a monospaced face and reflows every slide'
 type: fix
 priority: P1
@@ -11,13 +11,13 @@ spec: specs/166-slides-render-fidelity/spec.md
 branch: fix/166-slides-render-fidelity
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/469
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/468
-closed_at:
-closed_reason:
+closed_at: 2026-10-30
+closed_reason: merged into develop (#469)
 bump: patch
 release_version:
 ---
 
-# ITEM-178: A converted deck is drawn in a monospaced face and reflows every slide
+# ITEM-179: A converted deck is drawn in a monospaced face and reflows every slide
 
 ## Summary
 
