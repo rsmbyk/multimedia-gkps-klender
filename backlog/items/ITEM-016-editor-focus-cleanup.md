@@ -1,17 +1,18 @@
 ---
 id: ITEM-016
-status: in_review
+status: done
 title: 'Clear stale row-edit visibility after modal close'
 type: fix
 priority: P1
 effort: M
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-08
 spec: specs/014-editor-focus-cleanup/spec.md
 branch: feat/026-live-projection-editing
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-08
+closed_reason: merged into develop (PR #275)
 bump: patch
 release_version: 1.0.0
 ---

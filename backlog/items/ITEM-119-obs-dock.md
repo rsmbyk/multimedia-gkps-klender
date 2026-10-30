@@ -1,17 +1,18 @@
 ---
 id: ITEM-119
-status: in_review
+status: done
 title: 'OBS dock: run Service Entries with one state for dock, projector, and overlay'
 type: feat
 priority: P1
 effort: L
 created: 2026-10-19
-updated: 2026-10-20
+updated: 2026-10-21
 spec: specs/119-obs-dock/spec.md
 branch: feat/obs-dock
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/367
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-21
+closed_reason: merged into develop (PR #367)
 bump: minor
 release_version: 1.20.0
 ---

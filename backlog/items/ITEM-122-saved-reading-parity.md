@@ -1,6 +1,6 @@
 ---
 id: ITEM-122
-status: in_review
+status: done
 title: 'Match saved reading views to refreshed pages'
 type: fix
 priority: P1
@@ -10,8 +10,9 @@ updated: 2026-10-21
 spec: specs/122-saved-reading-parity/spec.md
 branch: fix/122-saved-reading-parity
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/370
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-21
+closed_reason: merged into develop (PR #370)
 bump: patch
 release_version: 1.20.1
 ---

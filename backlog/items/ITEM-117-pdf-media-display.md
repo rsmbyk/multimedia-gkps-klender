@@ -1,6 +1,6 @@
 ---
 id: ITEM-117
-status: in_review
+status: done
 title: 'Display PDF pages in Preview and projector'
 type: feat
 priority: P1
@@ -10,8 +10,9 @@ updated: 2026-10-19
 spec: specs/117-pdf-media-display/spec.md
 branch: feat/117-pdf-media-display
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/365
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-19
+closed_reason: merged into develop (PR #365)
 bump: minor
 release_version: 1.18.0
 ---

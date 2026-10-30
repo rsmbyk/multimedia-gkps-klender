@@ -1,6 +1,6 @@
 ---
 id: ITEM-113
-status: in_review
+status: done
 title: 'Allow Share online from a fresh Media Library session'
 type: fix
 priority: P1
@@ -10,8 +10,9 @@ updated: 2026-10-18
 spec: specs/113-media-library-share-csrf/spec.md
 branch: fix/113-media-library-share-csrf
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/361
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-18
+closed_reason: merged into develop (PR #361)
 bump: patch
 release_version: 1.15.1
 ---
