@@ -219,6 +219,19 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                 tatib=self.service, order_number=9, kind=tatib.ServiceEntryKind.MEDIA,
                 media=media, media_filename='slide.png')
 
+        if self._testMethodName == 'test_a_media_entry_steps_onto_its_rest':
+            media = tatib.MediaIdentity.objects.create(
+                sha256='a' * 64, byte_count=120, family='image', display_filename='slide.png')
+            self.media_rest_service = tatib.TataIbadah.objects.create(
+                name='Ibadah Media', date=date(2026, 9, 27), is_active=True)
+            tatib.ServiceEntry.objects.create(
+                tatib=self.media_rest_service, order_number=1,
+                kind=tatib.ServiceEntryKind.MEDIA, media=media, media_filename='slide.png',
+                title='Opening image')
+            tatib.ServiceEntry.objects.create(
+                tatib=self.media_rest_service, order_number=2, kind=tatib.ServiceEntryKind.TEXT,
+                title='Closing', text='Amin')
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -268,6 +281,33 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             '.slide', 'els => els.map(e => ({slide: e.dataset.slide, kind: e.dataset.kind,'
                      ' active: e.classList.contains("is-active"),'
                      ' hidden: e.getAttribute("aria-hidden")}))')
+
+    def test_a_media_entry_steps_onto_its_rest(self):
+        """Spec 164: a picture is followed by the entry's own rest, and `End` stays on the picture."""
+        page = self._page(f'/projector?service={self.media_rest_service.pk}')
+        page.wait_for_function("() => document.querySelector('.screen.is-active') !== null")
+        first = page.evaluate("""() => {
+          const el = document.querySelector('.screen.is-active');
+          return {entry: el.dataset.entry, blank: el.classList.contains('is-blank'),
+                  screen: document.body.dataset.currentScreen};
+        }""")
+        self.assertEqual((first['entry'], first['blank']), ('0', False))
+
+        page.keyboard.press('ArrowRight')
+        page.wait_for_function(
+            "() => document.querySelector('.screen.is-active').classList.contains('is-blank')")
+        stepped = page.evaluate("""() => ({
+          entry: document.querySelector('.screen.is-active').dataset.entry,
+          screen: document.body.dataset.currentScreen})""")
+        self.assertEqual(stepped['entry'], '0')        # the rest belongs to the media entry
+        self.assertEqual(int(stepped['screen']), int(first['screen']) + 1)
+
+        # End stops on the entry's last content screen, never on its trailing rest.
+        page.keyboard.press('End')
+        page.wait_for_function(
+            "() => !document.querySelector('.screen.is-active').classList.contains('is-blank')")
+        self.assertEqual(page.evaluate("document.body.dataset.currentScreen"), first['screen'])
+        page.close()
 
     def test_missing_pdf_shows_quiet_icon_then_text_resumes(self):
         page = self._page(self._projector_url())

@@ -45,6 +45,15 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.other, order_number=1, kind=tatib.ServiceEntryKind.TEXT,
             title='Salam', text='Damai di bumi bagi manusia')
+        # Spec 164: one service whose only entry is a picture, so its group's rest is reachable
+        # without another kind's screens in the way. Dated oldest, so the picker's order holds.
+        self.media_service = tatib.TataIbadah.objects.create(
+            name='Media Minggu', date=date(2026, 10, 11), is_active=True)
+        self.media = tatib.MediaIdentity.objects.create(
+            sha256='1' * 64, byte_count=120, family='image', display_filename='slide.png')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.media_service, order_number=1, kind=tatib.ServiceEntryKind.MEDIA,
+            media=self.media, media_filename='slide.png', title='Opening image')
 
         self._playwright = sync_playwright().start()
         try:
@@ -151,6 +160,29 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
         self.assertEqual(
             dock.evaluate("document.querySelector('.servicerow.is-cursor').dataset.name"),
             'Ibadah Minggu')
+        context.close()
+
+    def test_a_media_entry_lists_and_steps_its_rest(self):
+        """Spec 164: the media entry's inner list shows its rest and the transport lands on it."""
+        context = self._context()
+        dock = self._open(context, '/obs/dock')
+        self._open_service(dock, 'Media Minggu')
+        self._project_first_entry(dock)
+        self._wait_state(dock, self.media_service.pk)
+
+        rows = dock.evaluate(
+            "() => [...document.querySelectorAll('.entryli')].map(li =>"
+            " [...li.querySelectorAll('.screenerow')].map(row => row.innerText.trim()))")
+        self.assertEqual(rows[0][:2], ['IMAGE', 'Rest'])
+
+        # One press past the picture is the entry's own rest, and the projector paints it blank.
+        dock.keyboard.press('ArrowDown')
+        dock.wait_for_function(
+            "() => JSON.parse(localStorage.getItem('gkps-display')).screen === 1")
+        projector = self._open(context, '/projector')
+        projector.wait_for_function(
+            "() => { const el = document.querySelector('.screen.is-active');"
+            " return el && el.classList.contains('is-blank'); }")
         context.close()
 
     def test_keyboard_steps_screens_and_space_pauses_and_resumes(self):

@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-178](./items/ITEM-178-media-entry-rest.md) | A media entry ends on a rest like every other entry | The one kind whose group has no trailing blank — image, audio, video, PDF and slides — gets the built-in rest the others already have, in the projector and in the dock's step list | feat | P1 | S | [164](../specs/165-media-entry-rest/spec.md) | `feat/165-media-entry-rest` | 2026-10-29 |
 
 ## In review
 

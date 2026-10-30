@@ -119,8 +119,10 @@ class ImageDisplayContractTests(TestCase):
         self.assertEqual(items[0]['preview'], {'kind': 'slides', 'title': 'Teaching slides',
                                                'sha256': media.sha256})
         screens = _projector_data(service)['screens']
-        self.assertEqual(screens[-1]['slides_sha256'], media.sha256)
-        self.assertFalse(screens[-1]['blank'])
+        self.assertEqual(len(screens), 2)                    # the slide, then the entry's rest
+        self.assertEqual(screens[0]['slides_sha256'], media.sha256)
+        self.assertFalse(screens[0]['blank'])
+        self.assertTrue(screens[-1]['blank'])
         response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
         self.assertContains(response, f'data-preview-slides="{media.sha256}"')
 
@@ -148,7 +150,7 @@ class ImageDisplayContractTests(TestCase):
         self.assertContains(response, f'data-preview-image="{image.sha256}"')
         self.assertContains(response, f'data-preview-pdf="{pdf.sha256}"')
 
-    def test_image_and_pdf_each_have_one_projector_screen(self):
+    def test_image_and_pdf_each_have_a_screen_and_a_rest(self):
         from multimedia.web.reading.views import _projector_data
         service = TataIbadah.objects.create(name='Image service')
         image = MediaIdentity.objects.create(sha256='3' * 64, byte_count=120,
@@ -164,11 +166,12 @@ class ImageDisplayContractTests(TestCase):
         screens, entries = data['screens'], data['entries']
         image_entry, pdf_entry = entries[-2:]
         self.assertEqual([image_entry['type'], pdf_entry['type']], ['media', 'media'])
-        self.assertEqual(image_entry['start'], image_entry['end'])
+        self.assertEqual(image_entry['end'], image_entry['start'] + 1)
         self.assertEqual(screens[image_entry['start']]['image_sha256'], image.sha256)
         self.assertFalse(screens[image_entry['start']]['blank'])
+        self.assertTrue(screens[image_entry['end']]['blank'])
         self.assertEqual(screens[pdf_entry['start']]['pdf_sha256'], pdf.sha256)
-        self.assertFalse(screens[pdf_entry['start']]['blank'])
+        self.assertTrue(screens[pdf_entry['end']]['blank'])
 
 
 class AudioDisplayContractTests(TestCase):
@@ -196,7 +199,7 @@ class AudioDisplayContractTests(TestCase):
         response = self.client.get(reverse('web-tatib-service', args=[service.pk]))
         self.assertContains(response, f'data-preview-audio="{audio.sha256}"')
 
-    def test_audio_has_one_projector_screen_in_order(self):
+    def test_audio_has_a_screen_and_a_rest_in_order(self):
         from multimedia.web.reading.views import _projector_data
         service = TataIbadah.objects.create(name='Audio service')
         audio = MediaIdentity.objects.create(sha256='7' * 64, byte_count=120,
@@ -211,9 +214,10 @@ class AudioDisplayContractTests(TestCase):
         data = _projector_data(service)
         screens, entries = data['screens'], data['entries']
         audio_entry, pdf_entry = entries[-2:]
-        self.assertEqual(audio_entry['start'], audio_entry['end'])
+        self.assertEqual(audio_entry['end'], audio_entry['start'] + 1)
         self.assertEqual(screens[audio_entry['start']]['audio_sha256'], audio.sha256)
         self.assertFalse(screens[audio_entry['start']]['blank'])
+        self.assertTrue(screens[audio_entry['end']]['blank'])
         self.assertEqual(screens[pdf_entry['start']]['pdf_sha256'], pdf.sha256)
 
 
@@ -246,7 +250,7 @@ class VideoDisplayContractTests(TestCase):
         self.assertContains(response, f'data-preview-video="{video.sha256}"')
 
     @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-    def test_video_has_one_projector_screen_in_service_order(self):
+    def test_video_has_a_screen_and_a_rest_in_service_order(self):
         from multimedia.web.reading.views import _projector_data
         service = TataIbadah.objects.create(name='Video service')
         image = MediaIdentity.objects.create(sha256='c' * 64, byte_count=120,
@@ -268,14 +272,90 @@ class VideoDisplayContractTests(TestCase):
 
         self.assertLess(image_entry['start'], video_entry['start'])
         self.assertLess(video_entry['start'], audio_entry['start'])
-        self.assertEqual(video_entry['start'], video_entry['end'])
+        self.assertEqual(video_entry['end'], video_entry['start'] + 1)
         self.assertEqual(screens[video_entry['start']]['video_sha256'], video.sha256)
         self.assertFalse(screens[video_entry['start']]['blank'])
+        self.assertTrue(screens[video_entry['end']]['blank'])
         self.assertEqual(screens[image_entry['start']]['image_sha256'], image.sha256)
         self.assertEqual(screens[audio_entry['start']]['audio_sha256'], audio.sha256)
         response = self.client.get(f'/projector?service={service.pk}')
         self.assertContains(response, f'data-media-video="{video.sha256}"')
         self.assertContains(response, 'Audio/Video Play/Pause')
+
+
+class MediaEntryRestTests(TestCase):
+    """Spec 164: a media entry ends on the built-in rest every other kind ends on."""
+
+    def _media(self, sha_char, family='image', name='file.png'):
+        return MediaIdentity.objects.create(sha256=sha_char * 64, byte_count=120, family=family,
+                                            display_filename=name)
+
+    def test_each_family_ends_on_one_rest(self):
+        from multimedia.web.reading.views import _projector_data
+        families = (('image', 'image_sha256'), ('audio', 'audio_sha256'), ('video', 'video_sha256'),
+                    ('pdf', 'pdf_sha256'), ('slides', 'slides_sha256'))
+        for index, (family, key) in enumerate(families):
+            with self.subTest(family=family):
+                media = self._media(str(index), family, f'file.{family}')
+                service = TataIbadah.objects.create(name=f'{family} service')
+                ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=media,
+                                            media_filename=media.display_filename)
+                screens = _projector_data(service)['screens']
+                self.assertEqual(len(screens), 2)              # the media, then its rest
+                self.assertFalse(screens[0]['blank'])
+                self.assertEqual(screens[0][key], media.sha256)
+                self.assertTrue(screens[1]['blank'])
+
+    def test_a_media_entry_without_a_file_keeps_its_one_rest(self):
+        from multimedia.web.reading.views import _projector_data
+        service = TataIbadah.objects.create(name='Unattached media service')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=None,
+                                    media_filename='gone.png')
+        screens = _projector_data(service)['screens']
+        self.assertEqual(len(screens), 1)                      # its own screen already rests
+        self.assertTrue(screens[0]['blank'])
+
+    def test_the_rest_carries_only_the_built_in_blank(self):
+        from multimedia.web.reading.views import _projector_data
+        media = self._media('a', 'image', 'slide.png')
+        service = TataIbadah.objects.create(name='Rest shape service')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=1, media=media,
+                                    media_filename='slide.png')
+        rest = _projector_data(service)['screens'][1]
+        self.assertEqual(set(rest), {'blank', 'header', 'lines', 'entry_index'})
+        self.assertEqual((rest['header'], rest['lines']), ('', []))
+
+    def test_the_entry_range_extends_over_the_rest(self):
+        from multimedia.web.reading.views import _projector_data
+        service = TataIbadah.objects.create(name='Range service')
+        ServiceEntry.objects.create(tatib=service, kind=0, order_number=1, title='Salam',
+                                    text='Kasih karunia Tuhan beserta kita')
+        media = self._media('b', 'image', 'opening.png')
+        ServiceEntry.objects.create(tatib=service, kind=4, order_number=2, media=media,
+                                    media_filename='opening.png', title='Opening image')
+        text_entry, media_entry = _projector_data(service)['entries']
+        self.assertEqual(media_entry['start'], text_entry['end'] + 1)   # the start does not move
+        self.assertEqual(media_entry['end'], media_entry['start'] + 1)  # the rest is inside it
+        self.assertEqual((media_entry['type'], media_entry['label']), ('media', 'Opening image'))
+        self.assertEqual(media_entry['baits'], [])
+
+    def test_four_images_in_a_row_build_ten_screens(self):
+        """The service-149 shape: a text row then four pictures, each picture followed by a rest."""
+        from multimedia.web.reading.views import _projector_data
+        service = TataIbadah.objects.create(name='Images service')
+        ServiceEntry.objects.create(tatib=service, kind=0, order_number=1, title='Salam',
+                                    text='Kasih karunia Tuhan beserta kita')
+        for order, sha in enumerate(('c', 'd', 'e', 'f'), start=2):
+            media = self._media(sha, 'image', f'{sha}.png')
+            ServiceEntry.objects.create(tatib=service, kind=4, order_number=order, media=media,
+                                        media_filename=f'{sha}.png')
+        data = _projector_data(service)
+        screens, entries = data['screens'], data['entries']
+        self.assertEqual(len(screens), 10)
+        self.assertEqual([(entry['start'], entry['end']) for entry in entries],
+                         [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9)])
+        self.assertEqual([screen['blank'] for screen in screens],
+                         [False, True, False, True, False, True, False, True, False, True])
 
 
 class MediaLibraryCsrfTests(TestCase):
