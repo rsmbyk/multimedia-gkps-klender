@@ -30,11 +30,10 @@ concurrently.
 - [X] T009 [P] Re-run the probe and check every number in `spec.md`'s `## UI/UX` against it — `specs/164-dock-fluid-width/probe/probe.py`
 - [X] T010 [P] Run the whole dock surface: the two width cases, the module's five existing cases and the unit file — `tests/e2e/test_obs_dock.py`, `multimedia/web/test_obs_dock.py`
 - [X] T011 Converge against the traceability table, then Fold the new requirement into the capability file — `docs/spec/reading.md`, `specs/164-dock-fluid-width/converge.md`, `specs/164-dock-fluid-width/fold.md`
-- [ ] T012 Delivery: the spec's index row, `VERSION` 1.23.1 → 1.23.2 with the `## [Unreleased]` line, the card `ITEM-177` with its `branch` and `pr`, and the board rows — `specs/README.md`, `VERSION`, `CHANGELOG.md`, `backlog/items/ITEM-177-dock-fluid-width.md`, `backlog/board.md`
+- [X] T012 Delivery: the spec's index row, `VERSION` 1.23.1 → 1.23.2 with the `## [Unreleased]` line, the card `ITEM-177` with its `branch` and `pr`, and the board rows — `specs/README.md`, `VERSION`, `CHANGELOG.md`, `backlog/items/ITEM-177-dock-fluid-width.md`, `backlog/board.md`
 
 ## Phase 6: Convergence
 
 Pass 1 (2026-10-29): 19 rows checked by their declared method, no `missing`, no `partial`, no
 `contradicts`, no `unrequested` — converged on the first pass. See `converge.md`; `reading/R33` folded
-in `fold.md`. T012's `pr` is the one field still empty: it is written when the branch is pushed and
-the PR exists, and nothing is pushed before the owner says so.
+in `fold.md`. Delivery is PR #464; the card's `Done` move waits for the merge, in the closing pass.

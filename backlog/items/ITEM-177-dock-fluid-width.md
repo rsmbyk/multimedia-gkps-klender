@@ -1,6 +1,6 @@
 ---
 id: ITEM-177
-status: in-progress
+status: in-review
 title: 'The dock fills whatever panel it is given'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-10-29
 updated: 2026-10-29
 spec: specs/164-dock-fluid-width/spec.md
 branch: fix/164-dock-fluid-width
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/464
 issue:
 closed_at:
 closed_reason:
