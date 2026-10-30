@@ -160,9 +160,49 @@
     mark.style.transform = 'translate(' + dx.toFixed(2) + 'px,' + dy.toFixed(2) + 'px)';
   }
 
+  /* The label's capitals must meet the badge's centre. How far the ink of capitals sits
+     above its line box is a fact about the font this browser resolved -- the app asks for
+     ui-sans-serif, and every platform answers with something else -- so it is measured
+     here, exactly like the digit. The stylesheet's em lift is only the no-script fallback. */
+  function centreLabel(label) {
+    var mark = label.parentElement.querySelector('.generate__step-mark');
+    var text = (label.textContent || '').trim();
+    if (!mark || !text) return;
+    label.style.transform = '';                 // measure the box, not the previous shift
+    var box = label.getBoundingClientRect();
+    var circle = mark.getBoundingClientRect();
+    // a closed dialog measures nothing: skip until it is on screen
+    if (!box.height || !circle.height) return;
+    // the stylesheet's fallback lift is already in this box, so the measurement is the
+    // extra it needs on top of that, not the whole shift
+    var applied = 0;
+    var current = getComputedStyle(label).transform;
+    if (current && current !== 'none') applied = new DOMMatrixReadOnly(current).m42 || 0;
+    var style = getComputedStyle(label);
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    if (!context || !context.measureText) return;
+    context.font = style.fontStyle + ' ' + style.fontWeight + ' ' + style.fontSize
+      + ' ' + style.fontFamily;
+    var metrics = context.measureText(text);
+    if (metrics.actualBoundingBoxAscent === undefined) return;
+    var size = parseFloat(style.fontSize);
+    var lineHeight = parseFloat(style.lineHeight) || size * 1.2;
+    if (!size) return;
+    var fontAscent = metrics.fontBoundingBoxAscent || metrics.actualBoundingBoxAscent;
+    var fontDescent = metrics.fontBoundingBoxDescent || 0;
+    var halfLeading = (lineHeight - (fontAscent + fontDescent)) / 2;
+    var inkAscent = metrics.actualBoundingBoxAscent || fontAscent;
+    var inkCentre = box.y + halfLeading + fontAscent - (inkAscent / 2);
+    var delta = ((circle.y + circle.height / 2) - inkCentre) + applied;
+    if (!isFinite(delta) || Math.abs(delta) > 6) return;
+    label.style.transform = 'translateY(' + delta.toFixed(2) + 'px)';
+  }
+
   function centreSteps() {
     Array.prototype.forEach.call(document.querySelectorAll('.generate__steps li .generate__step-mark i'),
                                  centreDigit);
+    Array.prototype.forEach.call(document.querySelectorAll('.generate__step-label'), centreLabel);
   }
 
   function slotOf(row) { return row.dataset.slotRow; }
@@ -263,6 +303,8 @@
     if (!sync()) return;
     reset();
     modal.showModal();
+    // the labels are measured against the badge, so only once the dialog has a box
+    window.requestAnimationFrame(centreSteps);
     var first = modal.querySelector('[data-slot-action], [data-choice-open]:not([disabled])');
     if (first) first.focus();
   }
