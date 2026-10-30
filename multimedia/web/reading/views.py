@@ -1420,10 +1420,15 @@ def _tatib_stage(service):
                     'song_title': song_title, 'verse_line': verse_line,
                     'txt': filter_text})
     # "+ Add option" belongs under the last option of its choice, not under the choice's
-    # title: an option is its own row, so only the final one knows that it is last.
+    # title: an option is its own row, so only the final one knows that it is last. A choice
+    # with no options yet has no such row, so the choice itself carries the control --
+    # otherwise the one state that most needs it shows nothing to click.
     for index, item in enumerate(items):
         parent = item.get('option_of')
         if not parent:
+            if item.get('kind') == 'choice' and not item.get('options'):
+                item['add_option_for'] = item.get('pk')
+                item['add_option_kind'] = item.get('slot_kind')
             continue
         following = items[index + 1].get('option_of') if index + 1 < len(items) else None
         if following != parent:

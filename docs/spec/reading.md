@@ -1129,7 +1129,8 @@ writing endpoint SHALL refuse both on one. A fill-in
 SHALL be a title/note and one kind — passage, song, text or media — with no content of its own. A choice
 SHALL be a title, one kind, and an ordered list of options, each a complete entry of that kind added from the
 choice's own row as an indented child row, its mark in the gutter and its title in the slot's own type, and
-the row SHALL state how many options it holds — `No options yet` when it holds none. A choice may hold no
+the row SHALL state how many options it holds — `No options yet` when it holds none, the row then carrying
+`+ Add option` itself so the first one can be created. A choice may hold no
 options: the template is allowed to be unfinished, and such a choice cannot be settled at generation.
 
 #### Scenario: adding an option

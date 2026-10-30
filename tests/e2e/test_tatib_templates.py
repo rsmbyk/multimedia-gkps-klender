@@ -313,3 +313,49 @@ class InPageSwapE2ETests(StaticLiveServerTestCase):
         second = rows['rows'][1]
         middle = (second[0]['x'] + second[-1]['right']) / 2
         self.assertAlmostEqual(middle, rows['centre'], delta=1.5)
+
+
+@tag('e2e')
+@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class EmptyChoiceE2ETests(StaticLiveServerTestCase):
+    """A choice with no options still offers the control that creates the first one."""
+
+    def setUp(self):
+        self.template = tatib.TataIbadah.objects.create(name='Empty choice', is_active=True)
+        self.choice = tatib.ServiceEntry.objects.create(
+            tatib=self.template, kind=tatib.ServiceEntryKind.CHOICE,
+            fill_kind=tatib.SlotKind.SCRIPTURE, title='Bacaan', order_number=1)
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.chromium.launch()
+        self.page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+
+    def tearDown(self):
+        self.page.close()
+        self.browser.close()
+        self.playwright.stop()
+        super().tearDown()
+
+    def test_an_empty_choice_offers_add_option(self):
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.template.pk]))
+        self.page.wait_for_timeout(400)
+        row = self.page.locator('#read .tatib__item--choice').first
+        expect(row.locator('.slot__state')).to_have_text('No options yet')
+        button = row.locator('[data-add-option]')
+        expect(button).to_be_visible()
+        # on the list's text column, under the state line, not beside it
+        offsets = row.evaluate("""el => {
+          const r = el.getBoundingClientRect();
+          const b = el.querySelector('[data-add-option]').getBoundingClientRect();
+          const state = el.querySelector('.slot__state').getBoundingClientRect();
+          return {x: Math.round(b.x - r.x), below: b.y >= state.y + state.height};
+        }""")
+        self.assertEqual(offsets['x'], 64)
+        self.assertTrue(offsets['below'])
+
+        button.click()
+        form = self.page.locator('#editorContent form[data-entry-form]')
+        expect(form).to_be_visible()
+        # the option is created through the same per-kind form, and lands under the choice
+        self.assertIn(f'parent={self.choice.pk}', form.get_attribute('action'))
+        self.assertIn(f'tatib={self.template.pk}', form.get_attribute('action'))

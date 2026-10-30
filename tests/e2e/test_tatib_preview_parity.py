@@ -340,6 +340,33 @@ class PreviewParityTests(StaticLiveServerTestCase):
             self.assertEqual(badge['family'], 'Source Sans 3', badge)
             self.assertLessEqual(abs(badge['ty']), 1, badge)
 
+    def test_a_slot_row_holds_the_lists_icon_and_text_columns(self):
+        """The slot's mark sits in the 24px icon column and its text on the 64px line.
+
+        Those are the columns every icon-bearing entry uses: a 20px icon starting 24px in
+        (centre 34) with the title 64px in. The preview mock put the text at 56 and the row
+        read short of the titles around it.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(500)
+        slots = self.page.evaluate("""() => [].slice.call(document.querySelectorAll('#read .tatib__item--slot')).filter(el => el.getBoundingClientRect().height).map(el => {
+          const r = el.getBoundingClientRect();
+          const mark = el.querySelector('.slot__mark').getBoundingClientRect();
+          const title = el.querySelector('.read__sec').getBoundingClientRect();
+          const kind = el.querySelector('.slot__kind');
+          return {markCentre: Math.round(mark.x + mark.width / 2 - r.x),
+                  markLeft: Math.round(mark.x - r.x),
+                  titleX: Math.round(title.x - r.x),
+                  kindX: kind ? Math.round(kind.getBoundingClientRect().x - r.x) : null};
+        })""")
+        self.assertTrue(slots, 'no slot rows on the page')
+        for row in slots:
+            self.assertEqual(row['markLeft'], 24, row)      # the list's icon column
+            self.assertEqual(row['markCentre'], 34, row)
+            self.assertEqual(row['titleX'], 64, row)        # the list's text column
+            if row['kindX'] is not None:
+                self.assertEqual(row['kindX'], 64, row)
+
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         self.page.wait_for_timeout(400)
