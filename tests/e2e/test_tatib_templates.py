@@ -194,3 +194,59 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(copy.kind, tatib.TataIbadahKind.TEMPLATE)
         self.assertIsNone(copy.date)
         self.assertEqual(copy.service_entries.count(), 1)
+
+
+@tag('e2e')
+@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class InPageSwapE2ETests(StaticLiveServerTestCase):
+    """The sidebar opens a stage without reloading the document (spec 167).
+
+    The generate modal belongs to the stage the shell swaps in, so a script that cached the
+    node it was loaded beside keeps a dead reference and the button does nothing until a
+    refresh. Everything the modal needs must therefore be read from the document on open.
+    """
+
+    def setUp(self):
+        self.first = tatib.TataIbadah.objects.create(name='Alpha skeleton', is_active=True)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.first, kind=tatib.ServiceEntryKind.FILL_IN,
+            fill_kind=tatib.SlotKind.SONG, title='Nyanyian Pembuka', order_number=1)
+        self.second = tatib.TataIbadah.objects.create(name='Beta skeleton', is_active=True)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.second, kind=tatib.ServiceEntryKind.FILL_IN,
+            fill_kind=tatib.SlotKind.TEXT, title='Doa Syafaat', order_number=1)
+
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.chromium.launch()
+        self.page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+
+    def tearDown(self):
+        self.page.close()
+        self.browser.close()
+        self.playwright.stop()
+        super().tearDown()
+
+    def test_use_template_opens_after_an_in_page_swap(self):
+        """The way in: the dated list holds no generate modal, and the sidebar reaches a
+        template without reloading the document (spec 167). A script that gave up at load
+        because the modal it wanted was missing would never bind the button, so Use template
+        would do nothing until a refresh."""
+        self.page.goto(self.live_server_url + reverse('web-tatib'))
+        self.assertEqual(self.page.locator('#generateModal').count(), 0,
+                         'the dated list should not carry the generate modal')
+        self.page.evaluate('window.__noReload = true')
+
+        self.page.click('#tatibMode')
+        href = reverse('web-tatib-service', args=[self.second.pk])
+        self.page.click(f'a.book[href="{href}"]')
+        self.page.wait_for_url(re.compile(rf'{href}$'), wait_until='load')
+        expect(self.page.locator('[data-generate-open]')).to_be_visible()
+        self.assertTrue(self.page.evaluate('window.__noReload === true'),
+                        'the sidebar reloaded the document')
+
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.assertTrue(self.page.evaluate(
+            "() => document.getElementById('generateModal').open"))
+        expect(self.page.locator('[data-generate-status]')).to_contain_text('left to fill in')

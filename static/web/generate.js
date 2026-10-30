@@ -8,25 +8,108 @@
 (function () {
   'use strict';
 
-  var modal = document.getElementById('generateModal');
-  if (!modal || typeof modal.showModal !== 'function') return;
-
-  var bodyOne = modal.querySelector('[data-generate-step="1"]');
-  var bodyTwo = modal.querySelector('[data-generate-step="2"]');
-  var steps = Array.prototype.slice.call(modal.querySelectorAll('.generate__steps li'));
-  var rows = Array.prototype.slice.call(modal.querySelectorAll('.g-row--slot'));
-  var nextButton = modal.querySelector('[data-generate-next]');
-  var backButton = modal.querySelector('[data-generate-back]');
-  var closeButton = modal.querySelector('[data-generate-close]');
-  var createButton = modal.querySelector('[data-generate-create]');
-  var status = modal.querySelector('[data-generate-status]');
-  var nameInput = modal.querySelector('[data-generate-name-input]');
-  var dateInput = modal.querySelector('[data-generate-date]');
-  var confirmLayer = modal.querySelector('[data-generate-confirm]');
-  var summary = modal.querySelector('[data-generate-summary]');
+  /* The reading shell swaps the stage in place when a sidebar row is opened, so the modal
+     this module talks to is not the one it was loaded beside: on a Normal page there is no
+     modal at all, and on a template the node is replaced by the next page's. Everything is
+     therefore resolved on demand -- nothing is cached across a swap -- and the click that
+     opens the modal re-reads the document first. */
+  var modal = null;
+  var bodyOne, bodyTwo, steps, rows, nextButton, backButton, closeButton, createButton,
+      status, nameInput, dateInput, confirmLayer, summary;
+  // the editor dialog is shell-level: it survives a stage swap, so it is read once
   var editorModal = document.getElementById('editorModal');
   var editorContent = document.getElementById('editorContent');
   var opener = null;
+
+  function bindModal() {
+    if (modal.dataset.genBound) return;
+    modal.dataset.genBound = 'true';
+    modal.addEventListener('cancel', function (event) {
+      if (openChooser) { event.preventDefault(); hideChooser(); }
+      else if (!confirmLayer.hidden) { event.preventDefault(); confirmLayer.hidden = true; }
+    });
+    modal.addEventListener('click', function (event) {
+      if (event.target.closest('[data-generate-close]')) close();
+      if (event.target.closest('[data-generate-back]')) setStep(1);
+      if (event.target.closest('[data-generate-next]') && !nextButton.disabled) setStep(2);
+      if (event.target.closest('[data-generate-cancel]')) confirmLayer.hidden = true;
+      var accept = event.target.closest('[data-generate-accept]');
+      if (accept) submit(accept);
+    });
+    // the footer's Create opens the confirmation, not the request
+    modal.addEventListener('click', function (event) {
+      if (!event.target.closest('[data-generate-create]')) return;
+      var name = (nameInput.value || '').trim() || modal.dataset.generateName;
+      var day = dateInput.value;
+      if (!name || !day) {
+        status.textContent = !name ? 'The Tata Ibadah needs a name.' : 'Choose a date.';
+        return;
+      }
+      summary.textContent = name + ' · ' + new Date(day + 'T00:00:00')
+        .toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      confirmLayer.hidden = false;
+    });
+  modal.addEventListener('click', function (event) {
+    if (event.target === confirmLayer) { confirmLayer.hidden = true; return; }
+    if (openChooser && event.target === openChooser) { hideChooser(); return; }
+
+    var row = event.target.closest('.g-row--slot');
+    var setter = event.target.closest('[data-slot-action]');
+    if (setter && row) { openKindForm(row); return; }
+    var chooserOpen = event.target.closest('[data-choice-open]');
+    if (chooserOpen && row) {
+      var layer = modal.querySelector('[data-choose="' + slotOf(row) + '"]');
+      if (layer) showChooser(layer, chooserOpen);
+      return;
+    }
+    var pick = event.target.closest('[data-choose-pick]');
+    if (pick && sync()) {
+      /* The chooser is a layer of the modal, not a child of the row: the row is found
+         by the id the layer names. */
+      var choiceRow = modal.querySelector('[data-choice-row="' + openChooser.dataset.choose + '"]');
+      var optionLabel = pick.closest('.choose__item').querySelector('.choose__ref').textContent;
+      var meta = pick.closest('.choose__item').querySelector('.choose__meta');
+      settled[slotOf(choiceRow)] = {
+        label: optionLabel + (meta ? ' · ' + meta.textContent : ''),
+        option: pick.dataset.choosePick
+      };
+      Array.prototype.forEach.call(openChooser.querySelectorAll('[data-choose-pick]'),
+        function (button) { button.setAttribute('aria-pressed', String(button === pick)); });
+      refresh();
+      hideChooser();
+      return;
+    }
+    if (event.target.closest('[data-choose-close]')) { hideChooser(); return; }
+  });
+  }
+
+  /* Re-read the modal when the document's node is a different one. Returns false when the
+     page holds no modal at all -- a Normal Tata Ibadah -- so the caller can stay quiet. */
+  function sync() {
+    var next = document.getElementById('generateModal');
+    if (!next || typeof next.showModal !== 'function') { modal = null; return false; }
+    if (next !== modal) {
+      modal = next;
+      bodyOne = modal.querySelector('[data-generate-step="1"]');
+      bodyTwo = modal.querySelector('[data-generate-step="2"]');
+      steps = Array.prototype.slice.call(modal.querySelectorAll('.generate__steps li'));
+      rows = Array.prototype.slice.call(modal.querySelectorAll('.g-row--slot'));
+      nextButton = modal.querySelector('[data-generate-next]');
+      backButton = modal.querySelector('[data-generate-back]');
+      closeButton = modal.querySelector('[data-generate-close]');
+      createButton = modal.querySelector('[data-generate-create]');
+      status = modal.querySelector('[data-generate-status]');
+      nameInput = modal.querySelector('[data-generate-name-input]');
+      dateInput = modal.querySelector('[data-generate-date]');
+      confirmLayer = modal.querySelector('[data-generate-confirm]');
+      summary = modal.querySelector('[data-generate-summary]');
+      editorModal = document.getElementById('editorModal');
+      editorContent = document.getElementById('editorContent');
+      settled = {};
+      bindModal();
+    }
+    return true;
+  }
   var settled = {};
   var pendingSlot = null;         // the row whose kind form is open, if any
   var openChooser = null;
@@ -126,6 +209,7 @@
   }
 
   function open() {
+    if (!sync()) return;
     reset();
     modal.showModal();
     var first = modal.querySelector('[data-slot-action], [data-choice-open]:not([disabled])');
@@ -184,38 +268,6 @@
     chooserOpener = null;
   }
 
-  modal.addEventListener('click', function (event) {
-    if (event.target === confirmLayer) { confirmLayer.hidden = true; return; }
-    if (openChooser && event.target === openChooser) { hideChooser(); return; }
-
-    var row = event.target.closest('.g-row--slot');
-    var setter = event.target.closest('[data-slot-action]');
-    if (setter && row) { openKindForm(row); return; }
-    var chooserOpen = event.target.closest('[data-choice-open]');
-    if (chooserOpen && row) {
-      var layer = modal.querySelector('[data-choose="' + slotOf(row) + '"]');
-      if (layer) showChooser(layer, chooserOpen);
-      return;
-    }
-    var pick = event.target.closest('[data-choose-pick]');
-    if (pick) {
-      /* The chooser is a layer of the modal, not a child of the row: the row is found
-         by the id the layer names. */
-      var choiceRow = modal.querySelector('[data-choice-row="' + openChooser.dataset.choose + '"]');
-      var optionLabel = pick.closest('.choose__item').querySelector('.choose__ref').textContent;
-      var meta = pick.closest('.choose__item').querySelector('.choose__meta');
-      settled[slotOf(choiceRow)] = {
-        label: optionLabel + (meta ? ' · ' + meta.textContent : ''),
-        option: pick.dataset.choosePick
-      };
-      Array.prototype.forEach.call(openChooser.querySelectorAll('[data-choose-pick]'),
-        function (button) { button.setAttribute('aria-pressed', String(button === pick)); });
-      refresh();
-      hideChooser();
-      return;
-    }
-    if (event.target.closest('[data-choose-close]')) { hideChooser(); return; }
-  });
 
   document.addEventListener('click', function (event) {
     var generateOpen = event.target.closest('[data-generate-open]');
@@ -227,33 +279,6 @@
 
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && openChooser) { event.preventDefault(); hideChooser(); }
-  });
-  modal.addEventListener('cancel', function (event) {
-    if (openChooser) { event.preventDefault(); hideChooser(); }
-    else if (!confirmLayer.hidden) { event.preventDefault(); confirmLayer.hidden = true; }
-  });
-
-  modal.addEventListener('click', function (event) {
-    if (event.target.closest('[data-generate-close]')) close();
-    if (event.target.closest('[data-generate-back]')) setStep(1);
-    if (event.target.closest('[data-generate-next]') && !nextButton.disabled) setStep(2);
-    if (event.target.closest('[data-generate-cancel]')) confirmLayer.hidden = true;
-    var create = event.target.closest('[data-generate-accept]');
-    if (create) submit(create);
-  });
-
-  // the footer's Create opens the confirmation, not the request
-  modal.addEventListener('click', function (event) {
-    if (!event.target.closest('[data-generate-create]')) return;
-    var name = (nameInput.value || '').trim() || modal.dataset.generateName;
-    var day = dateInput.value;
-    if (!name || !day) {
-      status.textContent = !name ? 'The Tata Ibadah needs a name.' : 'Choose a date.';
-      return;
-    }
-    summary.textContent = name + ' · ' + new Date(day + 'T00:00:00')
-      .toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    confirmLayer.hidden = false;
   });
 
   function submit(button) {
@@ -287,5 +312,5 @@
     });
   }
 
-  refresh();
+  if (sync()) refresh();
 })();
