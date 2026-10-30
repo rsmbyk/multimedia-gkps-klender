@@ -153,7 +153,7 @@ specs/148-media-library-refresh-flicker/
 static/web/media-library.js                  refresh()'s control flow (one draw, state applied late)
 tests/e2e/test_media_library.py              six new cases in MediaLibraryE2ETests
 docs/spec/reading.md                         R24 at Fold
-backlog/items/ITEM-158-media-library-refresh-jolt.md   card
+backlog/items/ITEM-183-media-library-refresh-jolt.md   card
 backlog/board.md                             the card's row
 specs/README.md                              the spec's index row, at Accept
 VERSION, CHANGELOG.md                        patch bump and one line, at delivery

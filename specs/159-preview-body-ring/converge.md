@@ -36,6 +36,6 @@ No `contradicts` findings. No code gap remains.
 - `test_the_preview_header_stays_put_while_the_body_scrolls`
 
 All three fail the same way: a hover is intercepted by `<aside id="chapters">` and Playwright retries 62
-times. They are not in `backlog/board.md` — ITEM-159 collects three different reds — so they need a card
+times. They are not in `backlog/board.md` — ITEM-184 collects three different reds — so they need a card
 of their own. Proposed title: *"Three preview E2E tests cannot reach the reading pane: the chapters
 sidebar intercepts the pointer"*.

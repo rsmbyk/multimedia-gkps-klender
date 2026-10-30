@@ -1,12 +1,12 @@
 ---
-id: ITEM-159
+id: ITEM-184
 status: backlog
 title: 'Three E2E tests are red on develop: two text-wrap assertions and an add-controls opacity'
 type: fix
 priority: P1
 effort: S
 created: 2026-10-28
-updated: 2026-10-28
+updated: 2026-10-30
 spec:
 branch:
 pr:
@@ -17,7 +17,7 @@ bump:
 release_version:
 ---
 
-# ITEM-159: Three E2E tests are red on develop
+# ITEM-184: Three E2E tests are red on develop
 
 ## Summary
 

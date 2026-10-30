@@ -1,12 +1,12 @@
 ---
-id: ITEM-163
+id: ITEM-185
 status: backlog
 title: 'Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380'
 type: fix
 priority: P2
 effort: S
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 spec:
 branch:
 pr:
@@ -17,7 +17,7 @@ bump:
 release_version:
 ---
 
-# ITEM-163: Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380
+# ITEM-185: Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380
 
 ## Summary
 
@@ -42,4 +42,4 @@ mid-test — rather than the drawer behaviour itself.
 ## Links
 
 - Spec: —
-- Related items: ITEM-153, ITEM-159 (the other E2E reds on develop)
+- Related items: ITEM-153, ITEM-184 (the other E2E reds on develop)

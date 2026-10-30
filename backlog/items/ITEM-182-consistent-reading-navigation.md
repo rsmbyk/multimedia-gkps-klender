@@ -1,13 +1,13 @@
 ---
-id: ITEM-119
+id: ITEM-182
 status: done
 title: 'Keep public reading navigation consistent with current and saved data'
 type: fix
 priority: P1
 effort: M
 created: 2026-10-20
-updated: 2026-10-21
-spec: specs/119-consistent-reading-navigation/spec.md
+updated: 2026-10-30
+spec: specs/181-consistent-reading-navigation/spec.md
 branch: fix/119-online-navigation-freshness
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/368
 archived_at:
@@ -16,7 +16,7 @@ bump: patch
 release_version: 1.19.1
 ---
 
-# ITEM-119: Keep public reading navigation consistent with current and saved data
+# ITEM-182: Keep public reading navigation consistent with current and saved data
 
 ## Summary
 
@@ -30,4 +30,4 @@ Online in-page navigation can leave list, book, home, and search views on an old
 
 ## Links
 
-- Spec: [119](../../specs/119-consistent-reading-navigation/spec.md)
+- Spec: [181](../../specs/181-consistent-reading-navigation/spec.md)
