@@ -45,7 +45,12 @@ MEASURE = """() => {
     slotTitle: title && {size: cs(title).fontSize, weight: cs(title).fontWeight,
                          family: cs(title).fontFamily, align: cs(title).textAlign},
     mark: !!document.querySelector('.slot__mark'),
-    option: option && {borderLeft: cs(option).borderLeftWidth},
+    option: (() => {
+      if (!option) return null;
+      const o = option.getBoundingClientRect();
+      const choiceRow = item ? item.getBoundingClientRect() : null;
+      return {offset: choiceRow ? Math.round(o.x - choiceRow.x) : Math.round(o.x), borderLeft: cs(option).borderLeftWidth};
+    })(),
     optionTextX: optionText ? box(optionText).x : null,
     addOptionX: addOption ? box(addOption).x : null,
   };
@@ -166,10 +171,18 @@ class PreviewParityTests(StaticLiveServerTestCase):
         self.assertTrue(self.live()['mark'])
         self.assertTrue(self.preview()['mark'])
 
-    def test_the_option_carries_no_rule_of_its_own(self):
+    def test_the_option_sits_where_the_preview_puts_it(self):
+        """An option is indented inside its choice, behind one continuous rule.
+
+        The preview wrapped the options in a container that carried the rule; the product
+        emits them as siblings, so each row draws its own left edge -- contiguous, and the
+        indent has to match the preview's.
+        """
         live, preview = self.live(), self.preview()
-        self.assertEqual(live['option']['borderLeft'], '0px')
-        self.assertEqual(preview['option']['borderLeft'], '0px')
+        # the preview wraps options in a container that carries the rule; the product draws
+        # it on each row, so the check is the rule and a real indent, not a shared parent
+        self.assertEqual(live['option']['borderLeft'], '1px', live)
+        self.assertGreaterEqual(live['option']['offset'], 8, live)
 
     def test_add_option_sits_on_the_option_text(self):
         live, preview = self.live(), self.preview()
