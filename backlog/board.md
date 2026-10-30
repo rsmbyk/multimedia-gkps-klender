@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-177](./items/ITEM-177-dock-fluid-width.md) | The dock fills whatever panel it is given | The panel stops capping itself at 560px and centring, so an OBS dock at any size is filled edge to edge; the picker stays one column and its rows run with the width | fix | P2 | S | [164](../specs/164-dock-fluid-width/spec.md) | fix/164-dock-fluid-width | 2026-10-29 |
 
 ## In review
 
