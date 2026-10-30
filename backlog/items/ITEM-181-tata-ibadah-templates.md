@@ -1,6 +1,6 @@
 ---
 id: ITEM-181
-status: backlog
+status: in_review
 title: 'A Tata Ibadah is a service or a template'
 type: feat
 priority: P1
