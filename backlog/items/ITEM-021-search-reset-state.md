@@ -1,17 +1,18 @@
 ---
 id: ITEM-021
-status: in_review
+status: done
 title: 'Clear remembered search when the home is reset'
 type: fix
 priority: P1
 effort: S
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-08
 spec: specs/019-search-reset-state/spec.md
 branch: feat/026-live-projection-editing
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/275
-archived_at:
-archive_reason:
+issue:
+closed_at: 2026-10-08
+closed_reason: merged into develop (PR #275)
 bump: patch
 release_version: 1.0.0
 ---
