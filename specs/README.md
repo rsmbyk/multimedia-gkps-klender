@@ -99,3 +99,4 @@ the templates are in [`_templates/`](./_templates/).
 | [161](161-projector-empty-notice/spec.md) | The projector's empty notice leaves the stage when Go To shows a passage or a song | Accepted |
 | [159](159-preview-body-ring/spec.md) | A preview's play shortcut paints nothing on the dialog's edge | Accepted |
 | [163](163-media-dialog-file-picker-cancel/spec.md) | Dismissing the file picker leaves the New media dialog open | Accepted |
+| [180](180-overlay-text-styles/spec.md) | The overlay reads by kind: a song keeps the caption, a passage a quotation card, a liturgy a script panel | Accepted |

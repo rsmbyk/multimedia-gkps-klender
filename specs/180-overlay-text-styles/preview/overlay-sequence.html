@@ -1,0 +1,278 @@
+<!doctype html>
+<!-- Spec 180 — when a panel appears and disappears.
+     Twelve frames captured from the REAL /obs/source/overlay at 1920x1080, driven by the
+     dock's own verbs (gkpsDisplay.screen / hide / release), each over the church's own
+     worship frame. The strip steps through service 144's own screens: a passage panel, the
+     rest that clears it, media that paints nothing, a song caption, a text panel and its
+     answer, and the two ways the words go off air (hide, release). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overlay sequence — spec 180</title>
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<style>
+  html, body.seq {
+    margin: 0; height: 100%;
+    background: #0B0D10; color: #E8EAED;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  body.seq { display: flex; flex-direction: column; overflow: hidden; }
+  .seq__bar {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .seq__title { margin: 0; font-size: 13px; font-weight: 650; }
+  .seq__title span { color: rgba(255,255,255,.5); font-weight: 450; }
+  .seq__transport { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .seq__btn {
+    appearance: none; border: 1px solid rgba(255,255,255,.12); border-radius: 8px;
+    background: transparent; color: rgba(255,255,255,.72);
+    padding: 6px 11px; font: inherit; font-size: 12.5px; font-weight: 550; cursor: pointer;
+  }
+  .seq__btn:hover { color: #fff; border-color: rgba(255,255,255,.28); }
+  .seq__btn[aria-pressed="true"] { background: #E8EAED; color: #0B0D10; border-color: #E8EAED; }
+  .seq__count { font-size: 11.5px; color: rgba(255,255,255,.46); font-variant-numeric: tabular-nums; min-width: 56px; text-align: right; }
+  .seq__stage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 16px 20px 0; }
+  .seq__shot { max-width: 100%; max-height: 100%; border-radius: 6px; display: block; }
+  .seq__cap { flex: 0 0 auto; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 12px 20px 0; font-size: 12.5px; }
+  .seq__chip { border-radius: 4px; padding: 2px 7px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .seq__chip[data-verdict="panel"] { background: #B9C6D8; color: #0B0D10; }
+  .seq__chip[data-verdict="caption"] { background: #E4CDA5; color: #0B0D10; }
+  .seq__chip[data-verdict="nothing"] { background: transparent; color: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.24); }
+  .seq__name { font-weight: 600; }
+  .seq__what { color: rgba(255,255,255,.46); }
+  .seq__strip {
+    flex: 0 0 auto; display: flex; gap: 6px; overflow-x: auto;
+    padding: 12px 20px 14px; border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .seq__thumb {
+    appearance: none; padding: 0; border: 2px solid transparent; border-radius: 4px;
+    background: none; cursor: pointer; flex: 0 0 auto; width: 96px;
+  }
+  .seq__thumb img { display: block; width: 100%; border-radius: 2px; }
+  .seq__thumb[aria-current="true"] { border-color: #E8EAED; }
+  .seq__thumb:focus-visible { outline: 2px solid #7C9CF0; outline-offset: 2px; }
+  .seq__rule { padding: 12px 20px 18px; font-size: 11.5px; line-height: 1.55; color: rgba(255,255,255,.44); }
+  .seq__rule b { color: rgba(255,255,255,.7); font-weight: 600; }
+</style>
+</head>
+<body class="seq">
+<header class="seq__bar">
+  <p class="seq__title">OBS overlay · sequence <span>service 144 · 25 Oct 2026 · real captures at 1920×1080</span></p>
+  <div class="seq__transport">
+    <button type="button" class="seq__btn" id="prev" aria-label="Previous frame">◀</button>
+    <button type="button" class="seq__btn" id="play" aria-pressed="false">Play</button>
+    <button type="button" class="seq__btn" id="next" aria-label="Next frame">▶</button>
+    <span class="seq__count" id="count"></span>
+  </div>
+</header>
+
+<div class="seq__stage"><img class="seq__shot" id="shot" alt=""></div>
+<p class="seq__cap">
+  <span class="seq__chip" id="chip"></span>
+  <span class="seq__name" id="name"></span>
+  <span class="seq__what" id="what"></span>
+</p>
+<div class="seq__strip" id="strip"></div>
+<footer class="seq__rule">
+  <b>Appears</b> when the live screen belongs to a passage or a text and carries words — fading in over 180 ms while
+  rising 18 px and growing from 97.5 %. <b>Disappears</b> on the rest that closes every entry, on a section break, on
+  a media payload, and when the dock hides or the display is released — fading out over 120 ms as it sinks 8 px — and
+  never persists across a rest.
+  Consecutive screens of one entry replace the words inside the object: a cut. A song caption enters and leaves on the
+  same clock, with a shorter travel of its own. These captures are stills; the motion
+  itself is <a href="overlay-walkthrough.mp4" style="color:rgba(255,255,255,.72)">overlay-walkthrough.mp4</a> beside
+  this page — these same stops, recorded in order at the product's own pace.
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var FRAMES = [
+  {
+    "order": 1,
+    "index": 0,
+    "action": "show",
+    "label": "passage · first screen",
+    "verdict": "panel",
+    "kind": "passage",
+    "text": "KISAH PARA RASUL 1:1 · Roh Kudus dijanjikan · Hai Teofilus, dalam bukuku yang pertama aku ",
+    "file": "seq/01-screen-000-show.jpg"
+  },
+  {
+    "order": 2,
+    "index": 1,
+    "action": "screen",
+    "label": "rest after the passage",
+    "verdict": "nothing",
+    "kind": "",
+    "text": "",
+    "file": "seq/02-screen-001-screen.jpg"
+  },
+  {
+    "order": 3,
+    "index": 2,
+    "action": "screen",
+    "label": "media · image",
+    "verdict": "nothing",
+    "kind": "",
+    "text": "",
+    "file": "seq/03-screen-002-screen.jpg"
+  },
+  {
+    "order": 4,
+    "index": 4,
+    "action": "screen",
+    "label": "song · first lyric",
+    "verdict": "caption",
+    "kind": "song",
+    "text": "(1) Sangap di jahowa na sun timbul i · Balga ni holongNa ndang tarasam i",
+    "file": "seq/04-screen-004-screen.jpg"
+  },
+  {
+    "order": 5,
+    "index": 18,
+    "action": "screen",
+    "label": "rest after the song",
+    "verdict": "nothing",
+    "kind": "",
+    "text": "",
+    "file": "seq/05-screen-018-screen.jpg"
+  },
+  {
+    "order": 6,
+    "index": 19,
+    "action": "screen",
+    "label": "media · PDF",
+    "verdict": "nothing",
+    "kind": "",
+    "text": "",
+    "file": "seq/06-screen-019-screen.jpg"
+  },
+  {
+    "order": 7,
+    "index": 20,
+    "action": "screen",
+    "label": "text · first screen",
+    "verdict": "panel",
+    "kind": "liturgy",
+    "text": "VOTUM, INTROITUS, DOA · L. · Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh ",
+    "file": "seq/07-screen-020-screen.jpg"
+  },
+  {
+    "order": 8,
+    "index": 21,
+    "action": "screen",
+    "label": "text · the answer",
+    "verdict": "panel",
+    "kind": "liturgy",
+    "text": "J. · Amin.",
+    "file": "seq/08-screen-021-screen.jpg"
+  },
+  {
+    "order": 9,
+    "index": 84,
+    "action": "screen",
+    "label": "rest after the text",
+    "verdict": "nothing",
+    "kind": "",
+    "text": "",
+    "file": "seq/09-screen-084-screen.jpg"
+  },
+  {
+    "order": 10,
+    "index": 86,
+    "action": "screen",
+    "label": "song · first lyric",
+    "verdict": "caption",
+    "kind": "song",
+    "text": "Porini dong maribu hali, paraloling ni sorangkin · Bois ni gogoh inggananni, mamuji Naibat",
+    "file": "seq/10-screen-086-screen.jpg"
+  },
+  {
+    "order": 11,
+    "index": 4,
+    "action": "hide",
+    "label": "the dock hides the words",
+    "verdict": "nothing",
+    "kind": "",
+    "text": "",
+    "file": "seq/11-screen-004-hide.jpg"
+  },
+  {
+    "order": 12,
+    "index": 4,
+    "action": "release",
+    "label": "the display is released",
+    "verdict": "nothing",
+    "kind": "",
+    "text": "",
+    "file": "seq/12-screen-004-release.jpg"
+  }
+];
+  var shot = document.getElementById('shot');
+  var chip = document.getElementById('chip');
+  var name = document.getElementById('name');
+  var what = document.getElementById('what');
+  var count = document.getElementById('count');
+  var strip = document.getElementById('strip');
+  var playButton = document.getElementById('play');
+  var at = 0;
+  var timer = null;
+
+  function show(index) {
+    at = (index + FRAMES.length) % FRAMES.length;
+    var frame = FRAMES[at];
+    shot.src = frame.file;
+    shot.alt = frame.label;
+    chip.textContent = frame.verdict;
+    chip.dataset.verdict = frame.verdict;
+    name.textContent = frame.action === 'screen' ? 'screen ' + frame.index : frame.action;
+    what.textContent = frame.label + (frame.text ? ' — “' + frame.text.slice(0, 42) + '…”' : '');
+    count.textContent = (at + 1) + ' / ' + FRAMES.length;
+    strip.querySelectorAll('.seq__thumb').forEach(function (thumb, i) {
+      thumb.setAttribute('aria-current', String(i === at));
+    });
+  }
+
+  function stop() {
+    if (timer) { window.clearInterval(timer); timer = null; }
+    playButton.setAttribute('aria-pressed', 'false');
+    playButton.textContent = 'Play';
+  }
+
+  FRAMES.forEach(function (frame, index) {
+    var thumb = document.createElement('button');
+    thumb.type = 'button';
+    thumb.className = 'seq__thumb';
+    thumb.setAttribute('aria-label', (index + 1) + ' — ' + frame.label);
+    var image = document.createElement('img');
+    image.src = frame.file;
+    image.alt = '';
+    thumb.appendChild(image);
+    thumb.addEventListener('click', function () { stop(); show(index); });
+    strip.appendChild(thumb);
+  });
+
+  document.getElementById('prev').addEventListener('click', function () { stop(); show(at - 1); });
+  document.getElementById('next').addEventListener('click', function () { stop(); show(at + 1); });
+  playButton.addEventListener('click', function () {
+    if (timer) { stop(); return; }
+    playButton.setAttribute('aria-pressed', 'true');
+    playButton.textContent = 'Pause';
+    timer = window.setInterval(function () { show(at + 1); }, 1400);
+    show(at + 1);
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowLeft') { stop(); show(at - 1); }
+    if (event.key === 'ArrowRight') { stop(); show(at + 1); }
+    if (event.key === ' ') { event.preventDefault(); playButton.click(); }
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

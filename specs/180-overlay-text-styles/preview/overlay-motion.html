@@ -1,0 +1,337 @@
+<!doctype html>
+<!-- Spec 180 — the panel's motion, live and clickable.
+     The same stylesheet and the same classes the overlay's controller adds (is-entering,
+     is-leaving), so this page moves exactly as the browser source does. 1x is the real
+     timing — 200 ms in, 140 ms out; the slower speeds stretch the same curve and the same
+     keyframes so a 200 ms move can be read at a glance. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overlay motion — spec 180</title>
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<link rel="stylesheet" href="../../../static/styles/design/obs-overlay.css">
+<style>
+  html, body.motion {
+    margin: 0; height: 100%;
+    background: #0B0D10; color: #E8EAED;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  body.motion { display: flex; flex-direction: column; overflow: hidden; }
+
+  .motion__bar {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .motion__title { margin: 0 auto 0 0; font-size: 13px; font-weight: 650; }
+  .motion__title span { color: rgba(255,255,255,.5); font-weight: 450; }
+  .motion__group { display: flex; gap: 2px; padding: 2px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; }
+  .motion__btn {
+    appearance: none; border: 0; border-radius: 6px; background: transparent;
+    color: rgba(255,255,255,.7); padding: 6px 10px; font: inherit; font-size: 12.5px;
+    font-weight: 550; cursor: pointer;
+  }
+  .motion__btn:hover { color: #fff; background: rgba(255,255,255,.06); }
+  .motion__btn[aria-pressed="true"] { background: #E8EAED; color: #0B0D10; }
+
+  .motion__stage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 16px 20px; }
+  .motion__box { position: relative; overflow: hidden; border-radius: 8px; background: #000; }
+  .motion__frame { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  .motion__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* The stage is fixed on the real page; here it fills its frame. */
+  .motion__frame .obs-overlay__stage { position: absolute; inset: 0; }
+  /* Review only: the same keyframes and curve, stretched by --slow. */
+  .motion__frame .obs-overlay__plate.is-entering { animation-duration: calc(180ms * var(--slow, 1)); }
+  .motion__frame .obs-overlay__plate.is-leaving  { animation-duration: calc(120ms * var(--slow, 1)); }
+  .motion__frame .obs-overlay__plate.is-resizing { transition-duration: calc(180ms * var(--slow, 1)); }
+  .motion__frame .obs-overlay__caption.is-entering { animation-duration: calc(180ms * var(--slow, 1)); }
+  .motion__frame .obs-overlay__caption.is-leaving  { animation-duration: calc(120ms * var(--slow, 1)); }
+
+  .motion__readout {
+    flex: 0 0 auto; margin: 0; padding: 0 20px 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px;
+    color: rgba(255,255,255,.62); font-variant-numeric: tabular-nums;
+  }
+  .motion__readout b { color: #E8EAED; font-weight: 600; }
+  .motion__note { flex: 0 0 auto; margin: 0; padding: 0 20px 16px; font-size: 11.5px; line-height: 1.55; color: rgba(255,255,255,.42); }
+</style>
+</head>
+<body class="motion">
+<header class="motion__bar">
+  <p class="motion__title">OBS overlay · motion <span>spec 180 · the browser source's own classes</span></p>
+  <div class="motion__group" role="group" aria-label="What is on air">
+    <button type="button" class="motion__btn" data-state="passage">Passage</button>
+    <button type="button" class="motion__btn" data-state="liturgy">Liturgy</button>
+    <button type="button" class="motion__btn" data-state="song">Song</button>
+    <button type="button" class="motion__btn" data-state="none">Blank</button>
+    <button type="button" class="motion__btn" data-state="step">Next verse</button>
+  </div>
+  <div class="motion__group" role="group" aria-label="Speed">
+    <button type="button" class="motion__btn" data-slow="1" aria-pressed="true">1×</button>
+    <button type="button" class="motion__btn" data-slow="4" aria-pressed="false">¼×</button>
+    <button type="button" class="motion__btn" data-slow="8" aria-pressed="false">⅛×</button>
+  </div>
+</header>
+
+<div class="motion__stage">
+  <div class="motion__box" id="box">
+    <div class="motion__frame" id="frame">
+      <img class="motion__video" src="frame.jpg" alt="">
+      <div class="obs-overlay__stage" id="stage" aria-live="off"></div>
+    </div>
+  </div>
+</div>
+
+<p class="motion__readout" id="readout">at rest</p>
+<p class="motion__note">
+  The overlay runs at <b>1×</b>: a panel enters over 180 ms — opacity 0 → 1 while rising 18 px and growing from
+  97.5 % — and leaves over 120 ms as it sinks 7.9 px, both on <code>cubic-bezier(.4, 0, .2, 1)</code>. The slower speeds stretch the identical
+  keyframes and curve for review; nothing else changes. <b>Next verse</b> shows the case that must not animate: a
+  screen step inside one entry swaps the words and leaves the panel where it is.
+</p>
+
+<script>
+(function () {
+  'use strict';
+
+  var PASSAGE = {
+    kind: 'passage',
+    header: 'Mazmur 23:1\nTUHAN, gembalaku yang baik',
+    lines: [{ text: 'Mazmur Daud. TUHAN adalah gembalaku, takkan kekurangan aku.',
+              voice: '', mark: '', words: 'Mazmur Daud. TUHAN adalah gembalaku, takkan kekurangan aku.' }]
+  };
+  var PASSAGE_2 = {
+    kind: 'passage',
+    header: 'Mazmur 23:2\nTUHAN, gembalaku yang baik',
+    lines: [{ text: 'Ia membaringkan aku di padang yang berumput hijau, Ia membimbing aku ke air yang tenang.',
+              voice: '', mark: '', words: 'Ia membaringkan aku di padang yang berumput hijau, Ia membimbing aku ke air yang tenang.' }]
+  };
+  var LITURGY = {
+    kind: 'liturgy',
+    header: 'VOTUM, INTROITUS, DOA',
+    lines: [
+      { text: 'L. Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta  Roh Kudus, Pencipta langit dan bumi.',
+        voice: 'leader', mark: 'L.', words: 'Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta  Roh Kudus, Pencipta langit dan bumi.' },
+      { text: 'J. Amin.', voice: 'assembly', mark: 'J.', words: 'Amin.' }
+    ]
+  };
+  var SONG = {
+    kind: 'song',
+    lines: ['(1) Sangap di jahowa na sun timbul i', 'Balga ni holongNa ndang tarasam na i']
+  };
+
+  var stage = document.getElementById('stage');
+  var box = document.getElementById('box');
+  var frame = document.getElementById('frame');
+  var readout = document.getElementById('readout');
+  var slow = 1;
+  var onAir = 'none';
+  var verse = 0;
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  /* The overlay's own builders, copied so this page paints what the source paints. */
+  function captionOf(state) {
+    var node = el('p', 'obs-overlay__caption');
+    state.lines.forEach(function (line) { node.appendChild(el('span', '', line)); });
+    return node;
+  }
+
+  function plateOf(state) {
+    var node = el('div', 'obs-overlay__plate');
+    node.dataset.kind = state.kind;
+    var parts = state.header ? String(state.header).split('\n') : [];
+    var kicker = (parts.shift() || '').trim();
+    var title = parts.join('\n').trim();
+    if (kicker) node.appendChild(el('p', 'obs-overlay__kicker', kicker));
+    if (title) node.appendChild(el('p', 'obs-overlay__title', title));
+    if (kicker || title) node.appendChild(el('span', 'obs-overlay__rule'));
+    var body = el('div', 'obs-overlay__body');
+    state.lines.forEach(function (line) {
+      var voice = line.voice || '';
+      var row = el('p', 'obs-overlay__line' + (voice ? ' is-' + voice : ''));
+      if (line.mark && line.words) {
+        row.className += ' has-mark';
+        row.appendChild(el('span', 'obs-overlay__speaker', line.mark));
+        row.appendChild(el('span', 'obs-overlay__words', line.words));
+      } else {
+        row.textContent = line.text;
+      }
+      body.appendChild(row);
+    });
+    node.appendChild(body);
+    return node;
+  }
+
+  function applySpeakerColumn(plateNode) {
+    var widest = 0;
+    plateNode.querySelectorAll('.obs-overlay__speaker').forEach(function (mark) {
+      if (mark.offsetWidth > widest) widest = mark.offsetWidth;
+    });
+    var body = plateNode.querySelector('.obs-overlay__body');
+    if (body && widest) body.style.setProperty('--speaker-col', widest + 'px');
+  }
+
+  /* ---- the controller's motion, verbatim ---------------------------------- */
+
+  function watch(node, entering) {
+    var start = performance.now();
+    var until = entering ? 180 * slow : 120 * slow;
+    function tick(now) {
+      var live = node.isConnected ? node : null;
+      var style = live ? getComputedStyle(live) : null;
+      if (style) {
+        var offset = style.transform === 'none' ? 0 : new DOMMatrixReadOnly(style.transform).m42;
+        readout.innerHTML = '<b>' + (entering ? 'entering' : 'leaving') + '</b> · opacity ' +
+          Number(style.opacity).toFixed(2) + ' · ' + (offset >= 0 ? '+' : '') + offset.toFixed(2) + ' px · ' +
+          Math.round(now - start) + ' / ' + Math.round(until) + ' ms';
+      }
+      if (now - start < until + 40) requestAnimationFrame(tick);
+      else readout.textContent = entering ? 'at rest · panel up' : 'at rest · stage empty';
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function enter(node) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    node.classList.add('is-entering');
+    node.addEventListener('animationend', function () { node.classList.remove('is-entering'); }, {once: true});
+    watch(node, true);
+  }
+
+  function leave(node) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { node.remove(); return; }
+    node.classList.add('is-leaving');
+    var done = function () { if (node.isConnected) node.remove(); };
+    node.addEventListener('animationend', done, {once: true});
+    window.setTimeout(done, 600);
+    watch(node, false);
+  }
+
+  function resizeLayer(node, fromWidth, fromHeight) {
+    var toWidth = node.offsetWidth;
+    var toHeight = node.offsetHeight;
+    if (!fromWidth || !toWidth) return;
+    if (fromWidth === toWidth && fromHeight === toHeight) return;
+    var children = Array.prototype.slice.call(node.children);
+    children.forEach(function (child) {
+      child.style.transition = 'none';
+      child.style.opacity = '0';
+    });
+    node.style.width = fromWidth + 'px';
+    node.style.height = fromHeight + 'px';
+    node.classList.add('is-resizing');
+    node.offsetWidth;
+    window.requestAnimationFrame(function () {
+      node.style.width = toWidth + 'px';
+      node.style.height = toHeight + 'px';
+    });
+    var reveal = window.setTimeout(function () {
+      children.forEach(function (child) {
+        child.style.transition = 'opacity 110ms linear';
+        child.style.opacity = '1';
+      });
+    }, 110);
+    var settled = false;
+    var settle = function () {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(reveal);
+      node.classList.remove('is-resizing');
+      node.style.width = '';
+      node.style.height = '';
+      children.forEach(function (child) {
+        child.style.transition = '';
+        child.style.opacity = '';
+      });
+    };
+    node.addEventListener('transitionend', function (event) {
+      if (event.propertyName === 'width') settle();
+    });
+    window.setTimeout(settle, 400);
+  }
+
+  function show(kind) {
+    var state = kind === 'passage' ? (verse ? PASSAGE_2 : PASSAGE)
+      : kind === 'liturgy' ? LITURGY : kind === 'song' ? SONG : null;
+    onAir = kind;
+
+    if (!state) {
+      stage.querySelectorAll('.obs-overlay__caption').forEach(function (node) {
+        if (!node.classList.contains('is-leaving')) leave(node);
+      });
+      var shownPlate = stage.querySelector('.obs-overlay__plate');
+      if (shownPlate && !shownPlate.classList.contains('is-leaving')) leave(shownPlate);
+      else if (!shownPlate) readout.textContent = 'at rest · stage empty';
+      return;
+    }
+
+    if (state.kind === 'song') {
+      var hadCaption = stage.querySelector('.obs-overlay__caption');
+      var line = captionOf(state);
+      stage.replaceChildren(line);
+      if (hadCaption) readout.textContent = 'caption stays · words swap (a cut)';
+      else enter(line);
+      return;
+    }
+
+    var existing = stage.querySelector('.obs-overlay__plate');
+    var fromWidth = existing ? existing.offsetWidth : 0;
+    var fromHeight = existing ? existing.offsetHeight : 0;
+    var node = plateOf(state);
+    stage.replaceChildren(node);
+    applySpeakerColumn(node);
+    if (existing) {
+      resizeLayer(node, fromWidth, fromHeight);
+      readout.textContent = 'panel stays · the box morphs to the new measure';
+    } else {
+      enter(node);
+    }
+  }
+
+  document.querySelectorAll('[data-state]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var kind = button.dataset.state;
+      if (kind === 'step') {
+        if (onAir !== 'passage') { show('passage'); verse = 0; }
+        else { verse = verse ? 0 : 1; show('passage'); }
+        return;
+      }
+      if (kind === 'passage') verse = 0;
+      show(kind);
+    });
+  });
+
+  document.querySelectorAll('[data-slow]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      slow = Number(button.dataset.slow);
+      frame.style.setProperty('--slow', String(slow));
+      document.querySelectorAll('[data-slow]').forEach(function (other) {
+        other.setAttribute('aria-pressed', String(other === button));
+      });
+    });
+  });
+
+  function fit() {
+    var availableWidth = document.documentElement.clientWidth - 40;
+    var availableHeight = box.parentElement.clientHeight - 32;
+    var scale = Math.min(availableWidth / 1920, availableHeight / 1080);
+    frame.style.transform = 'scale(' + scale + ')';
+    box.style.width = Math.round(1920 * scale) + 'px';
+    box.style.height = Math.round(1080 * scale) + 'px';
+  }
+
+  window.addEventListener('resize', fit);
+  document.fonts.ready.then(fit);
+  fit();
+  show('passage');
+  verse = 0;
+})();
+</script>
+</body>
+</html>

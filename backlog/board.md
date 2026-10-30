@@ -31,6 +31,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-180](./items/ITEM-180-overlay-text-styles.md) | The overlay reads by kind: a passage is a quotation card, a liturgy is a script panel | The caption suits a lyric and not a reading: a passage loses its reference and a liturgy its title, so a passage gets a centred card naming its reference and a liturgy a left-aligned panel carrying its title and speaker turns, while songs keep the bare caption | feat | P1 | S | [180](../specs/180-overlay-text-styles/spec.md) | 2026-10-30 |
 
 ## In progress
 

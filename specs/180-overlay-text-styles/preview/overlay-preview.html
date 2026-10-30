@@ -1,0 +1,673 @@
+<!doctype html>
+<!-- Spec 180 — every kind of text the OBS overlay can be showing, at the frame's own size.
+     A static review page: the real classes and the repo's own obs-overlay.css + bundled
+     faces over a 1920x1080 frame from the church's own worship video. Each frame is laid
+     out at 1920x1080 (so container units resolve at the real size) and only the paint is
+     scaled to the page. Strings are the church's own — Bible verses from the TB edition,
+     liturgy turns from the stored Tata Ibadah items — so line lengths are real. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overlay text states — spec 180</title>
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/obs-overlay.css">
+<style>
+  html, body.review {
+    margin: 0; height: 100%;
+    background: #0B0D10; color: #E8EAED;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  /* The page owns its viewport: a sidebar of states, one frame on stage. Nothing scrolls
+     the host, so the bar and the index stay put while the frame changes. */
+  body.review { display: flex; flex-direction: column; overflow: hidden; }
+
+  .review__bar {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 12px;
+    padding: 10px 18px; border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .review__title { margin: 0 auto 0 0; font-size: 13px; font-weight: 650; letter-spacing: .01em; }
+  .review__title span { color: rgba(255,255,255,.5); font-weight: 450; }
+  .review__nav { display: flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; }
+  .review__btn {
+    appearance: none; border: 0; border-radius: 6px; padding: 5px 10px;
+    background: transparent; color: rgba(255,255,255,.62);
+    font: inherit; font-size: 12px; font-weight: 550; cursor: pointer;
+  }
+  .review__btn:hover { color: #fff; background: rgba(255,255,255,.07); }
+  .review__btn[aria-pressed="true"] { background: #E8EAED; color: #0B0D10; }
+  .review__count { min-width: 54px; text-align: center; font-size: 11.5px; color: rgba(255,255,255,.46); font-variant-numeric: tabular-nums; }
+
+  .review__body { flex: 1 1 auto; min-height: 0; display: flex; }
+
+  .review__index {
+    flex: 0 0 286px; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+    border-right: 1px solid rgba(255,255,255,.08); padding: 10px 8px 18px;
+  }
+  .index__group {
+    margin: 12px 8px 4px; font-size: 10.5px; letter-spacing: .09em;
+    text-transform: uppercase; color: rgba(255,255,255,.4); font-weight: 700;
+  }
+  .index__group:first-child { margin-top: 2px; }
+  .index__item {
+    display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: baseline;
+    width: 100%; text-align: left; appearance: none; border: 0; border-radius: 6px;
+    background: transparent; color: rgba(255,255,255,.74); padding: 7px 8px;
+    font: inherit; font-size: 12.5px; cursor: pointer;
+  }
+  .index__item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .index__item[aria-current="true"] { background: #E8EAED; color: #0B0D10; }
+  .index__no { font-size: 11px; opacity: .55; font-variant-numeric: tabular-nums; text-align: right; }
+  .index__name { font-weight: 550; }
+
+  .review__stage {
+    flex: 1 1 auto; min-width: 0; min-height: 0; overflow: auto;
+    padding: 16px 20px 24px; display: flex; flex-direction: column; align-items: flex-start;
+  }
+  .shot { margin: 0; }
+  .shot__cap { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; font-size: 12px; }
+  .shot__kind {
+    color: #0B0D10; background: #B9C6D8; border-radius: 4px;
+    padding: 2px 6px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .shot__name { font-weight: 600; color: #F2F4F6; letter-spacing: .01em; }
+  .shot__note { color: rgba(255,255,255,.42); font-variant-numeric: tabular-nums; }
+  .shot__box { position: relative; overflow: hidden; background: #000; border-radius: 6px; }
+  .shot__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .shot__frame { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  /* The stage is fixed on the real page; here it fills its frame. */
+  .shot__frame .obs-overlay__stage { position: absolute; inset: 0; }
+  .review__note {
+    margin: 14px 0 0; max-width: 74ch; font-size: 11.5px; line-height: 1.55; color: rgba(255,255,255,.42);
+  }
+  .review__note b { color: rgba(255,255,255,.68); font-weight: 600; }
+  .review__keys { margin: 8px 0 0; font-size: 11px; color: rgba(255,255,255,.32); }
+
+  @media (max-width: 880px) {
+    .review__body { flex-direction: column; }
+    /* A narrow pane gets a horizontal rail of states instead of a tall list. */
+    .review__index {
+      flex: 0 0 auto; display: flex; flex-wrap: nowrap; align-items: center; gap: 4px;
+      overflow-x: auto; overflow-y: hidden; max-height: none;
+      border-right: 0; border-bottom: 1px solid rgba(255,255,255,.08); padding: 6px 8px;
+    }
+    .index__group { display: none; }
+    .index__item { width: auto; flex: 0 0 auto; white-space: nowrap; padding: 6px 9px; }
+    .index__name { overflow: hidden; text-overflow: ellipsis; max-width: 34vw; }
+  }
+</style>
+</head>
+<body class="review">
+<header class="review__bar">
+  <p class="review__title">OBS overlay · text states <span>spec 180 · 1920×1080 frames</span></p>
+  <div class="review__nav" role="group" aria-label="Navigate the states">
+    <button type="button" class="review__btn" id="prev" aria-label="Previous state">◀</button>
+    <span class="review__count" id="count"></span>
+    <button type="button" class="review__btn" id="next" aria-label="Next state">▶</button>
+  </div>
+  <div class="review__nav" role="group" aria-label="Frame scale">
+    <button type="button" class="review__btn" data-scale="fit" aria-pressed="true">Fit</button>
+    <button type="button" class="review__btn" data-scale="one" aria-pressed="false">1:1</button>
+  </div>
+</header>
+
+<div class="review__body">
+  <nav class="review__index" id="index" aria-label="States"></nav>
+  <main class="review__stage" id="stage">
+    <div id="state"></div>
+    <footer class="review__note">
+      <b>Song</b> keeps the accepted subtitle caption — white 800, outlined, lower-centre, no plate.
+      <b>Passage</b> is a quotation: a centred card, the reference and the verse's own title above a hairline.
+      <b>Liturgy</b> is spoken: a left-aligned panel with a bar on its leading edge, its title over the turns, the
+      leader's line at 38.1 % ink. Every frame is laid out at 1920×1080 and only the paint is scaled; the page's numbers
+      are the surface's real ones.
+      <p class="review__keys">◀ ▶ or J K step · Home / End jump · 1–9 pick a state · Fit / 1:1 rescale</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STATES = [
+  {
+    "kindLabel": "PASSAGE",
+    "name": "Titled · short verse",
+    "kind": "passage",
+    "header": "Mazmur 23:1\nTUHAN, gembalaku yang baik",
+    "lines": [
+      {
+        "text": "Mazmur Daud. TUHAN adalah gembalaku, takkan kekurangan aku.",
+        "voice": "",
+        "mark": "",
+        "words": "Mazmur Daud. TUHAN adalah gembalaku, takkan kekurangan aku."
+      }
+    ]
+  },
+  {
+    "kindLabel": "PASSAGE",
+    "name": "Titled · long verse",
+    "kind": "passage",
+    "header": "Wahyu 22:18\nPenutup",
+    "lines": [
+      {
+        "text": "Aku bersaksi kepada setiap orang yang mendengar perkataan-perkataan nubuat dari kitab ini: \"Jika seorang menambahkan sesuatu kepada perkataan-perkataan ini, maka Allah akan menambahkan kepadanya malapetaka-malapetaka yang tertulis di dalam kitab ini.",
+        "voice": "",
+        "mark": "",
+        "words": "Aku bersaksi kepada setiap orang yang mendengar perkataan-perkataan nubuat dari kitab ini: \"Jika seorang menambahkan sesuatu kepada perkataan-perkataan ini, maka Allah akan menambahkan kepadanya malapetaka-malapetaka yang tertulis di dalam kitab ini."
+      }
+    ]
+  },
+  {
+    "kindLabel": "PASSAGE",
+    "name": "Reference only (no verse title)",
+    "kind": "passage",
+    "header": "Yohanes 3:16",
+    "lines": [
+      {
+        "text": "Karena begitu besar kasih Allah akan dunia ini, sehingga Ia telah mengaruniakan Anak-Nya yang tunggal, supaya setiap orang yang percaya kepada-Nya tidak binasa, melainkan beroleh hidup yang kekal.",
+        "voice": "",
+        "mark": "",
+        "words": "Karena begitu besar kasih Allah akan dunia ini, sehingga Ia telah mengaruniakan Anak-Nya yang tunggal, supaya setiap orang yang percaya kepada-Nya tidak binasa, melainkan beroleh hidup yang kekal."
+      }
+    ]
+  },
+  {
+    "kindLabel": "PASSAGE",
+    "name": "Longest verse in the database",
+    "kind": "passage",
+    "header": "Ester 8:9",
+    "lines": [
+      {
+        "text": "Pada waktu itu juga dipanggillah para panitera raja, dalam bulan yang ketiga--yakni bulan Siwan--pada tanggal dua puluh tiga, dan sesuai dengan segala yang diperintahkan Mordekhai ditulislah surat kepada orang Yahudi, dan kepada para wakil pemerintah, para bupati dan para pembesar daerah, dari India sampai ke Etiopia, seratus dua puluh tujuh daerah, kepada tiap-tiap daerah menurut tulisannya dan kepada tiap-tiap bangsa menurut bahasanya, dan juga kepada orang Yahudi menurut tulisan dan bahasanya.",
+        "voice": "",
+        "mark": "",
+        "words": "Pada waktu itu juga dipanggillah para panitera raja, dalam bulan yang ketiga--yakni bulan Siwan--pada tanggal dua puluh tiga, dan sesuai dengan segala yang diperintahkan Mordekhai ditulislah surat kepada orang Yahudi, dan kepada para wakil pemerintah, para bupati dan para pembesar daerah, dari India sampai ke Etiopia, seratus dua puluh tujuh daerah, kepada tiap-tiap daerah menurut tulisannya dan kepada tiap-tiap bangsa menurut bahasanya, dan juga kepada orang Yahudi menurut tulisan dan bahasanya."
+      }
+    ]
+  },
+  {
+    "kindLabel": "LITURGY",
+    "name": "Titled · leader and answer",
+    "kind": "liturgy",
+    "header": "VOTUM, INTROITUS, DOA",
+    "lines": [
+      {
+        "text": "L. Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta  Roh Kudus, Pencipta langit dan bumi.",
+        "voice": "leader",
+        "mark": "L.",
+        "words": "Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta  Roh Kudus, Pencipta langit dan bumi."
+      },
+      {
+        "text": "J. Amin.",
+        "voice": "assembly",
+        "mark": "J.",
+        "words": "Amin."
+      }
+    ]
+  },
+  {
+    "kindLabel": "LITURGY",
+    "name": "Untitled · the stored case",
+    "kind": "liturgy",
+    "header": "",
+    "lines": [
+      {
+        "text": "L. Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta  Roh Kudus, Pencipta langit dan bumi.",
+        "voice": "leader",
+        "mark": "L.",
+        "words": "Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta  Roh Kudus, Pencipta langit dan bumi."
+      },
+      {
+        "text": "J. Amin.",
+        "voice": "assembly",
+        "mark": "J.",
+        "words": "Amin."
+      }
+    ]
+  },
+  {
+    "kindLabel": "LITURGY",
+    "name": "One short answer",
+    "kind": "liturgy",
+    "header": "",
+    "lines": [
+      {
+        "text": "J. Amin.",
+        "voice": "assembly",
+        "mark": "J.",
+        "words": "Amin."
+      }
+    ]
+  },
+  {
+    "kindLabel": "LITURGY",
+    "name": "A joined line",
+    "kind": "liturgy",
+    "header": "",
+    "lines": [
+      {
+        "text": "L+J : \"Tuhan, kasihanilah kami. Roh Kudus, lembutkanlah hati kami yang keras, basuhlah noda dosa kami, dan ikatlah kami kembali dalam satu Roh kasih-Mu.\"",
+        "voice": "join",
+        "mark": "L+J :",
+        "words": "\"Tuhan, kasihanilah kami. Roh Kudus, lembutkanlah hati kami yang keras, basuhlah noda dosa kami, dan ikatlah kami kembali dalam satu Roh kasih-Mu.\""
+      }
+    ]
+  },
+  {
+    "kindLabel": "LITURGY",
+    "name": "Titled · long leader turn",
+    "kind": "liturgy",
+    "header": "PENGAKUAN DOSA",
+    "lines": [
+      {
+        "text": "Pelayan : Dalam kesadaran dan penyesalan yang mendalam atas segala dosa yang nyata dalam hidup, maka marilah kita hampiri hadirat Tuhan di dalam doa seraya memohon ampun dari Tuhan.",
+        "voice": "leader",
+        "mark": "Pelayan :",
+        "words": "Dalam kesadaran dan penyesalan yang mendalam atas segala dosa yang nyata dalam hidup, maka marilah kita hampiri hadirat Tuhan di dalam doa seraya memohon ampun dari Tuhan."
+      }
+    ]
+  },
+  {
+    "kindLabel": "LITURGY",
+    "name": "Two speakers AND a joined line · one screen",
+    "kind": "liturgy",
+    "header": "",
+    "lines": [
+      {
+        "text": "P: Jahowa do Raja, marpakeian hamuliaon do Ia.",
+        "voice": "leader",
+        "mark": "P:",
+        "words": "Jahowa do Raja, marpakeian hamuliaon do Ia."
+      },
+      {
+        "text": "K: Marpakeian anjaha margonditkon hagogohon do Jahowa.",
+        "voice": "assembly",
+        "mark": "K:",
+        "words": "Marpakeian anjaha margonditkon hagogohon do Jahowa."
+      },
+      {
+        "text": "P + K: Tongon, ipajonam do dunia on, seng anjai dugur.",
+        "voice": "join",
+        "mark": "P + K:",
+        "words": "Tongon, ipajonam do dunia on, seng anjai dugur."
+      }
+    ]
+  },
+  {
+    "kindLabel": "LITURGY",
+    "name": "Two speakers · long turns",
+    "kind": "liturgy",
+    "header": "",
+    "lines": [
+      {
+        "text": "L: Dan ampunilah kami akan kesalahan kami, seperti kami juga mengampuni orang yang bersalah kepada kami.",
+        "voice": "leader",
+        "mark": "L:",
+        "words": "Dan ampunilah kami akan kesalahan kami, seperti kami juga mengampuni orang yang bersalah kepada kami."
+      },
+      {
+        "text": "J: Ajarilah kami supaya mampu saling mengasihi seperti Engkau telah mengasihi kami, supaya kami dapat berbuat baik kepada orang yang berbuat jahat kepada kami, tidak iri dan dendam, dan tidak merendahkan atau menghina sesama kami. Kuatkanlah kami untuk selalu menaati-Mu dan mengasihi sesama kami.",
+        "voice": "assembly",
+        "mark": "J:",
+        "words": "Ajarilah kami supaya mampu saling mengasihi seperti Engkau telah mengasihi kami, supaya kami dapat berbuat baik kepada orang yang berbuat jahat kepada kami, tidak iri dan dendam, dan tidak merendahkan atau menghina sesama kami. Kuatkanlah kami untuk selalu menaati-Mu dan mengasihi sesama kami."
+      }
+    ]
+  },
+  {
+    "kindLabel": "LITURGY",
+    "name": "A joined line · long",
+    "kind": "liturgy",
+    "header": "",
+    "lines": [
+      {
+        "text": "P+K: Ahu porsaya bani Tuhan Jesus Kristus na sasada in, Anak sasada ni Naibata, na  tinubuhkon ni Bapa in sanggah nape dong dunia on, Naibata humbani Naibata, na lihar humbani na lihar, Naibata na sintong humbani Naibata na sintong, na itubuhkon lang na itompa. Sisada hadirion pakon Bapa in, marhiteihon-Si do ijadihon haganup.",
+        "voice": "join",
+        "mark": "P+K:",
+        "words": "Ahu porsaya bani Tuhan Jesus Kristus na sasada in, Anak sasada ni Naibata, na  tinubuhkon ni Bapa in sanggah nape dong dunia on, Naibata humbani Naibata, na lihar humbani na lihar, Naibata na sintong humbani Naibata na sintong, na itubuhkon lang na itompa. Sisada hadirion pakon Bapa in, marhiteihon-Si do ijadihon haganup."
+      }
+    ]
+  },
+  {
+    "kindLabel": "SONG",
+    "name": "Two-line lyric",
+    "kind": "song",
+    "lines": [
+      "(1) Sangap di jahowa na sun timbul i",
+      "Balga ni holongNa ndang tarasam i"
+    ]
+  },
+  {
+    "kindLabel": "SONG",
+    "name": "One-line lyric",
+    "kind": "song",
+    "lines": [
+      "Ibaen malasni uhurhin, hinorhon ni pambaen-Ni in."
+    ]
+  },
+  {
+    "kindLabel": "NOTHING",
+    "name": "Media or rest — the surface paints nothing",
+    "kind": "none",
+    "lines": []
+  }
+];
+
+  var indexEl = document.getElementById('index');
+  var stageEl = document.getElementById('stage');
+  var stateEl = document.getElementById('state');
+  var count = document.getElementById('count');
+  var scaleMode = 'fit';
+  var current = 0;
+  var paintedKind = '';
+  var pendingSwap = null;
+
+  /* A panel is one object: it arrives, it leaves, and a screen step inside one entry only
+     swaps its words. The viewer mirrors that rule, so stepping through the states shows
+     the same motion the browser source plays. */
+  function kindOf(state) { return state && state.kind !== 'none' ? state.kind : ''; }
+  function paints(kind) { return kind !== ''; }
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  /* The overlay's own builders, copied so the static page paints what the source paints. */
+  function caption(state) {
+    var node = el('p', 'obs-overlay__caption');
+    state.lines.forEach(function (line) {
+      node.appendChild(el('span', '', typeof line === 'string' ? line : line.text));
+    });
+    return node;
+  }
+
+  function plate(state) {
+    var node = el('div', 'obs-overlay__plate');
+    node.dataset.kind = state.kind;
+    var parts = state.header ? String(state.header).split('\n') : [];
+    var kicker = (parts.shift() || '').trim();
+    var title = parts.join('\n').trim();
+    if (kicker) node.appendChild(el('p', 'obs-overlay__kicker', kicker));
+    if (title) node.appendChild(el('p', 'obs-overlay__title', title));
+    if (kicker || title) node.appendChild(el('span', 'obs-overlay__rule'));
+    var body = el('div', 'obs-overlay__body');
+    state.lines.forEach(function (line) {
+      if (typeof line === 'string') { body.appendChild(el('p', 'obs-overlay__line', line)); return; }
+      var voice = line.voice || '';
+      var row = el('p', 'obs-overlay__line' + (voice ? ' is-' + voice : ''));
+      if (line.mark && line.words) {
+        row.className += ' has-mark';
+        row.appendChild(el('span', 'obs-overlay__speaker', line.mark));
+        row.appendChild(el('span', 'obs-overlay__words', line.words));
+      } else {
+        row.textContent = line.text;
+      }
+      body.appendChild(row);
+    });
+    node.appendChild(body);
+    return node;
+  }
+
+  function applySpeakerColumn(plateNode) {
+    var widest = 0;
+    plateNode.querySelectorAll('.obs-overlay__speaker').forEach(function (mark) {
+      if (mark.offsetWidth > widest) widest = mark.offsetWidth;
+    });
+    var body = plateNode.querySelector('.obs-overlay__body');
+    if (body && widest) body.style.setProperty('--speaker-col', widest + 'px');
+  }
+
+  function renderStage(stage, state) {
+    stage.dataset.kind = state.kind === 'none' ? '' : state.kind;
+    if (state.kind === 'none') { stage.replaceChildren(); return; }
+    stage.replaceChildren(state.kind === 'song' ? caption(state) : plate(state));
+    var current = stage.querySelector('.obs-overlay__plate');
+    if (current) applySpeakerColumn(current);
+  }
+
+  function stateNote(state, stage) {
+    if (state.kind === 'none') return 'nothing painted';
+    var chars = 0;
+    stage.querySelectorAll('.obs-overlay__line, .obs-overlay__caption span').forEach(function (node) {
+      chars += node.textContent.trim().length;
+    });
+    var rows = '';
+    var firstLine = stage.querySelector('.obs-overlay__line, .obs-overlay__caption span');
+    if (firstLine) {
+      var lineHeight = parseFloat(getComputedStyle(firstLine).lineHeight);
+      var total = 0;
+      // offsetHeight is layout px, unaffected by the frame's transform.
+      stage.querySelectorAll('.obs-overlay__line, .obs-overlay__caption span').forEach(function (node) {
+        total += lineHeight ? Math.max(1, Math.round(node.offsetHeight / lineHeight)) : 1;
+      });
+      rows = total + (total === 1 ? ' row · ' : ' rows · ');
+    }
+    var heading = state.header ? state.header.replace('\n', ' · ') : 'no heading';
+    return rows + chars + ' chars · ' + heading;
+  }
+
+  function build(state, index) {
+    var figure = el('figure', 'shot');
+    var cap = el('figcaption', 'shot__cap');
+    cap.appendChild(el('span', 'shot__kind', state.kindLabel));
+    cap.appendChild(el('span', 'shot__name', state.name));
+    var note = el('span', 'shot__note');
+    cap.appendChild(note);
+    figure.appendChild(cap);
+
+    var box = el('div', 'shot__box');
+    var video = el('img', 'shot__video');
+    video.src = 'frame.jpg';
+    video.alt = '';
+    box.appendChild(video);
+    var frame = el('div', 'shot__frame');
+    var stage = el('div', 'obs-overlay__stage');
+    stage.setAttribute('aria-live', 'off');
+    frame.appendChild(stage);
+    box.appendChild(frame);
+    figure.appendChild(box);
+
+    renderStage(stage, state);
+    figure.dataset.index = String(index);
+    figure._box = box;
+    figure._frame = frame;
+    figure._stage = stage;
+    figure._note = note;
+    figure._state = state;
+    return figure;
+  }
+
+  /* One state on stage at a time, sized to whatever room the pane gives it. */
+  function scaleFor() {
+    if (scaleMode === 'one') return 1;
+    var availableWidth = stageEl.clientWidth - 40;
+    var availableHeight = stageEl.clientHeight - (window.innerWidth <= 880 ? 104 : 132);
+    return Math.max(.08, Math.min(availableWidth / 1920, availableHeight / 1080, 1));
+  }
+
+  function paint() {
+    var figure = stateEl.querySelector('.shot');
+    if (!figure) return;
+    var scale = scaleFor();
+    figure._frame.style.transform = 'scale(' + scale + ')';
+    figure._box.style.width = Math.round(1920 * scale) + 'px';
+    figure._box.style.height = Math.round(1080 * scale) + 'px';
+    // The note is measured, so it is written once the frame is laid out.
+    figure._note.textContent = stateNote(figure._state, figure._stage);
+    var plateNode = figure._stage.querySelector('.obs-overlay__plate');
+    if (plateNode) applySpeakerColumn(plateNode);
+    count.textContent = (current + 1) + ' / ' + STATES.length;
+  }
+
+  function mount(figure, entering) {
+    stateEl.replaceChildren(figure);
+    paint();
+    if (!entering) return;
+    var layer = figure._stage.querySelector('.obs-overlay__plate, .obs-overlay__caption');
+    if (!layer) return;
+    layer.classList.add('is-entering');
+    layer.addEventListener('animationend', function () {
+      layer.classList.remove('is-entering');
+    }, {once: true});
+  }
+
+  /* The same panel on the next state keeps its place and morphs its box. */
+  function resizeLayer(node, fromWidth, fromHeight) {
+    var toWidth = node.offsetWidth;
+    var toHeight = node.offsetHeight;
+    if (!fromWidth || !toWidth) return;
+    if (fromWidth === toWidth && fromHeight === toHeight) return;
+    var children = Array.prototype.slice.call(node.children);
+    children.forEach(function (child) {
+      child.style.transition = 'none';
+      child.style.opacity = '0';
+    });
+    node.style.width = fromWidth + 'px';
+    node.style.height = fromHeight + 'px';
+    node.classList.add('is-resizing');
+    node.offsetWidth;
+    window.requestAnimationFrame(function () {
+      node.style.width = toWidth + 'px';
+      node.style.height = toHeight + 'px';
+    });
+    var reveal = window.setTimeout(function () {
+      children.forEach(function (child) {
+        child.style.transition = 'opacity 110ms linear';
+        child.style.opacity = '1';
+      });
+    }, 110);
+    var settled = false;
+    var settle = function () {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(reveal);
+      node.classList.remove('is-resizing');
+      node.style.width = '';
+      node.style.height = '';
+      children.forEach(function (child) {
+        child.style.transition = '';
+        child.style.opacity = '';
+      });
+    };
+    node.addEventListener('transitionend', function (event) {
+      if (event.propertyName === 'width') settle();
+    });
+    window.setTimeout(settle, 400);
+  }
+
+  function chrome() {
+    indexEl.querySelectorAll('.index__item').forEach(function (item, i) {
+      item.setAttribute('aria-current', String(i === current));
+    });
+    var active = indexEl.querySelector('[aria-current="true"]');
+    if (active && active.scrollIntoView) active.scrollIntoView({block: 'nearest'});
+  }
+
+  function show(index, remember) {
+    current = ((index % STATES.length) + STATES.length) % STATES.length;
+    var state = STATES[current];
+    var nextKind = kindOf(state);
+    var shownKind = paintedKind;
+
+    if (pendingSwap) { window.clearTimeout(pendingSwap); pendingSwap = null; }
+
+    var figure = build(state, current);
+    paintedKind = nextKind;
+
+    if (!shownKind) {
+      mount(figure, paints(nextKind));
+    } else if (shownKind === nextKind) {
+      // The same object with different words: the panel morphs its box, nothing re-enters.
+      var wasPlate = stateEl.querySelector('.obs-overlay__plate');
+      var fromWidth = wasPlate ? wasPlate.offsetWidth : 0;
+      var fromHeight = wasPlate ? wasPlate.offsetHeight : 0;
+      mount(figure, false);
+      var plateNode = figure._stage.querySelector('.obs-overlay__plate');
+      if (plateNode && fromWidth) resizeLayer(plateNode, fromWidth, fromHeight);
+    } else {
+      var leaving = stateEl.querySelector('.obs-overlay__plate, .obs-overlay__caption');
+      if (!leaving) {
+        mount(figure, paints(nextKind));
+      } else {
+        // A different object: the panel leaves first, then the next one arrives.
+        leaving.classList.add('is-leaving');
+        var swapped = false;
+        var swap = function () {
+          if (swapped) return;
+          swapped = true;
+          pendingSwap = null;
+          mount(figure, paints(nextKind));
+        };
+        leaving.addEventListener('animationend', swap, {once: true});
+        pendingSwap = window.setTimeout(swap, 400);
+      }
+    }
+
+    chrome();
+    if (remember) {
+      try { history.replaceState(null, '', '#' + (current + 1)); } catch (error) { /* file:// */ }
+    }
+  }
+
+  function buildIndex() {
+    var group = '';
+    STATES.forEach(function (state, index) {
+      if (state.kindLabel !== group) {
+        group = state.kindLabel;
+        indexEl.appendChild(el('p', 'index__group', group.charAt(0) + group.slice(1).toLowerCase()));
+      }
+      var item = el('button', 'index__item');
+      item.type = 'button';
+      item.appendChild(el('span', 'index__no', String(index + 1)));
+      item.appendChild(el('span', 'index__name', state.name));
+      item.addEventListener('click', function () { show(index, true); });
+      indexEl.appendChild(item);
+    });
+  }
+
+  buildIndex();
+
+  document.getElementById('prev').addEventListener('click', function () { show(current - 1, true); });
+  document.getElementById('next').addEventListener('click', function () { show(current + 1, true); });
+
+  document.querySelectorAll('.review__btn[data-scale]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      scaleMode = button.dataset.scale;
+      document.querySelectorAll('.review__btn[data-scale]').forEach(function (other) {
+        other.setAttribute('aria-pressed', String(other === button));
+      });
+      paint();
+    });
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+    var key = event.key;
+    if (key === 'ArrowLeft' || key === 'ArrowUp' || key === 'k' || key === 'K' || key === 'PageUp') {
+      event.preventDefault(); show(current - 1, true);
+    } else if (key === 'ArrowRight' || key === 'ArrowDown' || key === 'j' || key === 'J' || key === 'PageDown') {
+      event.preventDefault(); show(current + 1, true);
+    } else if (key === 'Home') {
+      event.preventDefault(); show(0, true);
+    } else if (key === 'End') {
+      event.preventDefault(); show(STATES.length - 1, true);
+    } else if (/^[1-9]$/.test(key)) {
+      event.preventDefault(); show(Number(key) - 1, true);
+    }
+  });
+
+  window.addEventListener('resize', paint);
+
+  var wanted = parseInt((window.location.hash || '').slice(1), 10);
+  show(isNaN(wanted) ? 0 : wanted - 1, false);
+  document.fonts.ready.then(paint);
+})();
+</script>
+</body>
+</html>
