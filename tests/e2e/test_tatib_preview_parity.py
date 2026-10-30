@@ -265,8 +265,8 @@ class PreviewParityTests(StaticLiveServerTestCase):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         self.page.wait_for_timeout(400)
         self.page.click('[data-generate-open]')
-        self.page.wait_for_selector('.generate__steps li span i', timeout=8000)
-        marks = self.page.evaluate("""() => [].slice.call(document.querySelectorAll('.generate__steps li span i')).map(i => {
+        self.page.wait_for_selector('.generate__steps li .generate__step-mark i', timeout=8000)
+        marks = self.page.evaluate("""() => [].slice.call(document.querySelectorAll('.generate__steps li .generate__step-mark i')).map(i => {
           const m = new DOMMatrixReadOnly(getComputedStyle(i).transform);
           const circle = i.parentElement.getBoundingClientRect();
           const box = i.getBoundingClientRect();
@@ -278,6 +278,33 @@ class PreviewParityTests(StaticLiveServerTestCase):
             self.assertLessEqual(abs(mark['dy']), 1, mark)
             self.assertLessEqual(abs(mark['dx']), 1, mark)
             self.assertLessEqual(abs(mark['boxCentreDelta']), 0.6, mark)
+
+    def test_the_step_labels_sit_on_their_badges(self):
+        """The label is a text run, not a badge: capitals ride high on the line box, so it
+        carries its own small lift. Styling the label as the mark is the failure mode this
+        guards -- both were `<span>`s and the badge rule caught the label too.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(400)
+        self.page.click('[data-generate-open]')
+        self.page.wait_for_selector('.generate__step-label', timeout=8000)
+        labels = self.page.evaluate("""() => [].slice.call(document.querySelectorAll('.generate__step-label')).map(l => {
+          const cs = getComputedStyle(l);
+          const m = new DOMMatrixReadOnly(cs.transform);
+          const mark = l.parentElement.querySelector('.generate__step-mark').getBoundingClientRect();
+          const box = l.getBoundingClientRect();
+          return {text: l.textContent.trim(), width: +box.width.toFixed(1),
+                  ty: +m.m42.toFixed(2), size: cs.fontSize, radius: cs.borderTopLeftRadius,
+                  delta: +((box.y + box.height / 2) - (mark.y + mark.height / 2)).toFixed(2)};
+        })""")
+        self.assertEqual(len(labels), 2)
+        for label in labels:
+            self.assertGreater(label['width'], 20, label)            # not an 18px circle
+            self.assertEqual(label['radius'], '0px', label)
+            self.assertAlmostEqual(label['ty'], 0.32, delta=0.05, msg=label)
+            self.assertLessEqual(abs(label['delta']), 1.5, label)
+        self.assertEqual([label['text'] for label in labels],
+                         ['Fill in the entries', 'Name and date'])
 
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))

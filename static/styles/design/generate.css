@@ -22,21 +22,27 @@
   letter-spacing: .09em; text-transform: uppercase;
 }
 .generate__steps li { display: flex; align-items: center; gap: 6px; }
-.generate__steps li span {
+/* The labels are capitals, so their ink sits above the middle of their line box while the
+   badge is centred on it: the pair reads as the label riding high. Lifting the label by a
+   fixed share of its own size puts the capitals' optical centre on the badge's centre --
+   layout geometry, so it holds at every device-pixel ratio (a digit needs a measured
+   correction instead). */
+.generate__steps .generate__step-label { display: inline-block; transform: translateY(.03em); }
+.generate__steps li .generate__step-mark {
   display: grid; place-items: center; width: 18px; height: 18px; flex: none;
   box-sizing: border-box; letter-spacing: 0;
   border: 1px solid var(--divider); border-radius: 50%; font-size: 10.5px;
 }
 /* The digit's transform is computed from the font's own ink box in generate.js --
    a fixed lift in CSS is only right for one font at one device-pixel ratio. */
-.generate__steps li span { text-indent: 0; }
-.generate__steps li span i { display: block; font-style: inherit; line-height: 1; }
-.generate__steps li span svg { display: block; width: 10px; height: 10px; }
+.generate__steps li .generate__step-mark { text-indent: 0; }
+.generate__steps li .generate__step-mark i { display: block; font-style: inherit; line-height: 1; }
+.generate__steps li .generate__step-mark svg { display: block; width: 10px; height: 10px; }
 .generate__steps li[aria-current="step"] { color: var(--ink); }
-.generate__steps li[aria-current="step"] span,
-.generate__steps li[data-done] span { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+.generate__steps li[aria-current="step"] .generate__step-mark,
+.generate__steps li[data-done] .generate__step-mark { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
 .generate__steps li[data-done] { color: var(--ink); }
-.generate__steps li[data-done] span i { transform: none; }
+.generate__steps li[data-done] .generate__step-mark i { transform: none; }
 
 .generate__body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 26px 16px; }
 .generate__body--form { padding-top: 20px; }

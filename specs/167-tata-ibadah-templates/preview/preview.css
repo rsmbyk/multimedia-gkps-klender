@@ -198,23 +198,26 @@ body { margin: 0; background: var(--canvas); color: var(--ink); }
   letter-spacing: .09em; text-transform: uppercase;
 }
 .generate__steps li { display: flex; align-items: center; gap: 6px; }
-.generate__steps li span {
+.generate__steps li .generate__step-mark {
   display: grid; place-items: center; width: 18px; height: 18px; flex: none;
   /* The list tracks its labels at .09em; inside an 18px circle that trailing space alone
      shifts a lone digit ~0.47px left, so the badge opts out. */
   box-sizing: border-box; letter-spacing: 0;
   border: 1px solid var(--divider); border-radius: 50%; font-size: 10.5px;
 }
-.generate__steps li span { text-indent: 0; }
-.generate__steps li span i { display: block; font-style: inherit; line-height: 1; }
-.generate__steps li span svg { display: block; width: 10px; height: 10px; }
-.generate__steps li[data-done] span i { transform: none; }
+.generate__steps li .generate__step-mark { text-indent: 0; }
+.generate__steps li .generate__step-mark i { display: block; font-style: inherit; line-height: 1; }
+.generate__steps li .generate__step-mark svg { display: block; width: 10px; height: 10px; }
+.generate__steps li[data-done] .generate__step-mark i { transform: none; }
+/* Capitals sit above the middle of their line box, so the label reads high against the
+   badge; a share of its own size puts the capitals' optical centre on the badge's. */
+.generate__steps .generate__step-label { display: inline-block; transform: translateY(.03em); }
 .generate__steps li[aria-current="step"] { color: var(--ink); }
 .generate__steps li[aria-current="step"] span {
   background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
 }
 .generate__steps li[data-done] { color: var(--ink); }
-.generate__steps li[data-done] span {
+.generate__steps li[data-done] .generate__step-mark {
   background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
   font-size: 11.5px;
 }

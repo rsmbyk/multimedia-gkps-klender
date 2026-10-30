@@ -161,7 +161,7 @@
   }
 
   function centreSteps() {
-    Array.prototype.forEach.call(document.querySelectorAll('.generate__steps li span i'),
+    Array.prototype.forEach.call(document.querySelectorAll('.generate__steps li .generate__step-mark i'),
                                  centreDigit);
   }
 
@@ -232,7 +232,7 @@
     steps.forEach(function (item) {
       var done = step === 2 && item.dataset.step === '1';
       item.toggleAttribute('data-done', done);
-      var mark = item.querySelector('span i');
+      var mark = item.querySelector('.generate__step-mark i');
       mark.innerHTML = done
         ? '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 6.3 4.8 8.6 9.5 3.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         : item.dataset.step;
