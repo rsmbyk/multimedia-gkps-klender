@@ -86,11 +86,11 @@ references read still shows it — once.
   `CHANGELOG.md`.
 - [X] T017 Fold: R24 added to `docs/spec/reading.md`, the header's `last folded` and `slices` moved
   (`fold.md`).
-- [ ] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-158`'s state — if the
+- [ ] T018 Delivery, after the report: open the PR as a draft, then read `ITEM-183`'s state — if the
   owner has moved it to `Ready`, set `in-review`, write `pr:` and move the board row, and push that one
   commit (`C-BOARD-GIT`); if it is still in `Backlog`, stop and say so, because `Ready` is the owner's
   move and not the agent's. *Done after the report, on the owner's word: pushed, drafted, the card moved
-  to `In review` and the PR marked ready; the card was renumbered `ITEM-156 → ITEM-158` when `develop`
+  to `In review` and the PR marked ready; the card was renumbered `ITEM-156 → ITEM-158` (now `ITEM-183`) when `develop`
   took the id for the spacing-E2E card.*
 
 ## Phase 6 — Convergence

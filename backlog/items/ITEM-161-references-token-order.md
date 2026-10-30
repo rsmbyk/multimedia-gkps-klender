@@ -44,4 +44,4 @@ Measured on the compose page at 1.22.8: two draws 190ms apart, 8 placeholder row
 ## Links
 
 - Spec: [150](../specs/150-references-token-order/spec.md)
-- Related items: ITEM-158 (spec 148, the slice this completes), ITEM-156 (the spacing-E2E red)
+- Related items: ITEM-183 (spec 148, the slice this completes), ITEM-156 (the spacing-E2E red)

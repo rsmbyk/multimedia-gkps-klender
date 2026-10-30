@@ -1,8 +1,8 @@
 # Spec: Consistent reading navigation across saved and server data
 
-- **ID:** 119
+- **ID:** 181
 - **Status:** Accepted
-- **Item:** ITEM-119
+- **Item:** ITEM-182
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch
