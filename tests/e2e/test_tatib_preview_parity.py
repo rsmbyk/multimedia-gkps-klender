@@ -256,6 +256,39 @@ class PreviewParityTests(StaticLiveServerTestCase):
         style = lambda rows: [row.split(' | ', 1)[1] for row in rows]
         self.assertEqual(style(live), style(preview))
 
+    def test_the_step_digit_is_centred_at_every_scale(self):
+        """The badge's optical correction must not depend on the device-pixel ratio.
+
+        Scoped to min-resolution it vanished at 1.25x, where an 18px badge is 22.5 device
+        pixels and the digit drew a pixel high -- the one scale a designer's second screen
+        is most likely to be at.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(400)
+        self.page.click('[data-generate-open]')
+        self.page.wait_for_selector('.generate__steps li span i', timeout=8000)
+        live = self.page.evaluate("""() => {
+          const i = document.querySelector('.generate__steps li span i');
+          const span = i.parentElement;
+          const m = new DOMMatrixReadOnly(getComputedStyle(i).transform);
+          return {ty: +m.m42.toFixed(2), indent: getComputedStyle(span).textIndent, lineHeight: getComputedStyle(i).lineHeight};
+        }""")
+        self.assertAlmostEqual(live['ty'], 0.4, delta=0.01,
+                               msg=f"no optical lift at this scale: {live}")
+        self.assertNotEqual(live['indent'], '0px')
+
+        self.page.goto(PREVIEW.as_uri())
+        self.page.wait_for_timeout(400)
+        self.page.click('[data-surface="generate"]')
+        self.page.wait_for_timeout(400)
+        preview = self.page.evaluate("""() => {
+          const i = document.querySelector('.generate__steps li span i');
+          const m = new DOMMatrixReadOnly(getComputedStyle(i).transform);
+          return {ty: +m.m42.toFixed(2), indent: getComputedStyle(i.parentElement).textIndent};
+        }""")
+        self.assertEqual(live['ty'], preview['ty'])
+        self.assertEqual(live['indent'], preview['indent'])
+
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         self.page.wait_for_timeout(400)
