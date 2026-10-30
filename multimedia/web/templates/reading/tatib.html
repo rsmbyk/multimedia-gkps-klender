@@ -8,8 +8,13 @@
 
 {% comment %}The project button rides with the date, at the top right of the page.{% endcomment %}
 {% block read_actions %}{% if service_id %}
-<div class="read__project" data-project-group data-display-channel="gkps-service-display">
+<div class="read__project"{% if is_template %} data-generate-group{% else %} data-project-group data-display-channel="gkps-service-display"{% endif %}>
   {% if service_media %}<button type="button" class="read__project-btn" id="serviceMediaButton" aria-label="Media files">Media files</button>{% endif %}
+  {% if is_template %}
+  <button type="button" class="read__project-btn" data-generate-open
+          data-generate-url="{% url 'web-tatib-generate' service_id %}"
+          data-generate-name="{{ service.name }}">Use template</button>
+  {% else %}
   <button type="button" class="read__project-btn read__project-btn--icon" data-project-window
           data-projector-url="{% url 'web-projector' %}" data-project-service="{{ service_id }}"
           aria-label="Open projector window" title="Open projector window">
@@ -31,80 +36,11 @@
     </svg>
     <span data-project-label>Project</span>
   </button>
+  {% endif %}
 </div>
 {% if service_media %}<dialog class="media-library__dialog service-media__dialog" id="serviceMediaDialog" aria-label="Media files"><h2>Media files</h2><div class="service-media__list">{% for entry in service_media %}<div class="service-media__row" data-media-sha="{{ entry.media_id }}" data-media-family="{{ entry.media.family }}" data-media-past="{% if service_media_past %}true{% else %}false{% endif %}"><div class="service-media__icon"></div><div class="service-media__main"><strong>{{ entry.title|default:entry.media_filename }}</strong><small>{{ entry.media.family|title }} · {{ entry.media.byte_count|filesizeformat }}</small></div><div class="service-media__states"><span data-download-action></span><span data-online-state title="Checking online availability">−</span><span data-local-state title="Checking this computer">−</span></div></div>{% endfor %}</div><div class="media-library__dialog-actions"><button type="button" data-transfer-close>Close</button></div></dialog>{% endif %}
 {% endif %}
-{% for item in items %}{% if item.preview %}
-<script type="text/template" class="entry__preview-src" data-preview-for="{{ item.anchor }}">
-{% if item.preview.kind == 'image' %}
-<p class="preview__ref">{{ item.preview.title }}</p>
-<div class="preview__image" data-preview-image="{{ item.preview.sha256 }}">
-  <img alt="{{ item.preview.title }}" hidden>
-  <div class="preview__image-unavailable" role="status">
-    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>
-    <span>Image unavailable on this computer</span>
-  </div>
-</div>
-{% elif item.preview.kind == 'audio' %}
-{% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
-<div class="preview__audio" data-preview-audio="{{ item.preview.sha256 }}">
-  <div class="audio-player" hidden>
-    <button type="button" class="audio-player__play" data-audio-play aria-label="Play audio"></button>
-    <div class="audio-player__timeline">
-      <div class="audio-player__filename">{{ item.preview.filename }}</div>
-      <input class="audio-player__seek" data-audio-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek audio">
-      <div class="audio-player__times"><span data-audio-elapsed>0:00</span><span class="audio-player__separator">/</span><span data-audio-total>0:00</span></div>
-    </div>
-  </div>
-  <div class="preview__audio-unavailable" role="status" hidden>
-    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg>
-    <span>Audio unavailable on this computer</span>
-  </div>
-</div>
-{% elif item.preview.kind == 'video' %}
-{% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
-<div class="preview__video" data-preview-video="{{ item.preview.sha256 }}">
-  <div class="preview__video-frame">
-    <video class="preview__video-element" playsinline preload="metadata" hidden></video>
-    <button type="button" class="preview__video-overlay-play" data-video-play aria-label="Play video"></button>
-  </div>
-  <div class="preview__video-controls">
-    <button type="button" class="preview__video-play" data-video-play aria-label="Play video"></button>
-    <input class="preview__video-seek" data-video-seek type="range" min="0" max="1" value="0" step="0.1" aria-label="Seek video">
-  </div>
-  <div class="preview__video-meta"><span class="preview__video-filename">{{ item.preview.filename }}</span><span><span data-video-elapsed>0:00</span> / <span data-video-total>0:00</span></span></div>
-</div>
-<div class="preview__video-unavailable" role="status" hidden>
-  <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m20 17 12 7-12 7zM12 5l24 38"/></svg>
-  <span>Video unavailable on this computer</span>
-</div>
-{% elif item.preview.kind == 'pdf' %}
-<p class="preview__ref">{{ item.preview.title }}</p>
-<div class="preview__pdf" data-preview-pdf="{{ item.preview.sha256 }}">
-  <div class="preview__pdf-page"><canvas aria-label="PDF page"></canvas></div>
-  <div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous PDF page">←</button><span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next PDF page">→</button></div>
-  <div class="preview__pdf-unavailable" role="status" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg><span>PDF unavailable on this computer</span></div>
-</div>
-{% elif item.preview.kind == 'slides' %}
-<p class="preview__ref">{{ item.preview.title }}</p>
-<div class="preview__pdf" data-preview-slides="{{ item.preview.sha256 }}">
-  <div class="preview__pdf-preparing" role="status">Preparing slides…</div>
-  <div class="preview__pdf-page"><canvas aria-label="PowerPoint slide"></canvas></div>
-  <div class="preview__pdf-controls" hidden><button type="button" data-pdf-prev aria-label="Previous slide">←</button><span data-pdf-count aria-live="polite"></span><button type="button" data-pdf-next aria-label="Next slide">→</button></div>
-  <div class="preview__pdf-unavailable" role="status" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="3"/><path d="M13 15h22M13 33h22M17 25l5-5 4 4 5-5M12 5l27 38"/></svg><span>PowerPoint unavailable on this computer</span></div>
-</div>
-{% elif item.preview.kind == 'editable_text' %}
-<div class="preview__split" data-screen-breaks="{{ item.preview.breaks_json }}" data-default-screen-mode="{{ item.preview.default_screen_mode }}" data-screen-state-signature="{{ item.preview.screen_state_signature }}" data-text-signature="{{ item.preview.signature }}" data-save-url="{{ item.preview.save_url }}" data-can-edit="{% if editor_enabled %}true{% else %}false{% endif %}">
-  {% if item.preview.title %}<p class="preview__ref">{{ item.preview.title }}</p>{% endif %}
-  {% if item.preview.reset_notice %}<p class="preview__notice" role="status">Text lines changed, so the custom breaks were reset.</p>{% endif %}
-  <div class="preview__rows">
-  {% for line in item.preview.lines %}
-    {% if line.present %}<p class="preview__line preview__row{% if line.voice %} is-{{ line.voice }}{% endif %}">{% if line.mark %}<span class="tatib__sp">{{ line.mark }}</span> {% endif %}{{ line.text }}</p>{% else %}<div class="preview__blank-line" aria-label="Blank line"></div>{% endif %}
-    {% if line.can_break_after %}<button type="button" class="preview__gap" data-break-after="{{ line.index }}" data-multi-boundary="{% if line.multi_boundary %}true{% else %}false{% endif %}" aria-label="Add screen break after line {{ line.index }}"><span data-break-label>Add break</span></button>{% endif %}
-  {% endfor %}
-  </div>
-</div>
-{% elif item.preview.kind == 'song' %}<p class="preview__song">{{ item.preview.heading }}</p>{% if item.preview.verses|length > 1 %}<div class="preview__tabs" role="tablist">{% for verse in item.preview.verses %}<button type="button" role="tab" class="preview__tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% if not forloop.first %} tabindex="-1"{% endif %}>{{ verse.number }}</button>{% endfor %}</div>{% endif %}<div class="preview__panels">{% for verse in item.preview.verses %}<div class="preview__panel" role="tabpanel"{% if not forloop.first %} hidden{% endif %}>{% for line in verse.lines %}<p class="preview__line">{{ line }}</p>{% endfor %}</div>{% endfor %}</div>{% else %}{% if item.preview.reference %}<p class="preview__ref">{{ item.preview.reference }}</p>{% endif %}{% for para in item.preview.paras %}<p class="preview__line{% if para.voice %} is-{{ para.voice }}{% endif %}">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>{% endfor %}{% endif %}</script>{% endif %}{% endfor %}
+{% for item in items %}{% if item.preview %}{% include 'reading/_preview_src.html' %}{% endif %}{% endfor %}
 {% endblock %}
 
 {% block read_body %}
@@ -115,6 +51,11 @@
   <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
   <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="{{ service_id }}">+ Media</button>
+  {% if is_template %}
+  <span class="entry__add-sep" aria-hidden="true"></span>
+  <button type="button" class="entry__add-btn entry__add-btn--slot" data-entry-open="fill_in" data-entry-tatib="{{ service_id }}">+ Fill-in</button>
+  <button type="button" class="entry__add-btn entry__add-btn--slot" data-entry-open="choice" data-entry-tatib="{{ service_id }}">+ Choice</button>
+  {% endif %}
   </span>
 </div>
 {% endif %}
@@ -139,8 +80,10 @@
   </button>
 </span>{% endif %}{% endif %}</div>
 {% else %}
-<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}{% if item.preview or item.entry or item.old_item %} tatib__item--acts{% endif %}{% if item.kind == 'media' %} tatib__item--media{% endif %}{% if item.kind == 'scripture' or item.kind == 'song' %} tatib__item--{{ item.kind }}{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.clipped %} data-clipped="true"{% endif %}{% if item.entry %} data-entry-pk="{{ item.pk }}"{% elif item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}{% if item.kind == 'media' %} data-media-hash="{{ item.media_hash }}" data-media-family="{{ item.media_family }}"{% endif %}>
+<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}{% if item.preview or item.entry or item.old_item %} tatib__item--acts{% endif %}{% if item.kind == 'media' %} tatib__item--media{% endif %}{% if item.kind == 'scripture' or item.kind == 'song' %} tatib__item--{{ item.kind }}{% endif %}{% if item.slot %} tatib__item--slot tatib__item--{{ item.slot_kind }}{% endif %}{% if item.option_of %} tatib__item--option{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.slot %} data-slot="{{ item.slot_kind }}"{% endif %}{% if item.option_of %} data-option-of="{{ item.option_of }}"{% endif %}{% if item.clipped %} data-clipped="true"{% endif %}{% if item.entry %} data-entry-pk="{{ item.pk }}"{% elif item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}{% if item.kind == 'media' %} data-media-hash="{{ item.media_hash }}" data-media-family="{{ item.media_family }}"{% endif %}>
 {% if item.kind == 'media' %}<span class="entry__media-icon" aria-hidden="true" data-media-icon="{{ item.media_family }}"></span>{% endif %}
+{% if item.slot %}<p class="slot__kind">{{ item.slot_label }}</p>{% endif %}
+{% if item.kind == 'choice' and editor_enabled %}<p class="slot__add-row"><button type="button" class="entry__add-btn entry__add-btn--slot" data-add-option="{{ item.pk }}" data-add-option-kind="{{ item.slot_kind }}" data-entry-tatib="{{ service_id }}">+ Add option</button></p>{% endif %}
 {% if item.title %}<h2 class="read__sec">{% if item.kind == 'scripture' or item.kind == 'song' %}{% include 'reading/_entry_kind_icon.html' with kind=item.kind %}{% endif %}{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
 {% if item.deleted_target %}<p class="entry__deleted-warning" role="status">This song, songbook, or an included verse was deleted.</p>{% endif %}
 {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
@@ -188,6 +131,11 @@
   <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
   <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="{{ service_id }}">+ Media</button>
+{% if is_template %}
+  <span class="entry__add-sep" aria-hidden="true"></span>
+  <button type="button" class="entry__add-btn entry__add-btn--slot" data-entry-open="fill_in" data-entry-tatib="{{ service_id }}">+ Fill-in</button>
+  <button type="button" class="entry__add-btn entry__add-btn--slot" data-entry-open="choice" data-entry-tatib="{{ service_id }}">+ Choice</button>
+  {% endif %}
 </span></div>
 {% endif %}
 {% endfor %}
@@ -212,7 +160,18 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="2.4"/><path d="M10.4 9.2v5.6l4.6-2.8z"/></svg>
       <span class="sr">Add Media</span>
     </button>
+    {% if is_template %}
+    <button type="button" class="entry__empty-btn entry__empty-btn--slot" data-entry-open="fill_in" data-entry-tatib="{{ service_id }}" title="Add Fill-in">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="3" stroke-dasharray="3 2.4"/><path d="M12 8.2v7.6M8.2 12h7.6"/></svg>
+      <span class="sr">Add Fill-in</span>
+    </button>
+    <button type="button" class="entry__empty-btn entry__empty-btn--slot" data-entry-open="choice" data-entry-tatib="{{ service_id }}" title="Add Choice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="3" stroke-dasharray="3 2.4"/><circle cx="12" cy="12" r="3.4"/></svg>
+      <span class="sr">Add Choice</span>
+    </button>
+    {% endif %}
   </div>
 </div>
 {% endif %}
+{% if is_template %}{% include 'reading/_generate_modal.html' %}{% endif %}
 {% endblock %}

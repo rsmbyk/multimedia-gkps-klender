@@ -1,0 +1,37 @@
+{% comment %}A fill-in or a choice (spec 167): a title, one kind, no content.
+
+Both kinds are authored the same way; what differs is what generation does with them, so
+the help line says that in a sentence instead of leaving the operator to infer it.{% endcomment %}
+<div class="editor__body" data-kind="{{ kind }}">
+  <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
+  <form class="editor__form" method="post" action="{{ save_url }}">
+    {% csrf_token %}
+    {% for field in form %}{% if field.is_hidden %}{{ field }}{% endif %}{% endfor %}
+    <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}">
+      <label for="{{ form.title.id_for_label }}">Title or note</label>
+      {{ form.title }}
+      <p class="editor__help">Optional — leave it empty to show the kind alone.</p>
+      {% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="editor__field">
+      <span class="editor__label" id="slotKindLabel">Kind</span>
+      <div class="editor__kinds" role="group" aria-labelledby="slotKindLabel" data-slot-kinds>
+        <button type="button" class="editor__kind" data-slot-kind="1" aria-pressed="false">Passage</button>
+        <button type="button" class="editor__kind" data-slot-kind="2" aria-pressed="false">Song</button>
+        <button type="button" class="editor__kind" data-slot-kind="0" aria-pressed="false">Text</button>
+        <button type="button" class="editor__kind" data-slot-kind="4" aria-pressed="false">Media</button>
+      </div>
+      {% if kind == 'choice' %}
+      <p class="editor__help">Add its options on the row after saving; the operator picks one later.</p>
+      {% else %}
+      <p class="editor__help">The operator fills this in when the template is used.</p>
+      {% endif %}
+      {% for error in form.fill_kind.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    {% for error in form.non_field_errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    <div class="editor__actions">
+      <button class="editor__save" type="submit">{% if kind == 'choice' %}Add choice{% else %}Add fill-in{% endif %}</button>
+      <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+    </div>
+  </form>
+</div>

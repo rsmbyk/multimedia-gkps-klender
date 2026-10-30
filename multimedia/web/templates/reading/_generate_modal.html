@@ -1,0 +1,144 @@
+{% comment %}Use template (spec 167): the order view-only, every fill-in and choice live, then
+the normal form. One modal, two steps, and a chooser layer per choice that owns its own
+dismissal -- closing it must leave this modal where it was.{% endcomment %}
+<dialog class="editor generate" id="generateModal" aria-labelledby="generateTitle"
+        data-generate-url="{{ generate_url }}" data-generate-name="{{ service.name }}"
+        data-generate-tatib="{{ service_id }}">
+  <div class="editor__content" data-editor-size="large">
+    <header class="generate__head">
+      <ol class="generate__steps" aria-label="Steps">
+        <li data-step="1" aria-current="step"><span><i>1</i></span> Fill in the entries</li>
+        <li data-step="2"><span><i>2</i></span> Name and date</li>
+      </ol>
+      <h2 class="editor__title" id="generateTitle">New Tata Ibadah</h2>
+      <p class="generate__from">From template · <strong>{{ service.name }}</strong></p>
+    </header>
+
+    <div class="generate__body" data-generate-step="1">
+      {% for item in items %}
+      {% if not item.eos and item.slot %}
+      <div class="g-row g-row--slot{% if item.option_of %} is-option{% endif %}"
+           data-slot-row="{{ item.pk }}" data-slot-kind-name="{{ item.kind }}"
+           data-slot-kind="{{ item.slot_kind }}" data-set="false"
+           {% if item.kind == 'choice' %}data-choice-row="{{ item.pk }}" data-choice-count="{{ item.options|length }}"{% endif %}>
+        <div class="g-main">
+          <p class="g-label">{{ item.slot_label }}</p>
+          {% if item.title %}<p class="g-title">{{ item.title }}</p>{% endif %}
+          <p class="g-value" data-slot-value>{% if item.kind == 'choice' %}{% if item.options %}{{ item.options|length }} option{{ item.options|length|pluralize }}{% else %}No options yet{% endif %}{% else %}Not set{% endif %}</p>
+        </div>
+        {% if item.kind == 'choice' %}
+        <button class="g-action" type="button" data-choice-open
+                {% if not item.options %}disabled{% endif %}>{% if item.options %}Choose{% else %}No options{% endif %}</button>
+        {% else %}
+        <button class="g-action" type="button" data-slot-action>Set</button>
+        {% endif %}
+      </div>
+      {% elif item.slot %}
+      {# an option renders through its choice, never as a row of its own #}
+      {% elif item.eos %}
+      <div class="g-break" aria-hidden="true"></div>
+      {% elif item.preview or item.entry or item.old_item %}
+      <div class="g-row g-fixed" data-fixed="{{ item.anchor }}">
+        <section class="tatib__item">
+          {% if item.kind == 'media' %}<span class="entry__media-icon" aria-hidden="true" data-media-icon="{{ item.media_family }}"></span>{% endif %}
+          {% if item.title %}<h2 class="read__sec">{{ item.title }}</h2>{% endif %}
+          {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
+          {% for para in item.paras %}{% if forloop.counter <= 2 %}<p class="tatib__tx">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>{% endif %}{% endfor %}
+        </section>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="generate__body generate__body--form" data-generate-step="2" hidden>
+      <div class="editor__field">
+        <label for="generateName">Name</label>
+        <input type="text" id="generateName" name="name" maxlength="64" value="{{ service.name }}" data-generate-name-input>
+      </div>
+      <div class="editor__field editor__date-field">
+        <label for="generateDate">Date</label>
+        <input type="hidden" name="date" data-date-picker-value data-generate-date>
+        <div class="editor__date-picker" data-date-picker
+             data-date-picker-default-sunday="true">
+          <div class="editor__date-controls">
+            <button class="editor__date-trigger" id="generateDate" type="button"
+                    data-date-picker-trigger aria-haspopup="dialog" aria-expanded="false">
+              <span data-date-picker-label>Choose a date</span>
+            </button>
+            <div class="editor__date-calendar" data-date-picker-calendar popover="manual"
+                 role="dialog" aria-label="Choose a date" hidden>
+              <div class="editor__date-nav">
+                <button type="button" data-date-picker-prev aria-label="Previous month">‹</button>
+                <h3 data-date-picker-month aria-live="polite"></h3>
+                <button type="button" data-date-picker-next aria-label="Next month">›</button>
+              </div>
+              <div class="editor__date-weekdays" aria-hidden="true">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
+                <span>Fri</span><span>Sat</span><span data-date-sunday>Sun</span>
+              </div>
+              <div class="editor__date-grid" data-date-picker-grid role="grid"
+                   aria-label="Choose a date"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="generate__foot">
+      <p class="generate__status" data-generate-status role="status"></p>
+      <div class="generate__actions">
+        <button class="editor__cancel" type="button" data-generate-back hidden>Back</button>
+        <button class="editor__cancel" type="button" data-generate-close>Cancel</button>
+        <button class="generate__next" type="button" data-generate-next disabled>Next</button>
+        <button class="editor__save" type="button" data-generate-create hidden>Create</button>
+      </div>
+    </footer>
+
+    {% for item in items %}{% if item.slot and item.kind == 'choice' %}
+    <div class="choose-layer" data-choose="{{ item.pk }}" hidden>
+      <div class="choose" role="dialog" aria-modal="true"
+           aria-labelledby="chooseTitle{{ item.pk }}">
+        <header class="choose__head">
+          <h3 id="chooseTitle{{ item.pk }}">{{ item.title|default:item.slot_label }}</h3>
+          <p>{% if item.options %}{{ item.options|length }} option{{ item.options|length|pluralize }} for this entry.{% else %}This choice has no options yet.{% endif %}</p>
+        </header>
+        <div class="choose__list">
+          {% for option in item.options %}
+          <div class="choose__item">
+            <div class="choose__main">
+              <span class="choose__ref">{{ option.citation }}</span>
+              {% if option.meta %}<span class="choose__meta">{{ option.meta }}</span>{% endif %}
+            </div>
+            {% if option.preview %}
+            <button class="choose__preview" type="button" data-preview-open
+                    data-preview-for="{{ option.anchor }}">Preview</button>
+            {% endif %}
+            <button class="choose__pick" type="button" data-choose-pick="{{ option.pk }}">Choose</button>
+          </div>
+          {% endfor %}
+        </div>
+        <footer class="choose__foot">
+          <button type="button" data-choose-close>Cancel</button>
+        </footer>
+      </div>
+    </div>
+    {% endif %}{% endfor %}
+
+    {% for item in items %}{% if item.slot and item.kind == 'choice' %}
+    {% for option in item.options %}{% if option.preview %}{% include 'reading/_preview_src.html' with item=option %}{% endif %}{% endfor %}
+    {% endif %}{% endfor %}
+
+    <div class="generate__confirm-layer" data-generate-confirm hidden>
+      <div class="editor__confirm" role="alertdialog" aria-modal="true"
+           aria-labelledby="generateConfirmTitle">
+        <h3 id="generateConfirmTitle">Create this Tata Ibadah?</h3>
+        <p data-generate-summary></p>
+        <p>The template stays as it is.</p>
+        <div class="editor__confirm-actions">
+          <button type="button" class="editor__cancel" data-generate-cancel>Cancel</button>
+          <button type="button" class="editor__save" data-generate-accept>Create</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</dialog>

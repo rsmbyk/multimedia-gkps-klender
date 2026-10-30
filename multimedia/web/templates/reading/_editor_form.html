@@ -1,9 +1,19 @@
 {% comment %}The modal's body: a form for one record, rendered on its own so the
 modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
 <div class="editor__body" data-kind="{{ kind }}" data-target="{{ target_id }}">
-  <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
+  <div class="editor__head">
+    <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
+    {% if copy_url %}<button class="editor__copy-btn" type="button" data-copy-open
+            data-copy-url="{{ copy_url }}">Copy as template</button>{% endif %}
+  </div>
   <form class="editor__form" method="post" action="{{ save_url }}">
     {% csrf_token %}
+    {% if kind == 'tatib' and not target_id %}
+    <div class="editor__types" role="group" aria-label="Type" data-tatib-kinds>
+      <button type="button" class="editor__type" data-tatib-kind="0" aria-pressed="true">Normal</button>
+      <button type="button" class="editor__type" data-tatib-kind="1" aria-pressed="false">Template</button>
+    </div>
+    {% endif %}
     {% if kind == 'song' and not target_id %}<input type="hidden" name="book" value="{{ book_id }}">{% endif %}
     {% for field in form %}
     {% if kind == 'tatib' and field.name == 'date' %}
@@ -17,7 +27,7 @@ modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
                   type="button" data-date-picker-trigger aria-haspopup="dialog" aria-expanded="false">
             <span data-date-picker-label>Choose a date</span>
           </button>
-          <button class="editor__date-clear" type="button" data-date-picker-clear>Clear date</button>
+          {% if not hide_date_clear %}<button class="editor__date-clear" type="button" data-date-picker-clear>Clear date</button>{% endif %}
           <div class="editor__date-calendar" data-date-picker-calendar popover="manual" role="dialog"
                aria-label="Choose a date" hidden>
             <div class="editor__date-nav">
@@ -55,4 +65,5 @@ modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
       <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
     </div>
   </form>
+  {% if copy_url %}{% include 'reading/_copy_confirm.html' %}{% endif %}
 </div>

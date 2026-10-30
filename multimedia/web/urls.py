@@ -24,6 +24,9 @@ urlpatterns = [
     # Tata Ibadah reading.
     path('tatib/', reading_views.TatibView.as_view(), name='web-tatib'),
     path('tatib/<int:service_id>/', reading_views.TatibView.as_view(), name='web-tatib-service'),
+    path('tatib/<int:service_id>/generate/', reading_views.tatib_generate, name='web-tatib-generate'),
+    path('tatib/<int:service_id>/copy-as-template/', reading_views.tatib_copy_as_template,
+         name='web-tatib-copy'),
     path('media-library/', reading_views.media_library, name='web-media-library'),
     path('media-library/references/', reading_views.media_references, name='web-media-references'),
     path('media-library/cloud/status/', reading_views.media_cloud_status, name='web-media-cloud-status'),
@@ -38,6 +41,7 @@ urlpatterns = [
     # swallow 'editor/entry/new/' with kind='entry', and the old view would 404.
     path('editor/entry/new/', reading_views.entry_form, name='web-entry-new'),
     path('editor/media/register/', reading_views.media_register, name='web-media-register'),
+    path('editor/entry/validate/', reading_views.entry_validate, name='web-entry-validate'),
     path('editor/entry/new/save/', reading_views.entry_save, name='web-entry-save-new'),
     path('editor/entry/<int:pk>/edit/', reading_views.entry_form, name='web-entry-edit'),
     path('editor/entry/<int:pk>/save/', reading_views.entry_save, name='web-entry-save'),

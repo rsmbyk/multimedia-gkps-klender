@@ -50,16 +50,63 @@ class SongForm(forms.ModelForm):
 
 
 class TataIbadahForm(forms.ModelForm):
+    """A Tata Ibadah is created as a Normal service or a Template (spec 167).
+
+    The type is a chip pair on create and an absent field on edit: an existing record
+    cannot change type, so the modal names what it is instead of offering the choice.
+    """
+
+    kind = forms.TypedChoiceField(choices=tatib_models.TataIbadahKind.choices,
+                                  coerce=int, widget=forms.HiddenInput, required=False)
+
     class Meta:
         model = tatib_models.TataIbadah
         fields = ['name', 'date']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['date'].widget = forms.HiddenInput(attrs={'data-date-picker-value': ''})
-        if not self.instance.pk:
-            self.fields['date'].help_text = (
-                'Leave empty for a recurring template (shown under Templates).')
+        self.hide_date_clear = True
+        self.is_template = (bool(self.instance.pk)
+                            and self.instance.kind == tatib_models.TataIbadahKind.TEMPLATE)
+        if self.instance.pk:
+            # The type never changes through an edit; a template has no date at all.
+            self.fields.pop('kind', None)
+            if self.is_template:
+                self.fields.pop('date')
+        else:
+            self.fields['kind'].initial = tatib_models.TataIbadahKind.SERVICE
+        if 'date' in self.fields:
+            self.fields['date'].widget = forms.HiddenInput(
+                attrs={'data-date-picker-value': ''})
+            self.fields['date'].required = False
+
+    def chosen_kind(self):
+        if self.instance.pk:
+            return self.instance.kind
+        return self.cleaned_data.get('kind') or tatib_models.TataIbadahKind.SERVICE
+
+    def clean(self):
+        cleaned = super().clean()
+        kind = self.chosen_kind()
+        # The model validates the instance after this, and its own rule reads `kind`;
+        # the chip is a form field, so the instance has to be told before _post_clean.
+        self.instance.kind = kind
+        day = cleaned.get('date') if 'date' in self.fields else self.instance.date
+        if kind == tatib_models.TataIbadahKind.TEMPLATE:
+            if day:
+                self.add_error('date', 'A template has no date.')
+        elif not day:
+            self.add_error('date', 'A normal Tata Ibadah needs a date.')
+        return cleaned
+
+    def save(self, commit=True):
+        entry = super().save(commit=False)
+        entry.kind = self.chosen_kind()
+        if entry.kind == tatib_models.TataIbadahKind.TEMPLATE:
+            entry.date = None
+        if commit:
+            entry.save()
+        return entry
 
 
 def build_form(kind, request, pk=None, data=None):
@@ -111,5 +158,8 @@ def save_form(kind, form, target):
     return form.save()
 
 
-def form_title(kind, pk):
+def form_title(kind, pk, target=None):
+    if kind == 'tatib' and target is not None and \
+            target.kind == tatib_models.TataIbadahKind.TEMPLATE:
+        return 'Edit template'
     return EDIT_TITLE[kind] if pk else CREATE_TITLE[kind]

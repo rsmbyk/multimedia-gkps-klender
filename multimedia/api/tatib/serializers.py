@@ -33,10 +33,23 @@ class TataIbadahItemSerializer(serializers.ModelSerializer):
 class TataIbadahSerializer(serializers.ModelSerializer):
     date = serializers.DateField(allow_null=True, required=False, default=None)
     is_active = serializers.BooleanField(required=False, default=True)
+    # The type is chosen at creation and never written again (spec 167): a create with no
+    # date is a template, an update cannot move a row from one type to the other.
+    kind = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = models.TataIbadah
         fields = '__all__'
+
+    def create(self, validated_data):
+        validated_data.pop('kind', None)
+        kind = (models.TataIbadahKind.TEMPLATE if validated_data.get('date') is None
+                else models.TataIbadahKind.SERVICE)
+        return models.TataIbadah.objects.create(kind=kind, **validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop('kind', None)
+        return super().update(instance, validated_data)
 
 
 class TataIbadahItemReorderSerializer(serializers.Serializer):

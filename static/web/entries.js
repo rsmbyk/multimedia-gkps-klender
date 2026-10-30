@@ -233,6 +233,9 @@
     if (first) first.focus();
   }
 
+  var slotTarget = null;          /* the generate row whose kind form is open (spec 167) */
+  var slotValidateUrl = '';
+
   function load(url, title) {
     announce('');
     return window.gkpsEditorLoadForm.open({
@@ -242,6 +245,15 @@
         content.innerHTML = html;
         markOrigin();
         wire(content);
+        if (slotTarget) {
+          /* A slot is validated, never saved: the form posts to the validate endpoint
+             with the slot's id, and generate.js paints the row from the answer. */
+          var form = content.querySelector('form');
+          if (form) {
+            form.action = slotValidateUrl + '?entry=' + encodeURIComponent(slotTarget);
+            form.dataset.slotEntry = slotTarget;
+          }
+        }
         focusFirst(content);
       },
       onFailure: function () {
@@ -252,10 +264,21 @@
     });
   }
 
-  function newUrl(kind, tatib, after) {
+  window.gkpsEntry = {
+    openSlotForm: function (kind, tatib, entryPk, validateUrl) {
+      slotTarget = entryPk;
+      slotValidateUrl = validateUrl;
+      return load(newUrl(kind, tatib), kind === 'choice' ? 'Add choice' : 'Add fill-in');
+    }
+  };
+
+  modal.addEventListener('close', function () { slotTarget = null; });
+
+  function newUrl(kind, tatib, after, parent) {
     var url = (modal.dataset.entryNewUrl || '/editor/entry/new/')
       + '?kind=' + encodeURIComponent(kind) + '&tatib=' + encodeURIComponent(tatib);
     if (after) url += '&after=' + encodeURIComponent(after);
+    if (parent) url += '&parent=' + encodeURIComponent(parent);
     return url;
   }
 
@@ -891,6 +914,19 @@
     });
   }
 
+  /* The fill-in / choice modal's four kind chips (spec 167). */
+  document.addEventListener('click', function (event) {
+    var chip = event.target.closest('[data-slot-kind]');
+    if (!chip) return;
+    var group = chip.closest('[data-slot-kinds]');
+    if (!group) return;
+    Array.prototype.forEach.call(group.querySelectorAll('[data-slot-kind]'), function (button) {
+      button.setAttribute('aria-pressed', String(button === chip));
+    });
+    var field = group.closest('form').querySelector('input[name="fill_kind"]');
+    if (field) field.value = chip.dataset.slotKind;
+  });
+
   document.addEventListener('click', function (event) {
     /* Spec 026: projecting no longer refuses an entry write. The operator keeps working
        while a Tata Ibadah is on screen, and the display follows every change. */
@@ -928,6 +964,18 @@
       load(editUrl(edit.dataset.entryEdit), 'Edit entry');
       return;
     }
+    var addOption = event.target.closest('[data-add-option]');
+    if (addOption && !addOption.disabled) {
+      /* A choice's own Add option (spec 167): the kind comes from the choice, and the
+         parent travels in the URL so the saved entry lands under it. */
+      if (!window.gkpsEditorLoadForm.canOpen()) return;
+      event.preventDefault();
+      trigger = addOption;
+      keyboardOpened = event.detail === 0;
+      load(newUrl(addOption.dataset.addOptionKind, addOption.dataset.entryTatib, '',
+                  addOption.dataset.addOption), 'Add option');
+      return;
+    }
     var opener = event.target.closest('[data-entry-open]');
     if (!opener || opener.disabled) return;
     if (!window.gkpsEditorLoadForm.canOpen()) return;
@@ -937,7 +985,8 @@
                     : (opener.closest('[data-entry-start]') ? 'start' : '');
     trigger = opener;
     keyboardOpened = false;
-    var titles = { scripture: 'Add Passage', song: 'Add Song', text: 'Add Text', media: 'Add Media' };
+    var titles = { scripture: 'Add Passage', song: 'Add Song', text: 'Add Text', media: 'Add Media',
+                   fill_in: 'Add fill-in', choice: 'Add choice' };
     load(newUrl(opener.dataset.entryOpen, opener.dataset.entryTatib, after),
       titles[opener.dataset.entryOpen] || 'Add entry');
   });

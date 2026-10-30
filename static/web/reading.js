@@ -2001,6 +2001,9 @@
   /* A sidebar editor saved something: re-render the page's regions in place, so
      every list, the panel selection and the reading stage agree again. */
   document.addEventListener('editor:saved', function (event) {
+    /* A generate slot is validated, not saved (spec 167): nothing on the page changed,
+       and re-reading it would replace the modal the operator is working in. */
+    if (event.detail && event.detail.slotEntry) return;
     /* In-page navigation does not change location. Refresh the section that
        supplied the visible sidebar; if the reader is in another section, keep
        its stage by swapping only the lists. */

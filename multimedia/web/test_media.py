@@ -225,7 +225,8 @@ class VideoDisplayContractTests(TestCase):
     @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
     def test_video_preview_uses_immutable_identity_and_saved_filename(self):
         from multimedia.web.reading.views import _tatib_stage
-        service = TataIbadah.objects.create(name='Video service')
+        service = TataIbadah.objects.create(name='Video service',
+                                            date=timezone.localdate())
         video = MediaIdentity.objects.create(sha256='9' * 64, byte_count=240,
                                              family='video', display_filename='library.webm')
         audio = MediaIdentity.objects.create(sha256='a' * 64, byte_count=120,
@@ -252,7 +253,8 @@ class VideoDisplayContractTests(TestCase):
     @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
     def test_video_has_a_screen_and_a_rest_in_service_order(self):
         from multimedia.web.reading.views import _projector_data
-        service = TataIbadah.objects.create(name='Video service')
+        service = TataIbadah.objects.create(name='Video service',
+                                            date=timezone.localdate())
         image = MediaIdentity.objects.create(sha256='c' * 64, byte_count=120,
                                              family='image', display_filename='picture.png')
         video = MediaIdentity.objects.create(sha256='d' * 64, byte_count=240,

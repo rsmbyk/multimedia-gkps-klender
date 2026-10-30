@@ -141,6 +141,11 @@
     return url;
   }
 
+  function csrfToken() {
+    var match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
   function announce(message) {
     if (status) status.textContent = message || '';
   }
@@ -219,6 +224,8 @@
         }
         if (release) { release(); release = null; }
         trigger = null;
+        var slotEntry = form.dataset && form.dataset.slotEntry;
+        if (slotEntry) data.slotEntry = slotEntry;
         close();
         document.dispatchEvent(new CustomEvent('editor:saved', { detail: data }));
         if (action) action.success();
@@ -272,5 +279,74 @@
       focusTools.restoreQuietly(focusTarget);
     }
     trigger = null;
+  });
+
+  /* ---------- the Tata Ibadah type chips (spec 167) ---------------------------
+     Normal carries a date; Template carries none, so the field and its picker are
+     removed rather than emptied -- the server refuses either disagreement anyway. */
+  modal.addEventListener('click', function (event) {
+    var chip = event.target.closest('[data-tatib-kind]');
+    if (!chip) return;
+    var group = chip.closest('[data-tatib-kinds]');
+    Array.prototype.forEach.call(group.querySelectorAll('[data-tatib-kind]'), function (button) {
+      button.setAttribute('aria-pressed', String(button === chip));
+    });
+    var form = group.closest('form');
+    var field = form.querySelector('input[name="kind"]');
+    if (field) field.value = chip.dataset.tatibKind;
+    var template = chip.dataset.tatibKind === '1';
+    var dateField = form.querySelector('.editor__date-field');
+    if (dateField) dateField.hidden = template;
+    var dateInput = form.querySelector('input[name="date"]');
+    var dateLabel = form.querySelector('[data-date-picker-label]');
+    if (template) {
+      /* The picker pre-fills the nearest Sunday on load; a template carries no date at
+         all, so the field is emptied rather than left holding one the server refuses. */
+      if (dateInput) dateInput.value = '';
+      if (dateLabel) dateLabel.textContent = 'Choose a date';
+    } else if (dateInput && !dateInput.value) {
+      var today = new Date();
+      var sunday = new Date(today.getTime());
+      sunday.setDate(today.getDate() + ((7 - today.getDay()) % 7));
+      var iso = sunday.toISOString().slice(0, 10);
+      dateInput.value = iso;
+      if (dateLabel) dateLabel.textContent = 'Nearest Sunday';
+    }
+  });
+
+  /* ---------- Copy as template (spec 167) ------------------------------------ */
+  modal.addEventListener('click', function (event) {
+    var openCopy = event.target.closest('[data-copy-open]');
+    if (openCopy) {
+      var layer = modal.querySelector('[data-copy-confirm]');
+      if (!layer) return;
+      layer.hidden = false;
+      var accept = layer.querySelector('[data-copy-accept]');
+      if (accept) accept.focus();
+      return;
+    }
+    if (event.target.closest('[data-copy-cancel]')) {
+      var confirm = modal.querySelector('[data-copy-confirm]');
+      if (confirm) confirm.hidden = true;
+      return;
+    }
+    var acceptCopy = event.target.closest('[data-copy-accept]');
+    if (!acceptCopy) return;
+    var triggerOpen = modal.querySelector('[data-copy-open]');
+    if (!triggerOpen) return;
+    acceptCopy.disabled = true;
+    fetch(triggerOpen.dataset.copyUrl, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrfToken() }
+    }).then(function (response) {
+      return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+    }).then(function (result) {
+      acceptCopy.disabled = false;
+      if (!result.ok) { announce((result.data && result.data.error) || 'The copy failed.'); return; }
+      window.location.href = result.data.url;
+    }).catch(function () {
+      acceptCopy.disabled = false;
+      announce('The copy failed.');
+    });
   });
 })();

@@ -1,0 +1,413 @@
+/* Spec 167 preview — the product's own stylesheets do the work; this file adds
+   (a) the harness chrome, (b) the components this slice introduces, in the same
+   vocabulary as components.css. Every rule below marked NEW is proposed for
+   components.css; the harness rules (PV) never ship. */
+
+/* ---------- PV: the harness ---------- */
+/* The app's shell is a flex row (rail + panels + stage); the preview carries the stage
+   alone, so the document is a plain block and the stage column is the column itself. */
+body.pv { display: block; }
+body { margin: 0; background: var(--canvas); color: var(--ink); }
+.pv-bar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+  padding: 10px 16px; border-bottom: 1px solid var(--divider); background: var(--rail-bg);
+}
+.pv-name {
+  margin: 0; color: var(--head-ink);
+  font: 650 11.5px/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .1em; text-transform: uppercase;
+}
+.pv-surfaces { display: flex; flex-wrap: wrap; gap: 6px; }
+.pv-tools { display: flex; gap: 6px; margin-left: auto; }
+.pv-surfaces button, .pv-tools button {
+  height: 30px; padding: 0 11px; border: 1px solid var(--divider); border-radius: 8px;
+  background: var(--canvas); color: var(--ink); cursor: pointer;
+  font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+  transition: background var(--ease), color var(--ease), border-color var(--ease);
+}
+.pv-surfaces button:hover, .pv-tools button:hover { border-color: var(--focus); }
+.pv-surfaces button[aria-pressed="true"] {
+  background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
+}
+.pv-hint {
+  max-width: 760px; margin: 8px auto 0; padding: 0 16px; color: var(--head-ink);
+  font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif;
+}
+.pv-stage { padding: 8px 16px 96px; }
+.pv-stage .read { display: block; width: min(760px, 100%); margin: 0 auto; }
+[hidden] { display: none !important; }
+
+/* ---------- NEW: the type switch reuses the screen-mode component ---------- */
+/* The thumb has two homes today; a third selection value moves it with the same rule. */
+.editor__screen-mode[data-selected="template"] .screen-mode__thumb {
+  left: calc(3px + (100% - 6px) / 2);
+}
+.editor__screen-mode[data-selected="template"] button[data-kind="template"],
+.editor__screen-mode[data-selected="normal"] button[data-kind="normal"] { color: var(--active-ink); }
+
+/* ---------- NEW: Use template takes the Project button's place ---------- */
+.read__project-btn--primary { color: var(--active-ink); border-color: var(--active-bg); background: var(--active-bg); }
+.read__project-btn--primary:hover { color: var(--active-ink); border-color: var(--active-bg); background: var(--active-bg); filter: brightness(.94); }
+
+/* ---------- NEW: the template add bar ---------- */
+/* Six buttons do not fit one 34px centred row at a narrow pane, so the template's bar
+   wraps and its two own kinds sit past a hairline. The seam's 20px height is unchanged;
+   the bar overlays it exactly as today. */
+.entry__add-split { width: 1px; height: 16px; flex: none; background: var(--divider); }
+.entry__add-btn--slot { color: var(--focus); border-color: color-mix(in srgb, var(--focus) 42%, var(--divider)); }
+.entry__add-btn--slot:hover { color: var(--focus); border-color: var(--focus); }
+.pv-stage .entry__add-inner, .pv-stage .entry__start-inner {
+  flex-wrap: wrap; justify-content: center; row-gap: 6px;
+  width: max-content; max-width: min(660px, calc(100vw - 96px));
+  height: auto; padding: 4px 0;
+}
+.pv-stage .entry__add:hover .entry__add-inner,
+.pv-stage .entry__add:focus-within .entry__add-inner,
+.pv-stage .entry__start:hover .entry__start-inner,
+.pv-stage .entry__start:focus-within .entry__start-inner,
+.is-revealed .entry__add-inner { opacity: 1; pointer-events: auto; transition-delay: 0s; }
+/* A pane too narrow for one row wraps the template's six buttons to two. The bar then
+   covers more of the seam than today's four-button one, so it reads as a plate rather
+   than letting words show through the buttons. */
+@container stage-pane (max-width: 500px) {
+  .pv-stage .entry__add-inner, .pv-stage .entry__start-inner {
+    padding: 6px; border: 1px solid var(--divider); border-radius: 10px;
+    background: var(--canvas); box-shadow: var(--shadow);
+  }
+}
+
+/* ---------- NEW: the fill-in row ---------- */
+.tatib__item--slot, .tatib__item--choice {
+  min-height: 56px; padding: 10px 8px 10px 12px;
+}
+.tatib__item--slot { padding-left: 56px; }
+.slot__mark {
+  position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px; display: grid; place-items: center;
+  color: color-mix(in srgb, var(--focus) 78%, var(--head-ink)); pointer-events: none;
+}
+.slot__mark svg { width: 100%; height: 100%; }
+.slot__kind {
+  margin: 0 0 2px; color: var(--head-ink);
+  font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+.slot__title {
+  margin: 0; color: var(--ink);
+  font: 620 17px/1.3 ui-serif, Georgia, 'Times New Roman', serif;
+  letter-spacing: -.01em;
+}
+.slot__state { margin: 3px 0 0; color: var(--head-ink); font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; }
+/* A template row reads as a placeholder at rest: a quiet dashed edge, never a boxed
+   service entry. The dash is the whole difference between "set" and "to set". */
+.tatib__item--slot::after, .tatib__item--choice::after {
+  content: ""; position: absolute; inset: 0; border: 1px dashed color-mix(in srgb, var(--divider) 55%, var(--focus));
+  border-radius: 9px; pointer-events: none;
+}
+.tatib__item--slot:hover::after, .tatib__item--choice:hover::after { border-color: color-mix(in srgb, var(--focus) 55%, var(--divider)); }
+
+/* ---------- NEW: the choice row and its options ---------- */
+.tatib__item--choice { padding-left: 56px; padding-bottom: 12px; }
+/* the mark names the row, so it rides the first line, not the middle of a tall list */
+.tatib__item--choice .slot__mark { top: 26px; }
+.choice__options {
+  margin: 10px 0 0 8px; padding: 0 0 0 24px; border-left: 1px solid var(--divider);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.choice__option {
+  position: relative; min-height: 38px; padding: 6px 8px;
+  border-radius: 8px;
+}
+.choice__option:hover { background: var(--icon-hover-bg); }
+.choice__ref { margin: 0; color: var(--ink); font: 600 14px/1.35 ui-serif, Georgia, 'Times New Roman', serif; }
+/* A text option with no title is its opening line: muted body voice, cut to one line. */
+.choice__ref--body {
+  color: var(--head-ink); font-weight: 400;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.choice__sub { margin: 1px 0 0; color: var(--head-ink); font: 500 12px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .03em; }
+.choice__add {
+  align-self: flex-start; margin: 6px 0 0 8px; height: 28px; padding: 0 10px;
+  border: 1px dashed var(--divider); border-radius: 7px; background: none; color: var(--head-ink);
+  font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+}
+.choice__add:hover { color: var(--focus); border-color: var(--focus); }
+
+/* ---------- NEW: Copy as template in the Edit modal ---------- */
+.editor__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin: 0 0 16px; padding: 0 0 14px; border-bottom: 1px solid var(--divider);
+}
+.editor__head .editor__title { margin: 0; padding: 0; border: 0; }
+
+.editor__copy-btn {
+  flex: none; height: 34px; padding: 0 13px; border: 1px solid var(--divider); border-radius: 8px;
+  background: none; color: var(--ink); cursor: pointer;
+  font: 560 13px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__copy-btn:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.editor__copy-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- NEW: the confirmations (the preview modal's own layer, reused) ---------- */
+.confirm-layer {
+  position: absolute; inset: 0; z-index: 4; display: grid; place-items: center;
+  padding: 16px; background: var(--backdrop);
+}
+.confirm {
+  box-sizing: border-box; width: min(468px, 100%); padding: 22px;
+  border-radius: 12px; background: var(--canvas); color: var(--ink); box-shadow: var(--shadow);
+}
+.confirm h3 { margin: 0 0 10px; font: 650 18px/1.25 ui-sans-serif, system-ui, sans-serif; }
+.confirm p { margin: 0 0 20px; color: var(--ink); font: 400 13.5px/1.55 ui-sans-serif, system-ui, sans-serif; }
+.confirm__actions { display: flex; justify-content: flex-end; gap: 8px; }
+.confirm__actions button {
+  height: 36px; padding: 0 14px; border: 1px solid var(--divider); border-radius: 8px;
+  background: var(--icon-hover-bg); color: var(--ink); cursor: pointer;
+  font: 560 13px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.confirm__actions [data-copy-accept], .confirm__actions [data-create-accept] {
+  border-color: var(--active-bg); background: var(--active-bg); color: var(--active-ink);
+}
+.confirm__actions button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- ADD: kind picker inside the fill-in / choice modals ---------- */
+.kind-pick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.kind-pick button {
+  height: 34px; border: 1px solid var(--divider); border-radius: 8px; background: none;
+  color: var(--head-ink); cursor: pointer; font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.kind-pick button:hover { border-color: var(--focus); }
+.kind-pick button[aria-pressed="true"] {
+  background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
+}
+.kind-pick button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- NEW: the generate modal (uses the large editor frame) ---------- */
+.generate .editor__content { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.generate__head { padding: 14px 26px 8.5px; border-bottom: 1px solid var(--divider); }
+/* The title and the source line share one left edge: the app frame indents the title by its own
+   26px padding, which the header already supplies, so only its vertical padding survives. */
+.generate .generate__head .editor__title {
+  margin: 0; padding: 20px 0; border-bottom: 1px solid var(--divider); font-size: 21px;
+}
+.generate__from { margin: 8.5px 0 0; color: var(--head-ink); font: 400 13px/1.4 ui-sans-serif, system-ui, sans-serif; }
+.generate__steps {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; padding: 0; list-style: none;
+  color: var(--head-ink); font: 600 10.8px/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .09em; text-transform: uppercase;
+}
+.generate__steps li { display: flex; align-items: center; gap: 6px; }
+.generate__steps li span {
+  display: grid; place-items: center; width: 18px; height: 18px; flex: none;
+  /* The list tracks its labels at .09em; inside an 18px circle that trailing space alone
+     shifts a lone digit ~0.47px left, so the badge opts out. */
+  box-sizing: border-box; letter-spacing: 0;
+  border: 1px solid var(--divider); border-radius: 50%; font-size: 10.5px;
+}
+.generate__steps li span i { display: block; font-style: inherit; line-height: inherit; }
+/* Sub-pixel text positioning exists only above 1dppx. At 1x the glyph snaps to whole device
+   pixels and already lands centred (measured: rows 5–13, cols 7–12 of an 18px circle, dx 0
+   dy 0); at 2x and above it rasterises on the quarter pixel and sits .75px high and .5px
+   left, so the correction is scoped there rather than dragging the 1x raster a pixel off. */
+@media (min-resolution: 1.5dppx) {
+  .generate__steps li span { text-indent: .05em; }
+  .generate__steps li span i { transform: translateY(.6px); }
+}
+/* The check is drawn, not typed: a glyph's bearings leave it .69px right and .31px high of
+   the circle, while a 12-unit path is symmetric about its own box. */
+.generate__steps li span svg { display: block; width: 10px; height: 10px; }
+.generate__steps li[data-done] span i { transform: none; }
+.generate__steps li[aria-current="step"] { color: var(--ink); }
+.generate__steps li[aria-current="step"] span {
+  background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
+}
+.generate__steps li[data-done] { color: var(--ink); }
+.generate__steps li[data-done] span {
+  background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
+  font-size: 11.5px;
+}
+.generate__from strong { color: var(--ink); font-weight: 600; }
+.generate__body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 26px 16px; }
+.generate__body--form { padding-top: 20px; }
+.generate__body--form .editor__field { margin: 0 0 16px; }
+.generate__summary { margin: 4px 0 0; color: var(--head-ink); font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; }
+.g-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 16px;
+  padding: 12px 0; border-bottom: 1px solid color-mix(in srgb, var(--divider) 55%, transparent);
+}
+.g-row:last-child { border-bottom: 0; }
+/* A review list of modal rows on a sheet: the rows keep their own dividers. */
+.g-list { border-top: 1px solid color-mix(in srgb, var(--divider) 55%, transparent); margin-bottom: 26px; }
+.g-list .g-row:last-child { border-bottom: 1px solid color-mix(in srgb, var(--divider) 55%, transparent); }
+/* one text column for the whole order: the gutter holds a muted row's kind mark,
+   a slot leaves it empty, so every row's words start at 24 */
+.g-row.is-slot { padding-left: 24px; }
+/* A fixed entry draws the page's own row — the same heading, body, kind mark and media
+   chip — so the operator reads the order they are about to create, not a summary of it. */
+.g-stage-row {
+  padding: 12px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--divider) 55%, transparent);
+}
+.g-stage-row:last-child { border-bottom: 0; }
+.g-stage-row .tatib__item {
+  /* a muted entry is a quiet row at the slot scale: one 16px mark in the gutter,
+     one 24px text column, no page-sized padding or minimum height */
+  position: relative; margin: 0; padding: 0 0 0 24px;
+  display: block; min-height: 0;
+}
+.g-stage-row .entry__kind-icon {
+  left: 0; top: 50%; transform: translateY(-50%); width: 16px; height: 16px;
+}
+.g-stage-row .entry__media-icon {
+  left: 0; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border-radius: 4px;
+}
+.g-stage-row .entry__media-icon svg { width: 11px; height: 11px; }
+/* The page's Tata Ibadah text styles at the row's scale: the heading stays 640 sans and
+   left-aligned, the body the entry serif — both a step below the slot's own title. */
+.g-stage-row .read__sec {
+  text-align: left; margin: 0;
+  font: 640 14px/1.35 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .02em; font-style: normal; color: var(--ink);
+}
+.g-stage-row .tatib__item--media .read__sec { margin: 0; }
+.g-stage-row .tatib__item--media .read__sub { margin: 0; }
+.g-stage-row .tatib__tx {
+  margin: 2px 0 0;
+  font: 400 14px/1.55 ui-serif, Georgia, 'Times New Roman', serif;
+}
+.g-stage-row .read__sub { margin: 1px 0 0; font: 400 11.5px/1.4 ui-sans-serif, system-ui, sans-serif; }
+.g-stage-row[data-fixed] { opacity: .52; pointer-events: none; }
+.g-label {
+  margin: 0; color: var(--head-ink);
+  font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+/* A slot row is the template page's own slot row: kind label, serif title, state line. */
+.g-title {
+  margin: 2px 0 0; color: var(--ink);
+  font: 620 17px/1.3 ui-serif, Georgia, 'Times New Roman', serif;
+  letter-spacing: -.01em;
+}
+.g-line { margin: 2px 0 0; color: var(--head-ink); font: 400 13px/1.45 ui-sans-serif, system-ui, sans-serif; }
+.g-row.is-fixed { opacity: .52; }
+.g-row.is-slot .g-label { color: color-mix(in srgb, var(--focus) 80%, var(--head-ink)); }
+.g-value {
+  margin: 3px 0 0; color: var(--head-ink);
+  font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif;
+}
+.g-row[data-set="true"] .g-value { color: var(--ink); }
+/* A slot may have no title — the kind line is then its name, and the value sits a shade
+   further below so the two lines still read as a pair, not a run-on. */
+.g-row.is-untitled .g-value { margin-top: 7px; }
+.g-bait { color: var(--head-ink); }
+/* A fallback identifier — a filename or a title-less text's opening line — is quiet next to
+   the ink it sits after. */
+.g-quiet { color: var(--head-ink); }
+.g-action[disabled] { opacity: .55; cursor: not-allowed; }
+.g-action {
+  height: 34px; padding: 0 14px; border: 1px solid var(--divider); border-radius: 8px;
+  background: none; color: var(--ink); cursor: pointer;
+  font: 600 13px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.g-action:hover { border-color: var(--focus); }
+.g-row[data-set="false"] .g-action { border-color: var(--active-bg); background: var(--active-bg); color: var(--active-ink); }
+.g-row[data-set="false"] .g-action:hover { filter: brightness(.94); }
+.g-action:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.generate__foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px 26px 18px; border-top: 1px solid var(--divider);
+}
+.generate__status { margin: 0; color: var(--head-ink); font: 500 12.5px/1.4 ui-sans-serif, system-ui, sans-serif; }
+.generate__actions { display: flex; gap: 8px; }
+.generate__next, .generate__back {
+  height: 38px; padding: 0 18px; border-radius: 9px; color: var(--ink); cursor: pointer;
+  font: 600 13.5px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.generate__next { border: 0; background: var(--active-bg); color: var(--active-ink); }
+.generate__next:disabled { background: var(--divider); color: var(--head-ink); cursor: not-allowed; }
+.generate__back { border: 1px solid var(--divider); background: none; }
+.generate__next:focus-visible, .generate__back:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- NEW: the choice's options, viewed and picked in place ---------- */
+.choose-layer {
+  position: absolute; inset: 0; z-index: 5; display: grid; place-items: center;
+  padding: 24px; background: var(--backdrop);
+}
+.choose {
+  display: flex; flex-direction: column; width: min(560px, 100%);
+  max-height: calc(100dvh - 80px); overflow: hidden;
+  /* The same hairline the app's dialogs draw: a ring in the shadow, not a border — a border
+     would take two pixels off the card's width and move every row inside it. */
+  border-radius: 12px; background: var(--canvas); color: var(--ink);
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
+}
+.choose__head { padding: 18px 20px 12px; border-bottom: 1px solid var(--divider); }
+.choose__head h3 { margin: 0; font: 650 18px/1.25 ui-sans-serif, system-ui, sans-serif; }
+.choose__head p { margin: 4px 0 0; color: var(--head-ink); font: 400 13px/1.45 ui-sans-serif, system-ui, sans-serif; }
+.choose__list { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; overflow-y: auto; }
+.choose__item {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 6px 8px;
+  padding: 8px; border: 1px solid var(--divider); border-radius: 10px;
+}
+.choose__item:has(.choose__pick[aria-pressed="true"]) { border-color: var(--active-bg); }
+.choose__main { grid-column: 1; min-width: 0; padding: 2px 4px; }
+.choose__pick {
+  grid-column: 3; height: 30px; padding: 0 12px; border: 1px solid var(--active-bg); border-radius: 7px;
+  background: var(--active-bg); color: var(--active-ink); cursor: pointer;
+  font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.choose__pick[aria-pressed="true"] { background: none; color: var(--active-bg); }
+.choose__pick:hover { filter: brightness(.95); }
+.choose__pick:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.choose__ref { display: block; color: var(--ink); font: 620 14.5px/1.35 ui-serif, Georgia, 'Times New Roman', serif; }
+/* A text with no title has no heading to show: its opening line is the label, in the body's
+   own voice and the muted ink, so it cannot be mistaken for a title. */
+.choose__ref--body {
+  color: var(--head-ink); font-weight: 400;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.choose__meta { display: block; color: var(--head-ink); font: 500 12px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .03em; }
+.choose__preview {
+  grid-column: 2; height: 30px; padding: 0 10px; border: 1px solid var(--divider); border-radius: 7px;
+  background: none; color: var(--head-ink); cursor: pointer;
+  font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.choose__preview:hover { color: var(--ink); border-color: var(--focus); }
+.choose__content {
+  grid-column: 1 / -1; margin: 2px 6px 4px; padding: 8px 0 2px 34px; border-top: 1px solid var(--divider);
+  color: var(--ink); font: 400 13.5px/1.6 ui-serif, Georgia, 'Times New Roman', serif;
+}
+.choose__content p { margin: 0 0 8px; }
+.choose__foot { display: flex; justify-content: flex-end; padding: 10px 16px 16px; border-top: 1px solid var(--divider); }
+.choose__foot button {
+  height: 36px; padding: 0 14px; border: 1px solid var(--divider); border-radius: 8px;
+  background: none; color: var(--ink); cursor: pointer;
+  font: 560 13px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.choose__foot button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- PV: the entry-kinds sheet ---------- */
+.kinds__lede {
+  margin: 10px 0 0; max-width: 58ch; color: var(--head-ink);
+  font: 400 14px/1.55 ui-sans-serif, system-ui, sans-serif;
+}
+.kinds__head {
+  margin: 34px 0 10px; padding-top: 16px; border-top: 1px solid var(--divider);
+  color: var(--head-ink); font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .09em; text-transform: uppercase; scroll-margin-top: 64px;
+}
+.kinds__head:first-child { margin-top: 4px; padding-top: 0; border-top: 0; }
+.kinds__head span {
+  margin-left: 8px; color: var(--head-ink);
+  font: 400 12.5px/1.3 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .01em; text-transform: none;
+}
+.kinds .tatib__item { margin-bottom: 8px; }
+
+@media (max-width: 700px) {
+  .generate__head, .generate__body, .generate__foot { padding-inline: 18px; }
+  .generate__foot { flex-wrap: wrap; }
+  .choose-layer { padding: 12px; }
+}
+
