@@ -291,6 +291,8 @@
     Array.prototype.forEach.call(group.querySelectorAll('[data-tatib-kind]'), function (button) {
       button.setAttribute('aria-pressed', String(button === chip));
     });
+    // the thumb slides on the wrapper's own state, not on a class per button
+    group.dataset.selected = chip.dataset.tatibKind === '1' ? 'template' : 'normal';
     var form = group.closest('form');
     var field = form.querySelector('input[name="kind"]');
     if (field) field.value = chip.dataset.tatibKind;

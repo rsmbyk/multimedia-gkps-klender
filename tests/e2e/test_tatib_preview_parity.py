@@ -66,6 +66,24 @@ GENERATE = """() => {
 }"""
 
 
+NEW_MODAL = """() => {
+  const sw = document.querySelector('[data-tatib-kinds], [data-kind-switch]');
+  const cs = el => getComputedStyle(el);
+  const box = el => { const r = el.getBoundingClientRect(); return {w: +r.width.toFixed(1), h: +r.height.toFixed(1)}; };
+  const frame = document.querySelector('#editorModal .editor__content')
+             || document.querySelector('#newModal .editor__content');
+  const thumb = sw && sw.querySelector('.screen-mode__thumb');
+  return {
+    frame: frame ? box(frame) : null,
+    track: sw ? {box: box(sw), radius: cs(sw).borderRadius, padding: cs(sw).padding,
+                 font: cs(sw.querySelector('button')).fontSize} : null,
+    icons: sw ? sw.querySelectorAll('svg').length : 0,
+    thumb: thumb ? box(thumb) : null,
+    buttons: sw ? [].slice.call(sw.querySelectorAll('button')).map(b => ({text: b.textContent.trim(), box: box(b)})) : [],
+  };
+}"""
+
+
 @tag('e2e')
 @unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -133,6 +151,37 @@ class PreviewParityTests(StaticLiveServerTestCase):
         live, preview = self.live(), self.preview()
         self.assertLessEqual(abs((live['addOptionX'] - live['optionTextX'])), 2)
         self.assertLessEqual(abs((preview['addOptionX'] - preview['optionTextX'])), 2)
+
+    def test_the_new_tata_ibadah_modal_wears_the_preview_switcher(self):
+        """The type switch is the preview's segmented control, not two bare buttons.
+
+        The product renders it with the app's own screen-mode component; a modal whose
+        switcher falls back to browser defaults is the failure this asserts against.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib'))
+        self.page.wait_for_timeout(400)
+        self.page.click('#panelAdd')
+        self.page.wait_for_selector('[data-tatib-kinds]', timeout=8000)
+        live = self.page.evaluate(NEW_MODAL)
+        self.page.goto(PREVIEW.as_uri())
+        self.page.wait_for_timeout(400)
+        self.page.evaluate("() => document.getElementById('newModal').showModal()")
+        self.page.wait_for_timeout(300)
+        preview = self.page.evaluate(NEW_MODAL)
+
+        self.assertIsNotNone(live['track'], f'live: {live}')
+        self.assertIsNotNone(preview['track'], f'preview: {preview}')
+        self.assertEqual(live['track']['radius'], preview['track']['radius'])
+        self.assertEqual(live['track']['padding'], preview['track']['padding'])
+        self.assertEqual(live['track']['font'], preview['track']['font'])
+        self.assertEqual(live['icons'], preview['icons'])
+        self.assertAlmostEqual(live['track']['box']['w'], preview['track']['box']['w'], delta=1)
+        self.assertAlmostEqual(live['track']['box']['h'], preview['track']['box']['h'], delta=1)
+        self.assertEqual(len(live['buttons']), len(preview['buttons']))
+        for mine, theirs in zip(live['buttons'], preview['buttons']):
+            self.assertEqual(mine['text'], theirs['text'])
+            self.assertAlmostEqual(mine['box']['w'], theirs['box']['w'], delta=1)
+        self.assertAlmostEqual(live['frame']['h'], preview['frame']['h'], delta=2)
 
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
