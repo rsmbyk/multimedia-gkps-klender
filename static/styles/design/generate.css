@@ -23,11 +23,11 @@
 }
 .generate__steps li { display: flex; align-items: center; gap: 6px; }
 /* The labels are capitals, so their ink sits above the middle of their line box while the
-   badge is centred on it: the pair reads as the label riding high. Lifting the label by a
-   fixed share of its own size puts the capitals' optical centre on the badge's centre --
-   layout geometry, so it holds at every device-pixel ratio (a digit needs a measured
-   correction instead). */
-.generate__steps .generate__step-label { display: inline-block; transform: translateY(.03em); }
+   badge is centred on it: the pair reads as the label riding high. This lift is the
+   no-script fallback, calibrated on the owner's font (1px at 10.8px); generate.js measures
+   the real ink box and overrides it, because the family behind ui-sans-serif differs from
+   machine to machine and no single em value is right for all of them. */
+.generate__steps .generate__step-label { display: inline-block; transform: translateY(.09em); }
 .generate__steps li .generate__step-mark {
   display: grid; place-items: center; width: 18px; height: 18px; flex: none;
   box-sizing: border-box; letter-spacing: 0;
