@@ -303,16 +303,29 @@
     var dateLabel = form.querySelector('[data-date-picker-label]');
     if (template) {
       /* The picker pre-fills the nearest Sunday on load; a template carries no date at
-         all, so the field is emptied rather than left holding one the server refuses. */
-      if (dateInput) dateInput.value = '';
+         all, so the field is emptied rather than left holding one the server refuses.
+         What it held is kept, so a switch back does not silently move the date. */
+      if (dateInput) {
+        group.dataset.savedDate = dateInput.value;
+        dateInput.value = '';
+      }
       if (dateLabel) dateLabel.textContent = 'Choose a date';
     } else if (dateInput && !dateInput.value) {
-      var today = new Date();
-      var sunday = new Date(today.getTime());
-      sunday.setDate(today.getDate() + ((7 - today.getDay()) % 7));
-      var iso = sunday.toISOString().slice(0, 10);
-      dateInput.value = iso;
-      if (dateLabel) dateLabel.textContent = 'Nearest Sunday';
+      group.dataset.savedDate = group.dataset.savedDate
+        || dateInput.dataset.initialValue || '';
+      if (!group.dataset.savedDate) {
+        var today = new Date();
+        var sunday = new Date(today.getTime());
+        sunday.setDate(today.getDate() + ((7 - today.getDay()) % 7));
+        group.dataset.savedDate = sunday.toISOString().slice(0, 10);
+      }
+      dateInput.value = group.dataset.savedDate;
+      /* the trigger names the date, never the rule that chose it */
+      if (dateLabel) {
+        dateLabel.textContent = new Intl.DateTimeFormat('id-ID', {
+          day: 'numeric', month: 'long', year: 'numeric'
+        }).format(new Date(dateInput.value + 'T00:00:00'));
+      }
     }
   });
 

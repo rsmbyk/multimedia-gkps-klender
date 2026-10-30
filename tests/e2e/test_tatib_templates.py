@@ -117,6 +117,27 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(self.page.locator('[data-project-open]').count(), 0)
         expect(self.page.locator('[data-generate-open]')).to_be_visible()
 
+    def test_switching_the_type_keeps_the_date(self):
+        """Switching to Template hides the date; switching back must restore it as a date.
+
+        The trigger names the date, not the rule that chose it: writing "Nearest Sunday"
+        into it reads as a third kind of value and loses what was picked.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib'))
+        self.page.click('#panelAdd')
+        expect(self.page.locator('#editorContent [data-tatib-kinds]')).to_be_visible()
+        label = self.page.locator('#editorModal [data-date-picker-label]')
+        before = label.inner_text().strip()
+        self.assertRegex(before, r'\d{4}')
+
+        self.page.click('[data-tatib-kind="1"]')
+        self.assertEqual(self.page.locator('#editorModal .editor__date-field').is_hidden(), True)
+        self.page.click('[data-tatib-kind="0"]')
+        expect(self.page.locator('#editorModal .editor__date-field')).to_be_visible()
+        after = label.inner_text().strip()
+        self.assertEqual(after, before)
+        self.assertNotIn('Nearest Sunday', after)
+
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()
         self.page.click('[data-generate-open]')
