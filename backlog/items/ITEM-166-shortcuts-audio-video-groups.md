@@ -1,6 +1,6 @@
 ---
 id: ITEM-166
-status: in-review
+status: done
 title: 'The shortcuts sheet names Audio and Video on their own'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/160-shortcuts-audio-video-groups/spec.md
 branch: feat/160-shortcuts-audio-video-groups
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/477
 issue: 476
-closed_at:
-closed_reason:
+closed_at: 2026-10-30
+closed_reason: merged into develop (PR #477)
 bump: patch
 release_version:
 ---
