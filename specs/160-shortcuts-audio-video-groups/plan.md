@@ -2,7 +2,7 @@
 
 **Spec**: `specs/160-shortcuts-audio-video-groups/spec.md`
 **Branch**: `feat/160-shortcuts-audio-video-groups`
-**Bump**: `patch` — 1.22.10 → 1.22.11
+**Bump**: `patch` — 1.25.0 → 1.25.1
 **Preview**: `static preview at specs/160-shortcuts-audio-video-groups/preview/preview.html`
 
 ## Technical Context
@@ -30,7 +30,7 @@ Re-checked after Phase 1: pass — the design adds no file to the product, no sc
 
 See `research.md`. Six decisions, each measured or read: markup-only (D001), two one-row groups
 (D002), the middle column (D003), the label and the chord (D004), a template test rather than a new
-browser case (D005), and `projector/R3` as the Fold target (D006). **Unknowns remaining: 0.**
+browser case (D005), and `projector/R12` as the Fold target (D006). **Unknowns remaining: 0.**
 
 ## Phase 1 — Design
 
@@ -158,7 +158,7 @@ specs/160-shortcuts-audio-video-groups/
 multimedia/web/templates/reading/projector_controls.html   one row removed, two groups added
 multimedia/web/tests.py                                    one new case in ServiceProjectorTests
 multimedia/web/test_media.py                               one assertion updated (:278)
-docs/spec/projector.md                                     R3 at Fold
+docs/spec/projector.md                                     R12 at Fold
 backlog/items/ITEM-166-shortcuts-audio-video-groups.md     card
 backlog/board.md                                           the card's row
 specs/README.md                                            the spec's index row, at Accept

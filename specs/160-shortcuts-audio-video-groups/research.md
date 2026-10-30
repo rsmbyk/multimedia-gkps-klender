@@ -97,9 +97,10 @@ at the push step); no test at all (rejected — SC-001 would be unverifiable).
 **Provenance**: `multimedia/web/tests.py:2554` (`ServiceProjectorTests`), `test_media.py:278`,
 `tests/e2e/test_audio_display.py:128-138`.
 
-## D006 — Folding into `projector/R3`
+## D006 — Folding into `projector/R12`
 
-**Decision**: Fold adds `R3` to `docs/spec/projector.md`; no new capability file.
+**Decision**: Fold adds `R12` to `docs/spec/projector.md`; no new capability file. (Renumbered from
+`R3` at the rebase onto develop 1.25.0 — `R3`–`R11` had been claimed by later slices; see `converge.md` pass 2.)
 
 **Rationale**: the file already owns the projector page (`R1` its Go To index, `R2` its own-response
 rendering). The shortcuts sheet is the same page's durable behaviour, and a capability file holding

@@ -6,11 +6,11 @@ type: feat
 priority: P2
 effort: S
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 spec: specs/160-shortcuts-audio-video-groups/spec.md
 branch: feat/160-shortcuts-audio-video-groups
 pr:
-issue:
+issue: 476
 closed_at:
 closed_reason:
 bump: patch

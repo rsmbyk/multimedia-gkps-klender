@@ -27,19 +27,58 @@ code was read after the run rather than trusted from the task ticks (SDD-22).
 No `missing`, `partial`, `unrequested` or `contradicts` row was found. The two deferred rows are the
 same gap analysis F3 recorded before code, not a new one.
 
+## Pass 2 — 2026-10-30, after the rebase onto develop (1.25.0)
+
+The branch was cut at 1.22.11 and replayed onto `develop` at `f36dc2db` (1.25.0) before delivery. The
+replay met three facts the base had taken after the spec was accepted:
+
+- **`projector/R3` was claimed.** `R3` now names *the projector's image placeholder appears only when
+  the image fails* (spec 157), and the file carries `R1`–`R11`. This slice's requirement is **`R12`**
+  in every artifact — spec, plan, research, analysis, checklist, tasks, this file and `fold.md` — and
+  it is folded as `R12`. No requirement the owner accepted changed; the identifier did, and the
+  rename is stated rather than silent.
+- **The sheet gained `Image and PDF`.** Spec 158 added a one-row group to the middle column between
+  `Library Detour` and this slice's groups, holding `T` — `Fit Width / Fit Height` — which `Display`
+  used to carry. The template and the sheet's test now read the middle column as `Library passage`,
+  `Library Detour`, `Image and PDF`, `Audio`, `Video`; the sheet holds **twelve** groups, not the
+  eleven the spec's edge case counted, and the two this slice adds are unchanged.
+- **The box still holds.** `preview/measure.py` on the rebuilt preview — `today` is the base's own
+  sheet, `after` the slice's — reads 1920×1080: 1123.4 × 676.1px → 1094.4 × 676.1px; 1280×720:
+  676.1px → 675.8px against a 688px limit, `scrollHeight` 675, nothing scrolls. Pitch 34px, heading
+  21.5px, group gap 24px, column gap 32px and sheet padding 20px 24px are unchanged; the middle
+  column runs 459.2 → 618.2px, still shorter than the 634.2px the tallest column sets.
+
+| Row | Type | Evidence | Outcome |
+| --- | --- | --- | --- |
+| FR-001…FR-003 | none | the new case, re-run green on the rebased tree; `Display` holds its three rows | matches |
+| FR-004 | none | `Image and PDF` sits between `Library Detour` and `Audio`; the two groups still end the middle column, after every group that was there when the spec was accepted | matches |
+| FR-005 | none | the measurements above; the diff names one template (+8/−1), two test modules, the board, the spec index and the pack | matches |
+| FR-006, SC-004, US2 AC1–AC4 | **gap closed** | the four E2E cases the plan deferred ran green on the rebased tree (below); the handler is still absent from the diff | verified |
+
+## Accepted gap closed
+
+The four E2E cases the plan deferred to the push step ran on 2026-10-30 and passed:
+
+- `tests/e2e/test_audio_display.py::AudioDisplayE2ETests::test_projector_space_navigation_and_reset`
+- `tests/e2e/test_video_display.py::VideoDisplayE2ETests::test_projector_fullscreen_play_pause_and_navigation_guard`
+- `tests/e2e/test_projector.py::ProjectorE2ETests::test_the_keyboard_moves_and_turns_the_display_on_and_off`
+- `tests/e2e/test_projector.py::ProjectorE2ETests::test_f_and_k_toggle_fullscreen_and_shortcut_sheet`
+
+The module run is green as well: `multimedia.web.tests.ServiceProjectorTests` and
+`multimedia.web.test_media`, 61 tests.
+
 ## Outcome
 
-**Converged with accepted gaps.** Passes used: 1 of 3.
+**Converged**, the accepted gap closed. Passes used: 2 of 3.
 
-- Folded: FR-001…FR-005 and the sheet's scenarios → `docs/spec/projector.md` R3.
-- Not folded, accepted: nothing about the keys, because the sheet's description of them is what R3
-  states and the behaviour itself is unchanged — the E2E cases prove the behaviour, and they run at
-  the push step.
+- Folded: FR-001…FR-005 and the sheet's scenarios → `docs/spec/projector.md` R12.
+- Nothing about the keys is folded as a change: the sheet's description of them is what R12 states,
+  and the behaviour itself is unchanged — the four E2E cases prove it.
 
 ## Delivery split
 
-`tasks.md`'s T010 stays open by design: `VERSION` (1.22.10 → 1.22.11) and the `CHANGELOG.md` line
-landed in the Fold commit with the card set `in-progress`, and the card's `In review` move, its
-`pr:`, `done`, `closed_at`, `closed_reason` and the board's `Done` row happen at the push and the
-closing chore, where the PR number exists and the merge is fact. A card claiming a merge before one
-happened would be the defect BRD-05 names.
+`tasks.md`'s T010 stays open by design: `VERSION` (1.25.0 → 1.25.1) and the `CHANGELOG.md` line are in
+the Fold commit with the card `in-progress`; the card's `In review` move, its `pr:` and the board's
+`In review` row follow the push, where the PR number exists, and `done`, `closed_at`, `closed_reason`
+and the board's `Done` row happen in the closing chore after the merge. A card claiming a merge before
+one happened would be the defect BRD-05 names.

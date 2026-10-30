@@ -98,8 +98,8 @@ Space hides and shows the words; with the sheet open Space does nothing.
 | FR-005 | The sheet's box, its columns' widths, its row pitch, its heading box and its group gaps SHALL otherwise be unchanged. | `new: projector` |
 | FR-006 | Space SHALL keep toggling the showing audio or video, and toggling the words when neither is showing; an open sheet SHALL keep swallowing the key. | `new: projector` |
 
-This slice adds `projector/R3` — the projector's existing file carries `R1` (the Go To index) and
-`R2` (the page renders from its own response), and neither states what the shortcuts sheet says.
+This slice adds `projector/R12` — the projector's file already carries `R1`–`R11`, none of which
+states what the sheet says about audio and video.
 
 ### Key Entities
 

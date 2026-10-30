@@ -26,6 +26,6 @@ order written.
 
 ## Phase 5 — Polish
 
-- [X] T008 Fold `projector/R3` into `docs/spec/projector.md`, with the sheet's groups and the absence of the combined row — `docs/spec/projector.md`
+- [X] T008 Fold `projector/R12` into `docs/spec/projector.md`, with the sheet's groups and the absence of the combined row — `docs/spec/projector.md`
 - [X] T009 Write `converge.md` and `fold.md`, and confirm the spread of `analysis.md` is unchanged after the edits — `specs/160-shortcuts-audio-video-groups/`
-- [ ] T010 *(delivery — completed at the push step)* Delivery bookkeeping: the card set `done` with its `spec:`, `branch:`, `bump: patch` and `closed_reason:`, the board row moved to `Done`, one `CHANGELOG.md` line under `Changed`, `VERSION` 1.22.10 → 1.22.11 — `backlog/`, `CHANGELOG.md`, `VERSION`
+- [ ] T010 *(delivery — completed at the push step and the closing chore)* Delivery bookkeeping: the card set `in-review` with its `pr:` when the PR opens, then `done` with `closed_at` and `closed_reason: merged into develop (<PR>)` in the closing chore; the board row moved `In review` then `Done`; one `CHANGELOG.md` line under `Changed`, `VERSION` 1.25.0 → 1.25.1 — `backlog/`, `CHANGELOG.md`, `VERSION`

@@ -10,4 +10,4 @@
 - [ ] CHK006 Is the key's behaviour guarded by its own story, so the regrouping cannot pass while Space's meaning changed? [Coverage, Spec §US2]
 - [ ] CHK007 Are the states that already exist (a window shorter than the sheet, the narrow column, reduced motion) recorded as unchanged rather than left unstated? [Coverage, Spec §Edge Cases]
 - [ ] CHK008 Does the spec say how the two states are reached in the preview, rather than describing the difference in adjectives? [Measurability, Spec §UI/UX]
-- [ ] CHK009 Is the capability target named as `projector/R3`, with the reason the existing two requirements are not reused? [Consistency, Spec §Requirements]
+- [ ] CHK009 Is the capability target named as `projector/R12`, with the reason no existing requirement in `projector.md` is reused? [Consistency, Spec §Requirements]

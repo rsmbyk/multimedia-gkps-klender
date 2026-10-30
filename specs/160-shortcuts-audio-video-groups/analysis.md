@@ -29,7 +29,7 @@ hold. The same gap is worth closing at the tooling level; it is not this slice's
 | F1 | low | A sheet heading is the only thing telling an operator which Space applies; both `Audio` and `Video` rows read only `Play/Pause`, and a reader who skips the heading sees two identical rows. | Accepted: the spec's assumptions record the label as the owner's wording ("their own groups"), and the heading sits 4px above its row in the same 14px face the sheet's other headings use. A qualifier would be the first row in the sheet to repeat its own group. |
 | F2 | low | The removed row was the widest text in the third column, so the sheet's width falls 29px (1123.4 → 1094.4 on the preview; 1124 → 1095 on the running page). The spec states it as unchanged geometry but the box is not literally identical. | Accepted and stated: FR-005 enumerates what must not move (pitch, heading, gaps, padding, height) and the width change is named in `## UI/UX`; SC-003's numbers are the ones the script prints. |
 | F3 | low | FR-006's four cases are E2E and the owner's rule defers heavy suites to the push step, so on this branch the key's behaviour is verified only by `inspection` — the handler is not in the diff. | Accepted: the four cases are declared with their names in the plan and the quickstart; the slice cannot change the handler (contracts `none`, one template and one test module in the diff), and the push step runs them. |
-| F4 | note | The capability target is `projector/R3` rather than a new capability file, because the projector's file already owns the page this sheet belongs to. | Recorded: Fold adds R3 (T008); R1 and R2 stay as accepted. |
+| F4 | note | The capability target is `projector/R12` rather than a new capability file, because the projector's file already owns the page this sheet belongs to. | Recorded: Fold adds R12 (T008); the file's existing requirements stay as accepted. |
 
 No mechanical fixes were needed: every FR and SC appears in both the plan and the tasks, every symbol
 named in `tasks.md` appears in the plan, and the declared split (14 test · 6 inspection · 6 manual
@@ -69,3 +69,5 @@ across 23 rows) is the count the table holds.
 - **2026-10-29 — first run**, on the accepted spec and the plan: coverage 23/23, split 14/6/6,
   assignment 10/10, four findings — three low (the bare `Play/Pause` label, the 29px width change, the
   E2E cases deferred to the push step) and one note (`projector/R3`).
+- **2026-10-30 — renumber**, after the rebase onto develop 1.25.0: `projector/R3` → `R12`, because
+  later slices claimed `R3`–`R11` (converge pass 2 records the renumber and the rebase's other deltas).
