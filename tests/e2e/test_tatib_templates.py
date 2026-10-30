@@ -253,6 +253,8 @@ class InPageSwapE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.second, kind=tatib.ServiceEntryKind.FILL_IN,
             fill_kind=tatib.SlotKind.TEXT, title='Doa Syafaat', order_number=1)
+        # an empty template: its six tiles are the only place the second row shows
+        self.empty = tatib.TataIbadah.objects.create(name='Empty skeleton', is_active=True)
 
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch()
@@ -287,3 +289,27 @@ class InPageSwapE2ETests(StaticLiveServerTestCase):
         self.assertTrue(self.page.evaluate(
             "() => document.getElementById('generateModal').open"))
         expect(self.page.locator('[data-generate-status]')).to_contain_text('left to fill in')
+
+    def test_the_empty_templates_tiles_centre_their_second_row(self):
+        """Four kind tiles, then fill-in and choice: the two extras centre under the four.
+
+        A grid puts them in its first two columns, which reads as a ragged left edge.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.empty.pk]))
+        self.page.wait_for_timeout(400)
+        rows = self.page.evaluate("""() => {
+          const tiles = [...document.querySelectorAll('.entry__empty-btn')];
+          const byRow = {};
+          tiles.forEach(t => {
+            const r = t.getBoundingClientRect();
+            const key = Math.round(r.y);
+            (byRow[key] = byRow[key] || []).push({x: r.x, right: r.right});
+          });
+          const box = document.querySelector('.entry__empty-actions').getBoundingClientRect();
+          return {rows: Object.keys(byRow).sort((a, b) => a - b).map(k => byRow[k]),
+                  centre: box.x + box.width / 2};
+        }""")
+        self.assertEqual([len(row) for row in rows['rows']], [4, 2])
+        second = rows['rows'][1]
+        middle = (second[0]['x'] + second[-1]['right']) / 2
+        self.assertAlmostEqual(middle, rows['centre'], delta=1.5)

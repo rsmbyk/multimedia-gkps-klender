@@ -2415,21 +2415,20 @@ kbd {
    four tiles off centre. A narrow reading column takes them 3 + 1 rather than
    shrinking them. */
 .entry__empty-actions {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 52px));
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
+  /* flex, not grid: a template adds two slot tiles, and the row they fall into has to
+     centre itself under the four kind tiles (238px = 4 × 52 + 3 × 10). */
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+  width: min(100%, 238px); margin: 20px auto 0;
 }
 /* a reading column too narrow to give four tiles 44px each (238px of body) takes
    them three and one at full size rather than shrinking them into dots */
 @container (max-width: 300px) {
-  .entry__empty-actions { grid-template-columns: repeat(3, 52px); }
+  .entry__empty-actions { width: min(100%, 176px); }
 }
 .entry__empty-btn {
   display: grid;
   place-items: center;
-  width: 100%;
+  width: 52px; max-width: 100%; flex: none;
   aspect-ratio: 1 / 1;
   padding: 0;
   color: var(--ink);
