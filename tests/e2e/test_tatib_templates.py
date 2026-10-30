@@ -129,14 +129,30 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         label = self.page.locator('#editorModal [data-date-picker-label]')
         before = label.inner_text().strip()
         self.assertRegex(before, r'\d{4}')
+        self.page.fill('#editorModal input[name="name"]', 'Ibadah Uji')
 
         self.page.click('[data-tatib-kind="1"]')
         self.assertEqual(self.page.locator('#editorModal .editor__date-field').is_hidden(), True)
+        state = self.focus_and_values()
+        self.assertEqual(state['focus'], 'name', 'the switch should leave the caret in the name')
+        self.assertEqual(state['name'], 'Ibadah Uji')
+
         self.page.click('[data-tatib-kind="0"]')
         expect(self.page.locator('#editorModal .editor__date-field')).to_be_visible()
+        state = self.focus_and_values()
+        self.assertEqual(state['focus'], 'name')
+        self.assertEqual(state['name'], 'Ibadah Uji')
+        self.assertEqual(state['caret'], len('Ibadah Uji'))
         after = label.inner_text().strip()
         self.assertEqual(after, before)
         self.assertNotIn('Nearest Sunday', after)
+
+    def focus_and_values(self):
+        return self.page.evaluate("""() => {
+          const n = document.querySelector('#editorModal input[name="name"]');
+          return {focus: document.activeElement === n ? 'name' : (document.activeElement.name || document.activeElement.tagName),
+                  name: n.value, caret: n.selectionStart};
+        }""")
 
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()

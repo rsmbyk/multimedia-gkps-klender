@@ -327,6 +327,14 @@
         }).format(new Date(dateInput.value + 'T00:00:00'));
       }
     }
+    /* the switch is a decision made before typing, so the caret goes to the name --
+       with whatever was already typed kept, and the caret after it. */
+    var nameInput = form.querySelector('input[name="name"]');
+    if (nameInput) {
+      nameInput.focus();
+      var end = (nameInput.value || '').length;
+      if (nameInput.setSelectionRange) nameInput.setSelectionRange(end, end);
+    }
   });
 
   /* ---------- Copy as template (spec 167) ------------------------------------ */
