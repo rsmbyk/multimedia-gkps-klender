@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-178](./items/ITEM-178-slides-render-fidelity.md) | A converted deck is drawn in a monospaced face and reflows every slide | Calibri, Calibri Light, Britannic Bold and Berlin Sans FB Demi all resolve to Liberation Mono in the media image, and LibreOffice 7.4 re-wraps what the fonts alone would not | fix | P1 | M | [166](../specs/166-slides-render-fidelity/spec.md) | `fix/166-slides-render-fidelity` | 2026-10-30 |
 
 ## In review
 

@@ -3,6 +3,7 @@
 import hashlib
 import io
 import os
+import re
 import shutil
 import subprocess
 import zipfile
@@ -22,9 +23,12 @@ from multimedia.local_media import (
     LocalLibrary,
     MediaHandler,
     InvalidMedia,
+    converter_identity,
+    font_inventory,
     parse_allowed_origins,
     status_payload,
 )
+from multimedia import slide_fonts
 
 
 class LocalLibraryTests(TestCase):
@@ -174,6 +178,10 @@ class LocalLibraryTests(TestCase):
         result = self.library.slide_pdf(saved['sha256'])
         self.assertEqual(result.read_bytes()[:5], b'%PDF-')
         self.assertEqual(len(PdfReader(result).pages), 3)
+        # The deck is set in Calibri and Times New Roman; a monospaced face here means the renderer
+        # answered a proportional request with one, which re-wraps every slide (spec 166).
+        embedded = set(re.findall(rb'/BaseFont\s*/([A-Za-z0-9+\-,._]+)', result.read_bytes()))
+        self.assertEqual([name for name in embedded if b'Mono' in name], [])
         self.assertEqual(self.library.list_files()[0]['family'], 'slides')
         self.assertEqual(len(self.library.list_files()), 1)
 
@@ -187,6 +195,48 @@ class LocalLibraryTests(TestCase):
             self.assertEqual(legacy_pdf.read_bytes()[:5], b'%PDF-')
             self.assertEqual(len(PdfReader(legacy_pdf).pages), 3)
             self.assertEqual(len(self.library.list_files()), 2)
+
+    def test_converter_identity_changes_when_the_fonts_change(self):
+        sample = Path(__file__).resolve().parents[1] / 'tests/fixtures/slides/three-slides.pptx'
+        saved = self.library.import_bytes('deck.pptx', sample.read_bytes())
+        pdf = sample.with_suffix('.pdf').read_bytes()
+        conversions = []
+
+        def convert(input_path, output_path):
+            conversions.append(1)
+            output_path.write_bytes(pdf)
+
+        with patch('multimedia.local_media.convert_slides', side_effect=convert), \
+             patch('multimedia.local_media.subprocess.run') as run, \
+             patch('multimedia.local_media.font_inventory', return_value='Carlito\nLiberation Sans'):
+            run.return_value.stdout = 'LibreOffice 25.2'
+            before = self.library.slide_pdf(saved['sha256'])
+        with patch('multimedia.local_media.convert_slides', side_effect=convert), \
+             patch('multimedia.local_media.subprocess.run') as run, \
+             patch('multimedia.local_media.font_inventory',
+                   return_value='Britannic Bold\nCarlito\nLiberation Sans'):
+            run.return_value.stdout = 'LibreOffice 25.2'
+            after = self.library.slide_pdf(saved['sha256'])
+        self.assertNotEqual(before, after)
+        self.assertEqual(conversions, [1, 1])
+
+    def test_converter_without_fontconfig_keeps_its_identity(self):
+        with patch('multimedia.local_media.subprocess.run', side_effect=OSError('no fc-list')):
+            self.assertEqual(font_inventory(), '')
+            self.assertEqual(converter_identity('LibreOffice 25.2'),
+                             converter_identity('LibreOffice 25.2'))
+
+    def test_a_monospaced_answer_is_a_violation(self):
+        resolved = {'Calibri': 'Liberation Mono',
+                    'Times New Roman': 'Liberation Serif',
+                    'Courier New': 'Liberation Mono'}
+        self.assertEqual(slide_fonts.violations(resolved),
+                         [('Calibri', 'Liberation Mono')])
+
+    def test_a_metric_compatible_answer_is_not_a_violation(self):
+        resolved = {'Calibri': 'Carlito', 'Arial': 'Liberation Sans',
+                    'Times New Roman': 'Liberation Serif'}
+        self.assertEqual(slide_fonts.violations(resolved), [])
 
     def test_converter_version_changes_cache_key(self):
         sample = Path(__file__).resolve().parents[1] / 'tests/fixtures/slides/three-slides.pptx'
