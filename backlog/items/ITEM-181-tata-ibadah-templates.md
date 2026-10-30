@@ -1,6 +1,6 @@
 ---
 id: ITEM-181
-status: in_review
+status: done
 title: 'A Tata Ibadah is a service or a template'
 type: feat
 priority: P1
@@ -9,12 +9,12 @@ created: 2026-10-30
 updated: 2026-10-30
 spec: specs/167-tata-ibadah-templates/spec.md
 branch: feat/167-tata-ibadah-templates
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/474
 issue:
-closed_at:
-closed_reason:
-bump:
-release_version:
+closed_at: 2026-10-30
+closed_reason: merged into develop (PR #474)
+bump: minor
+release_version: 1.25.0
 ---
 
 # ITEM-181: A Tata Ibadah is a service or a template
