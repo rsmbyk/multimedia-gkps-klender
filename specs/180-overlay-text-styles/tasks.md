@@ -88,5 +88,5 @@ plan declares `test` appears twice, once as the failing test and once as the cha
 
 ## Delivery
 
-- [ ] T031 Bump `VERSION` 1.23.3 → 1.24.0 against `origin/develop` (declared `minor`), add the `CHANGELOG.md` line
+- [X] T031 Bump `VERSION` 1.23.3 → 1.24.0 against `origin/develop` (declared `minor`), add the `CHANGELOG.md` line
       under `## [Unreleased]`, and carry the card to Done in the pre-merge commit (C-SDD-VER, BRD-07).
