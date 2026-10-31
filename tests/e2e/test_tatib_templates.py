@@ -620,6 +620,27 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertFalse(self.page.locator('#generateModal .choose-layer').is_visible())
         self.assertTrue(self.page.evaluate("() => document.getElementById('generateModal').open"))
 
+    def test_reopening_the_dialog_starts_from_nothing(self):
+        """A dialog dismissed and opened again must not carry the last pick: the chooser
+        kept its own pressed mark, so the option came back looking chosen.
+        """
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.locator('[data-choice-open]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(400)
+        self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate(
+            'el => el.click()')
+        self.page.wait_for_timeout(400)
+        self.page.locator('[data-generate-close]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(400)
+        self.page.click('[data-generate-open]')
+        self.page.wait_for_timeout(600)
+        state = self.page.evaluate("""() => ({
+          pressed: document.querySelectorAll('#generateModal [data-choose-pick][aria-pressed="true"]').length,
+          set: document.querySelectorAll('#generateModal .g-row--slot[data-set="true"]').length})""")
+        self.assertEqual(state, {'pressed': 0, 'set': 0}, state)
+
     def test_closing_the_chooser_keeps_the_modal(self):
         self.open_template()
         self.page.click('[data-generate-open]')

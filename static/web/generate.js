@@ -333,6 +333,11 @@
         .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     }
     rows.forEach(function (row) { row.dataset.set = 'false'; });
+    /* the choosers keep their own marks: a dialog opened again starts from nothing, and
+       the last pick must not come back looking chosen */
+    Array.prototype.forEach.call(modal.querySelectorAll('[data-choose-pick]'), function (button) {
+      button.setAttribute('aria-pressed', 'false');
+    });
     refresh();
   }
 
