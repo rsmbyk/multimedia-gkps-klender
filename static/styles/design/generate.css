@@ -181,12 +181,12 @@
    the child rows sit in the list's typography rather than beside it. */
 #read .choice__options .tatib__item--option .read__sec {
   margin: 0; color: var(--ink);
-  font: 640 13px/1.4 ui-sans-serif, system-ui, sans-serif;
+  font: 640 14px/1.4 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .03em; font-style: normal; text-align: left;
 }
 #read .tatib__item--option .read__sub {
   margin: -2px 0 0; color: var(--head-ink);
-  font: 560 12px/1.5 ui-sans-serif, system-ui, sans-serif;
+  font: 560 11.5px/1.5 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .04em;
 }
 /* the mark names the row, so it rides the first line, not the middle of a tall list */
