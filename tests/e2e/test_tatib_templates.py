@@ -496,8 +496,18 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(labels, ['Image · Banner Sore', 'Image · random.jpg'], labels)
         self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate('el => el.click()')
         self.page.wait_for_timeout(300)
-        value = self.page.locator('[data-choice-row][data-set="true"] [data-slot-value]').first.inner_text()
-        self.assertEqual(value.strip(), 'Image · Banner Sore')
+        value = self.page.locator('[data-choice-row][data-set="true"] [data-slot-value]').first
+        self.assertEqual(value.inner_text().strip(), 'Image · Banner Sore')
+        # the file name is the quiet part: the type stays in the row's own ink
+        parts = value.evaluate("""el => {
+          const main = el.querySelector('.g-value-main'), mute = el.querySelector('.g-value-mute');
+          return {main: main && main.textContent, mute: mute && mute.textContent,
+                  mainColor: main && getComputedStyle(main).color,
+                  muteColor: mute && getComputedStyle(mute).color};
+        }""")
+        self.assertEqual(parts['main'], 'Image')
+        self.assertEqual(parts['mute'], 'Banner Sore')
+        self.assertNotEqual(parts['mainColor'], parts['muteColor'], parts)
 
     def test_the_chooser_shows_a_text_options_words(self):
         """A text option is its words: the picker listed a blank reference and nothing else,

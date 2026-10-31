@@ -70,9 +70,10 @@
       /* The server names the picked option in its own words: a media reads type first,
          then the title or file name that tells it from its neighbours. */
       var pickedRow = pick.closest('.choose__item');
-      var optionLabel = pickedRow.dataset.pickLabel;
       settled[slotOf(choiceRow)] = {
-        label: optionLabel,
+        label: pickedRow.dataset.pickLabel,
+        main: pickedRow.dataset.pickMain,
+        mute: pickedRow.dataset.pickMute,
         option: pick.dataset.choosePick
       };
       Array.prototype.forEach.call(openChooser.querySelectorAll('[data-choose-pick]'),
@@ -224,6 +225,22 @@
 
   function settledCount() { return Object.keys(settled).length; }
 
+  /* The picked option's quiet detail -- a file name under its type, the verses under a
+     song -- is a step back from the name it belongs to. */
+  function paintValue(value, state) {
+    value.textContent = '';
+    if (!state.mute) { value.textContent = state.label; return; }
+    var main = document.createElement('span');
+    main.className = 'g-value-main';
+    main.textContent = state.main;
+    var mute = document.createElement('span');
+    mute.className = 'g-value-mute';
+    mute.textContent = state.mute;
+    value.appendChild(main);
+    value.appendChild(document.createTextNode(' · '));
+    value.appendChild(mute);
+  }
+
   function refresh() {
     var total = rows.length;
     var done = settledCount();
@@ -236,7 +253,7 @@
       if (isChoice(row)) {
         var count = Number(row.dataset.choiceCount || 0);
         if (state) {
-          value.textContent = state.label;
+          paintValue(value, state);
           action.textContent = 'Change';
         } else if (!count) {
           value.textContent = 'No options yet';

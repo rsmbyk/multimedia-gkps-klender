@@ -1331,15 +1331,20 @@ def _tatib_stage(service):
                     # file type first and then the name that tells it apart -- the title
                     # when there is one, the file name otherwise. Everything else reads as
                     # its reference, with its meta after it.
+                    # The label is two parts: what the entry is, and the quiet detail that
+                    # tells one from another -- the file name under its type, the verses
+                    # under a song. The dialog draws the second part muted.
                     if option_kind == 'media' and option.media_id:
-                        pick_label = ' · '.join(filter(None, [
-                            option.media.get_family_display(),
-                            option.title or option.media_filename or option.citation()]))
+                        pick_main = option.media.get_family_display()
+                        pick_mute = option.title or option.media_filename or option.citation()
                     else:
-                        pick_label = ' · '.join(filter(None, [option.citation(), meta]))
+                        pick_main = option.citation()
+                        pick_mute = meta
+                    pick_label = ' · '.join(filter(None, [pick_main, pick_mute]))
                     options.append({'pk': option.pk, 'anchor': f'e{option.pk}',
                                     'citation': option.citation(),
                                     'title': option.title, 'meta': meta, 'pick': pick_label,
+                                    'pick_main': pick_main, 'pick_mute': pick_mute,
                                     'kind': option_kind, 'subtitle': meta, 'entry': True,
                                     'body': (option.text or '').strip() if option_kind == 'text' else '',
                                     'preview': option_preview})

@@ -96,6 +96,7 @@
 }
 .g-value { margin: 3px 0 0; color: var(--head-ink); font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; }
 .g-row--slot[data-set="true"] .g-value { color: var(--ink); }
+.g-value-mute { color: var(--head-ink); }
 /* Set and Choose are the dialog's one action per row: filled like Use template, so the
    step reads as a list of things to do rather than a list of quiet labels. */
 .g-action {
