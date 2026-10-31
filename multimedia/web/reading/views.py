@@ -1298,6 +1298,8 @@ def _tatib_stage(service):
         anchor = f'e{row.pk}'
         title, body = row.resolve()
         kind_key = entry_forms.kind_name(row.kind)
+        # An option stays in `items` -- Use template lists it as the choice's muted row --
+        # but the page draws it inside its choice's block, so the page skips it here.
         if kind_key in ('fill_in', 'choice'):
             # A slot (spec 167): a kind line and its title; a choice keeps its options as
             # ordinary child rows drawn directly under it.
@@ -1323,6 +1325,7 @@ def _tatib_stage(service):
                     options.append({'pk': option.pk, 'anchor': f'e{option.pk}',
                                     'citation': option.citation(),
                                     'title': option.title, 'meta': meta,
+                                    'kind': option_kind, 'subtitle': meta, 'entry': True,
                                     'preview': option_preview})
             slot_state = ''
             if row.kind == tatib_models.ServiceEntryKind.CHOICE:
@@ -1332,6 +1335,7 @@ def _tatib_stage(service):
                           'kind': kind_key, 'kind_label': row.get_kind_display(),
                           'slot': True, 'slot_kind': slot_kind, 'slot_label': label,
                           'slot_state': slot_state, 'options': options,
+                          'option_items': options,
                           'title': title, 'subtitle': '', 'paras': [], 'clipped': False,
                           'note': '', 'preview': None, 'option_of': row.parent_id,
                           'after_marker': anchor})
@@ -1423,17 +1427,12 @@ def _tatib_stage(service):
     # title: an option is its own row, so only the final one knows that it is last. A choice
     # with no options yet has no such row, so the choice itself carries the control --
     # otherwise the one state that most needs it shows nothing to click.
-    for index, item in enumerate(items):
-        parent = item.get('option_of')
-        if not parent:
-            if item.get('kind') == 'choice' and not item.get('options'):
-                item['add_option_for'] = item.get('pk')
-                item['add_option_kind'] = item.get('slot_kind')
-            continue
-        following = items[index + 1].get('option_of') if index + 1 < len(items) else None
-        if following != parent:
-            item['add_option_for'] = parent
-            item['add_option_kind'] = item.get('kind')
+    for item in items:
+        # the choice draws its options itself, so the control that adds one belongs to the
+        # choice's own block -- under the options, or under "No options yet" when empty
+        if item.get('kind') == 'choice' and item.get('slot'):
+            item['add_option_for'] = item.get('pk')
+            item['add_option_kind'] = item.get('slot_kind')
     # No add bar between a choice and the first of its options: an option belongs to the
     # row above it, and a full entry bar in that seam reads as "these are two entries".
     for index, item in enumerate(items[:-1]):

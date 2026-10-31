@@ -163,17 +163,21 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.open_template()
         seam = self.page.evaluate("""() => {
           const choice = document.querySelector('#read .tatib__item--choice');
-          const next = choice.nextElementSibling;
-          const option = document.querySelector('#read .tatib__item--option');
+          const list = choice.querySelector('.choice__options');
+          const option = choice.querySelector('.tatib__item--option');
           const title = choice.querySelector('.read__sec');
-          return {nextIsAddBar: !!(next && next.classList.contains('entry__add')),
-                  optionTitleSize: parseFloat(getComputedStyle(option.querySelector('.read__sec')).fontSize),
+          return {optionsInside: choice.querySelectorAll('.tatib__item--option').length,
+                  addBarInside: choice.querySelectorAll('.entry__add').length,
+                  hasList: !!list,
+                  optionTitleSize: option ? parseFloat(getComputedStyle(option.querySelector('.read__sec')).fontSize) : null,
                   choiceTitleSize: parseFloat(getComputedStyle(title).fontSize),
-                  optionRule: getComputedStyle(option).borderLeftWidth};
+                  listRule: list ? getComputedStyle(list).borderLeftWidth : null};
         }""")
-        self.assertFalse(seam['nextIsAddBar'], 'an add bar sits between the choice and its option')
+        self.assertTrue(seam['optionsInside'], seam)
+        self.assertEqual(seam['addBarInside'], 0, 'an add bar sits inside the choice block')
+        self.assertTrue(seam['hasList'], seam)
         self.assertLess(seam['optionTitleSize'], seam['choiceTitleSize'])
-        self.assertEqual(seam['optionRule'], '1px')
+        self.assertEqual(seam['listRule'], '1px')
 
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()

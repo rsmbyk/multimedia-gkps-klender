@@ -49,9 +49,13 @@ MEASURE = """() => {
       if (!option) return null;
       const o = option.getBoundingClientRect();
       const choiceRow = item ? item.getBoundingClientRect() : null;
-      return {offset: choiceRow ? Math.round(o.x - choiceRow.x) : Math.round(o.x), borderLeft: cs(option).borderLeftWidth};
+      const list = option.closest('.choice__options');
+      return {offset: choiceRow ? Math.round(o.x - choiceRow.x) : Math.round(o.x),
+              borderLeft: cs(option).borderLeftWidth,
+              listRule: list ? cs(list).borderLeftWidth : null};
     })(),
     optionTextX: optionText ? box(optionText).x : null,
+    optionRowX: option ? box(option).x : null,
     addOptionX: addOption ? box(addOption).x : null,
   };
 }"""
@@ -181,13 +185,15 @@ class PreviewParityTests(StaticLiveServerTestCase):
         live, preview = self.live(), self.preview()
         # the preview wraps options in a container that carries the rule; the product draws
         # it on each row, so the check is the rule and a real indent, not a shared parent
-        self.assertEqual(live['option']['borderLeft'], '1px', live)
+        # the rule belongs to the group, not to each row
+        self.assertEqual(live['option']['borderLeft'], '0px', live)
+        self.assertEqual(live['option']['listRule'], '1px', live)
         self.assertGreaterEqual(live['option']['offset'], 8, live)
 
     def test_add_option_sits_on_the_option_text(self):
-        live, preview = self.live(), self.preview()
-        self.assertLessEqual(abs((live['addOptionX'] - live['optionTextX'])), 2)
-        self.assertLessEqual(abs((preview['addOptionX'] - preview['optionTextX'])), 2)
+        live = self.live()
+        # the control takes its line from the option rows, icon column included
+        self.assertLessEqual(abs(live['addOptionX'] - live['optionRowX']), 2, live)
 
     def test_the_new_tata_ibadah_modal_wears_the_preview_switcher(self):
         """The type switch is the preview's segmented control, not two bare buttons.

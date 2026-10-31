@@ -122,7 +122,6 @@
 /* the template page's slot rows, and a choice's own Add option */
 .slot__kind { margin: 0 0 2px; color: var(--head-ink); font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .slot__add-row { margin: 6px 0 0 8px; }
-.tatib__item--option { margin-left: 26px; padding-left: 12px; border-left: 1px solid var(--divider); }
 
 @media (max-width: 520px) {
   .generate__head, .generate__body, .generate__foot { padding-left: 16px; padding-right: 16px; }
@@ -158,7 +157,28 @@
   color: color-mix(in srgb, var(--focus) 78%, var(--head-ink)); pointer-events: none;
 }
 #read .slot__mark svg { width: 100%; height: 100%; }
-#read .tatib__item--choice { padding-left: 64px; padding-bottom: 12px; }
+#read .tatib__item--choice { padding-left: 64px; padding-bottom: 8px; }
+
+/* The preview's own frame: a slot is a place to fill, drawn as a dashed edge rather than a
+   card, so it never competes with the entries around it. */
+#read .tatib__item--slot::after {
+  content: ""; position: absolute; inset: 0; border-radius: 9px; pointer-events: none;
+  border: 1px dashed color-mix(in srgb, var(--divider) 55%, var(--focus));
+}
+#read .tatib__item--slot:hover::after { border-color: color-mix(in srgb, var(--focus) 55%, var(--divider)); }
+
+/* the options are the choice's own children now: one block, one rule, the control last */
+#read .choice__options {
+  margin: 8px 0 0 0; padding: 0 0 0 24px; border-left: 1px solid var(--divider);
+  display: flex; flex-direction: column;
+}
+#read .tatib__item--option {
+  margin: 0; padding: 4px 0;
+  min-height: 0; border: 0; border-radius: 0;
+}
+#read .choice__options .tatib__item--option .read__sec { margin: 0; font: 600 13px/1.35 ui-sans-serif, system-ui, sans-serif; }
+#read .tatib__item--option .read__sec .entry__kind-icon { width: 14px; height: 14px; }
+#read .tatib__item--option .read__sub { margin: 2px 0 0; font: 400 12px/1.4 ui-sans-serif, system-ui, sans-serif; }
 /* the mark names the row, so it rides the first line, not the middle of a tall list */
 #read .tatib__item--choice .slot__mark { top: 26px; transform: none; }
 #read .tatib__item--slot .read__sec {
@@ -175,19 +195,13 @@
 /* An option is a child row, not an entry of its own: no card, no minimum height, the
    choice's title at 17px and the option reading a step below it, on the rule the preview
    drew around the group. */
-#read .tatib__item--option {
-  margin: 0 0 0 8px; padding: 4px 0 4px 24px;
-  min-height: 0; border-radius: 0;
-  border-left: 1px solid var(--divider);
-}
-#read .tatib__item--option .read__sec {
-  margin: 0; font: 600 13px/1.35 ui-sans-serif, system-ui, sans-serif;
-}
-#read .tatib__item--option .read__sub { margin: 2px 0 0; font: 400 12px/1.4 ui-sans-serif, system-ui, sans-serif; }
-#read .tatib__item--option .read__sec .entry__kind-icon { width: 14px; height: 14px; }
+
 
 /* Add option reads as a quiet control under the options, not a slot-level action */
 /* the control lives in the last option's row, whose own indent already places it */
+/* under a list of options the control lines up with the rows; on an empty choice it
+   sits on the block's own text line */
+.choice__options + .slot__add-row { margin: 6px 0 0 24px; }
 .slot__add-row { margin: 6px 0 0 0; }
 .slot__add-row .entry__add-btn--slot {
   border-color: var(--divider); color: var(--head-ink);
