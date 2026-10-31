@@ -108,8 +108,11 @@ dismissal -- closing it must leave this modal where it was.{% endcomment %}
           {% for option in item.options %}
           <div class="choose__item">
             <div class="choose__main">
-              <span class="choose__ref">{{ option.citation }}</span>
+              {% if option.citation %}<span class="choose__ref">{{ option.citation }}</span>{% endif %}
               {% if option.meta %}<span class="choose__meta">{{ option.meta }}</span>{% endif %}
+              {% comment %}A text option is its words: a reference alone says nothing about
+              which prayer the operator is picking.{% endcomment %}
+              {% if option.body %}<span class="choose__body">{{ option.body }}</span>{% endif %}
             </div>
             {% if option.preview %}
             <button class="choose__preview" type="button" data-preview-open

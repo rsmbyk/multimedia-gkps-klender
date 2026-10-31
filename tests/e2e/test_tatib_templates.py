@@ -467,6 +467,23 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
             if row['mark']:
                 self.assertEqual(row['x'], 0, f"the mark is not in the row's gutter: {row}")
 
+    def test_the_chooser_shows_a_text_options_words(self):
+        """A text option is its words: the picker listed a blank reference and nothing else,
+        which made two prayers indistinguishable.
+        """
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.locator('[data-choice-open]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(400)
+        rows = self.page.evaluate("""() => [...document.querySelectorAll('#generateModal .choose-layer:not([hidden]) .choose__item')]
+          .map(i => ({ref: (i.querySelector('.choose__ref') || {}).textContent || '',
+                      body: (i.querySelector('.choose__body') || {}).textContent || ''}))""")
+        self.assertTrue(rows, 'no chooser rows')
+        for row in rows:
+            self.assertTrue(row['body'].strip(), f'option without its words: {row}')
+        self.assertIn('damai', ' '.join(r['body'] for r in rows), rows)
+
     def test_escape_closes_the_preview_not_the_dialog_under_it(self):
         """A preview opened from a chooser row sits above the dialog; Escape belongs to it.
         Swallowing that key to hide the chooser behind it closed the wrong thing.

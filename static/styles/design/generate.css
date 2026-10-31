@@ -124,6 +124,12 @@
 .choose__main { grid-column: 1; min-width: 0; padding: 2px 4px; }
 .choose__ref { display: block; color: var(--ink); font: 620 14.5px/1.35 ui-serif, Georgia, 'Times New Roman', serif; }
 .choose__meta { display: block; color: var(--head-ink); font: 500 12px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .03em; }
+/* the option's own words, two lines of them: enough to tell two prayers apart */
+.choose__body {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  margin: 3px 0 0; color: var(--head-ink);
+  font: 400 13px/1.45 ui-serif, Georgia, 'Times New Roman', serif;
+}
 .choose__preview { grid-column: 2; height: 30px; padding: 0 10px; border: 1px solid var(--divider); border-radius: 7px; background: none; color: var(--head-ink); cursor: pointer; font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif; }
 .choose__preview:hover { color: var(--ink); border-color: var(--focus); }
 .choose__pick { grid-column: 3; height: 30px; padding: 0 12px; border: 1px solid var(--active-bg); border-radius: 7px; background: var(--active-bg); color: var(--active-ink); cursor: pointer; font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif; }
