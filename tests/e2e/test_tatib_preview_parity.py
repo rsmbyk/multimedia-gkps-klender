@@ -167,8 +167,8 @@ class PreviewParityTests(StaticLiveServerTestCase):
         live, preview = self.live(), self.preview()
         self.assertEqual(live['slotTitle']['size'], preview['slotTitle']['size'])
         self.assertEqual(live['slotTitle']['weight'], preview['slotTitle']['weight'])
-        self.assertIn('serif', live['slotTitle']['family'].lower())
-        self.assertIn('serif', preview['slotTitle']['family'].lower())
+        self.assertIn('sans', live['slotTitle']['family'].lower())
+        self.assertIn('sans', preview['slotTitle']['family'].lower())
         self.assertEqual(live['slotTitle']['align'], 'left')
 
     def test_a_slot_row_draws_its_mark(self):
@@ -373,26 +373,29 @@ class PreviewParityTests(StaticLiveServerTestCase):
             if row['kindX'] is not None:
                 self.assertEqual(row['kindX'], 64, row)
 
-    def test_an_option_reads_like_an_entry_one_size_down(self):
-        """Same face, weight, tracking and leading ratio as the page's entry title and
-        meta; only the size differs. An option that invents its own type sits beside the
-        list's typography instead of in it.
+    def test_every_title_reads_in_the_entry_heading(self):
+        """Entry, choice and option titles share one style; the kind line stays smaller.
+
+        The choice used to carry a serif heading of its own, which made the same list read
+        as two different kinds of thing.
         """
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         self.page.wait_for_timeout(500)
         styles = self.page.evaluate("""() => {
-          const cs = (el) => { const c = getComputedStyle(el);
+          const cs = (sel) => { const el = document.querySelector(sel); if (!el) return null;
+            const c = getComputedStyle(el);
             return {size: parseFloat(c.fontSize), ratio: +(parseFloat(c.lineHeight) / parseFloat(c.fontSize)).toFixed(2),
                     weight: c.fontWeight, family: c.fontFamily.split(',')[0], tracking: c.letterSpacing}; };
-          const entry = document.querySelector('#read .tatib__item--entry .read__sec');
-          const option = document.querySelector('#read .tatib__item--option .read__sec');
-          return {entry: entry && cs(entry), option: option && cs(option)};
+          return {entry: cs('#read .tatib__item--entry > .read__sec'),
+                  choice: cs('#read .tatib__item--choice > .read__sec'),
+                  option: cs('#read .tatib__item--option > .read__sec'),
+                  kind: cs('#read .slot__kind')};
         }""")
-        self.assertIsNotNone(styles['option'], 'no option row on the fixture page')
-        self.assertEqual(styles['option']['weight'], styles['entry']['weight'], styles)
-        self.assertEqual(styles['option']['family'], styles['entry']['family'], styles)
-        self.assertEqual(styles['option']['ratio'], styles['entry']['ratio'], styles)
-        self.assertLess(styles['option']['size'], styles['entry']['size'], styles)
+        for key in ('entry', 'choice', 'option'):
+            self.assertIsNotNone(styles[key], f'no {key} title on the fixture page')
+        for key in ('choice', 'option'):
+            self.assertEqual(styles[key], styles['entry'], f'{key} differs from the entry title')
+        self.assertLess(styles['kind']['size'], styles['entry']['size'], styles)
 
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
