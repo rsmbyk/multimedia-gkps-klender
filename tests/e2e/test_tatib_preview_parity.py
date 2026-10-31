@@ -471,6 +471,25 @@ class PreviewParityTests(StaticLiveServerTestCase):
         }""")
         self.assertEqual(live, preview)
 
+    def test_the_dialogs_slot_title_is_the_page_heading(self):
+        """The row asking to be filled in names itself in the page's own heading, not in a
+        serif step of the dialog's own: the list inside and the list behind must agree.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(400)
+        self.page.locator('[data-generate-open]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(500)
+        fonts = self.page.evaluate("""() => {
+          const cs = (sel) => { const el = document.querySelector(sel); if (!el) return null;
+            const c = getComputedStyle(el); const size = parseFloat(c.fontSize);
+            return {size, ratio: +(parseFloat(c.lineHeight) / size).toFixed(2), weight: c.fontWeight,
+                    family: c.fontFamily.split(',')[0],
+                    tracking: +(parseFloat(c.letterSpacing) / size).toFixed(3)}; };
+          return {slot: cs('#generateModal .g-title'),
+                  page: cs('#read .tatib__item--entry > .read__sec')};
+        }""")
+        self.assertEqual(fonts['slot'], fonts['page'], 'the dialog names its rows differently')
+
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         self.page.wait_for_timeout(400)
