@@ -697,6 +697,31 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         # one row is left and it is settled: the footer counts one, not the two it opened on
         self.assertEqual(status, 'All 1 entry settled.', status)
 
+    def test_the_confirmation_is_a_card_over_a_backdrop(self):
+        """The confirmation is a surface, not lines laid over the form: its own fill,
+        radius and padding above a dimmed layer."""
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.locator('[data-generate-next]').evaluate('el => { el.disabled = false; el.click(); }')
+        self.page.wait_for_timeout(300)
+        self.page.locator('[data-generate-create]').evaluate('el => el.click()')
+        self.page.wait_for_timeout(300)
+        card = self.page.evaluate("""() => {
+          const layer = document.querySelector('[data-generate-confirm]');
+          const box = layer.querySelector('.editor__confirm');
+          const l = getComputedStyle(layer), c = getComputedStyle(box);
+          return {visible: !layer.hidden, backdrop: l.backgroundColor, position: l.position,
+                  fill: c.backgroundColor, radius: c.borderRadius,
+                  buttons: [...box.querySelectorAll('button')].map(b => b.textContent.trim())};
+        }""")
+        self.assertTrue(card['visible'])
+        self.assertEqual(card['position'], 'absolute')
+        self.assertNotEqual(card['backdrop'], 'rgba(0, 0, 0, 0)', 'no backdrop behind the card')
+        self.assertNotIn(card['fill'], ('rgba(0, 0, 0, 0)', 'transparent'), 'the card has no surface')
+        self.assertEqual(card['radius'], '12px')
+        self.assertEqual(card['buttons'], ['Cancel', 'Create'])
+
     def test_closing_the_chooser_keeps_the_modal(self):
         self.open_template()
         self.page.click('[data-generate-open]')

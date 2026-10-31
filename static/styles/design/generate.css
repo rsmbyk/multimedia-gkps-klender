@@ -159,7 +159,20 @@
 .generate__confirm-layer { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; padding: 24px; background: var(--backdrop); }
 .generate__confirm-layer[hidden], .choose-layer[hidden] { display: none; }
 .generate__confirm-layer .editor__confirm,
-.choose-layer .editor__confirm { width: min(440px, 100%); }
+.choose-layer .editor__confirm {
+  width: min(440px, 100%);
+  /* a card of its own: the layer is a backdrop, and the confirmation must read as one
+     surface above it rather than as lines inherited from the form underneath */
+  padding: 20px 22px 18px; border-radius: 12px;
+  background: var(--canvas); color: var(--ink);
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
+}
+.generate__confirm-layer .editor__confirm h3,
+.choose-layer .editor__confirm h3 { margin: 0; font: 650 17px/1.3 ui-sans-serif, system-ui, sans-serif; }
+.generate__confirm-layer .editor__confirm p,
+.choose-layer .editor__confirm p { margin: 0; color: var(--head-ink); font: 400 13px/1.5 ui-sans-serif, system-ui, sans-serif; }
+.generate__confirm-layer .editor__confirm-actions,
+.choose-layer .editor__confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 
 /* the template page's slot rows, and a choice's own Add option */
 .slot__kind { margin: 0 0 2px; color: var(--head-ink); font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
