@@ -298,6 +298,16 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(opacities['hovered'], '1')
         self.assertEqual(opacities['other'], '0', 'a sibling option opened too')
 
+        # the choice is an entry: its controls take the same corner every entry's do
+        corners = self.page.evaluate("""() => {
+          const at = (sel) => { const row = document.querySelector(sel); if (!row) return null;
+            const a = row.querySelector(':scope > .entry__acts'); if (!a) return null;
+            const r = row.getBoundingClientRect(), b = a.getBoundingClientRect();
+            return [Math.round(b.y - r.y), Math.round(r.right - b.right)]; };
+          return {entry: at('#read .tatib__item--entry'), choice: at('#read .tatib__item--choice')};
+        }""")
+        self.assertEqual(corners['choice'], corners['entry'], corners)
+
         # and the choice's own controls answer to the choice's own header
         self.page.locator('#read .tatib__item--choice .slot__kind').first.hover()
         self.page.wait_for_timeout(200)
