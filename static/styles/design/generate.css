@@ -177,7 +177,6 @@
   min-height: 0; border: 0; border-radius: 0;
 }
 #read .choice__options .tatib__item--option .read__sec { margin: 0; font: 600 13px/1.35 ui-sans-serif, system-ui, sans-serif; }
-#read .tatib__item--option .read__sec .entry__kind-icon { width: 14px; height: 14px; }
 #read .tatib__item--option .read__sub { margin: 2px 0 0; font: 400 12px/1.4 ui-sans-serif, system-ui, sans-serif; }
 /* the mark names the row, so it rides the first line, not the middle of a tall list */
 #read .tatib__item--choice .slot__mark { top: 26px; transform: none; }

@@ -171,13 +171,16 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
                   hasList: !!list,
                   optionTitleSize: option ? parseFloat(getComputedStyle(option.querySelector('.read__sec')).fontSize) : null,
                   choiceTitleSize: parseFloat(getComputedStyle(title).fontSize),
-                  listRule: list ? getComputedStyle(list).borderLeftWidth : null};
+                  listRule: list ? getComputedStyle(list).borderLeftWidth : null,
+                  optionTitleIcons: option ? option.querySelectorAll('.read__sec svg').length : null};
         }""")
         self.assertTrue(seam['optionsInside'], seam)
         self.assertEqual(seam['addBarInside'], 0, 'an add bar sits inside the choice block')
         self.assertTrue(seam['hasList'], seam)
         self.assertLess(seam['optionTitleSize'], seam['choiceTitleSize'])
         self.assertEqual(seam['listRule'], '1px')
+        # the choice already names the kind: an option carries its title, nothing else
+        self.assertEqual(seam['optionTitleIcons'], 0, seam)
 
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()

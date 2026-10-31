@@ -97,7 +97,7 @@
   <section class="tatib__item tatib__item--option" id="ti-{{ option.anchor }}"
            data-anchor="{{ option.anchor }}" data-option-of="{{ item.pk }}"
            data-entry-pk="{{ option.pk }}">
-    <h3 class="read__sec">{% if option.kind == 'scripture' or option.kind == 'song' %}{% include 'reading/_entry_kind_icon.html' with kind=option.kind %}{% endif %}<span>{{ option.title|default:option.citation }}</span></h3>
+    <h3 class="read__sec"><span>{{ option.title|default:option.citation }}</span></h3>
     {% if option.subtitle %}<p class="read__sub">{{ option.subtitle }}</p>{% endif %}
     {% if option.preview or option.entry %}{% include 'reading/_entry_acts.html' with item=option %}{% endif %}
   </section>
