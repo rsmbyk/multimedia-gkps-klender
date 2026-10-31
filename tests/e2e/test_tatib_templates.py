@@ -493,11 +493,11 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.page.wait_for_timeout(400)
         labels = self.page.evaluate("""() => [...document.querySelectorAll('#generateModal .choose-layer:not([hidden]) .choose__item')]
           .map(i => i.dataset.pickLabel)""")
-        self.assertEqual(labels, ['Image · Banner Sore', 'Image · random.jpg'], labels)
+        self.assertEqual(labels, ['Image · Banner Sore · banner.png', 'Image · random.jpg'], labels)
         self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate('el => el.click()')
         self.page.wait_for_timeout(300)
         value = self.page.locator('[data-choice-row][data-set="true"] [data-slot-value]').first
-        self.assertEqual(value.inner_text().strip(), 'Image · Banner Sore')
+        self.assertEqual(value.inner_text().strip(), 'Image · Banner Sore · banner.png')
         # the file name is the quiet part: the type stays in the row's own ink
         parts = value.evaluate("""el => {
           const main = el.querySelector('.g-value-main'), mute = el.querySelector('.g-value-mute');
@@ -505,8 +505,9 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
                   mainColor: main && getComputedStyle(main).color,
                   muteColor: mute && getComputedStyle(mute).color};
         }""")
-        self.assertEqual(parts['main'], 'Image')
-        self.assertEqual(parts['mute'], 'Banner Sore')
+        # the type and the title are the entry; only the file's own name steps back
+        self.assertEqual(parts['main'], 'Image · Banner Sore')
+        self.assertEqual(parts['mute'], 'banner.png')
         self.assertNotEqual(parts['mainColor'], parts['muteColor'], parts)
 
     def test_the_chooser_shows_a_text_options_words(self):

@@ -1335,8 +1335,11 @@ def _tatib_stage(service):
                     # tells one from another -- the file name under its type, the verses
                     # under a song. The dialog draws the second part muted.
                     if option_kind == 'media' and option.media_id:
-                        pick_main = option.media.get_family_display()
-                        pick_mute = option.title or option.media_filename or option.citation()
+                        # The type and the title are what the entry is; only the file's own
+                        # name steps back.
+                        pick_main = ' · '.join(filter(None, [option.media.get_family_display(),
+                                                             option.title]))
+                        pick_mute = option.media_filename or ''
                     else:
                         pick_main = option.citation()
                         pick_mute = meta
