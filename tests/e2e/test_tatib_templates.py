@@ -641,6 +641,26 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
           set: document.querySelectorAll('#generateModal .g-row--slot[data-set="true"]').length})""")
         self.assertEqual(state, {'pressed': 0, 'set': 0}, state)
 
+    def test_the_backdrop_closes_the_dialog(self):
+        """The overlay behind the dialog is a dismissal, like Cancel and Escape; a click
+        inside the card is not."""
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        box = self.page.evaluate("""() => { const r = document.getElementById('generateModal').getBoundingClientRect();
+          return {left: Math.round(r.left), top: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height)}; }""")
+        self.page.mouse.click(max(10, box['left'] - 60), box['top'] + box['h'] // 2)
+        self.page.wait_for_timeout(400)
+        self.assertFalse(self.page.evaluate("() => document.getElementById('generateModal').open"),
+                         'the backdrop left the dialog open')
+
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.mouse.click(box['left'] + box['w'] // 2, box['top'] + box['h'] // 2)
+        self.page.wait_for_timeout(300)
+        self.assertTrue(self.page.evaluate("() => document.getElementById('generateModal').open"),
+                        'a click inside the card dismissed it')
+
     def test_closing_the_chooser_keeps_the_modal(self):
         self.open_template()
         self.page.click('[data-generate-open]')

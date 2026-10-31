@@ -28,6 +28,11 @@
       if (openChooser) { event.preventDefault(); hideChooser(); }
       else if (!confirmLayer.hidden) { event.preventDefault(); confirmLayer.hidden = true; }
     });
+    /* The backdrop is the dialog's own element: a click there, and not on any layer
+       inside it, dismisses the dialog the way Cancel does. */
+    modal.addEventListener('click', function (event) {
+      if (event.target === modal && !openChooser) close();
+    });
     modal.addEventListener('click', function (event) {
       if (event.target.closest('[data-generate-close]')) close();
       if (event.target.closest('[data-generate-back]')) setStep(1);
