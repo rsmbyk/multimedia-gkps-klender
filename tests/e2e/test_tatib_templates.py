@@ -183,13 +183,16 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         # the choice already names the kind: an option carries its title, nothing else
         self.assertEqual(seam['optionTitleIcons'], 0, seam)
 
-    def test_the_choices_controls_are_icons_in_a_tight_row(self):
-        """Icon-only, revealed per row, and the row no taller than they need.
+    def test_the_options_controls_are_icons_in_a_tight_row(self):
+        """The option's controls are icons in a row no taller than they need; the choice's
+        keep the page's labels, and hovering an option lights the choice's too -- the option
+        is part of its entry.
 
-        The controls belong to the row the pointer is on: hovering an option must not light
-        the choice's own controls (":hover" reaches ancestors), and the row's height is the
-        buttons plus the same gap they keep from the edge, above and below.
+        The row's height is the buttons plus the same gap they keep from the edge, above
+        and below.
         """
+        # a pane wide enough for the page's own labels, so the two rows can be told apart
+        self.page.set_viewport_size({'width': 1920, 'height': 900})
         self.open_template()
         block = self.page.locator('#read .tatib__item--choice').first
         block.hover()
@@ -200,14 +203,18 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
           const acts = opt.querySelector(':scope > .entry__acts');
           const r = opt.getBoundingClientRect(), a = acts.getBoundingClientRect();
           const label = acts.querySelector('.entry__ctrl-label');
+          const choiceLabel = ch.querySelector(':scope > .entry__acts .entry__ctrl-label');
           const dot = getComputedStyle(opt, '::before');
           return {labelPosition: getComputedStyle(label).position,
+                  choiceLabelPosition: choiceLabel ? getComputedStyle(choiceLabel).position : null,
                   rowH: Math.round(r.height), actsH: Math.round(a.height),
                   top: Math.round(a.y - r.y), bottom: Math.round(r.bottom - a.bottom),
                   right: Math.round(r.right - a.right),
                   dotWidth: dot.width, dotLeft: dot.left};
         }""")
-        self.assertEqual(control['labelPosition'], 'absolute', 'the control labels still take room')
+        self.assertEqual(control['labelPosition'], 'absolute', 'the option labels still take room')
+        self.assertEqual(control['choiceLabelPosition'], 'static',
+                         'the choice is an entry: its controls keep their labels')
         self.assertEqual(control['top'], control['right'])
         self.assertEqual(control['bottom'], control['right'])
         self.assertEqual(control['rowH'], control['actsH'] + 2 * control['right'])
@@ -220,7 +227,8 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
           return {choice: getComputedStyle(ch.querySelector(':scope > .entry__acts')).opacity,
                   option: getComputedStyle(ch.querySelector('.tatib__item--option > .entry__acts')).opacity};
         }""")
-        self.assertEqual(opacities['choice'], '0', 'hovering an option lit the choice controls')
+        # an option is part of its entry: the pointer on it counts as the pointer on the choice
+        self.assertEqual(opacities['choice'], '1', 'hovering an option left the choice controls dark')
         self.assertEqual(opacities['option'], '1')
 
     def test_the_generate_modal_shows_the_order(self):

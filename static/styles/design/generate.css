@@ -192,18 +192,12 @@
   letter-spacing: .04em;
 }
 
-/* :hover reaches a row's ancestors too, so hovering an option would light the choice's
-   controls as well. Only the row the pointer is on keeps them. */
-#read .tatib__item--choice:has(.tatib__item--option:hover) > .entry__acts { opacity: 0; }
-
-/* The choice's own controls are icons, always: the row is a placeholder, its words are
-   the content, and three labelled buttons would outweigh a title and a count. */
-#read .tatib__item--choice > .entry__acts .entry__ctrl-label,
+/* An option's controls are icons, always: three labelled buttons would outweigh a child
+   row's title. The choice's own controls keep the page's labels -- it is an entry. */
 #read .tatib__item--option > .entry__acts .entry__ctrl-label {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
-#read .tatib__item--choice > .entry__acts .entry__ctrl,
 #read .tatib__item--option > .entry__acts .entry__ctrl { gap: 0; padding: 5px 6px; }
 
 /* Inside a choice the controls sit on the row's own centreline, so the gap above them
