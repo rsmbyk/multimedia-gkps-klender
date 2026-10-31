@@ -1439,11 +1439,11 @@ def _tatib_stage(service):
         if item.get('kind') == 'choice' and item.get('slot'):
             item['add_option_for'] = item.get('pk')
             item['add_option_kind'] = item.get('slot_kind')
-    # No add bar between a choice and the first of its options: an option belongs to the
-    # row above it, and a full entry bar in that seam reads as "these are two entries".
-    for index, item in enumerate(items[:-1]):
-        nxt = items[index + 1]
-        if item.get('options') and nxt.get('option_of') == item.get('pk'):
+    # An option is drawn inside its choice's block, so it gets no add bar of its own: the
+    # choice's bar already follows the whole block. Left in, every option piled one more
+    # bar into the same seam and the gap read as a run of separators.
+    for item in items:
+        if item.get('option_of'):
             item['suppress_add'] = True
     return items, toc
 

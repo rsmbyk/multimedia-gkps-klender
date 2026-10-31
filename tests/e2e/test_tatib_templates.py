@@ -358,6 +358,22 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertGreater(landed.index('Probe choice'), anchor, landed)
         self.assertLess(landed.index('Probe fill-in'), landed.index('Doa Pengutusan'), landed)
 
+    def test_one_add_bar_per_seam(self):
+        """An option is drawn inside its choice's block, so it must not emit an add bar of
+        its own: two of them in the same seam read as a run of separators.
+        """
+        self.open_template()
+        rows = self.page.evaluate("""() => {
+          const all = [...document.querySelectorAll('#read .tatib__item, #read .entry__add')]
+            .filter(el => !el.parentElement.closest('.tatib__item'))
+            .filter(el => el.getBoundingClientRect().height > 0)
+            .map(el => el.classList.contains('entry__add') ? 'ADD'
+                      : ((el.querySelector('.read__sec') || {}).textContent || 'entry').trim());
+          return all;
+        }""")
+        self.assertNotIn('ADD, ADD', ', '.join(rows))
+        self.assertEqual(sum(1 for r in rows if r == 'ADD'), len(rows) - rows.count('ADD'), rows)
+
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()
         self.page.click('[data-generate-open]')
