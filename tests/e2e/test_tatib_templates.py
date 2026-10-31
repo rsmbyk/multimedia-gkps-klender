@@ -671,6 +671,32 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertTrue(self.page.evaluate("() => document.getElementById('generateModal').open"),
                         'a click inside the card dismissed it')
 
+    def test_the_count_follows_the_rows_that_are_there(self):
+        """The footer counts the rows on the page, not the rows it saw when the dialog
+        opened: a page of settled rows still said "1 left to fill in" because a row that
+        no longer existed was still being counted.
+        """
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.wait_for_timeout(300)
+        before = self.page.evaluate("() => document.querySelectorAll('#generateModal .g-row--slot').length")
+        self.assertIn(f'of {before} settled', self.page.locator('[data-generate-status]').inner_text())
+
+        # a row disappears under the dialog, the way an in-page swap can take one
+        self.page.evaluate("""() => {
+          const rows = document.querySelectorAll('#generateModal .g-row--slot');
+          rows[0].remove();   /* the fill-in; the choice stays, so a pick can follow */
+        }""")
+        self.page.locator('[data-choice-open]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(300)
+        self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate(
+            'el => el.click()')
+        self.page.wait_for_timeout(300)
+        status = self.page.locator('[data-generate-status]').inner_text().strip()
+        # one row is left and it is settled: the footer counts one, not the two it opened on
+        self.assertEqual(status, 'All 1 entry settled.', status)
+
     def test_closing_the_chooser_keeps_the_modal(self):
         self.open_template()
         self.page.click('[data-generate-open]')

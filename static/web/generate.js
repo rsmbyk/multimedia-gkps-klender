@@ -265,6 +265,10 @@
   }
 
   function refresh() {
+    /* The rows are re-read every time: the dialog's markup can be replaced under the
+       script (an in-page swap), and a stale list counted a row that no longer existed --
+       a page of settled rows still said "1 left to fill in". */
+    rows = Array.prototype.slice.call(modal.querySelectorAll('.g-row--slot'));
     var total = rows.length;
     var done = settledCount();
     rows.forEach(function (row) {
