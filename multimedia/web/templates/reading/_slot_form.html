@@ -6,6 +6,7 @@ the help line says that in a sentence instead of leaving the operator to infer i
   <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
   <form class="editor__form" method="post" action="{{ save_url }}">
     {% csrf_token %}
+    {% if not entry and after %}<input type="hidden" name="after" value="{{ after }}">{% endif %}
     {% for field in form %}{% if field.is_hidden %}{{ field }}{% endif %}{% endfor %}
     <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}">
       <label for="{{ form.title.id_for_label }}">{% if kind == 'choice' %}Title{% else %}Title or note{% endif %}</label>

@@ -13,6 +13,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
 from django.urls import reverse
 
+from multimedia.bible import models as bible
 from multimedia.tatib import models as tatib
 
 try:
@@ -54,10 +55,40 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
             tatib=self.template, kind=tatib.ServiceEntryKind.TEXT, order_number=6,
             title='Pengutusan', text='Pergilah dengan damai.')
 
+        # A choice of every option shape the page has to draw: a passage (a title and no
+        # meta), a titled media row (a title and its file), and a text row (words).
+        self.rich = tatib.TataIbadah.objects.create(name='Rich skeleton', is_active=True)
+        lang = bible.Language.objects.create(name='Indonesia')
+        version = bible.Version.objects.create(lang=lang, name='Terjemahan Baru', abbreviation='TB')
+        book = bible.Book.objects.create(name='Mat', testament='new', number_of_chapters=28)
+        matius = bible.BookTranslation.objects.create(version=version, book=book, translation='Matius')
+        bible.Verse.objects.create(book_translation=matius, chapter=5, verse=13,
+                                   text='Kamu adalah garam dunia.')
+        self.rich_choice = tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.CHOICE,
+            fill_kind=tatib.SlotKind.TEXT, title='Bacaan', order_number=1)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.SCRIPTURE, parent=self.rich_choice,
+            order_number=2, book_translation=matius, chapter=5, verse_start=13, verse_end=13)
+        banner = tatib.MediaIdentity.objects.create(
+            sha256='b' * 64, byte_count=2048, family='image', display_filename='banner.png')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.MEDIA, parent=self.rich_choice,
+            order_number=3, media=banner, media_filename='banner.png', title='Banner')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.TEXT, parent=self.rich_choice,
+            order_number=4, title='Doa Damai', text='Tuhan, berilah damai kepada kami.')
+
         self._stopped = False
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch()
         self.page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
+
+    def open_rich(self):
+        self.page.set_viewport_size({'width': 1920, 'height': 900})
+        self.page.goto(self.live_server_url + reverse('web-tatib-service',
+                                                      args=[self.rich.pk]))
+        self.page.wait_for_timeout(400)
 
     def stop_browser(self):
         """Django's connection is synchronous: it cannot be used while Playwright's loop
@@ -215,9 +246,10 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(control['labelPosition'], 'absolute', 'the option labels still take room')
         self.assertEqual(control['choiceLabelPosition'], 'static',
                          'the choice is an entry: its controls keep their labels')
-        self.assertEqual(control['top'], control['right'])
-        self.assertEqual(control['bottom'], control['right'])
-        self.assertEqual(control['rowH'], control['actsH'] + 2 * control['right'])
+        # equal above and below, and never tighter than the gap they keep from the edge
+        self.assertEqual(control['top'], control['bottom'])
+        self.assertGreaterEqual(control['top'], control['right'])
+        self.assertGreaterEqual(control['rowH'], control['actsH'] + 2 * control['right'])
         self.assertEqual(control['dotWidth'], '6px')
 
         self.page.locator('#read .tatib__item--option').first.hover()
@@ -230,6 +262,59 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         # an option is part of its entry: the pointer on it counts as the pointer on the choice
         self.assertEqual(opacities['choice'], '1', 'hovering an option left the choice controls dark')
         self.assertEqual(opacities['option'], '1')
+
+    def test_an_option_is_drawn_by_its_shape(self):
+        """A passage names itself and nothing else, a titled media row names its file, and
+        a text row shows its words. An option drawn as a bare title loses all three.
+        """
+        self.open_rich()
+        rows = self.page.evaluate("""() => [...document.querySelectorAll('#read .tatib__item--option')].map(o => {
+          const title = o.querySelector('.read__sec');
+          const meta = o.querySelector('.read__sub');
+          const body = o.querySelector('.choice__opt-text');
+          const r = o.getBoundingClientRect(), t = title.getBoundingClientRect();
+          return {text: title.textContent.trim(), meta: meta ? meta.textContent.trim() : null,
+                  body: body ? body.textContent.trim() : null,
+                  top: Math.round(t.y - r.y), bottom: Math.round(r.bottom - t.bottom),
+                  rowH: Math.round(r.height)};
+        })""")
+        passage, media, text = rows[0], rows[1], rows[2]
+        self.assertIn('Matius 5:13', passage['text'])
+        self.assertIsNone(passage['meta'])
+        # a title with no meta sits on its row's centreline, not on its top edge
+        self.assertLessEqual(abs(passage['top'] - passage['bottom']), 1, rows)
+        self.assertEqual(media['meta'], 'Image · banner.png', rows)
+        self.assertIn('berilah damai', text['body'] or '', rows)
+
+    def test_a_slot_added_from_a_row_lands_after_that_row(self):
+        """+ Fill-in and + Choice are on every add row; the row they are clicked on is the
+        insertion point, so the form has to carry it.
+        """
+        self.page.set_viewport_size({'width': 1920, 'height': 900})
+        self.open_template()
+        row = self.page.locator('.entry__add').nth(1)
+        marker = row.get_attribute('data-entry-after')
+        self.assertTrue(marker, 'the add row names the element it follows')
+        for kind, label in (('fill_in', 'Probe fill-in'), ('choice', 'Probe choice')):
+            row = self.page.locator('.entry__add').nth(1)
+            marker = row.get_attribute('data-entry-after')
+            row.locator(f'[data-entry-open="{kind}"]').evaluate('el => el.click()')
+            self.page.wait_for_timeout(500)
+            self.assertEqual(
+                self.page.evaluate(
+                    "() => (document.querySelector('.editor__form input[name=after]') || {}).value"),
+                marker, f'the {kind} form dropped its insertion point')
+            self.page.fill('.editor__form input[name=title]', label)
+            self.page.locator('.editor__form [type=submit]').first.evaluate('el => el.click()')
+            self.page.wait_for_timeout(900)
+        self.stop_browser()
+        landed = list(tatib.ServiceEntry.objects.filter(tatib=self.template)
+                      .order_by('order_number').values_list('title', flat=True))
+        # both landed between the row they were added from and the entry that follows it
+        anchor = landed.index('Doa Syafaat')
+        self.assertGreater(landed.index('Probe fill-in'), anchor, landed)
+        self.assertGreater(landed.index('Probe choice'), anchor, landed)
+        self.assertLess(landed.index('Probe fill-in'), landed.index('Doa Pengutusan'), landed)
 
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()
@@ -281,7 +366,7 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.page.wait_for_timeout(300)
         self.stop_browser()
         created = tatib.TataIbadah.objects.exclude(
-            pk__in=[self.service.pk, self.template.pk]).get()
+            pk__in=[self.service.pk, self.template.pk, self.rich.pk]).get()
         kinds = list(created.service_entries.order_by('order_number')
                      .values_list('kind', flat=True))
         self.assertEqual(kinds, [tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.TEXT,
@@ -304,7 +389,7 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.page.wait_for_timeout(300)
         self.stop_browser()
         copy = tatib.TataIbadah.objects.exclude(
-            pk__in=[self.service.pk, self.template.pk]).get()
+            pk__in=[self.service.pk, self.template.pk, self.rich.pk]).get()
         self.assertEqual(copy.kind, tatib.TataIbadahKind.TEMPLATE)
         self.assertIsNone(copy.date)
         self.assertEqual(copy.service_entries.count(), 1)

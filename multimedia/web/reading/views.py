@@ -339,6 +339,7 @@ def entry_form(request, kind=None, pk=None):
         return render(request, 'reading/_slot_form.html', {
             'form': form, 'kind': kind, 'tatib': tatib,
             'title': entry_forms.entry_title(kind),
+            'after': request.GET.get('after'),
             'save_url': reverse('web-entry-save-new') + f'?tatib={tatib.pk}',
         })
     books, book_edition = _entry_book_options(form, kind)
@@ -531,6 +532,7 @@ def entry_save(request, pk=None):
             return render(request, 'reading/_slot_form.html', {
                 'form': form, 'kind': kind, 'tatib': form.tatib,
                 'title': entry_forms.entry_title(kind),
+                'after': request.POST.get('after'),
                 'save_url': reverse('web-entry-save-new') + f'?tatib={form.tatib.pk}',
             }, status=400)
         books, book_edition = _entry_book_options(form, kind)
@@ -1321,11 +1323,15 @@ def _tatib_stage(service):
                     if option_kind == 'song' and option.verses:
                         meta = 'Bait ' + format_verses(option.verses)
                     elif option_kind == 'media' and option.media_id:
-                        meta = option.media.get_family_display()
+                        family = option.media.get_family_display()
+                        # An untitled option shows the filename as its title already.
+                        meta = (f'{family} · {option.media_filename}'
+                                if option.title and option.media_filename else family)
                     options.append({'pk': option.pk, 'anchor': f'e{option.pk}',
                                     'citation': option.citation(),
                                     'title': option.title, 'meta': meta,
                                     'kind': option_kind, 'subtitle': meta, 'entry': True,
+                                    'body': (option.text or '').strip() if option_kind == 'text' else '',
                                     'preview': option_preview})
             slot_state = ''
             if row.kind == tatib_models.ServiceEntryKind.CHOICE:

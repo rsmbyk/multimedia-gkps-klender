@@ -407,7 +407,7 @@ class PreviewParityTests(StaticLiveServerTestCase):
                     tracking: +(parseFloat(c.letterSpacing) / size).toFixed(3)}; };
           return {entry: cs('#read .tatib__item--entry > .read__sec'),
                   choice: cs('#read .tatib__item--choice > .read__sec'),
-                  option: cs('#read .tatib__item--option > .read__sec'),
+                  option: cs('#read .tatib__item--option .read__sec'),
                   kind: cs('#read .slot__kind')};
         }""")
         for key in ('entry', 'choice', 'option'):
