@@ -87,6 +87,17 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
             order_number=5, media=wall, media_filename=long_file,
             title='A banner title with enough words in it to wrap past one row')
 
+        # ordinary rows around the choice, so the dialog has fixed rows to draw too
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.SCRIPTURE, order_number=6,
+            book_translation=matius, chapter=5, verse_start=13, verse_end=13)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.MEDIA, order_number=7,
+            media=banner, media_filename='banner.png', title='Banner Sore')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.TEXT, order_number=8,
+            title='Doa Penutup', text='Tuhan, sertailah kami.')
+
         self._stopped = False
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch()
@@ -424,6 +435,32 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(opacity, '0.52')
         expect(self.page.locator('[data-generate-next]')).to_be_disabled()
         expect(self.page.locator('[data-generate-status]')).to_contain_text('2 left to fill in')
+
+    def test_the_muted_rows_carry_their_kind_mark(self):
+        """A fixed row in the dialog states its kind the way the page does: a media chip,
+        a song or passage glyph in the gutter, nothing for a text. Without it the list
+        reads as a run of same-looking lines.
+        """
+        self.open_rich()
+        self.page.locator('[data-generate-open]').first.evaluate('el => el.click()')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.wait_for_timeout(400)
+        marks = self.page.evaluate("""() => [...document.querySelectorAll('#generateModal .g-fixed')].map(r => {
+          const icon = r.querySelector('.entry__kind-icon, .entry__media-icon');
+          const title = r.querySelector('.read__sec');
+          const box = r.getBoundingClientRect();
+          return {title: (title ? title.textContent : '').trim(),
+                  mark: icon ? (icon.dataset.kindIcon || icon.dataset.mediaIcon) : null,
+                  x: icon ? Math.round(icon.getBoundingClientRect().x - box.x) : null,
+                  textX: title ? Math.round(title.getBoundingClientRect().x - box.x) : null};
+        })""")
+        by_title = {m['title'][:12]: m for m in marks}
+        self.assertEqual(by_title['Banner Sore']['mark'], 'image', marks)
+        self.assertEqual(by_title['Matius 5:13']['mark'], 'scripture', marks)
+        self.assertIsNone(by_title['Doa Penutup']['mark'], marks)
+        for row in marks:
+            if row['mark']:
+                self.assertEqual(row['x'], 0, f"the mark is not in the row's gutter: {row}")
 
     def test_closing_the_chooser_keeps_the_modal(self):
         self.open_template()
