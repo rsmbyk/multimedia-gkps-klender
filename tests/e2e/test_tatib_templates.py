@@ -510,6 +510,25 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(parts['mute'], 'banner.png')
         self.assertNotEqual(parts['mainColor'], parts['muteColor'], parts)
 
+    def test_a_settled_text_choice_names_its_prayer(self):
+        """An untitled text option has no reference, so a settled row used to read blank.
+        Its words name it, the same ones the chooser shows.
+        """
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.locator('[data-choice-open]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(400)
+        labels = self.page.evaluate("""() => [...document.querySelectorAll('#generateModal .choose-layer:not([hidden]) .choose__item')]
+          .map(i => i.dataset.pickLabel)""")
+        self.assertTrue(all(label.strip() for label in labels), f'blank pick label: {labels}')
+        self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate(
+            'el => el.click()')
+        self.page.wait_for_timeout(400)
+        value = self.page.locator('[data-choice-row][data-set="true"] [data-slot-value]').first.inner_text()
+        self.assertTrue(value.strip(), 'the settled row names nothing')
+        self.assertIn('damai', value.lower(), value)
+
     def test_change_is_outlined_once_a_row_is_settled(self):
         """Change revises something already done; Set and Choose are the work still owed.
         Both cannot be the filled accent, or the page stops showing what is left.

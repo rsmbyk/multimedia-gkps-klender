@@ -1343,6 +1343,10 @@ def _tatib_stage(service):
                     else:
                         pick_main = option.citation()
                         pick_mute = meta
+                        if option_kind == 'text' and not pick_main:
+                            # An untitled prayer has no reference: its words are its name.
+                            words = ' '.join((option.text or '').split())
+                            pick_main = words if len(words) <= 80 else words[:77].rstrip() + '…'
                     pick_label = ' · '.join(filter(None, [pick_main, pick_mute]))
                     options.append({'pk': option.pk, 'anchor': f'e{option.pk}',
                                     'citation': option.citation(),
