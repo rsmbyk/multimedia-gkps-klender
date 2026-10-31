@@ -11,9 +11,17 @@
 <div class="read__project"{% if is_template %} data-generate-group{% else %} data-project-group data-display-channel="gkps-service-display"{% endif %}>
   {% if service_media %}<button type="button" class="read__project-btn" id="serviceMediaButton" aria-label="Media files">Media files</button>{% endif %}
   {% if is_template %}
-  <button type="button" class="read__project-btn" data-generate-open
+  <button type="button" class="read__project-btn read__project-btn--primary" data-generate-open
           data-generate-url="{% url 'web-tatib-generate' service_id %}"
-          data-generate-name="{{ service.name }}">Use template</button>
+          data-generate-name="{{ service.name }}">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3.4" width="11.4" height="13.2" rx="1.8"/>
+      <path d="M6.2 6.8h5M6.2 9.6h5M6.2 12.4h3"/>
+      <path d="M16.2 10.2v5.6M13.4 13h5.6"/>
+    </svg>
+    <span>Use template</span>
+  </button>
   {% else %}
   <button type="button" class="read__project-btn read__project-btn--icon" data-project-window
           data-projector-url="{% url 'web-projector' %}" data-project-service="{{ service_id }}"

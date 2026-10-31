@@ -849,6 +849,15 @@ li:hover > .row-edit,
 .read__project-btn:hover {
   color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg);
 }
+/* Use template is the page's one action (spec 167): the preview drew it as the filled
+   button, not as a bar like Media files beside it. */
+.read__project-btn--primary {
+  color: var(--active-ink); border-color: var(--active-bg); background: var(--active-bg);
+}
+.read__project-btn--primary:hover {
+  color: var(--active-ink); border-color: var(--active-bg); background: var(--active-bg);
+  filter: brightness(.94);
+}
 .read__project-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .read__project-btn[hidden] { display: none; }         /* author display beats [hidden] */
 .read__project[data-displaying="true"] .read__project-btn[data-project-open] {

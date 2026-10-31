@@ -447,6 +447,30 @@ class PreviewParityTests(StaticLiveServerTestCase):
         for prop in ('family', 'tracking', 'ratio'):
             self.assertEqual(metas['count'][prop], metas['option'][prop], f'count {prop} differs')
 
+    def test_use_template_is_the_previews_filled_button(self):
+        """The preview drew Use template as the page's filled action, icon and all; the
+        product drew it as a quiet bar beside Media files.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(400)
+        live = self.page.evaluate("""() => {
+          const el = [...document.querySelectorAll('button')].find(b => /use template/i.test(b.textContent));
+          const c = getComputedStyle(el); const r = el.getBoundingClientRect();
+          return {w: Math.round(r.width), h: Math.round(r.height), radius: c.borderRadius,
+                  bg: c.backgroundColor, ink: c.color, weight: c.fontWeight,
+                  icon: !!el.querySelector('svg')};
+        }""")
+        self.page.goto(PREVIEW.as_uri())
+        self.page.wait_for_timeout(400)
+        preview = self.page.evaluate("""() => {
+          const el = document.querySelector('.read__project-btn--primary');
+          const c = getComputedStyle(el); const r = el.getBoundingClientRect();
+          return {w: Math.round(r.width), h: Math.round(r.height), radius: c.borderRadius,
+                  bg: c.backgroundColor, ink: c.color, weight: c.fontWeight,
+                  icon: !!el.querySelector('svg')};
+        }""")
+        self.assertEqual(live, preview)
+
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         self.page.wait_for_timeout(400)
