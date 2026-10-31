@@ -34,8 +34,8 @@ dismissal -- closing it must leave this modal where it was.{% endcomment %}
         {% endif %}
       </div>
       {% elif item.option_of %}
-      {# A choice's option is not a row of this dialog: the choice row names the one that
-         was picked. Listing them all printed the same list twice. #}
+      {% comment %}A choice's option is not a row of this dialog: the choice row names
+      the one that was picked. Listing them all printed the same list twice.{% endcomment %}
       {% elif item.eos %}
       <div class="g-break" aria-hidden="true"></div>
       {% elif item.preview or item.entry or item.old_item %}

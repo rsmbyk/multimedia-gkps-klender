@@ -412,6 +412,10 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         fixed_text = self.page.locator('#generateModal').inner_text()
         self.assertNotIn('Doa Damai', fixed_text)
         self.assertNotIn('Doa Berkat', fixed_text)
+        # no template syntax on the page: '{# ... #}' is single-line only, and a wrapped
+        # one prints its tail as text
+        self.assertNotIn('{#', fixed_text)
+        self.assertNotIn('#}', fixed_text)
         action = self.page.locator('#generateModal .g-action').first
         self.assertEqual(action.evaluate('el => getComputedStyle(el).backgroundColor'),
                          'rgb(28, 92, 60)', 'Set is not the primary fill')
