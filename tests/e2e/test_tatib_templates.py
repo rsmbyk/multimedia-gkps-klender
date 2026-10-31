@@ -455,6 +455,11 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
                   textX: title ? Math.round(title.getBoundingClientRect().x - box.x) : null};
         })""")
         by_title = {m['title'][:12]: m for m in marks}
+        # a chip with no glyph is an empty square: the media mark is an svg, not a box
+        svgs = self.page.evaluate("""() => [...document.querySelectorAll('#generateModal [data-media-icon]')]
+          .map(el => !!el.querySelector('svg'))""")
+        self.assertTrue(svgs, 'the dialog draws no media chip at all')
+        self.assertTrue(all(svgs), 'a media chip is drawn without its glyph')
         self.assertEqual(by_title['Banner Sore']['mark'], 'image', marks)
         self.assertEqual(by_title['Matius 5:13']['mark'], 'scripture', marks)
         self.assertIsNone(by_title['Doa Penutup']['mark'], marks)
