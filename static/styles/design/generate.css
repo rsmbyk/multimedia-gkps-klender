@@ -105,6 +105,14 @@
   cursor: pointer; font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif;
 }
 .g-action:hover:not([disabled]) { filter: brightness(.94); }
+/* Settled rows read Change, a revision rather than an action still owed: outlined, so a
+   page of unfinished rows shows the filled buttons it is asking for. */
+.g-row--slot[data-set="true"] .g-action {
+  background: none; color: var(--ink); border-color: var(--divider);
+}
+.g-row--slot[data-set="true"] .g-action:hover:not([disabled]) {
+  filter: none; border-color: var(--focus); color: var(--ink);
+}
 .g-action[disabled] { opacity: .55; cursor: not-allowed; }
 
 .generate__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 26px; border-top: 1px solid var(--divider); min-height: 69px; box-sizing: border-box; }

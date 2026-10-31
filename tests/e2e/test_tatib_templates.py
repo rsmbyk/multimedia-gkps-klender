@@ -510,6 +510,32 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(parts['mute'], 'banner.png')
         self.assertNotEqual(parts['mainColor'], parts['muteColor'], parts)
 
+    def test_change_is_outlined_once_a_row_is_settled(self):
+        """Change revises something already done; Set and Choose are the work still owed.
+        Both cannot be the filled accent, or the page stops showing what is left.
+        """
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        filled = self.page.locator('#generateModal .g-action').first.evaluate(
+            'el => getComputedStyle(el).backgroundColor')
+        self.assertEqual(filled, 'rgb(28, 92, 60)')
+
+        self.page.locator('[data-choice-open]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(400)
+        self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate(
+            'el => el.click()')
+        self.page.wait_for_timeout(400)
+        change = self.page.evaluate("""() => {
+          const row = document.querySelector('[data-choice-row][data-set="true"]');
+          const button = row.querySelector('.g-action');
+          const c = getComputedStyle(button);
+          return {text: button.textContent.trim(), bg: c.backgroundColor, border: c.borderColor, color: c.color};
+        }""")
+        self.assertEqual(change['text'], 'Change')
+        self.assertEqual(change['bg'], 'rgba(0, 0, 0, 0)', 'Change is still filled')
+        self.assertEqual(change['color'], 'rgb(31, 31, 29)')
+
     def test_the_chooser_shows_a_text_options_words(self):
         """A text option is its words: the picker listed a blank reference and nothing else,
         which made two prayers indistinguishable.
