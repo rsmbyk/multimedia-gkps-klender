@@ -217,7 +217,8 @@
    own plus one gap above and one below -- and both equal the gap they keep from the edge. */
 #read .tatib__item--option {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 8px 8px 0; min-height: 0;
+  /* the same gutter on both sides: the row's own box is what the pointer highlights */
+  padding: 8px; min-height: 0;
 }
 /* The option's own lines are one block, centred against its controls: a title with no
    meta (a passage) then sits on the row's centreline instead of riding its top edge. */
@@ -268,7 +269,7 @@
 /* the control lives in the last option's row, whose own indent already places it */
 /* under a list of options the control lines up with the rows; on an empty choice it
    sits on the block's own text line */
-.choice__options + .slot__add-row { margin: 6px 0 0 24px; }
+.choice__options + .slot__add-row { margin: 6px 0 0 32px; }
 .slot__add-row { margin: 6px 0 0 0; }
 .slot__add-row .entry__add-btn--slot {
   border-color: var(--divider); color: var(--head-ink);

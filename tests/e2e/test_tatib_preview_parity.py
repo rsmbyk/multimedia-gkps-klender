@@ -209,8 +209,8 @@ class PreviewParityTests(StaticLiveServerTestCase):
 
     def test_add_option_sits_on_the_option_text(self):
         live = self.live()
-        # the control takes its line from the option rows, icon column included
-        self.assertLessEqual(abs(live['addOptionX'] - live['optionRowX']), 2, live)
+        # the control takes its line from the option's text, not from the row's own box
+        self.assertLessEqual(abs(live['addOptionX'] - live['optionTextX']), 2, live)
 
     def test_the_new_tata_ibadah_modal_wears_the_preview_switcher(self):
         """The type switch is the preview's segmented control, not two bare buttons.
