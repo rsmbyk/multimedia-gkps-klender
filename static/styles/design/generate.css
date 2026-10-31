@@ -176,8 +176,19 @@
   margin: 0; padding: 4px 0;
   min-height: 0; border: 0; border-radius: 0;
 }
-#read .choice__options .tatib__item--option .read__sec { margin: 0; font: 600 13px/1.35 ui-sans-serif, system-ui, sans-serif; }
-#read .tatib__item--option .read__sub { margin: 2px 0 0; font: 400 12px/1.4 ui-sans-serif, system-ui, sans-serif; }
+/* An option reads like an entry, one size down: same face, weight, tracking, leading
+   ratio and margins as the page's own entry title and meta -- only the size differs, so
+   the child rows sit in the list's typography rather than beside it. */
+#read .choice__options .tatib__item--option .read__sec {
+  margin: 0; color: var(--ink);
+  font: 640 13px/1.4 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .03em; font-style: normal; text-align: left;
+}
+#read .tatib__item--option .read__sub {
+  margin: -2px 0 0; color: var(--head-ink);
+  font: 560 12px/1.5 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .04em;
+}
 /* the mark names the row, so it rides the first line, not the middle of a tall list */
 #read .tatib__item--choice .slot__mark { top: 26px; transform: none; }
 #read .tatib__item--slot .read__sec {
