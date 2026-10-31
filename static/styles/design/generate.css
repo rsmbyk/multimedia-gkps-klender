@@ -56,7 +56,9 @@
 .generate__body--form .editor__field { margin: 0 0 14px; }
 
 /* a fixed row: the page's entry, a step below the slot's title, and inert */
-.g-row { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; }
+/* A row is a thing to read and act on, not a line: 14px above and below gives each one
+   air of its own and keeps the separators off the text. */
+.g-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; }
 /* A flex child will not shrink below its longest word unless it is told to, so one long
    file name or a run of characters could push the whole dialog into a horizontal scroll.
    'anywhere' also lowers the min-content width, which is what lets the row give way. */
