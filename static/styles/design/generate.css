@@ -189,6 +189,47 @@
   font: 560 11.5px/1.5 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .04em;
 }
+
+/* :hover reaches a row's ancestors too, so hovering an option would light the choice's
+   controls as well. Only the row the pointer is on keeps them. */
+#read .tatib__item--choice:has(.tatib__item--option:hover) > .entry__acts { opacity: 0; }
+
+/* The choice's own controls are icons, always: the row is a placeholder, its words are
+   the content, and three labelled buttons would outweigh a title and a count. */
+#read .tatib__item--choice > .entry__acts .entry__ctrl-label,
+#read .tatib__item--option > .entry__acts .entry__ctrl-label {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+#read .tatib__item--choice > .entry__acts .entry__ctrl,
+#read .tatib__item--option > .entry__acts .entry__ctrl { gap: 0; padding: 5px 6px; }
+
+/* Inside a choice the controls sit on the row's own centreline, so the gap above them
+   equals the gap below and both equal the 8px they keep from the right edge. */
+#read .tatib__item--choice > .entry__acts,
+#read .tatib__item--option > .entry__acts {
+  top: 50%; transform: translateY(-50%);
+}
+/* The row is as small as the controls allow: they sit in the flow, so the height is their
+   own plus one gap above and one below -- and both equal the gap they keep from the edge. */
+#read .tatib__item--option {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center; column-gap: 8px;
+  padding: 8px 8px 8px 0; min-height: 0;
+}
+#read .tatib__item--option > .read__sec { grid-column: 1; grid-row: 1; }
+#read .tatib__item--option > .read__sub { grid-column: 1; grid-row: 2; }
+#read .tatib__item--option > .entry__acts {
+  position: static; transform: none; grid-column: 2; grid-row: 1 / span 2; align-self: center;
+}
+
+/* A dot on the group's rule names each option's place on it. */
+#read .tatib__item--option { position: relative; }
+#read .tatib__item--option::before {
+  content: ""; position: absolute; left: -27px; top: 50%; margin-top: -3px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--divider);
+}
 /* the mark names the row, so it rides the first line, not the middle of a tall list */
 #read .tatib__item--choice .slot__mark { top: 26px; transform: none; }
 #read .tatib__item--slot .read__sec {

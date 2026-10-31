@@ -182,6 +182,46 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         # the choice already names the kind: an option carries its title, nothing else
         self.assertEqual(seam['optionTitleIcons'], 0, seam)
 
+    def test_the_choices_controls_are_icons_in_a_tight_row(self):
+        """Icon-only, revealed per row, and the row no taller than they need.
+
+        The controls belong to the row the pointer is on: hovering an option must not light
+        the choice's own controls (":hover" reaches ancestors), and the row's height is the
+        buttons plus the same gap they keep from the edge, above and below.
+        """
+        self.open_template()
+        block = self.page.locator('#read .tatib__item--choice').first
+        block.hover()
+        self.page.wait_for_timeout(200)
+        control = self.page.evaluate("""() => {
+          const ch = document.querySelector('#read .tatib__item--choice');
+          const opt = ch.querySelector('.tatib__item--option');
+          const acts = opt.querySelector(':scope > .entry__acts');
+          const r = opt.getBoundingClientRect(), a = acts.getBoundingClientRect();
+          const label = acts.querySelector('.entry__ctrl-label');
+          const dot = getComputedStyle(opt, '::before');
+          return {labelPosition: getComputedStyle(label).position,
+                  rowH: Math.round(r.height), actsH: Math.round(a.height),
+                  top: Math.round(a.y - r.y), bottom: Math.round(r.bottom - a.bottom),
+                  right: Math.round(r.right - a.right),
+                  dotWidth: dot.width, dotLeft: dot.left};
+        }""")
+        self.assertEqual(control['labelPosition'], 'absolute', 'the control labels still take room')
+        self.assertEqual(control['top'], control['right'])
+        self.assertEqual(control['bottom'], control['right'])
+        self.assertEqual(control['rowH'], control['actsH'] + 2 * control['right'])
+        self.assertEqual(control['dotWidth'], '6px')
+
+        self.page.locator('#read .tatib__item--option').first.hover()
+        self.page.wait_for_timeout(200)
+        opacities = self.page.evaluate("""() => {
+          const ch = document.querySelector('#read .tatib__item--choice');
+          return {choice: getComputedStyle(ch.querySelector(':scope > .entry__acts')).opacity,
+                  option: getComputedStyle(ch.querySelector('.tatib__item--option > .entry__acts')).opacity};
+        }""")
+        self.assertEqual(opacities['choice'], '0', 'hovering an option lit the choice controls')
+        self.assertEqual(opacities['option'], '1')
+
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()
         self.page.click('[data-generate-open]')
