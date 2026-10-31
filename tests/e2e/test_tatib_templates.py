@@ -467,6 +467,31 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
             if row['mark']:
                 self.assertEqual(row['x'], 0, f"the mark is not in the row's gutter: {row}")
 
+    def test_escape_closes_the_preview_not_the_dialog_under_it(self):
+        """A preview opened from a chooser row sits above the dialog; Escape belongs to it.
+        Swallowing that key to hide the chooser behind it closed the wrong thing.
+        """
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.locator('[data-choice-open]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(400)
+        self.page.locator('#generateModal [data-preview-open]').first.click()
+        self.page.wait_for_timeout(600)
+        self.assertTrue(self.page.evaluate("() => document.getElementById('previewModal').open"))
+
+        self.page.keyboard.press('Escape')
+        self.page.wait_for_timeout(400)
+        state = self.page.evaluate("""() => ({preview: document.getElementById('previewModal').open,
+            generate: document.getElementById('generateModal').open})""")
+        self.assertFalse(state['preview'], 'Escape left the preview open')
+        self.assertTrue(state['generate'], 'Escape closed the dialog the preview came from')
+
+        self.page.keyboard.press('Escape')
+        self.page.wait_for_timeout(400)
+        self.assertFalse(self.page.locator('#generateModal .choose-layer').is_visible())
+        self.assertTrue(self.page.evaluate("() => document.getElementById('generateModal').open"))
+
     def test_closing_the_chooser_keeps_the_modal(self):
         self.open_template()
         self.page.click('[data-generate-open]')

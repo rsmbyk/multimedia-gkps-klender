@@ -371,7 +371,14 @@
   });
 
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && openChooser) { event.preventDefault(); hideChooser(); }
+    if (event.key !== 'Escape' || !openChooser) return;
+    /* A chooser can be covered by another dialog -- the Preview opened from one of its
+       rows, say. Escape belongs to that dialog then: swallowing it here left the preview
+       open and closed this modal instead. */
+    if (modal && !modal.open) return;
+    if (document.querySelectorAll('dialog[open]').length > 1) return;
+    event.preventDefault();
+    hideChooser();
   });
 
   function submit(button) {
