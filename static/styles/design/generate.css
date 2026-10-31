@@ -179,9 +179,11 @@
 /* An option reads like an entry, one size down: same face, weight, tracking, leading
    ratio and margins as the page's own entry title and meta -- only the size differs, so
    the child rows sit in the list's typography rather than beside it. */
+/* An option is the one title that steps down: same face, weight, tracking and leading
+   ratio as every other title on the page, a size below them because it is a child row. */
 #read .choice__options .tatib__item--option .read__sec {
   margin: 0; color: var(--ink);
-  font: 640 17px/1.4 ui-sans-serif, system-ui, sans-serif;
+  font: 640 14px/1.4 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .03em; font-style: normal; text-align: left;
 }
 #read .tatib__item--option .read__sub {

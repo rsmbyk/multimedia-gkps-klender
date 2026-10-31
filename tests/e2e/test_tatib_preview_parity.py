@@ -384,8 +384,10 @@ class PreviewParityTests(StaticLiveServerTestCase):
         styles = self.page.evaluate("""() => {
           const cs = (sel) => { const el = document.querySelector(sel); if (!el) return null;
             const c = getComputedStyle(el);
-            return {size: parseFloat(c.fontSize), ratio: +(parseFloat(c.lineHeight) / parseFloat(c.fontSize)).toFixed(2),
-                    weight: c.fontWeight, family: c.fontFamily.split(',')[0], tracking: c.letterSpacing}; };
+            const size = parseFloat(c.fontSize);
+            return {size, ratio: +(parseFloat(c.lineHeight) / size).toFixed(2), weight: c.fontWeight,
+                    family: c.fontFamily.split(',')[0],
+                    tracking: +(parseFloat(c.letterSpacing) / size).toFixed(3)}; };
           return {entry: cs('#read .tatib__item--entry > .read__sec'),
                   choice: cs('#read .tatib__item--choice > .read__sec'),
                   option: cs('#read .tatib__item--option > .read__sec'),
@@ -393,9 +395,12 @@ class PreviewParityTests(StaticLiveServerTestCase):
         }""")
         for key in ('entry', 'choice', 'option'):
             self.assertIsNotNone(styles[key], f'no {key} title on the fixture page')
-        for key in ('choice', 'option'):
-            self.assertEqual(styles[key], styles['entry'], f'{key} differs from the entry title')
-        self.assertLess(styles['kind']['size'], styles['entry']['size'], styles)
+        self.assertEqual(styles['choice'], styles['entry'], 'the choice title differs from the entry title')
+        # the option is the one title that steps down -- same style, a smaller size
+        for prop in ('weight', 'family', 'tracking', 'ratio'):
+            self.assertEqual(styles['option'][prop], styles['entry'][prop], f'option {prop} differs')
+        self.assertLess(styles['option']['size'], styles['entry']['size'], styles)
+        self.assertLess(styles['kind']['size'], styles['option']['size'], styles)
 
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))

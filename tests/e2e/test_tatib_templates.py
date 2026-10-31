@@ -177,8 +177,8 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertTrue(seam['optionsInside'], seam)
         self.assertEqual(seam['addBarInside'], 0, 'an add bar sits inside the choice block')
         self.assertTrue(seam['hasList'], seam)
-        self.assertEqual(seam['optionTitleSize'], seam['choiceTitleSize'],
-                         'an option and its choice read in the same title style')
+        self.assertLess(seam['optionTitleSize'], seam['choiceTitleSize'],
+                        'an option steps down from its choice')
         self.assertEqual(seam['listRule'], '1px')
         # the choice already names the kind: an option carries its title, nothing else
         self.assertEqual(seam['optionTitleIcons'], 0, seam)
