@@ -504,6 +504,16 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         labels = self.page.evaluate("""() => [...document.querySelectorAll('#generateModal .choose-layer:not([hidden]) .choose__item')]
           .map(i => i.dataset.pickLabel)""")
         self.assertEqual(labels, ['Image · Banner Sore · banner.png', 'Image · random.jpg'], labels)
+        # one family per dialog: the picker's headings wear the meta's face
+        families = self.page.evaluate("""() => {
+          const layer = document.querySelector('#generateModal .choose-layer:not([hidden])');
+          const fam = (sel) => { const el = layer.querySelector(sel); return el ? getComputedStyle(el).fontFamily : null; };
+          return {heading: fam('.choose__head h3'), headMeta: fam('.choose__head p'),
+                  ref: fam('.choose__ref'), meta: fam('.choose__meta')};
+        }""")
+        self.assertEqual(families['ref'], families['meta'], families)
+        self.assertIn('sans', families['ref'])
+        self.assertEqual(families['heading'], families['headMeta'], families)
         self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate('el => el.click()')
         self.page.wait_for_timeout(300)
         value = self.page.locator('[data-choice-row][data-set="true"] [data-slot-value]').first

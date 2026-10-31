@@ -138,7 +138,9 @@
 .choose__item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 6px 8px; padding: 8px; border: 1px solid var(--divider); border-radius: 10px; }
 .choose__item:has(.choose__pick[aria-pressed="true"]) { border-color: var(--active-bg); }
 .choose__main { grid-column: 1; min-width: 0; padding: 2px 4px; }
-.choose__ref { display: block; color: var(--ink); font: 620 14.5px/1.35 ui-serif, Georgia, 'Times New Roman', serif; }
+/* The picker's headings wear the same face as its meta: one family per dialog, with
+   weight and size carrying the step instead of a serif borrowing from the page. */
+.choose__ref { display: block; color: var(--ink); font: 620 14.5px/1.35 ui-sans-serif, system-ui, sans-serif; letter-spacing: .01em; }
 .choose__meta { display: block; color: var(--head-ink); font: 500 12px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .03em; }
 /* the option's own words, two lines of them: enough to tell two prayers apart */
 .choose__body {
