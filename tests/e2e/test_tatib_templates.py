@@ -407,7 +407,14 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.page.click('[data-generate-open]')
         expect(self.page.locator('#generateModal')).to_be_visible()
         self.assertEqual(self.page.locator('#generateModal .g-row--slot').count(), 2)
-        self.assertGreater(self.page.locator('#generateModal .g-fixed').count(), 2)
+        # the two ordinary entries; a choice's options are named by its own row, not listed
+        self.assertEqual(self.page.locator('#generateModal .g-fixed').count(), 2)
+        fixed_text = self.page.locator('#generateModal').inner_text()
+        self.assertNotIn('Doa Damai', fixed_text)
+        self.assertNotIn('Doa Berkat', fixed_text)
+        action = self.page.locator('#generateModal .g-action').first
+        self.assertEqual(action.evaluate('el => getComputedStyle(el).backgroundColor'),
+                         'rgb(28, 92, 60)', 'Set is not the primary fill')
         opacity = self.page.locator('#generateModal .g-fixed').first.evaluate(
             'el => getComputedStyle(el).opacity')
         self.assertEqual(opacity, '0.52')

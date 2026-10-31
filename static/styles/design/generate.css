@@ -89,8 +89,14 @@
 .g-title { margin: 2px 0 0; color: var(--ink); font: 620 17px/1.3 ui-serif, Georgia, 'Times New Roman', serif; letter-spacing: -.01em; }
 .g-value { margin: 3px 0 0; color: var(--head-ink); font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; }
 .g-row--slot[data-set="true"] .g-value { color: var(--ink); }
-.g-action { height: 32px; padding: 0 14px; border: 1px solid var(--divider); border-radius: 8px; background: none; color: var(--ink); cursor: pointer; font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif; }
-.g-action:hover:not([disabled]) { border-color: var(--focus); }
+/* Set and Choose are the dialog's one action per row: filled like Use template, so the
+   step reads as a list of things to do rather than a list of quiet labels. */
+.g-action {
+  height: 32px; padding: 0 14px; border-radius: 8px;
+  border: 1px solid var(--active-bg); background: var(--active-bg); color: var(--active-ink);
+  cursor: pointer; font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.g-action:hover:not([disabled]) { filter: brightness(.94); }
 .g-action[disabled] { opacity: .55; cursor: not-allowed; }
 
 .generate__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 26px; border-top: 1px solid var(--divider); min-height: 69px; box-sizing: border-box; }
