@@ -78,6 +78,14 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.rich, kind=tatib.ServiceEntryKind.TEXT, parent=self.rich_choice,
             order_number=4, title='Doa Damai', text='Tuhan, berilah damai kepada kami.')
+        # Long enough to clamp: an option is a choice, not a paragraph.
+        long_file = ('side-view-silhouette-african-elephant-walking-across-green-ground-' * 4)[:246] + '.webp'
+        wall = tatib.MediaIdentity.objects.create(
+            sha256='c' * 64, byte_count=4096, family='image', display_filename=long_file)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.MEDIA, parent=self.rich_choice,
+            order_number=5, media=wall, media_filename=long_file,
+            title='A banner title with enough words in it to wrap past one row')
 
         self._stopped = False
         self.playwright = sync_playwright().start()
@@ -285,6 +293,29 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertLessEqual(abs(passage['top'] - passage['bottom']), 1, rows)
         self.assertEqual(media['meta'], 'Image · banner.png', rows)
         self.assertIn('berilah damai', text['body'] or '', rows)
+
+    def test_a_long_option_is_capped_at_five_lines(self):
+        """Three lines of title and two of meta, so one option can never push the block
+        taller than the choice it belongs to.
+        """
+        self.open_rich()
+        capped = self.page.evaluate("""() => {
+          const rows = [...document.querySelectorAll('#read .tatib__item--option')];
+          const row = rows[rows.length - 1];
+          const lines = (el) => el ? Math.round(el.getBoundingClientRect().height /
+                                            parseFloat(getComputedStyle(el).lineHeight)) : 0;
+          const title = row.querySelector('.read__sec'), meta = row.querySelector('.read__sub');
+          return {titleLines: lines(title), metaLines: lines(meta),
+                  titleClamp: getComputedStyle(title).webkitLineClamp,
+                  metaClamp: meta ? getComputedStyle(meta).webkitLineClamp : null,
+                  metaClipped: !!meta && meta.scrollHeight > meta.clientHeight + 1};
+        }""")
+        self.assertEqual(capped['titleClamp'], '3')
+        self.assertEqual(capped['metaClamp'], '2')
+        self.assertLessEqual(capped['titleLines'], 3, capped)
+        self.assertLessEqual(capped['metaLines'], 2, capped)
+        self.assertLessEqual(capped['titleLines'] + capped['metaLines'], 5, capped)
+        self.assertTrue(capped['metaClipped'], 'the fixture file name should be long enough to clamp')
 
     def test_a_slot_added_from_a_row_lands_after_that_row(self):
         """+ Fill-in and + Choice are on every add row; the row they are clicked on is the

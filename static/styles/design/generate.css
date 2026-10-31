@@ -185,11 +185,14 @@
   margin: 0; color: var(--ink);
   font: 640 14px/1.4 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .03em; font-style: normal; text-align: left;
+  /* three lines of title and two of meta: an option is a choice, not a paragraph */
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
 }
 #read .tatib__item--option .read__sub {
   margin: -2px 0 0; color: var(--head-ink);
   font: 560 11.5px/1.5 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .04em;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
 }
 
 /* An option's controls are icons, always: three labelled buttons would outweigh a child
