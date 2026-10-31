@@ -1327,9 +1327,19 @@ def _tatib_stage(service):
                         # An untitled option shows the filename as its title already.
                         meta = (f'{family} · {option.media_filename}'
                                 if option.title and option.media_filename else family)
+                    # What the dialog says once this option is picked. A media names its
+                    # file type first and then the name that tells it apart -- the title
+                    # when there is one, the file name otherwise. Everything else reads as
+                    # its reference, with its meta after it.
+                    if option_kind == 'media' and option.media_id:
+                        pick_label = ' · '.join(filter(None, [
+                            option.media.get_family_display(),
+                            option.title or option.media_filename or option.citation()]))
+                    else:
+                        pick_label = ' · '.join(filter(None, [option.citation(), meta]))
                     options.append({'pk': option.pk, 'anchor': f'e{option.pk}',
                                     'citation': option.citation(),
-                                    'title': option.title, 'meta': meta,
+                                    'title': option.title, 'meta': meta, 'pick': pick_label,
                                     'kind': option_kind, 'subtitle': meta, 'entry': True,
                                     'body': (option.text or '').strip() if option_kind == 'text' else '',
                                     'preview': option_preview})

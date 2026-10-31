@@ -106,7 +106,7 @@ dismissal -- closing it must leave this modal where it was.{% endcomment %}
         </header>
         <div class="choose__list">
           {% for option in item.options %}
-          <div class="choose__item">
+          <div class="choose__item" data-pick-label="{{ option.pick }}">
             <div class="choose__main">
               {% if option.citation %}<span class="choose__ref">{{ option.citation }}</span>{% endif %}
               {% if option.meta %}<span class="choose__meta">{{ option.meta }}</span>{% endif %}

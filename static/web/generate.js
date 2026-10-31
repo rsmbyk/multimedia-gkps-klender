@@ -67,10 +67,12 @@
       /* The chooser is a layer of the modal, not a child of the row: the row is found
          by the id the layer names. */
       var choiceRow = modal.querySelector('[data-choice-row="' + openChooser.dataset.choose + '"]');
-      var optionLabel = pick.closest('.choose__item').querySelector('.choose__ref').textContent;
-      var meta = pick.closest('.choose__item').querySelector('.choose__meta');
+      /* The server names the picked option in its own words: a media reads type first,
+         then the title or file name that tells it from its neighbours. */
+      var pickedRow = pick.closest('.choose__item');
+      var optionLabel = pickedRow.dataset.pickLabel;
       settled[slotOf(choiceRow)] = {
-        label: optionLabel + (meta ? ' · ' + meta.textContent : ''),
+        label: optionLabel,
         option: pick.dataset.choosePick
       };
       Array.prototype.forEach.call(openChooser.querySelectorAll('[data-choose-pick]'),

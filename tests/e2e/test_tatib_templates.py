@@ -98,6 +98,19 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
             tatib=self.rich, kind=tatib.ServiceEntryKind.TEXT, order_number=8,
             title='Doa Penutup', text='Tuhan, sertailah kami.')
 
+        # a choice of media, so the dialog's label for one can be read
+        self.media_choice = tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.CHOICE,
+            fill_kind=tatib.SlotKind.MEDIA, title='Tayangan', order_number=9)
+        random_file = tatib.MediaIdentity.objects.create(
+            sha256='d' * 64, byte_count=512, family='image', display_filename='random.jpg')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.MEDIA, parent=self.media_choice,
+            order_number=10, media=banner, media_filename='banner.png', title='Banner Sore')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.rich, kind=tatib.ServiceEntryKind.MEDIA, parent=self.media_choice,
+            order_number=11, media=random_file, media_filename='random.jpg')
+
         self._stopped = False
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch()
@@ -323,7 +336,7 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.open_rich()
         capped = self.page.evaluate("""() => {
           const rows = [...document.querySelectorAll('#read .tatib__item--option')];
-          const row = rows[rows.length - 1];
+          const row = rows.find(r => /A banner title/.test(r.textContent)) || rows[rows.length - 1];
           const lines = (el) => el ? Math.round(el.getBoundingClientRect().height /
                                             parseFloat(getComputedStyle(el).lineHeight)) : 0;
           const title = row.querySelector('.read__sec'), meta = row.querySelector('.read__sub');
@@ -466,6 +479,25 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         for row in marks:
             if row['mark']:
                 self.assertEqual(row['x'], 0, f"the mark is not in the row's gutter: {row}")
+
+    def test_a_media_pick_reads_type_first_then_its_name(self):
+        """A media option names its file type, then the title or file name that tells it
+        from its neighbours -- never the title first and never all three at once.
+        """
+        self.open_rich()
+        self.page.locator('[data-generate-open]').first.evaluate('el => el.click()')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.wait_for_timeout(400)
+        row = self.page.locator(f'[data-choice-row="{self.media_choice.pk}"]')
+        row.locator('[data-choice-open]').evaluate('el => el.click()')
+        self.page.wait_for_timeout(400)
+        labels = self.page.evaluate("""() => [...document.querySelectorAll('#generateModal .choose-layer:not([hidden]) .choose__item')]
+          .map(i => i.dataset.pickLabel)""")
+        self.assertEqual(labels, ['Image · Banner Sore', 'Image · random.jpg'], labels)
+        self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate('el => el.click()')
+        self.page.wait_for_timeout(300)
+        value = self.page.locator('[data-choice-row][data-set="true"] [data-slot-value]').first.inner_text()
+        self.assertEqual(value.strip(), 'Image · Banner Sore')
 
     def test_the_chooser_shows_a_text_options_words(self):
         """A text option is its words: the picker listed a blank reference and nothing else,
