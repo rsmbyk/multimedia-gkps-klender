@@ -2507,6 +2507,10 @@ kbd {
   }
 }
 
+/* A long word breaks rather than running past the column: a file name with no spaces,
+   a pasted URL, a run of one letter. 'anywhere' keeps the text inside its own box. */
+.read[data-kind="tatib"] :is(.read__sec, .read__sub, .tatib__tx) { overflow-wrap: anywhere; }
+
 /* ---------- the entry modals ---------------------------------------------- */
 
 /* A picker wears a select's chrome: the trigger is the closed control, the menu

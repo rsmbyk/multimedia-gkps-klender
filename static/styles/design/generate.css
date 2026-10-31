@@ -57,6 +57,11 @@
 
 /* a fixed row: the page's entry, a step below the slot's title, and inert */
 .g-row { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; }
+/* A flex child will not shrink below its longest word unless it is told to, so one long
+   file name or a run of characters could push the whole dialog into a horizontal scroll.
+   'anywhere' also lowers the min-content width, which is what lets the row give way. */
+.g-row > * { min-width: 0; }
+.g-row :is(.read__sec, .read__sub, .tatib__tx, .g-title, .g-value) { overflow-wrap: anywhere; }
 .g-row + .g-row { border-top: 1px solid var(--divider); }
 .g-fixed { opacity: .52; pointer-events: none; }
 .g-fixed .tatib__item { position: relative; margin: 0; padding: 0 0 0 24px; display: block; min-height: 0; }

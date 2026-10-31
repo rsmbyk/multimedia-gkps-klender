@@ -374,6 +374,34 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertNotIn('ADD, ADD', ', '.join(rows))
         self.assertEqual(sum(1 for r in rows if r == 'ADD'), len(rows) - rows.count('ADD'), rows)
 
+    def test_a_long_word_wraps_instead_of_overflowing(self):
+        """A file name with no spaces is one long word: it has to break inside the row, in
+        the page and in the Use template dialog both, or the dialog grows a horizontal
+        scrollbar and the row runs under its own controls.
+        """
+        self.open_rich()
+        page_overflow = self.page.evaluate("""() => {
+          const out = [];
+          document.querySelectorAll('#read .tatib__item--option .read__sec, #read .tatib__item--option .read__sub')
+            .forEach(el => { if (el.scrollWidth > el.clientWidth + 1) out.push(el.textContent.trim().slice(0, 20)); });
+          return out;
+        }""")
+        self.assertEqual(page_overflow, [], 'an option text runs past its own box')
+
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.rich.pk]))
+        self.page.wait_for_timeout(300)
+        self.page.locator('[data-generate-open]').first.evaluate('el => el.click()')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.wait_for_timeout(500)
+        modal = self.page.evaluate("""() => {
+          const body = document.querySelector('#generateModal .generate__body');
+          const rows = [...document.querySelectorAll('#generateModal .g-fixed')];
+          return {body: [body.scrollWidth, body.clientWidth],
+                  rows: rows.filter(r => r.scrollWidth > r.clientWidth + 1).length};
+        }""")
+        self.assertEqual(modal['body'][0], modal['body'][1], 'the dialog scrolls sideways')
+        self.assertEqual(modal['rows'], 0, 'a muted row runs past the dialog')
+
     def test_the_generate_modal_shows_the_order(self):
         self.open_template()
         self.page.click('[data-generate-open]')
