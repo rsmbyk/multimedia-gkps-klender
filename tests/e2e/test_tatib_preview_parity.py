@@ -14,6 +14,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings, tag
 from django.urls import reverse
 
+from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
 
 try:
@@ -139,6 +140,22 @@ class PreviewParityTests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, parent=choice,
             order_number=5, title='Doa Berkat', text='Tuhan, berkati kami.')
+
+        # One row of each meta the page draws: a bait line, a media meta, and an option
+        # that carries a bait of its own.
+        book = songs.Book.objects.create(name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        hymn = songs.Song.objects.create(book=book, number=12, title='Di Waktu Pagi', key='c')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, kind=tatib.ServiceEntryKind.SONG, song=hymn,
+            verses=[1, 2, 3], order_number=6)
+        media = tatib.MediaIdentity.objects.create(
+            sha256='a' * 64, byte_count=1024, family='image', display_filename='images.jpeg')
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, kind=tatib.ServiceEntryKind.MEDIA, media=media,
+            media_filename='images.jpeg', title='Titled Media', order_number=7)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, kind=tatib.ServiceEntryKind.SONG, song=hymn, parent=choice,
+            verses=[1, 3], order_number=8)
 
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch()
@@ -401,6 +418,34 @@ class PreviewParityTests(StaticLiveServerTestCase):
             self.assertEqual(styles['option'][prop], styles['entry'][prop], f'option {prop} differs')
         self.assertLess(styles['option']['size'], styles['entry']['size'], styles)
         self.assertLess(styles['kind']['size'], styles['option']['size'], styles)
+
+    def test_every_meta_reads_in_one_style(self):
+        """All the quiet lines are one style: the entry's meta, with the option's a size
+        below and the choice's count line a weight below that.
+        """
+        self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        self.page.wait_for_timeout(500)
+        metas = self.page.evaluate("""() => {
+          const cs = (sel) => { const el = document.querySelector(sel); if (!el) return null;
+            const c = getComputedStyle(el); const size = parseFloat(c.fontSize);
+            return {size, ratio: +(parseFloat(c.lineHeight) / size).toFixed(2), weight: c.fontWeight,
+                    family: c.fontFamily.split(',')[0],
+                    tracking: +(parseFloat(c.letterSpacing) / size).toFixed(3)}; };
+          return {media: cs('#read .tatib__item--media .read__sub'),
+                  bait: cs('#read .tatib__item--song .read__sub'),
+                  option: cs('#read .tatib__item--option .read__sub'),
+                  count: cs('#read .tatib__item--choice .slot__state')};
+        }""")
+        self.assertEqual(metas['bait'], metas['media'], 'the bait line differs from the media meta')
+        for prop in ('weight', 'family', 'tracking', 'ratio'):
+            self.assertEqual(metas['option'][prop], metas['media'][prop], f'option meta {prop} differs')
+        self.assertLess(metas['option']['size'], metas['media']['size'], metas)
+
+        self.assertEqual(metas['count']['size'], metas['option']['size'], 'the count is not the option meta size')
+        self.assertLess(int(metas['count']['weight']), int(metas['option']['weight']),
+                        'the count line is not lighter than the meta')
+        for prop in ('family', 'tracking', 'ratio'):
+            self.assertEqual(metas['count'][prop], metas['option'][prop], f'count {prop} differs')
 
     def test_the_muted_rows_in_use_template_are_the_preview_size(self):
         self.page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))

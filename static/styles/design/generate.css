@@ -246,7 +246,11 @@
   font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .08em; text-transform: uppercase;
 }
-#read .slot__state { margin: 3px 0 0; color: var(--head-ink); font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; }
+/* The count line is a meta like any other: the option meta's size, one weight below it. */
+#read .slot__state {
+  margin: 3px 0 0; color: var(--head-ink);
+  font: 400 11.5px/1.5 ui-sans-serif, system-ui, sans-serif; letter-spacing: .04em;
+}
 
 /* An option is a child row, not an entry of its own: no card, no minimum height, the
    choice's title at 17px and the option reading a step below it, on the rule the preview
