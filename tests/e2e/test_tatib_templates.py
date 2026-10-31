@@ -525,9 +525,22 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.page.locator('#generateModal .choose-layer:not([hidden]) [data-choose-pick]').first.evaluate(
             'el => el.click()')
         self.page.wait_for_timeout(400)
-        value = self.page.locator('[data-choice-row][data-set="true"] [data-slot-value]').first.inner_text()
-        self.assertTrue(value.strip(), 'the settled row names nothing')
-        self.assertIn('damai', value.lower(), value)
+        value = self.page.locator('[data-choice-row][data-set="true"] [data-slot-value]').first
+        self.assertTrue(value.inner_text().strip(), 'the settled row names nothing')
+        parts = value.evaluate("""el => {
+          const title = el.querySelector('.g-value-title'), body = el.querySelector('.g-value-body');
+          return {title: title && title.textContent, body: body && body.textContent,
+                  titleFont: title && getComputedStyle(title).fontFamily,
+                  bodyFont: body && getComputedStyle(body).fontFamily,
+                  titleColor: title && getComputedStyle(title).color,
+                  bodyColor: body && getComputedStyle(body).color};
+        }""")
+        # the name and the words are two things: a sans title over a serif body, in two inks
+        self.assertEqual(parts['title'], 'Doa Damai', parts)
+        self.assertIn('damai', (parts['body'] or '').lower(), parts)
+        self.assertIn('sans', parts['titleFont'])
+        self.assertIn('serif', parts['bodyFont'])
+        self.assertNotEqual(parts['titleColor'], parts['bodyColor'], parts)
 
     def test_change_is_outlined_once_a_row_is_settled(self):
         """Change revises something already done; Set and Choose are the work still owed.

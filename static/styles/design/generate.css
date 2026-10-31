@@ -97,6 +97,13 @@
 .g-value { margin: 3px 0 0; color: var(--head-ink); font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; }
 .g-row--slot[data-set="true"] .g-value { color: var(--ink); }
 .g-value-mute { color: var(--head-ink); }
+/* a chosen text option: the title it was given, then the words it carries */
+.g-value-title { display: block; color: var(--ink); font: 600 12.5px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .01em; }
+.g-value-body {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  margin: 2px 0 0; color: var(--head-ink);
+  font: 400 12.5px/1.45 ui-serif, Georgia, 'Times New Roman', serif;
+}
 /* Set and Choose are the dialog's one action per row: filled like Use template, so the
    step reads as a list of things to do rather than a list of quiet labels. */
 .g-action {

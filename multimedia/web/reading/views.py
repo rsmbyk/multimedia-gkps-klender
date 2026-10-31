@@ -1333,7 +1333,12 @@ def _tatib_stage(service):
                     # its reference, with its meta after it.
                     # The label is two parts: what the entry is, and the quiet detail that
                     # tells one from another -- the file name under its type, the verses
-                    # under a song. The dialog draws the second part muted.
+                    # under a song. The dialog draws the second part muted. A text option is
+                    # its own two: the title it was given, and the words it carries.
+                    pick_title, pick_body = '', ''
+                    if option_kind == 'text':
+                        pick_title = option.title or ''
+                        pick_body = ' '.join((option.text or '').split())
                     if option_kind == 'media' and option.media_id:
                         # The type and the title are what the entry is; only the file's own
                         # name steps back.
@@ -1352,6 +1357,7 @@ def _tatib_stage(service):
                                     'citation': option.citation(),
                                     'title': option.title, 'meta': meta, 'pick': pick_label,
                                     'pick_main': pick_main, 'pick_mute': pick_mute,
+                                    'pick_title': pick_title, 'pick_body': pick_body,
                                     'kind': option_kind, 'subtitle': meta, 'entry': True,
                                     'body': (option.text or '').strip() if option_kind == 'text' else '',
                                     'preview': option_preview})

@@ -74,6 +74,8 @@
         label: pickedRow.dataset.pickLabel,
         main: pickedRow.dataset.pickMain,
         mute: pickedRow.dataset.pickMute,
+        title: pickedRow.dataset.pickTitle,
+        body: pickedRow.dataset.pickBody,
         option: pick.dataset.choosePick
       };
       Array.prototype.forEach.call(openChooser.querySelectorAll('[data-choose-pick]'),
@@ -229,6 +231,22 @@
      song -- is a step back from the name it belongs to. */
   function paintValue(value, state) {
     value.textContent = '';
+    if (state.body) {
+      /* A chosen prayer keeps its two parts apart: the title it was given reads as a
+         name, the words under it as the quiet line of a body. */
+      value.classList.add('g-value--text');
+      if (state.title) {
+        var title = document.createElement('span');
+        title.className = 'g-value-title';
+        title.textContent = state.title;
+        value.appendChild(title);
+      }
+      var words = document.createElement('span');
+      words.className = 'g-value-body';
+      words.textContent = state.body;
+      value.appendChild(words);
+      return;
+    }
     if (!state.mute) { value.textContent = state.label; return; }
     var main = document.createElement('span');
     main.className = 'g-value-main';
