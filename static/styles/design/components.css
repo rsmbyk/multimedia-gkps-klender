@@ -1976,9 +1976,11 @@ kbd {
   background: var(--canvas);
   opacity: 0; transition: opacity var(--ease);
 }
-.tatib__item:hover .entry__acts,
-.tatib__eos:hover .entry__acts,
-.is-modal-origin .entry__acts,
+/* The controls belong to the row they sit in: a choice holds its options' rows, and a
+   descendant selector would open every one of them at once. */
+.tatib__item:hover > .entry__acts,
+.tatib__eos:hover > .entry__acts,
+.is-modal-origin > .entry__acts,
 .entry__acts:has(:focus:not(.focus-restore-quiet)) { opacity: 1; }
 /* A touch device has no hover to reveal them with: show them outright. */
 @media (hover: none) and (pointer: coarse) { .entry__acts { opacity: 1; } }

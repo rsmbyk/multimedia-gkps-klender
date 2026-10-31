@@ -195,6 +195,10 @@
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
 }
 
+/* Only the row under the pointer shows its controls. ':hover' reaches ancestors, so an
+   option would otherwise light the choice's controls as well. */
+#read .tatib__item--choice:has(.tatib__item--option:hover) > .entry__acts { opacity: 0; }
+
 /* An option's controls are icons, always: three labelled buttons would outweigh a child
    row's title. The choice's own controls keep the page's labels -- it is an entry. */
 #read .tatib__item--option > .entry__acts .entry__ctrl-label {

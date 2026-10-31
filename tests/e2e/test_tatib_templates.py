@@ -260,16 +260,27 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertGreaterEqual(control['rowH'], control['actsH'] + 2 * control['right'])
         self.assertEqual(control['dotWidth'], '6px')
 
-        self.page.locator('#read .tatib__item--option').first.hover()
+        self.page.locator('#read .tatib__item--option .read__sec').first.hover()
         self.page.wait_for_timeout(200)
         opacities = self.page.evaluate("""() => {
           const ch = document.querySelector('#read .tatib__item--choice');
+          const opts = [...ch.querySelectorAll('.tatib__item--option')];
           return {choice: getComputedStyle(ch.querySelector(':scope > .entry__acts')).opacity,
-                  option: getComputedStyle(ch.querySelector('.tatib__item--option > .entry__acts')).opacity};
+                  hovered: getComputedStyle(opts[0].querySelector(':scope > .entry__acts')).opacity,
+                  other: getComputedStyle(opts[1].querySelector(':scope > .entry__acts')).opacity};
         }""")
-        # an option is part of its entry: the pointer on it counts as the pointer on the choice
-        self.assertEqual(opacities['choice'], '1', 'hovering an option left the choice controls dark')
-        self.assertEqual(opacities['option'], '1')
+        # only the row under the pointer opens: not the choice above it, not its sibling
+        self.assertEqual(opacities['choice'], '0', 'hovering an option lit the choice controls')
+        self.assertEqual(opacities['hovered'], '1')
+        self.assertEqual(opacities['other'], '0', 'a sibling option opened too')
+
+        # and the choice's own controls answer to the choice's own header
+        self.page.locator('#read .tatib__item--choice .slot__kind').first.hover()
+        self.page.wait_for_timeout(200)
+        self.assertEqual(
+            self.page.evaluate(
+                "() => getComputedStyle(document.querySelector('#read .tatib__item--choice > .entry__acts')).opacity"),
+            '1')
 
     def test_an_option_is_drawn_by_its_shape(self):
         """A passage names itself and nothing else, a titled media row names its file, and
