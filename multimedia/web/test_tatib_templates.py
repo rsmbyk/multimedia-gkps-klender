@@ -292,7 +292,11 @@ class SlotEndpointTests(TestCase):
         value = response.json()['value']
         self.assertIn('NKB 12', value['line'])
         self.assertIn('Bait 1, 2', value['meta'])
-        self.assertEqual(response.json()['data']['song'], str(self.song.pk))
+        # the echo keeps every value of every field, as lists: a song's verses arrive as
+        # repeated keys, and the create request re-binds this data verbatim
+        echoed = response.json()['data']
+        self.assertEqual(echoed['song'], [str(self.song.pk)])
+        self.assertEqual(echoed['verses'], ['1', '2'])
         self.assertEqual(ServiceEntry.objects.count(), before)
 
     def _template_with_slots(self):

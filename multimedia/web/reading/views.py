@@ -26,7 +26,7 @@ from django.db import connection, transaction
 from django.db.models import Case, CharField, Count, F, IntegerField, Max, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
-                         JsonResponse)
+                         JsonResponse, QueryDict)
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
@@ -675,6 +675,17 @@ class _GenerateError(Exception):
     """A slot that cannot be resolved at Create; the transaction rolls back on it."""
 
 
+def _slot_form_data(data):
+    """The form data a settled slot carried, as a QueryDict that keeps repeated keys."""
+    query = QueryDict(mutable=True)
+    for key, value in (data or {}).items():
+        if isinstance(value, (list, tuple)):
+            query.setlist(key, [str(item) for item in value])
+        else:
+            query.setlist(key, [str(value)])
+    return query
+
+
 def _slot_value(slot, entry):
     """What a generate row shows once its slot is settled: the same facts the page prints."""
     kind_key = entry_forms.kind_name(entry.kind)
@@ -739,7 +750,10 @@ def entry_validate(request):
         }, status=400)
     entry = form.save(commit=False)
     entry.tatib = slot.tatib
-    data = {key: value for key, value in request.POST.items()
+    # Every value of every field, as lists: a song's verses arrive as repeated keys, and
+    # a plain dict would keep only the last of them -- the form then failed to re-bind at
+    # generate time and the row read "not settled" though the dialog showed it settled.
+    data = {key: request.POST.getlist(key) for key in request.POST
             if key != 'csrfmiddlewaretoken'}
     return JsonResponse({'ok': True, 'value': _slot_value(slot, entry), 'data': data})
 
@@ -802,7 +816,7 @@ def tatib_generate(request, service_id):
                     else:
                         kind_name = entry_forms.kind_name(row.fill_kind)
                         form = entry_forms.build_entry_form(
-                            kind_name, data=slot.get('data') or {}, tatib=service)
+                            kind_name, data=_slot_form_data(slot.get('data')), tatib=service)
                         if form is None or not form.is_valid():
                             raise _GenerateError(
                                 f'“{row.title or row.get_kind_display()}” is not settled.')
