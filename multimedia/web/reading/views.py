@@ -1446,7 +1446,8 @@ def _tatib_stage(service):
                 preview = {'kind': 'text', 'title': title, 'paras': _paragraphs(body)}
         block['preview'] = preview
         items.append(block)
-        text_count += 1
+        if row.parent_id is None:
+            text_count += 1
         text_kind = kind_key == 'text'
         label_lines = [title] if title else []
         if text_kind and not title:
@@ -1465,12 +1466,13 @@ def _tatib_stage(service):
             label_lines = [row.get_kind_display()]
         label = ' '.join(label_lines)
         filter_text = f'{label} {title} {body} {verse_line}'
-        toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
-                    'label': label, 'label_lines': label_lines, 'titled': bool(title),
-                    'pk': row.pk, 'entry': True,
-                    'song_label': song_label, 'song_reference': song_reference,
-                    'song_title': song_title, 'verse_line': verse_line,
-                    'txt': filter_text})
+        if row.parent_id is None:
+            toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
+                        'label': label, 'label_lines': label_lines, 'titled': bool(title),
+                        'pk': row.pk, 'entry': True,
+                        'song_label': song_label, 'song_reference': song_reference,
+                        'song_title': song_title, 'verse_line': verse_line,
+                        'txt': filter_text})
     # "+ Add option" belongs under the last option of its choice, not under the choice's
     # title: an option is its own row, so only the final one knows that it is last. A choice
     # with no options yet has no such row, so the choice itself carries the control --

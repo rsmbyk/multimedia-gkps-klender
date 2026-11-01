@@ -743,6 +743,42 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         # same wording: both name the month in full
         self.assertEqual(len(theirs.split()[1]), len(month), f'{label} vs {theirs}')
 
+    def test_an_option_is_not_a_row_of_the_sidebar(self):
+        """The sidebar arranges the order, and a grip on an option could drag it out of
+        the block it belongs to -- the list then numbered two rows under one entry and the
+        stage drew the options apart from their choice. The choice's row holds them.
+        """
+        self.open_template()
+        self.page.wait_for_timeout(300)
+        rows = self.page.evaluate("""() => [...document.querySelectorAll('[data-move-grip]')].map(g => {
+          const li = g.closest('li');
+          return {pk: Number(g.dataset.moveGrip), n: li.dataset.num,
+                  text: (li.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 24)};
+        })""")
+        labels = [row['text'] for row in rows]
+        self.assertNotIn('Doa Damai', ' '.join(labels), labels)
+        self.assertNotIn('Doa Berkat', ' '.join(labels), labels)
+        self.assertIn('Doa Pengutusan', ' '.join(labels), labels)
+        # one number per row, in sequence
+        numbers = [int(row['n']) for row in rows]
+        self.assertEqual(numbers, list(range(1, len(rows) + 1)), rows)
+
+        # and a move keeps the choice with its options
+        grip = self.page.locator(f'[data-move-grip="{rows[-1]["pk"]}"]')
+        grip.focus()
+        self.page.keyboard.press('ArrowUp')
+        self.page.wait_for_timeout(900)
+        self.page.reload()
+        self.page.wait_for_timeout(600)
+        blocks = self.page.evaluate("""() => [...document.querySelectorAll('#read .tatib__item--choice')]
+          .map(c => ({title: (c.querySelector('.read__sec') || {}).textContent,
+                      options: [...c.querySelectorAll('.tatib__item--option')].map(o => (o.querySelector('.read__sec') || {}).textContent)}))""")
+        self.assertTrue(blocks, 'no choice block on the page')
+        for block in blocks:
+            self.assertTrue(block['options'], f"choice without its options: {block}")
+        self.assertEqual(self.page.evaluate(
+            "() => document.querySelectorAll('#read .tatib__item--option').length"), 2)
+
     def test_closing_the_chooser_keeps_the_modal(self):
         self.open_template()
         self.page.click('[data-generate-open]')
