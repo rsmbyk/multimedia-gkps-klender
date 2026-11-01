@@ -1,6 +1,6 @@
 ---
 id: ITEM-186
-status: in-progress
+status: in-review
 title: 'A fresh clone starts on a machine with no HOME, and the converter uses the computer''s own fonts'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-01
 updated: 2026-11-01
 spec: specs/182-host-font-detection/spec.md
 branch: feat/182-host-font-detection
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/483
 issue: https://github.com/rsmbyk/multimedia-gkps-klender/issues/482
 closed_at:
 closed_reason:
