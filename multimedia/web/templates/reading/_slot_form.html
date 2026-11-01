@@ -6,9 +6,10 @@ the help line says that in a sentence instead of leaving the operator to infer i
   <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
   <form class="editor__form" method="post" action="{{ save_url }}">
     {% csrf_token %}
+    {% if not entry and after %}<input type="hidden" name="after" value="{{ after }}">{% endif %}
     {% for field in form %}{% if field.is_hidden %}{{ field }}{% endif %}{% endfor %}
     <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}">
-      <label for="{{ form.title.id_for_label }}">Title or note</label>
+      <label for="{{ form.title.id_for_label }}">{% if kind == 'choice' %}Title{% else %}Title or note{% endif %}</label>
       {{ form.title }}
       <p class="editor__help">Optional — leave it empty to show the kind alone.</p>
       {% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
@@ -16,15 +17,15 @@ the help line says that in a sentence instead of leaving the operator to infer i
     <div class="editor__field">
       <span class="editor__label" id="slotKindLabel">Kind</span>
       <div class="editor__kinds" role="group" aria-labelledby="slotKindLabel" data-slot-kinds>
-        <button type="button" class="editor__kind" data-slot-kind="1" aria-pressed="false">Passage</button>
-        <button type="button" class="editor__kind" data-slot-kind="2" aria-pressed="false">Song</button>
-        <button type="button" class="editor__kind" data-slot-kind="0" aria-pressed="false">Text</button>
-        <button type="button" class="editor__kind" data-slot-kind="4" aria-pressed="false">Media</button>
+        <button type="button" class="editor__kind" data-slot-kind="0" aria-pressed="{% if form.fill_kind.value == 0 or form.fill_kind.value == '0' %}true{% else %}false{% endif %}">Text</button>
+        <button type="button" class="editor__kind" data-slot-kind="2" aria-pressed="{% if form.fill_kind.value == 2 or form.fill_kind.value == '2' %}true{% else %}false{% endif %}">Song</button>
+        <button type="button" class="editor__kind" data-slot-kind="1" aria-pressed="{% if form.fill_kind.value == 1 or form.fill_kind.value == '1' %}true{% else %}false{% endif %}">Passage</button>
+        <button type="button" class="editor__kind" data-slot-kind="4" aria-pressed="{% if form.fill_kind.value == 4 or form.fill_kind.value == '4' %}true{% else %}false{% endif %}">Media</button>
       </div>
       {% if kind == 'choice' %}
-      <p class="editor__help">Add its options on the row after saving; the operator picks one later.</p>
+      <p class="editor__help">The operator picks one of its options when the template is used. Add the options on the row afterwards.</p>
       {% else %}
-      <p class="editor__help">The operator fills this in when the template is used.</p>
+      <p class="editor__help">The operator chooses this entry's content when the template is used.</p>
       {% endif %}
       {% for error in form.fill_kind.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
     </div>

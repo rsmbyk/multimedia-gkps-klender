@@ -29,7 +29,18 @@
     symbol.setAttribute('aria-label', state === 'missing' ? 'File missing on this computer' : '');
     symbol.setAttribute('aria-hidden', state === 'missing' ? 'false' : 'true');
   }
+  /* Every chip names its own family, so a placeholder that never gets a availability
+     pass -- the muted rows inside the Use template dialog -- still draws its glyph. */
+  function paintAll() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-media-icon]'), function (symbol) {
+      if (symbol.querySelector('svg')) return;
+      symbol.innerHTML = icon(symbol.dataset.mediaIcon || 'image');
+    });
+  }
+  window.gkpsMediaPaint = paintAll;
+
   function refresh() {
+    paintAll();
     var rows = Array.prototype.slice.call(document.querySelectorAll('.tatib__item--media'));
     if (!rows.length) return;
     rows.forEach(function (row) { renderRow(row, 'unavailable'); });

@@ -26,7 +26,7 @@ from django.db import connection, transaction
 from django.db.models import Case, CharField, Count, F, IntegerField, Max, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import (Http404, HttpResponseForbidden, HttpResponseNotAllowed,
-                         JsonResponse)
+                         JsonResponse, QueryDict)
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
@@ -339,6 +339,7 @@ def entry_form(request, kind=None, pk=None):
         return render(request, 'reading/_slot_form.html', {
             'form': form, 'kind': kind, 'tatib': tatib,
             'title': entry_forms.entry_title(kind),
+            'after': request.GET.get('after'),
             'save_url': reverse('web-entry-save-new') + f'?tatib={tatib.pk}',
         })
     books, book_edition = _entry_book_options(form, kind)
@@ -531,6 +532,7 @@ def entry_save(request, pk=None):
             return render(request, 'reading/_slot_form.html', {
                 'form': form, 'kind': kind, 'tatib': form.tatib,
                 'title': entry_forms.entry_title(kind),
+                'after': request.POST.get('after'),
                 'save_url': reverse('web-entry-save-new') + f'?tatib={form.tatib.pk}',
             }, status=400)
         books, book_edition = _entry_book_options(form, kind)
@@ -673,6 +675,17 @@ class _GenerateError(Exception):
     """A slot that cannot be resolved at Create; the transaction rolls back on it."""
 
 
+def _slot_form_data(data):
+    """The form data a settled slot carried, as a QueryDict that keeps repeated keys."""
+    query = QueryDict(mutable=True)
+    for key, value in (data or {}).items():
+        if isinstance(value, (list, tuple)):
+            query.setlist(key, [str(item) for item in value])
+        else:
+            query.setlist(key, [str(value)])
+    return query
+
+
 def _slot_value(slot, entry):
     """What a generate row shows once its slot is settled: the same facts the page prints."""
     kind_key = entry_forms.kind_name(entry.kind)
@@ -737,7 +750,10 @@ def entry_validate(request):
         }, status=400)
     entry = form.save(commit=False)
     entry.tatib = slot.tatib
-    data = {key: value for key, value in request.POST.items()
+    # Every value of every field, as lists: a song's verses arrive as repeated keys, and
+    # a plain dict would keep only the last of them -- the form then failed to re-bind at
+    # generate time and the row read "not settled" though the dialog showed it settled.
+    data = {key: request.POST.getlist(key) for key in request.POST
             if key != 'csrfmiddlewaretoken'}
     return JsonResponse({'ok': True, 'value': _slot_value(slot, entry), 'data': data})
 
@@ -800,7 +816,7 @@ def tatib_generate(request, service_id):
                     else:
                         kind_name = entry_forms.kind_name(row.fill_kind)
                         form = entry_forms.build_entry_form(
-                            kind_name, data=slot.get('data') or {}, tatib=service)
+                            kind_name, data=_slot_form_data(slot.get('data')), tatib=service)
                         if form is None or not form.is_valid():
                             raise _GenerateError(
                                 f'“{row.title or row.get_kind_display()}” is not settled.')
@@ -1298,6 +1314,8 @@ def _tatib_stage(service):
         anchor = f'e{row.pk}'
         title, body = row.resolve()
         kind_key = entry_forms.kind_name(row.kind)
+        # An option stays in `items` -- Use template lists it as the choice's muted row --
+        # but the page draws it inside its choice's block, so the page skips it here.
         if kind_key in ('fill_in', 'choice'):
             # A slot (spec 167): a kind line and its title; a choice keeps its options as
             # ordinary child rows drawn directly under it.
@@ -1319,15 +1337,53 @@ def _tatib_stage(service):
                     if option_kind == 'song' and option.verses:
                         meta = 'Bait ' + format_verses(option.verses)
                     elif option_kind == 'media' and option.media_id:
-                        meta = option.media.get_family_display()
+                        family = option.media.get_family_display()
+                        # An untitled option shows the filename as its title already.
+                        meta = (f'{family} · {option.media_filename}'
+                                if option.title and option.media_filename else family)
+                    # What the dialog says once this option is picked. A media names its
+                    # file type first and then the name that tells it apart -- the title
+                    # when there is one, the file name otherwise. Everything else reads as
+                    # its reference, with its meta after it.
+                    # The label is two parts: what the entry is, and the quiet detail that
+                    # tells one from another -- the file name under its type, the verses
+                    # under a song. The dialog draws the second part muted. A text option is
+                    # its own two: the title it was given, and the words it carries.
+                    pick_title, pick_body = '', ''
+                    if option_kind == 'text':
+                        pick_title = option.title or ''
+                        pick_body = ' '.join((option.text or '').split())
+                    if option_kind == 'media' and option.media_id:
+                        # The type and the title are what the entry is; only the file's own
+                        # name steps back.
+                        pick_main = ' · '.join(filter(None, [option.media.get_family_display(),
+                                                             option.title]))
+                        pick_mute = option.media_filename or ''
+                    else:
+                        pick_main = option.citation()
+                        pick_mute = meta
+                        if option_kind == 'text' and not pick_main:
+                            # An untitled prayer has no reference: its words are its name.
+                            words = ' '.join((option.text or '').split())
+                            pick_main = words if len(words) <= 80 else words[:77].rstrip() + '…'
+                    pick_label = ' · '.join(filter(None, [pick_main, pick_mute]))
                     options.append({'pk': option.pk, 'anchor': f'e{option.pk}',
                                     'citation': option.citation(),
-                                    'title': option.title, 'meta': meta,
+                                    'title': option.title, 'meta': meta, 'pick': pick_label,
+                                    'pick_main': pick_main, 'pick_mute': pick_mute,
+                                    'pick_title': pick_title, 'pick_body': pick_body,
+                                    'kind': option_kind, 'subtitle': meta, 'entry': True,
+                                    'body': (option.text or '').strip() if option_kind == 'text' else '',
                                     'preview': option_preview})
+            slot_state = ''
+            if row.kind == tatib_models.ServiceEntryKind.CHOICE:
+                slot_state = (f'{len(options)} option' + ('' if len(options) == 1 else 's')
+                              if options else 'No options yet')
             items.append({'eos': False, 'anchor': anchor, 'entry': True, 'pk': row.pk,
                           'kind': kind_key, 'kind_label': row.get_kind_display(),
                           'slot': True, 'slot_kind': slot_kind, 'slot_label': label,
-                          'options': options,
+                          'slot_state': slot_state, 'options': options,
+                          'option_items': options,
                           'title': title, 'subtitle': '', 'paras': [], 'clipped': False,
                           'note': '', 'preview': None, 'option_of': row.parent_id,
                           'after_marker': anchor})
@@ -1390,7 +1446,8 @@ def _tatib_stage(service):
                 preview = {'kind': 'text', 'title': title, 'paras': _paragraphs(body)}
         block['preview'] = preview
         items.append(block)
-        text_count += 1
+        if row.parent_id is None:
+            text_count += 1
         text_kind = kind_key == 'text'
         label_lines = [title] if title else []
         if text_kind and not title:
@@ -1409,12 +1466,29 @@ def _tatib_stage(service):
             label_lines = [row.get_kind_display()]
         label = ' '.join(label_lines)
         filter_text = f'{label} {title} {body} {verse_line}'
-        toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
-                    'label': label, 'label_lines': label_lines, 'titled': bool(title),
-                    'pk': row.pk, 'entry': True,
-                    'song_label': song_label, 'song_reference': song_reference,
-                    'song_title': song_title, 'verse_line': verse_line,
-                    'txt': filter_text})
+        if row.parent_id is None:
+            toc.append({'eos': kind_key == 'section_break', 'anchor': anchor, 'n': text_count,
+                        'label': label, 'label_lines': label_lines, 'titled': bool(title),
+                        'pk': row.pk, 'entry': True,
+                        'song_label': song_label, 'song_reference': song_reference,
+                        'song_title': song_title, 'verse_line': verse_line,
+                        'txt': filter_text})
+    # "+ Add option" belongs under the last option of its choice, not under the choice's
+    # title: an option is its own row, so only the final one knows that it is last. A choice
+    # with no options yet has no such row, so the choice itself carries the control --
+    # otherwise the one state that most needs it shows nothing to click.
+    for item in items:
+        # the choice draws its options itself, so the control that adds one belongs to the
+        # choice's own block -- under the options, or under "No options yet" when empty
+        if item.get('kind') == 'choice' and item.get('slot'):
+            item['add_option_for'] = item.get('pk')
+            item['add_option_kind'] = item.get('slot_kind')
+    # An option is drawn inside its choice's block, so it gets no add bar of its own: the
+    # choice's bar already follows the whole block. Left in, every option piled one more
+    # bar into the same seam and the gap read as a run of separators.
+    for item in items:
+        if item.get('option_of'):
+            item['suppress_add'] = True
     return items, toc
 
 

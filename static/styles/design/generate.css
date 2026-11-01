@@ -22,52 +22,104 @@
   letter-spacing: .09em; text-transform: uppercase;
 }
 .generate__steps li { display: flex; align-items: center; gap: 6px; }
-.generate__steps li span {
+/* The labels are capitals, so their ink sits above the middle of their line box while the
+   badge is centred on it: the pair reads as the label riding high. This lift is the
+   no-script fallback, calibrated on the owner's font (1px at 10.8px); generate.js measures
+   the real ink box and overrides it, because the family behind ui-sans-serif differs from
+   machine to machine and no single em value is right for all of them. */
+.generate__steps .generate__step-label { display: inline-block; transform: translateY(.09em); }
+.generate__steps li .generate__step-mark {
   display: grid; place-items: center; width: 18px; height: 18px; flex: none;
   box-sizing: border-box; letter-spacing: 0;
   border: 1px solid var(--divider); border-radius: 50%; font-size: 10.5px;
 }
-.generate__steps li span i { display: block; font-style: inherit; line-height: inherit; }
-@media (min-resolution: 1.5dppx) {
-  .generate__steps li span { text-indent: .05em; }
-  .generate__steps li span i { transform: translateY(.6px); }
+/* The digit's transform is computed from the font's own ink box in generate.js --
+   a fixed lift in CSS is only right for one font at one device-pixel ratio. */
+.generate__steps li .generate__step-mark { text-indent: 0; }
+/* The digit is drawn in the face the app ships rather than the machine's: ui-sans-serif
+   resolves to a different font on every platform, and the correction that centres a digit
+   in one is wrong in the next -- the owner's browser showed it. Source Sans 3 travels
+   with the repository, so its metrics are the same everywhere. */
+.generate__steps li .generate__step-mark {
+  font-family: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
 }
-.generate__steps li span svg { display: block; width: 10px; height: 10px; }
+.generate__steps li .generate__step-mark i { display: block; font-style: inherit; line-height: 1; }
+.generate__steps li .generate__step-mark svg { display: block; width: 10px; height: 10px; }
 .generate__steps li[aria-current="step"] { color: var(--ink); }
-.generate__steps li[aria-current="step"] span,
-.generate__steps li[data-done] span { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+.generate__steps li[aria-current="step"] .generate__step-mark,
+.generate__steps li[data-done] .generate__step-mark { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
 .generate__steps li[data-done] { color: var(--ink); }
-.generate__steps li[data-done] span i { transform: none; }
+.generate__steps li[data-done] .generate__step-mark i { transform: none; }
 
 .generate__body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 26px 16px; }
 .generate__body--form { padding-top: 20px; }
 .generate__body--form .editor__field { margin: 0 0 14px; }
 
 /* a fixed row: the page's entry, a step below the slot's title, and inert */
-.g-row { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; }
+/* A row is a thing to read and act on, not a line: 14px above and below gives each one
+   air of its own and keeps the separators off the text. */
+.g-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; }
+/* A flex child will not shrink below its longest word unless it is told to, so one long
+   file name or a run of characters could push the whole dialog into a horizontal scroll.
+   'anywhere' also lowers the min-content width, which is what lets the row give way. */
+.g-row > * { min-width: 0; }
+.g-row :is(.read__sec, .read__sub, .tatib__tx, .g-title, .g-value) { overflow-wrap: anywhere; }
 .g-row + .g-row { border-top: 1px solid var(--divider); }
 .g-fixed { opacity: .52; pointer-events: none; }
 .g-fixed .tatib__item { position: relative; margin: 0; padding: 0 0 0 24px; display: block; min-height: 0; }
 .g-fixed .entry__kind-icon { left: 0; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; }
 .g-fixed .entry__media-icon { left: 0; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border-radius: 4px; }
 .g-fixed .entry__media-icon svg { width: 11px; height: 11px; }
-.g-fixed .read__sec {
+/* An id in the selector: the page's own `.read[data-kind="tatib"] .read__sec` is as
+   specific as a two-class rule and is loaded earlier, so only an id beats it. The muted
+   row is a deliberate step below the slot's title, not the page's size at 52% opacity. */
+#generateModal .g-fixed .read__sec {
   text-align: left; margin: 0;
   font: 640 14px/1.35 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: .02em; font-style: normal; color: var(--ink);
 }
-.g-fixed .read__sub { margin: 2px 0 0; color: var(--head-ink); font: 500 11.5px/1.3 ui-sans-serif, system-ui, sans-serif; }
-.g-fixed .tatib__tx { margin: 2px 0 0; font: 400 14px/1.55 ui-serif, Georgia, 'Times New Roman', serif; }
+#generateModal .g-fixed .read__sub { margin: 2px 0 0; color: var(--head-ink); font: 500 11.5px/1.3 ui-sans-serif, system-ui, sans-serif; }
+#generateModal .g-fixed .tatib__tx {
+  margin: 2px 0 0; font: 400 14px/1.55 ui-serif, Georgia, 'Times New Roman', serif;
+  line-height: 1.55;
+}
 
 /* a slot row: the page's slot, live */
 .g-row--slot { align-items: center; padding-left: 24px; }
 .g-main { flex: 1; min-width: 0; }
 .g-label { margin: 0; color: var(--head-ink); font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
-.g-title { margin: 2px 0 0; color: var(--ink); font: 620 17px/1.3 ui-serif, Georgia, 'Times New Roman', serif; letter-spacing: -.01em; }
+/* The dialog's live rows name themselves in the page's own heading, not in a serif step
+   of their own: the list inside the dialog and the list behind it must not disagree. */
+.g-title {
+  margin: 2px 0 0; color: var(--ink);
+  font: 640 17px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .03em;
+}
 .g-value { margin: 3px 0 0; color: var(--head-ink); font: 400 12.5px/1.45 ui-sans-serif, system-ui, sans-serif; }
 .g-row--slot[data-set="true"] .g-value { color: var(--ink); }
-.g-action { height: 32px; padding: 0 14px; border: 1px solid var(--divider); border-radius: 8px; background: none; color: var(--ink); cursor: pointer; font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif; }
-.g-action:hover:not([disabled]) { border-color: var(--focus); }
+.g-value-mute { color: var(--head-ink); }
+/* a chosen text option: the title it was given, then the words it carries */
+.g-value-title { display: block; color: var(--ink); font: 600 12.5px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .01em; }
+.g-value-body {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  margin: 2px 0 0; color: var(--head-ink);
+  font: 400 12.5px/1.45 ui-serif, Georgia, 'Times New Roman', serif;
+}
+/* Set and Choose are the dialog's one action per row: filled like Use template, so the
+   step reads as a list of things to do rather than a list of quiet labels. */
+.g-action {
+  height: 32px; padding: 0 14px; border-radius: 8px;
+  border: 1px solid var(--active-bg); background: var(--active-bg); color: var(--active-ink);
+  cursor: pointer; font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.g-action:hover:not([disabled]) { filter: brightness(.94); }
+/* Settled rows read Change, a revision rather than an action still owed: outlined, so a
+   page of unfinished rows shows the filled buttons it is asking for. */
+.g-row--slot[data-set="true"] .g-action {
+  background: none; color: var(--ink); border-color: var(--divider);
+}
+.g-row--slot[data-set="true"] .g-action:hover:not([disabled]) {
+  filter: none; border-color: var(--focus); color: var(--ink);
+}
 .g-action[disabled] { opacity: .55; cursor: not-allowed; }
 
 .generate__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 26px; border-top: 1px solid var(--divider); min-height: 69px; box-sizing: border-box; }
@@ -86,8 +138,16 @@
 .choose__item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 6px 8px; padding: 8px; border: 1px solid var(--divider); border-radius: 10px; }
 .choose__item:has(.choose__pick[aria-pressed="true"]) { border-color: var(--active-bg); }
 .choose__main { grid-column: 1; min-width: 0; padding: 2px 4px; }
-.choose__ref { display: block; color: var(--ink); font: 620 14.5px/1.35 ui-serif, Georgia, 'Times New Roman', serif; }
+/* The picker's headings wear the same face as its meta: one family per dialog, with
+   weight and size carrying the step instead of a serif borrowing from the page. */
+.choose__ref { display: block; color: var(--ink); font: 620 14.5px/1.35 ui-sans-serif, system-ui, sans-serif; letter-spacing: .01em; }
 .choose__meta { display: block; color: var(--head-ink); font: 500 12px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: .03em; }
+/* the option's own words, two lines of them: enough to tell two prayers apart */
+.choose__body {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  margin: 3px 0 0; color: var(--head-ink);
+  font: 400 13px/1.45 ui-serif, Georgia, 'Times New Roman', serif;
+}
 .choose__preview { grid-column: 2; height: 30px; padding: 0 10px; border: 1px solid var(--divider); border-radius: 7px; background: none; color: var(--head-ink); cursor: pointer; font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif; }
 .choose__preview:hover { color: var(--ink); border-color: var(--focus); }
 .choose__pick { grid-column: 3; height: 30px; padding: 0 12px; border: 1px solid var(--active-bg); border-radius: 7px; background: var(--active-bg); color: var(--active-ink); cursor: pointer; font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif; }
@@ -99,12 +159,24 @@
 .generate__confirm-layer { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; padding: 24px; background: var(--backdrop); }
 .generate__confirm-layer[hidden], .choose-layer[hidden] { display: none; }
 .generate__confirm-layer .editor__confirm,
-.choose-layer .editor__confirm { width: min(440px, 100%); }
+.choose-layer .editor__confirm {
+  width: min(440px, 100%);
+  /* a card of its own: the layer is a backdrop, and the confirmation must read as one
+     surface above it rather than as lines inherited from the form underneath */
+  padding: 20px 22px 18px; border-radius: 12px;
+  background: var(--canvas); color: var(--ink);
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
+}
+.generate__confirm-layer .editor__confirm h3,
+.choose-layer .editor__confirm h3 { margin: 0; font: 650 17px/1.3 ui-sans-serif, system-ui, sans-serif; }
+.generate__confirm-layer .editor__confirm p,
+.choose-layer .editor__confirm p { margin: 0; color: var(--head-ink); font: 400 13px/1.5 ui-sans-serif, system-ui, sans-serif; }
+.generate__confirm-layer .editor__confirm-actions,
+.choose-layer .editor__confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 
 /* the template page's slot rows, and a choice's own Add option */
 .slot__kind { margin: 0 0 2px; color: var(--head-ink); font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .slot__add-row { margin: 6px 0 0 8px; }
-.tatib__item--option { margin-left: 26px; padding-left: 12px; border-left: 1px solid var(--divider); }
 
 @media (max-width: 520px) {
   .generate__head, .generate__body, .generate__foot { padding-left: 16px; padding-right: 16px; }
@@ -120,3 +192,141 @@
 }
 .entry__add-btn--slot:hover { border-color: var(--focus); }
 .entry__empty-btn--slot { color: var(--focus); }
+
+/* ---- the template page's slot rows, to the preview's measurements ----------------
+   The mark and every other row's kind icon share one column (24px in from the item), and
+   the slot's text starts where the song titles do (56px). Getting this wrong hangs the
+   mark outside the column the rest of the list uses -- which is exactly what it did. */
+/* 64px, not the preview mock's 56: that is where every other entry's title starts (a 20px
+   kind icon at 24 plus the gap), and a list reads by its text column. */
+#read .tatib__item--slot { position: relative; padding-left: 64px; }
+#read .tatib__item--slot,
+#read .tatib__item--choice { position: relative; }
+/* the page's item is a flex row of mark + text + controls; a slot has no single text child,
+   so its kind, title and state would lay out side by side. Stack them. */
+#read .tatib__item--slot { display: block; }
+#read .tatib__item--slot .read__sec { margin: 0; }
+#read .slot__mark {
+  position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px; display: grid; place-items: center;
+  color: color-mix(in srgb, var(--focus) 78%, var(--head-ink)); pointer-events: none;
+}
+#read .slot__mark svg { width: 100%; height: 100%; }
+#read .tatib__item--choice { padding-left: 64px; padding-bottom: 8px; }
+
+/* The preview's own frame: a slot is a place to fill, drawn as a dashed edge rather than a
+   card, so it never competes with the entries around it. */
+#read .tatib__item--slot::after {
+  content: ""; position: absolute; inset: 0; border-radius: 9px; pointer-events: none;
+  border: 1px dashed color-mix(in srgb, var(--divider) 55%, var(--focus));
+}
+#read .tatib__item--slot:hover::after { border-color: color-mix(in srgb, var(--focus) 55%, var(--divider)); }
+
+/* the options are the choice's own children now: one block, one rule, the control last */
+#read .choice__options {
+  margin: 8px 0 0 0; padding: 0 0 0 24px; border-left: 1px solid var(--divider);
+  display: flex; flex-direction: column;
+}
+#read .tatib__item--option {
+  margin: 0; padding: 4px 0;
+  min-height: 0; border: 0; border-radius: 0;
+}
+/* An option reads like an entry, one size down: same face, weight, tracking, leading
+   ratio and margins as the page's own entry title and meta -- only the size differs, so
+   the child rows sit in the list's typography rather than beside it. */
+/* An option is the one title that steps down: same face, weight, tracking and leading
+   ratio as every other title on the page, a size below them because it is a child row. */
+#read .choice__options .tatib__item--option .read__sec {
+  margin: 0; color: var(--ink);
+  font: 640 14px/1.4 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .03em; font-style: normal; text-align: left;
+  /* three lines of title and two of meta: an option is a choice, not a paragraph */
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
+}
+#read .tatib__item--option .read__sub {
+  margin: -2px 0 0; color: var(--head-ink);
+  font: 560 11.5px/1.5 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .04em;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+
+/* Only the row under the pointer shows its controls. ':hover' reaches ancestors, so an
+   option would otherwise light the choice's controls as well. */
+#read .tatib__item--choice:has(.tatib__item--option:hover) > .entry__acts { opacity: 0; }
+
+/* An option's controls are icons, always: three labelled buttons would outweigh a child
+   row's title. The choice's own controls keep the page's labels -- it is an entry. */
+#read .tatib__item--option > .entry__acts .entry__ctrl-label {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+#read .tatib__item--option > .entry__acts .entry__ctrl { gap: 0; padding: 5px 6px; }
+
+/* An option's controls sit on its own centreline, so the gap above them equals the gap
+   below. The choice itself is an entry and keeps every entry's corner: top right. */
+#read .tatib__item--option > .entry__acts {
+  top: 50%; transform: translateY(-50%);
+}
+/* The row is as small as the controls allow: they sit in the flow, so the height is their
+   own plus one gap above and one below -- and both equal the gap they keep from the edge. */
+#read .tatib__item--option {
+  display: flex; align-items: center; gap: 8px;
+  /* the same gutter on both sides: the row's own box is what the pointer highlights */
+  padding: 8px; min-height: 0;
+}
+/* The option's own lines are one block, centred against its controls: a title with no
+   meta (a passage) then sits on the row's centreline instead of riding its top edge. */
+#read .choice__opt-body { flex: 1 1 auto; min-width: 0; }
+#read .tatib__item--option > .entry__acts {
+  position: static; transform: none; flex: none; align-self: center;
+}
+/* A text option shows its words, two lines of them, a step under an entry's body. */
+#read .choice__options .tatib__item--option .choice__opt-text {
+  margin: 2px 0 0; color: var(--head-ink);
+  font: 400 14px/1.45 ui-serif, Georgia, 'Times New Roman', serif;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+
+/* A dot on the group's rule names each option's place on it. */
+#read .tatib__item--option { position: relative; }
+#read .tatib__item--option::before {
+  content: ""; position: absolute; left: -27px; top: 50%; margin-top: -3px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--divider);
+}
+/* the mark names the row, so it rides the first line, not the middle of a tall list */
+#read .tatib__item--choice .slot__mark { top: 26px; transform: none; }
+/* A choice's title reads in the same type as every other entry's: the serif step was the
+   slot style, and it made the circled titles look like a different kind of thing. */
+#read .tatib__item--slot .read__sec {
+  text-align: left; color: var(--ink);
+  font: 640 17px/1.4 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .03em; font-style: normal;
+}
+#read .slot__kind {
+  margin: 0 0 2px; color: var(--head-ink);
+  font: 600 11.5px/1.3 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+/* The count line is a meta like any other: the option meta's size, one weight below it. */
+#read .slot__state {
+  margin: 3px 0 0; color: var(--head-ink);
+  font: 400 11.5px/1.5 ui-sans-serif, system-ui, sans-serif; letter-spacing: .04em;
+}
+
+/* An option is a child row, not an entry of its own: no card, no minimum height, the
+   choice's title at 17px and the option reading a step below it, on the rule the preview
+   drew around the group. */
+
+
+/* Add option reads as a quiet control under the options, not a slot-level action */
+/* the control lives in the last option's row, whose own indent already places it */
+/* under a list of options the control lines up with the rows; on an empty choice it
+   sits on the block's own text line */
+.choice__options + .slot__add-row { margin: 6px 0 0 32px; }
+.slot__add-row { margin: 6px 0 0 0; }
+.slot__add-row .entry__add-btn--slot {
+  border-color: var(--divider); color: var(--head-ink);
+  font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.slot__add-row .entry__add-btn--slot:hover { border-color: var(--focus); color: var(--ink); }

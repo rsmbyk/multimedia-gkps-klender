@@ -9,9 +9,19 @@ modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
   <form class="editor__form" method="post" action="{{ save_url }}">
     {% csrf_token %}
     {% if kind == 'tatib' and not target_id %}
-    <div class="editor__types" role="group" aria-label="Type" data-tatib-kinds>
-      <button type="button" class="editor__type" data-tatib-kind="0" aria-pressed="true">Normal</button>
-      <button type="button" class="editor__type" data-tatib-kind="1" aria-pressed="false">Template</button>
+    <div class="editor__screen-mode-wrap">
+      <div class="screen-mode editor__screen-mode" role="group" aria-label="Tata Ibadah type"
+           data-tatib-kinds data-selected="normal">
+        <span class="screen-mode__thumb" aria-hidden="true"></span>
+        <button type="button" data-tatib-kind="0" aria-pressed="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.8" y="4" width="14.4" height="13" rx="2"/><path d="M2.8 8h14.4M6.4 2.4v3.2M13.6 2.4v3.2"/></svg>
+          Normal
+        </button>
+        <button type="button" data-tatib-kind="1" aria-pressed="false">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.8" y="4" width="14.4" height="13" rx="2" stroke-dasharray="2.6 2.4"/><path d="M6 8.4h8M6 12h5"/></svg>
+          Template
+        </button>
+      </div>
     </div>
     {% endif %}
     {% if kind == 'song' and not target_id %}<input type="hidden" name="book" value="{{ book_id }}">{% endif %}

@@ -1,0 +1,31 @@
+<span class="entry__acts">
+  {% if item.preview %}
+  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="{{ item.anchor }}" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
+    <span class="entry__ctrl-label">Preview</span>
+  </button>
+  {% endif %}
+  {% if item.entry %}
+  <button type="button" class="entry__ctrl" data-entry-edit="{{ item.pk }}">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="{{ item.pk }}">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  {% elif item.old_item %}
+  <button type="button" class="entry__ctrl" data-old-item-edit="{{ item.pk }}">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="{{ item.pk }}">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  {% endif %}
+</span>

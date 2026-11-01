@@ -11,9 +11,17 @@
 <div class="read__project"{% if is_template %} data-generate-group{% else %} data-project-group data-display-channel="gkps-service-display"{% endif %}>
   {% if service_media %}<button type="button" class="read__project-btn" id="serviceMediaButton" aria-label="Media files">Media files</button>{% endif %}
   {% if is_template %}
-  <button type="button" class="read__project-btn" data-generate-open
+  <button type="button" class="read__project-btn read__project-btn--primary" data-generate-open
           data-generate-url="{% url 'web-tatib-generate' service_id %}"
-          data-generate-name="{{ service.name }}">Use template</button>
+          data-generate-name="{{ service.name }}">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3.4" width="11.4" height="13.2" rx="1.8"/>
+      <path d="M6.2 6.8h5M6.2 9.6h5M6.2 12.4h3"/>
+      <path d="M16.2 10.2v5.6M13.4 13h5.6"/>
+    </svg>
+    <span>Use template</span>
+  </button>
   {% else %}
   <button type="button" class="read__project-btn read__project-btn--icon" data-project-window
           data-projector-url="{% url 'web-projector' %}" data-project-service="{{ service_id }}"
@@ -47,9 +55,9 @@
 {% if editor_enabled and items %}
 <div class="entry__start" data-entry-start role="group" aria-label="Add at the start of this Tata Ibadah">
   <span class="entry__start-inner">
-  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
-  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
   <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="{{ service_id }}">+ Media</button>
   {% if is_template %}
   <span class="entry__add-sep" aria-hidden="true"></span>
@@ -80,56 +88,46 @@
   </button>
 </span>{% endif %}{% endif %}</div>
 {% else %}
-<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}{% if item.preview or item.entry or item.old_item %} tatib__item--acts{% endif %}{% if item.kind == 'media' %} tatib__item--media{% endif %}{% if item.kind == 'scripture' or item.kind == 'song' %} tatib__item--{{ item.kind }}{% endif %}{% if item.slot %} tatib__item--slot tatib__item--{{ item.slot_kind }}{% endif %}{% if item.option_of %} tatib__item--option{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.slot %} data-slot="{{ item.slot_kind }}"{% endif %}{% if item.option_of %} data-option-of="{{ item.option_of }}"{% endif %}{% if item.clipped %} data-clipped="true"{% endif %}{% if item.entry %} data-entry-pk="{{ item.pk }}"{% elif item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}{% if item.kind == 'media' %} data-media-hash="{{ item.media_hash }}" data-media-family="{{ item.media_family }}"{% endif %}>
+{% if not item.option_of %}<section class="tatib__item{% if item.entry %} tatib__item--entry{% endif %}{% if item.preview or item.entry or item.old_item %} tatib__item--acts{% endif %}{% if item.kind == 'media' %} tatib__item--media{% endif %}{% if item.kind == 'scripture' or item.kind == 'song' %} tatib__item--{{ item.kind }}{% endif %}{% if item.slot %} tatib__item--slot tatib__item--{{ item.kind }}{% endif %}{% if item.option_of %} tatib__item--option{% endif %}" id="ti-{{ item.anchor }}" data-anchor="{{ item.anchor }}"{% if item.slot %} data-slot="{{ item.slot_kind }}" data-slot-kind="{{ item.kind }}"{% endif %}{% if item.option_of %} data-option-of="{{ item.option_of }}"{% endif %}{% if item.clipped %} data-clipped="true"{% endif %}{% if item.entry %} data-entry-pk="{{ item.pk }}"{% elif item.old_item %} data-old-item-pk="{{ item.pk }}"{% endif %}{% if item.kind == 'media' %} data-media-hash="{{ item.media_hash }}" data-media-family="{{ item.media_family }}"{% endif %}>
 {% if item.kind == 'media' %}<span class="entry__media-icon" aria-hidden="true" data-media-icon="{{ item.media_family }}"></span>{% endif %}
-{% if item.slot %}<p class="slot__kind">{{ item.slot_label }}</p>{% endif %}
-{% if item.kind == 'choice' and editor_enabled %}<p class="slot__add-row"><button type="button" class="entry__add-btn entry__add-btn--slot" data-add-option="{{ item.pk }}" data-add-option-kind="{{ item.slot_kind }}" data-entry-tatib="{{ service_id }}">+ Add option</button></p>{% endif %}
+{% if item.slot %}<span class="slot__mark" aria-hidden="true">{% include 'reading/_slot_mark.html' with kind=item.kind %}</span>
+<p class="slot__kind">{{ item.slot_label }}</p>{% endif %}
 {% if item.title %}<h2 class="read__sec">{% if item.kind == 'scripture' or item.kind == 'song' %}{% include 'reading/_entry_kind_icon.html' with kind=item.kind %}{% endif %}{% if item.jump %}<a class="entry__jump" href="{{ item.jump }}" data-entry-jump {% else %}<span {% endif %}{% if item.jump %}title="Open {{ item.title }}" aria-label="Open {{ item.title }}">{{ item.title }}</a>{% else %}>{{ item.title }}</span>{% endif %}</h2>{% endif %}
 {% if item.deleted_target %}<p class="entry__deleted-warning" role="status">This song, songbook, or an included verse was deleted.</p>{% endif %}
+{% if item.slot_state %}<p class="slot__state">{{ item.slot_state }}</p>{% endif %}
 {% if item.subtitle %}<p class="read__sub">{{ item.subtitle }}</p>{% endif %}
 {% for para in item.paras %}<p class="tatib__tx{% if para.voice %} is-{{ para.voice }}{% endif %}">{% if para.mark %}<span class="tatib__sp">{{ para.mark }}</span> {% endif %}{{ para.text }}</p>
 {% endfor %}
 {% if item.entry %}{% if item.note and item.eos %}<span class="tatib__note">{{ item.note }}</span>{% endif %}{% endif %}
+{% if item.option_items %}
+<div class="choice__options">
+  {% for option in item.option_items %}
+  <section class="tatib__item tatib__item--option" id="ti-{{ option.anchor }}"
+           data-anchor="{{ option.anchor }}" data-option-of="{{ item.pk }}"
+           data-entry-pk="{{ option.pk }}">
+    <div class="choice__opt-body">
+      <h3 class="read__sec"><span>{{ option.title|default:option.citation }}</span></h3>
+      {% if option.subtitle %}<p class="read__sub">{{ option.subtitle }}</p>{% endif %}
+      {% if option.body %}<p class="tatib__tx choice__opt-text">{{ option.body }}</p>{% endif %}
+    </div>
+    {% if option.preview or option.entry %}{% include 'reading/_entry_acts.html' with item=option %}{% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endif %}
+{% if item.add_option_for and editor_enabled %}
+<p class="slot__add-row"><button type="button" class="entry__add-btn entry__add-btn--slot" data-add-option="{{ item.add_option_for }}" data-add-option-kind="{{ item.add_option_kind }}" data-entry-tatib="{{ service_id }}">+ Add option</button></p>
+{% endif %}
 {% if item.preview or item.entry or item.old_item %}
-<span class="entry__acts">
-  {% if item.preview %}
-  <button type="button" class="entry__ctrl" data-preview-open data-preview-for="{{ item.anchor }}" aria-label="Preview this entry">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"/><circle cx="10" cy="10" r="2.1"/></svg>
-    <span class="entry__ctrl-label">Preview</span>
-  </button>
-  {% endif %}
-  {% if item.entry %}
-  <button type="button" class="entry__ctrl" data-entry-edit="{{ item.pk }}">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
-    <span class="entry__ctrl-label">Edit</span>
-  </button>
-  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="{{ item.pk }}">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
-    <span class="entry__ctrl-label">Delete</span>
-  </button>
-  {% elif item.old_item %}
-  <button type="button" class="entry__ctrl" data-old-item-edit="{{ item.pk }}">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
-    <span class="entry__ctrl-label">Edit</span>
-  </button>
-  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="{{ item.pk }}">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
-    <span class="entry__ctrl-label">Delete</span>
-  </button>
-  {% endif %}
-</span>
+{% include 'reading/_entry_acts.html' with item=item %}
 {% endif %}
-</section>
+</section>{% endif %}
 {% endif %}
-{% if editor_enabled %}
+{% if editor_enabled and not item.suppress_add %}
 <div class="entry__add" data-entry-after="{{ item.after_marker|default:item.anchor }}" role="group" aria-label="Add after this item"><span class="entry__add-inner">
-  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
-  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
   <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}">+ Passage</button>
   <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="{{ service_id }}">+ Media</button>
 {% if is_template %}
   <span class="entry__add-sep" aria-hidden="true"></span>
@@ -144,32 +142,33 @@
   <p class="entry__empty-title">This Tata Ibadah is empty.</p>
   <p class="entry__empty-hint">Add the first item to start preparing the service.</p>
   <div class="entry__empty-actions">
-    <button type="button" class="entry__empty-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}" title="Add Passage">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/><path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/></svg>
-      <span class="sr">Add Passage</span>
+    <button type="button" class="entry__empty-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}" title="Add Text">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/></svg>
+      <span class="sr">Add Text</span>
     </button>
     <button type="button" class="entry__empty-btn" data-entry-open="song" data-entry-tatib="{{ service_id }}" title="Add Song">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/></svg>
       <span class="sr">Add Song</span>
     </button>
-    <button type="button" class="entry__empty-btn" data-entry-open="text" data-entry-tatib="{{ service_id }}" title="Add Text">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/></svg>
-      <span class="sr">Add Text</span>
+    <button type="button" class="entry__empty-btn" data-entry-open="scripture" data-entry-tatib="{{ service_id }}" title="Add Passage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/><path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/></svg>
+      <span class="sr">Add Passage</span>
     </button>
     <button type="button" class="entry__empty-btn" data-entry-open="media" data-entry-tatib="{{ service_id }}" title="Add Media">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="2.4"/><path d="M10.4 9.2v5.6l4.6-2.8z"/></svg>
       <span class="sr">Add Media</span>
     </button>
+    
     {% if is_template %}
-    <button type="button" class="entry__empty-btn entry__empty-btn--slot" data-entry-open="fill_in" data-entry-tatib="{{ service_id }}" title="Add Fill-in">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="3" stroke-dasharray="3 2.4"/><path d="M12 8.2v7.6M8.2 12h7.6"/></svg>
-      <span class="sr">Add Fill-in</span>
-    </button>
-    <button type="button" class="entry__empty-btn entry__empty-btn--slot" data-entry-open="choice" data-entry-tatib="{{ service_id }}" title="Add Choice">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="3" stroke-dasharray="3 2.4"/><circle cx="12" cy="12" r="3.4"/></svg>
-      <span class="sr">Add Choice</span>
-    </button>
-    {% endif %}
+        <button type="button" class="entry__empty-btn entry__empty-btn--slot" data-entry-open="fill_in" data-entry-tatib="{{ service_id }}" title="Add Fill-in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="3" stroke-dasharray="3 2.4"/><path d="M12 8.2v7.6M8.2 12h7.6"/></svg>
+          <span class="sr">Add Fill-in</span>
+        </button>
+        <button type="button" class="entry__empty-btn entry__empty-btn--slot" data-entry-open="choice" data-entry-tatib="{{ service_id }}" title="Add Choice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="3" stroke-dasharray="3 2.4"/><circle cx="12" cy="12" r="3.4"/></svg>
+          <span class="sr">Add Choice</span>
+        </button>
+        {% endif %}
   </div>
 </div>
 {% endif %}
