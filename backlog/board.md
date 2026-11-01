@@ -41,11 +41,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-186](./items/ITEM-186-host-font-detection.md) | A fresh clone starts on a machine with no HOME, and the converter uses the computer's own fonts | Compose's fallback collapses to `/.local/share/gkps-fonts` where `HOME` is unset, so the media service refuses the mount; a host launcher mounts the platform's font directories read-only, and the aliases stop overriding an installed face | feat | P2 | M | [182](../specs/182-host-font-detection/spec.md) | [#483](https://github.com/rsmbyk/multimedia-gkps-klender/pull/483) | 2026-11-01 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-186](./items/ITEM-186-host-font-detection.md) | A fresh clone starts on a machine with no HOME, and the converter uses the computer's own fonts | Compose's fallback collapses to `/.local/share/gkps-fonts` where `HOME` is unset, so the media service refuses the mount; a host launcher mounts the platform's font directories read-only, and the aliases stop overriding an installed face | feat | P2 | M | [182](../specs/182-host-font-detection/spec.md) | develop via [#483](https://github.com/rsmbyk/multimedia-gkps-klender/pull/483) | 2026-11-01 |
 | [ITEM-166](./items/ITEM-166-shortcuts-audio-video-groups.md) | The shortcuts sheet names Audio and Video on their own | Audio and video each get a group holding their Play/Pause row, and the combined row leaves Display | feat | P2 | S | [160](../specs/160-shortcuts-audio-video-groups/spec.md) | develop via [#477](https://github.com/rsmbyk/multimedia-gkps-klender/pull/477) | 2026-10-30 |
 | [ITEM-181](./items/ITEM-181-tata-ibadah-templates.md) | A Tata Ibadah is a service or a template | The type is chosen when the record is created, a template carries fill-in and choice entries, generates a dated service in two steps, can be copied from any service, and never projects | feat | P1 | L | [167](../specs/167-tata-ibadah-templates/spec.md) | develop via [#474](https://github.com/rsmbyk/multimedia-gkps-klender/pull/474) | 2026-10-30 |
 | [ITEM-179](./items/ITEM-179-slides-render-fidelity.md) | A converted deck is drawn in a monospaced face and reflows every slide | Calibri, Calibri Light, Britannic Bold and Berlin Sans FB Demi all resolve to Liberation Mono in the media image, and LibreOffice 7.4 re-wraps what the fonts alone would not | fix | P1 | M | [166](../specs/166-slides-render-fidelity/spec.md) | develop via [#469](https://github.com/rsmbyk/multimedia-gkps-klender/pull/469) | 2026-10-30 |
