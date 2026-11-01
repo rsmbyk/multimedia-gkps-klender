@@ -57,9 +57,10 @@ services:
       GKPS_MEDIA_ALLOWED_ORIGINS: "${GKPS_MEDIA_PRODUCTION_ORIGIN:?Set GKPS_MEDIA_PRODUCTION_ORIGIN in the project .env},http://localhost:${WEB_PORT:-63404},http://127.0.0.1:${WEB_PORT:-63404}"
     volumes:
       - media_library_data:/var/lib/gkps-media
-      # Fonts that ship only with Office (Britannic Bold, Berlin Sans FB Demi) cannot be built into
-      # this image; the operator drops them here once and the converter draws the deck in them.
-      - ${GKPS_FONTS_DIR:-$HOME/.local/share/gkps-fonts}:/usr/share/fonts/operator:ro
+      # A font this computer's operator adds by hand. The default lives inside the checkout: a
+      # default cannot name $HOME, which a Windows computer does not export. The launcher
+      # (docker/up.sh, docker/up.ps1) adds the machine's own font directories beside this one.
+      - ${GKPS_FONTS_DIR:-./.fonts}:/usr/share/fonts/operator:ro
     restart: unless-stopped
 
 volumes:

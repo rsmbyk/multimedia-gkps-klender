@@ -21,11 +21,16 @@ process needs to be started separately and no host folder needs to be chosen.
 
    This is local Compose configuration, not a Vercel environment variable. The
    value must match the origin in the production browser address bar.
-4. Start the stack from the project root:
+4. Start the stack from the project root with the launcher, which also mounts this
+   computer's own fonts:
 
    ```sh
-   docker compose up --build -d
+   docker\up.ps1 --build     # Windows PowerShell
+   ./docker/up.sh --build    # macOS and Linux
    ```
+
+   Plain `docker compose up --build -d` still works: it starts the same stack
+   without the computer's font directories.
 
    Compose starts Django, PostgreSQL, and the media companion. The companion's
    allowed origins include the configured production origin and both local
@@ -89,11 +94,34 @@ Cambria, Arial and Times New Roman are drawn in metric-compatible substitutes
 
 Some decks also use fonts that ship only with Microsoft Office — `Britannic
 Bold` and `Berlin Sans FB Demi` are the usual two. They cannot be included in
-the image, but they can be supplied once on each computer:
+the image, so the stack reads them from the computer instead.
 
-1. Put the font files in `~/.local/share/gkps-fonts` (or in the directory
-   `GKPS_FONTS_DIR` names, if your `.env` sets it).
-2. Restart the companion: `docker compose up -d media`.
+Started with the launcher (`docker\up.ps1` on Windows, `./docker/up.sh`
+elsewhere), the stack mounts the computer's own font directories read-only
+beside the image's faces: `C:/Windows/Fonts` and the per-user font folder on
+Windows, `/System/Library/Fonts`, `/Library/Fonts` and `~/Library/Fonts` on
+macOS, `/usr/share/fonts` and `~/.local/share/fonts` on Linux. A deck set in a
+face installed on that computer is converted in the real face, with nothing to
+copy. Plain `docker compose up` skips this and draws with the image's
+substitutes.
+
+Docker Desktop shares only some host paths, and a path it cannot read appears
+to the container as an empty directory rather than an error. The launcher
+therefore skips the system-wide directories when the daemon reports itself as
+Docker Desktop (`/usr/share/fonts`, `/Library/Fonts`, `/System/Library/Fonts`),
+prints which ones it skipped, and tells you where to add them (Docker Desktop →
+Settings → Resources → File Sharing). On Windows the whole `C:` drive is shared
+by default, so `C:/Windows/Fonts` is used as it is. After starting, the launcher
+looks inside the companion once and says so if none of the mounted directories
+showed a font — so a silent empty mount cannot pass as success.
+
+A face that is neither installed nor shipped goes in the operator's folder —
+`GKPS_FONTS_DIR`, which defaults to `.fonts/` inside the project and is
+gitignored. A file placed there wins over the computer's own copy of the same
+family. The launcher still reads `~/.local/share/gkps-fonts` on a computer that
+has it.
+
+Restart the companion after adding a file: `docker compose up -d media`.
 
 The companion re-scans that directory on start, and a deck converted before the
 fonts arrived is converted again the next time it is projected — the derivative
