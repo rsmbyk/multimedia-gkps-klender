@@ -722,6 +722,27 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(card['radius'], '12px')
         self.assertEqual(card['buttons'], ['Cancel', 'Create'])
 
+    def test_the_date_label_reads_like_the_new_modal(self):
+        """One date, one wording: the dialog's picker prints the full month, as the New
+        Tata Ibadah modal's picker does, not a short form only this dialog used.
+        """
+        self.open_template()
+        self.page.click('[data-generate-open]')
+        expect(self.page.locator('#generateModal')).to_be_visible()
+        self.page.locator('[data-generate-next]').evaluate('el => { el.disabled = false; el.click(); }')
+        self.page.wait_for_timeout(300)
+        label = self.page.locator('#generateModal [data-date-picker-label]').inner_text().strip()
+        self.assertRegex(label, r'^\d{1,2} \w+ \d{4}$', label)
+        month = label.split()[1]
+        self.assertGreater(len(month), 3, f'short month in a full-date label: {label}')
+
+        self.page.goto(self.live_server_url + reverse('web-tatib'))
+        self.page.click('#panelAdd')
+        expect(self.page.locator('#editorContent [data-date-picker-label]')).to_be_visible()
+        theirs = self.page.locator('#editorContent [data-date-picker-label]').inner_text().strip()
+        # same wording: both name the month in full
+        self.assertEqual(len(theirs.split()[1]), len(month), f'{label} vs {theirs}')
+
     def test_closing_the_chooser_keeps_the_modal(self):
         self.open_template()
         self.page.click('[data-generate-open]')

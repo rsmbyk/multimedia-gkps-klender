@@ -338,8 +338,12 @@
     if (dateInput && !dateInput.value) dateInput.value = nearestSunday();
     var label = modal.querySelector('[data-date-picker-label]');
     if (label && dateInput && dateInput.value) {
-      label.textContent = new Date(dateInput.value + 'T00:00:00')
-        .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      /* the same wording the New Tata Ibadah modal's picker prints: '1 November 2026',
+         not a short month only this dialog would show */
+      var day = new Date(dateInput.value + 'T00:00:00');
+      label.textContent = window.gkpsDateLabel
+        ? window.gkpsDateLabel(day)
+        : day.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     }
     rows.forEach(function (row) { row.dataset.set = 'false'; });
     /* the choosers keep their own marks: a dialog opened again starts from nothing, and

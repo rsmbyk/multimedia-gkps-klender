@@ -15,6 +15,10 @@
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   });
   var activePicker = null;
+  /* One date, one wording: the dialogs that are not the picker print the same label. */
+  window.gkpsDateLabel = function (date) {
+    return date instanceof Date ? LABEL.format(date) : '';
+  };
 
   function localDate(year, month, day) {
     return new Date(year, month, day);
