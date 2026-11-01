@@ -91,11 +91,31 @@ class DockerComposePortRulesTests(SimpleTestCase):
         self.assertEqual(media["ports"], ["127.0.0.1:63174:63174"])
         self.assertEqual(media["restart"], "unless-stopped")
         self.assertEqual(media["environment"]["GKPS_MEDIA_LIBRARY_ROOT"], "/var/lib/gkps-media")
-        self.assertEqual(
-            media["volumes"], ["media_library_data:/var/lib/gkps-media"]
-        )
+        self.assertEqual(media["volumes"][0], "media_library_data:/var/lib/gkps-media")
         self.assertNotIn(".:/app", media["volumes"])
+        operator_mounts = [
+            entry for entry in media["volumes"] if ":/usr/share/fonts/operator" in entry
+        ]
+        self.assertEqual(
+            len(operator_mounts), 1, "the operator's font directory must be mounted exactly once"
+        )
         self.assertIn("media_library_data", self.compose["volumes"])
+
+    def test_the_font_mount_default_needs_no_home(self):
+        media = self.compose["services"]["media"]
+        mounted = [entry for entry in media["volumes"] if ":/usr/share/fonts/operator" in entry]
+        self.assertEqual(len(mounted), 1, "the operator's font directory is not mounted")
+        source = mounted[0].split(":/usr/share/fonts/operator")[0]
+        self.assertNotIn(
+            "$HOME",
+            source,
+            "the default names HOME, which a Windows computer does not export",
+        )
+        self.assertIn(
+            "./",
+            source,
+            "the default must be a path inside the checkout, so it resolves on every platform",
+        )
 
     def test_media_companion_allowlist_uses_required_production_and_both_web_origins(self):
         origins = self.compose["services"]["media"]["environment"]["GKPS_MEDIA_ALLOWED_ORIGINS"]

@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-186](./items/ITEM-186-host-font-detection.md) | A fresh clone starts on a machine with no HOME, and the converter uses the computer's own fonts | Compose's fallback collapses to `/.local/share/gkps-fonts` where `HOME` is unset, so the media service refuses the mount; a host launcher mounts the platform's font directories read-only, and the aliases stop overriding an installed face | feat | P2 | M | [182](../specs/182-host-font-detection/spec.md) | `feat/182-host-font-detection` | 2026-11-01 |
 
 ## In review
 

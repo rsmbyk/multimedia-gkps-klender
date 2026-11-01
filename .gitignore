@@ -180,6 +180,8 @@ celerybeat.pid
 
 # Environments
 .env
+# Fonts an operator adds by hand; never committed (they are licensed with Office, not with us).
+.fonts/
 .venv
 env/
 venv/

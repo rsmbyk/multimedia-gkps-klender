@@ -1,8 +1,8 @@
 # media-library
 
 **capability**: `media-library`
-**last folded**: 2026-10-30
-**slices**: `152-transfer-scrollbar-edge`, `149-transfer-separator-seam`, `166-slides-render-fidelity`
+**last folded**: 2026-11-01
+**slices**: `182-host-font-detection`, `152-transfer-scrollbar-edge`, `149-transfer-separator-seam`, `166-slides-render-fidelity`
 
 The local Media Library and the companion's transfer dialog. This file starts at spec 149: no
 media-library capability existed while the slices that built the surface landed (113, 117, 118), so
@@ -52,11 +52,13 @@ instead of painting over it.
 A PowerPoint file SHALL be converted by an Impress that places text where the deck places it — 25.2 or
 newer — and each family a deck names SHALL be drawn in a proportional face: `Calibri` and `Calibri
 Light` in Carlito, `Cambria` in Caladea, `Arial` in Liberation Sans, `Arial Narrow` in Liberation Sans
-Narrow, `Times New Roman` in Liberation Serif, `Courier New` in Liberation Mono. A family with no free
+Narrow, `Times New Roman` in Liberation Serif, `Courier New` in Liberation Mono — unless the computer
+that converts has the family itself, in which case that family SHALL be the one drawn: the mapping is
+a fallback, never an override. A family with no free
 metric equivalent SHALL be drawn in a proportional substitute, and no proportional family SHALL be
 drawn in a monospaced one. A build of the image SHALL fail when one is. The conversion command, its
 120-second ceiling, its 2 GB memory and 400 MB file limits and its private LibreOffice profile SHALL
-stay as they are. (spec 166)
+stay as they are. (spec 166; modified by spec 182)
 
 **Scenarios**
 
@@ -69,6 +71,9 @@ stay as they are. (spec 166)
   words, each amount on its label's line at x 475.45 and x 785.56, and nothing is clipped by the edge.
 - **Given** a deck that sets a run in `Courier New`, **When** it is converted, **Then** that run is still
   monospaced — the rule refuses a mono answer to a proportional request, not the face itself.
+- **Given** a computer with `Calibri` installed, **When** a deck set in `Calibri` is converted, **Then**
+  the real Calibri is drawn rather than Carlito, and the renderer's identity changes so a deck converted
+  earlier is converted again. (spec 182)
 
 ### R3 — A derivative is named after the renderer that made it
 
@@ -86,12 +91,15 @@ revision SHALL still key it. (spec 166)
 - **Given** a derivative produced by an older renderer, **When** the new one is written, **Then** the
   library's own record — the deck's SHA, name, family, references and deadline — is unchanged.
 
-### R4 — The operator can add the faces only Office has
+### R4 — The converter draws the faces the computer has, and the folder an operator adds
 
-The companion SHALL read a host directory mounted read-only at `/usr/share/fonts/operator`, re-scanned
-when the companion starts, so a face that ships only with Microsoft Office joins the renderer's
-inventory without rebuilding the image or changing code. Absent or empty, the companion SHALL convert
-exactly as it does without it. (spec 166)
+The companion SHALL read two host sources, re-scanned when it starts: the computer's own font
+directories, mounted read-only under `/usr/share/fonts/host`, and the operator's directory, mounted
+read-only at `/usr/share/fonts/operator` from `GKPS_FONTS_DIR` (default `.fonts/` inside the checkout).
+A face from either source SHALL join the renderer's inventory without rebuilding the image or changing
+code. When one family exists in both, the operator's copy SHALL be the one drawn. A source the Docker
+daemon cannot read SHALL be skipped and named, never mounted as an empty directory. Absent or empty,
+the companion SHALL convert exactly as it does without it. (spec 166; modified by spec 182)
 
 **Scenarios**
 
@@ -99,3 +107,8 @@ exactly as it does without it. (spec 166)
   available to the converter and the identity changes, so a deck converted before it is converted again.
 - **Given** no such directory, **When** the companion starts, **Then** it starts as before and the
   substitute faces are used.
+- **Given** a computer with the face installed, **When** the launcher mounts that computer's font
+  directories beside the operator's, **Then** the face joins the inventory and wins over the image's
+  substitute. (spec 182)
+- **Given** a directory the Docker daemon cannot read, **When** the launcher runs, **Then** it is
+  skipped and named, and a start that mounted nothing visible is reported. (spec 182)
