@@ -72,3 +72,6 @@ editor kinds untouched.
 - [ ] T015 [Convergence] `manual` — on `http://localhost:8814/tatib/149/` with the real system picker: open
   *New media*, click *Choose file to upload*, dismiss the picker with Escape — the dialog stays, title and
   any chosen file intact; press Escape on the dialog — it closes with its usual motion.
+  Checked 2026-11-02 at 1.26.0: `preview/picker_probe.py` on `http://localhost:63404/tatib/149/` exits 0
+  — a dismissed picker keeps the dialog, its title and any chosen file, and the dialog's own Escape still
+  closes it. The native picker's dismissal is the owner's own check and stays open.

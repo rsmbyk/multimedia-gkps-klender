@@ -1,7 +1,7 @@
 # Spec 053: Give each entry the height of its floating controls
 
 - **ID:** 053
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-055
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

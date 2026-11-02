@@ -1,6 +1,6 @@
 # Tasks 052: Collapse the hidden add rows and tighten the section break
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 

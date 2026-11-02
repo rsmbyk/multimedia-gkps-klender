@@ -1,6 +1,6 @@
 # Tasks 118: Display PowerPoint slides in Preview and projector
 
-- **Status:** In review
+- **Status:** Accepted
 - **Plan:** [./plan.md](./plan.md)
 - **Spec:** [./spec.md](./spec.md)
 
