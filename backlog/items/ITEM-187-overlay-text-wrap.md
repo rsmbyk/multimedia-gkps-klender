@@ -1,6 +1,6 @@
 ---
 id: ITEM-187
-status: in-progress
+status: in_review
 title: 'A long run in the overlay''s text is painted past its panel instead of wrapping'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-02
 updated: 2026-11-02
 spec: specs/183-overlay-text-wrap/spec.md
 branch: fix/183-overlay-text-wrap
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/486
 issue:
 closed_at:
 closed_reason:
