@@ -41,6 +41,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-187](./items/ITEM-187-overlay-text-wrap.md) | A long run in the overlay's text is painted past its panel instead of wrapping | The overlay declared no `overflow-wrap`, so a 120-character run left the plate by 710px and a 66-character lyric left the caption by 2,035px; one inherited declaration on the stage breaks each run at its own box | fix | P1 | S | [183](../specs/183-overlay-text-wrap/spec.md) | [#486](https://github.com/rsmbyk/multimedia-gkps-klender/pull/486) | 2026-11-02 |
 
 ## Done
 

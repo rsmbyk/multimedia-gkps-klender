@@ -29,6 +29,13 @@ html, body.obs-overlay {
   inset: 0;
   container-type: size;
   pointer-events: none;
+  /* Every word on this surface is operator-typed -- a lyric, a reference, an entry's own
+     title, a liturgy turn -- so any of them can carry a run with no space in it: a pasted
+     link, a compound word, a name typed in a hurry. It breaks at the box that owns it
+     instead of being painted past the panel (spec 183). Declared once here and inherited;
+     what already fits is laid out exactly as before. A speaker's mark is the exception --
+     it is a label, and keeps its own white-space: nowrap. */
+  overflow-wrap: break-word;
 }
 
 /* ---------- songs: the bare caption (spec 119) ---------------------------- */
