@@ -3,7 +3,7 @@
 **Slice**: `specs/143-add-bar`
 **Branch**: `feat/143-add-bar` (rebased onto `develop` after 142's merge; carries one commit, `77f36a3c`)
 **Created**: 2026-10-28
-**Status**: Draft
+**Status**: Accepted (owner, gate 1, 2026-10-28)
 **Input**: "reduce the moving parts when the cursor is moving in and out of the service entry areas … the entry needs to be pushed down for the add row to appear" — then "keep the row above … but keep the entry still", then "make the add buttons background solid", "make the divider a bit more muted", "add the same gaps above the first", "make it softer and more muted on rest", "center the buttons horizontally"
 
 ## What the page does today

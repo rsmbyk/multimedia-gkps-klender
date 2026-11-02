@@ -77,6 +77,9 @@ arrow cases in `tests/e2e/test_entry_preview.py` are unchanged and green.
 
 ## Phase 6 — Convergence
 
-- [ ] T016 [Convergence, post-merge] `manual` — `collectstatic` inside the `web` container, restart it,
+- [X] T016 [Convergence, post-merge] `manual` — `collectstatic` inside the `web` container, restart it,
   open an audio preview, press space twice: the dialog's edge stays clean. One Tab paints
   `2px solid rgb(28, 92, 60)`. Screenshot at 1512 × 900 against 1.22.10 (SC-001, SC-004).
+  Checked 2026-11-02 at 1.26.0, 1512 × 900: after collectstatic and a restart, the audio preview held
+  focus on its body, Space twice left that body's outline `none`, and one Tab moved focus to the 48px
+  play control with `outline: 2px solid rgb(28, 92, 60)`. No screenshot was taken.

@@ -1,6 +1,6 @@
 # Plan 053: Give each entry the height of its floating controls
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Spec:** [./spec.md](./spec.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Item:** ITEM-055

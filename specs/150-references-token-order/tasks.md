@@ -67,6 +67,8 @@ untouched.
 
 ## Phase 6 — Convergence
 
-- [ ] T013 [Convergence, post-merge] `manual` — after the merge, `collectstatic` inside the `web`
+- [X] T013 [Convergence, post-merge] `manual` — after the merge, `collectstatic` inside the `web`
   container, restart it, then run `specs/148-media-library-refresh-flicker/preview/frame_sampler.py`:
   `worst jolt: 0px`, exit 0, and `POST /v1/references` answered 200 on the page's first refresh.
+  Checked 2026-11-02 on the compose `web` service at 1.26.0 (collectstatic, restart): worst jolt 0px,
+  exit 0; the first refresh posted `/v1/references` to the companion and got 200.

@@ -3,7 +3,7 @@
 **Slice**: `specs/166-slides-render-fidelity`
 **Branch**: `fix/166-slides-render-fidelity`
 **Created**: 2026-10-30
-**Status**: Draft
+**Status**: Accepted (owner, gate 1, 2026-10-30)
 **Input**: "can you fix the ppt/ppts rendered pdf? most of the positioning are not like the
 original" — with six screenshots of *Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx*
 (16 slides, 13.333 × 7.5 in) as LibreOffice Impress and PowerPoint draw it.

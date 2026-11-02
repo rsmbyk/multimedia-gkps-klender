@@ -79,8 +79,11 @@ the loaded case now covers the other half.
 
 ## Phase 6 — Convergence
 
-- [ ] T019 [Convergence, post-merge] `manual` — after the merge, from `preview/README.md`'s Live check:
+- [X] T019 [Convergence, post-merge] `manual` — after the merge, from `preview/README.md`'s Live check:
   open `/projector?service=<id>` on the compose `web` container, press Space and step to the image screen
   (the picture alone), then stop the `media` container and step back (the glyph, no picture).
+  Checked 2026-11-02 on `/projector?service=144` at 1.26.0: screen 4 showed the picture alone with the
+  companion up (natural width 182px, glyph hidden); after `docker stop media` and a step away and back,
+  the picture was hidden and the glyph shown; the companion was restarted afterwards.
 
 <!-- written by Converge only beyond this point; absent until it runs -->

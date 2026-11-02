@@ -58,6 +58,8 @@ the templates are in [`_templates/`](./_templates/).
 | [049](049-passage-modal-layout/spec.md) | Center the TB/SIM switch and contain passage number pickers | Accepted |
 | [050](050-song-picker-short-name-search/spec.md) | Search and label songs by songbook short name | Accepted |
 | [051](051-song-picker-reference-search/spec.md) | Search songs by songbook reference and title | Accepted |
+| [052](052-collapse-hidden-add-rows/spec.md) | Collapse the hidden add rows and tighten the section break | Accepted |
+| [053](053-entry-controls-height/spec.md) | Give each entry the height of its floating controls | Accepted |
 | [057](057-service-entry-quick-actions/spec.md) | Service entry quick fixes: single-screen Save, instant break, no break Edit, sidebar verses | Accepted |
 | [059](059-speaker-colors/spec.md) | Color liturgy speakers as a congregation cue | Accepted |
 
@@ -66,7 +68,7 @@ the templates are in [`_templates/`](./_templates/).
 | [063](063-toc-number-centering/spec.md) | Center entry numbers vertically in the Tata Ibadah contents list | Accepted |
 | [065](065-entry-modal-origin-highlight/spec.md) | Hold the service entry highlight while its modal is open | Accepted |
 | [066](066-stage-song-verse-line/spec.md) | Always show a song entry's verses on the Tata Ibadah stage | Accepted |
-| [100](100-sim-translation-abbreviations/spec.md) | Use the requested SIM book abbreviations | Accepted; Go To amendment implemented |
+| [100](100-sim-translation-abbreviations/spec.md) | Use the requested SIM book abbreviations | Accepted; Amendments A and B accepted and implemented |
 | [101](101-goto-translation-flash/spec.md) | Brighten the translation label after flipping a Go To passage | Accepted |
 | [122](122-saved-reading-parity/spec.md) | Saved reading page parity | Accepted |
 | [123](123-tatib-date-header-parity/spec.md) | Match the Tata Ibadah date header to the songbook header | Accepted |
@@ -91,7 +93,7 @@ the templates are in [`_templates/`](./_templates/).
 | [151](151-rail-icons/spec.md) | The rail says what each section is, and its marks are the stage's own | Accepted |
 | [152](152-transfer-scrollbar-edge/spec.md) | The Transfers scrollbar sits at the dialog's edges | Accepted |
 | [153](153-preview-tabs-row/spec.md) | The preview's verse tabs get their own row | Accepted |
-| [154](154-audio-times-inline/spec.md) | An audio preview reads its times as `current / total` | Draft |
+| [154](154-audio-times-inline/spec.md) | An audio preview reads its times as `current / total` | Accepted |
 | [155](155-audio-presentation-lock/spec.md) | A playing recording owns the projector screen until it pauses | Accepted |
 | [156](156-audio-play-indicator/spec.md) | The audio projector screen shows its play/pause control | Accepted |
 | [157](157-projector-image-missing-glyph/spec.md) | The projector's image placeholder waits for the image to fail | Accepted |
@@ -101,5 +103,10 @@ the templates are in [`_templates/`](./_templates/).
 | [160](160-shortcuts-audio-video-groups/spec.md) | Audio and video name their play/pause key | Accepted |
 | [163](163-media-dialog-file-picker-cancel/spec.md) | Dismissing the file picker leaves the New media dialog open | Accepted |
 | [164](164-dock-fluid-width/spec.md) | The dock fills whatever panel it is given | Accepted |
+| [162](162-song-verse-empty-state/spec.md) | A song with no verses is named, not mistaken for no song | Accepted |
+| [165](165-media-entry-rest/spec.md) | A media entry ends on a rest like every other entry | Accepted |
+| [166](166-slides-render-fidelity/spec.md) | A converted deck keeps the deck's own layout | Accepted |
 | [167](167-tata-ibadah-templates/spec.md) | A Tata Ibadah is a service or a template | Accepted |
 | [180](180-overlay-text-styles/spec.md) | The overlay reads by kind: a song keeps the caption, a passage a quotation card, a liturgy a script panel | Accepted |
+| [181](181-consistent-reading-navigation/spec.md) | Consistent reading navigation across saved and server data | Accepted |
+| [182](182-host-font-detection/spec.md) | The computer's own fonts reach the converter | Accepted |

@@ -1,7 +1,7 @@
 # Spec 052: Collapse the hidden add rows and tighten the section break
 
 - **ID:** 052
-- **Status:** Draft
+- **Status:** Accepted
 - **Item:** ITEM-054
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)

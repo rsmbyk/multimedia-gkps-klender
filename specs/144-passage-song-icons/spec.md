@@ -3,7 +3,7 @@
 **Slice**: `specs/144-passage-song-icons`
 **Branch**: `feat/144-passage-song-icons`
 **Created**: 2026-10-28
-**Status**: Draft
+**Status**: Accepted (owner, gate 1, 2026-10-28)
 **Input**: "i want you to add some kind of icons for passage and songs just like the media entries, but make it kind of different so that you can distinguish between media and passage/songs entries." — owner, with a screenshot of `/tatib/144/`
 
 ## What the page does today

@@ -1,7 +1,7 @@
 # Spec: Display PowerPoint slides in Preview and projector
 
 - **ID:** 118
-- **Status:** In review
+- **Status:** Accepted
 - **Item:** ITEM-118
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
