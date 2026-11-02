@@ -1,8 +1,8 @@
 # overlay
 
 **capability**: `overlay`
-**last folded**: 2026-10-30
-**slices**: `180-overlay-text-styles`
+**last folded**: 2026-11-02
+**slices**: `183-overlay-text-wrap`, `180-overlay-text-styles`
 
 The OBS browser source: what the stream shows the congregation while a service runs. It is a listen-only page — the
 dock drives it and the projector shows the room the same screens — so everything here is what the page *paints* from a
@@ -27,7 +27,9 @@ no state SHALL paint nothing. (spec 180)
 
 A screen belonging to a `song` entry SHALL paint the accepted lyric caption: one block of white text at weight 800,
 an eight-way black outline that scales with the type, no fill, no border, no heading, centred at the caption's 5 %
-inset. (spec 180, carrying spec 119)
+inset. A lyric line wider than that box SHALL break at its own edge rather than being painted past it, keeping the
+caption's centring and its balanced lines; the block grows taller by the rows the wrap adds. (spec 180, carrying spec
+119; wrap folded by spec 183)
 
 #### Scenario: a two-line lyric at 1080p
 - WHEN a song screen with two lines is on air at 1920×1080
@@ -37,12 +39,19 @@ inset. (spec 180, carrying spec 119)
 - WHEN the song entry carries a citation such as `KJ 152 Bait 1`
 - THEN the caption paints the lyric only — never the citation
 
+#### Scenario: a lyric with no space in it
+- WHEN a lyric carries a 66-character run and is on air at 1920×1080
+- THEN it draws 5 rows inside the 1728 px box, 403.19 px tall, with no ink past the box (2,035.20 px past it before
+  spec 183)
+
 ### R3 — A passage screen paints a quotation card
 
 A screen belonging to a `passage` entry SHALL paint a centred card at the caption's inset: the screen header's first
 line as a kicker, its remaining lines as an italic title, a hairline, then the verse. With no header the card paints
 the words alone — no empty kicker, no orphan hairline. The card hugs its content between 34 % and 90 % of the frame
-width, keeps a rounded `.32em` corner and a near-opaque dark fill, and its words carry no outline. (spec 180)
+width, keeps a rounded `.32em` corner and a near-opaque dark fill, and its words carry no outline. A kicker, a title or
+a verse line wider than the card's content box SHALL break at that box's edge instead of being painted past it, and the
+card grows taller by the rows the wrap adds. (spec 180; wrap folded by spec 183)
 
 #### Scenario: a passage with a reference and a verse title
 - WHEN the screen header is `Matius 5:3` over `Kesembuhan pada hari Sabat`
@@ -56,12 +65,19 @@ width, keeps a rounded `.32em` corner and a near-opaque dark fill, and its words
 - WHEN a 467-character verse is on air at 1920×1080
 - THEN the card takes the frame's 90 % measure before it grows taller
 
+#### Scenario: a verse title with no space in it
+- WHEN the title is one 126-character run and the card is on air at 1920×1080
+- THEN the title draws 3 rows under the reference, the card 1728×364.03, and no ink sits past the card (207.39 px past
+  it before spec 183)
+
 ### R4 — A liturgy screen paints a script panel
 
 A screen belonging to a `text` entry SHALL paint a left-aligned panel at the same inset, carrying the entry's title
 as its kicker when the screen has one, and the screen's lines as turns: the leader's quieter than the congregation's,
 a joined line between the two. The panel is its own object — no centring, an almost square `.08em` corner, a bar on
-its leading edge, and enough left padding to clear that bar. (spec 180)
+its leading edge, and enough left padding to clear that bar. A turn or a title wider than the panel's content box SHALL
+break at that box's edge instead of being painted past it, and the panel grows taller by the rows the wrap adds. (spec
+180; wrap folded by spec 183)
 
 #### Scenario: a titled liturgy turn
 - WHEN a text screen titled `VOTUM, INTROITUS, DOA` carries a leader line and an `J. Amin.` answer
@@ -74,6 +90,12 @@ its leading edge, and enough left padding to clear that bar. (spec 180)
 #### Scenario: a single short answer
 - WHEN the screen holds one three-word answer
 - THEN the panel keeps its 34 % floor rather than collapsing to a chip
+
+#### Scenario: a turn with no space in it
+- WHEN a body line reads `a very <120-character run> untitled text` and is on air at 1920×1080
+- THEN it draws 3 rows inside the 1728 px panel with no ink past it (710.45 px past it before spec 183), and a marked
+  row wraps its words column under the mark's column
+- AND a 64-character entry title at `.5em` still measures one row, because the panel grows to hold it
 
 ### R5 — A speaker mark sits in a column of its own
 
