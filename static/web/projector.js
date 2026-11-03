@@ -466,12 +466,20 @@
   function read() {
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (stored && typeof stored === 'object') return stored;
+      if (stored && typeof stored === 'object' &&
+          window.GKPSDisplaySession && window.GKPSDisplaySession.owns(stored)) return stored;
     } catch (e) { /* no stored state */ }
     return null;
   }
   function write(state) {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        service: state.service, screen: state.screen, on: state.on,
+        translation: state.translation, at: state.at,
+        /* The session this write belongs to (spec 184). */
+        session: window.GKPSDisplaySession ? window.GKPSDisplaySession.stamp() : null
+      }));
+    } catch (e) { /* private mode */ }
   }
   function post(message) {
     if (channel) channel.postMessage(message);

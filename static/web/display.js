@@ -42,15 +42,17 @@
   function read() {
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (stored && typeof stored === 'object') {
+      if (stored && typeof stored === 'object' &&
+          window.GKPSDisplaySession && window.GKPSDisplaySession.owns(stored)) {
         return {service: stored.service == null ? null : Number(stored.service),
                 screen: Number(stored.screen) || 0,
                 on: stored.on === true,
                 translation: stored.translation || null,
-                at: Number(stored.at) || 0};
+                at: Number(stored.at) || 0,
+                session: stored.session};
       }
     } catch (e) { /* a corrupt value is no value */ }
-    return {service: null, screen: 0, on: false, translation: null, at: 0};
+    return {service: null, screen: 0, on: false, translation: null, at: 0, session: null};
   }
 
   var state = read();
@@ -76,7 +78,10 @@
              screen: Number(next.screen) || 0,
              on: next.on === true,
              translation: next.translation || null,
-             at: next.at};
+             at: next.at,
+             /* The session this write belongs to (spec 184): a state whose stamp no
+                longer matches the browser's marker is not a state. */
+             session: window.GKPSDisplaySession ? window.GKPSDisplaySession.stamp() : null};
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
     notify();
   }

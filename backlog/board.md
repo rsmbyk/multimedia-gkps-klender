@@ -41,6 +41,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-188](./items/ITEM-188-display-session-scope.md) | The active Tata Ibadah survives a browser restart | The display state is kept in `localStorage` with no session boundary, so reopening the browser or OBS repaints the previous service on the overlay, the projector and the dock; a new browser session starts with nothing on air | fix | P1 | M | [184](../specs/184-display-session-scope/spec.md) | [#488](https://github.com/rsmbyk/multimedia-gkps-klender/pull/488) | 2026-11-03 |
 | [ITEM-187](./items/ITEM-187-overlay-text-wrap.md) | A long run in the overlay's text is painted past its panel instead of wrapping | The overlay declared no `overflow-wrap`, so a 120-character run left the plate by 710px and a 66-character lyric left the caption by 2,035px; one inherited declaration on the stage breaks each run at its own box | fix | P1 | S | [183](../specs/183-overlay-text-wrap/spec.md) | [#486](https://github.com/rsmbyk/multimedia-gkps-klender/pull/486) | 2026-11-02 |
 
 ## Done
