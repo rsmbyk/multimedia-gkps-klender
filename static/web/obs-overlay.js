@@ -25,7 +25,8 @@
   function readState() {
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (stored && typeof stored === 'object') {
+      if (stored && typeof stored === 'object' &&
+          window.GKPSDisplaySession && window.GKPSDisplaySession.owns(stored)) {
         return {service: stored.service == null ? null : Number(stored.service),
                 screen: Number(stored.screen) || 0,
                 on: stored.on === true,

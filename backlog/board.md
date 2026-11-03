@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-188](./items/ITEM-188-display-session-scope.md) | The active Tata Ibadah survives a browser restart | The display state is kept in `localStorage` with no session boundary, so reopening the browser or OBS repaints the previous service on the overlay, the projector and the dock; a new browser session starts with nothing on air | fix | P1 | M | [184](../specs/184-display-session-scope/spec.md) | fix/184-display-session-scope | 2026-11-03 |
 
 ## In review
 
