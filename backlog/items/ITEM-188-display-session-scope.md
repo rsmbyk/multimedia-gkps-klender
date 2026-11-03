@@ -1,6 +1,6 @@
 ---
 id: ITEM-188
-status: in_progress
+status: in_review
 title: 'The active Tata Ibadah survives a browser restart'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-03
 updated: 2026-11-03
 spec: specs/184-display-session-scope/spec.md
 branch: fix/184-display-session-scope
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/488
+issue: 489
 closed_at:
 closed_reason:
 bump: patch
