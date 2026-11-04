@@ -1,8 +1,8 @@
 # projector
 
 **capability**: `projector`
-**last folded**: 2026-10-29
-**slices**: `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**last folded**: 2026-11-04
+**slices**: `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -42,6 +42,14 @@ fails — a failure leaves the panel open with its rows and says the content cou
 #### Scenario: a fetch fails
 - WHEN a chapter or song request fails
 - THEN the lock ends, the panel stays open, the field is usable and the row says the content could not be loaded
+
+The Go To SHALL be written to the display state rather than kept in the page: choosing a result SHALL
+write `goto`, a step SHALL write its position, and Back SHALL write `goto: null` — the service's own
+screen and edition being untouched throughout, so Back restores them. The payload the page fetched
+SHALL be held as a cache keyed by the state's go to, so a step inside it paints with no request and a
+go to started on another surface fetches once. A projector opened or reloaded mid-go to SHALL paint
+it. The panel, corner cue, loading lock and Back SHALL keep their present look and behaviour.
+(spec 185)
 
 ### R2 — The projector page renders from its own response alone
 
@@ -161,8 +169,8 @@ that gives the screen back SHALL keep the position playback had reached.
 - THEN the recording plays on the normal projector screen and the screen stays locked until it pauses
 
 #### Scenario: the dock drives the projector
-- WHEN the display channel hides, releases or names another screen
-- THEN the recording stops and is released, as it did before this requirement
+- WHEN the display channel hides, releases, names another screen, or names a go to
+- THEN the recording stops and is released before the arriving screen or go to paints (spec 185)
 
 ### R6 — An image screen is fitted to the stage, above 1:1 as well as below
 
