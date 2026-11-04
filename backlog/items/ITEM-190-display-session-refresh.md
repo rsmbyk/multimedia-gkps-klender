@@ -1,6 +1,6 @@
 ---
 id: ITEM-190
-status: in-review
+status: done
 title: 'A surface that outlives its browser session keeps painting the display'
 type: fix
 priority: P1
@@ -13,8 +13,10 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/492
 issue:
 archived_at:
 archive_reason:
-bump:
-release_version:
+bump: patch
+release_version: 1.26.4
+closed_at: 2026-11-04
+closed_reason: merged into develop (PR #492)
 ---
 
 # ITEM-190: A surface that outlives its browser session keeps painting the display
