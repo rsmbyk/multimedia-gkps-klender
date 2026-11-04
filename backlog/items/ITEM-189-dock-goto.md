@@ -1,6 +1,6 @@
 ---
 id: ITEM-189
-status: in-review
+status: done
 title: 'The dock can put a passage or a song on air — the Go To, shared by every surface'
 type: feat
 priority: P1
@@ -13,8 +13,10 @@ pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/491
 issue:
 archived_at:
 archive_reason:
-bump:
-release_version:
+bump: patch
+release_version: 1.26.3
+closed_at: 2026-11-04
+closed_reason: merged into develop (PR #491)
 ---
 
 # ITEM-189: The dock can put a passage or a song on air — the Go To, shared by every surface
