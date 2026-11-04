@@ -3,7 +3,7 @@
 **Slice**: `specs/186-display-session-refresh`
 **Branch**: `fix/186-display-session-refresh` (stacked on `feat/185-dock-goto`)
 **Created**: 2026-11-04
-**Status**: Accepted — gate 1, 2026-11-04
+**Status**: Accepted — gate 1 2026-11-04 · gate 2 2026-11-04 (checklist 8/8 ticked)
 **Input**: *"the dock is still marking a service as on screen while the browser considers that display expired"* — the
 owner's answer to a live out-of-sync report, after the overlay's diagnostic showed `session REFUSED` beside a dock that
 still showed the service on air.

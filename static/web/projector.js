@@ -1879,6 +1879,46 @@
       if (active) fit(active);
     });
   }
+  /* The session may have ended while this page stayed open (spec 186): re-read, and paint
+     from what the store now says — silently, because a re-read is not an act. */
+  function paintIdle() {
+    detour = null;
+    detourNode.classList.remove('is-active');
+    screens().forEach(function (each) {
+      each.classList.remove('is-active', 'is-in', 'is-out');
+      each.setAttribute('aria-hidden', 'true');
+    });
+    showing = false;
+    body.dataset.showing = 'false';
+    body.classList.add('words-hidden');
+    syncEmptyNotice();
+    renderCue();
+  }
+
+  function rereadSession() {
+    var stored = read();
+    if (stored && stored.goto) { applyGoto(); return; }
+    if (!stored || !stored.service || Number(stored.service) !== Number(service)) {
+      paintIdle();
+      return;
+    }
+    detour = null;
+    detourNode.classList.remove('is-active');
+    current = Math.max(0, Number(stored.screen) || 0);
+    previousIndex = current;
+    showing = stored.on === true;
+    translation = stored.translation || '';
+    render(true);
+  }
+
+  window.addEventListener('focus', rereadSession);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) rereadSession();
+  });
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) rereadSession();
+  });
+
   /* A go to this page did not start: a fresh open, a reload, or another surface's write
      (FR-010, FR-014). */
   window.addEventListener('storage', function (event) {
