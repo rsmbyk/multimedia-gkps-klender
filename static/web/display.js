@@ -350,6 +350,37 @@
     });
   }
 
+  /* ---------- the re-read (spec 186) ---------------------------------------
+     A surface that outlives its browser session keeps painting what it painted: the
+     marker is a session cookie, so it goes when the browser closes or the jar is
+     cleared, while localStorage survives. `read()` already refuses a state from another
+     session; this makes the surfaces ask again when they come back into view, take the
+     keyboard, or are restored from the back/forward cache. */
+
+  /* One canonical spelling of the state, so the compare cannot depend on the order the
+     fields were written in (`read()` and `write()` list `goto` and `session` differently). */
+  function fingerprint(value) {
+    return [value.service, value.screen, value.on === true, value.translation || null,
+            value.at, value.session || null,
+            value.goto ? JSON.stringify(value.goto) : ''].join('|');
+  }
+
+  function reread() {
+    var next = read();
+    if (fingerprint(next) === fingerprint(state)) return;          /* nothing to repaint */
+    state = next;
+    syncButton();
+    notify();
+  }
+
+  window.addEventListener('focus', reread);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) reread();
+  });
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) reread();               /* a restored page skipped its boot */
+  });
+
   /* The same change from another tab, via storage rather than the channel. */
   window.addEventListener('storage', function (event) {
     if (event.key !== KEY) return;
@@ -381,6 +412,8 @@
     /* the verbs */
     show: show,
     screen: moveTo,
+    /* Ask the store again — the module's own act, also bound to focus and visibility. */
+    reread: reread,
     goTo: goTo,
     stepGoto: stepGoto,
     back: back,

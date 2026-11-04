@@ -2,7 +2,7 @@
 
 **capability**: `display-state`
 **last folded**: 2026-11-04
-**slices**: `185-dock-goto`, `184-display-session-scope`
+**slices**: `186-display-session-refresh`, `185-dock-goto`, `184-display-session-scope`
 
 The browser-local state that decides what is on air in one browser — which Tata Ibadah, which screen,
 whether the words are up, and in which edition. The dock, the projector and a reading page's
@@ -63,3 +63,35 @@ shape cannot be parsed SHALL read as no goto. (spec 185)
 #### Scenario: the browser session ends
 - WHEN the stored state's stamp no longer matches the browser
 - THEN the go to reads as no go to, with the rest of the state
+
+### R3 — A surface open across the session's end re-reads, and paints idle
+
+A surface that stays open SHALL read the display state again when its document becomes visible, when
+its window gains focus, and when it is restored from the back/forward cache, and SHALL paint from that
+read in the same turn — no timer, no polling interval. The domain's re-read SHALL be the state
+module's own act: it compares the read with what it holds and notifies its subscribers only when they
+differ, so a surface that renders on notification needs no listener of its own, and a re-read that
+finds the same state repaints nothing. A state whose session stamp no longer matches SHALL leave the
+surface painting nothing: no live row, no go to block, no projector screen, no overlay plate, the
+dock's eye reading `Display this service`. The re-read SHALL add no storage key, channel message or
+verb. (spec 186)
+
+#### Scenario: the session ends while a dock tab is open
+- WHEN the browser's session marker is gone and the dock tab takes focus
+- THEN it marks no entry and no screen row, draws no block, and its eye reads `Display this service`
+
+#### Scenario: the tab becomes visible again
+- WHEN a hidden surface becomes visible
+- THEN the same re-read happens, without a reload
+
+#### Scenario: nothing has changed
+- WHEN a surface is focused while its state still matches
+- THEN no subscriber is notified and nothing repaints
+
+#### Scenario: the projector is the open surface
+- WHEN the marker is gone and the projector takes focus
+- THEN it paints no screen, no detour, and `data-showing="false"`
+
+#### Scenario: the page comes back from the back/forward cache
+- WHEN a restored page fires `pageshow` with `persisted`
+- THEN the re-read runs there too
