@@ -1,0 +1,219 @@
+/* Go To in the dock (spec 185) — the candidate rules and the preview's own chrome.
+ *
+ * Everything below the "candidate" headings is the proposal: the rules the product
+ * does not carry yet. The preview links the working tree's tokens, fonts and
+ * obs-dock.css (every state here is "after", so there is no control column for a
+ * copy to spoil); the delta is therefore the whole diff a reader has to weigh.
+ */
+
+/* ---------- harness chrome (not the product) -------------------------------- */
+
+html, body.pv { margin: 0; }
+
+body.pv {
+  display: block;                    /* the app lays its shell out on body{display:flex} */
+  background: #14120F;
+  color: #E8E5DC;
+  font: 400 13px/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: 14px 16px 40px;
+}
+
+.pv-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin: 0 0 12px;
+}
+.pv-bar .pv-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.pv-bar .pv-sp { flex: 1; }
+.pv-bar button {
+  height: 28px; padding: 0 10px; border: 1px solid #3A362F; border-radius: 7px;
+  background: none; color: #E8E5DC; font: 600 11px/1 inherit; letter-spacing: .04em;
+  cursor: pointer;
+}
+.pv-bar button:hover { border-color: #7C9CF0; }
+.pv-bar button[aria-pressed="true"] { background: #7C9CF0; border-color: #7C9CF0; color: #0D1838; }
+
+.pv-stage { display: flex; align-items: flex-start; gap: 18px; flex-wrap: wrap; }
+
+/* The frame is drawn with a shadow, never a border: a border would take 2px off
+   the dock's own content width and every number in the readout with it. */
+.pv-frame {
+  flex: none; width: 400px; height: 800px; overflow: hidden;
+  box-shadow: 0 0 0 1px #3A362F, 0 18px 40px rgba(0, 0, 0, .45);
+  /* The product puts these on `body.obs-dock`; the frame stands in for that body,
+     so the dock's own ink and type reach the parts that inherit them. */
+  color: var(--ink);
+  font: 400 14.5px/1.35 var(--font-sans);
+}
+.pv-frame .dock { height: 100%; }
+
+.pv-read {
+  flex: 1; min-width: 260px; max-width: 420px;
+  font: 400 11.5px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #B9B5A9; white-space: pre-wrap;
+}
+.pv-read b { color: #E8E5DC; font-weight: 600; }
+.pv-note { margin: 12px 0 0; color: #8C887C; font-size: 11.5px; max-width: 460px; }
+.pv-note b { color: #B9B5A9; font-weight: 600; }
+
+/* ---------- embedded in the sync page -------------------------------------- */
+
+body.pv.is-embed { padding: 0; background: var(--rail-bg); }
+body.pv.is-embed .pv-bar,
+body.pv.is-embed .pv-read,
+body.pv.is-embed .pv-note { display: none; }
+body.pv.is-embed .pv-stage { display: block; }
+body.pv.is-embed .pv-frame { width: 100%; height: 100vh; box-shadow: none; }
+
+/* ---------- candidate: the head while a go to is up ------------------------- */
+
+/* The switch-service control is disabled, not hidden: the head keeps its width and
+   the operator can see the exit exists, the way the transport's arrows dim at a bound. */
+.iconbtn:disabled { opacity: .45; cursor: default; }
+.iconbtn:disabled:hover { border-color: var(--divider); background: none; }
+
+/* ---------- candidate: the go to layer ------------------------------------- */
+
+/* The find band is a layer, not a band: an overlay in the product's own backdrop
+   token covers the head and the list (so nothing else can be pressed), the foot
+   band stands above it, and a click anywhere on the overlay closes it. The dock
+   needs a containing block for it; the band's footer needs its own background so
+   the scrim does not show through the field. */
+.dock { position: relative; }
+.dock__transport { position: relative; z-index: 6; background: var(--rail-bg); }
+
+.findscrim {
+  position: absolute; inset: 0; z-index: 5;
+  background: var(--backdrop);
+  opacity: 0;
+  transition: opacity 160ms var(--ease-timing);
+}
+.findscrim.is-on { opacity: 1; }
+.findscrim[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) { .findscrim { transition: none; } }
+
+/* ---------- candidate: the find band --------------------------------------- */
+
+.findband { display: grid; gap: 8px; min-width: 0; }
+
+/* The band and the transport take turns as ONE motion (the dock's own inner-block idiom):
+   a clipped grid row grows while the other collapses, so the foot band's height and the
+   list above it move on one curve instead of jumping. */
+.bandswap { display: grid; }
+.bandswap__row {
+  overflow: hidden;
+  height: 0;
+  transition: height 200ms var(--ease-timing);
+}
+/* The heights are the two rows' own measured sizes (set by the page from scrollHeight),
+   so both rows travel on the same curve and the band never settles short. */
+#transportRow { height: var(--transport-h, 40px); }
+.bandswap.is-find #transportRow { height: 0; }
+.bandswap.is-find #findBand { height: var(--band-h, 76px); }
+
+@media (prefers-reduced-motion: reduce) { .bandswap__row { transition: none; } }
+
+.findrow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+.findfield {
+  flex: 1; min-width: 0; height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: 400 13.5px/1.3 var(--font-sans);
+}
+.findfield::placeholder { color: var(--head-ink); }
+.findfield:focus { outline: none; border-color: var(--focus); }
+.findfield:disabled { opacity: .6; }
+
+.findcount {
+  flex: none;
+  color: var(--head-ink);
+  font: 650 11px/1 var(--font-sans);
+  letter-spacing: .08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.findresult {
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  width: 100%; height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--divider); border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: 400 13.5px/1.3 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.findresult:hover { background: var(--icon-hover-bg); border-color: var(--focus); }
+
+/* A row holding a match is the press target: it wears the same selected tint a live
+   row wears, so an empty query and a match never look alike. */
+.findresult[data-match="true"] {
+  background: var(--sidebar-selected-bg);
+  border-color: var(--sidebar-selected-bg);
+}
+.findresult[data-match="true"]:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+  border-color: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+}
+.findresult:disabled { color: var(--head-ink); font-style: italic; cursor: default; }
+.findresult:disabled:hover { background: none; border-color: var(--divider); }
+
+.findresult__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.findresult__edition { color: var(--head-ink); }
+
+/* ---------- candidate: the off-service strip ------------------------------- */
+
+.offblock { display: block; margin-top: -4px; }   /* the header's rest position is its pinned one */
+.offblock[hidden] { display: none; }
+
+/* While a go to is up the list holds nothing else: the service's rows are not drawn. */
+#entryList[hidden] { display: none; }
+
+/* The go to is the list's live block: its label row pins at the top of the scroll
+   while its own screens run beneath it — the anatomy the service's live entry
+   already has. The side margins reach across the list's own padding, and the
+   shadow covers the 4px strip above it so rows cannot show through. */
+.offstrip {
+  position: sticky; top: -4px; z-index: 4;
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 -8px;
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--divider);
+  background: var(--sidebar-selected-bg);   /* the header is the live row: the app's own selected tint */
+  box-shadow: 0 -4px 0 var(--sidebar-selected-bg);
+}
+
+/* The go to's own rows take the space a service entry gives to its number and its
+   indent: full-bleed under the header (box at the list's 8px padding, text at 18 —
+   the column a service entry's number sits in), against 61.6 for an entry's label and
+   62 for its inner rows. That difference is what tells the block apart at a glance. */
+.offblock .entryinner__body { padding-left: 0; }
+
+#offBody { padding-top: 3px; }
+
+
+.offstrip__label {
+  min-width: 0; flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 400 13px/1.4 var(--font-sans);
+}
+
+.offstrip__back {
+  flex: none; height: 28px; padding: 0 10px;
+  border: 1px solid var(--divider); border-radius: 8px;
+  /* Its own rail fill, not the header's tint: the control keeps the colour it had
+     before the header was emphasised, so it still reads as a control on the bar. */
+  background: var(--rail-bg); color: var(--ink);
+  font: 650 11px/1 var(--font-sans); letter-spacing: .06em;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.offstrip__back:hover {
+  border-color: var(--focus);
+  background: color-mix(in srgb, var(--rail-bg) 92%, var(--ink));   /* stays opaque on the tint */
+}
