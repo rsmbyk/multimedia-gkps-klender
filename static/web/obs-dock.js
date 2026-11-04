@@ -43,6 +43,19 @@
   var baitChips = document.getElementById('baitChips');
   var switchBtn = document.getElementById('switchBtn');
   var reloadBtn = document.getElementById('reloadPickBtn');
+  var findBtn = document.getElementById('findBtn');
+  var bandSwap = document.getElementById('bandSwap');
+  var transportRow = document.getElementById('transportRow');
+  var findBand = document.getElementById('findBand');
+  var findInput = document.getElementById('findInput');
+  var findResult = document.getElementById('findResult');
+  var findLabel = document.getElementById('findLabel');
+  var findCount = document.getElementById('findCount');
+  var findScrim = document.getElementById('findScrim');
+  var offBlock = document.getElementById('offBlock');
+  var offLabel = document.getElementById('offLabel');
+  var offBack = document.getElementById('offBack');
+  var offBody = document.getElementById('offBody');
   var themeBtn = document.getElementById('themeBtn');
   var root = document.documentElement;
 
@@ -388,6 +401,9 @@
   function step(delta) {
     if (dock.service == null || !dock.stops.length) return;
     var state = gkpsDisplay.read();
+    /* The transport steps what is on air: the go to while one is up, the service
+       otherwise (FR-015). */
+    if (state.goto) { stepGoto(delta); return; }
     var base = state.service === dock.service ? state.screen : -1;
     var list = dock.stops;
     var at = list.indexOf(base);
@@ -686,6 +702,305 @@
 
   baitChips.addEventListener('scroll', updateBaitFades, {passive: true});
 
+  /* ---------- the go to (spec 185) ------------------------------------------- */
+
+  /* The find band is a layer over the dock, and it is where the index is read: the
+     lookup module is injected on the first open, so a dock that is never searched
+     pays nothing for a 29 KB index (D004). */
+  var find = {open: false, rows: [], choice: 0, status: 'idle'};
+  var shown = {key: '', payload: null, loading: false};
+
+  function measureBand() {
+    var transport = transportRow.scrollHeight || 40;
+    bandSwap.style.setProperty('--transport-h', transport + 'px');
+    var band = findBand.scrollHeight;
+    if (band) bandSwap.style.setProperty('--band-h', band + 'px');
+  }
+
+  function ensureLibrary() {
+    if (window.GKPSProjectorLibrary) return;
+    var tag = document.createElement('script');
+    tag.src = panel.dataset.libraryUrl || '/static/web/projector-library.js';
+    tag.onerror = function () { find.status = 'failed'; paintFind(); };
+    document.head.appendChild(tag);
+  }
+
+  function paintFind() {
+    var row = find.rows[find.choice] || null;
+    var typed = findInput.value.trim();
+    findResult.dataset.match = row ? 'true' : 'false';
+    findResult.disabled = !row;
+    if (find.status === 'loading') findLabel.textContent = 'Loading search…';
+    else if (find.status === 'failed') findLabel.textContent = 'Could not load — try again';
+    else if (!typed) findLabel.textContent = 'Start typing to find a match';
+    else if (!row) findLabel.textContent = 'No matching passage or song';
+    else findLabel.textContent = row.label;
+    findCount.textContent = find.rows.length
+      ? (find.choice + 1) + ' / ' + find.rows.length : '0 / 0';
+  }
+
+  function refreshFind() {
+    if (find.status !== 'ready' || !window.GKPSProjectorLibrary) { paintFind(); return; }
+    find.rows = window.GKPSProjectorLibrary.lookup(findInput.value) || [];
+    find.choice = 0;
+    paintFind();
+  }
+
+  function openFind() {
+    if (find.open || dock.service == null) return;
+    find.open = true;
+    find.status = window.GKPSProjectorLibrary && window.GKPSProjectorLibrary.ready()
+      ? 'ready' : 'loading';
+    find.rows = [];
+    find.choice = 0;
+    findInput.value = '';
+    findInput.disabled = find.status !== 'ready';
+    measureBand();
+    bandSwap.classList.add('is-find');
+    findScrim.hidden = false;
+    window.requestAnimationFrame(function () { findScrim.classList.add('is-on'); });
+    paintFind();
+    ensureLibrary();
+    try { findInput.focus({preventScroll: true}); } catch (e) { findInput.focus(); }
+  }
+
+  function closeFind() {
+    if (!find.open) return;
+    find.open = false;
+    bandSwap.classList.remove('is-find');
+    findScrim.classList.remove('is-on');
+    window.setTimeout(function () { if (!find.open) findScrim.hidden = true; }, 170);
+    findInput.value = '';
+    findInput.disabled = false;
+    find.rows = [];
+    find.choice = 0;
+    find.status = 'idle';
+    paintFind();
+    focusPanel();
+  }
+
+  /* What is on air as a pointer (FR-001): the payload that paints it is fetched here
+     and cached, keyed by the goto, never stored (D003). */
+  function gotoKey(goto) {
+    if (!goto) return '';
+    return goto.kind === 'song' ? 'song:' + goto.song_id
+      : 'passage:' + goto.book_id + ':' + goto.chapter;
+  }
+
+  function fetchGoto(state) {
+    var key = gotoKey(state.goto);
+    if (shown.key === key) return;                 /* held or already in flight */
+    shown.key = key;
+    shown.payload = null;
+    shown.loading = true;
+    var url = state.goto.kind === 'song'
+      ? '/projector/goto/song/' + state.goto.song_id + '/'
+      : '/projector/goto/chapter/' + state.goto.book_id + '/' + state.goto.chapter + '/';
+    window.fetch(url, {credentials: 'same-origin', cache: 'no-store'})
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        shown.loading = false;
+        shown.payload = state.goto.kind === 'song'
+          ? {kind: 'song', label: payload.label, screens: payload.screens || [],
+             baits: payload.baits || []}
+          : {kind: 'passage', label: payload.label, editions: payload.editions || {}};
+        sync(gkpsDisplay.read());
+      })
+      .catch(function () {
+        shown.loading = false;
+        shown.payload = null;
+        var key2 = gotoKey(gkpsDisplay.read().goto);
+        if (key2 === key) {
+          shown.key = '';                          /* a later sync may retry */
+          runNote.hidden = false;
+          runNote.textContent = 'The go to could not be loaded.';
+        }
+      });
+  }
+
+  function gotoLabelOf(state) {
+    if (!shown.payload) return 'Loading…';
+    if (shown.payload.kind === 'song') return shown.payload.label;
+    var editions = shown.payload.editions || {};
+    var edition = editions.TB || editions[Object.keys(editions)[0]];
+    if (!edition) return 'Loading…';
+    return edition.name + ' ' + state.goto.chapter + ':' + state.goto.verse;
+  }
+
+  function baitHeads(payload) {
+    return (payload.baits || []).map(function (bait) {
+      return {kind: 'head', number: bait.number};
+    });
+  }
+
+  function songRows(payload) {
+    var rows = [];
+    (payload.baits || []).forEach(function (bait) {
+      rows.push({kind: 'head', label: 'Bait ' + bait.number});
+      for (var i = bait.start; i <= bait.end; i++) {
+        var screen = payload.screens[i];
+        if (!screen) continue;
+        if (screen.blank) { rows.push({kind: 'rest', pos: i, label: 'Rest'}); continue; }
+        rows.push({kind: 'lyric', pos: i,
+                   label: (screen.lines || []).map(function (line) { return line.text; })
+                     .join(' ')});
+      }
+    });
+    return rows;
+  }
+
+  function passageRows(payload) {
+    var editions = payload.editions || {};
+    var edition = editions.TB || editions[Object.keys(editions)[0]];
+    var verses = (edition && edition.verses) || [];
+    return verses.map(function (verse) {
+      return {kind: 'verse', pos: verse.n, label: verse.n + '. ' + verse.text};
+    });
+  }
+
+  function renderBlock(state) {
+    if (!state.goto) { offBlock.hidden = true; entryList.hidden = false; return; }
+    entryList.hidden = true;
+    offBlock.hidden = false;
+    fetchGoto(state);
+    offLabel.textContent = gotoLabelOf(state);
+    offBody.replaceChildren();
+    if (!shown.payload) return;
+    var rows = shown.payload.kind === 'song' ? songRows(shown.payload)
+      : passageRows(shown.payload);
+    var current = state.goto.kind === 'song' ? state.goto.index : state.goto.verse;
+    rows.forEach(function (row) {
+      if (row.kind === 'head') {
+        offBody.appendChild(el('div', 'baithead', row.label));
+        return;
+      }
+      var button = el('button', 'screenerow' + (row.kind === 'rest' ? ' is-rest' : ''),
+                      row.label);
+      button.type = 'button';
+      button.tabIndex = -1;
+      button.classList.add('offrow');
+      button.dataset.pos = String(row.pos);
+      button.setAttribute('aria-current', row.pos === current ? 'true' : 'false');
+      offBody.appendChild(button);
+    });
+  }
+
+  function pickBaitTarget(payload, index, step, last) {
+    var baits = payload.baits || [];
+    if (!baits.length) return null;
+    var at = -1;
+    baits.forEach(function (bait, n) { if (index >= bait.start && index <= bait.end) at = n; });
+    if (last) return step > 0 ? baits[baits.length - 1].start : baits[0].start;
+    at = Math.max(0, Math.min(baits.length - 1, (at < 0 ? 0 : at) + step));
+    return baits[at].start;
+  }
+
+  function paintGotoTransport(state) {
+    var payload = shown.payload;
+    var goto = state.goto;
+    /* Edition chip: the go to's own editions, with the one it shows (FR-002). */
+    if (payload && payload.kind === 'passage') {
+      var codes = Object.keys(payload.editions || {});
+      if (codes.length) {
+        transChip.hidden = false;
+        transChip.textContent = goto.translation || codes[0];
+        transChip.dataset.editions = codes.join(',');
+        transChip.setAttribute('aria-pressed', 'false');
+      } else {
+        transChip.hidden = true;
+      }
+    } else {
+      transChip.hidden = true;
+    }
+    /* Baits: the song's own, with the one on air pressed. */
+    baitChips.replaceChildren();
+    var baits = (payload && payload.kind === 'song' && payload.baits) || [];
+    baitStrip.hidden = !baits.length;
+    if (baits.length) {
+      baits.forEach(function (bait) {
+        var chip = el('button', 'bait', String(bait.number));
+        chip.type = 'button';
+        chip.tabIndex = -1;
+        chip.dataset.screen = String(bait.start);
+        chip.setAttribute('aria-pressed',
+          goto.index >= bait.start && goto.index <= bait.end ? 'true' : 'false');
+        baitChips.appendChild(chip);
+      });
+      updateBaitFades();
+    }
+    var lastIndex = payload && payload.screens ? payload.screens.length - 1 : 0;
+    if (goto.kind === 'song') {
+      prevBtn.disabled = goto.index <= 0;
+      nextBtn.disabled = goto.index >= lastIndex;
+    } else {
+      var verses = payload && payload.editions
+        ? (payload.editions[goto.translation] || payload.editions.TB || {}).verses || [] : [];
+      var first = verses.length ? verses[0].n : null;
+      var end = verses.length ? verses[verses.length - 1].n : null;
+      prevBtn.disabled = first == null || goto.verse <= first;
+      nextBtn.disabled = end == null || goto.verse >= end;
+    }
+  }
+
+  function adoptGoto(row, payload) {
+    /* A go to with nothing on air adopts the browsed service underneath it, so Back
+       always has a place to land (FR-016). */
+    if (gkpsDisplay.read().service == null) gkpsDisplay.show(dock.service, 0);
+    if (payload.kind === 'song') {
+      gkpsDisplay.goTo({kind: 'song', song_id: row.target.song_id, index: 0});
+      return;
+    }
+    gkpsDisplay.goTo({kind: 'passage', book_id: payload.book_id, chapter: payload.chapter,
+                      verse: payload.verse, translation: payload.translation});
+  }
+
+  function chooseFind(index) {
+    var row = find.rows[index];
+    if (!row || !window.GKPSProjectorLibrary) return;
+    find.status = 'loading';
+    paintFind();
+    window.GKPSProjectorLibrary.detour(row).then(function (payload) {
+      if (!payload) throw new Error('Nothing to paint');
+      /* The block paints from this same payload: one request per selection, never two. */
+      shown.key = gotoKey(payload.kind === 'song'
+        ? {kind: 'song', song_id: row.target.song_id}
+        : {kind: 'passage', book_id: payload.book_id, chapter: payload.chapter});
+      shown.payload = payload.kind === 'song'
+        ? {kind: 'song', label: payload.label, screens: payload.screens || [],
+           baits: payload.baits || []}
+        : {kind: 'passage', label: payload.label, editions: payload.editions || {}};
+      shown.loading = false;
+      adoptGoto(row, payload);
+      closeFind();
+    }).catch(function () {
+      find.status = 'failed';
+      findInput.disabled = false;
+      paintFind();
+    });
+  }
+
+  function stepGoto(delta) {
+    var state = gkpsDisplay.read();
+    if (!state.goto) return;
+    if (!shown.payload) return;
+    var target;
+    if (state.goto.kind === 'song') {
+      var last = (shown.payload.screens || []).length - 1;
+      target = Math.max(0, Math.min(state.goto.index + delta, last));
+    } else {
+      var verses = ((shown.payload.editions || {})[state.goto.translation]
+                    || (shown.payload.editions || {}).TB || {}).verses || [];
+      var at = verses.findIndex(function (verse) { return verse.n === state.goto.verse; });
+      if (at < 0) at = 0;
+      var next = verses[Math.max(0, Math.min(at + delta, verses.length - 1))];
+      target = next ? next.n : state.goto.verse;
+    }
+    gkpsDisplay.stepGoto(target);
+  }
+
   /* ---------- the state ------------------------------------------------------ */
 
   function sync(state) {
@@ -695,10 +1010,31 @@
     dock.screen = live ? state.screen : 0;
     dock.translation = live ? state.translation : null;
 
+    dock.goto = live ? state.goto : null;
+    /* The switch-service control is disabled, not hidden, while a go to is up: the
+       head keeps its width and the exit stays visible (FR-019). */
+    switchBtn.disabled = !!dock.goto;
+
     blankBtn.setAttribute('aria-pressed', dock.on ? 'false' : 'true');
-    var title = dock.on ? 'Hide words' : 'Display this service';
+    var title = dock.on ? 'Hide words'
+      : (dock.goto ? 'Show words' : 'Display this service');
     blankBtn.title = title;
     blankBtn.setAttribute('aria-label', title);
+
+    if (dock.goto) {
+      /* What is on air is the go to, and nothing else: the service's own rows are not
+         drawn, and no picker row wears the pill (FR-007, FR-017). */
+      renderBlock(state);
+      paintGotoTransport(state);
+      pickBody.querySelectorAll('.onscreen').forEach(function (pill) { pill.hidden = true; });
+      /* The service's rows are not drawn, so none of them is marked as on air (FR-017). */
+      entryList.querySelectorAll('[aria-current="true"]').forEach(function (row) {
+        row.setAttribute('aria-current', 'false');
+      });
+      runNote.hidden = true;
+      return;
+    }
+    renderBlock(state);
 
     var activeEntry = live ? entryOfScreen(state.screen) : -1;
     if (activeEntry >= 0 && isDivider(dock.entries[activeEntry])) activeEntry = -1;
@@ -793,7 +1129,20 @@
   baitChips.addEventListener('click', function (event) {
     var chip = event.target.closest('.bait');
     if (!chip) return;
-    projectScreen(Number(chip.dataset.screen));
+    if (gkpsDisplay.read().goto) gkpsDisplay.stepGoto(Number(chip.dataset.screen));
+    else projectScreen(Number(chip.dataset.screen));
+    focusPanel();
+  });
+
+  offBack.addEventListener('click', function () {
+    gkpsDisplay.back();
+    focusPanel();
+  });
+
+  offBody.addEventListener('click', function (event) {
+    var row = event.target.closest('.offrow');
+    if (!row) return;
+    gkpsDisplay.stepGoto(Number(row.dataset.pos));
     focusPanel();
   });
 
@@ -809,12 +1158,48 @@
     var state = gkpsDisplay.read();
     if (state.service === dock.service) {
       if (state.on) gkpsDisplay.hide();           /* Hide words: the place is kept */
+      /* Resume in place — and `screen()` would end a go to, which a resume must not. */
+      else if (state.goto) gkpsDisplay.resume();
       else gkpsDisplay.screen(state.screen);      /* resume where it was paused */
     } else {
       gkpsDisplay.show(dock.service, 0);          /* display from the start */
     }
     focusPanel();
   });
+
+  findBtn.addEventListener('click', function () { openFind(); });
+  findScrim.addEventListener('pointerdown', function (event) {
+    event.preventDefault();
+    closeFind();
+  });
+  findResult.addEventListener('click', function () { chooseFind(find.choice); });
+  findInput.addEventListener('input', refreshFind);
+  findInput.addEventListener('keydown', function (event) {
+    var key = event.key;
+    if (key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeFind(); return; }
+    if (key === 'ArrowDown' || key === 'ArrowUp') {
+      event.preventDefault(); event.stopPropagation();
+      if (!find.rows.length) return;
+      find.choice = (find.choice + (key === 'ArrowDown' ? 1 : -1) + find.rows.length)
+        % find.rows.length;
+      paintFind();
+      return;
+    }
+    if (key === 'Enter') { event.preventDefault(); event.stopPropagation(); chooseFind(find.choice); return; }
+    if (key === 'Backspace' && !findInput.value) {
+      event.preventDefault(); event.stopPropagation(); closeFind();
+    }
+  });
+  /* The library is injected on the first open and its index is fetched then; this is
+     where the band learns that the query can finally be answered. */
+  document.addEventListener('projector-library:ready', function () {
+    if (!find.open || find.status === 'ready') return;
+    find.status = 'ready';
+    findInput.disabled = false;
+    refreshFind();
+    try { findInput.focus({preventScroll: true}); } catch (e) { findInput.focus(); }
+  });
+  window.addEventListener('resize', measureBand);
 
   transChip.addEventListener('click', function () { flipEdition(); focusPanel(); });
   prevBtn.addEventListener('click', function () { step(-1); focusPanel(); });
@@ -834,6 +1219,16 @@
   }
 
   function stepUnit(delta, unit) {
+    var state = gkpsDisplay.read();
+    if (state.goto) {
+      if (unit === 'bait' && shown.payload && shown.payload.kind === 'song') {
+        var target = pickBaitTarget(shown.payload, state.goto.index, delta, false);
+        if (target != null) gkpsDisplay.stepGoto(target);
+        return;
+      }
+      stepGoto(delta);
+      return;
+    }
     var at = unitAt();
     if (unit === 'entry') {
       var entries = contentEntries();
@@ -861,6 +1256,16 @@
   }
 
   function edgeOf(unit, end) {
+    var state = gkpsDisplay.read();
+    if (state.goto) {
+      if (unit === 'bait' && shown.payload && shown.payload.kind === 'song') {
+        var target = pickBaitTarget(shown.payload, state.goto.index, end ? 1 : -1, true);
+        if (target != null) gkpsDisplay.stepGoto(target);
+        return;
+      }
+      stepGoto(end ? 9999 : -9999);
+      return;
+    }
     var at = unitAt();
     if (unit === 'entry') {
       var entries = contentEntries();
@@ -882,6 +1287,11 @@
     var key = event.key;
     var shift = event.shiftKey;
     var ctrl = event.ctrlKey || event.metaKey;
+    /* While the band is open it owns the keys: the covered dock acts on nothing. */
+    if (find.open) {
+      if (key === 'Escape') { event.preventDefault(); closeFind(); }
+      return;
+    }
     if (key === 'Escape') {
       if (panel.dataset.view === 'run') setView('pick', true);
       return;
@@ -908,6 +1318,7 @@
     }
     if (panel.dataset.view !== 'run') return;
     if (ctrl && (key === 'PageUp' || key === 'PageDown')) return;   /* the browser's tabs */
+    if ((key === 'g' || key === 'G') && !ctrl) { event.preventDefault(); openFind(); return; }
     var unit = shift ? 'bait' : ctrl ? 'entry' : 'screen';
     if (key === 'ArrowDown' || key === 'ArrowRight' || key === 'PageDown' ||
         key === 'ArrowUp' || key === 'ArrowLeft' || key === 'PageUp') {

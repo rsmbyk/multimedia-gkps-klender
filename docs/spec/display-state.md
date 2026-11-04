@@ -1,8 +1,8 @@
 # display-state
 
 **capability**: `display-state`
-**last folded**: 2026-11-03
-**slices**: `184-display-session-scope`
+**last folded**: 2026-11-04
+**slices**: `185-dock-goto`, `184-display-session-scope`
 
 The browser-local state that decides what is on air in one browser — which Tata Ibadah, which screen,
 whether the words are up, and in which edition. The dock, the projector and a reading page's
@@ -32,3 +32,34 @@ catch-up and live-update behaviour, and closing every surface SHALL NOT end it. 
 #### Scenario: the browser cannot hold a cookie
 - WHEN a page cannot read its marker back after writing it
 - THEN the display works for the life of that page, a reload starts idle, and no error reaches the operator
+
+### R2 — The state carries what is on air instead of the service, as a pointer
+
+The state SHALL carry `goto`, which is `null` while the service is on air or names what is on air
+instead: a song with its screen index, or a passage with its book, chapter, verse and shown edition.
+While `goto` is not null the state's `screen` and `translation` SHALL be the service's own place and
+SHALL NOT change; Back is `goto: null` and every surface then paints them. The goto SHALL carry no
+verse text, title or lyric. `show` and a move to a service screen SHALL end it; `hide` SHALL blank it
+and keep its place; `release` SHALL end it with the service; `flip` SHALL name the edition of whatever
+is on air. Every change SHALL be one write and one `{type: 'goto'}` message, and a goto whose stored
+shape cannot be parsed SHALL read as no goto. (spec 185)
+
+#### Scenario: a go to starts from the dock
+- WHEN the dock writes `goto` for a chosen song or passage
+- THEN the state's `screen` and `translation` are unchanged, and every reader paints the go to
+
+#### Scenario: the operator hides the words during a go to
+- WHEN `on` goes false while `goto` is set
+- THEN the words leave every surface, the go to keeps its place, and a resume needs no second write
+
+#### Scenario: a service screen goes on air during a go to
+- WHEN `show` or a move puts a service screen on air
+- THEN `goto` is cleared in the same write
+
+#### Scenario: a corrupt go to
+- WHEN the stored `goto` is not a song or a passage
+- THEN readers treat it as no go to and paint the service screen the state names
+
+#### Scenario: the browser session ends
+- WHEN the stored state's stamp no longer matches the browser
+- THEN the go to reads as no go to, with the rest of the state

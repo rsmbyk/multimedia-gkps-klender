@@ -403,6 +403,9 @@
   retireOfflineLibrary();
 
   window.GKPSProjectorLibrary = {load: load, refresh: refresh, ready: isReady, lookup: lookup,
-    detour: detour, fetchChapter: fetchChapter, movePassage: movePassage};
+    detour: detour, fetchChapter: fetchChapter, movePassage: movePassage,
+    /* The same shaping `detour` applies, for a chapter fetched without a row — a go to
+       read from the shared state names its passage directly (spec 185). */
+    fromChapter: passageDetour};
   load().catch(function () { /* the panel reports it when opened */ });
 })();

@@ -17,6 +17,7 @@
  * Messages, all on `gkps-service-display`:
  *
  *     {type: 'show', service: <id>, screen: <n>}   an entry screen is on air
+ *     {type: 'goto', goto: <Goto|null>}            a go to started, moved, flipped or ended
  *     {type: 'hide'}                               words off; the place is kept
  *     {type: 'release'}                            no active service
  *     {type: 'flip', translation: 'TB'|'SIM'|null} the shown translation changed
@@ -24,7 +25,10 @@
  *     {type: 'state'}                              a newcomer asks to be brought up to date
  *
  * Stored shape (`gkps-display`):
- *     {service, screen, on, translation, at}
+ *     {service, screen, on, translation, at, session, goto}
+ *
+ * `screen` and `translation` are the SERVICE's place. While `goto` is up they are frozen;
+ * Back is `goto: null` and they are what every surface then paints (spec 185 D001).
  *
  * Everything here is DELEGATED and resolved from the document on each use. The
  * shell swaps the reading pane's contents in place (reading.js applyPage), which
@@ -39,6 +43,26 @@
   var KEY = 'gkps-display';
   var DEFAULT_CHANNEL = 'gkps-service-display';
 
+  /* What is on air instead of the service: a pointer, never any words (spec 185 FR-001).
+     A goto that cannot be parsed is no goto, and the service's own screen is painted. */
+  function gotoOf(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    if (raw.kind === 'song') {
+      var songId = Number(raw.song_id);
+      if (!songId) return null;
+      return {kind: 'song', song_id: songId, index: Math.max(0, Number(raw.index) || 0)};
+    }
+    if (raw.kind === 'passage') {
+      var book = Number(raw.book_id), chapter = Number(raw.chapter);
+      var verse = Number(raw.verse);
+      if (!book || !chapter || !verse) return null;
+      var shown = raw.translation === 'SIM' ? 'SIM' : (raw.translation === 'TB' ? 'TB' : null);
+      return {kind: 'passage', book_id: book, chapter: chapter, verse: verse,
+              translation: shown};
+    }
+    return null;
+  }
+
   function read() {
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
@@ -49,10 +73,12 @@
                 on: stored.on === true,
                 translation: stored.translation || null,
                 at: Number(stored.at) || 0,
-                session: stored.session};
+                session: stored.session,
+                goto: gotoOf(stored.goto)};
       }
     } catch (e) { /* a corrupt value is no value */ }
-    return {service: null, screen: 0, on: false, translation: null, at: 0, session: null};
+    return {service: null, screen: 0, on: false, translation: null, at: 0,
+            session: null, goto: null};
   }
 
   var state = read();
@@ -74,11 +100,15 @@
 
   function write(next) {
     next.at = Date.now();               /* when this browser last touched the display */
+    /* A verb that says nothing about the goto leaves it alone: `hide` and `flip` act on
+       whatever is on air, and only the verbs below end a goto by naming `goto: null`. */
+    var goto = next.goto === undefined ? state.goto : gotoOf(next.goto);
     state = {service: next.service == null ? null : Number(next.service),
              screen: Number(next.screen) || 0,
              on: next.on === true,
              translation: next.translation || null,
              at: next.at,
+             goto: goto,
              /* The session this write belongs to (spec 184): a state whose stamp no
                 longer matches the browser's marker is not a state. */
              session: window.GKPSDisplaySession ? window.GKPSDisplaySession.stamp() : null};
@@ -96,16 +126,19 @@
   function show(service, screen) {
     var id = Number(service);
     if (!id) return;
+    /* "The service is on air" is one statement, whichever act produces it (FR-002). */
     write({service: id, screen: Number(screen) || 0, on: true,
-           translation: state.service === id ? state.translation : null});
+           translation: state.service === id ? state.translation : null, goto: null});
     post({type: 'show', service: state.service, screen: state.screen});
   }
 
   /* Move the live screen, keeping the service on air. */
   function moveTo(screen) {
     if (state.service == null) return;
+    /* A service screen going on air ends a go to, or the service would move invisibly
+       underneath it (FR-009, FR-015, D008). */
     write({service: state.service, screen: Number(screen) || 0, on: true,
-           translation: state.translation});
+           translation: state.translation, goto: null});
     post({type: 'show', service: state.service, screen: state.screen});
   }
 
@@ -119,16 +152,70 @@
 
   /* Let go: no active service anywhere. */
   function release() {
-    write({service: null, screen: 0, on: false, translation: null});
+    write({service: null, screen: 0, on: false, translation: null, goto: null});
     post({type: 'release'});
   }
 
   /* The shown translation of the live screen (null = the entry's own). */
   function flip(translation) {
     if (state.service == null) return;
+    /* `flip` names the edition of whatever is on air: the go to's while one is up, the
+       service's otherwise, which the service keeps for its return (FR-002, FR-015). */
+    if (state.goto && state.goto.kind === 'passage') {
+      write({service: state.service, screen: state.screen, on: state.on,
+             translation: state.translation,
+             goto: {kind: 'passage', book_id: state.goto.book_id,
+                    chapter: state.goto.chapter, verse: state.goto.verse,
+                    translation: translation === 'SIM' ? 'SIM' : (translation === 'TB' ? 'TB' : null)}});
+      post({type: 'goto', goto: state.goto});
+      return;
+    }
     write({service: state.service, screen: state.screen, on: state.on,
            translation: translation || null});
     post({type: 'flip', translation: state.translation});
+  }
+
+  /* ---------- the go to (spec 185) ----------------------------------------- */
+
+  /* Put a passage or a song on air. The service's own screen and edition are left as
+     they are, so Back has somewhere exact to land. */
+  function goTo(goto) {
+    var next = gotoOf(goto);
+    if (!next || state.service == null) return;
+    write({service: state.service, screen: state.screen, on: true,
+           translation: state.translation, goto: next});
+    post({type: 'goto', goto: state.goto});
+  }
+
+  /* Move the go to: a song's screen index, or a passage's verse. */
+  function stepGoto(position) {
+    if (!state.goto) return;
+    var next = state.goto.kind === 'song'
+      ? {kind: 'song', song_id: state.goto.song_id,
+         index: Math.max(0, Number(position) || 0)}
+      : {kind: 'passage', book_id: state.goto.book_id, chapter: state.goto.chapter,
+         verse: Math.max(1, Number(position) || 1), translation: state.goto.translation};
+    write({service: state.service, screen: state.screen, on: state.on,
+           translation: state.translation, goto: next});
+    post({type: 'goto', goto: state.goto});
+  }
+
+  /* Words back on, in place: a resume must never end a go to (FR-002's `hide` keeps
+     the place, and this is its other half). */
+  function resume() {
+    if (state.service == null) return;
+    write({service: state.service, screen: state.screen, on: true,
+           translation: state.translation});
+    post({type: 'goto', goto: state.goto});
+  }
+
+  /* Back to the service, exactly where it stood; `on` is not touched, because it is one
+     flag for whatever is on air (the spec's hidden-words edge case). */
+  function back() {
+    if (!state.goto) return;
+    write({service: state.service, screen: state.screen, on: state.on,
+           translation: state.translation, goto: null});
+    post({type: 'goto', goto: null});
   }
 
   /* Ask the surfaces to re-read what is on air (a saved change, spec 026). */
@@ -250,6 +337,10 @@
       } else if (message.type === 'flip') {
         write({service: state.service, screen: state.screen, on: state.on,
                translation: message.translation || null});
+      } else if (message.type === 'goto') {
+        /* The write that posted it is already stored: adopt it by re-reading, never by
+           writing again, or two surfaces would bounce the state between them. */
+        state = read();
       } else if (message.type === 'state') {
         /* The store is authoritative; every write persists, so a new surface never
            needs to be told. Kept tolerated for compatibility. */
@@ -290,6 +381,10 @@
     /* the verbs */
     show: show,
     screen: moveTo,
+    goTo: goTo,
+    stepGoto: stepGoto,
+    back: back,
+    resume: resume,
     hide: hide,
     release: release,
     flip: flip,

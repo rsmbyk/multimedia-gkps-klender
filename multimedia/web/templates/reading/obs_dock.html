@@ -47,7 +47,8 @@ and Space never presses whatever was last clicked.
 </head>
 <body class="obs-dock">
 
-<main class="dock" id="dockPanel" data-view="pick" tabindex="-1" aria-label="Operator dock">
+<main class="dock" id="dockPanel" data-view="pick" tabindex="-1" aria-label="Operator dock"
+      data-library-url="{% static 'web/projector-library.js' %}">
 
   <!-- ============================== picker ============================== -->
   <section class="view is-active" id="viewPick" aria-label="Pick a service">
@@ -113,6 +114,10 @@ and Space never presses whatever was last clicked.
           <p class="serviceline" id="runService"></p>
           <p class="servicedate" id="runDate"></p>
         </div>
+        <button type="button" class="iconbtn" id="findBtn" title="Go to a passage or song"
+                aria-label="Go to a passage or song" tabindex="-1">
+          <svg viewBox="0 0 20 20"><circle cx="8.7" cy="8.7" r="5.1"></circle><path d="M12.5 12.5 16.6 16.6"></path></svg>
+        </button>
         <button type="button" class="iconbtn" id="switchBtn" title="Switch service"
                 aria-label="Switch service" tabindex="-1">
           <svg viewBox="0 0 20 20"><path d="M6 4h10M6 10h10M6 16h10"></path><path d="M3 4h.01M3 10h.01M3 16h.01" stroke-width="2.4"></path></svg>
@@ -133,12 +138,24 @@ and Space never presses whatever was last clicked.
     </div>
 
     <div class="dock__body" id="runBody">
+      <div class="offblock" id="offBlock" hidden>
+        <div class="offstrip" id="offStrip">
+          <span class="offstrip__label" id="offLabel"></span>
+          <button type="button" class="offstrip__back" id="offBack" tabindex="-1">Back</button>
+        </div>
+        <div class="entryinner is-open">
+          <div class="entryinner__clip">
+            <div class="entryinner__body" id="offBody"></div>
+          </div>
+        </div>
+      </div>
       <ul id="entryList"></ul>
       <p class="dock__note" id="runNote" hidden></p>
     </div>
 
     <div class="dock__transport">
-      <div class="transportrow">
+      <div class="bandswap" id="bandSwap">
+      <div class="bandswap__row transportrow" id="transportRow">
         <button type="button" class="transchip" id="transChip" hidden tabindex="-1"
                 aria-pressed="false" title="Flip TB / SIM (T)">TB</button>
         <div class="baits" id="baitStrip" hidden>
@@ -155,7 +172,23 @@ and Space never presses whatever was last clicked.
           </button>
         </span>
       </div>
+
+      <div class="bandswap__row" id="findBand">
+        <div class="findband">
+          <div class="findrow">
+            <input class="findfield" id="findInput" type="search" autocomplete="off"
+                   spellcheck="false" placeholder="Passage or song" tabindex="-1">
+          </div>
+          <button type="button" class="findresult" id="findResult" disabled tabindex="-1">
+            <span class="findresult__label" id="findLabel">Start typing to find a match</span>
+            <span class="findcount" id="findCount">0 / 0</span>
+          </button>
+        </div>
+      </div>
+      </div>
     </div>
+
+    <div class="findscrim" id="findScrim" hidden></div>
   </section>
 </main>
 

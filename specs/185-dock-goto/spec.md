@@ -3,7 +3,7 @@
 **Slice**: `specs/185-dock-goto`
 **Branch**: `feat/185-dock-goto`
 **Created**: 2026-11-03
-**Status**: Accepted — gate 1, 2026-11-04
+**Status**: Accepted — gate 1 2026-11-04 · gate 2 2026-11-04 (checklist 20/20 ticked)
 **Input**: *"i wanna add something like the goto function into the obs dock. how would you do that?"* —
 answered with the shared-state design; the owner's ruling: *"all goto states are synced between
 pages and reset on browser restart (just like the tataibadah project)"*.

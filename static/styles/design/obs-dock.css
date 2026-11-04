@@ -754,3 +754,130 @@ html.win-focus .navbtn:not(:disabled):hover {
                 transform 280ms cubic-bezier(.2, .7, .3, 1);
   }
 }
+
+/* ---------- the go to (spec 185) -------------------------------------------
+   Ported from the approved preview (specs/185-dock-goto/preview/preview.css): the
+   find band takes the transport's place as a layer over the dock, and what is on
+   air is the list's live block while a go to runs. */
+
+/* The layer needs a containing block; the foot band stands above it with its own
+   rail fill, so the field and its suggestion stay at full strength. */
+.dock { position: relative; }
+.dock__transport { position: relative; z-index: 6; background: var(--rail-bg); }
+
+.findscrim {
+  position: absolute; inset: 0; z-index: 5;
+  background: var(--backdrop);
+  opacity: 0;
+  transition: opacity 160ms var(--ease-timing);
+}
+.findscrim.is-on { opacity: 1; }
+.findscrim[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) { .findscrim { transition: none; } }
+
+/* The band and the transport take turns as ONE motion: a clipped row grows while
+   the other collapses, so the foot band's height and the list above it move on one
+   curve instead of jumping. */
+.bandswap { display: grid; }
+.bandswap__row { overflow: hidden; height: 0; transition: height 200ms var(--ease-timing); }
+#transportRow { height: var(--transport-h, 40px); }
+.bandswap.is-find #transportRow { height: 0; }
+.bandswap.is-find #findBand { height: var(--band-h, 76px); }
+
+@media (prefers-reduced-motion: reduce) { .bandswap__row { transition: none; } }
+
+.findband { display: grid; gap: 8px; min-width: 0; }
+.findrow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+.findfield {
+  flex: 1; min-width: 0; height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: 400 13.5px/1.3 var(--font-sans);
+}
+.findfield::placeholder { color: var(--head-ink); }
+.findfield:focus { outline: none; border-color: var(--focus); }
+.findfield:disabled { opacity: .6; }
+
+.findcount {
+  flex: none;
+  color: var(--head-ink);
+  font: 650 11px/1 var(--font-sans);
+  letter-spacing: .08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.findresult {
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  width: 100%; height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--divider); border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: 400 13.5px/1.3 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.findresult:hover { background: var(--icon-hover-bg); border-color: var(--focus); }
+.findresult[data-match="true"] {
+  background: var(--sidebar-selected-bg);
+  border-color: var(--sidebar-selected-bg);
+}
+.findresult[data-match="true"]:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+  border-color: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+}
+.findresult:disabled { color: var(--head-ink); font-style: italic; cursor: default; }
+.findresult:disabled:hover { background: none; border-color: var(--divider); }
+.findresult__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.findresult__edition { color: var(--head-ink); }
+
+/* The switch-service control is disabled, not hidden: the head keeps its width and
+   the exit stays visible while a go to is up (FR-019). */
+.iconbtn:disabled { opacity: .45; cursor: default; }
+.iconbtn:disabled:hover { border-color: var(--divider); background: none; }
+
+/* The go to is the list's live block: its label row pins at the top of the scroll
+   while its own screens run beneath it. */
+.offblock { display: block; margin-top: -4px; }
+.offblock[hidden] { display: none; }
+#entryList[hidden] { display: none; }
+
+.offstrip {
+  position: sticky; top: -4px; z-index: 4;
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 -8px;
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--divider);
+  background: var(--sidebar-selected-bg);
+  box-shadow: 0 -4px 0 var(--sidebar-selected-bg);
+}
+
+/* The go to's rows take the space a service entry gives its number and indent:
+   full-bleed under the header, at the column a service entry's number sits in. */
+.offblock .entryinner__body { padding-left: 0; }
+#offBody { padding-top: 3px; }
+
+.offstrip__label {
+  min-width: 0; flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 400 13px/1.4 var(--font-sans);
+}
+
+.offstrip__back {
+  flex: none; height: 28px; padding: 0 10px;
+  border: 1px solid var(--divider); border-radius: 8px;
+  background: var(--rail-bg); color: var(--ink);
+  font: 650 11px/1 var(--font-sans); letter-spacing: .06em;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.offstrip__back:hover {
+  border-color: var(--focus);
+  background: color-mix(in srgb, var(--rail-bg) 92%, var(--ink));
+}
