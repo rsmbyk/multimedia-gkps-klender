@@ -371,6 +371,19 @@ class GotoSharedStateE2ETests(StaticLiveServerTestCase):
         dock.wait_for_timeout(500)
         self.assertTrue(self._state(dock)['on'])
         self.assertTrue(self._projector_view(projector)['line'])
+
+        # And a go to that was hidden and resumed must still give the service back with
+        # its words on: `on` is one flag for whatever is on air, projector included.
+        dock.locator('#offBack').click()
+        dock.wait_for_function(
+            "() => { const s = JSON.parse(localStorage.getItem('gkps-display') || 'null');"
+            " return !!(s && !s.goto); }")
+        dock.wait_for_timeout(400)
+        view = self._projector_view(projector)
+        self.assertFalse(view['detour'])
+        self.assertEqual(view['showing'], 'true', 'the service came back blank after Back')
+        self.assertTrue(view['line'])
+        self.assertEqual(self._overlay_view(overlay)['children'], 1)
         context.close()
 
     def test_the_stored_state_carries_no_verse_words(self):

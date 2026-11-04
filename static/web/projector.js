@@ -1393,7 +1393,11 @@
   }
 
   function applyGoto() {
+    var stored = read() || {};
     var goto = gotoStateOf();
+    /* `on` is one flag for whatever is on air, so the page takes it from the state on
+       every go to change — a stale local flag left the service blank after Back. */
+    showing = stored.on === true;
     if (!goto) {
       if (detour) {
         detour = null;
@@ -1524,7 +1528,7 @@
       lines.appendChild(p);
     });
     detourNode.classList.add('is-active');
-    body.dataset.showing = 'true';
+    body.dataset.showing = showing ? 'true' : 'false';
     /* The notice goes first: hiding it returns its band to the stage, and the fitting below
        measures that stage. */
     syncEmptyNotice();
