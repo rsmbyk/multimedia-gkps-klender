@@ -42,6 +42,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-187](./items/ITEM-187-overlay-text-wrap.md) | A long run in the overlay's text is painted past its panel instead of wrapping | The overlay declared no `overflow-wrap`, so a 120-character run left the plate by 710px and a 66-character lyric left the caption by 2,035px; one inherited declaration on the stage breaks each run at its own box | fix | P1 | S | [183](../specs/183-overlay-text-wrap/spec.md) | [#486](https://github.com/rsmbyk/multimedia-gkps-klender/pull/486) | 2026-11-02 |
+| [ITEM-189](./items/ITEM-189-dock-goto.md) | The dock can put a passage or a song on air — the Go To, shared by every surface | One Go To state in the display state: the dock's find row, the projector's own G and the overlay all follow the same detour, and Back puts the service back exactly as it stood | feat | P1 | L | [185](../specs/185-dock-goto/spec.md) | [#491](https://github.com/rsmbyk/multimedia-gkps-klender/pull/491) | 2026-11-04 |
 
 ## Done
 
