@@ -3,7 +3,7 @@
 **Slice**: `specs/188-legacy-bookmarks-to-services`
 **Branch**: `feat/188-legacy-bookmarks-to-services`
 **Created**: 2026-11-05
-**Status**: Draft
+**Status**: Accepted
 **Bump**: minor
 **Input**: *"i want the old bookmarks to be converted as the new services in a migration. use entry of
 kind songs to create the service. the old bookmark data still be preserved for the old dock to work."* —

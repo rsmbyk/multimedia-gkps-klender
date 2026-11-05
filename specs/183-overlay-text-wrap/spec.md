@@ -3,7 +3,7 @@
 **Slice**: `specs/183-overlay-text-wrap`
 **Branch**: `fix/183-overlay-text-wrap`
 **Created**: 2026-11-02
-**Status**: Draft — re-presented at gate 1 on 2026-11-02 after the owner widened the scope
+**Status**: Accepted — gate 1 2026-11-02, re-presented after the owner widened the scope
 **Input**: the owner's report, with a frame of `/obs/source/overlay` at 63404 — *"a long
 word/text are overflowing instead of being wrapped"*. The frame shows a liturgy plate whose body
 reads `a very`, then a run of `o`s painted across the whole frame, then `untitled text`. Asked how far

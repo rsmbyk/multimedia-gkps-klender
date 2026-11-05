@@ -3,7 +3,7 @@
 **Slice**: `specs/184-display-session-scope`
 **Branch**: `fix/184-display-session-scope`
 **Created**: 2026-11-03
-**Status**: Draft
+**Status**: Accepted
 **Input**: *"the projector / obs source overlay active tata ibadah should only last for the current
 browser session. when the browser reopens, there should be nothing to display until operators
 choose to"*
