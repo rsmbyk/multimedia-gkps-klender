@@ -41,12 +41,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-191](./items/ITEM-191-keyboard-parity.md) | The dock and the projector share one keyboard grammar | The dock gains the projector's go-to steps, `K`, `G` on the picker, a held `Esc` and a fetch guard; the picker narrows to `↑`/`↓`; the projector takes `⌘`; a go to can stand with no service | feat | P2 | M | [187](../specs/187-keyboard-parity/spec.md) | [#493](https://github.com/rsmbyk/multimedia-gkps-klender/pull/493) | 2026-11-05 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-191](./items/ITEM-191-keyboard-parity.md) | The dock and the projector share one keyboard grammar | The dock gains the projector's go-to steps, `K`, `G` on the picker, a held `Esc` and a fetch guard; the picker narrows to `↑`/`↓`; the projector takes `⌘`; a go to can stand with no service | feat | P2 | M | [187](../specs/187-keyboard-parity/spec.md) | develop via [#493](https://github.com/rsmbyk/multimedia-gkps-klender/pull/493) | 2026-11-05 |
 | [ITEM-192](./items/ITEM-192-legacy-bookmarks-to-services.md) | The old bookmarks stand as services | A migration turns each active, dated, song-holding bookmark into a dated Tata Ibadah of song entries — 157 of them — and leaves the bookmark rows for the legacy dock to keep reading | feat | P1 | M | [188](../specs/188-legacy-bookmarks-to-services/spec.md) | develop via [#496](https://github.com/rsmbyk/multimedia-gkps-klender/pull/496) | 2026-11-05 |
 | [ITEM-188](./items/ITEM-188-display-session-scope.md) | The active Tata Ibadah survives a browser restart | The display state is kept in `localStorage` with no session boundary, so reopening the browser or OBS repaints the previous service on the overlay, the projector and the dock; a new browser session starts with nothing on air | fix | P1 | M | [184](../specs/184-display-session-scope/spec.md) | develop via [#488](https://github.com/rsmbyk/multimedia-gkps-klender/pull/488) | 2026-11-03 |
 | [ITEM-189](./items/ITEM-189-dock-goto.md) | The dock can put a passage or a song on air — the Go To, shared by every surface | One Go To state in the display state: the dock's find row, the projector's own G and the overlay all follow the same detour, and Back puts the service back exactly as it stood | feat | P1 | L | [185](../specs/185-dock-goto/spec.md) | develop via [#491](https://github.com/rsmbyk/multimedia-gkps-klender/pull/491) | 2026-11-04 |
