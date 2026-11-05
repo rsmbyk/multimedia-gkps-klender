@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The team's old bookmarks now stand as services.** Every active, dated bookmark holding at least
+  one song becomes a dated Tata Ibadah of song entries — its songs in its order, with its verse
+  numbers — beside any service already standing on that name and date; the bookmarks themselves are
+  left untouched, so the legacy dock keeps reading them.
 - The dock and the projector answer **one keyboard grammar**. `Esc` returns the dock to the picker
   only when held for 900 ms — a tap does nothing — while `G` now works on the picker and a go to it
   starts there stands on air with no service underneath it, the dock's Back leaving every surface

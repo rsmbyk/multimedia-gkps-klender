@@ -4,6 +4,11 @@ Its rules, its citation, and what it resolves to for the display. The legacy ite
 model is exercised alongside, because both have to work in the same service.
 """
 
+import importlib
+from datetime import date
+from types import SimpleNamespace
+
+from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
@@ -427,3 +432,145 @@ class UnifiedTextScreenModeMigrationTests(TransactionTestCase):
         screens = _projector_screens(service)
         self.assertEqual([screen.get('single', False) for screen in screens if not screen['blank']],
                          [False, False, True, True, True])
+
+
+class LegacyBookmarkConversionTests(TransactionTestCase):
+    """The old bookmarks become services, and the bookmarks stay for the old dock (spec 188)."""
+
+    migrate_from = [('tatib', '0012_tataibadah_kind_and_slots')]
+    migrate_to = [('tatib', '0013_legacy_bookmarks_to_services')]
+
+    def migrate(self, targets):
+        executor = MigrationExecutor(connection)
+        executor.migrate(targets)
+        return executor.loader.project_state(targets).apps
+
+    def setUp(self):
+        super().setUp()
+        self.migrate(self.migrate_from)
+        # The bookmark and song models are untouched by this slice, so they come from the
+        # registry; the state this test asserts on is the one the migration leaves behind.
+        Song = apps.get_model('songs', 'Song')
+        Book = apps.get_model('songs', 'Book')
+        TataIbadah = apps.get_model('tatib', 'TataIbadah')
+        Bookmark = apps.get_model('bookmarks', 'SongBookmark')
+        Item = apps.get_model('bookmarks', 'SongBookmarkItem')
+
+        book = Book.objects.create(name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
+        first = Song.objects.create(book=book, number=1, title='First song')
+        second = Song.objects.create(book=book, number=2, title='Second song')
+        self.song_ids = [first.pk, second.pk]
+
+        # The only bookmark that qualifies: active, dated, and holding songs. Its order
+        # numbers hold a gap, which the service numbers over.
+        kept = Bookmark.objects.create(name='Ibadah Minggu', date=date(2026, 3, 1))
+        Item.objects.create(bookmark=kept, song=first, verse='1,3', order_number=2)
+        Item.objects.create(bookmark=kept, song=second, verse='2', order_number=7)
+        self.kept_id = kept.pk
+
+        # Three ways to be left out: deleted, undated, and empty.
+        deleted = Bookmark.objects.create(name='Deleted service', date=date(2026, 3, 8),
+                                          is_active=False)
+        Item.objects.create(bookmark=deleted, song=first, verse='1', order_number=1)
+        undated = Bookmark.objects.create(name='Doding Galangan')
+        Item.objects.create(bookmark=undated, song=first, verse='1', order_number=1)
+        Bookmark.objects.create(name='Empty service', date=date(2026, 3, 15))
+
+        # A service already standing under the same name and date is the same service: an
+        # empty one takes the songs, one the team filled is left alone.
+        service = TataIbadah.objects.create(name='Already a service', kind=0,
+                                            date=date(2026, 3, 22))
+        self.existing_service_id = service.pk
+        already = Bookmark.objects.create(name='Already a service', date=date(2026, 3, 22))
+        Item.objects.create(bookmark=already, song=second, verse='1', order_number=1)
+
+        built = TataIbadah.objects.create(name='Built by hand', kind=0,
+                                          date=date(2026, 3, 29))
+        self.built_service_id = built.pk
+        built_entry = apps.get_model('tatib', 'ServiceEntry').objects.create(
+            tatib_id=built.pk, kind=0, order_number=1, title='Their own opening')
+        self.built_entry_id = built_entry.pk
+        hand = Bookmark.objects.create(name='Built by hand', date=date(2026, 3, 29))
+        Item.objects.create(bookmark=hand, song=first, verse='1', order_number=1)
+
+        self.apps = self.migrate(self.migrate_to)
+
+    def tearDown(self):
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())
+        super().tearDown()
+
+    def test_an_active_dated_bookmark_becomes_a_service_of_song_entries(self):
+        TataIbadah = self.apps.get_model('tatib', 'TataIbadah')
+        ServiceEntry = self.apps.get_model('tatib', 'ServiceEntry')
+        service = TataIbadah.objects.get(name='Ibadah Minggu')
+
+        self.assertEqual((service.kind, service.date, service.is_active),
+                         (0, date(2026, 3, 1), True))
+        entries = list(ServiceEntry.objects.filter(tatib_id=service.pk)
+                       .order_by('order_number'))
+        self.assertEqual([entry.kind for entry in entries], [2, 2])
+        self.assertEqual([entry.song_id for entry in entries], self.song_ids)
+        self.assertEqual([entry.verses for entry in entries], [[1, 3], [2]])
+        self.assertEqual([entry.order_number for entry in entries], [1, 2])
+
+    def test_a_deleted_undated_or_empty_bookmark_stays_out(self):
+        TataIbadah = self.apps.get_model('tatib', 'TataIbadah')
+        self.assertEqual(set(TataIbadah.objects.values_list('name', flat=True)),
+                         {'Ibadah Minggu', 'Already a service', 'Built by hand'})
+
+    def test_a_service_of_the_same_name_and_date_gets_a_sibling_service(self):
+        TataIbadah = self.apps.get_model('tatib', 'TataIbadah')
+        ServiceEntry = self.apps.get_model('tatib', 'ServiceEntry')
+        twins = list(TataIbadah.objects.filter(name='Already a service').order_by('pk'))
+        self.assertEqual(len(twins), 2)
+        self.assertEqual({twin.date for twin in twins}, {date(2026, 3, 22)})
+
+        existing, created = twins
+        self.assertEqual(existing.pk, self.existing_service_id)
+        self.assertFalse(ServiceEntry.objects.filter(tatib_id=existing.pk).exists())
+        entries = list(ServiceEntry.objects.filter(tatib_id=created.pk)
+                       .order_by('order_number'))
+        self.assertEqual([(entry.kind, entry.song_id, entry.verses) for entry in entries],
+                         [(2, self.song_ids[1], [1])])
+
+    def test_a_filled_service_is_left_alone_and_gets_a_sibling(self):
+        TataIbadah = self.apps.get_model('tatib', 'TataIbadah')
+        ServiceEntry = self.apps.get_model('tatib', 'ServiceEntry')
+        twins = list(TataIbadah.objects.filter(name='Built by hand').order_by('pk'))
+        self.assertEqual(len(twins), 2)
+
+        existing, created = twins
+        self.assertEqual(existing.pk, self.built_service_id)
+        self.assertEqual(
+            list(ServiceEntry.objects.filter(tatib_id=existing.pk)
+                 .values_list('pk', 'title')),
+            [(self.built_entry_id, 'Their own opening')])
+        self.assertEqual(
+            list(ServiceEntry.objects.filter(tatib_id=created.pk)
+                 .values_list('kind', 'song_id', 'verses')),
+            [(2, self.song_ids[0], [1])])
+
+    def test_the_bookmarks_and_their_items_are_left_untouched(self):
+        Bookmark = self.apps.get_model('bookmarks', 'SongBookmark')
+        Item = self.apps.get_model('bookmarks', 'SongBookmarkItem')
+        self.assertEqual(Bookmark.objects.count(), 6)
+        self.assertEqual(
+            list(Item.objects.filter(bookmark_id=self.kept_id).order_by('order_number')
+                 .values_list('verse', 'order_number')),
+            [('1,3', 2), ('2', 7)])
+
+    def test_a_second_run_creates_the_same_services_again(self):
+        # Deliberate: the owner's rule is "a service under the same name and date never
+        # stops the conversion", so the migration has no exists-guard and no idempotence.
+        TataIbadah = self.apps.get_model('tatib', 'TataIbadah')
+        ServiceEntry = self.apps.get_model('tatib', 'ServiceEntry')
+        before = (TataIbadah.objects.count(), ServiceEntry.objects.count())
+
+        conversion = importlib.import_module(
+            'multimedia.tatib.migrations.0013_legacy_bookmarks_to_services')
+        conversion.convert_bookmarks(apps, SimpleNamespace(connection=connection))
+
+        self.assertEqual((TataIbadah.objects.count(), ServiceEntry.objects.count()),
+                         (before[0] + 3, before[1] + 4))
+
