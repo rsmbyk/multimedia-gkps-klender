@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-192](./items/ITEM-192-legacy-bookmarks-to-services.md) | The old bookmarks stand as services | A migration turns each active, dated, song-holding bookmark into a dated Tata Ibadah of song entries — 157 of them — and leaves the bookmark rows for the legacy dock to keep reading | feat | P1 | M | [188](../specs/188-legacy-bookmarks-to-services/spec.md) | `feat/188-legacy-bookmarks-to-services` | 2026-11-05 |
 
 ## In review
 
