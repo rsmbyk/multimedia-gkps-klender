@@ -25,14 +25,30 @@
   function readState() {
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (stored && typeof stored === 'object') {
+      if (stored && typeof stored === 'object' &&
+          window.GKPSDisplaySession && window.GKPSDisplaySession.owns(stored)) {
         return {service: stored.service == null ? null : Number(stored.service),
                 screen: Number(stored.screen) || 0,
                 on: stored.on === true,
-                translation: stored.translation || null};
+                translation: stored.translation || null,
+                goto: gotoOf(stored.goto)};
       }
     } catch (e) { /* no stored state */ }
-    return {service: null, screen: 0, on: false, translation: null};
+    return {service: null, screen: 0, on: false, translation: null, goto: null};
+  }
+
+  function gotoOf(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    if (raw.kind === 'song' && Number(raw.song_id)) {
+      return {kind: 'song', song_id: Number(raw.song_id),
+              index: Math.max(0, Number(raw.index) || 0)};
+    }
+    if (raw.kind === 'passage' && Number(raw.book_id) && Number(raw.chapter) && Number(raw.verse)) {
+      return {kind: 'passage', book_id: Number(raw.book_id), chapter: Number(raw.chapter),
+              verse: Number(raw.verse),
+              translation: raw.translation === 'SIM' ? 'SIM' : (raw.translation === 'TB' ? 'TB' : null)};
+    }
+    return null;
   }
 
   /* What a screen shows: its kind, its heading, and its lines. The shown translation,
@@ -273,9 +289,69 @@
       });
   }
 
+  /* ---------- the go to (spec 185) ------------------------------------------- */
+
+  /* A go to carries a pointer, so the overlay fetches the words it paints — the same
+     three payloads the projector reads, `no-store`, cached per song/chapter. */
+  var gotoCache = {};    /* key -> payload */
+
+  function gotoModel(goto, payload) {
+    if (goto.kind === 'song') {
+      var screen = (payload.screens || [])[goto.index];
+      if (!screen || screen.blank) return null;
+      var lines = (screen.lines || []).map(function (line) {
+        var text = String(line.text || '').trim();
+        return {text: text, voice: String(line.voice || ''),
+                mark: String(line.mark || '').trim(),
+                words: String(line.words == null ? text : line.words).trim()};
+      }).filter(function (line) { return line.text; });
+      if (!lines.length) return null;
+      return {kind: 'song', heading: '', lines: lines};
+    }
+    var editions = payload.editions || {};
+    var edition = editions[goto.translation] || editions.TB || editions[Object.keys(editions)[0]];
+    if (!edition) return null;
+    var verse = (edition.verses || []).filter(function (row) { return row.n === goto.verse; })[0];
+    if (!verse) return null;
+    var heading = edition.name + ' ' + payload.chapter + ':' + verse.n
+                  + (verse.title ? '\n' + verse.title : '');
+    return {kind: 'passage', heading: heading,
+            lines: [{text: verse.text, voice: '', mark: '', words: verse.text}]};
+  }
+
+  function syncGoto(state) {
+    var goto = state.goto;
+    var key = goto.kind === 'song' ? 'song:' + goto.song_id
+      : 'passage:' + goto.book_id + ':' + goto.chapter;
+    var held = gotoCache[key];
+    if (held) { paint(gotoModel(goto, held)); return; }
+    var url = goto.kind === 'song' ? '/projector/goto/song/' + goto.song_id + '/'
+      : '/projector/goto/chapter/' + goto.book_id + '/' + goto.chapter + '/';
+    fetch(url, {credentials: 'same-origin', cache: 'no-store'})
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        gotoCache[key] = payload;
+        var latest = readState();
+        if (!latest.goto || latest.on !== true) return;
+        if (latest.goto.kind !== goto.kind) return;
+        if (goto.kind === 'song' && latest.goto.song_id !== goto.song_id) return;
+        if (goto.kind === 'passage' && (latest.goto.book_id !== goto.book_id
+            || latest.goto.chapter !== goto.chapter)) return;
+        paint(gotoModel(latest.goto, payload));
+      })
+      .catch(function () { paint(null); });
+  }
+
   function sync() {
     var state = readState();
-    if (!state.service || state.on !== true) { paint(null); return; }
+    if (state.on !== true) { paint(null); return; }
+    /* A go to paints from its own payload, so it needs no service underneath it
+       (spec 187 FR-011): check it before the service is required. */
+    if (state.goto) { syncGoto(state); return; }
+    if (!state.service) { paint(null); return; }
     ensure(state.service, function (data) {
       if (!data) { paint(null); return; }
       /* The state may have moved on while the fetch was in the air. */

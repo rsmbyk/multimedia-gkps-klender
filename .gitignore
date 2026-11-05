@@ -219,3 +219,6 @@ _static/
 # Local working scratch (parity reference for spec 004; see ITEM-005) - never commit
 /scratch/
 db.sqlite3.bak-*
+
+# Spec previews: the probe writes its screenshots here
+specs/*/preview/shots/

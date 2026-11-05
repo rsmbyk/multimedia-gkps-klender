@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-10-29
-**slices**: `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-05
+**slices**: `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1187,3 +1187,28 @@ manifest, so a template's file waits for the dated service that uses it.
 #### Scenario: a template's media file
 - WHEN a file is referenced only by templates
 - THEN it is never auto-deleted and it does not enter the download manifest
+
+### R39 — The old bookmarks stand as services
+
+A migration SHALL create one dated service for every active bookmark that carries a date and at least
+one song: the bookmark's own name and date, its items as song entries in the bookmark's order, each
+with the same verse numbers. A bookmark that is deleted, undated or holds no songs SHALL NOT convert.
+A service already standing under the same name and date SHALL NOT stop the conversion — the bookmark
+still gets a service of its own beside it, and the standing service is left as it was, so a name and
+date may carry two services. The name comparison is case-sensitive. The bookmark rows SHALL NOT be
+written.
+
+#### Scenario: a converted bookmark
+- WHEN a bookmark dated 2026-10-11 with nine songs is converted
+- THEN the service list holds a 2026-10-11 service carrying nine song entries in the same order with
+  the same verses
+
+#### Scenario: a service already on that day
+- WHEN a service already stands under the bookmark's name and date
+- THEN the bookmark becomes a second service of that name and date, and the first one keeps its own
+  entries untouched
+
+#### Scenario: a bookmark that stays behind
+- WHEN a bookmark is deleted, undated, or holds no songs
+- THEN no service is created for it and the bookmark itself is unchanged
+

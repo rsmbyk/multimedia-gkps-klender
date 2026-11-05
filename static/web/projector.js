@@ -466,12 +466,25 @@
   function read() {
     try {
       var stored = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (stored && typeof stored === 'object') return stored;
+      if (stored && typeof stored === 'object' &&
+          window.GKPSDisplaySession && window.GKPSDisplaySession.owns(stored)) return stored;
     } catch (e) { /* no stored state */ }
     return null;
   }
   function write(state) {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+    try {
+      /* A write that says nothing about the go to leaves it alone: the projector moves
+         the service underneath nothing, and only a named `goto: null` ends one
+         (spec 185, the shared module's own rule). */
+      var held = state.goto === undefined ? ((read() || {}).goto || null) : state.goto;
+      localStorage.setItem(KEY, JSON.stringify({
+        service: state.service, screen: state.screen, on: state.on,
+        translation: state.translation, at: state.at,
+        goto: held,
+        /* The session this write belongs to (spec 184). */
+        session: window.GKPSDisplaySession ? window.GKPSDisplaySession.stamp() : null
+      }));
+    } catch (e) { /* private mode */ }
   }
   function post(message) {
     if (channel) channel.postMessage(message);
@@ -580,7 +593,7 @@
   var previousIndex = current;
 
   function move(step) {
-    if (detour) { detourStep(step, 'plain'); return; }
+    if (detour) { stepGoto(step, 'plain'); return; }
     if (pdfHost && pdfDocument && pdfPage + step >= 1 && pdfPage + step <= pdfDocument.numPages) {
       pdfPage += step;
       paintPDFScreen();
@@ -627,7 +640,6 @@
   var findRows = [];
   var findChoice = 0;
   var detour = null;
-  var returnScreen = null;
   var runningCueLabels = [];
 
   function clearRunningCueLabels() {
@@ -729,7 +741,7 @@
     render();
   }
   function moveEntry(offset) {
-    if (detour) { if (detour.kind === 'passage') detourStep(offset, 'ctrl'); return; }
+    if (detour) { if (detour.kind === 'passage') stepGoto(offset, 'ctrl'); return; }
     var next = entries[entryIndex() + offset];
     if (next && next.start <= next.end) moveTo(next.start);
   }
@@ -745,11 +757,11 @@
     });
   }
   function moveBait(offset) {
-    if (detour) { detourStep(offset, detour.kind === 'passage' ? 'shift' : 'bait'); return; }
+    if (detour) { stepGoto(offset, detour.kind === 'passage' ? 'shift' : 'bait'); return; }
     moveToBait(baitIndex() + offset);
   }
   function unitBoundary(last, modifier) {
-    if (detour) { detourBoundary(last, modifier); return; }
+    if (detour) { gotoBoundary(last, modifier); return; }
     var entry = entryAt(current);
     if (!entry) return;
     if (modifier === 'ctrl') {
@@ -1310,31 +1322,117 @@
   });
   findResults.addEventListener('click', function () { chooseFind(findChoice); });
 
+  /* ---------- the go to, read from the state (spec 185) ---------------------
+     The projector keeps no detour of its own: `detour` is the payload for the state's
+     current go to, fetched when the state names one it does not hold, and every act
+     below writes the state first. */
+
   var detourNode = document.createElement('section');
   detourNode.className = 'screen projector-detour';
   detourNode.innerHTML = '<h1 class="screen__head"></h1><div class="screen__lines"></div>';
   stage.appendChild(detourNode);
-  function leaveDetour() {
-    if (!detour) return;
-    detour = null;
-    detourNode.classList.remove('is-active');
-    if (returnScreen != null) current = returnScreen;
-    returnScreen = null;
-    showing = true;
-    render();
+
+  var gotoCache = {key: '', payload: null, loading: false};
+
+  function gotoKey(goto) {
+    if (!goto) return '';
+    return goto.kind === 'song' ? 'song:' + goto.song_id
+      : 'passage:' + goto.book_id + ':' + goto.chapter;
   }
+
+  function gotoStateOf() {
+    var stored = read() || {};
+    var goto = stored.goto;
+    if (!goto || typeof goto !== 'object') return null;
+    return goto;
+  }
+
+  function writeGoto(goto) {
+    write({service: service, screen: current, on: true,
+           translation: translation || null, at: Date.now(), goto: goto});
+    post({type: 'goto', goto: goto});
+  }
+
+  function fetchGotoPayload(goto, done, fail) {
+    var key = gotoKey(goto);
+    if (gotoCache.key === key && gotoCache.payload) { done(gotoCache.payload); return; }
+    gotoCache.key = key;
+    gotoCache.payload = null;
+    gotoCache.loading = true;
+    var url = goto.kind === 'song' ? '/projector/goto/song/' + goto.song_id + '/'
+      : '/projector/goto/chapter/' + goto.book_id + '/' + goto.chapter + '/';
+    fetch(url, {credentials: 'same-origin', cache: 'no-store'})
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        gotoCache.loading = false;
+        gotoCache.payload = payload;
+        done(payload);
+      })
+      .catch(function (error) {
+        gotoCache.loading = false;
+        gotoCache.key = '';
+        if (window.console && console.error) console.error('Go To load failed:', error);
+        if (fail) fail(error);
+      });
+  }
+
+  /* The payload the detour paints, in the shape `renderDetour` already uses. */
+  function detourFrom(goto, payload) {
+    if (goto.kind === 'song') {
+      return {kind: 'song', label: payload.label, screens: payload.screens || [],
+              baits: payload.baits || [], index: Math.max(0, Number(goto.index) || 0)};
+    }
+    var data = window.GKPSProjectorLibrary.fromChapter(
+      payload, goto.verse, goto.translation || '');
+    if (!data) return null;
+    data.translation = goto.translation || data.translation;
+    return data;
+  }
+
+  function applyGoto() {
+    var stored = read() || {};
+    var goto = gotoStateOf();
+    /* `on` is one flag for whatever is on air, so the page takes it from the state on
+       every go to change — a stale local flag left the service blank after Back. */
+    showing = stored.on === true;
+    if (!goto) {
+      var hadDetour = Boolean(detour);
+      detour = null;
+      detourNode.classList.remove('is-active');
+      /* A stored state that names no service is idle: painting this page's own service
+         would put a screen on air that nothing named (FR-011). A page with no stored
+         state at all stands alone and keeps what it painted. */
+      if (stored && stored.service == null) { paintIdle(); return; }
+      if (hadDetour) render();
+      return;
+    }
+    fetchGotoPayload(goto, function (payload) {
+      var made = detourFrom(goto, payload);
+      if (!made) return;
+      detour = made;
+      renderDetour();
+    });
+  }
+
+  /* The projector's `G` puts the pick on air by writing the state, not by keeping it:
+     the dock and the overlay learn about it the way they learn about a screen. */
   function openDetour(row) {
     if (gotoBusy || !window.GKPSProjectorLibrary) return;
     beginGotoLoad(findResults);
     window.GKPSProjectorLibrary.detour(row).then(function (data) {
       if (!data) throw new Error('Nothing to paint');
-      if (!detour) returnScreen = current;
-      detour = data;
-      detour.index = 0;
-      showing = true;
-      renderDetour();
+      if (data.kind === 'song') {
+        writeGoto({kind: 'song', song_id: row.target.song_id, index: 0});
+      } else {
+        writeGoto({kind: 'passage', book_id: data.book_id, chapter: data.chapter,
+                   verse: data.verse, translation: data.translation});
+      }
       endGotoLoad();
       closeFind();
+      applyGoto();
     }).catch(function (error) {
       if (window.console && console.error) console.error('Go To load failed:', error);
       endGotoLoad();
@@ -1342,48 +1440,87 @@
       if (findRows.length) findCount.textContent = (findChoice + 1) + ' / ' + findRows.length;
     });
   }
+
+  function leaveDetour() {
+    if (!detour) return;
+    writeGoto(null);
+    detour = null;
+    detourNode.classList.remove('is-active');
+    showing = true;
+    render();
+  }
+
   function requestPassage(action, level) {
     if (!detour || detour.kind !== 'passage' || gotoBusy) return;
     if (!window.GKPSProjectorLibrary) return;
     var step = window.GKPSProjectorLibrary.movePassage(detour, action, level);
     if (!step) return;
-    if (step.detour) { detour = step.detour; renderDetour(); return; }
+    if (step.detour) {
+      writeGoto({kind: 'passage', book_id: step.detour.book_id, chapter: step.detour.chapter,
+                 verse: step.detour.verse, translation: step.detour.translation});
+      applyGoto();
+      return;
+    }
     beginGotoLoad(null);
     window.GKPSProjectorLibrary.fetchChapter(step.request.book_id, step.request.chapter,
       step.request.verse, step.request.edition).then(function (data) {
-      if (data) { detour = data; renderDetour(); }
+      if (!data) return;
+      writeGoto({kind: 'passage', book_id: data.book_id, chapter: data.chapter,
+                 verse: data.verse, translation: data.translation});
+      applyGoto();
     }).catch(function () { /* keep the screen that is showing */ })
       .then(endGotoLoad);
   }
-  function detourStep(step, level) {
-    if (detour.kind === 'passage') { requestPassage(step > 0 ? 'next' : 'previous', level); return; }
+
+  function stepGoto(step, level) {
+    var goto = gotoStateOf();
+    if (!goto || !detour) return;
+    if (goto.kind === 'passage') { requestPassage(step > 0 ? 'next' : 'previous', level); return; }
     if (level === 'ctrl') return;
+    var index = detour.index;
     if (level === 'bait') {
       var currentBait = detour.baits.findIndex(function (bait) {
-        return detour.index >= bait.start && detour.index <= bait.end;
+        return index >= bait.start && index <= bait.end;
       });
       var target = detour.baits[currentBait + step];
-      if (target) detour.index = target.start;
-    } else detour.index = Math.max(0, Math.min(detour.index + step, detour.screens.length - 1));
-    renderDetour();
-  }
-  function detourBoundary(last, level) {
-    if (detour.kind === 'passage') { requestPassage(last ? 'last' : 'first', level); return; }
-    if (level === 'ctrl') return;
-    if (level === 'shift') detour.index = detour.baits[last ? detour.baits.length - 1 : 0].start;
-    else {
-      var bait = detour.baits.find(function (item) {
-        return detour.index >= item.start && detour.index <= item.end;
-      });
-      if (bait) detour.index = last ? Math.max(bait.start, bait.end - 1) : bait.start;
+      if (target) index = target.start;
+    } else {
+      index = Math.max(0, Math.min(index + step, detour.screens.length - 1));
     }
-    renderDetour();
+    writeGoto({kind: 'song', song_id: goto.song_id, index: index});
+    applyGoto();
   }
+
+  function gotoBoundary(last, level) {
+    var goto = gotoStateOf();
+    if (!goto || !detour) return;
+    if (goto.kind === 'passage') { requestPassage(last ? 'last' : 'first', level); return; }
+    if (level === 'ctrl') return;
+    var index = detour.index;
+    if (level === 'shift') {
+      index = detour.baits[last ? detour.baits.length - 1 : 0].start;
+    } else {
+      var bait = detour.baits.find(function (item) {
+        return index >= item.start && index <= item.end;
+      });
+      if (bait) index = last ? Math.max(bait.start, bait.end - 1) : bait.start;
+    }
+    writeGoto({kind: 'song', song_id: goto.song_id, index: index});
+    applyGoto();
+  }
+
   function renderDetour() {
     if (!detour) return;
+    /* A go to arriving over the channel takes the screen from a playing recording, the
+       way another screen does (FR-012): the media hosts are released before it paints. */
+    renderImageScreen(null);
+    renderAudioScreen(null);
+    renderVideoScreen(null);
+    renderPDFScreen(null);
     screens().forEach(function (screen) { screen.classList.remove('is-active'); });
     var data = detour.kind === 'passage' ? detour.translations[detour.translation]
       : detour.screens[detour.index];
+    if (!data) return;
     var head = detourNode.querySelector('.screen__head');
     var lines = detourNode.querySelector('.screen__lines');
     head.hidden = !data.header;
@@ -1394,14 +1531,16 @@
       lines.appendChild(p);
     });
     detourNode.classList.add('is-active');
-    body.dataset.showing = 'true';
+    body.dataset.showing = showing ? 'true' : 'false';
     /* The notice goes first: hiding it returns its band to the stage, and the fitting below
        measures that stage. */
     syncEmptyNotice();
     fit(detourNode); renderCue();
   }
   function renderDetourCue() {
-    var returnEntry = entryAt(returnScreen == null ? current : returnScreen);
+    /* The service's own place is frozen while a go to is up (D001), so the cue's return
+       names the entry the projector already stands on. */
+    var returnEntry = entryAt(current);
     cuePrefix.replaceChildren();
     var label = document.createElement('span');
     label.textContent = detour.label + (detour.kind === 'passage' ? ' · ' : ' ·');
@@ -1490,12 +1629,15 @@
       }
     }
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
-    if (event.altKey || event.metaKey) return;
+    if (event.altKey) return;
+    /* `⌘` and `Ctrl` are one modifier for the navigation chords (FR-010); any other
+       ⌘ chord falls through to the browser, which owns it. */
+    var ctrl = event.ctrlKey || event.metaKey;
     var key = event.key.toLowerCase();
-    if (!event.ctrlKey && !event.shiftKey && ['j', 'g'].includes(key)) {
+    if (!ctrl && !event.shiftKey && ['j', 'g'].includes(key)) {
       event.preventDefault(); openFind(key); return;
     }
-    if (!event.ctrlKey && !event.shiftKey && key === 'c') {
+    if (!ctrl && !event.shiftKey && key === 'c') {
       event.preventDefault();
       var hide = !body.classList.contains('corner-hidden');
       body.classList.toggle('corner-hidden', hide);
@@ -1503,12 +1645,12 @@
       if (!hide) revealControls();
       return;
     }
-    if (!event.ctrlKey && !event.shiftKey && key === 't') {
+    if (!ctrl && !event.shiftKey && key === 't') {
       event.preventDefault();
       if (imageHost || pdfHost) toggleFit(); else flipTranslation();
       return;
     }
-    if (!event.ctrlKey && event.key === ' ') {
+    if (!ctrl && event.key === ' ') {
       event.preventDefault();
       if (audioHost && audioPlayer) { if (!event.repeat) audioPlayer.toggle(); }
       else if (videoHost && videoPlayer) { if (!event.repeat) videoPlayer.toggle(); }
@@ -1518,13 +1660,14 @@
     var forward = ['ArrowRight', 'ArrowDown', 'PageDown'].includes(event.key);
     var backward = ['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key);
     if (forward || backward) {
-      if (event.ctrlKey && (event.key === 'PageUp' || event.key === 'PageDown')) return;
+      if (ctrl && (event.key === 'PageUp' || event.key === 'PageDown')) return;
       event.preventDefault();
-      if (event.ctrlKey) moveEntry(forward ? 1 : -1);
+      if (ctrl) moveEntry(forward ? 1 : -1);
       else if (event.shiftKey) moveBait(forward ? 1 : -1);
       else move(forward ? 1 : -1);
     } else if (event.key === 'Home' || event.key === 'End') {
-      event.preventDefault(); unitBoundary(event.key === 'End', event.ctrlKey ? 'ctrl' : event.shiftKey ? 'shift' : 'plain');
+      event.preventDefault();
+      unitBoundary(event.key === 'End', ctrl ? 'ctrl' : event.shiftKey ? 'shift' : 'plain');
     }
   });
 
@@ -1620,6 +1763,8 @@
       } else if (message.type === 'flip') {
         translation = message.translation || '';
         render(true);
+      } else if (message.type === 'goto') {
+        applyGoto();
       } else if (message.type === 'update') {
         reflow();
       }
@@ -1741,6 +1886,52 @@
       if (active) fit(active);
     });
   }
+  /* The session may have ended while this page stayed open (spec 186): re-read, and paint
+     from what the store now says — silently, because a re-read is not an act. */
+  function paintIdle() {
+    detour = null;
+    detourNode.classList.remove('is-active');
+    screens().forEach(function (each) {
+      each.classList.remove('is-active', 'is-in', 'is-out');
+      each.setAttribute('aria-hidden', 'true');
+    });
+    showing = false;
+    body.dataset.showing = 'false';
+    body.classList.add('words-hidden');
+    syncEmptyNotice();
+    renderCue();
+  }
+
+  function rereadSession() {
+    var stored = read();
+    if (stored && stored.goto) { applyGoto(); return; }
+    if (!stored || !stored.service || Number(stored.service) !== Number(service)) {
+      paintIdle();
+      return;
+    }
+    detour = null;
+    detourNode.classList.remove('is-active');
+    current = Math.max(0, Number(stored.screen) || 0);
+    previousIndex = current;
+    showing = stored.on === true;
+    translation = stored.translation || '';
+    render(true);
+  }
+
+  window.addEventListener('focus', rereadSession);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) rereadSession();
+  });
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) rereadSession();
+  });
+
+  /* A go to this page did not start: a fresh open, a reload, or another surface's write
+     (FR-010, FR-014). */
+  window.addEventListener('storage', function (event) {
+    if (event.key === KEY) applyGoto();
+  });
+  applyGoto();
   window.addEventListener('pagehide', clearImageScreen);
   window.addEventListener('pagehide', clearVideoScreen);
 })();

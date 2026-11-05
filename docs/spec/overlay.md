@@ -1,8 +1,8 @@
 # overlay
 
 **capability**: `overlay`
-**last folded**: 2026-11-02
-**slices**: `183-overlay-text-wrap`, `180-overlay-text-styles`
+**last folded**: 2026-11-05
+**slices**: `187-keyboard-parity`, `185-dock-goto`, `183-overlay-text-wrap`, `180-overlay-text-styles`
 
 The OBS browser source: what the stream shows the congregation while a service runs. It is a listen-only page — the
 dock drives it and the projector shows the room the same screens — so everything here is what the page *paints* from a
@@ -11,9 +11,14 @@ as folded behaviour from here on.
 
 ### R1 — The overlay paints from the display state alone, and carries no control
 
-The overlay SHALL render from the browser-local display state — `{service, screen, on, translation}` — pushed by the
-dock over its channel, and SHALL carry no control, no focusable element and no chrome of its own. A page opened with
-no state SHALL paint nothing. (spec 180)
+The overlay SHALL render from the browser-local display state — `{service, screen, on, translation, goto}` — pushed by
+the dock over its channel, and SHALL carry no control, no focusable element and no chrome of its own. A page opened with
+no state SHALL paint nothing. A state that names a go to SHALL paint it instead of the service's screen: a song as the
+caption, a passage as the quotation card, in the edition the go to shows — the page fetching the words itself from
+`/projector/goto/*` and painting nothing while the go to is blank, hidden or gone. A page opened or reloaded mid-go to
+SHALL paint the go to, and a go to that names **no service** SHALL be painted the same way — the
+card comes from the go to's own payload, and `back` from it SHALL leave the stage painting nothing.
+(spec 180, extended by specs 185 and 187)
 
 #### Scenario: nothing is on air
 - WHEN the overlay loads with no display state
@@ -22,6 +27,18 @@ no state SHALL paint nothing. (spec 180)
 #### Scenario: the dock hides the words
 - WHEN the display state goes `on: false`
 - THEN the words leave the stage once their exit ends, and the page keeps its place in the layout
+
+#### Scenario: a go to comes on air
+- WHEN the state's `goto` names a song or a passage
+- THEN the stage paints the caption or the card that kind already uses, and the reference it names
+
+#### Scenario: a go to with no service
+- WHEN the state carries a go to and `service: null`
+- THEN the caption or the card is painted from the go to, and after `back` the stage paints nothing
+
+#### Scenario: the go to ends
+- WHEN `goto` returns to null
+- THEN the service's screen named beside it is painted again
 
 ### R2 — A song screen paints the caption
 
