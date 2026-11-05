@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The dock and the projector answer **one keyboard grammar**. `Esc` returns the dock to the picker
+  only when held for 900 ms — a tap does nothing — while `G` now works on the picker and a go to it
+  starts there stands on air with no service underneath it, the dock's Back leaving every surface
+  idle; inside a go to the dock's arrows step a verse, a chapter and a book with the projector's own
+  chords, fetching exactly the chapter it enters and nothing at all inside the loaded one; the picker
+  moves on `↑`/`↓` only; `K` opens the dock's own shortcut sheet, 32 rows in five groups in the
+  projector's wording and order (34 and six on the picker, whose two keys lead it); a fetch in flight
+  refuses every key and click and reads `Loading…` until it settles; `Home`/`End` act on the unit on
+  show — the live bait, or the entry, never the whole service — by the projector's own arithmetic,
+  `Shift` taking the bait or the entry's ends and `Ctrl`/`⌘` the service's first or last entry; a
+  refresh opens whatever is on air instead of the picker; and the find band keeps the keyboard in its
+  field when the window comes back. On the projector, `⌘` is the same modifier as `Ctrl` for the
+  arrows and `Home`/`End` while every other `⌘` chord stays the browser's, and a go to that names no
+  service is painted from its own payload, `Back` leaving the page idle.
 - A surface that stays open no longer paints a display its browser no longer owns: the dock and the projector read the display state again when their page becomes visible, when their window takes focus and when the page is restored from the back/forward cache, and paint nothing when the stored state belongs to an earlier browser session — the case where the session marker, a cookie, has gone while `localStorage` survived. The state module compares that re-read with what it holds and tells its surfaces only when something changed, so focusing a surface that is already in step repaints nothing, and no key, message or timer is added.
 - The dock can put a passage or a song on air from the runner itself: `G`, or the magnifier in the runner's head, opens a find band over a dimmed dock, typing answers from the projector's own index with no request, and choosing puts that passage or song on air at its first screen or verse. What is on air is drawn as the list's live block — the label with `Back`, then the go to's own baits and lyrics or its verses — while the service's rows and the switch-service control wait behind it, the arrows, bait chips, `T` and `Space` act on the go to, and `Back` restores the service at the exact screen and edition it stood on. The go to is one field of the browser-local display state, so the projector's own `G` and the caption overlay follow the same one, and it ends with the browser session like the service.
 - The local stack starts on a computer that does not export `HOME` — the font mount now defaults to a folder inside the checkout instead of a home-directory path that a Windows shell never provides — and, started through `docker/up.ps1` or `docker/up.sh`, it reads the fonts that computer already has: an installed Calibri, Cambria or Britannic Bold is drawn in its own face instead of the image's substitute, a directory Docker cannot read is skipped and named rather than mounted empty, and the operator's own folder still wins a same-family clash.
@@ -20,6 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The projector's shortcut sheet is grouped by subject in three columns and folds to one scrolling
+  column when the window is too narrow for them: one `Display` group (words, corner, the sheet itself,
+  finding and fullscreen), one `Find` group ordered `Previous Match`, `Next Match`, `Open Match`,
+  `Close When Empty`, `Close Find`, one `Audio and Video` group with a single `Play/Pause`, and one
+  `Passage` group merging the verse rows with the library's chapter and book rows; the media groups
+  end the left column and the middle carries `Passage` and `Library Detour`. Its frame follows its
+  tallest column (686 px at 1080p, where it was fixed at 677), scrolls on the app's own 5 px capsule,
+  and no longer has the corner cue drawn over it. Below 1125 px the sheet is one column of the same
+  groups, in the same order, scrolling inside its frame.
 - The active Tata Ibadah lasts only the browser session now: reopening the browser or OBS opens with nothing on air instead of repainting the previous service, while closing a surface inside a session still changes nothing.
 - A media entry ends on the projector's built-in rest now, the blank every text, passage and song entry already draws after itself: a picture, a recording, a video, a PDF page or a slide deck is followed by one blank screen before the next entry, so no step goes from one picture straight to the next and a service that finishes on a picture can be left blank by stepping. The rest belongs to the entry — it is not a row in the order — the dock lists it under the media row and steps onto it, and an entry whose file is gone still keeps its one rest. The media screens themselves do not move: same payloads, same fit, same lock.
 - The operator dock fills whatever panel it is given: the page used to cap itself at 560px and centre in the window, leaving a strip of background on both sides of an OBS dock the operator had widened — it now takes the panel's whole width, and the picker's rows run with it (1424px of a 1440px dock, its date on the row's right edge). The picker stays one column at every size, its bucket heads still stick, and nothing below 560px moves: a narrow OBS dock paints exactly as it did.
