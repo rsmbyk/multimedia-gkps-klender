@@ -146,7 +146,7 @@ SHEET = (
         ("First Bait", [SHIFT + key("Home", "nav")]),
         ("Last Bait", [SHIFT + key("End", "nav")]),
     )),
-    ("Passage and go to", (
+    ("Passage", (
         ("Flip TB / SIM", [key("T")]),
         ("First Verse", [key("Home", "nav")]),
         ("Last Verse", [key("End", "nav")]),

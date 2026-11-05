@@ -23,8 +23,8 @@
 - [x] CHK019 Are the failure cases covered — a chapter fetch that fails, a go to at the first or last book, a sheet opened with the picker showing? [Coverage, Spec §Edge Cases]
 - [x] CHK020 Does the spec keep names of people out, and does it call the two surfaces by the repo's vocabulary? [Consistency, Spec §Glossary]
 
-**Ticked**: 2026-11-05 — all 20 items, against the spec as accepted at gate 1 (FR-001…FR-015,
+**Ticked**: 2026-11-05 — all 20 items, by the owner at gate 2 (FR-001…FR-015,
 SC-001…SC-012, US1…US11). Three items earned a fix while reading: CHK009 (the sheet's rows were stated
 as a count, not a list — the group and row order was written into FR-013/FR-014), CHK011 (the contract
-now states the `service: null` allowance) and CHK014 (the frame's 835.5 px and the 720p scroll were
+now states the `service: null` allowance) and CHK014 (the frame's height and the 720p scroll were
 measured and written down, not implied).

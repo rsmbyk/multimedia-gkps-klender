@@ -12,16 +12,23 @@
  * and the caption overlay are readers.
  *
  * Keyboard (the dock owns it; every control is tabindex="-1" and the panel takes the
- * focus back on pointerdown):
+ * focus back on pointerdown). The keys are listed where the operator reads them — the
+ * `K` sheet in `obs_dock.html`, in the projector's wording — and one grammar spans both
+ * surfaces (spec 187):
  *
- *     ArrowDown / ArrowRight / PageDown     next screen
- *     ArrowUp / ArrowLeft / PageUp          previous screen
- *     Shift + the same                      next / previous bait
- *     Ctrl/⌘ + the same                     next / previous entry
- *     Home / End                            first / last of the same unit
- *     Space                                 display / hide this service
+ *     ↑ / ↓                                 move the pick (the picker only)
+ *     Enter                                 open the marked service (the picker only)
+ *     G                                     go to a passage or a song (both views)
+ *     K                                     the shortcut sheet (both views)
+ *     ArrowDown / ArrowRight / PageDown     next screen; in a go to, the next verse
+ *     ArrowUp / ArrowLeft / PageUp          previous screen / verse
+ *     Shift + the same                      next / previous bait, or chapter in a go to
+ *     Ctrl/⌘ + the same                     next / previous entry, or book in a go to
+ *     Home / End                            first / last of the unit on show
+ *     Shift / Ctrl + Home / End             the unit's first / last bait, chapter or entry
+ *     Space                                 display / hide what is on air
  *     T                                     show the other edition (passages)
- *     Escape                                back to the picker
+ *     Escape (held 900 ms)                  back to the picker
  */
 (function () {
   'use strict';
@@ -356,6 +363,8 @@
       if (rows.length && dock.pickIndex < 0) setPickCursor(0, false);
       else if (rows.length) setPickCursor(dock.pickIndex, true);
     }
+    cancelEscapeHold();
+    if (keysOpen) applyKeysGroup();
     focusPanel();
   }
 
@@ -707,7 +716,7 @@
   /* The find band is a layer over the dock, and it is where the index is read: the
      lookup module is injected on the first open, so a dock that is never searched
      pays nothing for a 29 KB index (D004). */
-  var find = {open: false, rows: [], choice: 0, status: 'idle'};
+  var find = {open: false, rows: [], choice: 0, status: 'idle', fromPicker: false};
   var shown = {key: '', payload: null, loading: false};
 
   function measureBand() {
@@ -747,7 +756,12 @@
   }
 
   function openFind() {
-    if (find.open || dock.service == null) return;
+    if (find.open || keysOpen) return;
+    /* The picker may start a go to with nothing underneath it (FR-002); from the
+       runner the band still needs the service it browses. */
+    if (dock.service == null && panel.dataset.view !== 'pick') return;
+    find.fromPicker = panel.dataset.view === 'pick';
+    cancelEscapeHold();
     find.open = true;
     find.status = window.GKPSProjectorLibrary && window.GKPSProjectorLibrary.ready()
       ? 'ready' : 'loading';
@@ -755,6 +769,9 @@
     find.choice = 0;
     findInput.value = '';
     findInput.disabled = find.status !== 'ready';
+    /* The footer that carries the band is hidden on the picker until the band needs it
+       (FR-002), so it is shown before its rows are measured. */
+    panel.classList.add('is-find');
     measureBand();
     bandSwap.classList.add('is-find');
     findScrim.hidden = false;
@@ -768,6 +785,10 @@
     if (!find.open) return;
     find.open = false;
     bandSwap.classList.remove('is-find');
+    /* The footer folds away with the band on the picker, after its own 200 ms. */
+    window.setTimeout(function () {
+      if (!find.open) panel.classList.remove('is-find');
+    }, 210);
     findScrim.classList.remove('is-on');
     window.setTimeout(function () { if (!find.open) findScrim.hidden = true; }, 170);
     findInput.value = '';
@@ -822,7 +843,7 @@
   }
 
   function gotoLabelOf(state) {
-    if (!shown.payload) return 'Loading…';
+    if (gotoBusy || !shown.payload) return 'Loading…';
     if (shown.payload.kind === 'song') return shown.payload.label;
     var editions = shown.payload.editions || {};
     var edition = editions.TB || editions[Object.keys(editions)[0]];
@@ -946,9 +967,12 @@
   }
 
   function adoptGoto(row, payload) {
-    /* A go to with nothing on air adopts the browsed service underneath it, so Back
-       always has a place to land (FR-016). */
-    if (gkpsDisplay.read().service == null) gkpsDisplay.show(dock.service, 0);
+    /* A go to chosen on the picker stands alone: it never adopts the marked service
+       (FR-004). Chosen from the runner, it keeps adopting the browsed service, so Back
+       always has a place to land (FR-016 of spec 185). */
+    if (!find.fromPicker && gkpsDisplay.read().service == null) {
+      gkpsDisplay.show(dock.service, 0);
+    }
     if (payload.kind === 'song') {
       gkpsDisplay.goTo({kind: 'song', song_id: row.target.song_id, index: 0});
       return;
@@ -960,6 +984,7 @@
   function chooseFind(index) {
     var row = find.rows[index];
     if (!row || !window.GKPSProjectorLibrary) return;
+    var fromPicker = find.fromPicker;
     find.status = 'loading';
     paintFind();
     window.GKPSProjectorLibrary.detour(row).then(function (payload) {
@@ -975,6 +1000,9 @@
       shown.loading = false;
       adoptGoto(row, payload);
       closeFind();
+      /* The block is where a go to is stepped and `Back` lives, so a go to started on
+         the picker hands the stage to the runner (FR-004). */
+      if (fromPicker) setView('run', false);
     }).catch(function () {
       find.status = 'failed';
       findInput.disabled = false;
@@ -1010,10 +1038,27 @@
     dock.screen = live ? state.screen : 0;
     dock.translation = live ? state.translation : null;
 
-    dock.goto = live ? state.goto : null;
+    /* A go to can stand with no service underneath it (FR-003): it is what is on air,
+       so the dock paints its block though no service is live. */
+    var hadGoto = dock.goto != null;
+    var goto = state.goto && (live || state.service == null) ? state.goto : null;
+    dock.goto = goto;
+    /* The runner holding a go to alone names its mode; the block below names the go to
+       itself, so the head does not repeat it. */
+    var alone = goto != null && state.service == null;
+    panel.classList.toggle('is-alone', alone);
+    if (alone) runService.textContent = 'Go To';
+    else if (dock.name) runService.textContent = dock.name;
+    /* A go to that stood alone and has just ended leaves the dock with nothing to run,
+       so Back hands it back to the picker it was started from (FR-004). */
+    if (hadGoto && !goto && state.service == null && panel.dataset.view === 'run') {
+      setView('pick', true);
+    }
     /* The switch-service control is disabled, not hidden, while a go to is up: the
        head keeps its width and the exit stays visible (FR-019). */
-    switchBtn.disabled = !!dock.goto;
+    /* A go to can stand with no service underneath it: there is none to lose, and the
+       control returns to the picker (FR-004). */
+    switchBtn.disabled = !!dock.goto && state.service != null;
 
     blankBtn.setAttribute('aria-pressed', dock.on ? 'false' : 'true');
     var title = dock.on ? 'Hide words'
@@ -1106,6 +1151,7 @@
   });
 
   entryList.addEventListener('click', function (event) {
+    if (gotoBusy) return;                    /* nothing changes what is on air */
     var band = event.target.closest('.nextband');
     if (band) {
       projectScreen(Number(band.dataset.screen));
@@ -1127,6 +1173,7 @@
   });
 
   baitChips.addEventListener('click', function (event) {
+    if (gotoBusy) return;
     var chip = event.target.closest('.bait');
     if (!chip) return;
     if (gkpsDisplay.read().goto) gkpsDisplay.stepGoto(Number(chip.dataset.screen));
@@ -1154,9 +1201,12 @@
   }
 
   blankBtn.addEventListener('click', function () {
-    if (dock.service == null) return;
+    if (gotoBusy) return;
     var state = gkpsDisplay.read();
-    if (state.service === dock.service) {
+    /* A go to standing with no service is still something to hide and resume
+       (FR-003), so the browsed service is only needed when there is nothing else. */
+    if (dock.service == null && !state.goto) return;
+    if (state.service === dock.service || state.service == null) {
       if (state.on) gkpsDisplay.hide();           /* Hide words: the place is kept */
       /* Resume in place — and `screen()` would end a go to, which a resume must not. */
       else if (state.goto) gkpsDisplay.resume();
@@ -1193,6 +1243,12 @@
   /* The library is injected on the first open and its index is fetched then; this is
      where the band learns that the query can finally be answered. */
   document.addEventListener('projector-library:ready', function () {
+    /* A chapter or book step asked for before the index arrived replays here. */
+    if (pendingStep) {
+      var step = pendingStep;
+      pendingStep = null;
+      passageStep(step.action, step.level);
+    }
     if (!find.open || find.status === 'ready') return;
     find.status = 'ready';
     findInput.disabled = false;
@@ -1201,13 +1257,76 @@
   });
   window.addEventListener('resize', measureBand);
 
-  transChip.addEventListener('click', function () { flipEdition(); focusPanel(); });
-  prevBtn.addEventListener('click', function () { step(-1); focusPanel(); });
-  nextBtn.addEventListener('click', function () { step(1); focusPanel(); });
+  transChip.addEventListener('click', function () { if (gotoBusy) return; flipEdition(); focusPanel(); });
+  prevBtn.addEventListener('click', function () { if (gotoBusy) return; step(-1); focusPanel(); });
+  nextBtn.addEventListener('click', function () { if (gotoBusy) return; step(1); focusPanel(); });
   switchBtn.addEventListener('click', function () { setView('pick', true); });
   reloadBtn.addEventListener('click', function () { window.location.reload(); });
 
+  /* ---------- the shortcut sheet (K) ----------------------------------------- */
+
+  /* A layer, not a view: it opens over whichever view is showing, lists the dock's own
+     keys, and while it is up nothing behind it acts (FR-007). The picker's own two keys
+     ride with the view, so the runner's sheet never offers a key it does not have
+     (FR-008). */
+  var keysOpen = false;
+  var keysheet = document.getElementById('keysheet');
+  var keysScrim = document.getElementById('keysScrim');
+  var keysSheetClose = document.getElementById('keysClose');
+
+  function applyKeysGroup() {
+    if (!keysheet) return;
+    keysheet.querySelectorAll('.ksgroup[data-keys="pick"]').forEach(function (group) {
+      group.hidden = panel.dataset.view !== 'pick';
+    });
+  }
+
+  function setKeysOpen(open) {
+    if (!keysheet || keysOpen === open) return;
+    if (open) { closeFind(); cancelEscapeHold(); }
+    keysOpen = open;
+    keysheet.hidden = !open;
+    keysheet.setAttribute('aria-hidden', open ? 'false' : 'true');
+    root.classList.toggle('keys-open', open);
+    if (open) {
+      applyKeysGroup();
+      void keysheet.offsetWidth;                  /* restart the entry animation */
+      keysheet.classList.add('is-on');
+    } else {
+      keysheet.classList.remove('is-on');
+      focusPanel();
+    }
+  }
+
+  if (keysSheetClose) keysSheetClose.addEventListener('click', function () {
+    setKeysOpen(false);
+  });
+  if (keysScrim) keysScrim.addEventListener('pointerdown', function (event) {
+    event.preventDefault();
+    setKeysOpen(false);
+  });
+
   /* ---------- keyboard (the dock owns it) ------------------------------------ */
+
+  /* The held `Esc` (FR-001): the same gesture the projector uses to leave fullscreen,
+     and the same 900 ms, but a release before it cancels the whole thing — the dock's
+     own rule, which the projector's timer does not need. */
+  var escapeHold = null;
+
+  function cancelEscapeHold() {
+    if (escapeHold == null) return;
+    window.clearTimeout(escapeHold);
+    escapeHold = null;
+  }
+
+  function startEscapeHold() {
+    cancelEscapeHold();
+    escapeHold = window.setTimeout(function () {
+      escapeHold = null;
+      if (find.open || keysOpen) return;
+      if (panel.dataset.view === 'run') setView('pick', true);
+    }, 900);
+  }
 
   function unitAt() {
     var state = gkpsDisplay.read();
@@ -1218,9 +1337,132 @@
             entry: entryIndex >= 0 ? dock.entries[entryIndex] : null};
   }
 
+  function baitIndexOf(entry, index) {
+    var baits = entry.baits || [];
+    for (var i = 0; i < baits.length; i++) {
+      if (index >= baits[i].start && index <= baits[i].end) return i;
+    }
+    return -1;
+  }
+
+  /* The projector's own boundary arithmetic (projector.js `unitBoundary`): a plain
+     Home / End takes the unit on show, `Shift` its first or last bait, and
+     `Ctrl`/`⌘` the service's first or last entry. The plain chord never reaches the
+     service's own ends — that is what the modifier is for (FR-012). */
+  function unitBoundary(last, modifier, at) {
+    if (modifier === 'entry') {
+      var entries = contentEntries();
+      if (entries.length) projectScreen(entries[last ? entries.length - 1 : 0].start);
+      return;
+    }
+    var entry = at.entry;
+    if (!entry || isDivider(entry)) return;      /* between entries: nothing moves */
+    if (entry.type === 'song' && (entry.baits || []).length) {
+      var baits = entry.baits;
+      var bait = baits[modifier === 'bait'
+        ? (last ? baits.length - 1 : 0)
+        : Math.max(0, baitIndexOf(entry, at.index))];
+      if (bait) {
+        projectScreen(last && modifier !== 'bait'
+          ? Math.max(bait.start, bait.end - 1) : bait.start);
+      }
+      return;
+    }
+    /* A text entry has no bait to take, so `Shift` falls through to the entry's own
+       ends — exactly the projector's `unitBoundary` (FR-012), so one chord lands on one
+       screen on both surfaces. */
+    var screen = dock.screens[entry.end];
+    projectScreen(last
+      ? Math.max(entry.start, entry.end - (screen && screen.blank ? 1 : 0))
+      : entry.start);
+  }
+
+  /* ---------- the go to's own units (FR-005, FR-009) ------------------------- */
+
+  /* Raised while the go to's content or a crossing is in flight: every key and every
+     pointer action that could change what is on air is refused until it settles. */
+  var gotoBusy = false;
+  var pendingStep = null;
+
+  function setGotoBusy(on) {
+    gotoBusy = on;
+    panel.dataset.gotoBusy = on ? 'true' : 'false';
+    if (dock.goto) offLabel.textContent = gotoLabelOf(gkpsDisplay.read());
+  }
+
+  function passageStep(action, level) {
+    var state = gkpsDisplay.read();
+    var goto = state.goto;
+    if (!goto || goto.kind !== 'passage') return false;
+    var payload = shown.payload;
+    if (!payload || payload.kind !== 'passage') return false;
+    /* A chapter or book step reads the index; the band is not the only way in, so the
+       first such step loads the module and replays itself when it arrives. */
+    if (!window.GKPSProjectorLibrary || !window.GKPSProjectorLibrary.ready()) {
+      pendingStep = {action: action, level: level};
+      ensureLibrary();
+      return false;
+    }
+    var current = {book_id: goto.book_id, chapter: goto.chapter, verse: goto.verse,
+                   translation: goto.translation, editions: payload.editions || {}};
+    var moved = window.GKPSProjectorLibrary.movePassage(current, action, level);
+    if (!moved) return false;
+    if (moved.detour) { gkpsDisplay.stepGoto(moved.detour.verse); return true; }
+    if (gotoBusy) return false;
+    setGotoBusy(true);
+    window.GKPSProjectorLibrary.fetchChapter(moved.request.book_id, moved.request.chapter,
+      moved.request.verse, moved.request.edition).then(function (data) {
+        if (!data) return;
+        /* The block paints from this same payload: one request per crossing, never two
+           (FR-005) — the fetch the step already made becomes the block's own. */
+        shown.key = gotoKey({kind: 'passage', book_id: data.book_id, chapter: data.chapter});
+        shown.payload = {kind: 'passage', label: data.label, editions: data.editions || {}};
+        shown.loading = false;
+        gkpsDisplay.goTo({kind: 'passage', book_id: data.book_id, chapter: data.chapter,
+                          verse: data.verse, translation: data.translation});
+      }).catch(function () {
+        runNote.hidden = false;
+        runNote.textContent = 'The go to could not be loaded.';
+      }).then(function () { setGotoBusy(false); });
+    return true;
+  }
+
+  /* Home / End inside a go to: the projector's own `gotoBoundary`. */
+  function gotoBoundary(last, modifier) {
+    var state = gkpsDisplay.read();
+    var goto = state.goto;
+    if (!goto) return;
+    if (goto.kind === 'passage') {
+      passageStep(last ? 'last' : 'first',
+                  modifier === 'entry' ? 'ctrl' : modifier === 'bait' ? 'shift' : 'plain');
+      return;
+    }
+    if (modifier === 'entry') return;            /* a song has no book to take */
+    var payload = shown.payload;
+    if (!payload || payload.kind !== 'song') return;
+    var baits = payload.baits || [];
+    if (!baits.length) return;
+    if (modifier === 'bait') {
+      gkpsDisplay.stepGoto(last ? baits[baits.length - 1].start : baits[0].start);
+      return;
+    }
+    var at = 0;
+    baits.forEach(function (bait, n) {
+      if (goto.index >= bait.start && goto.index <= bait.end) at = n;
+    });
+    var bait = baits[Math.max(0, Math.min(at, baits.length - 1))];
+    gkpsDisplay.stepGoto(last ? Math.max(bait.start, bait.end - 1) : bait.start);
+  }
+
   function stepUnit(delta, unit) {
     var state = gkpsDisplay.read();
     if (state.goto) {
+      if (state.goto.kind === 'passage') {
+        passageStep(delta > 0 ? 'next' : 'previous',
+                    unit === 'entry' ? 'ctrl' : unit === 'bait' ? 'shift' : 'plain');
+        return;
+      }
+      if (unit === 'entry') return;              /* a song has no book to take */
       if (unit === 'bait' && shown.payload && shown.payload.kind === 'song') {
         var target = pickBaitTarget(shown.payload, state.goto.index, delta, false);
         if (target != null) gkpsDisplay.stepGoto(target);
@@ -1244,10 +1486,7 @@
     }
     if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
       var baits = at.entry.baits;
-      var bait = 0;
-      for (var i = 0; i < baits.length; i++) {
-        if (at.index >= baits[i].start) bait = i;
-      }
+      var bait = Math.max(0, baitIndexOf(at.entry, at.index));
       bait = Math.max(0, Math.min(baits.length - 1, bait + delta));
       projectScreen(baits[bait].start);
       return;
@@ -1256,30 +1495,7 @@
   }
 
   function edgeOf(unit, end) {
-    var state = gkpsDisplay.read();
-    if (state.goto) {
-      if (unit === 'bait' && shown.payload && shown.payload.kind === 'song') {
-        var target = pickBaitTarget(shown.payload, state.goto.index, end ? 1 : -1, true);
-        if (target != null) gkpsDisplay.stepGoto(target);
-        return;
-      }
-      stepGoto(end ? 9999 : -9999);
-      return;
-    }
-    var at = unitAt();
-    if (unit === 'entry') {
-      var entries = contentEntries();
-      if (!entries.length) return;
-      projectScreen(end ? entries[entries.length - 1].start : entries[0].start);
-      return;
-    }
-    if (unit === 'bait' && at.entry && (at.entry.baits || []).length) {
-      var baits = at.entry.baits;
-      projectScreen(end ? baits[baits.length - 1].start : baits[0].start);
-      return;
-    }
-    if (!dock.stops.length) return;
-    projectScreen(end ? dock.stops[dock.stops.length - 1] : dock.stops[0]);
+    unitBoundary(end, unit, unitAt());
   }
 
   panel.addEventListener('keydown', function (event) {
@@ -1287,26 +1503,38 @@
     var key = event.key;
     var shift = event.shiftKey;
     var ctrl = event.ctrlKey || event.metaKey;
+    /* The sheet is a layer: it owns the Esc and the `K`, and nothing behind it acts. */
+    if (keysOpen) {
+      if (key === 'Escape' || key === 'k' || key === 'K') {
+        event.preventDefault();
+        setKeysOpen(false);
+      }
+      return;
+    }
     /* While the band is open it owns the keys: the covered dock acts on nothing. */
     if (find.open) {
       if (key === 'Escape') { event.preventDefault(); closeFind(); }
       return;
     }
+    /* A hold, not a tap: a press released before 900 ms moves nothing (FR-001). */
     if (key === 'Escape') {
-      if (panel.dataset.view === 'run') setView('pick', true);
+      event.preventDefault();
+      if (panel.dataset.view === 'run' && !event.repeat) startEscapeHold();
+      return;
+    }
+    if ((key === 'k' || key === 'K') && !ctrl && !shift) {
+      event.preventDefault();
+      setKeysOpen(true);
       return;
     }
     if (panel.dataset.view === 'pick') {
       var rows = pickRows();
       if (!rows.length) return;
-      if (key === 'ArrowDown' || key === 'ArrowRight' || key === 'PageDown') {
+      /* Only the two arrows move the mark (FR-006); the rest of the pad is inert here. */
+      if (key === 'ArrowDown' || key === 'ArrowUp') {
         event.preventDefault();
-        setPickCursor((dock.pickIndex < 0 ? -1 : dock.pickIndex) + 1, true);
-        return;
-      }
-      if (key === 'ArrowUp' || key === 'ArrowLeft' || key === 'PageUp') {
-        event.preventDefault();
-        setPickCursor((dock.pickIndex < 0 ? 0 : dock.pickIndex) - 1, true);
+        var step0 = key === 'ArrowDown' ? 1 : -1;
+        setPickCursor((dock.pickIndex < 0 ? (step0 > 0 ? -1 : 0) : dock.pickIndex) + step0, true);
         return;
       }
       if (key === 'Enter') {
@@ -1314,9 +1542,15 @@
         openCursorRow();
         return;
       }
+      if ((key === 'g' || key === 'G') && !ctrl && !shift) {
+        event.preventDefault();
+        openFind();
+        return;
+      }
       return;                                    /* the picker has no other keys */
     }
     if (panel.dataset.view !== 'run') return;
+    if (gotoBusy) return;                        /* nothing changes what is on air */
     if (ctrl && (key === 'PageUp' || key === 'PageDown')) return;   /* the browser's tabs */
     if ((key === 'g' || key === 'G') && !ctrl) { event.preventDefault(); openFind(); return; }
     var unit = shift ? 'bait' : ctrl ? 'entry' : 'screen';
@@ -1333,26 +1567,48 @@
     if (key === 't' || key === 'T') flipEdition();
   });
 
+  panel.addEventListener('keyup', function (event) {
+    if (event.key === 'Escape') cancelEscapeHold();
+  });
+  window.addEventListener('blur', cancelEscapeHold);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { cancelEscapeHold(); return; }
+    if (find.open) parkFocus();                  /* the band keeps the keyboard (FR-015) */
+  });
+
   /* A click must leave the focus where the keyboard lives, not on the clicked
      button: otherwise Space would re-press the last thing clicked. The panel is the
      only focusable thing here, so a click on the page AROUND it would leave focus on
      <body> and kill every shortcut while the transport — which tracks the window's
      focus — still reads armed. Park focus again for those too. */
-  panel.addEventListener('pointerdown', focusPanel);
+  /* The focus belongs to whoever is taking the keys: the band's field while it is open
+     and usable, the panel otherwise (FR-015). A window that comes back from another app
+     re-parks it, because the dock's own panel is not what the operator is typing into. */
+  function parkFocus() {
+    if (find.open && !findInput.disabled) {
+      try { findInput.focus({preventScroll: true}); return; } catch (e) { /* fall through */ }
+    }
+    focusPanel();
+  }
+
+  panel.addEventListener('pointerdown', parkFocus);
 
   document.addEventListener('pointerdown', function (event) {
     if (panel.contains(event.target)) return;
-    window.requestAnimationFrame(focusPanel);
+    window.requestAnimationFrame(parkFocus);
   }, true);
 
   document.addEventListener('focusin', function (event) {
     if (panel.contains(event.target)) return;
-    window.requestAnimationFrame(focusPanel);
+    window.requestAnimationFrame(parkFocus);
   });
 
 
   /* The transport arrows fill while this window holds the keyboard. */
-  function markFocus() { root.classList.add('win-focus'); }
+  function markFocus() {
+    root.classList.add('win-focus');
+    if (find.open) parkFocus();
+  }
   function clearFocus() { root.classList.remove('win-focus'); }
   window.addEventListener('focus', markFocus);
   window.addEventListener('blur', clearFocus);
@@ -1394,5 +1650,21 @@
   applyTheme(root.dataset.themeMode || 'dark', false);
   gkpsDisplay.subscribe(sync);
   if (pickRows().length) setPickCursor(0, false);
+
+  /* A refresh lands where the operator already is (FR-016): the service on air opens
+     in the runner — or, when the go to stands alone, the runner holding its block.
+     Nothing on air leaves the picker, and a service this picker does not list cannot
+     be opened, so the dock stays put rather than guess. */
+  (function resumeOnAir() {
+    var state = gkpsDisplay.read();
+    if (state.goto && state.service == null) { setView('run', false); return; }
+    if (state.service == null) return;
+    var row = pickRows().filter(function (candidate) {
+      return Number(candidate.dataset.service) === Number(state.service);
+    })[0];
+    if (!row) return;
+    openService(Number(row.dataset.service), row.dataset.name, row.dataset.date);
+  })();
+
   focusPanel();
 })();

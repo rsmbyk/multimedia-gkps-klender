@@ -46,7 +46,7 @@ first and then `verse`.
 
 | Field | Type | Constraints | From |
 | --- | --- | --- | --- |
-| `group` | `string` | one of `Pick a service`, `Service`, `Song`, `Passage and go to`, `Display`, `Find` | FR-008 |
+| `group` | `string` | one of `Pick a service`, `Service`, `Song`, `Passage`, `Display`, `Find` | FR-008 |
 | `label` | `string` | the projector's own string, verbatim, except the three dock-only rows | FR-008 |
 | `chords` | `string[]` | one chord per alternative; `or` separates them | FR-008 |
 | `data-keys` | `'pick' \| null` | only the picker group carries it; it is `hidden` unless the view is the picker | FR-008 |

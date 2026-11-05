@@ -91,12 +91,14 @@
 - **Decision**: `projector_controls.html` merges Display + Find + Fullscreen into `Display`, renames
   *While Finding* to `Find` and orders it Prev · Next · Open · Close When Empty · Close, merges Audio
   and Video into one group and moves it and Image and PDF into the first `.stack`; `.sheet`
-  (`projector.css:488`) stops holding a fixed height and follows its tallest column — 835.5 px at
+  (`projector.css:488`) stops holding a fixed height and follows its tallest column — 686 px at
   1080p, measured on the living page — with its existing `overflow: auto` covering 720p.
 - **Rationale**: the sheet's box is already content-driven (676.5 px at 1080p today, its tallest
   column plus the head); the media move makes the left column the tallest one, and the owner asked for
-  the move. The measured 835.5 px fits 1080p with its frame; at 720p the sheet scrolls instead of
-  clipping.
+  the move. The owner's later Passage merge (his words: *"merge the passage and library passage
+  into one group"*) moves the verse rows into the middle, so the left column is still the
+  tallest and the frame comes back to 686 px — the sheet then fits 720p with no scroll at all,
+  which is why FR-014 says only that a row is never clipped.
 - **Alternatives considered**: keeping 677 px and letting the sixth group fall below the fold
   (contradicts the no-clip rule); equal-height columns with an internal scroll (worse than one scroll
   on the sheet); shrinking the rows or headings (changes the type scale the owner approved).

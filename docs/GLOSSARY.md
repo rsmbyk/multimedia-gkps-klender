@@ -42,6 +42,7 @@ still found in the codebase.
 | **Source** | OBS source, browser source | A page captured by OBS as a browser source; it displays text. |
 | **Projection** | Project | The full-screen text display surface (`/obs/project/source`) for song lyrics, service items, and Bible passages. |
 | **Panel** | Segment | A UI container/region within a page. Prefer **panel** in new code; `segment` survives in legacy CSS. |
+| **Unit** | — | What a plain `Home` / `End` acts on: the live bait when the live entry is a song, the live entry otherwise. Never the whole service — `Ctrl`/`⌘` with the same key is the chord that reaches that. |
 
 ## OBS messaging
 

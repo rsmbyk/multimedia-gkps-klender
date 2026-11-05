@@ -124,9 +124,11 @@ once; a plain step fetches nothing and lands on the same place the projector lan
 - [ ] T037 [P] [US10] `test_audio_and_video_are_one_group_in_the_left_column` (FR-014, SC-011).
 - [ ] T038 [P] [US10] `test_the_sheet_grows_to_its_tallest_column_and_scrolls_at_720` (US10/AC4).
 - [ ] T039 [US10] `projector_controls.html`: Audio and Video become one `Audio and Video` group with one
-      `Play/Pause` row; it and `Image and PDF` move to the end of the first `.stack`.
+      `Play/Pause` row; it and `Image and PDF` move to the end of the first `.stack`; `Passage`
+      and `Library passage` merge into one `Passage` group (verses, chapters, books) at the top of
+      the middle `.stack`, ahead of `Library Detour`.
 - [ ] T040 [US10] `static/styles/design/projector.css`: `.sheet`'s frame follows its tallest column
-      (835.5 px at 1080p) and scrolls at 720p instead of clipping.
+      (686 px at 1080p) and scrolls at 720p instead of clipping.
 
 ## Phase 13 — US11 (P2) — the find band keeps the keyboard
 
@@ -143,7 +145,27 @@ once; a plain step fetches nothing and lands on the same place the projector lan
 - [ ] T044 Run the four dock/projector modules and the two extended ones together; fix the reds that
       belong to this slice (the known-red tests on `develop` stay listed in the board's Backlog).
 - [ ] T045 Re-run `preview/probe.py`; the preview's numbers and the implemented sheet agree.
+- [ ] T046 [P] [US12] `test_a_refresh_opens_the_service_on_air`,
+      `test_a_refresh_with_nothing_on_air_keeps_the_picker` and
+      `test_a_refresh_brings_back_a_go_to_that_stands_alone` in `tests/e2e/test_dock_keys.py`.
+- [ ] T047 [US12] `static/web/obs-dock.js`: the boot's `resumeOnAir` opens the service the state
+      names, or the runner holding a standing go to, and leaves the picker otherwise (FR-016).
+- [ ] T048 [P] [US13] `test_a_narrow_window_draws_one_scrolling_column` in
+      `tests/e2e/test_projector_keys.py`.
+- [ ] T049 [US13] `static/styles/design/projector.css`: `.sheet` reflows to one scrolling column
+      below 1125 px — the width its three columns need (1093 + 32) — keeping the groups' order
+      and every row (FR-017).
 
 ## Phase 15 — Convergence
 
-<!-- written by Converge only; absent until it runs -->
+- [x] CONV-1 (pass 1) Every row of the traceability table checked by its declared method — 29 `test`
+      rows through seven modules (79 tests, green in one run), 2 `inspection` rows by reading the code.
+      `converge.md` holds the table.
+- [x] CONV-2 (pass 1) C1 `contradicts` — FR-012's "the projector's own `unitBoundary`" against its own
+      "moves nothing on an entry with none". Root cause: the spec. Put to the owner.
+- [x] CONV-3 (pass 2) The owner chose the projector's behaviour: `unitBoundary` falls through to the
+      entry's ends, `test_shift_home_and_end_take_a_text_entrys_ends` replaces the 0-rows test, and
+      FR-012 / US8/AC3 / SC-010 are reworded.
+- [x] CONV-4 (pass 2) Re-checked: 0 `missing`, 0 `partial`, 0 `contradicts`, 0 `unrequested`. Converged.
+
+**Passes used**: 2 of 3. No cap reached, no accepted gap.

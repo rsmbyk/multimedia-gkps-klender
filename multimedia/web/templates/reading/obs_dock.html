@@ -153,6 +153,11 @@ and Space never presses whatever was last clicked.
       <p class="dock__note" id="runNote" hidden></p>
     </div>
 
+
+  </section>
+
+    <!-- The band and its scrim are a layer over BOTH views (spec 187 FR-002): a go to
+         can be started from the picker, so the footer cannot live inside the runner. -->
     <div class="dock__transport">
       <div class="bandswap" id="bandSwap">
       <div class="bandswap__row transportrow" id="transportRow">
@@ -189,7 +194,83 @@ and Space never presses whatever was last clicked.
     </div>
 
     <div class="findscrim" id="findScrim" hidden></div>
-  </section>
+
+    <div class="keysheet" id="keysheet" hidden>
+      <div class="keysheet__scrim" id="keysScrim"></div>
+      <section class="keysheet__panel" role="dialog" aria-modal="true"
+               aria-labelledby="keysTitle">
+        <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+        <symbol id="arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10m-4-4 4 4-4 4"/></symbol>
+        <symbol id="arrow-left" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3m4-4-4 4 4 4"/></symbol>
+        <symbol id="arrow-up" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3m-4 4 4-4 4 4"/></symbol>
+        <symbol id="arrow-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10m-4-4 4 4 4-4"/></symbol>
+        <symbol id="shift-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 14 8h-3v4H5V8H2zM4.5 14h7"/></symbol>
+        <symbol id="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v8H3m0 0 3-3m-3 3 3 3"/></symbol>
+        <symbol id="backspace" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 13 13H6L2 8z"/><path d="m8 6 4 4m0-4-4 4"/></symbol>
+        </svg>
+        <header class="keysheet__head">
+          <h2 class="keysheet__title" id="keysTitle">Keyboard</h2>
+          <button type="button" class="keysheet__close" id="keysClose" tabindex="-1"
+                  aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4 14.6 14.6M14.6 5.4 5.4 14.6"></path></svg>
+          </button>
+        </header>
+        <div class="keysheet__body" id="keysBody">
+              <section class="ksgroup ksgroup--first" data-keys="pick">
+                <h4>Pick a service</h4>
+                <p class="krow"><span class="kfn">Move the Pick</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span><span class="or">or</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Open the Service</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#enter"/></svg></span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Service</h4>
+                <p class="krow"><span class="kfn">Next</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span><span class="or">or</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span><span class="or">or</span><span class="k nav">PgDn</span></span></p>
+                <p class="krow"><span class="kfn">Previous</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span><span class="or">or</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span><span class="or">or</span><span class="k nav">PgUp</span></span></p>
+                <p class="krow"><span class="kfn">First</span><span class="chord"><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last</span><span class="chord"><span class="k nav">End</span></span></p>
+                <p class="krow"><span class="kfn">Next Entry</span><span class="chord"><span class="k w">⌘</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Previous Entry</span><span class="chord"><span class="k w">⌘</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">First Entry</span><span class="chord"><span class="k w">⌘</span><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Entry</span><span class="chord"><span class="k w">⌘</span><span class="k nav">End</span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Song</h4>
+                <p class="krow"><span class="kfn">Next Bait</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span><span class="or">or</span><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">PgDn</span></span></p>
+                <p class="krow"><span class="kfn">Previous Bait</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span><span class="or">or</span><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">PgUp</span></span></p>
+                <p class="krow"><span class="kfn">First Bait</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Bait</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">End</span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Passage</h4>
+                <p class="krow"><span class="kfn">Flip TB / SIM</span><span class="chord"><span class="k">T</span></span></p>
+                <p class="krow"><span class="kfn">First Verse</span><span class="chord"><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Verse</span><span class="chord"><span class="k nav">End</span></span></p>
+                <p class="krow"><span class="kfn">Next Chapter</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span><span class="or">or</span><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">PgDn</span></span></p>
+                <p class="krow"><span class="kfn">Previous Chapter</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span><span class="or">or</span><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">PgUp</span></span></p>
+                <p class="krow"><span class="kfn">First Chapter</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Chapter</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">End</span></span></p>
+                <p class="krow"><span class="kfn">Next Book</span><span class="chord"><span class="k w">⌘</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Previous Book</span><span class="chord"><span class="k w">⌘</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">First Book</span><span class="chord"><span class="k w">⌘</span><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Book</span><span class="chord"><span class="k w">⌘</span><span class="k nav">End</span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Display</h4>
+                <p class="krow"><span class="kfn">Show or Hide Words</span><span class="chord"><span class="k sp glyph" aria-label="Space"><span class="space-mark">␣</span></span></span></p>
+                <p class="krow"><span class="kfn">Keyboard Shortcuts</span><span class="chord"><span class="k">K</span></span></p>
+                <p class="krow"><span class="kfn">Passage or Song</span><span class="chord"><span class="k">G</span></span></p>
+                <p class="krow"><span class="kfn">Back to Services (hold)</span><span class="chord"><span class="k w">Esc</span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Find</h4>
+                <p class="krow"><span class="kfn">Previous Match</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Next Match</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Open Match</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#enter"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Close When Empty</span><span class="chord"><span class="k glyph bk"><svg aria-hidden="true"><use href="#backspace"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Close Find</span><span class="chord"><span class="k w">Esc</span></span></p>
+              </section>
+        </div>
+      </section>
+    </div>
 </main>
 
 <script src="{% static 'web/display-session.js' %}"></script>

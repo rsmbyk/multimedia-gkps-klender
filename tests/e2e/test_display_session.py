@@ -301,9 +301,14 @@ class DisplaySessionE2ETests(StaticLiveServerTestCase):
         overlay.reload()
         overlay.wait_for_selector('.obs-overlay__plate')
         dock.reload()
-        dock.wait_for_selector('.servicerow')
+        dock.wait_for_selector('.servicerow', state='attached')
         dock.wait_for_timeout(200)
         self.assertEqual(self._pill_count(dock), 1)
+        # And the dock comes back on the service it was running, not on the picker
+        # (spec 187 FR-016).
+        self.assertEqual(
+            dock.evaluate("() => document.getElementById('dockPanel').dataset.view"),
+            'run')
         self.assertEqual(overlay.evaluate(
             "document.getElementById('overlayStage').children.length"), 1)
         context.close()
@@ -319,9 +324,12 @@ class DisplaySessionE2ETests(StaticLiveServerTestCase):
         overlay = self._open(context, '/obs/source/overlay')
         overlay.wait_for_selector('.obs-overlay__plate')
         dock = self._open(context, '/obs/dock')
-        dock.wait_for_selector('.servicerow')
+        dock.wait_for_selector('.servicerow', state='attached')
         dock.wait_for_timeout(200)
         self.assertEqual(self._pill_count(dock), 1)
+        self.assertEqual(
+            dock.evaluate("() => document.getElementById('dockPanel').dataset.view"),
+            'run')
         context.close()
 
     # ---------- the browser that cannot hold a session ----------------------

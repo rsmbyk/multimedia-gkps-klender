@@ -36,9 +36,9 @@ The repo carries no `CONSTITUTION.md`; the standing principles are the ones its 
 | No new endpoint; content comes from what exists (spec 136) | pass | Chapter/song payloads and the index are spec 185's routes. |
 | The session bounds the state's life (spec 184) | pass | Every write still stamps `session`; nothing else changes. |
 | The dock's keyboard lives on the panel, every control `tabindex="-1"` | pass | The sheet's controls join that rule; the band's field is the one element that takes the focus, and FR-015 says so. |
-| The projector's sheet is grouped by subject and must not clip (projector R9, R12) | justified | R9's fixed 677 px frame is superseded: the moved media groups make the left column the tallest (835.5 px at 1080p), and 720p scrolls instead of clipping. Recorded as FR-014 and folded into `projector/R9`, `R12`. |
+| The projector's sheet is grouped by subject and must not clip (projector R9, R12) | justified | R9's fixed 677 px frame is superseded: the moved media groups make the left column the tallest (686 px at 1080p), and 720p scrolls instead of clipping. Recorded as FR-014 and folded into `projector/R9`, `R12`. |
 | Previews are built from the product's own components | pass | The dock's sheet is drawn from the product's tokens, `obs-dock.css` and the sheet's own markup; the projector's before/after are the living page with its DOM moved. |
-| Tests prove user-visible behaviour through the repo's Playwright harness | pass | Two new modules and two extended; the split below is 25 test · 2 inspection · 0 manual. |
+| Tests prove user-visible behaviour through the repo's Playwright harness | pass | Two new modules and two extended; the split below is 29 test · 2 inspection · 0 manual. |
 | No personal names in repo artifacts | pass | Roles only. |
 
 Re-checked after Phase 1: **pass** — the one justified row is the sheet's frame, and Complexity
@@ -81,6 +81,8 @@ it answers.
 | FR-013 | `multimedia/web/templates/reading/projector_controls.html` (group merge and order) | `test` → `tests/e2e/test_projector_keys.py::test_the_sheet_carries_one_display_group_and_one_find_group` | US9/AC1-2, US9/AC4 |
 | FR-014 | `projector_controls.html` (media groups and columns), `static/styles/design/projector.css` (`.sheet` height) | `test` → `tests/e2e/test_projector_keys.py::test_audio_and_video_are_one_group_in_the_left_column` | US10/AC1-5 |
 | FR-015 | `static/web/obs-dock.js` (`focusPanel`, `window` focus, `visibilitychange`, `focusin`, `pointerdown`) | `test` → `tests/e2e/test_dock_keys.py::test_the_band_keeps_the_keyboard_when_the_window_returns` | US11/AC1-5 |
+| FR-016 | `static/web/obs-dock.js` (the boot's `resumeOnAir`) | `test` → `tests/e2e/test_dock_keys.py`: `test_a_refresh_opens_the_service_on_air`, `test_a_refresh_with_nothing_on_air_keeps_the_picker`, `test_a_refresh_brings_back_a_go_to_that_stands_alone` | US12 |
+| FR-017 | `static/styles/design/projector.css` (the `max-width: 1124px` reflow of `.sheet`) | `test` → `tests/e2e/test_projector_keys.py::test_a_narrow_window_draws_one_scrolling_column`, `test_the_corner_cue_stays_out_of_the_sheet` | US13 |
 | SC-001 | `tests/e2e/test_dock_keys.py` | `test` — 300 ms tap moves nothing, 1000 ms hold shows the picker | US1 |
 | SC-002 | `tests/e2e/test_goto_shared_state.py` | `test` — `localStorage['gkps-display']` carries `service: null` plus the goto | US2 |
 | SC-003 | `tests/e2e/test_dock_keys.py` | `test` — request counter: 1 / 1 / 0 across `Shift+→`, `Ctrl+→`, a plain step | US3 |
@@ -93,17 +95,19 @@ it answers.
 | SC-010 | `tests/e2e/test_dock_keys.py` | `test` — the live row against the service's own ends, in a text entry and in a bait | US8 |
 | SC-011 | `tests/e2e/test_projector_keys.py` | `test` — the three columns' headings in order and the sheet's box at 1080p | US10 |
 | SC-012 | `tests/e2e/test_dock_keys.py` | `test` — blur/refocus leaves `activeElement` on `#findInput`; typing appends; `Esc` returns it to the panel | US11 |
+| SC-013 | `tests/e2e/test_dock_keys.py` | `test` — the three refresh cases read the view, the head and the live row | US12 |
+| SC-014 | `tests/e2e/test_projector_keys.py` | `test` — the stacks' x, the sheet's box and its scroll size at 900 and 1920 | US13 |
 | FR-013 (no label or chord changed) | `projector_controls.html` | `inspection` — the diff shows moved `<section>`s and one `<h3>`, and no `.fn` or `.k` change | US9/AC4 |
 | FR-014 (no label or chord changed) | `projector_controls.html` | `inspection` — the same diff; one duplicate `Play/Pause` row removed with its heading | US10/AC5 |
 
-**Verification split**: 25 test · 2 inspection · 0 manual.
+**Verification split**: 29 test · 2 inspection · 0 manual.
 
 ## Complexity Tracking
 
 | Violation | Why needed | Simpler alternative rejected because |
 | --- | --- | --- |
 | The dock mirrors the projector's `unitBoundary` and `requestPassage` instead of sharing a module | The two scripts are separate closures over different models (`stops`/`entries` against `screens`/`entries`); the slice's ask is behaviour, not a refactor of the projector's tested core | Extracting the arithmetic into `projector-library.js` would change the projector's core beyond the request, and one shared table would still need the two models |
-| The projector's sheet frame leaves its fixed 677 px | The owner's media move makes the left column the tallest (835.5 px at 1080p); a fixed frame would clip the sixth group at every window size | Keeping 677 px and clipping, or shrinking the rows/headings, both break a rule the owner set |
+| The projector's sheet frame leaves its fixed 677 px | The owner's media move makes the left column the tallest (686 px at 1080p); a fixed frame would clip the sixth group at every window size | Keeping 677 px and clipping, or shrinking the rows/headings, both break a rule the owner set |
 
 ## Project Structure
 

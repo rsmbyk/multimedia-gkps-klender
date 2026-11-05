@@ -1,12 +1,12 @@
 ---
 id: ITEM-191
-status: backlog
+status: in_progress
 title: 'The dock and the projector share one keyboard grammar'
 type: feat
 priority: P2
 effort: M
 created: 2026-11-04
-updated: 2026-11-04
+updated: 2026-11-05
 spec: specs/187-keyboard-parity/spec.md
 branch:
 pr:

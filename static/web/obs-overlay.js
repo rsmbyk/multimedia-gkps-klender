@@ -347,8 +347,11 @@
 
   function sync() {
     var state = readState();
-    if (!state.service || state.on !== true) { paint(null); return; }
+    if (state.on !== true) { paint(null); return; }
+    /* A go to paints from its own payload, so it needs no service underneath it
+       (spec 187 FR-011): check it before the service is required. */
     if (state.goto) { syncGoto(state); return; }
+    if (!state.service) { paint(null); return; }
     ensure(state.service, function (data) {
       if (!data) { paint(null); return; }
       /* The state may have moved on while the fetch was in the air. */

@@ -142,9 +142,10 @@
     post({type: 'show', service: state.service, screen: state.screen});
   }
 
-  /* Words off; the service and screen stay for a resume in place. */
+  /* Words off; the service and screen stay for a resume in place. A go to with no
+     service beside it is still something on air, so it hides too (FR-003). */
   function hide() {
-    if (state.service == null) return;
+    if (state.service == null && !state.goto) return;
     write({service: state.service, screen: state.screen, on: false,
            translation: state.translation});
     post({type: 'hide'});
@@ -158,7 +159,7 @@
 
   /* The shown translation of the live screen (null = the entry's own). */
   function flip(translation) {
-    if (state.service == null) return;
+    if (state.service == null && !state.goto) return;
     /* `flip` names the edition of whatever is on air: the go to's while one is up, the
        service's otherwise, which the service keeps for its return (FR-002, FR-015). */
     if (state.goto && state.goto.kind === 'passage') {
@@ -178,10 +179,11 @@
   /* ---------- the go to (spec 185) ----------------------------------------- */
 
   /* Put a passage or a song on air. The service's own screen and edition are left as
-     they are, so Back has somewhere exact to land. */
+     they are, so Back has somewhere exact to land. A go to with no service underneath
+     is the picker's own act (FR-003): it stands alone rather than adopting one. */
   function goTo(goto) {
     var next = gotoOf(goto);
-    if (!next || state.service == null) return;
+    if (!next) return;
     write({service: state.service, screen: state.screen, on: true,
            translation: state.translation, goto: next});
     post({type: 'goto', goto: state.goto});
@@ -203,17 +205,19 @@
   /* Words back on, in place: a resume must never end a go to (FR-002's `hide` keeps
      the place, and this is its other half). */
   function resume() {
-    if (state.service == null) return;
+    if (state.service == null && !state.goto) return;
     write({service: state.service, screen: state.screen, on: true,
            translation: state.translation});
     post({type: 'goto', goto: state.goto});
   }
 
   /* Back to the service, exactly where it stood; `on` is not touched, because it is one
-     flag for whatever is on air (the spec's hidden-words edge case). */
+     flag for whatever is on air (the spec's hidden-words edge case). A go to that
+     named no service ends in the idle state — nothing on air at all (FR-003). */
   function back() {
     if (!state.goto) return;
-    write({service: state.service, screen: state.screen, on: state.on,
+    var idle = state.service == null;
+    write({service: state.service, screen: state.screen, on: idle ? false : state.on,
            translation: state.translation, goto: null});
     post({type: 'goto', goto: null});
   }

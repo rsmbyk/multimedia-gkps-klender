@@ -3,7 +3,7 @@
 **Slice**: `specs/187-keyboard-parity`
 **Branch**: `feat/187-keyboard-parity`
 **Created**: 2026-11-04
-**Status**: Accepted — gate 1 2026-11-05
+**Status**: Accepted — gate 1 2026-11-05 · gate 2 2026-11-05 (checklist 20/20 ticked)
 **Input**: the owner's list, as written: *"on the dock, run view -> back to the picer requires the same
 hold of esc key as to leave fullscreen"* · *"on the dock, g also available on the picker"* · *"on the
 dock, match the goto's shift+arrow, ctrl+arrow, ctrl/shift Home/End to match to be the same as in
@@ -237,8 +237,8 @@ live row is that entry's last screen, not the service's; step into a song's seco
 2. **Given** the runner with a song's bait on air **When** `Home` / `End` is pressed **Then** the live
    row is that bait's first / last screen.
 3. **Given** the runner with a text entry on air **When** `Shift+Home` / `Shift+End` is pressed
-   **Then** nothing moves — there is no bait to take — and in a song the same chord takes the entry's
-   first / last bait.
+   **Then** the live row is that entry's first / last screen — the projector's fall-through for an
+   entry with no baits — and in a song the same chord takes the entry's first / last bait.
 4. **Given** any entry **When** `Ctrl`/`⌘+Home` / `End` is pressed **Then** the live row is the
    service's first / last entry.
 5. **Given** a go to on air **When** any of these chords is pressed **Then** the go to's own levels
@@ -267,26 +267,27 @@ with `K` — the same two headings, holding the dock's rows.
 4. **Given** either sheet **Then** no label or chord changed, and no row was added or dropped by the
    merge.
 
-### US10 — The media groups sit with the service, and Audio and Video is one group (P2)
+### US10 — The media and passage groups are one each, and the columns hold what they act on (P2)
 
-**Why this priority**: the middle column carries five groups while the left carries three, and the
+**Why this priority**: the middle column carried five groups while the left carried three, and the
 media keys act on the service's own screens; one row (`Play/Pause` on `Space`) cannot need two
-headings.
+headings, and the passage keys are one subject whatever loads the chapter.
 
-**Independent Test**: open the projector's sheet — the left column ends with `Image and PDF` and
-`Audio and Video`; the middle carries `Library passage` and `Library Detour` only.
+**Independent Test**: open the projector's sheet — the left column reads `Service`, `Song`,
+`Image and PDF`, `Audio and Video`; the middle reads `Passage` (verses, chapters, books) then
+`Library Detour`.
 
 **Acceptance scenarios**
 
-1. **Given** the projector's sheet **Then** its left column reads Service, Song, Passage, Image and
-   PDF, Audio and Video.
-2. **Given** the middle column **Then** it carries Library passage and Library Detour, and no media
-   group.
+1. **Given** the projector's sheet **Then** its left column reads Service, Song, Image and PDF,
+   Audio and Video — and no passage group.
+2. **Given** the middle column **Then** it carries one `Passage` group — `Flip TB / SIM`,
+   `First Verse`, `Last Verse`, then the chapter rows, then the book rows — and `Library Detour`
+   after it, and no media group.
 3. **Given** the `Audio and Video` group **Then** it holds one `Play/Pause` row on `Space`, not two.
-4. **Given** a 1080p window **Then** the sheet measures its tallest column (835.5 px against today's
-   677) with no row clipped; at 720p it scrolls internally and no row is lost.
-5. **Given** either sheet **Then** no label or chord changed, and the merge removed one heading and
-   one row.
+4. **Given** a 1080p window **Then** the sheet measures its tallest column (686 px against today's 677) and clips no row; at a window the content outgrows it scrolls internally and no row is lost.
+5. **Given** either sheet **Then** no label or chord changed, and the two merges removed two
+   headings and one row.
 
 ### US11 — The find band keeps the keyboard (P2)
 
@@ -355,14 +356,53 @@ typing appends; close the band — the panel holds it again.
 | FR-005 | In a go to, the dock's keys SHALL be the projector's: plain arrows step the verse or screen, `Shift` steps a chapter (passage) or a bait (song), `Ctrl`/`⌘` steps a book, `Home`/`End` take the first or last verse (passage) or the live bait's first or last screen (song), `Shift+Home`/`End` the first or last chapter or bait, and `Ctrl`/`⌘+Home`/`End` the first or last book. A chapter or book step SHALL fetch exactly the chapter it enters and paint it; a verse step inside the loaded chapter SHALL make no request. | `dock/R3` (modified) |
 | FR-006 | On the picker, only `↑` and `↓` SHALL move the mark; `Enter` SHALL open the marked service and `G` SHALL open the Go To band. `←`, `→`, `PgUp` and `PgDn` SHALL do nothing there. | `dock/R6` (new) |
 | FR-007 | `K` SHALL open a shortcut sheet over the dock on either view; `K` again, `Esc`, its close control, or a click on the 8 px frame around the panel SHALL close it; the sheet SHALL be a layer — no control behind it acts, and no other key acts — and the band and the sheet SHALL never be open together. | `dock/R7` (new) |
-| FR-008 | The dock's shortcut sheet SHALL list the dock's own keys in **five groups** — the service's screens, a song, a passage and a go to, the display, and the find — and SHALL name `Esc`'s hold rather than a tap. It SHALL add the **picker's own keys** — `↑` / `↓` and `Enter` — as a sixth group only while the picker is the view on show, and SHALL not list them on the runner. Every row SHALL wear the **projector's own wording, verbatim**, and stand in the **projector's own order** within its group, wherever the projector has the same shortcut (`Next`, `Previous`, `First`, `Last`, `Next Entry`, `Next Bait`, `First Chapter`, `Show or Hide Words`, `Keyboard Shortcuts`, …); only the rows the projector does not have (`Move the Pick`, `Open the Service`, `Back to Services (hold)`) SHALL be worded for the dock. | `dock/R7` (new) |
+| FR-008 | The dock's shortcut sheet SHALL list the dock's own keys in **five groups** — the service's screens, a song, a passage, the display, and the find — and SHALL name `Esc`'s hold rather than a tap. It SHALL add the **picker's own keys** — `↑` / `↓` and `Enter` — as a sixth group only while the picker is the view on show, and SHALL not list them on the runner. Every row SHALL wear the **projector's own wording, verbatim**, and stand in the **projector's own order** within its group, wherever the projector has the same shortcut (`Next`, `Previous`, `First`, `Last`, `Next Entry`, `Next Bait`, `First Chapter`, `Show or Hide Words`, `Keyboard Shortcuts`, …); only the rows the projector does not have (`Move the Pick`, `Open the Service`, `Back to Services (hold)`) SHALL be worded for the dock. | `dock/R7` (new) |
 | FR-009 | While a go to's content is being fetched or a chapter or book step is in flight, the dock SHALL refuse every key and every pointer action that would change what is on air, and the block's header SHALL read `Loading…` until the fetch settles; the guard SHALL end when it paints or fails. | `dock/R8` (new) |
 | FR-010 | On the projector, `Ctrl` and `⌘` SHALL be the same modifier for the arrow and `Home`/`End` chords; `⌘` with any other key SHALL leave the projector inert so the browser keeps its own shortcut. | `projector/R13` (new) |
 | FR-011 | The projector and the overlay SHALL paint a go to that names no service, exactly as they paint one that does, and a `back` from it SHALL leave both idle. | `projector/R1` (modified), `overlay/R1` (modified) |
-| FR-012 | On the dock's runner with no go to up, `Home` / `End` SHALL act on the **unit on show**, as the projector's plain chord does: the first or last screen of the live **bait** when the live entry is a song, otherwise of the live **entry** — never the first or last screen of the service. `Shift+Home`/`End` SHALL take the live entry's first or last bait and move nothing on an entry with none, and `Ctrl`/`⌘+Home`/`End` SHALL take the service's first or last entry. With the live screen between entries, `Home` and `End` SHALL move nothing. The arithmetic SHALL be the projector's own `unitBoundary`, so the two surfaces land on the same screen for the same chord. | `dock/R9` (new) |
+| FR-012 | On the dock's runner with no go to up, `Home` / `End` SHALL act on the **unit on show**, as the projector's plain chord does: the first or last screen of the live **bait** when the live entry is a song, otherwise of the live **entry** — never the first or last screen of the service. `Shift+Home`/`End` SHALL take the live entry's first or last bait when that entry is a song, and the entry's own first or last screen when it has none — the projector's own fall-through, a blank trailing rest skipped — and `Ctrl`/`⌘+Home`/`End` SHALL take the service's first or last entry. With the live screen between entries, `Home` and `End` SHALL move nothing. The arithmetic SHALL be the projector's own `unitBoundary`, so the two surfaces land on the same screen for the same chord. | `dock/R9` (new) |
 | FR-013 | The projector's shortcut sheet SHALL carry **one `Display` group**, merging today's Display, Find and Fullscreen groups — `Show or Hide Words`, `Show or Hide Corner`, `Keyboard Shortcuts`, `Find in Service`, `Passage or Song`, `Enter or Leave`, `Hold to Leave` — and **one `Find` group**, today's *While Finding* — ordered `Previous Match`, `Next Match`, `Open Match`, `Close When Empty`, `Close Find`. The Display rows SHALL keep their present order. The regrouping SHALL remove two headings and no row, SHALL NOT change any label or chord, and SHALL NOT clip a row at 720p. The dock's sheet SHALL carry the same two groups, holding the rows the dock has. | `projector/R12` (modified), `dock/R7` (modified) |
-| FR-014 | The projector's sheet SHALL carry **one `Audio and Video` group** in place of today's `Audio` and `Video` groups, holding `Play/Pause` on `Space` once; that group and `Image and PDF` SHALL sit at the end of the sheet's **left** column, after `Passage`, and the middle column SHALL carry `Library passage` and `Library Detour` only. No label or chord SHALL change, and the merge SHALL remove one heading and one row. The sheet's frame SHALL keep following its tallest column, which makes it **835.5 px at 1080p** where it is 677 today; at 720p the sheet SHALL scroll internally rather than clip a row. | `projector/R9` (modified), `projector/R12` (modified) |
+| FR-014 | The projector's sheet SHALL carry **one `Audio and Video` group** in place of today's `Audio` and `Video` groups, holding `Play/Pause` on `Space` once, at the end of the sheet's **left** column after `Image and PDF`; and **one `Passage` group** in the **middle** column, merging today's `Passage` (the verse rows) and `Library passage` (the chapter and book rows) — verses first, then chapters, then books — ahead of `Library Detour`. No label or chord SHALL change, and the two merges SHALL remove two headings and one row. The sheet's frame SHALL keep following its tallest column, which leaves it **686 px at 1080p**, measured on the running app, where today's is 677, and SHALL never clip a row: where the content outgrows the window the sheet scrolls internally. | `projector/R9` (modified), `projector/R12` (modified) |
 | FR-015 | While the find band is open, the dock SHALL keep the keyboard in its field: the field SHALL take the focus as soon as it is usable — at open when the index is ready, and the moment the index arrives when it is not; a window that regains focus, a pointerdown in the dock, and any focus landing outside the panel SHALL each leave the focus in the field rather than on the panel; and closing the band SHALL return the focus to the panel. A refocus SHALL NOT change the query, the chosen match or the list's scroll. | `dock/R10` (new) |
+| FR-016 | On load the dock SHALL open what is on air instead of the picker: the service the state names, in its runner with that service's live screen, or — when a go to stands with no service — the runner holding the go to's block. It SHALL stay on the picker when nothing is on air, and when the state names a service this picker does not list. | `dock/R11` (new) |
+| FR-017 | The projector's shortcut sheet SHALL reflow to **one scrolling column** whenever the window is too narrow for its three — the columns need 1093 px of content plus the sheet's 32 px of air, so they give way below 1125 px. In that layout the groups SHALL keep their order and no label, chord or row SHALL be lost or cut, and the sheet SHALL scroll inside its own frame — with the app's own scrollbar (spec 087): a 5 px capsule in `--scroll-thumb` on a transparent track, no platform steppers, the standard properties gated behind `@supports not selector(::-webkit-scrollbar)`. While it is open it SHALL be the page's topmost layer — nothing of the page's own HUD, the corner cue included, SHALL be drawn over it. | `projector/R12` (modified) |
+
+### US12 — A refresh lands where the operator already is (P2)
+
+**Why this priority**: OBS reloads a browser source when its cache is refreshed and when the machine
+wakes; a dock that falls back to the picker makes the operator re-open the service they are running.
+
+**Independent Test**: put a screen on air, reload the dock — its runner opens that service with the
+live row marked; with nothing on air the picker is shown; with a go to that stands alone, the runner
+holds its block.
+
+**Acceptance scenarios**
+
+1. **Given** a service on air **When** the dock loads **Then** its runner opens that service and the
+   live screen's row is the marked one, and nothing about what is on air changes.
+2. **Given** nothing on air **When** the dock loads **Then** the picker is the view.
+3. **Given** a go to with no service underneath **When** the dock loads **Then** the runner is the
+   view and the go to's block is drawn, its head reading `Go To`.
+4. **Given** a state naming a service this picker does not list **When** the dock loads **Then** it
+   stays on the picker rather than open nothing.
+
+### US13 — The projector's sheet folds to one column on a narrow window (P2)
+
+**Why this priority**: a projector source is sometimes opened on a laptop or a narrow window; three
+columns then run off the frame and the right-hand keys are unreadable.
+
+**Independent Test**: open the sheet at 900 × 900 — one column, nothing cut, it scrolls; at
+1920 × 1080 — three columns, no scroll.
+
+**Acceptance scenarios**
+
+1. **Given** a window narrower than the three columns need **Then** the sheet is one column, in the
+   same group order, and it scrolls inside its frame on the app's own 5 px capsule.
+2. **Given** that one column **Then** no label, chord or row is cut at the frame's edge.
+3. **Given** a 1920 px window **Then** the sheet is three columns and does not scroll.
+4. **Given** the sheet open at any width **Then** the corner cue is not drawn over it, and the
+   cue is back once the sheet closes.
+
 
 ### Key Entities
 
@@ -387,9 +427,11 @@ typing appends; close the band — the panel holds it again.
 | SC-007 | During a chapter fetch, 10 key presses and 3 transport clicks change nothing: after the fetch the go to is where the chord asked. | E2E with a delayed route. |
 | SC-008 | On the projector, `⌘+→` lands where `Ctrl+→` lands, and `⌘+T` flips nothing. | E2E on the projector page. |
 | SC-009 | With `service: null` and a goto, the overlay's stage carries the plate and the projector paints the detour; after `Back` both paint nothing. | E2E reading both surfaces. |
-| SC-010 | `Home` / `End` in a text entry and in a song's bait land on that unit's first / last screen — the service's ends are never reached by the plain chord; `Shift+Home` on a text entry moves 0 rows. | E2E reading the live row's index against the service's own ends. |
-| SC-011 | The projector's sheet carries one `Audio and Video` group with a single `Play/Pause` row, sits it and `Image and PDF` at the end of the left column, leaves the middle with Library passage and Library Detour, and measures 835.5 px at 1080p. | E2E: read the three columns' headings in order and the sheet's box. |
+| SC-010 | `Home` / `End` in a text entry and in a song's bait land on that unit's first / last screen — the service's ends are never reached by the plain chord; `Shift+Home`/`End` on a text entry land on that entry's first / last screen. | E2E reading the live row's index against the service's own ends and the entry's screens. |
+| SC-011 | The projector's sheet carries one `Audio and Video` group with a single `Play/Pause` row at the end of the left column, one `Passage` group merging the verse, chapter and book rows at the top of the middle column ahead of `Library Detour`, no media group in the middle, and measures 686 px at 1080p. | E2E: read the three columns' headings and rows in order, and the sheet's box. |
 | SC-012 | With the band open, a window blur and refocus leaves `document.activeElement` on `#findInput`, and typing `NKB 4` appends to the query; after `Esc` it is on `#dockPanel`. | E2E: blur/refocus the window, read `activeElement`, type, close. |
+| SC-013 | After a refresh the dock is in the runner of the service on air — its head naming it, its live row marked — and with nothing on air it is on the picker. | E2E: reload, read the view, the head and the live row. |
+| SC-014 | At 900 px wide the projector's sheet is one column, its three stacks share one x, its content is no wider than its frame and it scrolls; at 1920 px it is three columns and does not scroll. | E2E: read the stacks' x, the sheet's box and its scroll size. |
 
 ## UI/UX
 
@@ -407,7 +449,7 @@ the product's template, stylesheet and captured data, at 320 / 400 / 520, dark a
   title `KEYBOARD` at 10.5 px/650, letter-spacing .08em, `--head-ink`, and a 30 × 30 close control
   (8 px radius) whose right edge is flush with the keycap column at x 377.
 - **Its rows**: a scrolling body 382 × 733 at (9, 58), carrying **32 rows in five groups** on the
-  runner — service, song, passage and go to, display, find — and **34 in six** on the picker, whose
+  runner — service, song, **Passage**, display, find — and **34 in six** on the picker, whose
   own two keys lead it: *Move the Pick* `↑` / `↓` and *Open the Service* `Enter`, drawn only while the
   picker is the view, so the runner's sheet never offers a key it does not have. **One row per
   direction**, as the projector's own sheet draws it: `next` and `previous`, `first` and `last` never
@@ -480,6 +522,19 @@ the product's template, stylesheet and captured data, at 320 / 400 / 520, dark a
   is that the words are on air; nothing else about the overlay changes.
 
 ## Clarifications
+
+### Session 2026-11-05
+
+- Q: Dock · a refresh while a service is on air
+  → A: *"when the dock is refreshed, it should open the service currently on screen (if any)"* —
+  recorded as FR-016, extended to a go to that stands alone.
+- Q: Converge · `Shift+Home`/`End` inside a text entry
+  → A: **match the projector** — the chord takes that entry's first / last screen (a blank trailing
+  rest skipped); FR-012, US8/AC3 and SC-010 were reworded to say so. The dock had moved nothing there,
+  which was the only place the two surfaces disagreed.
+- Q: Projector · a window too narrow for three columns
+  → A: *"when the projector page width cant display the 3-column keyboard sheet, make it a
+  single-column scrolling just like the dock"* — recorded as FR-017.
 
 ### Session 2026-11-04
 

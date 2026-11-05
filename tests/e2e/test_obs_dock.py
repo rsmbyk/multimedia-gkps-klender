@@ -154,8 +154,11 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
             dock.evaluate("document.getElementById('runService').textContent"),
             'Ibadah Minggu')
 
-        # Back in the picker, the mark stays on the service just opened.
-        dock.keyboard.press('Escape')
+        # Back in the picker, the mark stays on the service just opened. Since spec 187
+        # the return is a hold, not a tap (`Esc` alone leaves the runner).
+        dock.keyboard.down('Escape')
+        dock.wait_for_timeout(1000)
+        dock.keyboard.up('Escape')
         dock.wait_for_function(
             "() => document.getElementById('dockPanel').dataset.view === 'pick'")
         self.assertEqual(

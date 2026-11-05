@@ -1,8 +1,8 @@
 # projector
 
 **capability**: `projector`
-**last folded**: 2026-11-04
-**slices**: `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**last folded**: 2026-11-05
+**slices**: `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -38,6 +38,14 @@ fails — a failure leaves the panel open with its rows and says the content cou
 #### Scenario: leaving a chapter
 - WHEN a step crosses to another chapter or book
 - THEN the fetch runs under the same lock, and the corner indicator shows beside the shortcuts button
+
+#### Scenario: a go to with no service
+- WHEN the shared state carries a go to and no service — one the dock's picker started
+- THEN the page paints the go to exactly as it paints one over a service, and `Back` from it paints
+  nothing at all
+
+The page SHALL paint a go to that names no service from the go to's own payload, and a `Back` that
+ends it SHALL leave the page idle — no screen and no detour. (spec 187)
 
 #### Scenario: a fetch fails
 - WHEN a chapter or song request fails
@@ -226,15 +234,22 @@ unaffected: `T` still flips a passage's TB/SIM. (spec 158)
 - WHEN `T` is pressed on a passage screen
 - THEN the translation flips TB/SIM, as before
 
-### R9 — The shortcut sheet names the key
+### R9 — The shortcut sheet names the key, and its frame follows its content
 
 The projector's shortcut sheet SHALL carry a group naming images and PDFs, whose one row gives `T` for
-fit width and fit height, and the sheet SHALL keep the height it had (677 px at 1080p) so it still
-fits a 1280×720 window. (spec 158)
+fit width and fit height. The sheet's frame SHALL follow its tallest column rather than a fixed
+height — 686 px at 1080p, measured on the running page — and SHALL never clip a row: where the content
+outgrows the window the sheet scrolls inside its frame, on the app's own scrollbar (5 px, `--scroll-thumb`,
+a transparent track, no platform steppers, the standard properties gated behind
+`@supports not selector(::-webkit-scrollbar)`). (specs 187, 158)
 
-#### Scenario: the sheet on a 720p window
-- WHEN `K` opens the sheet at 1280×720
-- THEN the Image and PDF group is inside the sheet's frame and the sheet is 677 px tall
+#### Scenario: the sheet is opened
+- WHEN `K` opens the sheet at 1920×1080
+- THEN the Image and PDF group is inside the frame, the frame is its tallest column and nothing scrolls
+
+#### Scenario: a window shorter than the sheet
+- WHEN the window is 1280×720
+- THEN the sheet keeps to `100vh - 32px` and scrolls internally; no row is out of reach
 
 ### R10 — The overflow is panned, by drag and by wheel
 
@@ -285,29 +300,57 @@ SHALL list the rest under the media row and step onto it. (spec 165)
 - WHEN the last entry of a service is a media entry
 - THEN its rest is the service's last screen, so the display can be left blank by stepping
 
-### R12 — The shortcuts sheet names audio and video in groups of their own
+### R12 — The shortcuts sheet is grouped by subject
 
-The projector's shortcuts sheet SHALL group its rows by the subject the keys act on, and audio and
-video SHALL each carry a group of their own: a heading `Audio` and a heading `Video`, each holding one
-`Play/Pause` row on the Space chord. The sheet SHALL NOT carry a combined `Audio/Video Play/Pause`
-row, and `Display` SHALL hold only `Show or Hide Words`, `Show or Hide Corner` and `Keyboard
-Shortcuts`.
+The projector's shortcuts sheet SHALL group its rows by the subject the keys act on, in three columns
+at a window wide enough to hold them:
 
-The two groups SHALL sit at the end of the sheet's middle column, after the groups it already carries,
-so that the sheet's box keeps the height its tallest column sets. Every other group, row, label and chord SHALL stay as it
-was, and the rows SHALL keep their 34px pitch.
+- **left** — `Service`, `Song`, `Image and PDF`, `Audio and Video`;
+- **middle** — `Passage`, then `Library Detour`;
+- **right** — `Display`, then `Find`.
+
+`Audio and Video` SHALL be one group holding one `Play/Pause` row on the Space chord. `Passage` SHALL
+be one group merging the verse rows and the library's chapter and book rows — `Flip TB / SIM`,
+`First Verse`, `Last Verse`, then the chapter rows, then the book rows. `Display` SHALL hold `Show or
+Hide Words`, `Show or Hide Corner`, `Keyboard Shortcuts`, `Find in Service`, `Passage or Song`, `Enter
+or Leave` and `Hold to Leave` in that order, and `Find` SHALL hold `Previous Match`, `Next Match`,
+`Open Match`, `Close When Empty`, `Close Find` in that order.
+
+Below the width the three columns need — 1093 px of content plus the sheet's 32 px of air — the sheet
+SHALL reflow to **one scrolling column**, the groups in the same order and no label, chord or row cut.
+While it is open it SHALL be the page's topmost layer: nothing of the page's own HUD, the corner cue
+included, SHALL be drawn over it.
 
 Space SHALL keep its meaning: it toggles the audio or the video that is showing, toggles the words
-when neither is, and does nothing while the sheet is open.
+when neither is, and does nothing while the sheet is open. (specs 187, 160)
 
 #### Scenario: the sheet is opened
-- WHEN K opens the shortcuts sheet
-- THEN `Audio` and `Video` each head one `Play/Pause` row, and no combined row exists
+- WHEN `K` opens the sheet at 1920×1080
+- THEN the three columns read as above, one `Play/Pause` row exists, and `Passage` carries eleven rows
 
-#### Scenario: a window shorter than the sheet
-- WHEN the window is 1280×720
-- THEN the sheet's 676px box still fits inside the 688px the window allows, and nothing scrolls
+#### Scenario: a narrow window
+- WHEN the window is narrower than 1125 px
+- THEN the sheet is one column, in the same group order, and it scrolls inside its frame
+
+#### Scenario: the corner cue
+- WHEN the sheet is open
+- THEN the cue is not drawn over it, and it is back once the sheet closes
 
 #### Scenario: Space with media showing
 - WHEN an audio or video entry is on screen and Space is pressed
 - THEN that media toggles play/pause once, and the words do not change
+
+### R13 — `⌘` is the same modifier as `Ctrl`
+
+On the projector, `Ctrl` and `⌘` SHALL be one modifier for the arrow chords and for `Home`/`End`:
+`⌘+→` lands where `Ctrl+→` lands, `⌘+Home` where `Ctrl+Home` does. `⌘` with any other key SHALL leave
+the page inert, so the browser keeps its own shortcut — `⌘+T` flips nothing, `⌘+C` hides nothing,
+`⌘+K` opens nothing. (spec 187)
+
+#### Scenario: the navigation chords
+- WHEN `⌘+→` or `⌘+End` is pressed
+- THEN the screen lands where `Ctrl+→` or `Ctrl+End` lands
+
+#### Scenario: a browser chord
+- WHEN `⌘` is pressed with any other key
+- THEN the page does not take the key and the browser's own action runs

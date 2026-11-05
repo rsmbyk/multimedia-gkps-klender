@@ -21,7 +21,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-174](./items/ITEM-174-drawer-backdrop-pointer-events.md) | The drawer backdrop stays over the page and swallows every pointer in the browser suite | `<div id="drawerBackdrop" class="drawer-backdrop">` is left covering the reading page, so `item.hover()` and rail clicks time out across `test_entry_pickers` (21), `test_entry_preview` (3) and `test_immediate_editor_open` (2); identical on `3e005688^` | fix | P1 | M | — | 2026-10-29 |
 | [ITEM-175](./items/ITEM-175-section-break-divider-box.md) | The section-break divider measures 8px where its test expects 0px | `test_the_divider_takes_the_same_box_as_the_entries` reads `['8px', '8px']` against `['0px', '0px']`; identical on `3e005688^` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-185](./items/ITEM-185-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
-| [ITEM-191](./items/ITEM-191-keyboard-parity.md) | The dock and the projector share one keyboard grammar | The dock gains the projector's go-to steps, `K`, `G` on the picker, a held `Esc` and a fetch guard; the picker narrows to `↑`/`↓`; the projector takes `⌘`; a go to can stand with no service | feat | P2 | M | [187](../specs/187-keyboard-parity/spec.md) | 2026-11-04 |
 
 ## Speccing
 
@@ -37,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-191](./items/ITEM-191-keyboard-parity.md) | The dock and the projector share one keyboard grammar | The dock gains the projector's go-to steps, `K`, `G` on the picker, a held `Esc` and a fetch guard; the picker narrows to `↑`/`↓`; the projector takes `⌘`; a go to can stand with no service | feat | P2 | M | [187](../specs/187-keyboard-parity/spec.md) | `feat/187-keyboard-parity` | 2026-11-05 |
 
 ## In review
 
