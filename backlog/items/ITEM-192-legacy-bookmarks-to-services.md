@@ -1,6 +1,6 @@
 ---
 id: ITEM-192
-status: in-progress
+status: in-review
 title: 'The old bookmarks stand as services'
 type: feat
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-05
 updated: 2026-11-05
 spec: 188-legacy-bookmarks-to-services
 branch: feat/188-legacy-bookmarks-to-services
-pr:
-issue:
+pr: 496
+issue: 495
 closed_at:
 closed_reason:
 bump: minor
