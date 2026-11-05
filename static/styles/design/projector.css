@@ -457,7 +457,11 @@ body.projector.find-closing .projector-find { animation: projectorListOut 180ms 
   body.projector.keys-open .mouse-zones, body.projector.entry-list-open .mouse-zones,
   body.projector.keys-closing .mouse-zones, body.projector.entry-list-closing .mouse-zones,
   body.projector.find-open .mouse-zones, body.projector.find-closing .mouse-zones { pointer-events: none; }
-  body.projector.keys-open .cue, body.projector.keys-closing .cue { pointer-events: none; }
+  /* The sheet is the topmost layer while it is open (spec 187 FR-017): the corner cue
+     used to sit at z-index 5, above the sheet's 4, and drew straight over the table. */
+  body.projector.keys-open .cue, body.projector.keys-closing .cue {
+    pointer-events: none; opacity: 0; visibility: hidden;
+  }
   body.projector.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open):not(.find-closing) .cue,
   body.projector.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open):not(.find-closing) .keys {
     opacity: 0; visibility: hidden; pointer-events: none;
@@ -499,6 +503,17 @@ body.projector.find-closing .projector-find { animation: projectorListOut 180ms 
   }
   body.projector.keys-open .sheet { display: flex; animation: projectorSheetIn 180ms var(--display-ease) both; }
   body.projector.keys-closing .sheet { display: flex; pointer-events: none; animation: projectorSheetOut 180ms var(--display-ease) both; }
+  /* The app's scrollbar (spec 087), as the dock's sheet draws it: 5 px, bare,
+     token-coloured, a capsule. The standard properties stay behind the gate — in Blink
+     they would win over ::-webkit-scrollbar and paint the platform's 10 px bar. */
+  @supports not selector(::-webkit-scrollbar) {
+    .sheet { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+  }
+  .sheet::-webkit-scrollbar { width: 5px; height: 5px; }
+  .sheet::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  .sheet::-webkit-scrollbar-track, .sheet::-webkit-scrollbar-corner { background: transparent; }
+  .sheet::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+  .sheet::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
   @keyframes projectorBackdropIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes projectorBackdropOut { from { opacity: 1; } to { opacity: 0; } }
   @keyframes projectorSheetIn {
@@ -564,3 +579,17 @@ body.projector.find-closing .projector-find { animation: projectorListOut 180ms 
   .k.sp.glyph { font-size: 16px; }
   .fn { white-space: nowrap; color: var(--on); }
   .keys:focus-visible { outline: 1px solid var(--on); outline-offset: 6px; border-radius: 3px; }
+
+  /* Spec 187 FR-017: a window too narrow for three columns gets the sheet as ONE column
+     that scrolls — the dock's own reading — instead of a table cut at the frame. The
+     three columns need 1093 px of content plus the sheet's 32 px of air, so below that
+     width the stacks stand on top of one another. */
+  @media (max-width: 1124px) {
+    .sheet {
+      flex-direction: column;
+      gap: 16px;
+      width: min(600px, calc(100vw - 32px));
+      max-width: calc(100vw - 32px);
+    }
+    .sheet .stack { gap: 16px; }
+  }

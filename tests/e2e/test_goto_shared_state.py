@@ -121,8 +121,12 @@ class GotoSharedStateE2ETests(StaticLiveServerTestCase):
         page = context.new_page()
         page.set_default_timeout(6000)
         page.goto(self.live_server_url + '/obs/dock')
-        page.wait_for_selector(f'.servicerow[data-service="{self.service.pk}"]')
-        page.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
+        page.wait_for_selector('.servicerow', state='attached')
+        # A dock that loads with this service already on air opens its runner (spec 187
+        # FR-016), so the picker row is behind the view and cannot be clicked.
+        if page.evaluate(
+                "() => document.getElementById('dockPanel').dataset.view") == 'pick':
+            page.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
         page.wait_for_selector('.entryrow')
         return page
 
@@ -408,10 +412,79 @@ class GotoSharedStateE2ETests(StaticLiveServerTestCase):
           localStorage.setItem('gkps-display', JSON.stringify(state));
         }""", seed)
         page.reload()
-        page.wait_for_selector(f'.servicerow[data-service="{self.service.pk}"]')
-        page.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
+        page.wait_for_selector('.servicerow', state='attached')
+        # A dock that loads with this service already on air opens its runner (spec 187
+        # FR-016), so the picker row is behind the view and cannot be clicked.
+        if page.evaluate(
+                "() => document.getElementById('dockPanel').dataset.view") == 'pick':
+            page.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
         page.wait_for_selector('.entryrow')
         page.wait_for_timeout(300)
         self.assertIsNone(page.evaluate("() => window.gkpsDisplay.read().goto"))
         self.assertTrue(page.evaluate("() => document.getElementById('offBlock').hidden"))
+        context.close()
+
+    # ---------- spec 187: a go to that stands with no service ----------------
+
+    def test_a_picker_go_to_stands_alone_and_paints_on_both_surfaces(self):
+        """The picker starts a go to with nothing underneath it: the projector and the
+        overlay paint it, and Back leaves all three idle.
+
+        The projector is opened WITHOUT `?service=`, because that query is itself an act
+        of projection (projector.js:1849 writes the service on air); a bare page follows
+        whatever the state says.
+        """
+        context = self._context()
+        projector = context.new_page()
+        projector.set_default_timeout(6000)
+        projector.goto(self.live_server_url + '/projector')
+        overlay = self._overlay(context)
+        dock = context.new_page()
+        dock.set_default_timeout(6000)
+        dock.goto(self.live_server_url + '/obs/dock')
+        dock.wait_for_selector('.servicerow')
+        dock.bring_to_front()
+        self.assertEqual(
+            dock.evaluate("() => document.getElementById('dockPanel').dataset.view"),
+            'pick')
+        self.assertIsNone((self._state(dock) or {}).get('service'),
+                          'the picker started with a service on air')
+
+        dock.keyboard.press('g')
+        dock.wait_for_selector('.bandswap.is-find')
+        dock.wait_for_function(
+            "() => document.getElementById('findLabel').textContent"
+            " !== 'Loading search…'")
+        dock.fill('#findInput', 'Matius 5')
+        dock.wait_for_timeout(350)
+        dock.keyboard.press('Enter')
+        dock.wait_for_function(
+            "() => { const s = JSON.parse(localStorage.getItem('gkps-display') || 'null');"
+            " return !!(s && s.goto && s.service === null); }")
+        dock.wait_for_timeout(400)
+
+        state = self._state(dock)
+        self.assertIsNone(state['service'], 'the picker adopted a service')
+        self.assertIsNone(state['translation'])
+        self.assertEqual(state['screen'], 0)
+        self.assertTrue(state['on'])
+
+        projector.wait_for_function(
+            "() => { const d = document.querySelector('.projector-detour.is-active');"
+            " return !!d && d.textContent.includes('Matius'); }")
+        overlay.wait_for_function(
+            "() => document.getElementById('overlayStage').dataset.kind === 'passage'")
+        self.assertIn('Matius', overlay.evaluate(
+            "() => document.getElementById('overlayStage').textContent"))
+
+        dock.locator('#offBack').click()
+        dock.wait_for_function(
+            "() => !JSON.parse(localStorage.getItem('gkps-display') || 'null').goto")
+        projector.wait_for_function(
+            "() => !document.querySelector('.projector-detour.is-active')")
+        overlay.wait_for_function(
+            "() => document.getElementById('overlayStage').dataset.kind === ''")
+        state = self._state(dock)
+        self.assertIsNone(state['service'])
+        self.assertFalse(state['on'], 'Back left something on air')
         context.close()

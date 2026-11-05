@@ -1399,11 +1399,14 @@
        every go to change — a stale local flag left the service blank after Back. */
     showing = stored.on === true;
     if (!goto) {
-      if (detour) {
-        detour = null;
-        detourNode.classList.remove('is-active');
-        render();
-      }
+      var hadDetour = Boolean(detour);
+      detour = null;
+      detourNode.classList.remove('is-active');
+      /* A stored state that names no service is idle: painting this page's own service
+         would put a screen on air that nothing named (FR-011). A page with no stored
+         state at all stands alone and keeps what it painted. */
+      if (stored && stored.service == null) { paintIdle(); return; }
+      if (hadDetour) render();
       return;
     }
     fetchGotoPayload(goto, function (payload) {
@@ -1626,12 +1629,15 @@
       }
     }
     if (body.classList.contains('keys-open') || body.classList.contains('entry-list-open')) return;
-    if (event.altKey || event.metaKey) return;
+    if (event.altKey) return;
+    /* `⌘` and `Ctrl` are one modifier for the navigation chords (FR-010); any other
+       ⌘ chord falls through to the browser, which owns it. */
+    var ctrl = event.ctrlKey || event.metaKey;
     var key = event.key.toLowerCase();
-    if (!event.ctrlKey && !event.shiftKey && ['j', 'g'].includes(key)) {
+    if (!ctrl && !event.shiftKey && ['j', 'g'].includes(key)) {
       event.preventDefault(); openFind(key); return;
     }
-    if (!event.ctrlKey && !event.shiftKey && key === 'c') {
+    if (!ctrl && !event.shiftKey && key === 'c') {
       event.preventDefault();
       var hide = !body.classList.contains('corner-hidden');
       body.classList.toggle('corner-hidden', hide);
@@ -1639,12 +1645,12 @@
       if (!hide) revealControls();
       return;
     }
-    if (!event.ctrlKey && !event.shiftKey && key === 't') {
+    if (!ctrl && !event.shiftKey && key === 't') {
       event.preventDefault();
       if (imageHost || pdfHost) toggleFit(); else flipTranslation();
       return;
     }
-    if (!event.ctrlKey && event.key === ' ') {
+    if (!ctrl && event.key === ' ') {
       event.preventDefault();
       if (audioHost && audioPlayer) { if (!event.repeat) audioPlayer.toggle(); }
       else if (videoHost && videoPlayer) { if (!event.repeat) videoPlayer.toggle(); }
@@ -1654,13 +1660,14 @@
     var forward = ['ArrowRight', 'ArrowDown', 'PageDown'].includes(event.key);
     var backward = ['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key);
     if (forward || backward) {
-      if (event.ctrlKey && (event.key === 'PageUp' || event.key === 'PageDown')) return;
+      if (ctrl && (event.key === 'PageUp' || event.key === 'PageDown')) return;
       event.preventDefault();
-      if (event.ctrlKey) moveEntry(forward ? 1 : -1);
+      if (ctrl) moveEntry(forward ? 1 : -1);
       else if (event.shiftKey) moveBait(forward ? 1 : -1);
       else move(forward ? 1 : -1);
     } else if (event.key === 'Home' || event.key === 'End') {
-      event.preventDefault(); unitBoundary(event.key === 'End', event.ctrlKey ? 'ctrl' : event.shiftKey ? 'shift' : 'plain');
+      event.preventDefault();
+      unitBoundary(event.key === 'End', ctrl ? 'ctrl' : event.shiftKey ? 'shift' : 'plain');
     }
   });
 

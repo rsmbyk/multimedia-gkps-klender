@@ -1,8 +1,8 @@
 # display-state
 
 **capability**: `display-state`
-**last folded**: 2026-11-04
-**slices**: `186-display-session-refresh`, `185-dock-goto`, `184-display-session-scope`
+**last folded**: 2026-11-05
+**slices**: `187-keyboard-parity`, `186-display-session-refresh`, `185-dock-goto`, `184-display-session-scope`
 
 The browser-local state that decides what is on air in one browser — which Tata Ibadah, which screen,
 whether the words are up, and in which edition. The dock, the projector and a reading page's
@@ -42,7 +42,12 @@ SHALL NOT change; Back is `goto: null` and every surface then paints them. The g
 verse text, title or lyric. `show` and a move to a service screen SHALL end it; `hide` SHALL blank it
 and keep its place; `release` SHALL end it with the service; `flip` SHALL name the edition of whatever
 is on air. Every change SHALL be one write and one `{type: 'goto'}` message, and a goto whose stored
-shape cannot be parsed SHALL read as no goto. (spec 185)
+shape cannot be parsed SHALL read as no goto.
+
+A go to SHALL also stand with **no service underneath it** — `service: null` beside a non-null
+`goto` — which is what the dock's picker writes: `goTo` SHALL accept it, `stepGoto`, `hide`, `resume`
+and `flip` SHALL act on it, `back` SHALL end it in the idle state (`service: null`, `on: false`), and
+`show` SHALL end it as it ends any go to. (spec 187)
 
 #### Scenario: a go to starts from the dock
 - WHEN the dock writes `goto` for a chosen song or passage
@@ -55,6 +60,11 @@ shape cannot be parsed SHALL read as no goto. (spec 185)
 #### Scenario: a service screen goes on air during a go to
 - WHEN `show` or a move puts a service screen on air
 - THEN `goto` is cleared in the same write
+
+#### Scenario: a go to with no service
+- WHEN the picker's go to is written with `service: null`
+- THEN every reader paints the go to, `screen` is 0 and `translation` is null, and `back` leaves the
+  idle state rather than a service's screen
 
 #### Scenario: a corrupt go to
 - WHEN the stored `goto` is not a song or a passage

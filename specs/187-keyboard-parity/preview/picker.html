@@ -1,0 +1,1331 @@
+  <section class="view" id="viewPick" aria-label="Pick a service">
+    <div class="dock__head">
+      <div class="dock__titlerow">
+        <img class="dock__logo" src="__LOGO__" alt="GKPS Klender" width="34" height="34">
+        <div style="min-width:0">
+          <h2 class="dock__title">Tata Ibadah</h2>
+        </div>
+        <span class="dock__tools">
+          <button type="button" class="iconbtn" id="reloadPickBtn" title="Reload services"
+                  aria-label="Reload services" tabindex="-1">
+            <svg viewBox="0 0 20 20"><path d="M16.2 8.6a6.3 6.3 0 1 0 .3 3.1"></path><path d="M16.7 4.5v4.4h-4.4"></path></svg>
+          </button>
+          <button type="button" class="iconbtn iconbtn--theme" id="themeBtn"
+                  title="Appearance: Dark" aria-label="Appearance: Dark" tabindex="-1">
+            <svg class="sun" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"/>
+            </svg>
+            <svg class="moon" viewBox="0 0 24 24">
+              <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/>
+            </svg>
+            <svg class="system" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="13" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+    </div>
+
+    <div class="dock__body" id="pickBody">
+      
+      <section data-bucket="last-30-days">
+        <h3 class="group__head">Last 30 days</h3>
+        <ul>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="155" data-name="111ojo"
+                    data-date="1 November 2026" tabindex="-1">
+              <span class="servicerow__n">111ojo</span>
+              <span class="onscreen" data-onscreen-for="155" hidden>On screen</span>
+              
+              <span class="servicerow__d">1 Nov 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="149" data-name="hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+                    data-date="25 Oktober 2026" tabindex="-1">
+              <span class="servicerow__n">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</span>
+              <span class="onscreen" data-onscreen-for="149" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Okt 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="148" data-name="a"
+                    data-date="25 Oktober 2026" tabindex="-1">
+              <span class="servicerow__n">a</span>
+              <span class="onscreen" data-onscreen-for="148" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Okt 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="147" data-name="I"
+                    data-date="25 Oktober 2026" tabindex="-1">
+              <span class="servicerow__n">I</span>
+              <span class="onscreen" data-onscreen-for="147" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Okt 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="146" data-name="Ibadah Minggu"
+                    data-date="25 Oktober 2026" tabindex="-1">
+              <span class="servicerow__n">Ibadah Minggu</span>
+              <span class="onscreen" data-onscreen-for="146" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Okt 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="145" data-name="Ibadah Minggu"
+                    data-date="25 Oktober 2026" tabindex="-1">
+              <span class="servicerow__n">Ibadah Minggu</span>
+              <span class="onscreen" data-onscreen-for="145" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Okt 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="144" data-name="Ibadah Minggu"
+                    data-date="20 Oktober 2026" tabindex="-1">
+              <span class="servicerow__n">Ibadah Minggu</span>
+              <span class="onscreen" data-onscreen-for="144" hidden>On screen</span>
+              
+              <span class="servicerow__d">20 Okt 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="143" data-name="11 Oktober 2026"
+                    data-date="11 Oktober 2026" tabindex="-1">
+              <span class="servicerow__n">11 Oktober 2026</span>
+              <span class="onscreen" data-onscreen-for="143" hidden>On screen</span>
+              
+              <span class="servicerow__d">11 Okt 2026</span>
+            </button>
+          </li>
+          
+        </ul>
+      </section>
+      
+      <section data-bucket="earlier-this-year">
+        <h3 class="group__head">Earlier this year</h3>
+        <ul>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="142" data-name="Ibadah Minggu"
+                    data-date="4 Oktober 2026" tabindex="-1">
+              <span class="servicerow__n">Ibadah Minggu</span>
+              <span class="onscreen" data-onscreen-for="142" hidden>On screen</span>
+              
+              <span class="servicerow__d">4 Okt 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="141" data-name="30 Agustus 2026"
+                    data-date="30 Agustus 2026" tabindex="-1">
+              <span class="servicerow__n">30 Agustus 2026</span>
+              <span class="onscreen" data-onscreen-for="141" hidden>On screen</span>
+              
+              <span class="servicerow__d">30 Agu 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="140" data-name="23 Agustus 2026 (Minggu sahabat)"
+                    data-date="23 Agustus 2026" tabindex="-1">
+              <span class="servicerow__n">23 Agustus 2026 (Minggu sahabat)</span>
+              <span class="onscreen" data-onscreen-for="140" hidden>On screen</span>
+              
+              <span class="servicerow__d">23 Agu 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="139" data-name="Tata Ibadah Olob Olob dan Angkat Sidi"
+                    data-date="9 Agustus 2026" tabindex="-1">
+              <span class="servicerow__n">Tata Ibadah Olob Olob dan Angkat Sidi</span>
+              <span class="onscreen" data-onscreen-for="139" hidden>On screen</span>
+              
+              <span class="servicerow__d">9 Agu 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="138" data-name="Pengakuan Iman"
+                    data-date="12 Juli 2026" tabindex="-1">
+              <span class="servicerow__n">Pengakuan Iman</span>
+              <span class="onscreen" data-onscreen-for="138" hidden>On screen</span>
+              
+              <span class="servicerow__d">12 Jul 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="137" data-name="Ibadah Minggu Pelajar"
+                    data-date="28 Juni 2026" tabindex="-1">
+              <span class="servicerow__n">Ibadah Minggu Pelajar</span>
+              <span class="onscreen" data-onscreen-for="137" hidden>On screen</span>
+              
+              <span class="servicerow__d">28 Jun 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="136" data-name="Ibadah 14 Juni 2026"
+                    data-date="14 Juni 2026" tabindex="-1">
+              <span class="servicerow__n">Ibadah 14 Juni 2026</span>
+              <span class="onscreen" data-onscreen-for="136" hidden>On screen</span>
+              
+              <span class="servicerow__d">14 Jun 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="135" data-name="Minggu UEM 31 Mei 2026"
+                    data-date="31 Mei 2026" tabindex="-1">
+              <span class="servicerow__n">Minggu UEM 31 Mei 2026</span>
+              <span class="onscreen" data-onscreen-for="135" hidden>On screen</span>
+              
+              <span class="servicerow__d">31 Mei 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="134" data-name="Ibadah Pentakosta &amp; Pesta SM"
+                    data-date="24 Mei 2026" tabindex="-1">
+              <span class="servicerow__n">Ibadah Pentakosta &amp; Pesta SM</span>
+              <span class="onscreen" data-onscreen-for="134" hidden>On screen</span>
+              
+              <span class="servicerow__d">24 Mei 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="133" data-name="Bulsn Oikumene"
+                    data-date="17 Mei 2026" tabindex="-1">
+              <span class="servicerow__n">Bulsn Oikumene</span>
+              <span class="onscreen" data-onscreen-for="133" hidden>On screen</span>
+              
+              <span class="servicerow__d">17 Mei 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="132" data-name="Minggu Kemitraan"
+                    data-date="3 Mei 2026" tabindex="-1">
+              <span class="servicerow__n">Minggu Kemitraan</span>
+              <span class="onscreen" data-onscreen-for="132" hidden>On screen</span>
+              
+              <span class="servicerow__d">3 Mei 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="131" data-name="Hari Bumi"
+                    data-date="12 April 2026" tabindex="-1">
+              <span class="servicerow__n">Hari Bumi</span>
+              <span class="onscreen" data-onscreen-for="131" hidden>On screen</span>
+              
+              <span class="servicerow__d">12 Apr 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="130" data-name="PASKAH II"
+                    data-date="12 April 2026" tabindex="-1">
+              <span class="servicerow__n">PASKAH II</span>
+              <span class="onscreen" data-onscreen-for="130" hidden>On screen</span>
+              
+              <span class="servicerow__d">12 Apr 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="129" data-name="Minggu Paskah 2026"
+                    data-date="5 April 2026" tabindex="-1">
+              <span class="servicerow__n">Minggu Paskah 2026</span>
+              <span class="onscreen" data-onscreen-for="129" hidden>On screen</span>
+              
+              <span class="servicerow__d">5 Apr 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="128" data-name="Jumat Agung"
+                    data-date="3 April 2026" tabindex="-1">
+              <span class="servicerow__n">Jumat Agung</span>
+              <span class="onscreen" data-onscreen-for="128" hidden>On screen</span>
+              
+              <span class="servicerow__d">3 Apr 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="127" data-name="Ibadah Kamis Putih"
+                    data-date="2 April 2026" tabindex="-1">
+              <span class="servicerow__n">Ibadah Kamis Putih</span>
+              <span class="onscreen" data-onscreen-for="127" hidden>On screen</span>
+              
+              <span class="servicerow__d">2 Apr 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="126" data-name="Hari Doa Sedunia"
+                    data-date="15 Maret 2026" tabindex="-1">
+              <span class="servicerow__n">Hari Doa Sedunia</span>
+              <span class="onscreen" data-onscreen-for="126" hidden>On screen</span>
+              
+              <span class="servicerow__d">15 Mar 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="125" data-name="Minggu Seksi Inang"
+                    data-date="8 Maret 2026" tabindex="-1">
+              <span class="servicerow__n">Minggu Seksi Inang</span>
+              <span class="onscreen" data-onscreen-for="125" hidden>On screen</span>
+              
+              <span class="servicerow__d">8 Mar 2026</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="124" data-name="18 Februari 2026"
+                    data-date="18 Februari 2026" tabindex="-1">
+              <span class="servicerow__n">18 Februari 2026</span>
+              <span class="onscreen" data-onscreen-for="124" hidden>On screen</span>
+              
+              <span class="servicerow__d">18 Feb 2026</span>
+            </button>
+          </li>
+          
+        </ul>
+      </section>
+      
+      <section data-bucket="older">
+        <h3 class="group__head">Older</h3>
+        <ul>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="123" data-name="31 DESEMBER 2025"
+                    data-date="31 Desember 2025" tabindex="-1">
+              <span class="servicerow__n">31 DESEMBER 2025</span>
+              <span class="onscreen" data-onscreen-for="123" hidden>On screen</span>
+              
+              <span class="servicerow__d">31 Des 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="122" data-name="26 dEsEmBeR 2025"
+                    data-date="26 Desember 2025" tabindex="-1">
+              <span class="servicerow__n">26 dEsEmBeR 2025</span>
+              <span class="onscreen" data-onscreen-for="122" hidden>On screen</span>
+              
+              <span class="servicerow__d">26 Des 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="121" data-name="24 dEsEmBeR 2025"
+                    data-date="24 Desember 2025" tabindex="-1">
+              <span class="servicerow__n">24 dEsEmBeR 2025</span>
+              <span class="onscreen" data-onscreen-for="121" hidden>On screen</span>
+              
+              <span class="servicerow__d">24 Des 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="120" data-name="23 November 2025"
+                    data-date="23 November 2025" tabindex="-1">
+              <span class="servicerow__n">23 November 2025</span>
+              <span class="onscreen" data-onscreen-for="120" hidden>On screen</span>
+              
+              <span class="servicerow__d">23 Nov 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="119" data-name="Tata Ibadah Minggu Bapa"
+                    data-date="9 November 2025" tabindex="-1">
+              <span class="servicerow__n">Tata Ibadah Minggu Bapa</span>
+              <span class="onscreen" data-onscreen-for="119" hidden>On screen</span>
+              
+              <span class="servicerow__d">9 Nov 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="118" data-name="2 November 2025"
+                    data-date="2 November 2025" tabindex="-1">
+              <span class="servicerow__n">2 November 2025</span>
+              <span class="onscreen" data-onscreen-for="118" hidden>On screen</span>
+              
+              <span class="servicerow__d">2 Nov 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="117" data-name="24 Agustus 2025"
+                    data-date="24 Agustus 2025" tabindex="-1">
+              <span class="servicerow__n">24 Agustus 2025</span>
+              <span class="onscreen" data-onscreen-for="117" hidden>On screen</span>
+              
+              <span class="servicerow__d">24 Agu 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="115" data-name="OLOB-OLOB KURIA GKPS"
+                    data-date="10 Agustus 2025" tabindex="-1">
+              <span class="servicerow__n">OLOB-OLOB KURIA GKPS</span>
+              <span class="onscreen" data-onscreen-for="115" hidden>On screen</span>
+              
+              <span class="servicerow__d">10 Agu 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="114" data-name="Minggu Bertobat"
+                    data-date="10 Agustus 2025" tabindex="-1">
+              <span class="servicerow__n">Minggu Bertobat</span>
+              <span class="onscreen" data-onscreen-for="114" hidden>On screen</span>
+              
+              <span class="servicerow__d">10 Agu 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="113" data-name="Minggu Doa"
+                    data-date="20 Juli 2025" tabindex="-1">
+              <span class="servicerow__n">Minggu Doa</span>
+              <span class="onscreen" data-onscreen-for="113" hidden>On screen</span>
+              
+              <span class="servicerow__d">20 Jul 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="110" data-name="Minggu Pelajar"
+                    data-date="29 Juni 2025" tabindex="-1">
+              <span class="servicerow__n">Minggu Pelajar</span>
+              <span class="onscreen" data-onscreen-for="110" hidden>On screen</span>
+              
+              <span class="servicerow__d">29 Jun 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="108" data-name="PESTA SEKOLAH MINGGU 2025"
+                    data-date="8 Juni 2025" tabindex="-1">
+              <span class="servicerow__n">PESTA SEKOLAH MINGGU 2025</span>
+              <span class="onscreen" data-onscreen-for="108" hidden>On screen</span>
+              
+              <span class="servicerow__d">8 Jun 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="107" data-name="minggu doa"
+                    data-date="1 Juni 2025" tabindex="-1">
+              <span class="servicerow__n">minggu doa</span>
+              <span class="onscreen" data-onscreen-for="107" hidden>On screen</span>
+              
+              <span class="servicerow__d">1 Jun 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="106" data-name="Minggu UEM 1 Juni 2025"
+                    data-date="1 Juni 2025" tabindex="-1">
+              <span class="servicerow__n">Minggu UEM 1 Juni 2025</span>
+              <span class="onscreen" data-onscreen-for="106" hidden>On screen</span>
+              
+              <span class="servicerow__d">1 Jun 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="105" data-name="Kenaikan 29 May 2025"
+                    data-date="29 Mei 2025" tabindex="-1">
+              <span class="servicerow__n">Kenaikan 29 May 2025</span>
+              <span class="onscreen" data-onscreen-for="105" hidden>On screen</span>
+              
+              <span class="servicerow__d">29 Mei 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="104" data-name="Minggu Kemitraan"
+                    data-date="4 Mei 2025" tabindex="-1">
+              <span class="servicerow__n">Minggu Kemitraan</span>
+              <span class="onscreen" data-onscreen-for="104" hidden>On screen</span>
+              
+              <span class="servicerow__d">4 Mei 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="103" data-name="Minggu Paskah 20 April 2025"
+                    data-date="20 April 2025" tabindex="-1">
+              <span class="servicerow__n">Minggu Paskah 20 April 2025</span>
+              <span class="onscreen" data-onscreen-for="103" hidden>On screen</span>
+              
+              <span class="servicerow__d">20 Apr 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="102" data-name="Jumat Agung 18 April"
+                    data-date="18 April 2025" tabindex="-1">
+              <span class="servicerow__n">Jumat Agung 18 April</span>
+              <span class="onscreen" data-onscreen-for="102" hidden>On screen</span>
+              
+              <span class="servicerow__d">18 Apr 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="101" data-name="Kamis putih 17 April 2025"
+                    data-date="16 April 2025" tabindex="-1">
+              <span class="servicerow__n">Kamis putih 17 April 2025</span>
+              <span class="onscreen" data-onscreen-for="101" hidden>On screen</span>
+              
+              <span class="servicerow__d">16 Apr 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="100" data-name="Hari Doa Sedunia"
+                    data-date="16 Maret 2025" tabindex="-1">
+              <span class="servicerow__n">Hari Doa Sedunia</span>
+              <span class="onscreen" data-onscreen-for="100" hidden>On screen</span>
+              
+              <span class="servicerow__d">16 Mar 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="99" data-name="Pesta Inang"
+                    data-date="9 Maret 2025" tabindex="-1">
+              <span class="servicerow__n">Pesta Inang</span>
+              <span class="onscreen" data-onscreen-for="99" hidden>On screen</span>
+              
+              <span class="servicerow__d">9 Mar 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="98" data-name="Rabu Abu"
+                    data-date="5 Maret 2025" tabindex="-1">
+              <span class="servicerow__n">Rabu Abu</span>
+              <span class="onscreen" data-onscreen-for="98" hidden>On screen</span>
+              
+              <span class="servicerow__d">5 Mar 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="97" data-name="Pelantikan  Pengurus Lansia"
+                    data-date="16 Februari 2025" tabindex="-1">
+              <span class="servicerow__n">Pelantikan  Pengurus Lansia</span>
+              <span class="onscreen" data-onscreen-for="97" hidden>On screen</span>
+              
+              <span class="servicerow__d">16 Feb 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="96" data-name="19 JANUARI"
+                    data-date="19 Januari 2025" tabindex="-1">
+              <span class="servicerow__n">19 JANUARI</span>
+              <span class="onscreen" data-onscreen-for="96" hidden>On screen</span>
+              
+              <span class="servicerow__d">19 Jan 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="95" data-name="Ibadah Tahun Baru 1 Januari 2025"
+                    data-date="5 Januari 2025" tabindex="-1">
+              <span class="servicerow__n">Ibadah Tahun Baru 1 Januari 2025</span>
+              <span class="onscreen" data-onscreen-for="95" hidden>On screen</span>
+              
+              <span class="servicerow__d">5 Jan 2025</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="94" data-name="Ujung Tahun 31 Desember 2024"
+                    data-date="31 Desember 2024" tabindex="-1">
+              <span class="servicerow__n">Ujung Tahun 31 Desember 2024</span>
+              <span class="onscreen" data-onscreen-for="94" hidden>On screen</span>
+              
+              <span class="servicerow__d">31 Des 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="93" data-name="Natal 25 Desember 2024"
+                    data-date="25 Desember 2024" tabindex="-1">
+              <span class="servicerow__n">Natal 25 Desember 2024</span>
+              <span class="onscreen" data-onscreen-for="93" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Des 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="92" data-name="Malam Natal 24 Desember 2024"
+                    data-date="24 Desember 2024" tabindex="-1">
+              <span class="servicerow__n">Malam Natal 24 Desember 2024</span>
+              <span class="onscreen" data-onscreen-for="92" hidden>On screen</span>
+              
+              <span class="servicerow__d">24 Des 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="91" data-name="NATAL SEKOLAH MINGGU"
+                    data-date="15 Desember 2024" tabindex="-1">
+              <span class="servicerow__n">NATAL SEKOLAH MINGGU</span>
+              <span class="onscreen" data-onscreen-for="91" hidden>On screen</span>
+              
+              <span class="servicerow__d">15 Des 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="90" data-name="MINGGU UJUNG TAHUN KURIA (24/11/24)"
+                    data-date="24 November 2024" tabindex="-1">
+              <span class="servicerow__n">MINGGU UJUNG TAHUN KURIA (24/11/24)</span>
+              <span class="onscreen" data-onscreen-for="90" hidden>On screen</span>
+              
+              <span class="servicerow__d">24 Nov 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="89" data-name="Minggu Seksi Bapa 10 November 2024"
+                    data-date="10 November 2024" tabindex="-1">
+              <span class="servicerow__n">Minggu Seksi Bapa 10 November 2024</span>
+              <span class="onscreen" data-onscreen-for="89" hidden>On screen</span>
+              
+              <span class="servicerow__d">10 Nov 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="88" data-name="20 Oktober 2024"
+                    data-date="20 Oktober 2024" tabindex="-1">
+              <span class="servicerow__n">20 Oktober 2024</span>
+              <span class="onscreen" data-onscreen-for="88" hidden>On screen</span>
+              
+              <span class="servicerow__d">20 Okt 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="87" data-name="29 september 2024"
+                    data-date="29 September 2024" tabindex="-1">
+              <span class="servicerow__n">29 september 2024</span>
+              <span class="onscreen" data-onscreen-for="87" hidden>On screen</span>
+              
+              <span class="servicerow__d">29 Sep 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="86" data-name="22 Sept 2024"
+                    data-date="22 September 2024" tabindex="-1">
+              <span class="servicerow__n">22 Sept 2024</span>
+              <span class="onscreen" data-onscreen-for="86" hidden>On screen</span>
+              
+              <span class="servicerow__d">22 Sep 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="85" data-name="VOTUM 8 SEPT"
+                    data-date="8 September 2024" tabindex="-1">
+              <span class="servicerow__n">VOTUM 8 SEPT</span>
+              <span class="onscreen" data-onscreen-for="85" hidden>On screen</span>
+              
+              <span class="servicerow__d">8 Sep 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="82" data-name="Minggu Sahabat"
+                    data-date="18 Agustus 2024" tabindex="-1">
+              <span class="servicerow__n">Minggu Sahabat</span>
+              <span class="onscreen" data-onscreen-for="82" hidden>On screen</span>
+              
+              <span class="servicerow__d">18 Agu 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="80" data-name="A"
+                    data-date="4 Agustus 2024" tabindex="-1">
+              <span class="servicerow__n">A</span>
+              <span class="onscreen" data-onscreen-for="80" hidden>On screen</span>
+              
+              <span class="servicerow__d">4 Agu 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="78" data-name="minggu pelajar 2024"
+                    data-date="23 Juni 2024" tabindex="-1">
+              <span class="servicerow__n">minggu pelajar 2024</span>
+              <span class="onscreen" data-onscreen-for="78" hidden>On screen</span>
+              
+              <span class="servicerow__d">23 Jun 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="77" data-name="HUT GKPS KLENDER 38"
+                    data-date="9 Juni 2024" tabindex="-1">
+              <span class="servicerow__n">HUT GKPS KLENDER 38</span>
+              <span class="onscreen" data-onscreen-for="77" hidden>On screen</span>
+              
+              <span class="servicerow__d">9 Jun 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="76" data-name="minggu hut SM"
+                    data-date="19 Mei 2024" tabindex="-1">
+              <span class="servicerow__n">minggu hut SM</span>
+              <span class="onscreen" data-onscreen-for="76" hidden>On screen</span>
+              
+              <span class="servicerow__d">19 Mei 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="75" data-name="Kenaikan Yesus"
+                    data-date="9 Mei 2024" tabindex="-1">
+              <span class="servicerow__n">Kenaikan Yesus</span>
+              <span class="onscreen" data-onscreen-for="75" hidden>On screen</span>
+              
+              <span class="servicerow__d">9 Mei 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="74" data-name="Minggu kemitraan 2024"
+                    data-date="5 Mei 2024" tabindex="-1">
+              <span class="servicerow__n">Minggu kemitraan 2024</span>
+              <span class="onscreen" data-onscreen-for="74" hidden>On screen</span>
+              
+              <span class="servicerow__d">5 Mei 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="73" data-name="Hari Bumi Sedunia"
+                    data-date="7 April 2024" tabindex="-1">
+              <span class="servicerow__n">Hari Bumi Sedunia</span>
+              <span class="onscreen" data-onscreen-for="73" hidden>On screen</span>
+              
+              <span class="servicerow__d">7 Apr 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="72" data-name="PASKAH"
+                    data-date="31 Maret 2024" tabindex="-1">
+              <span class="servicerow__n">PASKAH</span>
+              <span class="onscreen" data-onscreen-for="72" hidden>On screen</span>
+              
+              <span class="servicerow__d">31 Mar 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="70" data-name="JUMAT AGUNG"
+                    data-date="29 Maret 2024" tabindex="-1">
+              <span class="servicerow__n">JUMAT AGUNG</span>
+              <span class="onscreen" data-onscreen-for="70" hidden>On screen</span>
+              
+              <span class="servicerow__d">29 Mar 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="71" data-name="KAMIS PUTIH"
+                    data-date="28 Maret 2024" tabindex="-1">
+              <span class="servicerow__n">KAMIS PUTIH</span>
+              <span class="onscreen" data-onscreen-for="71" hidden>On screen</span>
+              
+              <span class="servicerow__d">28 Mar 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="69" data-name="17 M"
+                    data-date="17 Maret 2024" tabindex="-1">
+              <span class="servicerow__n">17 M</span>
+              <span class="onscreen" data-onscreen-for="69" hidden>On screen</span>
+              
+              <span class="servicerow__d">17 Mar 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="68" data-name="17 Maret"
+                    data-date="17 Maret 2024" tabindex="-1">
+              <span class="servicerow__n">17 Maret</span>
+              <span class="onscreen" data-onscreen-for="68" hidden>On screen</span>
+              
+              <span class="servicerow__d">17 Mar 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="67" data-name="Hari Doa Sedunia"
+                    data-date="10 Maret 2024" tabindex="-1">
+              <span class="servicerow__n">Hari Doa Sedunia</span>
+              <span class="onscreen" data-onscreen-for="67" hidden>On screen</span>
+              
+              <span class="servicerow__d">10 Mar 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="66" data-name="Minggu Seksi Inang"
+                    data-date="3 Maret 2024" tabindex="-1">
+              <span class="servicerow__n">Minggu Seksi Inang</span>
+              <span class="onscreen" data-onscreen-for="66" hidden>On screen</span>
+              
+              <span class="servicerow__d">3 Mar 2024</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="65" data-name="Partonggoan Ujung Tahun"
+                    data-date="31 Desember 2023" tabindex="-1">
+              <span class="servicerow__n">Partonggoan Ujung Tahun</span>
+              <span class="onscreen" data-onscreen-for="65" hidden>On screen</span>
+              
+              <span class="servicerow__d">31 Des 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="62" data-name="Natal II &amp; HUT Namaposo"
+                    data-date="26 Desember 2023" tabindex="-1">
+              <span class="servicerow__n">Natal II &amp; HUT Namaposo</span>
+              <span class="onscreen" data-onscreen-for="62" hidden>On screen</span>
+              
+              <span class="servicerow__d">26 Des 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="63" data-name="Natal I"
+                    data-date="25 Desember 2023" tabindex="-1">
+              <span class="servicerow__n">Natal I</span>
+              <span class="onscreen" data-onscreen-for="63" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Des 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="61" data-name="Malam Natal"
+                    data-date="24 Desember 2023" tabindex="-1">
+              <span class="servicerow__n">Malam Natal</span>
+              <span class="onscreen" data-onscreen-for="61" hidden>On screen</span>
+              
+              <span class="servicerow__d">24 Des 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="60" data-name="Natal SM"
+                    data-date="9 Desember 2023" tabindex="-1">
+              <span class="servicerow__n">Natal SM</span>
+              <span class="onscreen" data-onscreen-for="60" hidden>On screen</span>
+              
+              <span class="servicerow__d">9 Des 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="57" data-name="Minggu Bapa GKPS 2023"
+                    data-date="5 November 2023" tabindex="-1">
+              <span class="servicerow__n">Minggu Bapa GKPS 2023</span>
+              <span class="onscreen" data-onscreen-for="57" hidden>On screen</span>
+              
+              <span class="servicerow__d">5 Nov 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="56" data-name="22 Oktober (HBN)"
+                    data-date="22 Oktober 2023" tabindex="-1">
+              <span class="servicerow__n">22 Oktober (HBN)</span>
+              <span class="onscreen" data-onscreen-for="56" hidden>On screen</span>
+              
+              <span class="servicerow__d">22 Okt 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="52" data-name="Minggu Sahabat Khusus"
+                    data-date="20 Agustus 2023" tabindex="-1">
+              <span class="servicerow__n">Minggu Sahabat Khusus</span>
+              <span class="onscreen" data-onscreen-for="52" hidden>On screen</span>
+              
+              <span class="servicerow__d">20 Agu 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="51" data-name="Jubileum Kuria"
+                    data-date="13 Agustus 2023" tabindex="-1">
+              <span class="servicerow__n">Jubileum Kuria</span>
+              <span class="onscreen" data-onscreen-for="51" hidden>On screen</span>
+              
+              <span class="servicerow__d">13 Agu 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="48" data-name="Minggu Pelajar"
+                    data-date="25 Juni 2023" tabindex="-1">
+              <span class="servicerow__n">Minggu Pelajar</span>
+              <span class="onscreen" data-onscreen-for="48" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Jun 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="47" data-name="Minggu UEM"
+                    data-date="4 Juni 2023" tabindex="-1">
+              <span class="servicerow__n">Minggu UEM</span>
+              <span class="onscreen" data-onscreen-for="47" hidden>On screen</span>
+              
+              <span class="servicerow__d">4 Jun 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="46" data-name="Pesta Sikolah Minggu (Pentakosta)"
+                    data-date="28 Mei 2023" tabindex="-1">
+              <span class="servicerow__n">Pesta Sikolah Minggu (Pentakosta)</span>
+              <span class="onscreen" data-onscreen-for="46" hidden>On screen</span>
+              
+              <span class="servicerow__d">28 Mei 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="45" data-name="Ibadah Parnaik ni Tuhan Jesus"
+                    data-date="18 Mei 2023" tabindex="-1">
+              <span class="servicerow__n">Ibadah Parnaik ni Tuhan Jesus</span>
+              <span class="onscreen" data-onscreen-for="45" hidden>On screen</span>
+              
+              <span class="servicerow__d">18 Mei 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="44" data-name="HUT Kuria"
+                    data-date="14 Mei 2023" tabindex="-1">
+              <span class="servicerow__n">HUT Kuria</span>
+              <span class="onscreen" data-onscreen-for="44" hidden>On screen</span>
+              
+              <span class="servicerow__d">14 Mei 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="43" data-name="Minggu Kemitraan"
+                    data-date="7 Mei 2023" tabindex="-1">
+              <span class="servicerow__n">Minggu Kemitraan</span>
+              <span class="onscreen" data-onscreen-for="43" hidden>On screen</span>
+              
+              <span class="servicerow__d">7 Mei 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="41" data-name="Paskah II"
+                    data-date="10 April 2023" tabindex="-1">
+              <span class="servicerow__n">Paskah II</span>
+              <span class="onscreen" data-onscreen-for="41" hidden>On screen</span>
+              
+              <span class="servicerow__d">10 Apr 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="40" data-name="Paskah"
+                    data-date="9 April 2023" tabindex="-1">
+              <span class="servicerow__n">Paskah</span>
+              <span class="onscreen" data-onscreen-for="40" hidden>On screen</span>
+              
+              <span class="servicerow__d">9 Apr 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="39" data-name="Jumat Agung"
+                    data-date="7 April 2023" tabindex="-1">
+              <span class="servicerow__n">Jumat Agung</span>
+              <span class="onscreen" data-onscreen-for="39" hidden>On screen</span>
+              
+              <span class="servicerow__d">7 Apr 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="38" data-name="HDS 2023"
+                    data-date="12 Maret 2023" tabindex="-1">
+              <span class="servicerow__n">HDS 2023</span>
+              <span class="onscreen" data-onscreen-for="38" hidden>On screen</span>
+              
+              <span class="servicerow__d">12 Mar 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="36" data-name="Minggu Inang"
+                    data-date="5 Maret 2023" tabindex="-1">
+              <span class="servicerow__n">Minggu Inang</span>
+              <span class="onscreen" data-onscreen-for="36" hidden>On screen</span>
+              
+              <span class="servicerow__d">5 Mar 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="31" data-name="Ibadah Awal Tahun 2023"
+                    data-date="1 Januari 2023" tabindex="-1">
+              <span class="servicerow__n">Ibadah Awal Tahun 2023</span>
+              <span class="onscreen" data-onscreen-for="31" hidden>On screen</span>
+              
+              <span class="servicerow__d">1 Jan 2023</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="30" data-name="Ibadah Partonggoan Ujung Tahun"
+                    data-date="31 Desember 2022" tabindex="-1">
+              <span class="servicerow__n">Ibadah Partonggoan Ujung Tahun</span>
+              <span class="onscreen" data-onscreen-for="30" hidden>On screen</span>
+              
+              <span class="servicerow__d">31 Des 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="29" data-name="HUT Namaposo"
+                    data-date="26 Desember 2022" tabindex="-1">
+              <span class="servicerow__n">HUT Namaposo</span>
+              <span class="onscreen" data-onscreen-for="29" hidden>On screen</span>
+              
+              <span class="servicerow__d">26 Des 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="28" data-name="Ibadah Natal"
+                    data-date="25 Desember 2022" tabindex="-1">
+              <span class="servicerow__n">Ibadah Natal</span>
+              <span class="onscreen" data-onscreen-for="28" hidden>On screen</span>
+              
+              <span class="servicerow__d">25 Des 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="27" data-name="Ibadah Malam Natal"
+                    data-date="24 Desember 2022" tabindex="-1">
+              <span class="servicerow__n">Ibadah Malam Natal</span>
+              <span class="onscreen" data-onscreen-for="27" hidden>On screen</span>
+              
+              <span class="servicerow__d">24 Des 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="26" data-name="Natal Bapa Inang Lansia"
+                    data-date="10 Desember 2022" tabindex="-1">
+              <span class="servicerow__n">Natal Bapa Inang Lansia</span>
+              <span class="onscreen" data-onscreen-for="26" hidden>On screen</span>
+              
+              <span class="servicerow__d">10 Des 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="24" data-name="Minggu Akhir Tahun Gerejawi"
+                    data-date="20 November 2022" tabindex="-1">
+              <span class="servicerow__n">Minggu Akhir Tahun Gerejawi</span>
+              <span class="onscreen" data-onscreen-for="24" hidden>On screen</span>
+              
+              <span class="servicerow__d">20 Nov 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="23" data-name="Minggu Pesta Bapa"
+                    data-date="6 November 2022" tabindex="-1">
+              <span class="servicerow__n">Minggu Pesta Bapa</span>
+              <span class="onscreen" data-onscreen-for="23" hidden>On screen</span>
+              
+              <span class="servicerow__d">6 Nov 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="21" data-name="Bulan Doa Alkitab 2022"
+                    data-date="23 Oktober 2022" tabindex="-1">
+              <span class="servicerow__n">Bulan Doa Alkitab 2022</span>
+              <span class="onscreen" data-onscreen-for="21" hidden>On screen</span>
+              
+              <span class="servicerow__d">23 Okt 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="19" data-name="ibadah 28 agustus"
+                    data-date="28 Agustus 2022" tabindex="-1">
+              <span class="servicerow__n">ibadah 28 agustus</span>
+              <span class="onscreen" data-onscreen-for="19" hidden>On screen</span>
+              
+              <span class="servicerow__d">28 Agu 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="18" data-name="MINGGU SAHABAT 21 AGUSTUS 2022"
+                    data-date="21 Agustus 2022" tabindex="-1">
+              <span class="servicerow__n">MINGGU SAHABAT 21 AGUSTUS 2022</span>
+              <span class="onscreen" data-onscreen-for="18" hidden>On screen</span>
+              
+              <span class="servicerow__d">21 Agu 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="17" data-name="ibadah 7 agustus"
+                    data-date="7 Agustus 2022" tabindex="-1">
+              <span class="servicerow__n">ibadah 7 agustus</span>
+              <span class="onscreen" data-onscreen-for="17" hidden>On screen</span>
+              
+              <span class="servicerow__d">7 Agu 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="14" data-name="Minggu Pelajar GKPS"
+                    data-date="26 Juni 2022" tabindex="-1">
+              <span class="servicerow__n">Minggu Pelajar GKPS</span>
+              <span class="onscreen" data-onscreen-for="14" hidden>On screen</span>
+              
+              <span class="servicerow__d">26 Jun 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="6" data-name="UEM Sunday"
+                    data-date="12 Juni 2022" tabindex="-1">
+              <span class="servicerow__n">UEM Sunday</span>
+              <span class="onscreen" data-onscreen-for="6" hidden>On screen</span>
+              
+              <span class="servicerow__d">12 Jun 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="5" data-name="Pesta Sekolah Minggu"
+                    data-date="5 Juni 2022" tabindex="-1">
+              <span class="servicerow__n">Pesta Sekolah Minggu</span>
+              <span class="onscreen" data-onscreen-for="5" hidden>On screen</span>
+              
+              <span class="servicerow__d">5 Jun 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="3" data-name="Kenaikan Yesus"
+                    data-date="26 Mei 2022" tabindex="-1">
+              <span class="servicerow__n">Kenaikan Yesus</span>
+              <span class="onscreen" data-onscreen-for="3" hidden>On screen</span>
+              
+              <span class="servicerow__d">26 Mei 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="12" data-name="1 Mei"
+                    data-date="1 Mei 2022" tabindex="-1">
+              <span class="servicerow__n">1 Mei</span>
+              <span class="onscreen" data-onscreen-for="12" hidden>On screen</span>
+              
+              <span class="servicerow__d">1 Mei 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="11" data-name="Paskah"
+                    data-date="17 April 2022" tabindex="-1">
+              <span class="servicerow__n">Paskah</span>
+              <span class="onscreen" data-onscreen-for="11" hidden>On screen</span>
+              
+              <span class="servicerow__d">17 Apr 2022</span>
+            </button>
+          </li>
+          
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="13" data-name="Jumat Agung"
+                    data-date="15 April 2022" tabindex="-1">
+              <span class="servicerow__n">Jumat Agung</span>
+              <span class="onscreen" data-onscreen-for="13" hidden>On screen</span>
+              
+              <span class="servicerow__d">15 Apr 2022</span>
+            </button>
+          </li>
+          
+        </ul>
+      </section>
+      
+    </div>
+  </section>
