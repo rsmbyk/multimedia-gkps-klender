@@ -1,6 +1,6 @@
 ---
 id: ITEM-191
-status: in-review
+status: done
 title: 'The dock and the projector share one keyboard grammar'
 type: feat
 priority: P2
@@ -11,10 +11,10 @@ spec: specs/187-keyboard-parity/spec.md
 branch: feat/187-keyboard-parity
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/493
 issue:
-closed_at:
-closed_reason:
-bump:
-release_version:
+closed_at: 2026-11-05
+closed_reason: merged into develop (PR #493)
+bump: minor
+release_version: 1.27.0
 ---
 
 # ITEM-191: The dock and the projector share one keyboard grammar
