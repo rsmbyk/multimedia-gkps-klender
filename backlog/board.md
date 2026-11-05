@@ -36,12 +36,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-191](./items/ITEM-191-keyboard-parity.md) | The dock and the projector share one keyboard grammar | The dock gains the projector's go-to steps, `K`, `G` on the picker, a held `Esc` and a fetch guard; the picker narrows to `↑`/`↓`; the projector takes `⌘`; a go to can stand with no service | feat | P2 | M | [187](../specs/187-keyboard-parity/spec.md) | `feat/187-keyboard-parity` | 2026-11-05 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-191](./items/ITEM-191-keyboard-parity.md) | The dock and the projector share one keyboard grammar | The dock gains the projector's go-to steps, `K`, `G` on the picker, a held `Esc` and a fetch guard; the picker narrows to `↑`/`↓`; the projector takes `⌘`; a go to can stand with no service | feat | P2 | M | [187](../specs/187-keyboard-parity/spec.md) | [#493](https://github.com/rsmbyk/multimedia-gkps-klender/pull/493) | 2026-11-05 |
 | [ITEM-187](./items/ITEM-187-overlay-text-wrap.md) | A long run in the overlay's text is painted past its panel instead of wrapping | The overlay declared no `overflow-wrap`, so a 120-character run left the plate by 710px and a 66-character lyric left the caption by 2,035px; one inherited declaration on the stage breaks each run at its own box | fix | P1 | S | [183](../specs/183-overlay-text-wrap/spec.md) | [#486](https://github.com/rsmbyk/multimedia-gkps-klender/pull/486) | 2026-11-02 |
 
 ## Done
