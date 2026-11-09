@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-05
-**slices**: `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-09
+**slices**: `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1211,4 +1211,47 @@ written.
 #### Scenario: a bookmark that stays behind
 - WHEN a bookmark is deleted, undated, or holds no songs
 - THEN no service is created for it and the bookmark itself is unchanged
+
+### R40 — A song's verses are added, edited, removed and reordered on its page
+
+The song page SHALL render verse controls only for ordinary (non-hymn) songbooks where editing is
+allowed: one add control after the last verse, and a grip and edit control per verse row painted only
+while the row is hovered or focused. With a single verse the grip SHALL render disabled — one verse
+has nowhere to move. A hymn song's page and a restricted reader's page SHALL render none.
+A verse that any service entry references SHALL NOT be deletable. Entries name verses by ID and display
+the current numbers; reordering renumbers live rows 1…n and never moves a reference. Reordering is
+pointer-only drag: grabbing a grip collapses verses to 44px one-line rows for the gesture, a ghost copy
+rides the pointer one to one (service sidebar shape) while the real row stays as a tinted placeholder,
+others slide one slot per crossing with no rebound, numbers renumber as rows cross, and the drop writes
+at once with no Save and no confirmation. The slot is read from the current cursor height against the
+grab-frozen midpoints of the other verses, not from the origin slot.
+
+#### Scenario: adding a verse
+- WHEN the reader presses `Add verse` and saves a lyric on an ordinary song
+- THEN the verse is appended numbered one past the last, the stage shows it without reload
+
+#### Scenario: editing a lyric
+- WHEN the reader saves an edit
+- THEN the verse keeps its number and only that lyric changes
+
+#### Scenario: reordering from the grip
+- WHEN the reader drags a verse so the live cursor passes another verse's frozen midpoint
+- THEN the dragged verse takes that slot, numbers read `from→now` while dragging, rows it passes move exactly one slot once, and the drop writes the order at once with no confirmation
+
+#### Scenario: referenced verse cannot be deleted
+- WHEN the edit modal opens for a verse a service names
+- THEN delete is disabled and the modal states how many services name the song
+
+#### Scenario: service survives reorder
+- WHEN a song is reordered
+- THEN a service entry naming its verses still projects the same lyrics, labelled by their current numbers
+
+#### Scenario: single verse has nowhere to go
+- WHEN a song has one verse and the row is hovered
+- THEN the edit control works and the grip renders disabled
+
+#### Scenario: hymn and restricted pages
+- WHEN the page is a hymn song's or editing is restricted
+- THEN no verse control is drawn and every endpoint refuses the write
+
 

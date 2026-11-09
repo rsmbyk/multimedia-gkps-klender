@@ -7,6 +7,29 @@
 {% block ch_rows %}{% include 'reading/_song_list.html' %}{% endblock %}
 
 {% block read_body %}
-{% for lyric in verses %}<p class="v"><span class="v__n">{{ forloop.counter }}</span><span>{{ lyric|linebreaksbr }}</span></p>
-{% endfor %}
+{% if verse_rows %}
+  {% for v in verse_rows %}
+  <p class="v" data-verse="{{ v.pk }}" data-verse-number="{{ v.number }}">
+    <span class="v__n">{{ v.number }}</span>
+    <span class="v__text">{{ v.lyric|linebreaksbr }}</span>
+    {% if can_edit_verses %}
+    <span class="v__acts">
+      <button type="button" class="v__grip" aria-label="Drag to reorder verse {{ v.number }}" title="Drag to reorder" {% if verse_rows|length < 2 %}disabled aria-disabled="true"{% endif %}>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"/></svg>
+      </button>
+      <button type="button" class="v__edit" aria-label="Edit verse {{ v.number }}" title="Edit verse {{ v.number }}" data-verse-edit="{{ v.pk }}">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+      </button>
+    </span>
+    {% endif %}
+  </p>
+  {% endfor %}
+{% endif %}
+{% if can_edit_verses %}
+<div class="verse-add"><button type="button" class="verse-add__btn" data-add-verse data-song="{{ song.pk }}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg><span>Add verse</span></button></div>
+{% endif %}
+{% if not verse_rows and can_edit_verses %}
+<div class="entry__empty"><p class="entry__empty-title">This song has no verses yet.</p><p class="entry__empty-hint">Add the first verse to give this song its lyrics.</p><div class="entry__empty-actions"><button type="button" class="verse-add__btn" data-add-verse data-song="{{ song.pk }}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg><span>Add verse</span></button></div></div>
+{% endif %}
+<script src="/static/web/songs_verse.js"></script>
 {% endblock %}

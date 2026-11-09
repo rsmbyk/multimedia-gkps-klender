@@ -12,11 +12,11 @@ from django.conf import settings
 from multimedia.songs import models as song_models
 from multimedia.tatib import models as tatib_models
 
-EDITOR_KINDS = ('songbook', 'song', 'tatib')
+EDITOR_KINDS = ('songbook', 'song', 'tatib', 'verse')
 
-ADD_LABEL = {'songbook': 'Add songbook', 'song': 'Add song', 'tatib': 'Add Tata Ibadah'}
-CREATE_TITLE = {'songbook': 'New songbook', 'song': 'New song', 'tatib': 'New Tata Ibadah'}
-EDIT_TITLE = {'songbook': 'Edit songbook', 'song': 'Edit song', 'tatib': 'Edit Tata Ibadah'}
+ADD_LABEL = {'songbook': 'Add songbook', 'song': 'Add song', 'tatib': 'Add Tata Ibadah', 'verse': 'Add verse'}
+CREATE_TITLE = {'songbook': 'New songbook', 'song': 'New song', 'tatib': 'New Tata Ibadah', 'verse': 'New verse'}
+EDIT_TITLE = {'songbook': 'Edit songbook', 'song': 'Edit song', 'tatib': 'Edit Tata Ibadah', 'verse': 'Edit verse'}
 
 
 def editors_allowed(request):
@@ -47,6 +47,17 @@ class SongForm(forms.ModelForm):
         self.book = book or (self.instance.book if self.instance.pk else None)
         if self.book is not None:
             self.instance.book = self.book
+
+
+class VerseForm(forms.ModelForm):
+    class Meta:
+        model = song_models.Verse
+        fields = ['lyric']
+
+    def __init__(self, *args, song=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if song is not None:
+            self.instance.song = song
 
 
 class TataIbadahForm(forms.ModelForm):
@@ -128,6 +139,20 @@ def build_form(kind, request, pk=None, data=None):
     if kind == 'tatib':
         instance = _record(tatib_models.TataIbadah, pk) if pk else None
         return TataIbadahForm(data=data, instance=instance), instance
+    if kind == 'verse':
+        # Verse edit/create against one ordinary song (spec 189). New rows
+        # come from `?song=`, edits from the verse's own pk.
+        if pk:
+            verse = get_verse = song_models.Verse.objects.filter(
+                pk=pk, is_deleted=False).select_related('song__book').first()
+            if verse is None or verse.song.book.is_hymn_book:
+                return None, None
+            return VerseForm(data=data, instance=verse), verse
+        song_id = query.get('song')
+        song = _record(song_models.Song, song_id) if song_id else None
+        if song is None or song.book.is_hymn_book:
+            return None, None
+        return VerseForm(data=data, song=song), song
     # song: the songbook comes from the instance, or from the request
     if pk:
         song = _record(song_models.Song, pk)
@@ -155,6 +180,15 @@ def _record(model, pk):
 
 def save_form(kind, form, target):
     """Persist a valid editor form without changing fields it does not expose."""
+    if kind == 'verse':
+        # New verse number is one past the last live number; renumbering
+        # for reorder is done by verses.verse_reorder, not here.
+        if not form.instance.pk:
+            live = list(form.instance.song.verse_set.filter(is_deleted=False).order_by('number'))
+            form.instance.number = live[-1].number + 1 if live else 1
+        form.instance.lyric = (form.instance.lyric or '').strip()
+        form.instance.save()
+        return form.instance
     return form.save()
 
 

@@ -135,7 +135,7 @@ def _shell(section, nav, ch, read_on, home_state, ch_mode='chapter'):
 
 def _editor_fragment_context(kind, form, pk, target=None):
     kwargs = {'kind': kind, 'pk': pk} if pk else {'kind': kind}
-    return {
+    ctx = {
         'form': form,
         'kind': kind,
         'title': editors.form_title(kind, pk, target),
@@ -147,6 +147,18 @@ def _editor_fragment_context(kind, form, pk, target=None):
         'copy_url': (reverse('web-tatib-copy', args=[pk])
                      if kind == 'tatib' and pk else ''),
     }
+    if kind == 'verse' and pk and target is not None:
+        verse = target
+        referenced = 0
+        song = getattr(verse, 'song', None)
+        if song is not None:
+            for entry in tatib_models.ServiceEntry.objects.filter(
+                    kind=tatib_models.ServiceEntryKind.SONG, song=song):
+                if verse.pk in (entry.verses or []):
+                    referenced += 1
+        ctx['verse_referenced'] = bool(referenced)
+        ctx['named_service_count'] = referenced
+    return ctx
 
 
 def editor_form(request, kind, pk=None):
@@ -692,7 +704,7 @@ def _slot_value(slot, entry):
     label = f'{slot.get_kind_display()} · {entry_forms.SLOT_LABELS.get(kind_key, kind_key)}'
     meta = ''
     if entry.kind == tatib_models.ServiceEntryKind.SONG and entry.verses:
-        meta = 'Bait ' + format_verses(entry.verses)
+        meta = 'Bait ' + format_verses(entry.verse_numbers() if hasattr(entry, 'verse_numbers') else entry.verses)
     elif entry.kind == tatib_models.ServiceEntryKind.MEDIA and entry.media_id:
         meta = entry.media.get_family_display()
     return {'label': label, 'title': slot.title, 'line': entry.citation(), 'meta': meta}
@@ -1243,7 +1255,7 @@ def _entry_preview(entry, kind_key):
         heading = entry.citation()      # the short form, shared with the stage (spec 054)
     else:
         heading = f'{song.book.name} — {song.title}' if song.title else song.book.name
-    verses = song.verse_set.filter(number__in=entry.verses or [], is_deleted=False).order_by('number')
+    verses = song.verse_set.filter(pk__in=entry.verses or [], is_deleted=False).order_by('number')
     return {'kind': 'song', 'heading': heading,
             'verses': [{'number': verse.number, 'lines': (verse.lyric or '').split('\n')}
                        for verse in verses]}
@@ -1335,7 +1347,7 @@ def _tatib_stage(service):
                                       else None)
                     meta = ''
                     if option_kind == 'song' and option.verses:
-                        meta = 'Bait ' + format_verses(option.verses)
+                        meta = 'Bait ' + format_verses(option.verse_numbers() if hasattr(option,'verse_numbers') else option.verses)
                     elif option_kind == 'media' and option.media_id:
                         family = option.media.get_family_display()
                         # An untitled option shows the filename as its title already.
@@ -1411,7 +1423,7 @@ def _tatib_stage(service):
         verse_line = ''
         if kind_key == 'song' and row.song_id and not deleted_target and row.verses:
             # Spec 066: the stage and the sidebar state the entry's own verses, full or partial.
-            verse_line = 'Bait ' + format_verses(row.verses)
+            verse_line = 'Bait ' + format_verses(row.verse_numbers() if hasattr(row,'verse_numbers') else row.verses)
         block = {'entry': True, 'anchor': anchor, 'pk': row.pk, 'kind': kind_key,
                  'kind_label': row.get_kind_display(), 'title': title,
                  'option_of': row.parent_id,
@@ -1583,7 +1595,7 @@ def _song_screens(entry):
     """
     if not entry.song_id:
         return []
-    verses = (entry.song.verse_set.filter(number__in=entry.verses or [], is_deleted=False)
+    verses = (entry.song.verse_set.filter(pk__in=entry.verses or [], is_deleted=False)
               .order_by('number'))
     screens = []
     for verse in verses:
@@ -1647,7 +1659,7 @@ def _projector_data(service):
             group = []
             if row.song_id:
                 for verse in row.song.verse_set.filter(
-                        number__in=row.verses or [], is_deleted=False).order_by('number'):
+                        pk__in=row.verses or [], is_deleted=False).order_by('number'):
                     bait_start = start + len(group)
                     pairs = _line_pairs(verse.lyric)
                     for split, lines in enumerate(pairs, 1):
@@ -2248,8 +2260,17 @@ class SongDetailView(TemplateView):
                         if song.number is not None else reference)
         else:
             citation = book.name
-        verses = [verse.lyric for verse in song.verse_set.filter(is_deleted=False)
-                  .order_by('number')]
+        verse_rows = list(song.verse_set.filter(is_deleted=False).order_by('number'))
+        verses = [verse.lyric for verse in verse_rows]
+        can_edit = (not book.is_hymn_book) and editors.editors_allowed(self.request)
+        # How many services name a verse of this song (delete refusal line, FR-010).
+        named_count = 0
+        if not book.is_hymn_book:
+            verse_ids = {verse.pk for verse in verse_rows}
+            for entry in tatib_models.ServiceEntry.objects.filter(
+                    kind=tatib_models.ServiceEntryKind.SONG, song=song):
+                if verse_ids & set(entry.verses or []):
+                    named_count += 1
         context.update(_shell('kidung', 'open', 'open', True, 'reading', ch_mode='song'))
         context.update({'editor_book_id': book.pk, 'book_is_hymn': book.is_hymn_book})
         context.update({
@@ -2259,6 +2280,11 @@ class SongDetailView(TemplateView):
             'show_song_sort': not book.is_hymn_book,
             'ch_title': f'Song list — {book.name}',
             'verses': verses,
+            'verse_rows': verse_rows,
+            'song': song,
+            'can_edit_verses': can_edit,
+            'named_service_count': named_count,
+            'is_hymn_book': book.is_hymn_book,
             'read_kind': 'song',
             'read_eyebrow': citation,
             'read_name': song.title or citation,

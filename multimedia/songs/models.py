@@ -121,4 +121,7 @@ class Verse(SoftDeleteModel):
 
     class Meta:
         ordering = ['song', 'number']
-        unique_together = ['song', 'number']
+        constraints = [
+            models.UniqueConstraint(fields=['song', 'number'], condition=models.Q(is_deleted=False),
+                                    name='verse_live_number_unique'),
+        ]

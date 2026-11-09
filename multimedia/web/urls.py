@@ -3,6 +3,7 @@ from django.views.generic import RedirectView
 
 from multimedia.web import views
 from multimedia.web.reading import views as reading_views
+from multimedia.web.reading import verses as verse_views
 
 urlpatterns = [
     # Site root: a maintenance notice while MAINTENANCE_MODE is on, else the home.
@@ -53,6 +54,10 @@ urlpatterns = [
          name='web-entry-song-options'),
     path('editor/entry/song/<int:pk>/verses/', reading_views.entry_song_verses,
          name='web-entry-song-verses'),
+    path('editor/verse/new/save/', verse_views.verse_new, name='web-verse-new'),
+    path('editor/verse/<int:pk>/save/', verse_views.verse_save, name='web-verse-save'),
+    path('editor/verse/<int:pk>/delete/', verse_views.verse_delete, name='web-verse-delete'),
+    path('editor/verse/reorder/', verse_views.verse_reorder, name='web-verse-reorder'),
     path('editor/entry/chapter/<int:pk>/<int:chapter>/', reading_views.entry_chapter_verses,
          name='web-entry-chapter-verses'),
 

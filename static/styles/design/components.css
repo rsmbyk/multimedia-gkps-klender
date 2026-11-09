@@ -518,6 +518,7 @@ li:hover > .row-edit,
 .editor[open]:has([data-entry-form="media"]) { animation: media-library-in 190ms cubic-bezier(.2,.8,.2,1) both; }
 .editor[open].media-closing:has([data-entry-form="media"]) { animation: media-library-out 150ms ease-in both; }
 .editor:has([data-editor-size="large"]) .editor__content { padding: 0; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
+.editor:has([data-editor-size="large"]) .editor__body { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .editor:has([data-editor-size="large"]) .editor__title { margin: 0; padding: 20px 26px; border-bottom: 1px solid var(--divider); font-size: 21px; }
 .editor:has([data-editor-size="large"]) .editor__form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .editor:has([data-editor-size="large"]) .editor__form > .editor__field,
@@ -2788,6 +2789,87 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 @media (prefers-reduced-motion: no-preference) {
    #chList.is-dragging li:not(.is-dragging) { transition: transform 60ms var(--ease-timing); }
 }
+/* Song verse editing (spec 189, FR-006b/e/f): ghost rides the
+   hand like the service sidebar; the real row is a tinted placeholder. */
+#readBody .v.is-dragging {
+  visibility: visible;
+  background: color-mix(in srgb, var(--active-bg) 18%, var(--canvas));
+  border-radius: 9px; user-select: none; cursor: grabbing;
+}
+#readBody .v.is-dragging > * { visibility: hidden; }
+.verse__ghost,
+.v.verse__ghost {
+  position: fixed; z-index: 1000; box-sizing: border-box;
+  pointer-events: none; transition: none !important;
+  border-radius: 9px; background: var(--rail-bg); color: var(--ink);
+  box-shadow: 0 14px 30px -16px var(--backdrop); opacity: .94;
+}
+.verse__ghost .v__text { user-select: none; }
+.verse__ghost .v__n { opacity: 1; padding-right: .35rem; white-space: nowrap; overflow: visible; }
+@media (prefers-reduced-motion: no-preference) {
+  #readBody .v:not(.is-dragging) { transition: transform 160ms var(--ease-timing); }
+  body.is-arranging #readBody .v:not(.is-dragging) { transition: transform 60ms var(--ease-timing); }
+}
+
+/* Song verse editing (spec 189): the gutter tools live in the number's
+   column, so the lyric column never moves; the ghost copy rides the
+   pointer like the service sidebar. */
+.v { position: relative; }
+.v__n { transition: opacity 90ms var(--ease-timing); }
+.v:has(.v__acts):hover .v__n,
+.v:has(.v__acts):focus-within .v__n,
+.v.is-acts .v__n { opacity: 0; }
+.v__acts {
+  position: absolute; left: 0; top: 8px;
+  width: 2.6rem; display: flex; flex-direction: column; align-items: center;
+  gap: 2px; opacity: 0; pointer-events: none; transition: opacity 120ms var(--ease-timing);
+}
+.v:hover .v__acts,
+.v:focus-within .v__acts,
+.v.is-acts .v__acts { opacity: 1; pointer-events: auto; transition-delay: 90ms; }
+.v__grip, .v__edit {
+  display: grid; place-items: center; width: 20px; height: 20px; padding: 0;
+  border: 0; border-radius: 6px; background: transparent;
+  color: var(--head-ink); cursor: pointer;
+}
+.v__grip:disabled { cursor: not-allowed; opacity: .35; }
+.v__grip { cursor: grab; touch-action: none; pointer-events: auto; }
+.v__grip:active { cursor: grabbing; }
+.v__grip:hover, .v__edit:hover { background: var(--icon-hover-bg); color: var(--ink); }
+.v__grip:focus-visible, .v__edit:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.v__grip svg, .v__edit svg { width: 16px; height: 16px; }
+.v.is-compact { display: flex; align-items: center; height: 44px; padding: 0; }
+.v.is-compact + .v.is-compact:not(.is-dragging) { border-top: 1px solid var(--divider); }
+.v.is-seam-above { border-bottom: 1px solid var(--divider); }
+.v.is-compact .v__n {
+  flex: none; width: 2.6rem; padding-right: .9rem; line-height: 44px;
+}
+.v.is-compact .v__text {
+  flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; font: 400 14px/1.4 ui-serif, Georgia, serif;
+}
+.v.is-compact .v__acts {
+  position: static; transform: none; width: auto; flex-direction: row;
+  margin-left: 10px; opacity: 1; pointer-events: auto;
+}
+.v.is-compact .v__edit { display: none; }
+.v.is-compact:hover .v__n, .v.is-compact:focus-within .v__n { opacity: 1; }
+.verse-add { margin: 14px 0 0; padding-left: calc(2.6rem + .15rem); }
+.verse-add__btn {
+  display: inline-flex; align-items: center; gap: 7px; height: 38px;
+  padding: 0 14px 0 11px; border: 1px dashed color-mix(in srgb, var(--focus) 42%, var(--divider));
+  border-radius: 9px; background: none; color: var(--head-ink);
+  font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+}
+.verse-add__btn:hover { color: var(--ink); border-color: var(--focus); }
+.verse-add__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.verse-add__btn svg { width: 15px; height: 15px; }
+@media (max-width: 480px) {
+  .v__acts { width: 1.7rem; }
+  .v__grip svg, .v__edit svg { width: 15px; height: 15px; }
+  .verse-add { padding-left: calc(1.7rem + .15rem); }
+}
+
 /* Temporary media handoff */
 .media-library__file { grid-template-columns: 42px minmax(0, 1fr) 66px 42px; padding-inline: 12px; }
 .media-library__file.is-unused { padding-left: 9px; }

@@ -6,7 +6,7 @@ modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
     {% if copy_url %}<button class="editor__copy-btn" type="button" data-copy-open
             data-copy-url="{{ copy_url }}">Copy as template</button>{% endif %}
   </div>
-  <form class="editor__form" method="post" action="{{ save_url }}">
+  <form class="editor__form" method="post" action="{{ save_url }}"{% if kind == 'verse' %} data-editor-size="large"{% endif %}>
     {% csrf_token %}
     {% if kind == 'tatib' and not target_id %}
     <div class="editor__screen-mode-wrap">
@@ -59,7 +59,7 @@ modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
     </div>
     {% elif field.is_hidden %}{{ field }}
     {% else %}
-    <div class="editor__field{% if field.errors %} is-invalid{% endif %}">
+    <div class="editor__field{% if field.errors %} is-invalid{% endif %}"{% if kind == 'verse' %} data-editor-grow{% endif %}>
       <label for="{{ field.id_for_label }}">{{ field.label }}</label>
       {{ field }}
       {% if field.help_text %}<p class="editor__help">{{ field.help_text }}</p>{% endif %}
@@ -71,9 +71,15 @@ modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
     <p class="editor__error" role="alert">{{ error }}</p>
     {% endfor %}
     <div class="editor__actions">
+      {% if kind == 'verse' and target_id %}
+      <button class="editor__danger editor__delete" type="button" data-verse-delete data-verse-row="{{ target_id }}"{% if verse_referenced %} disabled{% endif %}>Delete verse</button>
+      {% endif %}
       <button class="editor__save" type="submit">Save</button>
       <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
     </div>
+    {% if kind == 'verse' and verse_referenced %}
+    <p class="editor__help">This verse is used in {{ named_service_count }} Tata Ibadah, so it cannot be deleted here.</p>
+    {% endif %}
   </form>
   {% if copy_url %}{% include 'reading/_copy_confirm.html' %}{% endif %}
 </div>
