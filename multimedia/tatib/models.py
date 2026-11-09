@@ -187,10 +187,26 @@ class ServiceEntry(models.Model):
     verse_start = models.PositiveIntegerField(null=True, blank=True)
     verse_end = models.PositiveIntegerField(null=True, blank=True)
 
-    # song: the verse numbers this entry includes, stored explicitly, so a verse
-    # added to the song later has to be added to the service deliberately
+    # song: the verse IDs this entry includes, stored explicitly (IDs, not numbers,
+    # so a reorder changes the displayed number but never the reference — spec 189 FR-008).
     song = models.ForeignKey(song_models.Song, models.PROTECT, null=True, blank=True)
     verses = models.JSONField(default=list, blank=True)
+
+    def verse_numbers(self):
+        """Current numbers of the referenced verses, in number order (FR-008)."""
+        if not self.song_id:
+            return []
+        verses = (self.song.verse_set.filter(pk__in=self.verses or [], is_deleted=False)
+                  .order_by('number'))
+        return [verse.number for verse in verses]
+
+    def verse_lines(self):
+        """Lyrics of the referenced verses in current-number order."""
+        if not self.song_id:
+            return []
+        verses = (self.song.verse_set.filter(pk__in=self.verses or [], is_deleted=False)
+                  .order_by('number'))
+        return [verse.lyric for verse in verses]
 
     # Media bytes remain on the operator computer; the service keeps identity and label.
     media = models.ForeignKey(MediaIdentity, models.PROTECT, null=True, blank=True)
@@ -327,7 +343,7 @@ class ServiceEntry(models.Model):
             return False
         song = self.song
         return (song.is_deleted or song.book.is_deleted
-                or song.verse_set.filter(number__in=self.verses or [], is_deleted=True).exists())
+                or song.verse_set.filter(pk__in=self.verses or [], is_deleted=True).exists())
 
     def _scripture_body(self):
         verses = (bible_models.Verse.objects
@@ -339,6 +355,6 @@ class ServiceEntry(models.Model):
         return '\n\n'.join(f'{v.verse} {v.text}'.strip() for v in verses)
 
     def _song_body(self):
-        verses = (self.song.verse_set.filter(number__in=self.verses or [], is_deleted=False)
+        verses = (self.song.verse_set.filter(pk__in=self.verses or [], is_deleted=False)
                   .order_by('number'))
         return '\n\n'.join((v.lyric or '').strip() for v in verses)

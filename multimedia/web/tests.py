@@ -1476,7 +1476,7 @@ class ServiceEntryViewTests(TestCase):
     # --- what the pickers need ---------------------------------------------
 
     def test_a_deleted_saved_song_remains_available_when_editing_its_existing_entry(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         self.song.delete()
         form = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
         self.assertEqual(form.status_code, 200)
@@ -1701,7 +1701,7 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(verses.json()['verses'], [1, 3])
 
     def test_the_song_fragment_checks_every_verse_of_its_song(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         response = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="verses"')
@@ -1710,7 +1710,7 @@ class ServiceEntryViewTests(TestCase):
             self.assertRegex(html, rf'value="{number}"[^>]*checked')
 
     def test_song_edit_fragment_shows_the_hymn_reference_as_its_label(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         response = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'KJ 152 Ada Kuasa dalam DarahNya')
@@ -1760,7 +1760,7 @@ class ServiceEntryViewTests(TestCase):
                           ['Legacy title']])
 
     def test_a_song_row_sends_its_heading_and_bait_line_separately(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         row = self._toc_row(entry.pk)
         self.assertEqual(row['label_lines'], [f'{self.song.book_number} {self.song.title}'])
         self.assertEqual(row['verse_line'], 'Bait 1-3')
@@ -1821,7 +1821,7 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('?v=2&amp;to=4', html)
 
     def test_a_song_entry_offers_a_jump_to_its_song(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
         pane = html.split('id="readBody"')[1]
@@ -1830,7 +1830,7 @@ class ServiceEntryViewTests(TestCase):
         self.assertNotIn('bait 1', pane)                         # no lyrics: the display has those
 
     def test_a_song_entry_warns_when_its_target_has_been_soft_deleted(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         self.song.verse_set.get(number=2).delete()
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
@@ -1893,7 +1893,7 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('ayat 3', html)
 
     def test_a_song_preview_lists_its_short_reference_and_verse_tabs(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 3]])
         html = self.html()
         self.assertIn('data-preview-open', html)
         self.assertIn('KJ 152 — Ada Kuasa dalam DarahNya', html)
@@ -1902,7 +1902,7 @@ class ServiceEntryViewTests(TestCase):
         self.assertIn('>3<', html)
 
     def test_a_song_preview_has_no_tabs_for_a_single_verse(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[2])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [2]])
         html = self.html()
         self.assertIn('data-preview-open', html)
         self.assertNotIn('preview__tab', html)
@@ -1911,19 +1911,19 @@ class ServiceEntryViewTests(TestCase):
         book = songs.Book.objects.create(name='Kidung Eksperimen', short_name='KE')
         song = songs.Song.objects.create(book=book, number=3, title='Nyanyian Baru')
         songs.Verse.objects.create(song=song, number=1, lyric='bait baru')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1]])
         self.assertIn('Kidung Eksperimen — Nyanyian Baru', self.html())
 
     def test_a_title_less_hymn_song_preview_shows_the_short_reference_alone(self):
         song = songs.Song.objects.create(book=self.songbook, number=201, title='')
         songs.Verse.objects.create(song=song, number=1, lyric='bait')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1]])
         self.assertIn('KJ 201</p>', self.html())
 
     # --- the song entry's stage label and verse line (spec 054) --------------
 
     def test_a_hymn_song_heading_reads_its_short_reference_and_title(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         pane = self.pane()
         self.assertIn('KJ 152 — Ada Kuasa dalam DarahNya', pane)
         self.assertNotIn('Kidung Jemaat 152', pane)
@@ -1931,20 +1931,20 @@ class ServiceEntryViewTests(TestCase):
     def test_a_title_less_hymn_song_heading_shows_the_short_reference_alone(self):
         song = songs.Song.objects.create(book=self.songbook, number=201, title='')
         songs.Verse.objects.create(song=song, number=1, lyric='bait')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1]])
         pane = self.pane()
         self.assertIn('KJ 201</a>', pane)
         self.assertNotIn('KJ 201 —', pane)
 
     def test_a_partial_verse_selection_shows_its_numbers(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 3]])
         pane = self.pane()
         self.assertIn('class="read__sub"', pane)
         self.assertIn('Bait 1, 3', pane)
 
     def test_a_full_verse_selection_shows_its_numbers(self):
         # Spec 066 amends spec 054: a full selection is stated too.
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         pane = self.pane()
         self.assertIn('class="read__sub"', pane)
         self.assertIn('Bait 1-3', pane)
@@ -1953,14 +1953,14 @@ class ServiceEntryViewTests(TestCase):
         book = songs.Book.objects.create(name='Lagu lain', is_hymn_book=False)
         song = songs.Song.objects.create(book=book, title='Mars Sekolah GKPS')
         songs.Verse.objects.create(song=song, number=1, lyric='bait')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1]])
         self.assertIn('<p class="read__sub">Bait 1</p>', self.pane())
 
     def test_the_stage_and_sidebar_verse_lines_agree(self):
         song = songs.Song.objects.create(book=self.songbook, number=153, title='Panjang')
         for number in range(1, 11):
             songs.Verse.objects.create(song=song, number=number, lyric=f'bait {number}')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1, 2, 3, 5, 6, 8, 9, 10])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1, 2, 3, 5, 6, 8, 9, 10]])
         response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
         item = next(item for item in response.context['toc_items'] if item.get('entry'))
         self.assertEqual(item['verse_line'], 'Bait 1-3, 5, 6, 8-10')
@@ -1972,20 +1972,20 @@ class ServiceEntryViewTests(TestCase):
         song = songs.Song.objects.create(book=book, number=3, title='Nyanyian Baru')
         for number in (1, 2, 3):
             songs.Verse.objects.create(song=song, number=number, lyric=f'bait {number}')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1, 3]])
         pane = self.pane()
         self.assertIn('Bait 1, 3', pane)
         self.assertIn('Kidung Eksperimen 3', pane)      # the heading itself is unchanged
 
     def test_a_deleted_included_verse_suppresses_the_verse_line(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         songs.Verse.objects.get(song=self.song, number=2).delete()
         pane = self.pane()
         self.assertIn('entry__deleted-warning', pane)
         self.assertNotIn('read__sub', pane)
 
     def test_a_verse_added_after_preparing_keeps_the_entrys_own_line(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         self.assertIn('<p class="read__sub">Bait 1-3</p>', self.pane())
         songs.Verse.objects.create(song=self.song, number=4, lyric='bait 4')
         self.assertIn('<p class="read__sub">Bait 1-3</p>', self.pane())
@@ -1993,14 +1993,14 @@ class ServiceEntryViewTests(TestCase):
     # --- the sidebar's song label (spec 039) --------------------------------
 
     def test_a_hymn_song_labels_the_sidebar_with_its_short_full_title(self):
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1]])
         toc = self.html().split('id="chList"')[1]
         self.assertIn('KJ 152 Ada Kuasa dalam DarahNya', toc)
 
     def test_sidebar_song_parts_keep_the_full_title_and_escape_markup(self):
         self.song.title = ('Pujian <em>bersama</em> ' + 'panjang ' * 6)[:64]
         self.song.save()
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 3])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 3]])
         response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
         item = next(item for item in response.context['toc_items'] if item.get('entry'))
         self.assertEqual(item['song_reference'], 'KJ 152')
@@ -2013,7 +2013,7 @@ class ServiceEntryViewTests(TestCase):
         book = songs.Book.objects.create(name='Lagu lain', is_hymn_book=False)
         song = songs.Song.objects.create(book=book, title='Mars Sekolah GKPS')
         songs.Verse.objects.create(song=song, number=1, lyric='bait')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1]])
         response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
         item = next(item for item in response.context['toc_items'] if item.get('entry'))
         self.assertEqual(item['song_reference'], '')
@@ -2024,7 +2024,7 @@ class ServiceEntryViewTests(TestCase):
         book = songs.Book.objects.create(name='Kidung Eksperimen', short_name='KE')
         song = songs.Song.objects.create(book=book, number=3, title='Nyanyian Baru')
         songs.Verse.objects.create(song=song, number=1, lyric='bait')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1]])
         toc = self.html().split('id="chList"')[1]
         self.assertIn('Kidung Eksperimen 3', toc)
         self.assertNotIn('KE 3 Nyanyian Baru', toc)
@@ -2032,7 +2032,7 @@ class ServiceEntryViewTests(TestCase):
     def test_a_title_less_hymn_song_shows_the_short_reference_alone(self):
         song = songs.Song.objects.create(book=self.songbook, number=200, title='')
         songs.Verse.objects.create(song=song, number=1, lyric='bait')
-        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[1])
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1]])
         toc = self.html().split('id="chList"')[1]
         self.assertIn('KJ 200</span>', toc)              # no trailing space
 
@@ -2273,14 +2273,14 @@ class ServiceEntryViewTests(TestCase):
                          [tatib.ServiceEntryKind.TEXT, tatib.ServiceEntryKind.TEXT])
 
     def test_the_sidebar_song_row_shows_its_verses_on_a_second_line(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2, 3])
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         row = self._toc_row(entry.pk)
         self.assertTrue(row['song_label'])
         self.assertEqual(row['label_lines'], [f'{self.song.book_number} {self.song.title}'])
         self.assertEqual(row['verse_line'], 'Bait 1-3')
 
     def test_a_deleted_song_target_shows_no_sidebar_verse_line(self):
-        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2]])
         self.song.delete()
         row = self._toc_row(entry.pk)
         self.assertEqual(row['verse_line'], '')
@@ -2676,7 +2676,7 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('ayat 3', screens[1])
 
     def test_projector_metadata_keeps_entry_bait_and_rest_boundaries(self):
-        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2]])
         self.make(2, kind=tatib.ServiceEntryKind.SECTION_BREAK, title='Persembahan')
         response = self.client.get(self.projector_url())
         entries = response.context['projector_entries']
@@ -2899,7 +2899,7 @@ class ServiceProjectorTests(TestCase):
         self.assertIn('two', screens[0])
 
     def test_a_song_shows_its_lyrics_alone_in_pairs(self):
-        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2]])
         screens = self.screens()
         self.assertEqual(len(screens), 4)                    # each verse, then its own blank
         self.assertIn('bait 1', screens[0])
@@ -2934,7 +2934,7 @@ class ServiceProjectorTests(TestCase):
 
     def test_a_song_verse_keeps_its_line_pairs_then_one_blank(self):
         songs.Verse.objects.filter(song=self.song, number=1).update(lyric='satu\ndua\ntiga')
-        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1])
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1]])
         screens = self.screens()
         self.assertEqual(len(screens), 3)
         self.assertIn('satu', screens[0])
@@ -3001,7 +3001,7 @@ class ServiceProjectorTests(TestCase):
     def test_a_lyric_change_reaches_a_fresh_projection(self):
         """What Update fetches is resolved at request time: the lyrics are the song's
         own, so an edit reaches every service that uses it."""
-        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1])
+        self.make(1, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1]])
         self.assertIn('bait 1', self.html())
         songs.Verse.objects.filter(song=self.song, number=1).update(lyric='bait satu yang baru')
         self.assertIn('bait satu yang baru', self.html())
@@ -3030,7 +3030,7 @@ class ServiceProjectorTests(TestCase):
         """The pane is the running order: the words belong on the display."""
         self.make(1, kind=tatib.ServiceEntryKind.SCRIPTURE, book_translation=self.matius,
                   chapter=5, verse_start=2, verse_end=3)
-        self.make(2, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[1, 2])
+        self.make(2, kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2]])
         html = self.client.get(reverse('web-tatib-service',
                                        args=[self.tatib.pk])).content.decode()
         pane = html.split('id="readBody"')[1]

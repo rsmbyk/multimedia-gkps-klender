@@ -122,7 +122,7 @@ class ScriptureEntryForm(ServiceEntryForm):
 
 
 class SongEntryForm(ServiceEntryForm):
-    """The verses are the song's own numbers; what is stored is the ones included."""
+    """Verses are stored by ID; the checkbox label is the current number (spec 189)."""
 
     verses = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
 
@@ -136,11 +136,16 @@ class SongEntryForm(ServiceEntryForm):
             song_queryset |= song_models.Song.objects.filter(pk=self.instance.song_id)
         self.fields['song'].queryset = song_queryset
         self.song = self._chosen_song()
-        numbers = list(self.song.verse_set.filter(is_deleted=False)
-                       .order_by('number').values_list('number', flat=True)) if self.song else []
+        live = list(self.song.verse_set.filter(is_deleted=False)
+                    .order_by('number').values_list('id', 'number')) if self.song else []
+        live_ids = [verse_id for verse_id, _ in live]
         if self.instance.pk and self.instance.song_id == getattr(self.song, 'pk', None):
-            numbers = sorted(set(numbers) | set(self.instance.verses or []))
-        self.fields['verses'].choices = [(n, str(n)) for n in numbers]
+            live_ids = sorted(set(live_ids) | set(self.instance.verses or []))
+            # current numbers for legacy ids still present live
+            number_by_id = dict(live)
+            # stale ids (deleted) would show as their id; picker forbids new writes of those
+            live = [(vid, number_by_id.get(vid, vid)) for vid in live_ids]
+        self.fields['verses'].choices = [(vid, str(num)) for vid, num in live]
 
     def _chosen_song(self):
         if self.is_bound:

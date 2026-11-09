@@ -220,5 +220,6 @@ _static/
 /scratch/
 db.sqlite3.bak-*
 
-# Spec previews: the probe writes its screenshots here
+# Spec previews: the probe writes its screenshots and its measurement report here
 specs/*/preview/shots/
+specs/*/preview/report.json
