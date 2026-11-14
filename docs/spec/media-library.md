@@ -112,3 +112,35 @@ the companion SHALL convert exactly as it does without it. (spec 166; modified b
   substitute. (spec 182)
 - **Given** a directory the Docker daemon cannot read, **When** the launcher runs, **Then** it is
   skipped and named, and a start that mounted nothing visible is reported. (spec 182)
+
+### R5 — The companion manages this computer's origins on its own page
+
+The companion SHALL serve a configuration page on its own loopback address (`http://127.0.0.1:63174/`)
+that manages the origins this computer accepts: the operator adds, edits and deletes recorded origins
+on the page under the exact-origin grammar with the first broken rule named under the form, a
+duplicate is refused as both an add and an edit, and a deletion renumbers the list. The local seeds
+(`http://localhost:<WEB_PORT>` and `http://127.0.0.1:<WEB_PORT>`) SHALL be shown read-only. The
+companion SHALL enforce the union of the seeds and the recorded set on every request; a request from
+an origin outside it SHALL be refused with a message naming the page and no CORS header, and the web
+app SHALL surface that message in its local-media status popup when present. The recorded set SHALL
+live in the companion's volume — it survives a restart — and removing the volume removes it. The
+page SHALL also list the font directories the converter sees with each one's family count, and say
+outright when none is found. The page and its endpoints SHALL be bound to the loopback host and the
+page's own origin, with no media token. (spec 192)
+
+**Scenarios**
+
+- **Given** a fresh start with nothing recorded, **When** the page is opened, **Then** the empty
+  state is said outright beside the read-only local seeds and the font directories with their counts.
+- **Given** an origin typed with a path or trailing slash, **When** it is added, **Then** the first
+  broken rule is named under the form and nothing is recorded.
+- **Given** a valid origin recorded, **When** the companion restarts, **Then** the set is still
+  recorded and enforced.
+- **Given** the operator edits a recorded row inline, **When** they press Discard or click outside
+  the field, **Then** the edits are discarded and the row keeps its origin.
+- **Given** a recorded origin deleted, **When** the list is shown, **Then** the remaining rows are
+  renumbered from one.
+- **Given** a browser origin that is neither a seed nor recorded, **When** it uses the companion,
+  **Then** it is refused with the page-naming message and the web app's status popup shows it.
+- **Given** a computer whose font mounts are all empty, **When** the page is opened, **Then** the
+  fonts section says no font directory was found. (spec 192)

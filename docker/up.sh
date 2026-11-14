@@ -14,6 +14,8 @@ cd "$(dirname "$0")/.."
 
 override="${TMPDIR:-/tmp}/gkps-host-fonts.yaml"
 count=0
+added_dirs=
+labels=
 skipped=
 
 add_dir() {
@@ -22,6 +24,9 @@ add_dir() {
     [ -d "$dir" ] || return 0
     count=$((count + 1))
     quoted=$(printf '%s' "$dir" | sed "s/'/''/g")
+    added_dirs="$added_dirs$quoted "
+    if [ -n "$labels" ]; then labels="$labels,"; fi
+    labels="$labels$count=$quoted"
     printf "\n      - type: bind\n        source: '%s'\n        target: /usr/share/fonts/host/%s\n        read_only: true" \
         "$quoted" "$count" >>"$override"
 }
@@ -73,6 +78,7 @@ if [ "$count" -eq 0 ]; then
     printf ' []\n' >>"$override"
 else
     printf '\n' >>"$override"
+    printf "    environment:\n      GKPS_MEDIA_FONT_LABELS: '%s'\n" "$labels" >>"$override"
 fi
 
 print_only=0
@@ -81,7 +87,14 @@ if [ $# -gt 0 ] && [ "$1" = "--print" ]; then
     shift
 fi
 
-printf 'gkps: %s font directories from this computer\n' "$count" >&2
+if [ "$count" -eq 0 ]; then
+    printf 'gkps: no font directory found on this computer\n' >&2
+else
+    printf 'gkps: font directories from this computer (%s):\n' "$count" >&2
+    for dir in $added_dirs; do
+        printf 'gkps:   %s\n' "$dir" >&2
+    done
+fi
 for dir in $skipped; do
     printf 'gkps: skipped %s — the Docker daemon cannot read it from the host; add it under Docker Desktop > Settings > Resources > File Sharing\n' "$dir" >&2
 done

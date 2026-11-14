@@ -609,6 +609,7 @@ li:hover > .row-delete,
 .media-library__status h2 { font-size: 16px; margin: 0 0 8px; }
 .media-library__status-row { display: flex; justify-content: space-between; gap: 15px; padding: 10px 0; border-bottom: 1px solid var(--divider); }
 .media-library__status-row:last-child, .media-library__status.is-unavailable .media-library__status-row { border-bottom: 0; }
+.media-library__status-reason strong { font-weight: 400; overflow-wrap: anywhere; text-align: right; color: var(--head-ink); }
 .media-library__status.is-unavailable .media-library__status-row { padding-bottom: 0; }
 .media-library__status-row > span { color: var(--head-ink); }
 .media-library__status-row strong { text-align: right; font-weight: 600; }

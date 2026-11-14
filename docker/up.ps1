@@ -17,16 +17,25 @@ if ($env:USERPROFILE) { $candidates += (Join-Path $env:USERPROFILE '.local\share
 
 $lines = @('services:', '  media:', '    volumes:')
 $count = 0
+$added = @()
+$labels = ''
 foreach ($dir in $candidates) {
     if (-not (Test-Path -LiteralPath $dir -PathType Container)) { continue }
     $count++
     $quoted = ($dir -replace '\\', '/') -replace "'", "''"
+    $added += $quoted
+    if ($labels) { $labels += ',' }
+    $labels += "$count=$quoted"
     $lines += '      - type: bind'
     $lines += "        source: '$quoted'"
     $lines += "        target: /usr/share/fonts/host/$count"
     $lines += '        read_only: true'
 }
 if ($count -eq 0) { $lines[-1] = '    volumes: []' }
+else {
+    $lines += '    environment:'
+    $lines += "      GKPS_MEDIA_FONT_LABELS: '$labels'"
+}
 [System.IO.File]::WriteAllLines($override, $lines)
 
 $printOnly = $false
@@ -42,7 +51,12 @@ elseif ($args.Count -gt 0) {
 if ($rest.Count -eq 0 -and -not $printOnly) { $rest = @('up', '-d') }
 elseif ($rest.Count -gt 0 -and $rest[0].StartsWith('-')) { $rest = @('up', '-d') + $rest }
 
-Write-Output "gkps: $count font directories from this computer"
+if ($count -eq 0) {
+    Write-Output 'gkps: no font directory found on this computer'
+} else {
+    Write-Output "gkps: font directories from this computer ($count):"
+    foreach ($dir in $added) { Write-Output "gkps:   $dir" }
+}
 
 $composeArgs = @('-f', 'docker-compose.yml', '-f', $override)
 if ($printOnly) {

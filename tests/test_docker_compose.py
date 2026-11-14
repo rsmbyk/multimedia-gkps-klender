@@ -119,11 +119,24 @@ class DockerComposePortRulesTests(SimpleTestCase):
             "the default must be a path inside the checkout, so it resolves on every platform",
         )
 
-    def test_media_companion_allowlist_uses_required_production_and_both_web_origins(self):
+    def test_media_companion_allowlist_uses_the_local_seeds_only(self):
         origins = self.compose["services"]["media"]["environment"]["GKPS_MEDIA_ALLOWED_ORIGINS"]
-        self.assertIn("${GKPS_MEDIA_PRODUCTION_ORIGIN:?", origins)
-        self.assertIn("http://localhost:${WEB_PORT:-63404}", origins)
-        self.assertIn("http://127.0.0.1:${WEB_PORT:-63404}", origins)
+        self.assertEqual(
+            origins,
+            "http://localhost:${WEB_PORT:-63404},http://127.0.0.1:${WEB_PORT:-63404}",
+        )
+
+    def test_no_operator_origin_variable_remains(self):
+        for path in (COMPOSE_FILE, ENV_EXAMPLE,
+                     REPO_ROOT / "README.md",
+                     REPO_ROOT / "docs" / "local-media-companion.md",
+                     REPO_ROOT / "docs" / "ARCHITECTURE.md"):
+            text = path.read_text(encoding="utf-8")
+            self.assertNotIn(
+                "GKPS_MEDIA_PRODUCTION_ORIGIN",
+                text,
+                f"{path.name} still carries the operator origin variable",
+            )
 
     def test_media_companion_endpoint_is_consistent_in_browser_and_python_clients(self):
         sources = (
@@ -144,7 +157,8 @@ class DockerComposePortRulesTests(SimpleTestCase):
         db_default, _ = self._published("db")
         self.assertIn(f"WEB_PORT={web_default}", text)
         self.assertIn(f"DB_PORT={db_default}", text)
-        self.assertIn("GKPS_MEDIA_PRODUCTION_ORIGIN=", text)
+        self.assertIn("http://127.0.0.1:63174/", text,
+                      ".env.example points at the companion's configuration page")
 
 
 class DockerComposeRestartPolicyTests(SimpleTestCase):

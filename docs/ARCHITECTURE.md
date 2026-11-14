@@ -75,10 +75,12 @@ that Docker host and is shared by Chrome and the OBS browser dock through
 [`docs/local-media-companion.md`](local-media-companion.md) for first-time setup
 and volume lifecycle.
 
-Compose publishes the companion only on host loopback and configures its exact
-origin allowlist from the required `GKPS_MEDIA_PRODUCTION_ORIGIN` in the project
-`.env`, plus `http://localhost:<WEB_PORT>` and
-`http://127.0.0.1:<WEB_PORT>`. Selection sends bytes to a temporary inspection
+Compose publishes the companion only on host loopback and seeds its origin
+allowlist with the local web app's origins (`http://localhost:<WEB_PORT>` and
+`http://127.0.0.1:<WEB_PORT>`); the operator records further origins — the
+production site, a staging environment — on the companion's own page at
+`http://127.0.0.1:63174/`, and the set is enforced per request from the
+companion's volume. Selection sends bytes to a temporary inspection
 endpoint; Save sends them to the import endpoint for the verified atomic copy.
 Both return the hash and metadata. Django stores only that identity and an
 immutable service-entry reference. The Media Library page fetches service

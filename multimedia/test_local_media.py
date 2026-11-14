@@ -2,6 +2,7 @@
 
 import hashlib
 import io
+import json
 import os
 import re
 import shutil
@@ -24,6 +25,8 @@ from multimedia.local_media import (
     MediaHandler,
     InvalidMedia,
     converter_identity,
+    families_by_directory,
+    font_directories,
     font_inventory,
     parse_allowed_origins,
     status_payload,
@@ -310,8 +313,10 @@ class SlideEndpointTests(TestCase):
             output = Path(directory) / 'slide.pdf'
             output.write_bytes(b'%PDF-1.7\n%%EOF\n')
             class Handler(MediaHandler):
-                origins = frozenset({'https://example.org'})
-                library = type('Library', (), {'slide_pdf': lambda self, sha: output})()
+                library = type('Library', (), {
+                    'slide_pdf': lambda self, sha: output,
+                    'allowed_origins': lambda self: frozenset({'https://example.org'}),
+                })()
             server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
             thread = threading.Thread(target=server.serve_forever, daemon=True)
             thread.start()
@@ -396,3 +401,223 @@ class TransferPlanTests(TestCase):
         self.assertEqual(job['status'], 'failed')
         self.assertEqual(plan['attempts'], 1)
         self.assertGreater(datetime.fromisoformat(plan['next_attempt']), now())
+
+
+class OriginStoreTests(TestCase):
+    """The recorded origin set: add/edit/delete with the exact-origin grammar, persisted (spec 192)."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.library = LocalLibrary(Path(self.temp.name))
+
+    def test_add_records_and_persists_across_a_library_rebuild(self):
+        self.library.add_origin('https://multimedia.example.org')
+        self.library.add_origin('https://staging.multimedia.example.org')
+        self.assertEqual(self.library.recorded_origins(),
+                         ['https://multimedia.example.org', 'https://staging.multimedia.example.org'])
+        reopened = LocalLibrary(Path(self.temp.name))
+        self.assertEqual(reopened.recorded_origins(), self.library.recorded_origins())
+
+    def test_add_rejects_each_broken_rule_and_records_nothing(self):
+        broken = ('https://multimedia.example.org/', 'multimedia.example.org',
+                  'https://ex ample.org', 'https://user@host.example',
+                  'https://host.example:99999', 'ftp://host.example',
+                  'https://multimedia.example.org/path?query')
+        for value in broken:
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.library.add_origin(value)
+        self.assertEqual(self.library.recorded_origins(), [])
+
+    def test_duplicate_add_is_refused(self):
+        self.library.add_origin('https://multimedia.example.org')
+        with self.assertRaisesRegex(ValueError, 'already recorded'):
+            self.library.add_origin('https://multimedia.example.org')
+        self.assertEqual(len(self.library.recorded_origins()), 1)
+
+    def test_edit_rewrites_the_slot_and_delete_renumbers(self):
+        self.library.add_origin('https://a.example.org')
+        self.library.add_origin('https://b.example.org')
+        self.library.update_origin(1, 'https://c.example.org')
+        self.assertEqual(self.library.recorded_origins(), ['https://c.example.org', 'https://b.example.org'])
+        self.library.remove_origin(1)
+        self.assertEqual(self.library.recorded_origins(), ['https://b.example.org'])
+
+    def test_out_of_range_slots_are_named_and_change_nothing(self):
+        self.library.add_origin('https://a.example.org')
+        with self.assertRaisesRegex(ValueError, 'no origin 3 is recorded'):
+            self.library.update_origin(3, 'https://b.example.org')
+        with self.assertRaisesRegex(ValueError, 'no origin 3 is recorded'):
+            self.library.remove_origin(3)
+        with self.assertRaisesRegex(ValueError, 'no origin 0 is recorded'):
+            self.library.remove_origin(0)
+        self.assertEqual(self.library.recorded_origins(), ['https://a.example.org'])
+
+    def test_allowed_origins_is_the_env_seeds_plus_the_recorded_set(self):
+        library = LocalLibrary(Path(self.temp.name), app_origins=('http://localhost:63404',))
+        library.add_origin('https://multimedia.example.org')
+        self.assertEqual(library.allowed_origins(),
+                         frozenset({'http://localhost:63404', 'https://multimedia.example.org'}))
+        self.assertEqual(library.recorded_origins(), ['https://multimedia.example.org'])
+
+
+class ConfigSurfaceTests(TestCase):
+    """The companion's own page and config endpoints (spec 192): loopback Host,
+    own-or-absent Origin, no media token — reachable with an empty recorded set."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.library = LocalLibrary(Path(self.temp.name), app_origins=('http://localhost:63404',))
+
+        class Handler(MediaHandler):
+            library = self.library
+
+        self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+        self.base = f'http://127.0.0.1:{self.server.server_port}'
+
+    def _request(self, path, origin='__absent__', host='127.0.0.1:63174', method='GET', data=None):
+        headers = {'Host': host}
+        if origin != '__absent__':
+            headers['Origin'] = origin
+        req = urllib.request.Request(self.base + path, data=data, headers=headers, method=method)
+        try:
+            return urllib.request.urlopen(req)
+        except urllib.error.HTTPError as exc:
+            return exc
+
+    def test_page_is_served_with_an_empty_recorded_set(self):
+        with self._request('/') as response:
+            self.assertEqual(getattr(response, 'code', None), 200)
+            self.assertIn('Media companion', response.read().decode())
+
+    def test_page_is_served_on_the_localhost_host_form(self):
+        self.assertEqual(getattr(self._request('/', host='localhost:63174'), 'code', None), 200)
+
+    def test_page_is_refused_on_a_foreign_host(self):
+        self.assertEqual(getattr(self._request('/', host='evil.example:63174'), 'code', None), 403)
+
+    def test_config_endpoints_need_no_media_token(self):
+        with self._request('/v1/origins', origin='http://127.0.0.1:63174') as response:
+            self.assertEqual(getattr(response, 'code', None), 200)
+            self.assertEqual(json.load(response), {'recorded': [], 'seeds': ['http://localhost:63404']})
+
+    def test_config_endpoints_refuse_a_foreign_origin(self):
+        response = self._request('/v1/origins', origin='https://evil.example')
+        self.assertEqual(getattr(response, 'code', None), 403)
+
+    def test_refused_request_names_the_page_and_sends_no_cors_header(self):
+        response = self._request('/v1/status', origin='https://unrecorded.example')
+        self.assertEqual(getattr(response, 'code', None), 403)
+        payload = json.loads(response.read())
+        self.assertIn('127.0.0.1:63174', payload['error'])
+        self.assertNotIn('Access-Control-Allow-Origin', response.headers)
+
+    def test_enforcement_sees_a_runtime_recorded_origin_without_a_restart(self):
+        refused = self._request('/v1/status', origin='https://multimedia.example.org')
+        self.assertEqual(getattr(refused, 'code', None), 403)
+        self.library.add_origin('https://multimedia.example.org')
+        with self._request('/v1/status', origin='https://multimedia.example.org') as response:
+            self.assertEqual(getattr(response, 'code', None), 200)
+
+    def test_local_seeds_pass_with_nothing_recorded(self):
+        with self._request('/v1/status', origin='http://localhost:63404') as response:
+            self.assertEqual(getattr(response, 'code', None), 200)
+
+    def test_origin_add_edit_delete_through_http(self):
+        def add(value):
+            return self._request('/v1/origins', origin='http://127.0.0.1:63174', method='POST',
+                                 data=json.dumps({'origin': value}).encode())
+        with add('https://a.example.org') as response:
+            self.assertEqual(getattr(response, 'code', None), 200)
+            self.assertEqual(json.load(response)['recorded'], ['https://a.example.org'])
+        response = add('https://b.example.org/')
+        self.assertEqual(getattr(response, 'code', None), 400)
+        self.assertIn('path', json.loads(response.read())['error'])
+        self.library.add_origin('https://b.example.org')
+        response = add('https://b.example.org')
+        self.assertEqual(getattr(response, 'code', None), 409)
+        self.assertEqual(json.loads(response.read())['error'], 'that origin is already recorded')
+
+        with self._request('/v1/origins/1', origin='http://127.0.0.1:63174', method='PUT',
+                           data=json.dumps({'origin': 'https://c.example.org'}).encode()) as response:
+            self.assertEqual(getattr(response, 'code', None), 200)
+            self.assertEqual(json.load(response)['recorded'],
+                             ['https://c.example.org', 'https://b.example.org'])
+        response = self._request('/v1/origins/9', origin='http://127.0.0.1:63174', method='PUT',
+                                 data=json.dumps({'origin': 'https://d.example.org'}).encode())
+        self.assertEqual(getattr(response, 'code', None), 404)
+        self.assertEqual(json.loads(response.read())['error'], 'no origin 9 is recorded')
+
+        with self._request('/v1/origins/2', origin='http://127.0.0.1:63174', method='DELETE') as response:
+            self.assertEqual(getattr(response, 'code', None), 200)
+            self.assertEqual(json.load(response)['recorded'], ['https://c.example.org'])
+        response = self._request('/v1/origins/9', origin='http://127.0.0.1:63174', method='DELETE')
+        self.assertEqual(getattr(response, 'code', None), 404)
+
+    def test_font_view_lists_directories_with_family_counts(self):
+        fonts_dir = Path(self.temp.name) / 'host-fonts'
+        fonts_dir.mkdir()
+        (fonts_dir / 'face.ttf').write_bytes(b'not a real font')
+        class Handler(MediaHandler):
+            library = self.library
+            font_view = lambda self: [{'path': str(fonts_dir), 'source': 'C:/Windows/Fonts', 'families': 214}]
+        self.server.RequestHandlerClass = Handler  # not used; the subclass below is what runs
+        server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        with urllib.request.urlopen(urllib.request.Request(
+                f'http://127.0.0.1:{server.server_port}/v1/fonts', headers={
+                    'Host': '127.0.0.1:63174', 'Origin': 'http://127.0.0.1:63174'})) as response:
+            payload = json.load(response)
+        self.assertEqual(payload, {'directories': [
+            {'path': str(fonts_dir), 'source': 'C:/Windows/Fonts', 'families': 214}]})
+
+    def test_fc_list_failure_yields_zero_families_for_every_directory(self):
+        fonts_dir = Path(self.temp.name) / 'host-fonts'
+        fonts_dir.mkdir()
+        with patch('multimedia.local_media.fc_listing', side_effect=OSError('no fontconfig')):
+            directories = font_directories(mounts=[(fonts_dir, 'C:/Windows/Fonts')])
+        self.assertEqual([entry['families'] for entry in directories], [0])
+
+
+class FontListingTests(TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.host_dir = Path(self.temp.name) / 'host' / '1'
+        self.host_dir.mkdir(parents=True)
+        self.operator_dir = Path(self.temp.name) / 'operator'
+        self.operator_dir.mkdir()
+        self.mounts = [(self.host_dir, 'C:/Windows/Fonts'), (self.operator_dir, '.fonts/')]
+
+    def test_families_group_by_directory_and_deduplicate(self):
+        listing = ('/usr/share/fonts/host/1/A.ttf\nArial\n'
+                   '/usr/share/fonts/host/1/B.ttf\nArial\n'
+                   '/usr/share/fonts/host/1/C.ttf\nCambria\n'
+                   '/usr/share/fonts/operator/D.ttf\nBritannic Bold\n')
+        counts = families_by_directory(listing)
+        self.assertEqual(counts['/usr/share/fonts/host/1'], {'Arial', 'Cambria'})
+        self.assertEqual(counts['/usr/share/fonts/operator'], {'Britannic Bold'})
+
+    def test_font_directories_uses_the_injected_listing_and_the_launcher_labels(self):
+        listing = (f'{self.host_dir}/A.ttf\nArial\n'
+                   f'{self.host_dir}/B.ttf\nArial\n'
+                   f'{self.operator_dir}/D.ttf\nBritannic Bold\n')
+        with patch.dict(os.environ, {'GKPS_MEDIA_FONT_LABELS': '1=C:/Windows/Fonts'}):
+            directories = font_directories(lambda: listing, mounts=self.mounts)
+        self.assertEqual(directories, [
+            {'path': str(self.host_dir), 'source': 'C:/Windows/Fonts', 'families': 1},
+            {'path': str(self.operator_dir), 'source': '.fonts/', 'families': 1},
+        ])
+
+    def test_a_failed_fc_list_yields_zero_families_for_every_directory(self):
+        with patch('multimedia.local_media.fc_listing', side_effect=OSError('no fontconfig')):
+            directories = font_directories(mounts=self.mounts)
+        self.assertEqual([entry['families'] for entry in directories], [0, 0])
