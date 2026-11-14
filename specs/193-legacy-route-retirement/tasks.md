@@ -144,10 +144,18 @@ address `contracts/routes.md` names, and none renders a page.
 - [x] T029 [Polish] First commit at Fold: the spec pack, `multimedia/retirement.py`, the four
   touched URLconfs, the view, the template, both test modules, `docs/spec/routing.md`, the card and
   the board row together, targeted suite green.
-- [ ] T030 [Polish] Delivery: branch pushed on the owner's word (GIT-07), PR opened as a draft with
+- [x] T030 [Polish] Delivery: branch pushed on the owner's word (GIT-07), PR opened as a draft with
   the body that becomes the squash message; card to `In review` in a commit after the PR number
-  exists.
+  exists. Pushed 2026-11-14, draft PR #509 opened, card and board row moved to In review in
+  5ee7f972.
 
 ## Phase 7 — Convergence
 
-<!-- written by Converge only; absent until it runs -->
+Converged 2026-11-14. Checklist 20/20 ticked. Capability fold: `routing` gains R1 (a retired address
+answers one 302 to its live successor), R2 (`/archive/<old path>` answers the same successor in one
+hop for this one release), R3 (`/obs/blank` transparent, one corner watermark note). Docs reconciled:
+`docs/spec/routing.md` (R1–R3), `docs/ARCHITECTURE.md` (URL roots incl. `/archive/`), `docs/GLOSSARY.md`
+(retired address, archive namespace), `CHANGELOG.md`, `VERSION`. Verification: 17/17
+`RetiredWebRouteTests`, watermark E2E green; the non-E2E suite matches `origin/develop`'s 23 known
+reds; the full 682-test E2E run was stopped and the partial log matched the known-red list.
+Version 1.30.0 → 1.31.0 (minor, per the card's `bump`).
