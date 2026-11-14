@@ -1,6 +1,6 @@
 ---
 id: ITEM-195
-status: in-progress
+status: in-review
 title: 'The local stack stays down after a reboot'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-14
 updated: 2026-11-14
 spec: specs/191-compose-restart/spec.md
 branch: feat/191-compose-restart
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/504
 issue: 503
 closed_at:
 closed_reason:

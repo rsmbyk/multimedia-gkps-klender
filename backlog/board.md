@@ -36,12 +36,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-195](./items/ITEM-195-compose-restart.md) | The local stack stays down after a reboot | web and db carry no restart policy, so a restart's daemon shutdown leaves them exited (web 255) and only media returns; the fix is the policy written in the compose file | fix | P1 | S | [191](../specs/191-compose-restart/spec.md) | feat/191-compose-restart | 2026-11-14 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-195](./items/ITEM-195-compose-restart.md) | The local stack stays down after a reboot | web and db carry no restart policy, so a restart's daemon shutdown leaves them exited (web 255) and only media returns; the fix is the policy written in the compose file | fix | P1 | S | [191](../specs/191-compose-restart/spec.md) | [#504](https://github.com/rsmbyk/multimedia-gkps-klender/pull/504) | 2026-11-14 |
 
 ## Done
 
