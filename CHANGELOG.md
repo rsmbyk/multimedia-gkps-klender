@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.32.0] - 2026-11-15
+
 ### Added
 
 - **The old addresses answer the new app.** Every retired OBS dock answers `/obs/dock`, every retired
