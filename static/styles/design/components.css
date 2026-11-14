@@ -856,6 +856,8 @@ li:hover > .row-delete,
   gap: 12px;
 }
 .read__project { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin: 0; }
+/* In the title row (spec 193) the group sits beside the edition switch and keeps its own width. */
+.read__row .read__project { flex: none; }
 .read__project-btn {
   display: inline-flex; align-items: center; gap: 6px;
   height: 34px; padding: 0 14px; border-radius: 9px;
@@ -3200,7 +3202,7 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
   }
 
   /* the Project control is the desktop's: the toolbar has no room for it */
-  [data-project-open] { display: none; }
+  [data-project-open], [data-project-goto] { display: none; }
 
   /* a row keeps its name on one line and its date under it, clear of the
      always-visible edit control */

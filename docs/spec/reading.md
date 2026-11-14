@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-14
-**slices**: `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1284,5 +1284,42 @@ the shell swaps to the parent list with the history entry replaced, so Back neve
 #### Scenario: refused and restricted records
 - WHEN the row is a hymn songbook or a hymn song, the songbook is already deleted, editing is restricted, or the kind does not match the record
 - THEN no control is drawn where the row can be identified, and the endpoints answer 404 or 403
+
+### R42 — A reading page's Project control puts its song or chapter on air
+
+The song page and the Bible chapter page SHALL each draw a Project control — the Tata Ibadah page's
+project button, its anatomy and tokens, minus the Stop toggle: the control always reads "Project",
+never "Stop projecting". The song page draws it in the stage header's actions group at the top row's
+right end while the song has verses; the chapter page draws it in the title row at its right end,
+immediately right of the TB/SIM edition switch, while a chapter is on stage. Neither page draws it
+on a song with no verses, a book page with no chapter, any saved (offline) page, or below 720px,
+and the control is a reader control — never editor-gated. (spec 193)
+
+Clicking it SHALL put the page's song or chapter on air as a Go To (`dock/R12`) and SHALL open or
+focus the browser's named `gkps-projector` window: a closed one loads `/projector` already showing
+the detour, an open one is brought forward without a reload, and a popup the browser blocks leaves
+the Go To on air. The song detours at its first screen; the chapter at verse 1 in the edition the
+page shows. A detour the projector already shows — from here or from any surface — SHALL never be
+reset or re-fetched by the control: the detour keeps its place, and the window act happens anyway.
+
+#### Scenario: the song page projects
+- WHEN the control on a song page is clicked
+- THEN the projector detours to that song at its first screen and the named window is opened or focused
+
+#### Scenario: the chapter page projects
+- WHEN the control on a chapter page is clicked
+- THEN the projector detours to that chapter at verse 1 in the shown edition, the control sitting right of the edition switch
+
+#### Scenario: an open detour is never reset
+- WHEN the control is clicked while the projector already shows that song or chapter
+- THEN no fetch and no repaint happen, the detour keeps its place, and the window is still opened or focused
+
+#### Scenario: back returns
+- WHEN the projector's Back ends the detour
+- THEN an adopted service returns to the place it kept
+
+#### Scenario: where it is not drawn
+- WHEN the song has no verses, the Bible page has no chapter, the page is a saved copy, or the window is narrower than 720px
+- THEN no control is drawn
 
 

@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   shows that reason when the companion is unavailable. The stack needs no `.env` anymore: the required
   `GKPS_MEDIA_PRODUCTION_ORIGIN` is gone, plain `docker compose up` starts everything, and both
   launchers name the font directories they mount together with each one's on-disk source (spec 192).
+- **Project buttons on the song and Bible chapter pages.** One click puts the open song or chapter on
+  the projector as a Go To detour and opens the projector window; the detour already open is never
+  reset or re-fetched, and Back on the projector returns to the service.
 
 - **Delete controls in the reading sidebars.** Non-hymn songs, songbooks and Tata Ibadah services and
   templates are removed through a confirmed, guarded delete — trash beside the pencil, revealed on

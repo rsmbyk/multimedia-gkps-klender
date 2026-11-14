@@ -303,6 +303,28 @@
       openProjector(reopen.dataset.projectorUrl || '/projector');
       return;
     }
+    var project = event.target.closest('[data-project-goto]');
+    if (project) {
+      event.preventDefault();
+      /* The reading pages' Project control (spec 193): the open song or chapter on air
+         as a Go To detour. A detour already open is never reset — the pointer is left
+         alone (its place is its own), and hidden words resume where they kept. The
+         window act is unconditional: open when none, focus the one that is. */
+      var next = project.dataset.gotoSong
+        ? {kind: 'song', song_id: Number(project.dataset.gotoSong), index: 0}
+        : {kind: 'passage', book_id: Number(project.dataset.gotoBook),
+           chapter: Number(project.dataset.gotoChapter), verse: 1,
+           translation: project.dataset.gotoEdition === 'SIM' ? 'SIM' : 'TB'};
+      var here = state.goto;
+      var same = here && here.kind === next.kind
+        && (next.kind === 'song'
+            ? here.song_id === next.song_id
+            : here.book_id === next.book_id && here.chapter === next.chapter);
+      if (same && !state.on) resume();
+      else if (!same) goTo(next);
+      openProjector(project.dataset.projectorUrl || '/projector');
+      return;
+    }
     var open = event.target.closest('[data-project-open]');
     if (!open) return;
     event.preventDefault();

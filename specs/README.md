@@ -110,3 +110,4 @@ the templates are in [`_templates/`](./_templates/).
 | [180](180-overlay-text-styles/spec.md) | The overlay reads by kind: a song keeps the caption, a passage a quotation card, a liturgy a script panel | Accepted |
 | [181](181-consistent-reading-navigation/spec.md) | Consistent reading navigation across saved and server data | Accepted |
 | [182](182-host-font-detection/spec.md) | The computer's own fonts reach the converter | Accepted |
+| [193](193-reading-project-button/spec.md) | A reading page's Project control puts its song or chapter on air | Accepted |
