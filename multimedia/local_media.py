@@ -1,0 +1,844 @@
+"""Per-computer media store and loopback companion for spec 103.
+
+Run with ``python -m multimedia.local_media``. The server never exposes paths
+outside its own data root and never puts binary payloads through Vercel.
+"""
+
+import hashlib
+import io
+import json
+import os
+import shutil
+import secrets
+import signal
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+import urllib.request
+import zipfile
+from xml.etree import ElementTree
+from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import urlparse, urlsplit
+
+from pypdf import PdfReader
+
+MAX_BYTES = 200_000_000
+PORT = int(os.environ.get('GKPS_MEDIA_PORT') or '63174')
+REFUSAL_MESSAGE = ('Origin is not allowed. Record this computer\'s origins on '
+                   f'the companion\'s page at http://127.0.0.1:{PORT}/.')
+
+# Bumped when the converter's command or its export filter changes, so a derivative made by the old
+# one is not mistaken for this one's. The renderer's own identity — its version and its fonts — is
+# read at run time (see converter_identity).
+CONVERTER_REVISION = '1'
+
+
+def font_inventory():
+    """Every family the renderer can see.
+
+    A font added to the image or mounted by the operator changes where text lands exactly as much as a
+    LibreOffice upgrade does, so the derivative's identity has to carry it.
+    """
+    try:
+        output = subprocess.run(['fc-list', ':', 'family'], capture_output=True,
+                                text=True, timeout=10, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        return ''
+    return '\n'.join(sorted({name.strip() for line in output.splitlines()
+                             for name in line.split(',') if name.strip()}))
+
+
+def converter_identity(version):
+    """What decides a render: the renderer's version, its command revision, and its fonts."""
+    return f'{version}\n{CONVERTER_REVISION}\n{font_inventory()}'
+
+
+
+class InvalidMedia(ValueError):
+    pass
+
+
+def default_root():
+    configured_root = os.environ.get('GKPS_MEDIA_LIBRARY_ROOT')
+    if configured_root:
+        root = Path(configured_root).expanduser()
+        if not root.is_absolute():
+            raise ValueError('GKPS_MEDIA_LIBRARY_ROOT must be an absolute path.')
+        return root
+    if sys.platform == 'win32':
+        return Path(os.environ.get('LOCALAPPDATA') or Path.home() / 'AppData' / 'Local') / 'GKPS Klender' / 'Media Library'
+    if sys.platform == 'darwin':
+        return Path.home() / 'Library' / 'Application Support' / 'GKPS Klender' / 'Media Library'
+    data_home = os.environ.get('XDG_DATA_HOME')
+    return (Path(data_home) if data_home and Path(data_home).is_absolute()
+            else Path.home() / '.local' / 'share') / 'gkps-klender' / 'media-library'
+
+
+def parse_allowed_origins(value):
+    """Parse exact browser origins; paths, wildcards, and malformed URLs fail closed."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError('Set GKPS_MEDIA_ALLOWED_ORIGINS to exact app origins before starting.')
+    origins = value.split(',')
+    parsed_origins = set()
+    for raw_origin in origins:
+        origin = raw_origin.strip()
+        if not origin or any(char.isspace() for char in origin):
+            raise ValueError('GKPS_MEDIA_ALLOWED_ORIGINS contains an invalid origin.')
+        try:
+            parsed = urlsplit(origin)
+            # Accessing .port also validates malformed or out-of-range ports.
+            parsed.port
+        except ValueError as exc:
+            raise ValueError('GKPS_MEDIA_ALLOWED_ORIGINS contains an invalid origin.') from exc
+        if (parsed.scheme not in {'http', 'https'} or not parsed.hostname
+                or parsed.username is not None or parsed.password is not None
+                or parsed.path or parsed.query or parsed.fragment
+                or origin != f'{parsed.scheme}://{parsed.netloc}'):
+            raise ValueError('GKPS_MEDIA_ALLOWED_ORIGINS must contain exact origins without paths.')
+        parsed_origins.add(origin)
+    return frozenset(parsed_origins)
+
+
+def validate_recorded_origin(value):
+    """One recorded origin, in the page's own words: the first broken rule is raised (spec 192)."""
+    origin = value.strip() if isinstance(value, str) else ''
+    if any(char.isspace() for char in origin):
+        raise ValueError('an origin is one line with no spaces')
+    if not origin.startswith(('http://', 'https://')):
+        raise ValueError('an origin starts with its scheme — http:// or https://')
+    if '@' in origin:
+        raise ValueError('an origin carries no credentials — no @')
+    parsed = urlsplit(origin)
+    if parsed.path or parsed.query or parsed.fragment:
+        raise ValueError('an origin carries no path, query or trailing slash')
+    if not parsed.hostname:
+        raise ValueError('an origin needs a hostname after the scheme')
+    try:
+        parsed.port
+    except ValueError:
+        raise ValueError('an origin needs a numeric port in range')
+    return origin
+
+
+def fc_listing():
+    """One full fc-list pass: every font's file path and family, as interleaved lines."""
+    output = subprocess.run(['fc-list', '--format', '%{file}\n%{family}\n'],
+                            capture_output=True, text=True, timeout=10, check=True).stdout
+    return output
+
+
+def families_by_directory(listing):
+    """Group one fc-list pass into {directory: set(family)} — pairs of file, family lines."""
+    counts = {}
+    lines = listing.splitlines()
+    for i in range(0, len(lines) - 1, 2):
+        family = lines[i + 1].strip()
+        if not family:
+            continue
+        directory = str(Path(lines[i]).parent)
+        counts.setdefault(directory, set()).add(family)
+    return counts
+
+
+def font_mounts():
+    """The container's font directories in listing order, with the launcher's host labels."""
+    labels = {}
+    for part in os.environ.get('GKPS_MEDIA_FONT_LABELS', '').split(','):
+        if '=' in part:
+            key, _, value = part.partition('=')
+            labels[key.strip()] = value.strip()
+    mounts = []
+    host_base = Path('/usr/share/fonts/host')
+    if host_base.is_dir():
+        for child in sorted(host_base.iterdir()):
+            if child.is_dir():
+                mounts.append((child, labels.get(child.name, '')))
+    operator = Path('/usr/share/fonts/operator')
+    if operator.is_dir():
+        mounts.append((operator, labels.get('operator', '.fonts/')))
+    return mounts
+
+
+def font_directories(lister=fc_listing, mounts=None):
+    """The directories the converter sees, with a family count each (spec 192).
+
+    The launcher names the host sources it mounted through GKPS_MEDIA_FONT_LABELS
+    ('1=C:/Windows/Fonts,…'), keyed on the mount's last path segment.
+    """
+    try:
+        counts = families_by_directory(lister())
+    except (OSError, subprocess.SubprocessError):
+        counts = {}
+    mounts = font_mounts() if mounts is None else mounts
+    return [{'path': str(path), 'source': label, 'families': len(counts.get(str(path), set()))}
+            for path, label in mounts]
+
+
+def detect_family(path):
+    """Inspect container signatures; filename and browser MIME are untrusted."""
+    with path.open('rb') as stream:
+        head = stream.read(256)
+        stream.seek(max(0, path.stat().st_size - 4096))
+        tail = stream.read()
+    if head.startswith(b'%PDF-') and b'%%EOF' in tail:
+        return 'pdf'
+    if head.startswith(b'\x89PNG\r\n\x1a\n') and b'IEND' in tail:
+        return 'image'
+    if head.startswith(b'\xff\xd8\xff') and tail.rstrip().endswith(b'\xff\xd9'):
+        return 'image'
+    if head.startswith((b'GIF87a', b'GIF89a')) and tail.rstrip().endswith(b';'):
+        return 'image'
+    if head.startswith(b'RIFF') and head[8:12] == b'WEBP' and int.from_bytes(head[4:8], 'little') + 8 <= path.stat().st_size:
+        return 'image'
+    if head.startswith(b'BM') and int.from_bytes(head[2:6], 'little') == path.stat().st_size:
+        return 'image'
+    if head.startswith((b'II*\x00', b'MM\x00*')):
+        return 'image'
+    if head.startswith(b'ID3') or (len(head) > 2 and head[0] == 255 and head[1] & 224 == 224):
+        return 'audio'
+    if head.startswith(b'fLaC'):
+        return 'audio'
+    if head.startswith(b'OggS'):
+        return 'video' if b'theora' in head else 'audio'
+    if head.startswith(b'RIFF') and head[8:12] == b'WAVE':
+        return 'audio'
+    if head.startswith(b'RIFF') and head[8:12] == b'AVI ':
+        return 'video'
+    if head.startswith(b'\x1a\x45\xdf\xa3'):
+        return 'video'
+    if head[4:8] == b'ftyp':
+        if head[8:12] in (b'avif', b'avis', b'heic', b'heix', b'hevc', b'hevx', b'mif1', b'msf1'):
+            return 'image'
+        return 'audio' if b'M4A' in head[8:24] else 'video'
+    if head.startswith((b'\x00\x00\x01\xba', b'\x00\x00\x01\xb3')):
+        return 'video'
+    if head.startswith(b'PK\x03\x04'):
+        try:
+            with zipfile.ZipFile(path) as archive:
+                names = ('[Content_Types].xml', 'ppt/presentation.xml')
+                if all(name in archive.namelist() and archive.getinfo(name).file_size <= 2_000_000
+                       for name in names):
+                    content_types = ElementTree.fromstring(archive.read(names[0]))
+                    presentation = ElementTree.fromstring(archive.read(names[1]))
+                    if (content_types.tag.endswith('}Types')
+                            and presentation.tag.endswith('}presentation')
+                            and any('presentationml.presentation.main+xml' in element.attrib.get('ContentType', '')
+                                    for element in content_types)):
+                        return 'slides'
+        except (zipfile.BadZipFile, ElementTree.ParseError, RuntimeError):
+            pass
+    if head.startswith(b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'):
+        marker = 'PowerPoint Document'.encode('utf-16le')
+        with path.open('rb') as stream:
+            overlap = b''
+            for block in iter(lambda: stream.read(1024 * 1024), b''):
+                if marker in overlap + block:
+                    return 'slides'
+                overlap = block[-len(marker):]
+    raise InvalidMedia('This file type is not supported or the file is malformed.')
+
+
+class LocalLibrary:
+    def __init__(self, root=None, app_origins=()):
+        self.app_origins = frozenset(app_origins)
+        self.root = Path(root or default_root()).expanduser().resolve()
+        self.files_dir = self.root / 'files'
+        self.files_dir.mkdir(parents=True, exist_ok=True)
+        self.derived_dir = self.root / 'derived-slides'
+        self.derived_dir.mkdir(parents=True, exist_ok=True)
+        self._slide_lock = threading.RLock()
+        self._origin_lock = threading.RLock()
+        self.db_path = self.root / 'index.sqlite3'
+        with self._db() as db:
+            db.execute('''CREATE TABLE IF NOT EXISTS files (
+                sha256 TEXT PRIMARY KEY, name TEXT NOT NULL, family TEXT NOT NULL,
+                size INTEGER NOT NULL, uploaded_at TEXT NOT NULL,
+                unused_since TEXT, delete_at TEXT)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY, value TEXT NOT NULL)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS transfers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, direction TEXT NOT NULL,
+                sha256 TEXT NOT NULL, name TEXT NOT NULL, size INTEGER NOT NULL,
+                bytes_done INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL,
+                automatic INTEGER NOT NULL DEFAULT 0, started_at TEXT NOT NULL,
+                ended_at TEXT, error TEXT)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS auto_downloads (
+                sha256 TEXT PRIMARY KEY, name TEXT NOT NULL, family TEXT NOT NULL,
+                size INTEGER NOT NULL, url TEXT NOT NULL, expires_at TEXT NOT NULL,
+                attempts INTEGER NOT NULL DEFAULT 0, next_attempt TEXT NOT NULL,
+                eligible_until TEXT)''')
+            if 'eligible_until' not in {row[1] for row in db.execute('PRAGMA table_info(auto_downloads)')}:
+                db.execute('ALTER TABLE auto_downloads ADD COLUMN eligible_until TEXT')
+            restarted_at = datetime.now(timezone.utc)
+            interrupted_auto = [row['sha256'] for row in db.execute(
+                "SELECT sha256 FROM transfers WHERE status='active' AND automatic=1")]
+            db.execute("UPDATE transfers SET status='failed', ended_at=?, error='Companion restarted' WHERE status='active'",
+                       (restarted_at.isoformat(),))
+            for sha in interrupted_auto:
+                row = db.execute('SELECT attempts FROM auto_downloads WHERE sha256=?', (sha,)).fetchone()
+                if row:
+                    attempts = row['attempts'] + 1
+                    delay = min(300, 5 * (2 ** min(attempts - 1, 6))) + int(sha[:2], 16) % 5
+                    db.execute('UPDATE auto_downloads SET attempts=?, next_attempt=? WHERE sha256=?',
+                               (attempts, (restarted_at + timedelta(seconds=delay)).isoformat(), sha))
+            db.execute('''CREATE TABLE IF NOT EXISTS reference_inventory (
+                sha256 TEXT PRIMARY KEY, protected INTEGER NOT NULL)''')
+
+        with self._db() as db:
+            row = db.execute("SELECT value FROM settings WHERE key='origins'").fetchone()
+        try:
+            origins = json.loads(row['value']) if row else []
+        except ValueError:
+            origins = []
+        self._origins = origins if isinstance(origins, list) else []
+
+    @contextmanager
+    def _db(self):
+        db = sqlite3.connect(self.db_path)
+        db.row_factory = sqlite3.Row
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
+
+    def list_files(self):
+        with self._db() as db:
+            rows = [dict(row) for row in db.execute('SELECT * FROM files ORDER BY uploaded_at DESC, sha256')]
+        return [row for row in rows if self.verified_file(row['sha256']) is not None]
+
+    def retention(self):
+        with self._db() as db:
+            row = db.execute("SELECT value FROM settings WHERE key='retention'").fetchone()
+        return row['value'] if row else '30'
+
+    def set_retention(self, value):
+        if value not in {'3', '7', '30', '90', 'unlimited'}:
+            raise ValueError('Choose 3, 7, 30, 90 days, or unlimited.')
+        old = self.retention()
+        now = datetime.now(timezone.utc)
+        tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        with self._db() as db:
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('retention', ?)", (value,))
+            if value != 'unlimited':
+                for row in list(db.execute('SELECT sha256, unused_since, delete_at FROM files WHERE unused_since IS NOT NULL')):
+                    planned = datetime.fromisoformat(row['unused_since']) + timedelta(days=int(value))
+                    previous = datetime.fromisoformat(row['delete_at']) if row['delete_at'] else None
+                    if old == 'unlimited':
+                        deadline = tomorrow
+                    elif int(value) < int(old):
+                        deadline = (tomorrow if previous and previous - now > timedelta(days=int(value))
+                                    else min(previous, planned) if previous else planned)
+                    else:
+                        deadline = planned
+                    db.execute('UPDATE files SET delete_at=? WHERE sha256=?', (deadline.isoformat(), row['sha256']))
+            else:
+                db.execute('UPDATE files SET delete_at=NULL WHERE unused_since IS NOT NULL')
+
+    def recorded_origins(self):
+        return list(self._origins)
+
+    def allowed_origins(self):
+        return self.app_origins | frozenset(self._origins)
+
+    def add_origin(self, value):
+        origin = validate_recorded_origin(value)
+        with self._origin_lock, self._db() as db:
+            if origin in self._origins:
+                raise ValueError('that origin is already recorded')
+            self._origins.append(origin)
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('origins', ?)",
+                       (json.dumps(self._origins),))
+        return list(self._origins)
+
+    def update_origin(self, index, value):
+        origin = validate_recorded_origin(value)
+        with self._origin_lock, self._db() as db:
+            if not 1 <= index <= len(self._origins):
+                raise ValueError(f'no origin {index} is recorded')
+            if any(o == origin for j, o in enumerate(self._origins) if j != index - 1):
+                raise ValueError('that origin is already recorded')
+            self._origins[index - 1] = origin
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('origins', ?)",
+                       (json.dumps(self._origins),))
+        return list(self._origins)
+
+    def remove_origin(self, index):
+        with self._origin_lock, self._db() as db:
+            if not 1 <= index <= len(self._origins):
+                raise ValueError(f'no origin {index} is recorded')
+            self._origins.pop(index - 1)
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('origins', ?)",
+                       (json.dumps(self._origins),))
+        return list(self._origins)
+
+    def sync_references(self, used_hashes, protected_hashes=()):
+        """Only a fresh complete server inventory authorizes automatic deletion."""
+        used = set(used_hashes)
+        if any(len(sha) != 64 or any(c not in '0123456789abcdef' for c in sha) for sha in used):
+            raise ValueError('Invalid reference inventory.')
+        protected = set(protected_hashes)
+        if not protected.issubset(used):
+            raise ValueError('Protected files must be in the reference inventory.')
+        now = datetime.now(timezone.utc)
+        retention = self.retention()
+        with self._slide_lock, self._db() as db:
+            db.execute('DELETE FROM reference_inventory')
+            db.executemany('INSERT INTO reference_inventory VALUES (?, ?)',
+                           [(sha, int(sha in protected)) for sha in used])
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('inventory_at', ?)", (now.isoformat(),))
+            for row in list(db.execute('SELECT * FROM files')):
+                sha = row['sha256']
+                if sha in used:
+                    db.execute('UPDATE files SET unused_since=NULL, delete_at=NULL WHERE sha256=?', (sha,))
+                    continue
+                since = datetime.fromisoformat(row['unused_since']) if row['unused_since'] else now
+                deadline = (datetime.fromisoformat(row['delete_at']) if row['delete_at']
+                            else since + timedelta(days=int(retention)) if retention != 'unlimited' else None)
+                if deadline and deadline <= now:
+                    (self.files_dir / sha).unlink(missing_ok=True)
+                    db.execute('DELETE FROM files WHERE sha256=?', (sha,))
+                    self._purge_slides(sha)
+                else:
+                    db.execute('UPDATE files SET unused_since=?, delete_at=? WHERE sha256=?',
+                               (since.isoformat(), deadline.isoformat() if deadline else None, sha))
+
+    def import_bytes(self, filename, payload):
+        return self.import_stream(filename, io.BytesIO(payload), len(payload))
+
+    def _stage_stream(self, filename, source, size):
+        if not isinstance(filename, str) or not filename or filename in ('.', '..') or '/' in filename or '\\' in filename:
+            raise InvalidMedia('A plain filename is required.')
+        if len(filename) > 255:
+            raise InvalidMedia('The filename is too long.')
+        if not 0 < size <= MAX_BYTES:
+            raise InvalidMedia('A file must be between 1 byte and 200 MB.')
+        digest = hashlib.sha256()
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(dir=self.root, prefix='.import-', delete=False) as target:
+                temp_path = Path(target.name)
+                remaining = size
+                while remaining:
+                    block = source.read(min(1024 * 1024, remaining))
+                    if not block:
+                        raise InvalidMedia('The file ended before the declared size.')
+                    target.write(block)
+                    digest.update(block)
+                    remaining -= len(block)
+                target.flush()
+                os.fsync(target.fileno())
+            family = detect_family(temp_path)
+            sha = digest.hexdigest()
+            return temp_path, sha, family
+        except Exception:
+            if temp_path is not None:
+                temp_path.unlink(missing_ok=True)
+            raise
+
+    def inspect_stream(self, filename, source, size):
+        temp_path, sha, family = self._stage_stream(filename, source, size)
+        try:
+            with self._db() as db:
+                saved = db.execute('SELECT * FROM files WHERE sha256=?', (sha,)).fetchone()
+            if saved and self.verified_file(sha):
+                return {**dict(saved), 'reused': True}
+            return {'sha256': sha, 'name': filename, 'family': family, 'size': size, 'reused': False}
+        finally:
+            temp_path.unlink(missing_ok=True)
+
+    def import_stream(self, filename, source, size):
+        temp_path, sha, family = self._stage_stream(filename, source, size)
+        try:
+            with self._db() as db:
+                saved = db.execute('SELECT * FROM files WHERE sha256=?', (sha,)).fetchone()
+                if saved and self.verified_file(sha):
+                    return {**dict(saved), 'reused': True}
+                destination = self.files_dir / sha
+                os.replace(temp_path, destination)
+                temp_path = None
+                uploaded = datetime.now(timezone.utc).isoformat()
+                db.execute('INSERT OR REPLACE INTO files (sha256, name, family, size, uploaded_at) VALUES (?, ?, ?, ?, ?)',
+                           (sha, filename, family, size, uploaded))
+                return {**dict(db.execute('SELECT * FROM files WHERE sha256=?', (sha,)).fetchone()),
+                        'reused': False}
+        finally:
+            if temp_path is not None:
+                temp_path.unlink(missing_ok=True)
+
+    def remove(self, sha):
+        with self._slide_lock, self._db() as db:
+            fresh = db.execute("SELECT value FROM settings WHERE key='inventory_at'").fetchone()
+            if not fresh or datetime.now(timezone.utc) - datetime.fromisoformat(fresh['value']) > timedelta(minutes=5):
+                raise ValueError('Service references must be refreshed before removing a file.')
+            protected = db.execute('SELECT protected FROM reference_inventory WHERE sha256=?', (sha,)).fetchone()
+            if protected and protected['protected']:
+                raise ValueError('A Tata Ibadah today or later still uses this file.')
+            row = db.execute('SELECT sha256 FROM files WHERE sha256=?', (sha,)).fetchone()
+            if not row:
+                return False
+            (self.files_dir / sha).unlink(missing_ok=True)
+            db.execute('DELETE FROM files WHERE sha256=?', (sha,))
+            self._purge_slides(sha)
+            return True
+
+    def _purge_slides(self, sha):
+        for derivative in self.derived_dir.glob(sha + '-*.pdf'):
+            derivative.unlink(missing_ok=True)
+
+    def slide_pdf(self, sha, convert=None):
+        """Prepare a disposable PDF from an indexed, verified PowerPoint source."""
+        with self._slide_lock:
+            with self._db() as db:
+                row = db.execute('SELECT family FROM files WHERE sha256=?', (sha,)).fetchone()
+            source = self.verified_file(sha)
+            if not row or row['family'] != 'slides' or source is None:
+                raise InvalidMedia('PowerPoint unavailable on this computer.')
+            if convert is None:
+                convert = convert_slides
+                try:
+                    version = subprocess.run(['libreoffice', '--version'], capture_output=True,
+                                             text=True, timeout=10, check=True).stdout.strip()
+                except (OSError, subprocess.SubprocessError) as exc:
+                    raise InvalidMedia('PowerPoint conversion is unavailable.') from exc
+            else:
+                version = 'test-converter'
+            key = hashlib.sha256(converter_identity(version).encode()).hexdigest()[:16]
+            target = self.derived_dir / f'{sha}-{key}.pdf'
+            if target.is_file() and _valid_display_pdf(target):
+                return target
+            target.unlink(missing_ok=True)
+            # Signature, not the user's filename, selects the input format.
+            with source.open('rb') as stream:
+                suffix = '.pptx' if stream.read(4) == b'PK\x03\x04' else '.ppt'
+            with tempfile.TemporaryDirectory(dir=self.derived_dir) as temporary:
+                temporary = Path(temporary)
+                input_path = temporary / ('presentation' + suffix)
+                output_path = temporary / 'presentation.pdf'
+                shutil.copyfile(source, input_path)
+                try:
+                    convert(input_path, output_path)
+                    if not _valid_display_pdf(output_path):
+                        raise InvalidMedia('PowerPoint conversion did not produce a PDF.')
+                    os.replace(output_path, target)
+                except (OSError, subprocess.SubprocessError) as exc:
+                    raise InvalidMedia('PowerPoint conversion failed.') from exc
+            return target
+
+    def verified_file(self, sha):
+        """Return only indexed bytes that still match their saved identity."""
+        if len(sha) != 64 or any(c not in '0123456789abcdef' for c in sha):
+            return None
+        with self._db() as db:
+            row = db.execute('SELECT size FROM files WHERE sha256=?', (sha,)).fetchone()
+        path = self.files_dir / sha
+        if not row or not path.is_file() or path.stat().st_size != row['size']:
+            return None
+        digest = hashlib.sha256()
+        with path.open('rb') as stream:
+            for block in iter(lambda: stream.read(1024 * 1024), b''):
+                digest.update(block)
+        return path if digest.hexdigest() == sha else None
+
+
+def _valid_display_pdf(path):
+    if not path.is_file() or not 8 <= path.stat().st_size <= 400_000_000:
+        return False
+    with path.open('rb') as stream:
+        if stream.read(5) != b'%PDF-':
+            return False
+        stream.seek(max(0, path.stat().st_size - 4096))
+        if b'%%EOF' not in stream.read():
+            return False
+    try:
+        reader = PdfReader(path, strict=True)
+        return len(reader.pages) > 0
+    except Exception:
+        return False
+
+
+def convert_slides(input_path, output_path):
+    """Run Impress with a private profile and a bounded conversion time."""
+    profile = input_path.parent / 'profile'
+    command = ['prlimit', '--as=2147483648', '--fsize=419430400', '--',
+               'libreoffice', f'-env:UserInstallation={profile.as_uri()}',
+               '--headless', '--convert-to', 'pdf:impress_pdf_Export',
+               '--outdir', str(output_path.parent), str(input_path)]
+    process = subprocess.Popen(command, cwd=input_path.parent, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, start_new_session=True)
+    try:
+        stdout, stderr = process.communicate(timeout=120)
+    except subprocess.TimeoutExpired as exc:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.communicate()
+        raise InvalidMedia('PowerPoint conversion timed out.') from exc
+    if process.returncode:
+        raise subprocess.CalledProcessError(process.returncode, command, stdout, stderr)
+
+
+class MediaHandler(BaseHTTPRequestHandler):
+    library = None
+    transfers = None
+    token = ''
+    font_view = staticmethod(font_directories)
+
+    def _config_allowed(self):
+        """The page and its endpoints: loopback Host, own-or-absent Origin, no token (spec 192)."""
+        host = self.headers.get('Host', '')
+        if host not in (f'127.0.0.1:{PORT}', f'localhost:{PORT}'):
+            return False
+        origin = self.headers.get('Origin')
+        return origin is None or origin in (f'http://127.0.0.1:{PORT}', f'http://localhost:{PORT}')
+
+    def _allowed(self):
+        origin = self.headers.get('Origin')
+        host = self.headers.get('Host', '')
+        return (host in (f'127.0.0.1:{PORT}', f'localhost:{PORT}')
+                and origin in self.library.allowed_origins())
+
+    def _refuse(self):
+        return self._reply(403, {'error': REFUSAL_MESSAGE})
+
+    def _serve_page(self):
+        page = Path(__file__).with_name('companion_page.html')
+        try:
+            body = page.read_bytes()
+        except FileNotFoundError:
+            return self._reply(404, {'error': 'Not found.'})
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('Cache-Control', 'no-store')
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _reply(self, status, payload):
+        body = json.dumps(payload).encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('Cache-Control', 'no-store')
+        if self._allowed():
+            self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
+            self.send_header('Vary', 'Origin')
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_OPTIONS(self):
+        if not self._allowed():
+            return self._refuse()
+        self.send_response(204)
+        self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-GKPS-Media-Token, X-GKPS-Filename')
+        self.send_header('Access-Control-Allow-Private-Network', 'true')
+        self.send_header('Vary', 'Origin')
+        self.end_headers()
+
+    def do_GET(self):
+        path = urlparse(self.path).path
+        if self._config_allowed() and path in ('/', '/v1/origins', '/v1/fonts'):
+            if path == '/':
+                return self._serve_page()
+            if path == '/v1/origins':
+                return self._reply(200, {'recorded': self.library.recorded_origins(),
+                                         'seeds': sorted(self.library.app_origins)})
+            return self._reply(200, {'directories': self.font_view()})
+        if path in ('/', '/v1/origins', '/v1/fonts'):
+            return self._refuse()
+        if not self._allowed():
+            return self._refuse()
+        path = urlparse(self.path).path
+        if path == '/v1/status':
+            return self._reply(200, status_payload(self.library, self.token))
+        if path == '/v1/files':
+            return self._reply(200, {'files': self.library.list_files()})
+        if path == '/v1/transfers':
+            return self._reply(200, self.transfers.list())
+        if path.startswith('/v1/slides/'):
+            try:
+                file = self.library.slide_pdf(path.removeprefix('/v1/slides/'))
+            except InvalidMedia as exc:
+                return self._reply(404, {'error': str(exc)})
+            return self._send_file(file, 'application/pdf')
+        if path.startswith('/v1/files/'):
+            file = self.library.verified_file(path.removeprefix('/v1/files/'))
+            if file is None:
+                return self._reply(404, {'error': 'File not available.'})
+            return self._send_file(file, 'application/octet-stream')
+        return self._reply(404, {'error': 'Not found.'})
+
+    def _send_file(self, file, content_type):
+        try:
+            stream = file.open('rb')
+        except FileNotFoundError:
+            return self._reply(404, {'error': 'File not available.'})
+        with stream:
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.send_header('Content-Length', str(os.fstat(stream.fileno()).st_size))
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('X-Content-Type-Options', 'nosniff')
+            self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
+            self.send_header('Vary', 'Origin')
+            self.end_headers()
+            for block in iter(lambda: stream.read(1024 * 1024), b''):
+                self.wfile.write(block)
+
+    def do_POST(self):
+        path = urlparse(self.path).path
+        if path == '/v1/origins':
+            if not self._config_allowed():
+                return self._refuse()
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 1000000:
+                    raise ValueError('Invalid request size.')
+                payload = json.loads(self.rfile.read(length))
+                self.library.add_origin(payload['origin'])
+                return self._reply(200, {'recorded': self.library.recorded_origins()})
+            except ValueError as exc:
+                status = 409 if 'already recorded' in str(exc) else 400
+                return self._reply(status, {'error': str(exc)})
+            except (KeyError, TypeError, json.JSONDecodeError) as exc:
+                return self._reply(400, {'error': str(exc)})
+        if not self._allowed():
+            return self._refuse()
+        if not secrets.compare_digest(self.headers.get('X-GKPS-Media-Token', ''), self.token):
+            return self._reply(403, {'error': 'Not authorized.'})
+        path = urlparse(self.path).path
+        if path in ('/v1/settings', '/v1/references', '/v1/transfers', '/v1/auto-downloads/sync'):
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 1000000:
+                    raise ValueError('Invalid request size.')
+                payload = json.loads(self.rfile.read(length))
+                if path == '/v1/settings':
+                    self.library.set_retention(str(payload['retention']))
+                    return self._reply(200, {'retention': self.library.retention()})
+                if path == '/v1/references':
+                    self.library.sync_references(payload['hashes'], payload.get('protected', []))
+                    return self._reply(200, {'files': self.library.list_files()})
+                if path == '/v1/auto-downloads/sync':
+                    hashes = set(payload['hashes'])
+                    if any(len(sha) != 64 or any(c not in '0123456789abcdef' for c in sha) for sha in hashes):
+                        raise ValueError('Invalid automatic download inventory.')
+                    with self.library._db() as db:
+                        for row in db.execute('SELECT sha256 FROM auto_downloads'):
+                            if row['sha256'] not in hashes:
+                                db.execute('DELETE FROM auto_downloads WHERE sha256=?', (row['sha256'],))
+                    return self._reply(200, {'synced': True})
+                if payload.get('direction') == 'upload':
+                    job = self.transfers.start_upload(payload['sha256'], payload['url'],
+                                                      payload['complete_url'],
+                                                      payload['completion_token'])
+                elif payload.get('direction') == 'download':
+                    job = self.transfers.start_download(
+                        payload['sha256'], payload['name'], payload['family'], int(payload['size']),
+                        payload['url'], payload['expires_at'], bool(payload.get('automatic')),
+                        payload.get('eligible_until'))
+                else:
+                    raise ValueError('Choose upload or download.')
+                return self._reply(200, {'job_id': job})
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+                return self._reply(400, {'error': str(exc)})
+        if path not in ('/v1/import', '/v1/inspect'):
+            return self._reply(404, {'error': 'Not found.'})
+        try:
+            size = int(self.headers.get('Content-Length', '0'))
+            operation = self.library.inspect_stream if path == '/v1/inspect' else self.library.import_stream
+            result = operation(self.headers.get('X-GKPS-Filename', ''), self.rfile, size)
+        except (ValueError, InvalidMedia) as exc:
+            return self._reply(400, {'error': str(exc)})
+        return self._reply(200, result)
+
+    def do_PUT(self):
+        path = urlparse(self.path).path
+        if not path.startswith('/v1/origins/'):
+            return self._reply(404, {'error': 'Not found.'})
+        if not self._config_allowed():
+            return self._refuse()
+        try:
+            index = int(path.rsplit('/', 1)[-1])
+        except ValueError:
+            return self._reply(404, {'error': 'No origin is recorded at that slot.'})
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+            if not 0 < length <= 1000000:
+                raise ValueError('Invalid request size.')
+            payload = json.loads(self.rfile.read(length))
+            self.library.update_origin(index, payload['origin'])
+            return self._reply(200, {'recorded': self.library.recorded_origins()})
+        except ValueError as exc:
+            status = 404 if 'no origin' in str(exc) else 409 if 'already recorded' in str(exc) else 400
+            return self._reply(status, {'error': str(exc)})
+        except (KeyError, TypeError, json.JSONDecodeError) as exc:
+            return self._reply(400, {'error': str(exc)})
+
+    def do_DELETE(self):
+        path = urlparse(self.path).path
+        if path.startswith('/v1/origins/'):
+            if not self._config_allowed():
+                return self._refuse()
+            try:
+                index = int(path.rsplit('/', 1)[-1])
+            except ValueError:
+                return self._reply(404, {'error': 'No origin is recorded at that slot.'})
+            try:
+                self.library.remove_origin(index)
+                return self._reply(200, {'recorded': self.library.recorded_origins()})
+            except ValueError as exc:
+                return self._reply(404, {'error': str(exc)})
+        if not self._allowed():
+            return self._refuse()
+        if not secrets.compare_digest(self.headers.get('X-GKPS-Media-Token', ''), self.token):
+            return self._reply(403, {'error': 'Not authorized.'})
+        path = urlparse(self.path).path
+        if path.startswith('/v1/transfers/'):
+            try:
+                return self._reply(200, {'cancelled': self.transfers.cancel(int(path.rsplit('/', 1)[-1]))})
+            except ValueError as exc:
+                return self._reply(400, {'error': str(exc)})
+        if not path.startswith('/v1/files/'):
+            return self._reply(404, {'error': 'Not found.'})
+        sha = path.removeprefix('/v1/files/')
+        if len(sha) != 64 or any(c not in '0123456789abcdef' for c in sha):
+            return self._reply(400, {'error': 'Invalid fingerprint.'})
+        try:
+            return self._reply(200, {'removed': self.library.remove(sha)})
+        except ValueError as exc:
+            return self._reply(409, {'error': str(exc)})
+
+
+def status_payload(library, token):
+    files = library.list_files()
+    return {'connection': 'connected', 'file_count': len(files),
+            'total_size': sum(file['size'] for file in files),
+            'retention': library.retention(), 'write_token': token}
+
+
+def main():
+    from multimedia.local_transfers import TransferManager
+    raw_origins = os.environ.get('GKPS_MEDIA_ALLOWED_ORIGINS', '')
+    seeds = frozenset() if not raw_origins.strip() else parse_allowed_origins(raw_origins)
+    library = LocalLibrary(app_origins=seeds)
+    transfers = TransferManager(library)
+    MediaHandler.library = library
+    MediaHandler.transfers = transfers
+    MediaHandler.token = secrets.token_urlsafe(32)
+    server = ThreadingHTTPServer(('0.0.0.0', PORT), MediaHandler)
+    print(f'Media Library companion listening on container port {PORT}', flush=True)
+    server.serve_forever()
+
+
+if __name__ == '__main__':
+    main()

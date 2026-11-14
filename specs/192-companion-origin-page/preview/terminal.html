@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>192 — launcher setup preview</title>
+<link rel="stylesheet" href="terminal.css">
+</head>
+<body>
+<header>
+  <h1>docker\up.ps1 &nbsp;/&nbsp; docker/up.sh — the setup shell, in action</h1>
+  <div class="modes">
+    <button id="modeWalk" class="modebtn" type="button" aria-pressed="true">walk-through</button>
+    <button id="modeLive" class="modebtn" type="button" aria-pressed="false">live setup</button>
+  </div>
+  <p id="desc"></p>
+</header>
+<main id="term" class="term" aria-live="polite"></main>
+<div id="liverow" hidden>
+  <span class="prompt">origin:</span>
+  <input id="livein" autocomplete="off" spellcheck="false" aria-label="origin prompt">
+  <button id="reset" type="button" hidden>start over</button>
+</div>
+<footer>
+  <nav id="pills"></nav>
+  <div class="controls">
+    <button id="back" type="button">← line</button>
+    <button id="next" type="button">line →</button>
+    <button id="run" type="button">run all</button>
+    <span class="sep"></span>
+    <button id="prevS" type="button">◀ scenario</button>
+    <button id="nextS" type="button">scenario ▶</button>
+  </div>
+  <p class="hint">Enter or → next line · Backspace or ← rewind · ↑/↓ or [ ] switch scenario · a plays the scenario · the address-bar position is a deep link</p>
+</footer>
+<script src="terminal.js"></script>
+</body>
+</html>

@@ -10,7 +10,6 @@ const songList = $('#song-list')
 const search = $('#search-song')
 
 const bookName = $('#book-name')
-const bookLang = $('#book-lang')
 
 const buttonAddSong = $('#btn-add-song')
 
@@ -45,7 +44,6 @@ const hideLoader = () => {
 const displayBookInfoPlaceholder = () => {
     breadcrumb.hide()
     bookName.hide()
-    bookLang.hide()
     placeholderBookInfo.show()
 }
 
@@ -59,7 +57,6 @@ const displayPlaceholder = () => {
 const displayBookInfo = () => {
     placeholderBookInfo.hide()
     bookName.show()
-    bookLang.show()
 }
 
 const displaySongList = () => {
@@ -86,7 +83,6 @@ const updateBreadcrumb = book => {
 
 const updateBookInfo = book => {
     bookName.text(book.name)
-    bookLang.text(book.lang === 1 ? 'Simalungun' : 'Indonesia')
 
     displayBookInfo()
 }

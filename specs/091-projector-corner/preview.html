@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Projector · Mouse controls preview · 1366×768</title>
+<style>
+  :root {
+    --hall: #2a2823; --wall: #14130F; --ink: #F5F3EE; --head: #FFD166;
+    --whisper: #6E6A62; --on: #E8E4DC; --quiet: #8E8A80;
+    --display-ease: cubic-bezier(.32, .72, .28, 1);
+    --scroll-thumb: #45413A; --scroll-thumb-hover: #65615A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--hall); }
+  body {
+    min-width: 1366px; min-height: 768px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "CMG Sans", "Source Sans Pro", "Source Sans 3", "Liberation Sans", sans-serif;
+  }
+  .wall {
+    position: relative;
+    width: 1366px; height: 768px;
+    background: var(--wall); color: var(--ink);
+    font-weight: 700; line-height: 1.37;
+    overflow: hidden;
+  }
+  .projector__screen {
+    height: 100%;
+    padding: 32px 32px 64px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .projector__screens { position: relative; flex: 1; width: 100%; overflow: hidden; }
+  .screen {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: stretch; justify-content: flex-start;
+    text-align: center;
+  }
+  .screen__head {
+    flex: 0 0 auto; width: 100%;
+    margin: 0 0 1em; padding: 0; text-align: center;
+    color: var(--head); white-space: pre-wrap; overflow-wrap: break-word;
+    font-size: 123.60679775px; font-weight: 700; line-height: 1.37;
+  }
+  .screen__lines {
+    flex: 1 1 auto; min-height: 0; width: 100%; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0; text-align: center; font-size: 200px;
+  }
+  .screen__line + .screen__line { margin-top: 0.45em; }
+  .screen__line {
+    flex: 0 0 auto; width: 100%;
+    margin: 0; text-align: center;
+    white-space: pre-wrap; overflow-wrap: break-word;
+    font-size: inherit; font-weight: 700; line-height: 1.37;
+  }
+  .cue {
+    position: absolute; left: 32px; right: 84px; bottom: 20px;
+    display: flex; align-items: center; height: 24px;
+    margin: 0; padding: 0;
+    font-size: 16px; font-weight: 650; line-height: 1; color: var(--whisper); letter-spacing: 0.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cue .on { color: var(--on); }
+  .cue-service {
+    appearance: none; display: inline-flex; align-items: center; justify-content: center;
+    flex: 0 0 24px; width: 24px; height: 24px; margin: 0; padding: 0;
+    border: 0; border-radius: 5px; background: none; color: inherit; cursor: pointer;
+    transition: color 120ms ease, background-color 120ms ease;
+  }
+  .cue-service svg { display: block; width: 19px; height: 19px; }
+  .cue-service:hover, .cue-service[aria-expanded="true"] { color: var(--on); background: #2a2722; }
+  .cue-service:active { color: var(--ink); background: #49443c; }
+  .cue-service:focus-visible { outline: 1px solid var(--on); outline-offset: 3px; }
+  .cue-separator { margin: 0 .42em 0 .32em; }
+  .projector-find-dismiss { position: absolute; inset: 0; z-index: 7; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; }
+  .projector-find-dismiss[hidden] { display: none; }
+  .projector-find { position: absolute; z-index: 8; left: 32px; bottom: 58px; width: 400px; max-height: 560px; overflow: auto; padding: 16px; background: var(--wall); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; color: var(--on); font-size: 11px; font-weight: 400; }
+  .projector-find[hidden] { display: none; }
+  .projector-find label { display: block; margin-bottom: 8px; color: var(--quiet); }
+  .projector-find input { width: 100%; padding: 8px 10px; border: 1px solid #4a463f; border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
+  .projector-find input:focus-visible { border-color: var(--on); }
+  .entry-list-dismiss {
+    position: absolute; inset: 0; z-index: 6; width: 100%; height: 100%;
+    padding: 0; border: 0; background: rgba(8, 7, 5, .28);
+    color: var(--quiet); cursor: pointer;
+  }
+  .entry-list-dismiss[hidden] { display: none; }
+  .wall.entry-list-open .entry-list-dismiss { animation: projectorBackdropIn 180ms var(--display-ease) both; }
+  .wall.entry-list-closing .entry-list-dismiss { animation: projectorBackdropOut 180ms var(--display-ease) both; }
+  .entry-list { position: absolute; z-index: 7; left: 32px; bottom: 58px; width: 360px; max-height: 560px; overflow: auto; scroll-padding-top: 68px; background: var(--wall); border: 1px solid #3a372f; border-radius: 10px; box-shadow: 0 16px 48px #0005; font-size: 12px; font-weight: 400; }
+  @supports not selector(::-webkit-scrollbar) {
+    .entry-list { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+  }
+  .entry-list::-webkit-scrollbar { width: 5px; height: 5px; }
+  .entry-list::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  .entry-list::-webkit-scrollbar-track, .entry-list::-webkit-scrollbar-corner { background: transparent; }
+  .entry-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+  .entry-list::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+  .entry-list[hidden] { display: none; }
+  .wall.entry-list-open .entry-list { animation: projectorListIn 180ms var(--display-ease) both; }
+  .wall.entry-list-closing .entry-list { animation: projectorListOut 180ms var(--display-ease) both; pointer-events: none; }
+  .entry-list__header { position: sticky; top: 0; z-index: 1; padding: 10px 16px 9px; background: var(--wall); }
+  .entry-list__heading { display: block; margin-bottom: 8px; color: var(--quiet); font-size: 11px; letter-spacing: .04em; }
+  .entry-list__search { width: 100%; padding: 7px 9px; border: 1px solid #4a463f; border-radius: 5px; background: #2a2722; color: var(--on); font: inherit; outline: none; }
+  .entry-list__search:focus-visible { border-color: var(--quiet); }
+  .entry-list__results { padding-bottom: 10px; }
+  .entry-list__empty { padding: 9px 16px; color: var(--quiet); }
+  .entry-list__item { display: grid; grid-template-columns: 26px 1fr; gap: 8px; width: 100%; min-height: 37px; align-items: center; padding: 7px 16px; border: 0; background: none; color: var(--on); text-align: left; font: inherit; cursor: pointer; }
+  .entry-list__item[aria-current="true"] { box-shadow: inset 2px 0 var(--quiet); }
+  .entry-list__item:hover, .entry-list__item:focus-visible { background: #26231f; color: var(--ink); outline: none; }
+  .entry-list__item[data-active="true"] { background: #36322b; color: var(--ink); }
+  .entry-list__number { color: var(--quiet); font-variant-numeric: tabular-nums; }
+  .entry-list__item[aria-current="true"] .entry-list__number { color: var(--on); }
+  .entry-list__meta { display: block; margin-top: 2px; color: var(--quiet); font-size: 10px; }
+  .cue-baits { display: inline-flex; align-items: center; gap: .36em; margin: 0 .42em 0 .36em; }
+  .cue-baits[hidden] { display: none; }
+  .cue-bait, .cue-next, .cue-translation {
+    appearance: none; border: 0; margin: 0; padding: 0;
+    background: transparent; color: inherit; font: inherit; line-height: inherit;
+    transition: color 140ms ease, opacity 140ms ease;
+  }
+  .cue-bait { cursor: pointer; }
+  .cue-bait[aria-pressed="true"] { color: var(--on); }
+  .cue-bait:hover { color: #817d74; }
+  .cue-bait[aria-pressed="true"]:hover { color: #d4d0c7; }
+  .cue-bait:active { opacity: .72; }
+  .cue-translation { cursor: pointer; }
+  .cue-translation:hover { color: #817d74; }
+  .cue-translation.flash { color: var(--on); }
+  .cue-translation:active { opacity: .72; }
+  .cue-progress { color: var(--on); }
+  .cue-progress:not(:empty)::before { content: "·"; margin: 0 .42em 0 .32em; color: var(--whisper); }
+  .cue-next {
+    display: inline-flex; align-items: center; gap: .18em; margin-left: .26em;
+    cursor: url("./cursor-right.svg") 16 16, e-resize; white-space: nowrap;
+  }
+  .cue-next:hover { color: #817d74; }
+  .cue-next.on { color: var(--on); }
+  .cue-next.on:hover { opacity: .9; }
+  .cue-bait:focus-visible, .cue-next:focus-visible, .cue-translation:focus-visible { outline: 1px solid var(--on); outline-offset: 3px; }
+  .mouse-zones {
+    position: absolute; inset: 0 0 64px; z-index: 2;
+    display: grid; grid-template-columns: 40% 20% 40%;
+  }
+  .mouse-zone { background: transparent; }
+  .mouse-zone--previous { cursor: url("./cursor-left.svg") 16 16, w-resize; }
+  .mouse-zone--next { cursor: url("./cursor-right.svg") 16 16, e-resize; }
+  .mouse-zone--display { cursor: url("./cursor-hide.svg") 16 16, pointer; }
+  .wall.words-hidden .mouse-zone--display { cursor: url("./cursor-show.svg") 16 16, pointer; }
+  .wall.keys-open .mouse-zones, .wall.entry-list-open .mouse-zones, .wall.find-open .mouse-zones,
+  .wall.keys-closing .mouse-zones, .wall.entry-list-closing .mouse-zones { pointer-events: none; }
+  .wall.keys-open .cue, .wall.keys-closing .cue { pointer-events: none; }
+  .wall.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open) .cue,
+  .wall.controls-idle:not(.keys-open):not(.entry-list-open):not(.find-open) .keys {
+    opacity: 0; visibility: hidden; pointer-events: none;
+  }
+  .keys {
+    position: absolute; right: 32px; bottom: 20px;
+    margin: 0; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer;
+    color: var(--whisper); line-height: 0; z-index: 5;
+    transition: color 120ms ease, background-color 120ms ease, transform 120ms ease,
+      opacity 180ms ease, visibility 0s linear 180ms;
+  }
+  .keys svg { display: block; width: 34px; height: 24px; }
+  .keys:hover, .wall.keys-open .keys { color: var(--on); background: #2a2722; }
+  .keys:active, .wall.keys-open .keys:active { color: var(--ink); background: #49443c; transform: scale(0.96); }
+  .wall.cursor-hidden, .wall.cursor-hidden * { cursor: none !important; }
+  .cue { z-index: 5; transition: opacity 180ms ease, visibility 0s linear 180ms; }
+  .wall:not(.controls-idle) .cue,
+  .wall:not(.controls-idle) .keys { transition-delay: 0s; }
+  .wall.keys-open::before, .wall.keys-closing::before {
+    content: "";
+    position: absolute; inset: 0; z-index: 1;
+    background: rgba(8, 7, 5, 0.62);
+    cursor: pointer;
+  }
+  .wall.keys-open::before { animation: projectorBackdropIn 180ms var(--display-ease) both; }
+  .wall.keys-closing::before { animation: projectorBackdropOut 180ms var(--display-ease) both; }
+  .sheet {
+    position: absolute; left: 50%; top: 50%; z-index: 4;
+    transform: translate(-50%, -50%);
+    display: none; gap: 32px;
+    padding: 20px 24px;
+    background: var(--wall);
+    border: 1px solid #3a372f; border-radius: 10px;
+    box-shadow: 0 16px 48px #0005;
+    font-size: 14px; font-weight: 400; letter-spacing: 0; line-height: 1.25;
+    color: var(--whisper);
+  }
+  .wall.keys-open .sheet { display: flex; animation: projectorSheetIn 180ms var(--display-ease) both; }
+  .wall.keys-closing .sheet { display: flex; pointer-events: none; animation: projectorSheetOut 180ms var(--display-ease) both; }
+  @keyframes projectorBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes projectorBackdropOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes projectorSheetIn {
+    from { opacity: 0; transform: translate(-50%, -50%) translateY(8px) scale(.985); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  @keyframes projectorSheetOut {
+    from { opacity: 1; transform: translate(-50%, -50%); }
+    to { opacity: 0; transform: translate(-50%, -50%) translateY(8px) scale(.985); }
+  }
+  @keyframes projectorListIn {
+    from { opacity: 0; transform: translateY(6px) scale(.99); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes projectorListOut {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(6px) scale(.99); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wall.keys-open::before, .wall.keys-closing::before,
+    .wall.keys-open .sheet, .wall.keys-closing .sheet,
+    .wall.entry-list-open .entry-list-dismiss, .wall.entry-list-closing .entry-list-dismiss,
+    .wall.entry-list-open .entry-list, .wall.entry-list-closing .entry-list { animation: none; }
+  }
+  .stack { display: flex; flex-direction: column; gap: 24px; }
+  .group h3 {
+    margin: 0 0 4px;
+    font-size: 14px; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--quiet);
+  }
+  .row {
+    display: flex; align-items: center; gap: 20px;
+    margin: 0; padding: 3px 0;
+  }
+  .row + .row { border-top: 1px solid #ffffff08; }
+  .combo { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+  .chord { display: inline-flex; gap: 4px; }
+  .or { color: var(--quiet); font-size: 14px; font-weight: 650; }
+  .k {
+    --u: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: var(--u); min-width: var(--u); height: var(--u); padding: 0;
+    border: 1px solid #4a463f; border-radius: 5px;
+    background: #2a2722; color: var(--on);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    font-size: 14px; font-weight: 400; line-height: 1;
+  }
+  .k.glyph { font-size: 16px; font-weight: 400; font-family: "DejaVu Sans", sans-serif; }
+  .arrow-mark { display: block; width: 14px; height: 14px; line-height: 0; }
+  .arrow-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .key-symbol, .shift-mark { display: block; width: 14px; height: 14px; line-height: 0; }
+  .key-symbol svg, .shift-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .space-mark { display: inline-block; transform: scaleX(1.3); }
+  .cue-arrow { display: inline-block; width: .8em; height: .8em; line-height: 0; }
+  .cue-arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .k.nav { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); font-size: 12px; }
+  .k.w { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.w:not(.glyph) { font-size: 12px; }
+  .k.ww { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.bk { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.sp { width: calc(var(--u) * 3); min-width: calc(var(--u) * 3); font-size: 12px; }
+  .k.sp.glyph { font-size: 16px; }
+  .fn { white-space: nowrap; color: var(--on); }
+  .keys:focus-visible { outline: 1px solid var(--on); outline-offset: 6px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="kbd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M8 12h.01M12 12h.01M16 12h.01M7 15h10" stroke-width="2.4"/>
+  </symbol>
+  <symbol id="service-list-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+    <path d="M9 6h11M9 12h11M9 18h11"/>
+    <path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="2.4"/>
+  </symbol>
+  <symbol id="arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8h10m-4-4 4 4-4 4"/>
+  </symbol>
+  <symbol id="arrow-left" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 8H3m4-4-4 4 4 4"/>
+  </symbol>
+  <symbol id="arrow-up" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 13V3m-4 4 4-4 4 4"/>
+  </symbol>
+  <symbol id="arrow-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3v10m-4-4 4 4 4-4"/>
+  </symbol>
+  <symbol id="shift-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 2 14 8h-3v4H5V8H2zM4.5 14h7"/>
+  </symbol>
+  <symbol id="backspace" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h7a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 13 13H6L2 8z"/>
+    <path d="m8 6 4 4m0-4-4 4"/>
+  </symbol>
+  <symbol id="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 3v8H3m0 0 3-3m-3 3 3 3"/>
+  </symbol>
+</svg>
+<div class="wall" id="wall">
+  <div class="mouse-zones" aria-hidden="true">
+    <div class="mouse-zone mouse-zone--previous" data-mouse-action="previous"></div>
+    <div class="mouse-zone mouse-zone--display" data-mouse-action="display"></div>
+    <div class="mouse-zone mouse-zone--next" data-mouse-action="next"></div>
+  </div>
+  <div class="projector__screen">
+    <div class="projector__screens" id="stage">
+      <div class="screen">
+        <h1 class="screen__head"></h1>
+        <div class="screen__lines"></div>
+      </div>
+    </div>
+  </div>
+  <div class="cue" id="corner-cue" aria-label="Current position and next entry">
+    <button type="button" class="cue-service" id="cue-service" aria-label="Service entries" aria-expanded="false" aria-controls="entry-list" title="Service entries"><svg aria-hidden="true"><use href="#service-list-icon"/></svg></button><span class="cue-separator" aria-hidden="true">·</span>
+    <span id="cue-prefix"></span><span class="cue-baits" id="cue-baits" aria-label="Choose a bait"></span><span class="cue-progress" id="cue-progress"></span>
+    <button type="button" class="cue-next" id="cue-next" aria-label="Go to next entry">
+      <span class="cue-arrow" id="cue-arrow" aria-hidden="true"><svg><use href="#arrow-right"/></svg></span><span id="cue-next-name"></span>
+    </button>
+  </div>
+  <button type="button" class="entry-list-dismiss" id="entry-list-dismiss" aria-label="Close service entries" hidden></button>
+  <div class="entry-list" id="entry-list" aria-label="Service entries" hidden>
+    <div class="entry-list__header">
+      <label class="entry-list__heading" for="entry-list-search">SERVICE ENTRIES</label>
+      <input id="entry-list-search" class="entry-list__search" type="search" placeholder="Search entries" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="entry-list-results">
+    </div>
+    <div id="entry-list-results" class="entry-list__results" role="listbox" aria-label="Matching service entries"></div>
+  </div>
+  <button type="button" class="projector-find-dismiss" id="projectorFindDismiss" aria-label="Close passage or song search" hidden></button>
+  <section class="projector-find" id="projectorFind" aria-label="Projector find" hidden>
+    <label for="projectorFindInput">Passage or Song</label>
+    <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false">
+  </section>
+  <button type="button" class="keys" aria-label="Shortcuts" aria-expanded="false" aria-controls="key-list"><svg aria-hidden="true"><use href="#kbd"/></svg></button>
+  <div class="sheet" id="key-list">
+    <div class="stack">
+      <section class="group">
+        <h3>Service</h3>
+        <p class="row"><span class="fn">Next</span><span class="combo"><span class="chord"><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Down Arrow"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous</span><span class="combo"><span class="chord"><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Up Arrow"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First</span><span class="combo"><span class="chord"><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last</span><span class="combo"><span class="chord"><span class="k nav">End</span></span></span></p>
+        <p class="row"><span class="fn">Next Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Previous Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">First Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Song</h3>
+        <p class="row"><span class="fn">Next Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Passage</h3>
+        <p class="row"><span class="fn">Flip TB / SIM</span><span class="combo"><span class="chord"><span class="k">T</span></span></span></p>
+        <p class="row"><span class="fn">First Verse</span><span class="combo"><span class="chord"><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Verse</span><span class="combo"><span class="chord"><span class="k nav">End</span></span></span></p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="group">
+        <h3>Library passage</h3>
+        <p class="row"><span class="fn">Next Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">End</span></span></span></p>
+        <p class="row"><span class="fn">Next Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Previous Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">First Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Library Detour</h3>
+        <p class="row"><span class="fn">Back to Service</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="group">
+        <h3>Display</h3>
+        <p class="row"><span class="fn">Show or Hide Words</span><span class="combo"><span class="chord"><span class="k sp glyph" title="Space" aria-label="Space"><span class="space-mark">␣</span></span></span></span></p>
+        <p class="row"><span class="fn">Show or Hide Corner</span><span class="combo"><span class="chord"><span class="k">C</span></span></span></p>
+        <p class="row"><span class="fn">Keyboard Shortcuts</span><span class="combo"><span class="chord"><span class="k">K</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Find</h3>
+        <p class="row"><span class="fn">Find in Service</span><span class="combo"><span class="chord"><span class="k">J</span></span></span></p>
+        <p class="row"><span class="fn">Passage or Song</span><span class="combo"><span class="chord"><span class="k">G</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>While Finding</h3>
+        <p class="row"><span class="fn">Previous Match</span><span class="combo"><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Up Arrow"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Next Match</span><span class="combo"><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Down Arrow"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Close When Empty</span><span class="combo"><span class="chord"><span class="k bk glyph" title="Backspace" aria-label="Backspace"><span class="key-symbol" aria-hidden="true"><svg><use href="#backspace"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Open Match</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Enter" aria-label="Enter"><span class="key-symbol" aria-hidden="true"><svg><use href="#enter"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Close Find</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Fullscreen</h3>
+        <p class="row"><span class="fn">Enter or Leave</span><span class="combo"><span class="chord"><span class="k">F</span></span></span></p>
+        <p class="row"><span class="fn">Hold to Leave</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    var stage = document.getElementById('stage');
+    var head = stage.querySelector('.screen__head');
+    var lines = stage.querySelector('.screen__lines');
+    var range = document.createRange();
+    var goldenRatio = (1 + Math.sqrt(5)) / 2;
+
+    function applyFontScale(textSize) {
+      lines.style.fontSize = textSize + 'px';
+      head.style.fontSize = (textSize / goldenRatio) + 'px';
+    }
+
+    function textOverflows() {
+      if (lines.scrollHeight > lines.clientHeight + 1) return true;
+      var stageBox = stage.getBoundingClientRect();
+      var linesBox = lines.getBoundingClientRect();
+      range.selectNodeContents(lines);
+      var ink = range.getBoundingClientRect();
+      return ink.top < linesBox.top - 1 || ink.bottom > linesBox.bottom + 1
+          || ink.left < stageBox.left - 1 || ink.right > stageBox.right + 1;
+    }
+
+    function resizeTextFont() {
+      var smallest = 1;
+      var largest = 200;
+      while (smallest < largest) {
+        var candidate = Math.ceil((smallest + largest) / 2);
+        applyFontScale(candidate);
+        if (textOverflows()) largest = candidate - 1;
+        else smallest = candidate;
+      }
+      applyFontScale(smallest);
+    }
+
+    function fit() {
+      resizeTextFont();
+    }
+
+    var wall = document.getElementById('wall');
+    var button = wall.querySelector('.keys');
+    var cuePrefix = document.getElementById('cue-prefix');
+    var baitList = document.getElementById('cue-baits');
+    var cueProgress = document.getElementById('cue-progress');
+    var cueNext = document.getElementById('cue-next');
+    var cueArrow = document.getElementById('cue-arrow');
+    var cueNextName = document.getElementById('cue-next-name');
+    var cueService = document.getElementById('cue-service');
+    var entryList = document.getElementById('entry-list');
+    var entryListDismiss = document.getElementById('entry-list-dismiss');
+    var findPanel = document.getElementById('projectorFind');
+    var findDismiss = document.getElementById('projectorFindDismiss');
+    var findInput = document.getElementById('projectorFindInput');
+    var entryListSearch = document.getElementById('entry-list-search');
+    var entryListResults = document.getElementById('entry-list-results');
+    var entryListMatches = [];
+    var entryListChoice = 0;
+    var entries = [
+      {
+        type: 'passage', title: 'Mateus 5:13', prefix: 'Mateus 5:13–16', next: 'NKB 12A',
+        pages: [['Hanima do garam ni dunia on.']],
+        tbPages: [['Kamu adalah garam dunia.']]
+      },
+      {
+        type: 'song', prefix: 'NKB 12A', next: 'Pengakuan dosa',
+        baits: [
+          { number: 1, pages: [['Bersama seluruh', 'ciptaan']] },
+          { number: 2, pages: [['Bersama seluruh', 'ciptaan'], ['memuji nama-Mu', 'selamanya']] },
+          { number: 4, pages: [['Kasih-Mu menyatukan', 'seluruh umat']] }
+        ]
+      },
+      {
+        type: 'text', title: 'Pengakuan dosa', next: 'Akhir liturgi',
+        pages: [['Ampunilah segala dosa', 'kami, ya Tuhan'], ['Perbarui hati kami', 'di dalam kasih-Mu']]
+      },
+      { type: 'break', title: 'Akhir liturgi', next: 'Khotbah', pages: [[]] },
+      {
+        type: 'text', title: 'Khotbah', next: 'Mateus 5:13',
+        pages: [['Firman-Mu menjadi', 'pelita bagi hidup kami']]
+      }
+    ];
+    var entryIndex = 1;
+    var baitIndex = 1;
+    var pageIndex = 0;
+    var songRest = false;
+    var passageTranslation = 'SIM';
+    var translationFlashTimer;
+
+    function currentEntry() { return entries[entryIndex]; }
+    function entryLabel(entry) { return entry.title || entry.prefix; }
+    function normalize(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
+    function renderEntryList() {
+      var query = normalize(entryListSearch.value.trim());
+      entryListMatches = entries.map(function (entry, index) { return index; }).filter(function (index) {
+        var entry = entries[index];
+        var searchable = (index + 1) + ' ' + entryLabel(entry) + ' ' +
+          (entry.baits ? 'Bait ' + entry.baits.map(function (bait) { return bait.number; }).join(', ') : '');
+        return normalize(searchable).includes(query);
+      });
+      if (!entryListMatches.includes(entryListChoice)) entryListChoice = entryListMatches[0];
+      entryListResults.replaceChildren();
+      entryListMatches.forEach(function (index) {
+        var entry = entries[index];
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'entry-list__item';
+        item.id = 'entry-list-option-' + index;
+        item.setAttribute('role', 'option');
+        item.dataset.entryIndex = String(index);
+        if (index === entryIndex) item.setAttribute('aria-current', 'true');
+        item.dataset.active = String(index === entryListChoice);
+        item.setAttribute('aria-selected', String(index === entryListChoice));
+        var number = document.createElement('span');
+        number.className = 'entry-list__number';
+        number.textContent = String(index + 1);
+        var name = document.createElement('span');
+        name.textContent = entryLabel(entry);
+        if (entry.type === 'song') {
+          var meta = document.createElement('small');
+          meta.className = 'entry-list__meta';
+          meta.textContent = 'Bait ' + entry.baits.map(function (bait) { return bait.number; }).join(', ');
+          name.appendChild(meta);
+        }
+        item.append(number, name);
+        entryListResults.appendChild(item);
+      });
+      if (!entryListMatches.length) {
+        var empty = document.createElement('div');
+        empty.className = 'entry-list__empty'; empty.textContent = 'No matching entries';
+        empty.setAttribute('role', 'status');
+        entryListResults.appendChild(empty);
+      }
+      if (entryListChoice == null) entryListSearch.removeAttribute('aria-activedescendant');
+      else entryListSearch.setAttribute('aria-activedescendant', 'entry-list-option-' + entryListChoice);
+    }
+    function scrollEntryListChoice() {
+      var selected = entryList.querySelector('[data-active="true"]');
+      if (!selected) return;
+      var position = entryListMatches.indexOf(entryListChoice);
+      if (position === entryListMatches.length - 1) entryList.scrollTop = entryList.scrollHeight;
+      else if (position === 0) entryList.scrollTop = 0;
+      else {
+        var header = entryList.querySelector('.entry-list__header').getBoundingClientRect();
+        var row = selected.getBoundingClientRect();
+        var visibleHeight = entryList.clientHeight - header.height;
+        entryList.scrollTop += row.top - header.bottom - (visibleHeight - row.height) / 2;
+      }
+    }
+    function currentPages() {
+      var entry = currentEntry();
+      return entry.type === 'song' ? entry.baits[baitIndex].pages
+        : entry.type === 'passage' && passageTranslation === 'TB' ? entry.tbPages
+        : entry.pages;
+    }
+    function renderCue() {
+      var entry = currentEntry();
+      var isSong = entry.type === 'song';
+      var isBreak = entry.type === 'break';
+      var lastSongRest = isSong && songRest && baitIndex === entry.baits.length - 1;
+      baitList.hidden = !isSong;
+      baitList.replaceChildren();
+      if (isSong) {
+        entry.baits.forEach(function (bait, index) {
+          var baitButton = document.createElement('button');
+          baitButton.type = 'button';
+          baitButton.className = 'cue-bait';
+          baitButton.dataset.baitIndex = String(index);
+          baitButton.textContent = String(bait.number);
+          baitButton.setAttribute('aria-label', 'Go to bait ' + bait.number);
+          baitButton.setAttribute('aria-pressed', index === (songRest ? baitIndex + 1 : baitIndex) ? 'true' : 'false');
+          baitList.appendChild(baitButton);
+        });
+        cuePrefix.textContent = entry.prefix + ' ·';
+      } else {
+        cuePrefix.textContent = entry.type === 'passage' ? entry.prefix + ' · ' : entry.title;
+        if (entry.type === 'passage') {
+          var translationButton = document.createElement('button');
+          translationButton.type = 'button';
+          translationButton.className = 'cue-translation';
+          translationButton.textContent = passageTranslation;
+          translationButton.setAttribute('aria-label', 'Flip passage translation from ' + passageTranslation);
+          cuePrefix.appendChild(translationButton);
+        }
+      }
+      cueProgress.textContent = isBreak || entry.type === 'passage' || (isSong && songRest)
+        ? ''
+        : (pageIndex + 1) + '/' + currentPages().length;
+      cueArrow.classList.toggle('on', isBreak || lastSongRest);
+      cueNext.classList.toggle('on', isBreak || lastSongRest);
+      cueNextName.textContent = entry.next;
+      cueNext.setAttribute('aria-label', 'Go to next entry: ' + entry.next);
+    }
+    function renderScreen() {
+      var entry = currentEntry();
+      var page = songRest ? [] : currentPages()[pageIndex] || [];
+      head.hidden = entry.type === 'song' || entry.type === 'break';
+      head.textContent = head.hidden ? '' : entry.title;
+      lines.replaceChildren();
+      page.forEach(function (line) {
+        var paragraph = document.createElement('p');
+        paragraph.className = 'screen__line';
+        paragraph.textContent = line;
+        lines.appendChild(paragraph);
+      });
+      renderCue();
+      renderEntryList();
+      fit();
+    }
+    function moveToEntry(index) {
+      entryIndex = (index + entries.length) % entries.length;
+      baitIndex = 0;
+      pageIndex = 0;
+      songRest = false;
+      renderScreen();
+    }
+    function nextEntry() { moveToEntry(entryIndex + 1); }
+    function previousEntry() { moveToEntry(entryIndex - 1); }
+    function stepForward() {
+      var entry = currentEntry();
+      if (entry.type === 'song' && songRest) {
+        if (baitIndex + 1 < entry.baits.length) {
+          baitIndex += 1;
+          pageIndex = 0;
+          songRest = false;
+          renderScreen();
+        } else {
+          nextEntry();
+        }
+        return;
+      }
+      var pages = currentPages();
+      if (pageIndex + 1 < pages.length) {
+        pageIndex += 1;
+      } else if (entry.type === 'song') {
+        songRest = true;
+      } else {
+        nextEntry();
+        return;
+      }
+      renderScreen();
+    }
+    function stepBackward() {
+      var entry = currentEntry();
+      if (entry.type === 'song' && songRest) {
+        songRest = false;
+      } else if (pageIndex > 0) {
+        pageIndex -= 1;
+      } else if (entry.type === 'song' && baitIndex > 0) {
+        baitIndex -= 1;
+        pageIndex = currentPages().length - 1;
+        songRest = true;
+      } else {
+        previousEntry();
+        return;
+      }
+      renderScreen();
+    }
+    function setWordsVisible(visible) {
+      wall.classList.toggle('words-hidden', !visible);
+      stage.style.visibility = visible ? '' : 'hidden';
+    }
+    function toggleWords() {
+      setWordsVisible(stage.style.visibility === 'hidden');
+    }
+    function flipTranslation() {
+      if (currentEntry().type !== 'passage') return;
+      passageTranslation = passageTranslation === 'SIM' ? 'TB' : 'SIM';
+      renderScreen();
+      var translationButton = cuePrefix.querySelector('.cue-translation');
+      translationButton.classList.add('flash');
+      window.clearTimeout(translationFlashTimer);
+      translationFlashTimer = window.setTimeout(function () {
+        translationButton.classList.remove('flash');
+      }, 1000);
+    }
+
+    var cursorTimer;
+    function revealCursor() {
+      wall.classList.remove('cursor-hidden');
+      window.clearTimeout(cursorTimer);
+      cursorTimer = window.setTimeout(function () {
+        wall.classList.add('cursor-hidden');
+      }, 2000);
+    }
+    ['pointermove', 'pointerdown', 'click'].forEach(function (eventName) {
+      wall.addEventListener(eventName, revealCursor, { passive: true });
+    });
+    revealCursor();
+
+    var controlsTimer;
+    function revealControls() {
+      window.clearTimeout(controlsTimer);
+      if (wall.classList.contains('corner-hidden')) return;
+      wall.classList.remove('controls-idle');
+      if (wall.classList.contains('keys-open') || wall.classList.contains('entry-list-open') ||
+          wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing') ||
+          wall.classList.contains('find-open')) return;
+      controlsTimer = window.setTimeout(function () {
+        wall.classList.add('controls-idle');
+      }, 30000);
+    }
+    ['pointermove', 'pointerdown', 'click', 'keydown'].forEach(function (eventName) {
+      document.addEventListener(eventName, revealControls, { passive: true });
+    });
+    revealControls();
+
+    var layerCloseMs = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
+    var keysCloseTimer, entryCloseTimer;
+    function setFindOpen(open) {
+      findPanel.hidden = !open;
+      findDismiss.hidden = !open;
+      wall.classList.toggle('find-open', open);
+      if (open) { findInput.value = ''; findInput.focus(); }
+      else { findInput.blur(); findDismiss.blur(); }
+      revealControls();
+    }
+    findDismiss.addEventListener('click', function (event) {
+      event.stopPropagation(); setFindOpen(false);
+    });
+    findInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' || (event.key === 'Backspace' && !findInput.value)) {
+        event.preventDefault(); event.stopPropagation(); setFindOpen(false);
+      }
+    });
+    function setOpen(open) {
+      if (open) setEntryListOpen(false);
+      if (open) {
+        window.clearTimeout(keysCloseTimer);
+        wall.classList.remove('keys-closing');
+        wall.classList.add('keys-open');
+      } else if (wall.classList.contains('keys-open')) {
+        button.blur();
+        window.clearTimeout(keysCloseTimer);
+        wall.classList.remove('keys-open');
+        wall.classList.add('keys-closing');
+        keysCloseTimer = window.setTimeout(function () {
+          wall.classList.remove('keys-closing');
+          wall.querySelector('.cue').inert = false;
+          revealControls();
+        }, layerCloseMs);
+      }
+      button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      wall.querySelector('.cue').inert = open || wall.classList.contains('keys-closing');
+      revealControls();
+    }
+    function setEntryListOpen(open) {
+      if (open && wall.classList.contains('keys-open')) return;
+      if (open) {
+        entryListSearch.value = '';
+        entryListChoice = entryIndex;
+        renderEntryList();
+        window.clearTimeout(entryCloseTimer);
+        wall.classList.remove('entry-list-closing');
+        wall.classList.add('entry-list-open');
+        entryList.hidden = false;
+        entryList.inert = false;
+        entryListDismiss.hidden = true;
+        window.requestAnimationFrame(function () {
+          if (wall.classList.contains('entry-list-open')) entryListDismiss.hidden = false;
+        });
+        entryListSearch.focus();
+      } else if (wall.classList.contains('entry-list-open')) {
+        entryListSearch.blur();
+        cueService.blur();
+        window.clearTimeout(entryCloseTimer);
+        wall.classList.remove('entry-list-open');
+        wall.classList.add('entry-list-closing');
+        entryList.inert = true;
+        entryCloseTimer = window.setTimeout(function () {
+          wall.classList.remove('entry-list-closing');
+          entryList.hidden = true;
+          entryListDismiss.hidden = true;
+          revealControls();
+        }, layerCloseMs);
+      }
+      cueService.setAttribute('aria-expanded', open ? 'true' : 'false');
+      revealControls();
+      if (open) scrollEntryListChoice();
+    }
+    cueService.addEventListener('click', function (event) {
+      event.stopPropagation();
+      setEntryListOpen(!wall.classList.contains('entry-list-open'));
+    });
+    entryListDismiss.addEventListener('click', function (event) {
+      event.stopPropagation();
+      setEntryListOpen(false);
+    });
+    function chooseEntryList(index) {
+      if (!entries[index]) return;
+      moveToEntry(index);
+      setEntryListOpen(false);
+    }
+    entryListSearch.addEventListener('input', function () {
+      entryListChoice = undefined;
+      renderEntryList();
+      scrollEntryListChoice();
+    });
+    entryListSearch.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' || (event.key === 'Backspace' && !entryListSearch.value)) {
+        event.preventDefault(); event.stopPropagation(); setEntryListOpen(false);
+      } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault(); event.stopPropagation();
+        if (!entryListMatches.length) return;
+        var position = entryListMatches.indexOf(entryListChoice);
+        entryListChoice = entryListMatches[(position + (event.key === 'ArrowDown' ? 1 : -1) + entryListMatches.length) % entryListMatches.length];
+        renderEntryList();
+        scrollEntryListChoice();
+      } else if (event.key === 'Enter') {
+        event.preventDefault(); event.stopPropagation(); chooseEntryList(entryListChoice);
+      }
+    });
+    entryList.addEventListener('click', function (event) {
+      var item = event.target.closest('.entry-list__item');
+      if (!item) return;
+      event.stopPropagation();
+      chooseEntryList(Number(item.dataset.entryIndex));
+    });
+    button.addEventListener('click', function (event) {
+      event.stopPropagation();
+      setOpen(!wall.classList.contains('keys-open'));
+    });
+    wall.addEventListener('click', function (event) {
+      if (wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
+      if (wall.classList.contains('keys-open')) {
+        if (!event.target.closest('.sheet')) setOpen(false);
+        return;
+      }
+      if (wall.classList.contains('entry-list-open')) {
+        if (!event.target.closest('.entry-list')) setEntryListOpen(false);
+        return;
+      }
+      if (wall.classList.contains('find-open')) return;
+      var zone = event.target.closest('.mouse-zone');
+      if (!zone) return;
+      if (zone.dataset.mouseAction === 'previous') stepBackward();
+      if (zone.dataset.mouseAction === 'next') stepForward();
+      if (zone.dataset.mouseAction === 'display') toggleWords();
+    });
+    baitList.addEventListener('click', function (event) {
+      var baitButton = event.target.closest('.cue-bait');
+      if (!baitButton) return;
+      event.stopPropagation();
+      if (wall.classList.contains('keys-open') || wall.classList.contains('entry-list-open')) return;
+      baitIndex = Number(baitButton.dataset.baitIndex);
+      pageIndex = 0;
+      songRest = false;
+      renderScreen();
+    });
+    cuePrefix.addEventListener('click', function (event) {
+      if (!event.target.closest('.cue-translation')) return;
+      event.stopPropagation();
+      if (wall.classList.contains('keys-open') || wall.classList.contains('entry-list-open')) return;
+      flipTranslation();
+    });
+    cueNext.addEventListener('click', function (event) {
+      event.stopPropagation();
+      if (wall.classList.contains('keys-open') || wall.classList.contains('entry-list-open')) return;
+      nextEntry();
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.target === entryListSearch || event.target === findInput) return;
+      if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.repeat) {
+        if (event.key.toLowerCase() === 'j' && !wall.classList.contains('keys-open')) {
+          event.preventDefault(); setEntryListOpen(true); return;
+        }
+        if (event.key.toLowerCase() === 'g' && !wall.classList.contains('keys-open') && !wall.classList.contains('entry-list-open')) {
+          event.preventDefault(); setFindOpen(true); return;
+        }
+        if (event.key.toLowerCase() === 'k') {
+          event.preventDefault(); setOpen(!wall.classList.contains('keys-open')); return;
+        }
+        if (event.key.toLowerCase() === 'f') {
+          event.preventDefault();
+          if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+          else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {});
+          return;
+        }
+      }
+      if (event.key === 'Escape') {
+        if (wall.classList.contains('keys-closing') || wall.classList.contains('entry-list-closing')) return;
+        if (wall.classList.contains('find-open')) { setFindOpen(false); return; }
+        if (wall.classList.contains('entry-list-open')) setEntryListOpen(false);
+        else setOpen(false);
+      }
+      if (wall.classList.contains('find-open')) return;
+      if (event.key.toLowerCase() === 't' && !wall.classList.contains('keys-open')) flipTranslation();
+      if (event.key.toLowerCase() === 'c') {
+        var hide = !wall.classList.contains('corner-hidden');
+        wall.classList.toggle('corner-hidden', hide);
+        wall.querySelector('.cue').hidden = hide;
+        button.hidden = hide;
+        if (hide) { setEntryListOpen(false); setOpen(false); }
+        else revealControls();
+      }
+      if (event.key === ' ' && event.target === document.body) {
+        event.preventDefault();
+        toggleWords();
+      }
+    });
+    renderScreen();
+    window.addEventListener('resize', fit);
+    if (location.hash === '#keys') setOpen(true);
+  })();
+</script>
+</body>
+</html>

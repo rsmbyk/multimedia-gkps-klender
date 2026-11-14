@@ -1,0 +1,280 @@
+{% load static %}
+{% comment %}
+The operator dock (spec 119): pick a Tata Ibadah, browse it, and run it.
+
+Two views of one panel, built to the approved mockup (v70): the picker is an
+age-grouped list of services (flat rows — name, an "On screen" pill, a "Today" pill
+on the day's own rows, a short date) under the same four buckets the reading sidebar
+draws (spec 132); the runner is a numbered list of entries — songs showing their
+reference beside the title with a "Bait …" line under it, untitled text in quiet
+italics, a section break as a hairline — with the current entry pinned, the next one
+named under it, and a transport row (edition chip, bait strip, two arrows) at the foot.
+
+The display state is browser-local (web/display.js): the picker says which service is
+on screen, the runner says which entry and screen, and the slashed-eye button in the
+runner's head is the whole display control ("Display this service" / "Hide words").
+
+The dock owns the transport keys and the focus: every control is tabindex="-1" and
+the panel itself is the focus target (tabindex="-1"), so keys never land on a button
+and Space never presses whatever was last clicked.
+{% endcomment %}
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title }}</title>
+
+<!-- Resolve the saved appearance before first paint (same key as the public site;
+     the dock's own default is dark). -->
+<script>
+(function () {
+  var mode = 'dark';
+  try {
+    var saved = localStorage.getItem('gkps-theme');
+    if (saved === 'light' || saved === 'dark' || saved === 'system') mode = saved;
+  } catch (e) {}
+  document.documentElement.dataset.themeMode = mode;
+  document.documentElement.dataset.theme = mode === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : mode;
+})();
+</script>
+
+<link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+<link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'styles/design/obs-dock.css' %}">
+</head>
+<body class="obs-dock">
+
+<main class="dock" id="dockPanel" data-view="pick" tabindex="-1" aria-label="Operator dock"
+      data-library-url="{% static 'web/projector-library.js' %}">
+
+  <!-- ============================== picker ============================== -->
+  <section class="view is-active" id="viewPick" aria-label="Pick a service">
+    <div class="dock__head">
+      <div class="dock__titlerow">
+        <img class="dock__logo" src="{% static 'assets/gkps.png' %}" alt="GKPS Klender" width="34" height="34">
+        <div style="min-width:0">
+          <h2 class="dock__title">Tata Ibadah</h2>
+        </div>
+        <span class="dock__tools">
+          <button type="button" class="iconbtn" id="reloadPickBtn" title="Reload services"
+                  aria-label="Reload services" tabindex="-1">
+            <svg viewBox="0 0 20 20"><path d="M16.2 8.6a6.3 6.3 0 1 0 .3 3.1"></path><path d="M16.7 4.5v4.4h-4.4"></path></svg>
+          </button>
+          <button type="button" class="iconbtn iconbtn--theme" id="themeBtn"
+                  title="Appearance: Dark" aria-label="Appearance: Dark" tabindex="-1">
+            <svg class="sun" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"/>
+            </svg>
+            <svg class="moon" viewBox="0 0 24 24">
+              <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/>
+            </svg>
+            <svg class="system" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="13" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+    </div>
+
+    <div class="dock__body" id="pickBody">
+      {% for group in groups %}
+      <section{% if group.key %} data-bucket="{{ group.key }}"{% endif %}>
+        <h3 class="group__head">{{ group.label }}</h3>
+        <ul>
+          {% for service in group.services %}
+          <li>
+            <button type="button" class="servicerow"
+                    data-service="{{ service.pk }}" data-name="{{ service.name }}"
+                    data-date="{{ service.long_date }}" tabindex="-1">
+              <span class="servicerow__n">{{ service.name }}</span>
+              <span class="onscreen" data-onscreen-for="{{ service.pk }}" hidden>On screen</span>
+              {% if service.is_today %}<span class="servicerow__today">Today</span>{% endif %}
+              <span class="servicerow__d">{{ service.short_date }}</span>
+            </button>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% empty %}
+      <p class="dock__note">No Tata Ibadah yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ============================== runner ============================== -->
+  <section class="view" id="viewRun" aria-label="Runner">
+    <div class="dock__head">
+      <div class="dock__runheadrow">
+        <div class="dock__runtitles">
+          <p class="serviceline" id="runService"></p>
+          <p class="servicedate" id="runDate"></p>
+        </div>
+        <button type="button" class="iconbtn" id="findBtn" title="Go to a passage or song"
+                aria-label="Go to a passage or song" tabindex="-1">
+          <svg viewBox="0 0 20 20"><circle cx="8.7" cy="8.7" r="5.1"></circle><path d="M12.5 12.5 16.6 16.6"></path></svg>
+        </button>
+        <button type="button" class="iconbtn" id="switchBtn" title="Switch service"
+                aria-label="Switch service" tabindex="-1">
+          <svg viewBox="0 0 20 20"><path d="M6 4h10M6 10h10M6 16h10"></path><path d="M3 4h.01M3 10h.01M3 16h.01" stroke-width="2.4"></path></svg>
+        </button>
+        <button type="button" class="iconbtn" id="blankBtn" aria-pressed="true"
+                title="Display this service" aria-label="Display this service" tabindex="-1">
+          <svg class="glyph glyph--display" viewBox="0 0 20 20">
+            <path d="M3 3l14 14"></path>
+            <path d="M6.6 6.7C4.1 8.2 2.6 10 2.6 10s2.8 4.6 7.4 4.6c1.5 0 2.8-.4 3.9-1"></path>
+            <path d="M9 5.5c.3 0 .7-.1 1-.1 4.6 0 7.4 4.6 7.4 4.6s-.8 1.4-2.2 2.6"></path>
+          </svg>
+          <svg class="glyph glyph--onscreen" viewBox="0 0 20 20">
+            <path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"></path>
+            <circle cx="10" cy="10" r="2.6"></circle>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="dock__body" id="runBody">
+      <div class="offblock" id="offBlock" hidden>
+        <div class="offstrip" id="offStrip">
+          <span class="offstrip__label" id="offLabel"></span>
+          <button type="button" class="offstrip__back" id="offBack" tabindex="-1">Back</button>
+        </div>
+        <div class="entryinner is-open">
+          <div class="entryinner__clip">
+            <div class="entryinner__body" id="offBody"></div>
+          </div>
+        </div>
+      </div>
+      <ul id="entryList"></ul>
+      <p class="dock__note" id="runNote" hidden></p>
+    </div>
+
+
+  </section>
+
+    <!-- The band and its scrim are a layer over BOTH views (spec 187 FR-002): a go to
+         can be started from the picker, so the footer cannot live inside the runner. -->
+    <div class="dock__transport">
+      <div class="bandswap" id="bandSwap">
+      <div class="bandswap__row transportrow" id="transportRow">
+        <button type="button" class="transchip" id="transChip" hidden tabindex="-1"
+                aria-pressed="false" title="Flip TB / SIM (T)">TB</button>
+        <div class="baits" id="baitStrip" hidden>
+          <span class="baitstrip" id="baitChips"></span>
+        </div>
+        <span class="navpair">
+          <button type="button" class="navbtn" id="prevBtn" tabindex="-1"
+                  title="Previous screen" aria-label="Previous screen">
+            <svg viewBox="0 0 20 20"><path d="M12 4 6 10l6 6"></path></svg>
+          </button>
+          <button type="button" class="navbtn" id="nextBtn" tabindex="-1"
+                  title="Next screen" aria-label="Next screen">
+            <svg viewBox="0 0 20 20"><path d="M8 4l6 6-6 6"></path></svg>
+          </button>
+        </span>
+      </div>
+
+      <div class="bandswap__row" id="findBand">
+        <div class="findband">
+          <div class="findrow">
+            <input class="findfield" id="findInput" type="search" autocomplete="off"
+                   spellcheck="false" placeholder="Passage or song" tabindex="-1">
+          </div>
+          <button type="button" class="findresult" id="findResult" disabled tabindex="-1">
+            <span class="findresult__label" id="findLabel">Start typing to find a match</span>
+            <span class="findcount" id="findCount">0 / 0</span>
+          </button>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div class="findscrim" id="findScrim" hidden></div>
+
+    <div class="keysheet" id="keysheet" hidden>
+      <div class="keysheet__scrim" id="keysScrim"></div>
+      <section class="keysheet__panel" role="dialog" aria-modal="true"
+               aria-labelledby="keysTitle">
+        <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+        <symbol id="arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10m-4-4 4 4-4 4"/></symbol>
+        <symbol id="arrow-left" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3m4-4-4 4 4 4"/></symbol>
+        <symbol id="arrow-up" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3m-4 4 4-4 4 4"/></symbol>
+        <symbol id="arrow-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10m-4-4 4 4 4-4"/></symbol>
+        <symbol id="shift-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 14 8h-3v4H5V8H2zM4.5 14h7"/></symbol>
+        <symbol id="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v8H3m0 0 3-3m-3 3 3 3"/></symbol>
+        <symbol id="backspace" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 13 13H6L2 8z"/><path d="m8 6 4 4m0-4-4 4"/></symbol>
+        </svg>
+        <header class="keysheet__head">
+          <h2 class="keysheet__title" id="keysTitle">Keyboard</h2>
+          <button type="button" class="keysheet__close" id="keysClose" tabindex="-1"
+                  aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4 14.6 14.6M14.6 5.4 5.4 14.6"></path></svg>
+          </button>
+        </header>
+        <div class="keysheet__body" id="keysBody">
+              <section class="ksgroup ksgroup--first" data-keys="pick">
+                <h4>Pick a service</h4>
+                <p class="krow"><span class="kfn">Move the Pick</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span><span class="or">or</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Open the Service</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#enter"/></svg></span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Service</h4>
+                <p class="krow"><span class="kfn">Next</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span><span class="or">or</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span><span class="or">or</span><span class="k nav">PgDn</span></span></p>
+                <p class="krow"><span class="kfn">Previous</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span><span class="or">or</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span><span class="or">or</span><span class="k nav">PgUp</span></span></p>
+                <p class="krow"><span class="kfn">First</span><span class="chord"><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last</span><span class="chord"><span class="k nav">End</span></span></p>
+                <p class="krow"><span class="kfn">Next Entry</span><span class="chord"><span class="k w">⌘</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Previous Entry</span><span class="chord"><span class="k w">⌘</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">First Entry</span><span class="chord"><span class="k w">⌘</span><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Entry</span><span class="chord"><span class="k w">⌘</span><span class="k nav">End</span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Song</h4>
+                <p class="krow"><span class="kfn">Next Bait</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span><span class="or">or</span><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">PgDn</span></span></p>
+                <p class="krow"><span class="kfn">Previous Bait</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span><span class="or">or</span><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">PgUp</span></span></p>
+                <p class="krow"><span class="kfn">First Bait</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Bait</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">End</span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Passage</h4>
+                <p class="krow"><span class="kfn">Flip TB / SIM</span><span class="chord"><span class="k">T</span></span></p>
+                <p class="krow"><span class="kfn">First Verse</span><span class="chord"><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Verse</span><span class="chord"><span class="k nav">End</span></span></p>
+                <p class="krow"><span class="kfn">Next Chapter</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span><span class="or">or</span><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">PgDn</span></span></p>
+                <p class="krow"><span class="kfn">Previous Chapter</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span><span class="or">or</span><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">PgUp</span></span></p>
+                <p class="krow"><span class="kfn">First Chapter</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Chapter</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#shift-arrow"/></svg></span><span class="k nav">End</span></span></p>
+                <p class="krow"><span class="kfn">Next Book</span><span class="chord"><span class="k w">⌘</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Previous Book</span><span class="chord"><span class="k w">⌘</span><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">First Book</span><span class="chord"><span class="k w">⌘</span><span class="k nav">Home</span></span></p>
+                <p class="krow"><span class="kfn">Last Book</span><span class="chord"><span class="k w">⌘</span><span class="k nav">End</span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Display</h4>
+                <p class="krow"><span class="kfn">Show or Hide Words</span><span class="chord"><span class="k sp glyph" aria-label="Space"><span class="space-mark">␣</span></span></span></p>
+                <p class="krow"><span class="kfn">Keyboard Shortcuts</span><span class="chord"><span class="k">K</span></span></p>
+                <p class="krow"><span class="kfn">Passage or Song</span><span class="chord"><span class="k">G</span></span></p>
+                <p class="krow"><span class="kfn">Back to Services (hold)</span><span class="chord"><span class="k w">Esc</span></span></p>
+              </section>
+              <section class="ksgroup">
+                <h4>Find</h4>
+                <p class="krow"><span class="kfn">Previous Match</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Next Match</span><span class="chord"><span class="k glyph"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Open Match</span><span class="chord"><span class="k glyph ww"><svg aria-hidden="true"><use href="#enter"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Close When Empty</span><span class="chord"><span class="k glyph bk"><svg aria-hidden="true"><use href="#backspace"/></svg></span></span></p>
+                <p class="krow"><span class="kfn">Close Find</span><span class="chord"><span class="k w">Esc</span></span></p>
+              </section>
+        </div>
+      </section>
+    </div>
+</main>
+
+<script src="{% static 'web/display-session.js' %}"></script>
+<script src="{% static 'web/display.js' %}"></script>
+<script src="{% static 'web/obs-dock.js' %}"></script>
+</body>
+</html>

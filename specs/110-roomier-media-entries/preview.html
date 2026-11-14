@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Media entry spacing — preview</title>
+<style>
+:root{font:14px ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#282723;background:#f7f5f1;--canvas:#f7f5f1;--entry:#f3f1ee;--line:#dfdcd4;--ink:#282723;--muted:#6b695f;--green:#1c5c3c;--icon-bg:#e1e8e2}
+:root[data-theme="dark"]{color:#f3f0e9;background:#171611;--canvas:#171611;--entry:#24221d;--line:#403d35;--ink:#f3f0e9;--muted:#aaa69c;--green:#89ba97;--icon-bg:#2c4034}
+*{box-sizing:border-box}body{margin:0}.page{width:min(710px,calc(100% - 34px));margin:0 auto;padding:24px 16px 72px}.service-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:0 0 31px}.date{margin:0 0 5px;color:var(--muted);font-size:15px;letter-spacing:.15em;text-transform:uppercase;font-weight:730}.service-head h1{margin:0;font:700 39px/1.13 Georgia,ui-serif,serif}.project{border:0;border-radius:8px;background:#1c5c3c;color:#fff;padding:9px 15px;font:650 12px ui-sans-serif,system-ui,sans-serif}.entries{display:grid;gap:12px}.entry{position:relative;border:1px solid var(--line);border-radius:9px;background:var(--entry)}.entry--media{min-height:80px;display:flex;align-items:center;padding:16px 16px 16px 64px}.file-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:8px;display:grid;place-items:center;background:var(--icon-bg);color:var(--green)}.file-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.copy{min-width:0}.entry h2{margin:0 0 4px;font:640 17px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.02em;overflow-wrap:anywhere}.entry p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.45;font-weight:560}.entry--text{min-height:56px;padding:16px 12px;font:16px/1.4 Georgia,ui-serif,serif}.entry--break{height:56px;padding:27px 12px}.break-line{height:1px;background:var(--line);position:relative}.break-line:after{content:"";position:absolute;left:50%;top:-2px;width:5px;height:5px;transform:rotate(45deg);background:var(--line)}.theme{position:fixed;right:16px;bottom:16px;border:1px solid var(--line);border-radius:8px;background:var(--entry);color:var(--ink);padding:8px 12px;box-shadow:0 5px 20px #0002;font:12px ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+@media(max-width:520px){.page{padding-inline:0}.service-head h1{font-size:33px}.entry--media{padding-right:12px}.entry h2{font-size:15px}}
+</style>
+</head>
+<body>
+<main class="page"><header class="service-head"><div><p class="date">18 Oktober 2026</p><h1>Test</h1></div><button class="project" type="button">▣ Project</button></header>
+<div class="entries">
+<section class="entry entry--media"><span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21H6zM14 2.5v4h4M9 11h6M9 14h6M9 17h4"/></svg></span><div class="copy"><h2>Invoice-AATTCSTN-0002.pdf</h2><p>PDF</p></div></section>
+<section class="entry entry--text">13212321321</section>
+<section class="entry entry--media"><span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21H6zM14 2.5v4h4M9 11h6M9 14h6M9 17h4"/></svg></span><div class="copy"><h2>Tingting</h2><p>PDF · Invoice-AATTCSTN-0002.pdf</p></div></section>
+<section class="entry entry--break" aria-label="Break"><div class="break-line"></div></section>
+<section class="entry entry--media"><span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21H6zM14 2.5v4h4M9 11h6M9 14h6M9 17h4"/></svg></span><div class="copy"><h2>Invoice-AATTCSTN-0002.pdf</h2><p>PDF</p></div></section>
+</div></main>
+<button class="theme" id="themeToggle" type="button">Preview dark theme</button>
+<script>document.getElementById('themeToggle').onclick=function(){const root=document.documentElement;root.dataset.theme=root.dataset.theme==='light'?'dark':'light';this.textContent=root.dataset.theme==='light'?'Preview dark theme':'Preview light theme'}</script>
+</body></html>

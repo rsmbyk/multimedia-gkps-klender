@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image and PDF fit — preview (spec 158)</title>
+<!-- Real materials: the projector's own stylesheets, markup and media files. See README.md. -->
+<link rel="stylesheet" href="styles/design/fonts.css">
+<link rel="stylesheet" href="styles/design/tokens.css">
+<link rel="stylesheet" href="styles/design/projector.css">
+<style>
+  /* ---- The change under review, as CSS -------------------------------------
+     An element the fit script has sized carries its own width and height; the
+     projector's max-width/max-height caps would clamp it back to the old size,
+     so a fitted screen drops them, refuses flex shrink, and clips the excess. */
+  .screen.is-fitted .screen__image,
+  .screen.is-fitted .screen__pdf-page { max-width: none; max-height: none; flex: none; }
+  .screen.is-fitted .screen__image-box,
+  .screen.is-fitted .screen__pdf-box { overflow: hidden; }
+
+  /* ---- Preview chrome: not part of the product ----------------------------- */
+  .pv {
+    position: fixed; z-index: 40; left: 14px; right: 14px; top: 3px;
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    font: 600 12px/1 "Source Sans 3", system-ui, sans-serif; color: #b9b3a7;
+  }
+  .pv button {
+    padding: 4px 8px; border: 1px solid #ffffff1f; border-radius: 6px;
+    background: #ffffff0a; color: #d9d3c7; font: inherit; cursor: pointer;
+  }
+  .pv button:hover { background: #ffffff16; }
+  .pv button[aria-pressed="true"] { background: #ffd166; border-color: #ffd166; color: #171613; }
+  .pv .hud {
+    margin-left: auto; padding: 4px 9px; border-radius: 6px; background: #ffffff0d;
+    font: 500 11px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; color: #cfc9bd;
+    font-variant-numeric: tabular-nums;
+  }
+  .pv .hud b { color: #ffd166; font-weight: 700; }
+  body.projector.keys-open .pv, body.projector.keys-closing .pv { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body class="projector" data-display-channel="preview" data-service="144" data-current-screen="0" data-showing="true">
+
+<!-- real-symbols -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="kbd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M8 12h.01M12 12h.01M16 12h.01M7 15h10" stroke-width="2.4"/>
+  </symbol>
+  <symbol id="service-list-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+    <path d="M9 6h11M9 12h11M9 18h11"/>
+    <path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="2.4"/>
+  </symbol>
+  <symbol id="arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8h10m-4-4 4 4-4 4"/>
+  </symbol>
+  <symbol id="arrow-left" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 8H3m4-4-4 4 4 4"/>
+  </symbol>
+  <symbol id="arrow-up" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 13V3m-4 4 4-4 4 4"/>
+  </symbol>
+  <symbol id="arrow-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3v10m-4-4 4 4 4-4"/>
+  </symbol>
+  <symbol id="shift-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 2 14 8h-3v4H5V8H2zM4.5 14h7"/>
+  </symbol>
+  <symbol id="backspace" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h7a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 13 13H6L2 8z"/>
+    <path d="m8 6 4 4m0-4-4 4"/>
+  </symbol>
+  <symbol id="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 3v8H3m0 0 3-3m-3 3 3 3"/>
+  </symbol>
+</svg>
+<!-- /real-symbols -->
+
+<main class="projector__screen" id="projectorScreen">
+  <div class="projector__screens" id="projectorScreens">
+
+    <!-- entry 2 · a 182×277 portrait, the size in the reported screenshot -->
+    <section class="screen is-active" data-screen="0" data-entry="2" data-media-kind="image"
+             data-own-width="182" data-own-height="277" aria-hidden="false">
+      <div class="screen__image-box" data-media-image="5cced97edf39ffe2bdf90bbf50880c236ae25b6ab7b7449b55860e74c2cd0888">
+        <img class="screen__image" alt="" src="files/image-182x277.png">
+        <svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>
+      </div>
+    </section>
+
+    <!-- entry 3 · a 787×444 landscape: the width is the smaller ratio -->
+    <section class="screen" data-screen="1" data-entry="3" data-media-kind="image"
+             data-own-width="787" data-own-height="444" aria-hidden="true">
+      <div class="screen__image-box" data-media-image="e7a3bb2561c2c68e460e5855c37feb4ab24da7c543b7d325611df305d5e9a066">
+        <img class="screen__image" alt="" src="files/image-787x444.png">
+        <svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg>
+      </div>
+    </section>
+
+    <!-- entry 4 · Receipt-2773-9204.png · one Letter page, 612×792 pt -->
+    <section class="screen" data-screen="2" data-entry="4" data-media-kind="pdf"
+             data-own-width="612" data-own-height="792" aria-hidden="true">
+      <div class="screen__pdf-box" data-media-pdf="ce5151f33d3ce6e034ad0aa969071859982f43d16bf5d0d0b657848b4065560f">
+        <canvas class="screen__pdf-page"></canvas>
+        <svg class="screen__pdf-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div class="cue" id="corner-cue" aria-label="Current position and next entry">
+  <button type="button" class="cue-service" id="cue-service" aria-label="Service entries" aria-expanded="false" aria-controls="entry-list" title="Service entries"><svg aria-hidden="true"><use href="#service-list-icon"/></svg></button><span class="cue-separator" aria-hidden="true">·</span>
+  <span id="cue-prefix"></span><span class="cue-baits" id="cue-baits" aria-label="Choose a bait"></span><span class="cue-progress" id="cue-progress"></span>
+  <button type="button" class="cue-next" id="cue-next" aria-label="Go to next entry">
+    <span class="cue-arrow" id="cue-arrow" aria-hidden="true"><svg><use href="#arrow-right"/></svg></span><span id="cue-next-name"></span>
+  </button>
+</div>
+
+<button type="button" class="keys" id="keys-button" aria-label="Shortcuts" aria-expanded="false" aria-controls="key-list"><svg aria-hidden="true"><use href="#kbd"/></svg></button>
+<!-- real-sheet -->
+<div class="sheet" id="key-list">
+    <div class="stack">
+      <section class="group">
+        <h3>Service</h3>
+        <p class="row"><span class="fn">Next</span><span class="combo"><span class="chord"><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Down Arrow"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous</span><span class="combo"><span class="chord"><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Up Arrow"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First</span><span class="combo"><span class="chord"><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last</span><span class="combo"><span class="chord"><span class="k nav">End</span></span></span></p>
+        <p class="row"><span class="fn">Next Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Previous Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">First Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Song</h3>
+        <p class="row"><span class="fn">Next Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Passage</h3>
+        <p class="row"><span class="fn">Flip TB / SIM</span><span class="combo"><span class="chord"><span class="k">T</span></span></span></p>
+        <p class="row"><span class="fn">First Verse</span><span class="combo"><span class="chord"><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Verse</span><span class="combo"><span class="chord"><span class="k nav">End</span></span></span></p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="group">
+        <h3>Library passage</h3>
+        <p class="row"><span class="fn">Next Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgDn</span></span></span></p>
+        <p class="row"><span class="fn">Previous Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgUp</span></span></span></p>
+        <p class="row"><span class="fn">First Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">End</span></span></span></p>
+        <p class="row"><span class="fn">Next Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Previous Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">First Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">Home</span></span></span></p>
+        <p class="row"><span class="fn">Last Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">End</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Library Detour</h3>
+        <p class="row"><span class="fn">Back to Service</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Image and PDF</h3>
+        <p class="row"><span class="fn">Fit Width / Fit Height</span><span class="combo"><span class="chord"><span class="k">T</span></span></span></p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="group">
+        <h3>Display</h3>
+        <p class="row"><span class="fn">Show or Hide Words</span><span class="combo"><span class="chord"><span class="k sp glyph" title="Space" aria-label="Space"><span class="space-mark">␣</span></span></span></span></p>
+        <p class="row"><span class="fn">Audio/Video Play/Pause</span><span class="combo"><span class="chord"><span class="k sp glyph" title="Space" aria-label="Space"><span class="space-mark">␣</span></span></span></span></p>
+        <p class="row"><span class="fn">Show or Hide Corner</span><span class="combo"><span class="chord"><span class="k">C</span></span></span></p>
+        <p class="row"><span class="fn">Keyboard Shortcuts</span><span class="combo"><span class="chord"><span class="k">K</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Find</h3>
+        <p class="row"><span class="fn">Find in Service</span><span class="combo"><span class="chord"><span class="k">J</span></span></span></p>
+        <p class="row"><span class="fn">Passage or Song</span><span class="combo"><span class="chord"><span class="k">G</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>While Finding</h3>
+        <p class="row"><span class="fn">Previous Match</span><span class="combo"><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Up Arrow"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Next Match</span><span class="combo"><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Down Arrow"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Close When Empty</span><span class="combo"><span class="chord"><span class="k bk glyph" title="Backspace" aria-label="Backspace"><span class="key-symbol" aria-hidden="true"><svg><use href="#backspace"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Open Match</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Enter" aria-label="Enter"><span class="key-symbol" aria-hidden="true"><svg><use href="#enter"/></svg></span></span></span></span></p>
+        <p class="row"><span class="fn">Close Find</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+      <section class="group">
+        <h3>Fullscreen</h3>
+        <p class="row"><span class="fn">Enter or Leave</span><span class="combo"><span class="chord"><span class="k">F</span></span></span></p>
+        <p class="row"><span class="fn">Hold to Leave</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+      </section>
+    </div>
+  </div>
+<!-- /real-sheet -->
+
+<div class="pv" role="group" aria-label="Preview controls, not part of the product">
+  <button type="button" data-pv-screen="0" aria-pressed="true">Image 182×277</button>
+  <button type="button" data-pv-screen="1" aria-pressed="false">Landscape 787×444</button>
+  <button type="button" data-pv-screen="2" aria-pressed="false">PDF page 612×792</button>
+  <button type="button" id="pv-fit" aria-pressed="true">Fit (the change)</button>
+  <button type="button" id="pv-today" aria-pressed="false">Today (1:1)</button>
+  <button type="button" id="pv-t">Press T</button>
+  <button type="button" id="pv-keys" aria-pressed="false">Shortcuts (K)</button>
+  <span class="hud" id="pv-hud"></span>
+</div>
+
+<script src="preview.js"></script>
+</body>
+</html>

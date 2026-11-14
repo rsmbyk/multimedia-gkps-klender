@@ -26,7 +26,7 @@ songbooks, read lyrics, search — with the editor relocated under `/manage/`.
 
 ## Notes
 
-- Spec pack: [`specs/001-public-songs-reading/`](../specs/001-public-songs-reading/spec.md).
+- Spec: [`specs/001-public-songs-reading/`](../specs/001-public-songs-reading/spec.md).
 - Part of the owner's vision: the website becomes the product (see
   [`docs/PRODUCT.md`](../../docs/PRODUCT.md) → Vision).
 - `bump: minor`: `VERSION` is `0.5.2` (highest shared tag), so this slice lands

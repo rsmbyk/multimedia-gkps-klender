@@ -1,0 +1,239 @@
+{% comment %}One kind's fields (spec 006, slice 2). The modal posts this fragment back.{% endcomment %}
+<h2 class="editor__title" id="editorTitle">{{ title }}</h2>
+<form class="editor__form" data-entry-form="{{ kind }}"{% if kind == 'text' or kind == 'media' and not entry %} data-editor-size="large"{% endif %}{% if kind == 'media' and not entry %} data-media-create data-media-register-url="{% url 'web-media-register' %}"{% endif %} action="{{ save_url }}" method="post">
+  {% csrf_token %}
+  {% if not entry and after %}<input type="hidden" name="after" value="{{ after }}">{% endif %}
+  {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+
+  {% if kind == 'text' and not entry %}
+  <div class="editor__screen-mode-wrap">
+    <div class="screen-mode editor__screen-mode" role="group" aria-label="Default screen mode" data-create-screen-mode data-selected="{% if form.default_screen_mode.value == 'single_screen' %}single_screen{% else %}multi_line{% endif %}">
+      <span class="screen-mode__thumb" aria-hidden="true"></span>
+      <button type="button" data-create-mode="multi_line" aria-pressed="{% if form.default_screen_mode.value != 'single_screen' %}true{% else %}false{% endif %}">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Multi-line
+      </button>
+      <button type="button" data-create-mode="single_screen" aria-pressed="{% if form.default_screen_mode.value == 'single_screen' %}true{% else %}false{% endif %}">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M5.5 8h9M5.5 11h9"/></svg>Single-screen
+      </button>
+    </div>
+    <p class="editor__screen-mode-help" data-create-mode-help>{% if form.default_screen_mode.value == 'single_screen' %}One fitted screen by default{% else %}Two lines per screen by default{% endif %}</p>
+  </div>
+  {% endif %}
+
+  {% if kind == 'media' %}
+  {% if not entry %}
+  <div class="media-entry__tabs" role="tablist" aria-label="Choose media source" data-media-tab="upload">
+    <span class="media-entry__tab-thumb" aria-hidden="true"></span>
+    <button type="button" role="tab" data-media-tab-button="upload" aria-selected="true">Upload</button>
+    <button type="button" role="tab" data-media-tab-button="library" aria-selected="false">Media Library</button>
+  </div>
+  <div class="media-entry__panel" data-media-panel="upload" role="tabpanel">
+    <div class="media-entry__drop" data-media-drop>
+      <div data-media-prompt><span class="media-entry__upload-icon" aria-hidden="true">⇧</span><strong>Drop a file here</strong><span>or</span><button type="button" class="media-entry__upload-btn" data-media-choose>Choose file to upload</button><p><strong>Supported files:</strong> images, audio, video, PDF, and PPT/PPTX<br><strong>Maximum 200 MB</strong> per file</p></div>
+      <div data-media-selected hidden><span class="media-entry__file-icon" data-media-selected-icon aria-hidden="true"></span><strong data-media-selected-name></strong><p data-media-selected-meta></p><p class="media-entry__existing" data-media-existing hidden>Already in Media Library</p><p data-media-library-name hidden></p><button type="button" class="media-entry__upload-btn" data-media-choose>Choose another file</button></div>
+    </div>
+    <p class="media-entry__note" data-media-note>The file will be copied to this computer's Media Library when the entry is saved.</p>
+    <input type="file" data-media-file accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.tif,.tiff,.avif,.heic,.mp3,.flac,.ogg,.oga,.wav,.m4a,.mp4,.webm,.ogv,.avi,.mpeg,.mpg,.mov,.pdf,.ppt,.pptx" hidden>
+  </div>
+  <div class="media-entry__panel media-entry__panel--library" data-media-panel="library" role="tabpanel" hidden><div data-media-library-list></div></div>
+  {% else %}
+  <div class="editor__field"><label>File</label><div class="media-entry__readonly" data-media-edit-hash="{{ entry.media_id }}"><strong>{{ entry.media_filename }}</strong><p>{{ entry.media.get_family_display }} · <span data-media-edit-availability>Checking this computer…</span></p></div><p class="editor__hint">The file reference cannot be changed after this entry is created.</p></div>
+  {% endif %}
+  <input type="hidden" name="media" value="{{ form.media.value|default:'' }}">
+  <input type="hidden" name="media_filename" value="{{ form.media_filename.value|default:'' }}">
+  {% for error in form.media.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  {% for error in form.media_filename.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}"><label for="id_title">Entry title <span class="editor__hint">(optional)</span></label><input type="text" name="title" id="id_title" maxlength="64" placeholder="If blank, the file name is shown" value="{{ form.title.value|default:'' }}">{% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}</div>
+
+  {% elif kind == 'scripture' %}
+  <div class="editor__field{% if form.book_translation.errors %} is-invalid{% endif %}">
+    <div class="editor__translation-row">
+      <div class="read__lang editor__translation-toggle" role="group"
+           aria-label="Choose passage translation" data-entry-translation-toggle
+           data-edition="{{ book_edition|default:'tb' }}">
+        <span class="read__lang-thumb" aria-hidden="true"></span>
+        <button type="button" data-edition-option="tb"
+                aria-pressed="{% if book_edition != 'sim' %}true{% else %}false{% endif %}"
+                title="New Translation (Indonesian)">TB</button>
+        <button type="button" data-edition-option="sim"
+                aria-pressed="{% if book_edition == 'sim' %}true{% else %}false{% endif %}"
+                title="Simalungun translation">SIM</button>
+      </div>
+    </div>
+    <label id="entry-book-label" for="entry-book-trigger">Book</label>
+    <div class="editor__picker" data-entry-picker="book">
+      <button type="button" class="editor__picker-trigger" id="entry-book-trigger"
+              data-picker-trigger aria-label="Book" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-book-menu"{% if form.book_translation.errors %} aria-invalid="true"{% endif %}>
+        <span data-picker-label>Choose a book</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-book-menu" hidden>
+        <input type="search" placeholder="Filter books..." aria-label="Filter books" autocomplete="off">
+        <div class="editor__picker-options" data-picker-options role="listbox" aria-label="Books">
+          {% regroup books by testament_label as testaments %}
+          {% for testament in testaments %}
+          <div class="editor__picker-group" data-picker-group
+               data-testament="{{ testament.list.0.testament }}">
+            <p class="editor__songgroup-label" data-testament-label
+               data-label-tb="{{ testament.list.0.testament_label }}"
+               data-label-sim="{{ testament.list.0.testament_sim_label }}">{{ testament.grouper }}</p>
+            {% for book in testament.list %}
+            <button type="button" role="option" class="editor__songoption editor__songoption--book" data-book="{{ book.id }}"
+                    data-book-tb="{{ book.tb_id|default:'' }}" data-book-sim="{{ book.sim_id|default:'' }}"
+                    data-chapters="{{ book.chapters }}" data-book-name="{{ book.tb_name }}"
+                    data-book-other="{{ book.sim_name }}" data-book-name-tb="{{ book.tb_name }}"
+                    data-book-name-sim="{{ book.sim_name }}" data-book-code-tb="{{ book.tb_abbr }}"
+                    data-book-code-sim="{{ book.sim_abbr }}"
+                    aria-selected="{% if book.selected %}true{% else %}false{% endif %}">
+              <span class="book__n">{{ book.tb_name }}</span>
+              {% if book.sim_name %}<span class="book__s">{{ book.sim_name }}</span>{% endif %}
+            </button>
+            {% endfor %}
+          </div>
+          {% endfor %}
+          <p class="editor__hint" data-picker-empty hidden>No matching books.</p>
+        </div>
+      </div>
+      <select name="book_translation" id="id_book_translation" hidden>
+        <option value=""></option>
+        {% for book in books %}
+        {% if book.tb_id %}
+        <option value="{{ book.tb_id }}" data-chapters="{{ book.chapters }}" data-edition="tb"
+                {% if form.book_translation.value|stringformat:'s' == book.tb_id|stringformat:'s' %}selected{% endif %}>{{ book.tb_name }}</option>
+        {% endif %}
+        {% if book.sim_id %}
+        <option value="{{ book.sim_id }}" data-chapters="{{ book.chapters }}" data-edition="sim"
+                data-primary-book="{{ book.tb_id }}"
+                {% if form.book_translation.value|stringformat:'s' == book.sim_id|stringformat:'s' %}selected{% endif %}>{{ book.sim_name }}</option>
+        {% endif %}
+        {% if not book.tb_id and not book.sim_id %}
+        <option value="{{ book.id }}" data-chapters="{{ book.chapters }}" data-edition="tb"
+                {% if form.book_translation.value|stringformat:'s' == book.id|stringformat:'s' %}selected{% endif %}>{{ book.tb_name }}</option>
+        {% endif %}
+        {% if book.selected and not book.selected_translation_is_primary and not book.selected_translation_is_sim %}
+        <option value="{{ book.selected_translation_id }}" data-chapters="{{ book.chapters }}"
+                data-primary-book="{{ book.id }}" data-edition="tb" selected>{{ book.selected_translation_name }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    {% for error in form.book_translation.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  <div class="editor__row editor__row--chapter">
+    <div class="editor__field{% if form.chapter.errors %} is-invalid{% endif %}">
+      <label id="entry-chapter-label" for="entry-chapter-trigger">Chapter</label>
+      <div class="editor__picker" data-entry-picker="chapter">
+        <button type="button" class="editor__picker-trigger" id="entry-chapter-trigger"
+                data-picker-trigger data-placeholder="Choose a chapter" aria-label="Chapter"
+                aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-chapter-menu"
+                disabled {% if form.chapter.errors %}aria-invalid="true"{% endif %}>
+          <span data-picker-label>Choose a chapter</span>
+        </button>
+        <div class="editor__picker-menu" id="entry-chapter-menu" hidden>
+          <div class="editor__picker-options" id="entry-chapter-options" data-picker-options
+               role="listbox" aria-label="Chapters"></div>
+        </div>
+        <select name="chapter" id="id_chapter" hidden disabled
+                data-initial="{{ form.chapter.value|default:1 }}"></select>
+      </div>
+      {% for error in form.chapter.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+  </div>
+  <div class="editor__row editor__row--range">
+    <div class="editor__field{% if form.verse_start.errors %} is-invalid{% endif %}">
+      <label id="entry-verse_start-label" for="entry-verse_start-trigger">From verse</label>
+      <div class="editor__picker" data-entry-picker="verse_start">
+        <button type="button" class="editor__picker-trigger" id="entry-verse_start-trigger"
+                data-picker-trigger data-placeholder="Choose a verse" aria-label="From verse"
+                aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-verse_start-menu"
+                disabled {% if form.verse_start.errors %}aria-invalid="true"{% endif %}>
+          <span data-picker-label>Choose a verse</span>
+        </button>
+        <div class="editor__picker-menu" id="entry-verse_start-menu" hidden>
+          <div class="editor__picker-options" id="entry-verse_start-options" data-picker-options
+               role="listbox" aria-label="From verses"></div>
+        </div>
+        <select name="verse_start" id="id_verse_start" hidden disabled
+                data-initial="{{ form.verse_start.value|default:1 }}"></select>
+      </div>
+      {% for error in form.verse_start.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="editor__field{% if form.verse_end.errors %} is-invalid{% endif %}">
+      <label id="entry-verse_end-label" for="entry-verse_end-trigger">To verse <span class="editor__hint">(optional)</span></label>
+      <div class="editor__end-wrap" data-end-wrap tabindex="0" aria-describedby="entry-end-tip">
+        <div class="editor__picker" data-entry-picker="verse_end">
+          <button type="button" class="editor__picker-trigger" id="entry-verse_end-trigger"
+                  data-picker-trigger data-placeholder="No ending verse" aria-label="To verse"
+                  aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-verse_end-menu"
+                  disabled {% if form.verse_end.errors %}aria-invalid="true"{% endif %}>
+            <span data-picker-label>No ending verse</span>
+          </button>
+          <div class="editor__picker-menu" id="entry-verse_end-menu" hidden>
+            <div class="editor__picker-options" id="entry-verse_end-options" data-picker-options
+                 role="listbox" aria-label="To verses"></div>
+          </div>
+          <select name="verse_end" id="id_verse_end" hidden disabled
+                  data-initial="{{ form.verse_end.value|default_if_none:'' }}"></select>
+        </div>
+        <div class="editor__end-tip" id="entry-end-tip" role="tooltip">No verses available after the start verse number.</div>
+      </div>
+      {% for error in form.verse_end.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+  </div>
+
+  {% elif kind == 'song' %}
+  <div class="editor__field{% if form.song.errors %} is-invalid{% endif %}">
+    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
+              aria-controls="entry-song-menu"{% if form.song.errors %} aria-invalid="true"{% endif %}>
+        <span data-picker-label>{% if song %}{{ song_label }}{% else %}Choose a song{% endif %}</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-song-menu" hidden>
+        <input type="search" id="entry-song-search" placeholder="Search songs..."
+               aria-label="Search songs" autocomplete="off">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="{{ form.song.value|default:'' }}">
+    </div>
+    {% for error in form.song.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  <div class="editor__field{% if form.verses.errors %} is-invalid{% endif %}">
+    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
+    <div class="editor__picker" data-entry-picker="verses">
+      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
+              data-verses-trigger aria-haspopup="true" aria-expanded="false"
+              aria-controls="entry-verses-menu"{% if form.verses.errors %} aria-invalid="true"{% endif %}>
+        <span data-verses-summary>{% if form.song_has_no_verses %}This song has no verses{% else %}Pick a song first{% endif %}</span>
+      </button>
+      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
+        <div class="editor__verses" id="entry-verses" data-verses>{{ form.verses }}</div>
+      </div>
+    </div>
+    {% for error in form.verses.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+
+  {% else %}
+  <div class="editor__field{% if form.title.errors %} is-invalid{% endif %}">
+    <label for="id_title">Title <span class="editor__hint">(optional)</span></label>
+    <input type="text" name="title" id="id_title" maxlength="64" value="{{ form.title.value|default:'' }}"
+           {% if form.title.errors %}aria-invalid="true"{% endif %}>
+    {% for error in form.title.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  {% if kind == 'text' %}
+  <div class="editor__field{% if form.text.errors %} is-invalid{% endif %}" data-editor-grow>
+    <label for="id_text">Text</label>
+    <textarea name="text" id="id_text" rows="6"{% if form.text.errors %} aria-invalid="true"{% endif %}>{{ form.text.value|default:'' }}</textarea>
+    {% for error in form.text.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {% for error in form.non_field_errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit"{% if kind == 'text' %}{% if not form.text.value %} disabled{% endif %}{% endif %}{% if kind == 'media' and not entry %} disabled{% endif %}>Save</button>
+    <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+  </div>
+</form>

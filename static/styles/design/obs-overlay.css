@@ -1,0 +1,215 @@
+/* The OBS caption overlay (specs 119 and 165).
+ *
+ * A transparent browser source. It carries no chrome: no controls, no header, no
+ * focusable element -- the dock is the only surface with controls.
+ *
+ * TWO text styles, chosen by what is on air:
+ *
+ * - A SONG is a lyric, so it keeps the subtitle caption (spec 119): white ink, a fat
+ *   dark outline that scales with the font, lower-centre with a 5% inset, no plate.
+ *   Proportions came off the church's stream samples: one line of ink is ~4% of the
+ *   frame height, a two-line block stays in the lower fifth.
+ * - A PASSAGE or a LITURGY TEXT carries a heading -- the Bible reference and the
+ *   verse's title, or the entry's own title -- so it wears a plate: a quiet dark
+ *   card the words sit on, the heading above a hairline. The plate is the contrast,
+ *   so these words carry no outline.
+ *
+ * Every size is in container units of the stage, so the surface is identical at any
+ * output resolution, and the plate's own type scale hangs off one number.
+ */
+
+html, body.obs-overlay {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.obs-overlay__stage {
+  position: fixed;
+  inset: 0;
+  container-type: size;
+  pointer-events: none;
+  /* Every word on this surface is operator-typed -- a lyric, a reference, an entry's own
+     title, a liturgy turn -- so any of them can carry a run with no space in it: a pasted
+     link, a compound word, a name typed in a hurry. It breaks at the box that owns it
+     instead of being painted past the panel (spec 183). Declared once here and inherited;
+     what already fits is laid out exactly as before. A speaker's mark is the exception --
+     it is a label, and keeps its own white-space: nowrap. */
+  overflow-wrap: break-word;
+}
+
+/* ---------- songs: the bare caption (spec 119) ---------------------------- */
+
+.obs-overlay__caption {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: 5%;
+  margin: 0;
+  text-align: center;
+  color: #FFFFFF;
+  font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: clamp(11px, 3.75cqw, 80px);
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: .01em;
+  text-wrap: balance;
+  text-shadow:
+    0 .04em 0 #000, .04em 0 0 #000, -.04em 0 0 #000, 0 -.04em 0 #000,
+    .03em .03em 0 #000, -.03em -.03em 0 #000, .03em -.03em 0 #000, -.03em .03em 0 #000,
+    0 .025em .22em rgba(0, 0, 0, .62);
+}
+
+.obs-overlay__caption span {
+  display: block;
+}
+
+/* ---------- passages and liturgy texts: the plate (spec 165) -------------- */
+
+.obs-overlay__plate {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: 5%;
+  box-sizing: border-box;
+  width: fit-content;
+  min-width: 34%;
+  max-width: 90%;
+  margin-inline: auto;
+  padding: .42em .65em .44em;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: .32em;
+  background-color: rgba(10, 12, 16, .88);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, 0) 42%);
+  box-shadow: 0 .62em 1.65em rgba(0, 0, 0, .42);
+  color: #F6F7F5;
+  font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: clamp(5.5px, 1.875cqw, 40px);
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* A liturgy text is SPOKEN, not quoted. It reads left-aligned like a script, its
+   title over the turns, and a bar down its leading edge gives the call-and-response a
+   structure the centred quotation card cannot. Same inks and type scale, a different
+   object on the screen. */
+.obs-overlay__plate[data-kind="liturgy"] {
+  width: fit-content;
+  min-width: 34%;
+  max-width: 90%;
+  padding: .42em .65em .44em 1.05em;
+  border-left: .105em solid rgba(255, 255, 255, .78);
+  border-radius: .08em;
+  text-align: left;
+}
+
+/* The heading: what the screen is. A reference (or an entry's title) on the first
+   line, and the verse's own title under it when the edition carries one. */
+.obs-overlay__kicker {
+  margin: 0;
+  color: rgba(255, 255, 255, .76);
+  font-size: .5em;
+  font-weight: 350;
+  line-height: 1.25;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.obs-overlay__title {
+  margin: .34em 0 0;
+  color: rgba(255, 255, 255, .92);
+  font-size: .808em;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.3;
+  white-space: pre-line;
+}
+
+.obs-overlay__rule {
+  display: block;
+  height: 1px;
+  margin: .38em 0 .54em;
+  background: rgba(255, 255, 255, .22);
+}
+
+.obs-overlay__body {
+  display: flex;
+  flex-direction: column;
+  gap: .3em;
+}
+
+.obs-overlay__line {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: .002em;
+  text-wrap: pretty;
+}
+
+/* The panel's own motion: a short fade with a drift as it arrives, a shorter one as it
+   leaves — the words are a cut, the object is not. No bounce, no overshoot, and nothing
+   animates while a panel simply stays up. */
+@keyframes overlay-plate-in {
+  from { opacity: 0; transform: translateY(.5em) scale(.975); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes overlay-plate-out {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(.22em) scale(.985); }
+}
+/* The caption is one object too: it arrives and leaves with the same clock, a shorter
+   travel of its own — a lyric has no plate to move, so it drifts about 14 px. */
+@keyframes overlay-caption-in {
+  from { opacity: 0; transform: translateY(.2em); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes overlay-caption-out {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(.12em); }
+}
+
+.obs-overlay__plate.is-entering { animation: overlay-plate-in 180ms cubic-bezier(.4, 0, .2, 1) both; }
+.obs-overlay__plate.is-leaving  { animation: overlay-plate-out 120ms cubic-bezier(.4, 0, .2, 1) both; }
+
+/* The same panel serving the next screen: it keeps its place and morphs its own box from
+   the old measure to the new one, while the words change inside it. */
+.obs-overlay__plate.is-resizing {
+  overflow: hidden;
+  transition: width 180ms cubic-bezier(.4, 0, .2, 1), height 180ms cubic-bezier(.4, 0, .2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .obs-overlay__plate.is-resizing { transition: none; }
+}
+
+.obs-overlay__caption.is-entering { animation: overlay-caption-in 180ms cubic-bezier(.4, 0, .2, 1) both; }
+.obs-overlay__caption.is-leaving  { animation: overlay-caption-out 120ms cubic-bezier(.4, 0, .2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .obs-overlay__plate.is-entering,
+  .obs-overlay__plate.is-leaving,
+  .obs-overlay__caption.is-entering,
+  .obs-overlay__caption.is-leaving { animation: none; }
+}
+
+/* A liturgy line that carries a speaker mark: the mark holds a column of its own, so a
+   wrapped line hangs under the words it introduces rather than under the mark or the
+   panel's edge. A grid rather than a text-indent, because the marks are not one width —
+   "L." and "Pelayan :" both occur. */
+.obs-overlay__line.has-mark {
+  display: grid;
+  grid-template-columns: var(--speaker-col, max-content) minmax(0, 1fr);
+  column-gap: .45em;
+  text-align: left;
+}
+
+.obs-overlay__speaker { white-space: nowrap; }
+.obs-overlay__words { text-wrap: pretty; }
+
+/* Liturgy voices (spec 059), carried to the stream: the congregation's joined line
+   stays closest to the body ink, a leader's line is only a cue and sits quieter. */
+.obs-overlay__line.is-join { color: rgba(255, 255, 255, .8); }
+.obs-overlay__line.is-leader { color: rgba(255, 255, 255, .381); }

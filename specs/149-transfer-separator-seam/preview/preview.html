@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transfers list — one line per boundary</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<style>
+  /* Preview chrome only. Nothing here touches a product class. */
+  html, body { margin: 0; }
+  body { display: block; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); }
+  .bar {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+    padding: 11px 20px;
+    background: color-mix(in srgb, var(--rail-bg) 92%, var(--canvas));
+    border-bottom: 1px solid var(--divider);
+  }
+  .bar strong { font-size: 14px; }
+  .bar .note, .bar .knob { font: 500 12px/1.35 var(--font-sans); color: var(--head-ink); }
+  .bar .spacer { flex: 1; }
+  .bar button {
+    padding: 6px 11px; border: 1px solid var(--divider); border-radius: 8px;
+    background: var(--canvas); color: var(--ink);
+    font: 600 12px/1 var(--font-sans); cursor: pointer;
+  }
+  .bar button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
+  .page { width: min(1240px, 100vw - 40px); margin: 0 auto; padding: 26px 0 90px; }
+  .lede { max-width: 74ch; margin: 0 0 22px; font: 400 13.5px/1.55 var(--font-sans); color: var(--head-ink); }
+  .lede code { font-size: 12.5px; }
+  .pair { display: grid; grid-template-columns: repeat(2, 580px); gap: 40px; align-items: start; }
+  @media (max-width: 1260px) { .pair { grid-template-columns: minmax(0, 1fr); justify-items: start; } }
+  .col > h2 {
+    margin: 0 0 3px; font: 640 12px/1.2 var(--font-sans); letter-spacing: .04em; text-transform: uppercase;
+    color: var(--head-ink);
+  }
+  .col > h2 b { color: var(--focus); }
+  .col > p { margin: 0 0 12px; font: 400 12.5px/1.5 var(--font-sans); color: var(--head-ink); }
+  /* A non-modal <dialog> is absolutely positioned by the UA sheet; the product centers it
+     with showModal(). Placing it in the flow is the only thing this page overrides. */
+  .col dialog { position: static; inset: auto; margin: 0; }
+  .metrics { width: 100%; margin-top: 26px; border-collapse: collapse; font: 400 13px/1.5 var(--font-sans); }
+  .metrics caption { text-align: left; padding-bottom: 8px; font-weight: 660; font-size: 13px; }
+  .metrics th, .metrics td { padding: 8px 18px 8px 0; border-bottom: 1px solid var(--divider); text-align: left; vertical-align: top; }
+  .metrics thead th { font-weight: 640; color: var(--head-ink); font-size: 12px; letter-spacing: .03em; text-transform: uppercase; }
+  .metrics th:first-child { width: 46%; color: var(--ink); font-weight: 520; }
+  .metrics td { font-variant-numeric: tabular-nums; font-weight: 560; }
+  .metrics tr.bite td:nth-child(2) { color: var(--focus); }
+  .metrics tr.bite td:nth-child(3) { color: var(--focus); }
+  .detail { margin-top: 22px; }
+  .detail h3 { margin: 0 0 6px; font: 640 12px/1.2 var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--head-ink); }
+  .detail h3 b { color: var(--focus); }
+  .detail-frame { zoom: 2; width: 580px; background: var(--canvas); }
+  .detail-frame > div { padding: 6px 22px; }
+  .inspector { margin-top: 26px; font: 400 12px/1.5 var(--font-sans); color: var(--head-ink); }
+  .inspector summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+</style>
+<style>
+  /* THE DELTA — the two rules this slice adds, and nothing else. Scoped to the After
+     column so one page can carry both states; in the working tree they are unscoped. */
+
+  /* 1. The seam keeps its 2px line and loses the row border stacked above it, so the group
+        boundary is drawn once. `border-bottom-width` (not a transparent colour) closes the
+        1px, which leaves the line 9px from the text above and 9px from the text below. */
+  .pvue-after .media-transfers__row:has(+ .media-transfers__divider) { border-bottom-width: 0; }
+
+  /* 2. The list becomes the scroll container, so the dialog's padding survives the overflow
+        and the last row's border never lands on the dialog's own border. */
+  .pvue-after .media-transfers__dialog { display: flex; flex-direction: column; }
+  .pvue-after .media-transfers__list { min-height: 0; overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <strong>Transfers list — one line per boundary</strong>
+  <span class="note">spec 149 · static preview · the real <code>.media-transfers</code> markup, tokens and stylesheets</span>
+  <span class="spacer"></span>
+  <span class="knob" id="viewport"></span>
+  <button type="button" id="lengthBtn" aria-pressed="false">15 rows</button>
+  <button type="button" id="themeBtn">Dark</button>
+</div>
+
+<div class="page">
+  <p class="lede">
+    The nine transfers of the reported screenshot, in the order the dialog draws them
+    (<code>ended_at</code> descending). The seam sits after the second row: those two finished
+    after this session's first transfer started, the seven below were already complete.
+    Both dialogs take the product's own <code>width: min(580px, 100vw - 32px)</code> and
+    <code>max-height: min(86vh, 46rem)</code>. <b>15 rows</b> adds six older completed
+    transfers, to show what the same dialog does once the list is plainly taller than it.
+  </p>
+
+  <div class="pair">
+    <div class="col" id="colNow">
+      <h2>Today — <b>develop</b></h2>
+      <p id="noteNow">Each row's <code>border-bottom: 1px</code>, with the session divider's
+        <code>border-top: 2px</code> and <code>margin: 9px 0</code> stacked above it.</p>
+      <dialog class="media-library__dialog media-transfers__dialog" open aria-label="Transfers">
+        <h2>Transfers</h2>
+        <div id="listNow"></div>
+      </dialog>
+    </div>
+    <div class="col pvue-after" id="colAfter">
+      <h2>After — <b>spec 149</b></h2>
+      <p id="noteAfter">The same rows; the row above the seam drops its border, and the list
+        scrolls inside the dialog's padding.</p>
+      <dialog class="media-library__dialog media-transfers__dialog" open aria-label="Transfers">
+        <h2>Transfers</h2>
+        <div id="listAfter" class="media-transfers__list"></div>
+      </dialog>
+    </div>
+  </div>
+
+  <table class="metrics" id="metrics">
+    <caption>Measured on this page, at the viewport above</caption>
+    <thead><tr><th>What</th><th>Today</th><th>After</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <section class="detail" id="detailNow">
+    <h3>The seam at 2× — <b>today</b></h3>
+    <div class="detail-frame"><div id="detailNowList"></div></div>
+  </section>
+  <section class="detail" id="detailAfter">
+    <h3>The seam at 2× — <b>after</b></h3>
+    <div class="detail-frame"><div id="detailAfterList"></div></div>
+  </section>
+
+  <details class="inspector">
+    <summary>Rows carried by this page</summary>
+    <p id="roster"></p>
+  </details>
+</div>
+
+<template id="row">
+  <div class="media-transfers__row">
+    <span class="media-transfers__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"></path></svg></span>
+    <div class="media-transfers__main"><strong></strong><span>Completed</span></div>
+  </div>
+</template>
+
+<script>
+  'use strict';
+
+  // The nine transfers of the reported dialog, as the companion reported them, plus six
+  // older ones for the overflow state. The seam index is where the session divider sits.
+  const TRANSFERS = [
+    'images (1).jpeg',
+    'side-view-silhouette-african-elephant-walking-across-green-ground-against-light-blue-sky-stately-wild-bull-marching-proudly-481645534.webp',
+    'random.jpg',
+    'Sujud & Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3',
+    'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx',
+    'images.jpeg',
+    'Invoice-AATTcSTN-0002.pdf',
+    'Receipt-2773-9204.png',
+    'Invoice-AATTcSTN-0002.pdf',
+  ];
+  const OLDER = [
+    'Warta Jemaat - 18 Oktober 2026.pdf',
+    'Kidung Jemaat 43 - audio latihan.mp3',
+    'pemandangan-gunung.jpg',
+    'Tata Ibadah Minggu 11 Oktober.pptx',
+    'Renungan 11 Oktober 2026.pdf',
+    'logo-gkps-klender.png',
+  ];
+  const SEAM = 2;
+
+  function fill(list, names) {
+    const row = document.getElementById('row').content;
+    list.replaceChildren();
+    names.forEach((name, index) => {
+      if (index === SEAM) {
+        const rule = document.createElement('hr');
+        rule.className = 'media-transfers__divider';
+        list.append(rule);
+      }
+      const node = row.cloneNode(true);
+      node.querySelector('strong').textContent = name;
+      list.append(node);
+    });
+  }
+
+  const px = n => Math.round(n * 10) / 10 + 'px';
+  const edgeOf = (el, side, width) => side === 'bottom'
+    ? el.getBoundingClientRect().bottom - width / 2
+    : el.getBoundingClientRect().top + width / 2;
+
+  // Every painted horizontal boundary a viewer can actually see: the dialog's own box clips
+  // nothing (its overflow is visible), so "visible" means inside the list's painted box.
+  function boundaries(list, clip) {
+    const out = [];
+    list.querySelectorAll('.media-transfers__row').forEach(row => {
+      const width = parseFloat(getComputedStyle(row).borderBottomWidth);
+      const y = edgeOf(row, 'bottom', width);
+      if (width > 0 && y < clip) out.push({ kind: 'row', width, y });
+    });
+    list.querySelectorAll('.media-transfers__divider').forEach(hr => {
+      const width = parseFloat(getComputedStyle(hr).borderTopWidth);
+      const y = edgeOf(hr, 'top', width);
+      if (width > 0 && y < clip) out.push({ kind: 'seam', width, y });
+    });
+    return out.sort((a, b) => a.y - b.y);
+  }
+
+  function read(column) {
+    const dialog = document.querySelector('#' + column + ' dialog');
+    const list = dialog.querySelector('#listNow, #listAfter');
+    const box = dialog.getBoundingClientRect();
+    const border = parseFloat(getComputedStyle(dialog).borderBottomWidth);
+    const padding = parseFloat(getComputedStyle(dialog).paddingBottom);
+    const innerBottom = box.bottom - border - padding;
+    const listBottom = list.getBoundingClientRect().bottom;
+    const scrollable = list.scrollHeight > list.clientHeight + 1;
+    const clip = scrollable ? list.getBoundingClientRect().bottom : box.bottom - border;
+
+    const lines = boundaries(list, clip);
+    const hr = list.querySelector('.media-transfers__divider');
+    const before = hr.previousElementSibling;
+    const beforeWidth = before ? parseFloat(getComputedStyle(before).borderBottomWidth) : 0;
+    const hrWidth = parseFloat(getComputedStyle(hr).borderTopWidth);
+    const seam = [];
+    if (beforeWidth > 0) seam.push({ width: beforeWidth, y: edgeOf(before, 'bottom', beforeWidth) });
+    if (hrWidth > 0) seam.push({ width: hrWidth, y: edgeOf(hr, 'top', hrWidth) });
+
+    // How far the list's own box runs past the dialog's inner bottom edge, and how close the
+    // last boundary a viewer can see comes to the dialog's own border.
+    const nearest = lines[lines.length - 1];
+
+    return {
+      height: box.height,
+      scroller: scrollable ? 'the list (' + (list.scrollHeight - list.clientHeight) + 'px of it)' : 'nothing — the rows paint over the dialog’s padding',
+      seam,
+      seamGap: seam.length === 2 ? Math.round((seam[1].y - seam[0].y) * 10) / 10 : null,
+      overflow: Math.round((listBottom - innerBottom) * 10) / 10,
+      nearestToEdge: nearest ? Math.round((box.bottom - border - nearest.y) * 10) / 10 : null,
+      lineCount: boundaries(list, Infinity).length,
+    };
+  }
+
+  function render() {
+    const now = read('colNow');
+    const after = read('colAfter');
+    const rows = [
+      ['Dialog height', px(now.height), px(after.height)],
+      ['What absorbs a list taller than the dialog', now.scroller, after.scroller],
+      ['Separators at the session seam', now.seam.length + ' · ' + now.seam.map(s => s.width + 'px').join(' + '),
+        after.seam.length + ' · ' + after.seam.map(s => s.width + 'px').join(' + ')],
+      ['Distance between them', now.seamGap === null ? '—' : px(now.seamGap), after.seamGap === null ? '—' : px(after.seamGap)],
+      ['The list’s box past the dialog’s inner bottom edge', px(now.overflow), px(after.overflow)],
+      ['Lowest visible boundary → the dialog’s bottom border', px(now.nearestToEdge), px(after.nearestToEdge)],
+      ['Boundary lines the viewer can see', now.lineCount, after.lineCount],
+    ];
+    const body = document.querySelector('#metrics tbody');
+    body.replaceChildren(...rows.map(([name, a, b]) => {
+      const tr = document.createElement('tr');
+      tr.className = 'bite';
+      const th = document.createElement('th'); th.textContent = name;
+      const tdA = document.createElement('td'); tdA.textContent = a;
+      const tdB = document.createElement('td'); tdB.textContent = b;
+      tr.append(th, tdA, tdB);
+      return tr;
+    }));
+    document.getElementById('viewport').textContent = innerWidth + '×' + innerHeight + ' · ' + devicePixelRatio + 'dpr';
+    document.getElementById('roster').textContent =
+      [...document.querySelectorAll('#listNow .media-transfers__main strong')].map((n, i) => (i + 1) + '. ' + n.textContent).join('  ·  ');
+  }
+
+  function build(long) {
+    const names = long ? TRANSFERS.concat(OLDER) : TRANSFERS;
+    fill(document.getElementById('listNow'), names);
+    fill(document.getElementById('listAfter'), names);
+    document.getElementById('noteNow').textContent = long
+      ? 'Each row’s border-bottom: 1px, the divider’s 2px above it — and six rows painted OUTSIDE the dialog, over the page.'
+      : 'Each row’s border-bottom: 1px, with the session divider’s border-top: 2px and margin: 9px 0 stacked above it.';
+    ['Now', 'After'].forEach(side => {
+      const source = document.getElementById('list' + side);
+      const target = document.getElementById('detail' + side + 'List');
+      target.replaceChildren(...[...source.children].slice(0, 5).map(node => node.cloneNode(true)));
+      target.parentElement.parentElement.classList.toggle('pvue-after', side === 'After');
+    });
+    document.getElementById('noteAfter').textContent = long
+      ? 'The list scrolls (450px of rows here); the dialog’s 22px padding stays at its bottom edge.'
+      : 'The same rows; the row above the seam drops its border, and the list scrolls inside the dialog’s padding.';
+    render();
+  }
+
+  document.getElementById('lengthBtn').addEventListener('click', event => {
+    const long = event.currentTarget.getAttribute('aria-pressed') !== 'true';
+    event.currentTarget.setAttribute('aria-pressed', String(long));
+    event.currentTarget.textContent = long ? '9 rows' : '15 rows';
+    build(long);
+  });
+
+  document.getElementById('themeBtn').addEventListener('click', event => {
+    const dark = document.documentElement.dataset.theme !== 'dark';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    event.currentTarget.textContent = dark ? 'Light' : 'Dark';
+    render();
+  });
+
+  addEventListener('resize', render);
+  addEventListener('load', () => { build(false); setTimeout(render, 260); });
+</script>
+</body>
+</html>

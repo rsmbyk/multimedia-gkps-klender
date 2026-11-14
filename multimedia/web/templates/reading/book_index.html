@@ -1,8 +1,5 @@
 {% extends 'reading/base.html' %}
 
-{% block title %}Songbooks · Multimedia GKPS Klender{% endblock %}
+{% block title %}{{ page_title|default:'Kidung — Multimedia GKPS Klender' }}{% endblock %}
 
-{% block content %}
-<h1 class="page-title">Songbooks</h1>
-{% include 'reading/_books.html' %}
-{% endblock %}
+{% block panel_body %}{% include 'reading/_songbooks_panel.html' %}{% endblock %}

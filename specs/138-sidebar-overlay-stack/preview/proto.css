@@ -1,0 +1,281 @@
+/* Spec 138 prototype — the drawer shell over the real page.
+   Everything here is the proposal; the page under it is the project's own markup
+   and stylesheets. Two attributes drive it, both set by proto.js from the window
+   width and the inspector's thresholds:
+
+     html[data-mode="overlay"]   the sidebars are drawers, not columns
+     html[data-phone="yes"]      the drawer shell with a top toolbar
+
+   Only the deltas are written here: geometry, the backdrop, the toolbar, the
+   names the rail only had as tooltips, and the stacking. */
+
+/* ---------- overlay mode: nothing pushes ---------- */
+html[data-mode="overlay"] {
+  --books-w: 0px !important;
+  --ch-w-shown: 0px !important;
+  --reserve-ch: 0px !important;
+  --proto-drawer-w: var(--panel-w);
+}
+html[data-mode="overlay"] .stage {
+  margin-left: var(--rail-w) !important;
+  width: auto !important;
+  transition: none !important;
+}
+
+/* The rail is painted ABOVE the drawers, so a drawer at rest is hidden behind it
+   and, sliding in, appears to come out from under it. */
+html[data-mode="overlay"] .rail { z-index: 50; }
+
+/* both lists are drawers hanging off the rail; level 2 lands on level 1 */
+html[data-mode="overlay"] .panel,
+html[data-mode="overlay"] .chapters {
+  position: fixed;
+  top: 0; bottom: 0;
+  left: var(--rail-w);
+  width: var(--proto-drawer-w);
+  max-width: none;
+  clip-path: none !important;
+  visibility: visible !important;
+  transform: translateX(-100%);
+  transition: transform var(--ease), box-shadow var(--ease);
+  box-shadow: none;
+  z-index: 40;
+  border-right: 1px solid var(--divider);
+}
+html[data-mode="overlay"] .chapters { z-index: 41; }
+
+html[data-mode="overlay"][data-nav="open"] .panel {
+  transform: none !important;
+  box-shadow: var(--shadow);
+}
+/* The child covers its parent exactly: same left edge, same width, one step higher.
+   !important because the page's own `[data-ch-mode="song"]` rule below 1272px
+   still pins this element's left edge, and the prototype must win. */
+html[data-mode="overlay"][data-ch="open"] .chapters {
+  transform: none !important;
+  left: var(--rail-w) !important;
+  width: var(--proto-drawer-w) !important;
+  box-shadow: var(--shadow-dialog);
+}
+
+/* ---------- the backdrop ---------- */
+.proto-backdrop {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  left: var(--rail-w);
+  background: var(--backdrop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ease);
+  z-index: 35;
+}
+html[data-mode="overlay"]:is([data-nav="open"], [data-ch="open"]) .proto-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================================
+   The phone: a top toolbar, no strip, drawers at full width
+   ============================================================ */
+:root { --toolbar-h: 58px; }
+
+html[data-phone="yes"] .stage {
+  margin-left: 0 !important;
+  padding-top: calc(var(--toolbar-h) + 12px) !important;
+}
+
+/* every phone drawer is the whole width, and starts under the toolbar. The
+   `[data-ch="open"]` rule above is more specific than a bare [data-phone] one,
+   so the phone's geometry is restated with the open state included. */
+html[data-phone="yes"] .panel,
+html[data-phone="yes"] .chapters,
+html[data-mode="overlay"][data-phone="yes"][data-nav="open"] .panel,
+html[data-mode="overlay"][data-phone="yes"][data-ch="open"] .chapters {
+  top: var(--toolbar-h);
+  left: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;   /* the page caps the song list at 26rem */
+}
+
+/* the rail is a drawer of its own: the main menu, nothing else */
+html[data-phone="yes"] .rail {
+  top: var(--toolbar-h);
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  max-width: 100vw;
+  align-items: stretch;
+  padding: 10px;
+  box-sizing: border-box;
+  transform: translateX(-100%);
+  transition: transform var(--ease);
+  z-index: 42;
+  border-right: 1px solid var(--divider);
+  box-shadow: none;
+}
+html[data-phone="yes"][data-rail="open"] .rail {
+  transform: none;
+  box-shadow: var(--shadow-dialog);
+}
+/* On a phone the menu stays under the section list: level 1 slides over it, and
+   level 2 over level 1, so nothing swaps places. */
+html[data-phone="yes"] .panel { z-index: 43; }
+html[data-phone="yes"] .chapters { z-index: 44; }
+/* the Project / Stop projecting control is a wide-screen action */
+html[data-phone="yes"] [data-project-open] { display: none !important; }
+/* A touch screen has no hover to reveal a row's edit control with, and neither
+   does a phone drawer. The project already exempts .entry__acts and the add
+   tiles this way; the sidebar rows were missed. */
+html[data-phone="yes"] .row-edit { opacity: 1; pointer-events: auto; }
+/* With the edit control always on, the date no longer has a column of its own on
+   a phone: the name keeps the row and the date drops under it, clear of the
+   control. */
+html[data-phone="yes"] .panel__body .book {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  row-gap: 1px;
+  padding-right: 42px;
+}
+html[data-phone="yes"] .panel__body .book__n { grid-column: 1; }
+html[data-phone="yes"] .panel__body .book__today { grid-column: 2; margin-left: 6px; }
+html[data-phone="yes"] .panel__body .book__s { grid-column: 1 / -1; }
+/* the edit control keeps the row's middle, now against two lines */
+html[data-phone="yes"] .panel__body li > .row-edit { top: 50%; }
+@media (hover: none) and (pointer: coarse) {
+  .row-edit { opacity: 1; pointer-events: auto; }
+}
+html[data-phone="yes"] .rail__logo { display: none; }
+html[data-phone="yes"] .rail__menu {
+  width: 100%;
+  align-items: stretch;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  gap: 6px;
+  list-style: none;
+}
+html[data-phone="yes"] .rail__menu li { width: 100%; }
+html[data-phone="yes"] .rail__menu .rail__btn {
+  /* the strip's button is a centred grid; the drawer's is icon + name */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 48px;
+  border-radius: 9px;
+  gap: 12px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+html[data-phone="yes"] .rail__menu .rail__btn svg { flex: none; width: 22px; height: 22px; }
+/* the name the rail only carried as a tooltip becomes its label, in the icon's ink */
+html[data-phone="yes"] .rail__menu .rail__btn .proto-label {
+  display: inline;
+  font: 600 14.5px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: inherit;
+  letter-spacing: -.01em;
+}
+.proto-label { display: none; }
+/* tooltips are for the strip, not the drawer */
+html[data-phone="yes"] .rail__btn::after,
+html[data-phone="yes"] .ftip { display: none !important; }
+
+/* ---------- the phone toolbar ---------- */
+.proto-toolbar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--toolbar-h);
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--divider);
+  z-index: 45;
+}
+html[data-phone="yes"] .proto-toolbar { display: flex; }
+.proto-toolbar__control,
+.proto-toolbar__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  border-radius: 9px;
+  cursor: pointer;
+  padding: 0;
+  flex: none;
+}
+.proto-toolbar__control:hover,
+.proto-toolbar__logo:hover { background: var(--rail-bg); }
+.proto-toolbar__control svg { width: 24px; height: 24px; }   /* the rail's own icon size */
+.proto-toolbar__logo img { width: 34px; height: 34px; border-radius: 9px; display: block; }
+.proto-toolbar__title {
+  font: 600 14px/1.2 ui-sans-serif, system-ui, sans-serif;
+  color: var(--head-ink);
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 4px;
+}
+.proto-toolbar__spacer { flex: 1 1 auto; }
+/* the rail's foot — transfer progress and the theme — moved into the toolbar */
+.proto-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+html[data-phone="yes"] .proto-toolbar__right .rail__foot {
+  margin: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+html[data-phone="yes"] .proto-toolbar__right .rail__theme { display: inline-flex; }
+
+/* ---------- the inspector: a prototype's own furniture ---------- */
+.proto-panel {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 60;
+  width: 268px;
+  background: var(--tip-bg);
+  color: var(--tip-ink);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 12px;
+  box-shadow: var(--shadow-dialog);
+  font: 500 12.5px/1.45 ui-sans-serif, system-ui, sans-serif;
+  padding: 10px 12px 12px;
+}
+.proto-panel[hidden] { display: none; }
+.proto-panel h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.proto-panel__row { display: flex; align-items: center; gap: 8px; margin: 0 0 7px; }
+.proto-panel__row > span { flex: none; width: 78px; opacity: .75; }
+.proto-panel select {
+  flex: 1 1 auto; min-width: 0; height: 27px; border-radius: 6px;
+  background: rgba(255, 255, 255, .1); color: inherit; border: 1px solid rgba(255, 255, 255, .2);
+  font: inherit;
+}
+.proto-panel__buttons { display: flex; gap: 6px; margin-top: 9px; }
+.proto-panel button {
+  flex: 1 1 auto; height: 29px; border-radius: 7px; border: 1px solid rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .1); color: inherit; font: inherit; cursor: pointer;
+}
+.proto-panel button:hover { background: rgba(255, 255, 255, .2); }
+.proto-panel__readout { margin: 8px 0 0; opacity: .7; font-variant-numeric: tabular-nums; }
+.proto-chip {
+  position: fixed; right: 12px; bottom: 12px; z-index: 60;
+  height: 32px; padding: 0 13px; border-radius: 999px;
+  background: var(--tip-bg); color: var(--tip-ink);
+  border: 1px solid rgba(255, 255, 255, .2); box-shadow: var(--shadow);
+  font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+}

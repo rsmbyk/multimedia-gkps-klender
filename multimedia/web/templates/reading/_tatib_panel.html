@@ -1,0 +1,26 @@
+{% for group in tatib_groups %}
+<section class="group"{% if group.key %} data-bucket="{{ group.key }}"{% endif %}>
+  {% if group.label %}<h3 class="group__head">{{ group.label }}</h3>{% endif %}
+  <ul>
+    {% for service in group.services %}
+    <li data-editor-kind="{{ service.kind }}"><a class="book" href="{% url 'web-tatib-service' service.id %}"
+           data-name="{{ service.id }}" data-sim="{{ service.id }}"
+           aria-label="{{ service.name }}{% if service.date_display %} ({{ service.date_display }}){% endif %}{% if service.today %} — today{% endif %}"{% if service.current %} aria-current="true"{% endif %}>
+      <span class="book__n">{{ service.name }}</span>{% if service.today %}<span class="book__today">Today</span>{% endif %}
+      {% if service.date_display %}<span class="book__s">{{ service.date_display }}</span>{% endif %}</a>{% if editor_enabled %}
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="{{ service.id }}"
+            aria-label="Edit {{ service.name }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button>
+    <button class="row-delete" type="button" data-editor-delete="{{ service.kind }}" data-editor-id="{{ service.id }}"
+            aria-label="Delete {{ service.name }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 6h11M8 6V4.5c0-.8.7-1.5 1.5-1.5h1c.8 0 1.5.7 1.5 1.5V6M6.2 6l.6 9.2c.1.7.7 1.3 1.4 1.3h3.6c.7 0 1.3-.6 1.4-1.3l.6-9.2"/></svg>
+    </button>{% endif %}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endfor %}

@@ -4,7 +4,6 @@ const modal = $('#modal-edit-book')
 const modalHeader = $('#modal-edit-book-header')
 
 const form = $('#form-edit-book')
-const dropdownLang = $('#form-edit-book-lang-dropdown')
 
 const errorMessages = form.find('.ui.error.message')
 const nameErrorMessage = form.find('#form-edit-book-error-message-name')
@@ -18,8 +17,6 @@ let requestFunction
 
 const bookSubject = new BehaviorSubject().pipe(skipWhile(book => book === undefined))
 const onSuccessSubject = new BehaviorSubject().pipe(skipWhile(onSuccess => onSuccess === undefined))
-
-dropdownLang.dropdown()
 
 form.form({
     fields: {
@@ -37,7 +34,6 @@ form.form({
                 },
             ],
         },
-        lang: 'empty',
     },
     inline: true,
     on: 'change',
@@ -112,12 +108,11 @@ const submitForm = onSuccess => {
     errorMessages.empty()
 
     if (form.form('is valid')) {
-        const { id, name, lang } = form.form('get values')
+        const { id, name } = form.form('get values')
 
         const formData = {
             id: id,
             name: name.trim(),
-            lang: lang,
         }
 
         console.log(formData)
@@ -147,7 +142,6 @@ const updateBookFormValues = book => {
         form.form('set values', {
             id: book.id,
             name: book.name,
-            lang: book.lang,
         })
     }
 

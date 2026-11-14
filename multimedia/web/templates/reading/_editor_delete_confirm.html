@@ -1,0 +1,15 @@
+{% comment %}Confirm deleting a sidebar record; posted back by editors.js (spec 190).{% endcomment %}
+<div class="editor__body" data-kind="{{ kind }}" data-delete-id="{{ target_id }}">
+  {# sr: the dialog names itself via aria-labelledby="editorTitle"; the header is not drawn. #}
+  <h2 id="editorTitle" class="sr">Delete {{ noun }}: {{ record_name }}</h2>
+  <p>Delete <strong>{{ record_name }}</strong>?{% if hint %} {{ hint }}{% endif %}</p>
+  <form class="editor__form" method="post" action="{{ delete_url }}"
+        data-editor-delete-form="1" data-editor-delete-kind="{{ kind }}"
+        data-editor-delete-id="{{ target_id }}">
+    {% csrf_token %}
+    <div class="editor__actions">
+      <button class="editor__danger" type="submit">Delete {{ noun }}</button>
+      <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+    </div>
+  </form>
+</div>

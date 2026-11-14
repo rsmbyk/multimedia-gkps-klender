@@ -8,6 +8,7 @@ import json
 from django.db import transaction
 
 from multimedia.bible import models
+from multimedia.bible.seeding import apply_book_abbreviations
 
 
 # Languages
@@ -58,6 +59,17 @@ with transaction.atomic():
                 translation=translation,
             )
             print(book_translation_object)
+
+
+# Book Abbreviations
+
+sim_version = models.Version.objects.filter(abbreviation='SIM').first()
+if sim_version:
+    with open('raw/bible/book_abbreviations/SIM.json') as f:
+        book_abbreviations = json.load(f)
+
+    with transaction.atomic():
+        apply_book_abbreviations(sim_version, book_abbreviations)
 
 
 # Versions

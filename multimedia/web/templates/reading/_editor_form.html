@@ -1,0 +1,85 @@
+{% comment %}The modal's body: a form for one record, rendered on its own so the
+modal can swap it in and swap it back with errors (spec 005).{% endcomment %}
+<div class="editor__body" data-kind="{{ kind }}" data-target="{{ target_id }}">
+  <div class="editor__head">
+    <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
+    {% if copy_url %}<button class="editor__copy-btn" type="button" data-copy-open
+            data-copy-url="{{ copy_url }}">Copy as template</button>{% endif %}
+  </div>
+  <form class="editor__form" method="post" action="{{ save_url }}"{% if kind == 'verse' %} data-editor-size="large"{% endif %}>
+    {% csrf_token %}
+    {% if kind == 'tatib' and not target_id %}
+    <div class="editor__screen-mode-wrap">
+      <div class="screen-mode editor__screen-mode" role="group" aria-label="Tata Ibadah type"
+           data-tatib-kinds data-selected="normal">
+        <span class="screen-mode__thumb" aria-hidden="true"></span>
+        <button type="button" data-tatib-kind="0" aria-pressed="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.8" y="4" width="14.4" height="13" rx="2"/><path d="M2.8 8h14.4M6.4 2.4v3.2M13.6 2.4v3.2"/></svg>
+          Normal
+        </button>
+        <button type="button" data-tatib-kind="1" aria-pressed="false">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.8" y="4" width="14.4" height="13" rx="2" stroke-dasharray="2.6 2.4"/><path d="M6 8.4h8M6 12h5"/></svg>
+          Template
+        </button>
+      </div>
+    </div>
+    {% endif %}
+    {% if kind == 'song' and not target_id %}<input type="hidden" name="book" value="{{ book_id }}">{% endif %}
+    {% for field in form %}
+    {% if kind == 'tatib' and field.name == 'date' %}
+    <div class="editor__field editor__date-field{% if field.errors %} is-invalid{% endif %}">
+      <label for="{{ field.id_for_label }}_trigger">{{ field.label }}</label>
+      {{ field }}
+      <div class="editor__date-picker" data-date-picker
+           data-date-picker-default-sunday="{% if not form.is_bound and not target_id %}true{% else %}false{% endif %}">
+        <div class="editor__date-controls">
+          <button class="editor__date-trigger" id="{{ field.id_for_label }}_trigger"
+                  type="button" data-date-picker-trigger aria-haspopup="dialog" aria-expanded="false">
+            <span data-date-picker-label>Choose a date</span>
+          </button>
+          {% if not hide_date_clear %}<button class="editor__date-clear" type="button" data-date-picker-clear>Clear date</button>{% endif %}
+          <div class="editor__date-calendar" data-date-picker-calendar popover="manual" role="dialog"
+               aria-label="Choose a date" hidden>
+            <div class="editor__date-nav">
+              <button type="button" data-date-picker-prev aria-label="Previous month">‹</button>
+              <h3 data-date-picker-month aria-live="polite"></h3>
+              <button type="button" data-date-picker-next aria-label="Next month">›</button>
+            </div>
+            <div class="editor__date-weekdays" aria-hidden="true">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
+              <span>Fri</span><span>Sat</span><span data-date-sunday>Sun</span>
+            </div>
+            <div class="editor__date-grid" data-date-picker-grid role="grid"
+                 aria-label="Choose a date"></div>
+          </div>
+        </div>
+      </div>
+      {% if field.help_text %}<p class="editor__help">{{ field.help_text }}</p>{% endif %}
+      {% for error in field.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    {% elif field.is_hidden %}{{ field }}
+    {% else %}
+    <div class="editor__field{% if field.errors %} is-invalid{% endif %}"{% if kind == 'verse' %} data-editor-grow{% endif %}>
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<p class="editor__help">{{ field.help_text }}</p>{% endif %}
+      {% for error in field.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+    <p class="editor__error" role="alert">{{ error }}</p>
+    {% endfor %}
+    <div class="editor__actions">
+      {% if kind == 'verse' and target_id %}
+      <button class="editor__danger editor__delete" type="button" data-verse-delete data-verse-row="{{ target_id }}"{% if verse_referenced %} disabled{% endif %}>Delete verse</button>
+      {% endif %}
+      <button class="editor__save" type="submit">Save</button>
+      <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+    </div>
+    {% if kind == 'verse' and verse_referenced %}
+    <p class="editor__help">This verse is used in {{ named_service_count }} Tata Ibadah, so it cannot be deleted here.</p>
+    {% endif %}
+  </form>
+  {% if copy_url %}{% include 'reading/_copy_confirm.html' %}{% endif %}
+</div>

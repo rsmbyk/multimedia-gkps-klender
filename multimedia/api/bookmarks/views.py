@@ -17,7 +17,8 @@ class SongBookmarkViewSet(viewsets.ModelViewSet):
 
 
 class SongBookmarkItemViewSet(viewsets.ModelViewSet):
-    queryset = models.SongBookmarkItem.objects.all()
+    queryset = models.SongBookmarkItem.objects.filter(
+        song__is_deleted=False, song__book__is_deleted=False)
     serializer_class = serializers.SongBookmarkItemSerializer
     filterset_class = filters.SongBookmarkItemFilterSet
 

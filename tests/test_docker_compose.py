@@ -1,7 +1,9 @@
 """Guards for the local Docker Compose stack (spec 002).
 
 These pin the port rules so the stack cannot drift back onto the crowded
-well-known range, and keep ``.env.example`` in step with the compose defaults.
+well-known range, keep ``.env.example`` in step with the compose defaults,
+and pin the restart policy that returns the stack after a daemon restart
+(spec 191).
 """
 
 from __future__ import annotations
@@ -52,6 +54,7 @@ class DockerComposePortRulesTests(SimpleTestCase):
         services = self.compose.get("services", {})
         self.assertIn("web", services)
         self.assertIn("db", services)
+        self.assertIn("media", services)
 
     def test_published_ports_avoid_well_known_range(self):
         published = {}
@@ -85,6 +88,68 @@ class DockerComposePortRulesTests(SimpleTestCase):
         self.assertEqual(web_container, 8000)
         self.assertEqual(db_container, 5432)
 
+    def test_media_companion_uses_private_loopback_port_and_named_volume(self):
+        media = self.compose["services"]["media"]
+        self.assertEqual(media["ports"], ["127.0.0.1:63174:63174"])
+        self.assertEqual(media["restart"], "unless-stopped")
+        self.assertEqual(media["environment"]["GKPS_MEDIA_LIBRARY_ROOT"], "/var/lib/gkps-media")
+        self.assertEqual(media["volumes"][0], "media_library_data:/var/lib/gkps-media")
+        self.assertNotIn(".:/app", media["volumes"])
+        operator_mounts = [
+            entry for entry in media["volumes"] if ":/usr/share/fonts/operator" in entry
+        ]
+        self.assertEqual(
+            len(operator_mounts), 1, "the operator's font directory must be mounted exactly once"
+        )
+        self.assertIn("media_library_data", self.compose["volumes"])
+
+    def test_the_font_mount_default_needs_no_home(self):
+        media = self.compose["services"]["media"]
+        mounted = [entry for entry in media["volumes"] if ":/usr/share/fonts/operator" in entry]
+        self.assertEqual(len(mounted), 1, "the operator's font directory is not mounted")
+        source = mounted[0].split(":/usr/share/fonts/operator")[0]
+        self.assertNotIn(
+            "$HOME",
+            source,
+            "the default names HOME, which a Windows computer does not export",
+        )
+        self.assertIn(
+            "./",
+            source,
+            "the default must be a path inside the checkout, so it resolves on every platform",
+        )
+
+    def test_media_companion_allowlist_uses_the_local_seeds_only(self):
+        origins = self.compose["services"]["media"]["environment"]["GKPS_MEDIA_ALLOWED_ORIGINS"]
+        self.assertEqual(
+            origins,
+            "http://localhost:${WEB_PORT:-63404},http://127.0.0.1:${WEB_PORT:-63404}",
+        )
+
+    def test_no_operator_origin_variable_remains(self):
+        for path in (COMPOSE_FILE, ENV_EXAMPLE,
+                     REPO_ROOT / "README.md",
+                     REPO_ROOT / "docs" / "local-media-companion.md",
+                     REPO_ROOT / "docs" / "ARCHITECTURE.md"):
+            text = path.read_text(encoding="utf-8")
+            self.assertNotIn(
+                "GKPS_MEDIA_PRODUCTION_ORIGIN",
+                text,
+                f"{path.name} still carries the operator origin variable",
+            )
+
+    def test_media_companion_endpoint_is_consistent_in_browser_and_python_clients(self):
+        sources = (
+            REPO_ROOT / "multimedia/local_media.py",
+            REPO_ROOT / "static/web/media-library.js",
+            REPO_ROOT / "static/web/media-entry.js",
+            REPO_ROOT / "static/web/media-stage.js",
+        )
+        for source in sources:
+            text = source.read_text(encoding="utf-8")
+            self.assertIn("63174", text, f"{source.name} must use the companion port")
+            self.assertNotIn("47863", text, f"{source.name} retains the old companion port")
+
     def test_env_example_matches_compose_defaults(self):
         self.assertTrue(ENV_EXAMPLE.exists(), ".env.example is missing")
         text = ENV_EXAMPLE.read_text(encoding="utf-8")
@@ -92,3 +157,30 @@ class DockerComposePortRulesTests(SimpleTestCase):
         db_default, _ = self._published("db")
         self.assertIn(f"WEB_PORT={web_default}", text)
         self.assertIn(f"DB_PORT={db_default}", text)
+        self.assertIn("http://127.0.0.1:63174/", text,
+                      ".env.example points at the companion's configuration page")
+
+
+class DockerComposeRestartPolicyTests(SimpleTestCase):
+    """The stack returns after a daemon restart (spec 191).
+
+    A machine restart kills every container at daemon shutdown; without a
+    restart policy the web and database containers stay exited until someone
+    starts them by hand. ``unless-stopped`` returns them and still honours a
+    deliberate ``docker compose stop`` — which is why it is not ``always``.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        if not COMPOSE_FILE.exists():
+            raise AssertionError("docker-compose.yml is missing")
+        cls.compose = yaml.safe_load(COMPOSE_FILE.read_text(encoding="utf-8"))
+
+    def test_web_and_db_restart_on_daemon_restart(self):
+        for service in ("web", "db"):
+            self.assertEqual(
+                self.compose["services"][service].get("restart"),
+                "unless-stopped",
+                f"{service} stays exited after a daemon restart without a restart policy",
+            )

@@ -1,0 +1,84 @@
+{% load static %}
+{% comment %}
+The service projector (specs 006 and 091): the words and header stay primary,
+while a quiet corner cue supports the operator on a mirrored display.
+
+It carries one screen per thing to show and keeps no server record of what is on
+screen: which screen is showing lives in the operator's browser and travels between
+that browser's tabs over the display channel (web/projector.js, web/display.js).
+{% endcomment %}
+<!doctype html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title }}</title>
+<link rel="shortcut icon" type="image/png" href="{% static 'assets/gkps.png' %}">
+<link rel="stylesheet" href="{% static 'styles/design/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'styles/design/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'styles/design/projector.css' %}">
+</head>
+<body class="projector" data-display-channel="gkps-service-display"
+      data-service="{{ service_id }}" data-adopt="{{ adopt_service }}"
+      data-current-screen="0" data-showing="false">
+
+<div class="mouse-zones" aria-hidden="true">
+  <div class="mouse-zone mouse-zone--previous" data-mouse-action="previous"></div>
+  <div class="mouse-zone mouse-zone--display" data-mouse-action="display"></div>
+  <div class="mouse-zone mouse-zone--next" data-mouse-action="next"></div>
+</div>
+<main class="projector__screen" id="projectorScreen">
+  <div class="projector__screens" id="projectorScreens">
+    {% for screen in screens %}
+    <section class="screen{% if screen.blank %} is-blank{% endif %}{% if screen.single %} screen--single{% endif %}"
+             data-screen="{{ forloop.counter0 }}" data-entry="{{ screen.entry_index }}"
+             data-bait="{{ screen.bait|default_if_none:'' }}" data-split="{{ screen.split|default_if_none:'' }}"
+             data-split-total="{{ screen.split_total|default_if_none:'' }}"
+             data-bait-rest="{% if screen.bait_rest %}true{% endif %}"
+             {% if screen.single %} data-fit="single"{% endif %}
+             aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
+      {% if screen.header %}<h1 class="screen__head">{{ screen.header }}</h1>{% endif %}
+      {% if screen.lines %}
+      <div class="screen__lines">
+        {% for line in screen.lines %}<p class="screen__line{% if line.voice %} is-{{ line.voice }}{% endif %}">{{ line.text }}</p>{% endfor %}
+      </div>
+      {% endif %}
+      {% if screen.image_sha256 %}<div class="screen__image-box" data-media-image="{{ screen.image_sha256 }}"><img class="screen__image" alt="" hidden><svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><rect x="7" y="9" width="34" height="29" rx="3"/><circle cx="17" cy="19" r="2.5"/><path d="m10 34 9-9 6 6 5-5 9 9M12 5l24 38"/></svg></div>{% endif %}
+      {% if screen.audio_sha256 %}<div class="screen__audio-box" data-media-audio="{{ screen.audio_sha256 }}"><div class="screen__audio-player" hidden><span class="screen__audio-play" data-audio-play aria-label="Play audio"></span><div class="screen__audio-seek" data-audio-seek><span class="screen__audio-fill"></span></div><div class="screen__audio-times"><span data-audio-elapsed>0:00</span> / <span data-audio-total>0:00</span></div></div><svg class="screen__image-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m12 5 24 38M19 18v13m0-13 12-3v13m-12 3c-6 0-6 7 0 7s6-7 0-7m12-3c-6 0-6 7 0 7s6-7 0-7"/></svg></div>{% endif %}
+      {% if screen.video_sha256 %}<div class="screen__video-box" data-media-video="{{ screen.video_sha256 }}"><video class="screen__video" playsinline preload="metadata" hidden></video><span class="screen__video-play" data-video-play aria-label="Play video"></span><div class="screen__video-controls" data-video-controls><div class="screen__video-seek" data-video-seek><span class="screen__video-fill"></span></div><span class="screen__video-time"><span data-video-elapsed>0:00</span> / <span data-video-total>0:00</span></span></div><svg class="screen__video-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><rect x="7" y="9" width="34" height="29" rx="3"/><path d="m20 17 12 7-12 7zM12 5l24 38"/></svg></div>{% endif %}
+      {% if screen.pdf_sha256 %}<div class="screen__pdf-box" data-media-pdf="{{ screen.pdf_sha256 }}"><canvas class="screen__pdf-page" hidden></canvas><svg class="screen__pdf-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><path d="M11 4h17l9 9v27H11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM28 4v9h9M15 23h15M12 6l27 36"/></svg></div>{% endif %}
+      {% if screen.slides_sha256 %}<div class="screen__pdf-box" data-media-slides="{{ screen.slides_sha256 }}"><canvas class="screen__pdf-page" hidden></canvas><svg class="screen__pdf-missing" viewBox="0 0 48 48" aria-hidden="true" hidden><rect x="7" y="7" width="34" height="34" rx="3"/><path d="M13 15h22M13 33h22M17 25l5-5 4 4 5-5M12 5l27 38"/></svg></div>{% endif %}
+    </section>
+    {% endfor %}
+  </div>
+
+  {% if not screens %}
+  <p class="projector__empty">Nothing to show yet: this Tata Ibadah has no items.</p>
+  {% endif %}
+</main>
+
+{% include 'reading/projector_controls.html' %}
+<button type="button" class="projector-find-dismiss" id="projectorFindDismiss" aria-label="Close passage or song search" hidden></button>
+<section class="projector-find" id="projectorFind" aria-label="Projector find" hidden>
+  <label for="projectorFindInput" id="projectorFindLabel">Go To · Passage or Song</label>
+  <div class="projector-search-field">
+    <input id="projectorFindInput" type="search" autocomplete="off" spellcheck="false" placeholder="Try NKB 2, Matius 2, or Haleluya" aria-controls="projectorFindResults">
+    <button type="button" class="projector-search-clear" id="projectorFindClear" aria-label="Clear Go To search" hidden><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button>
+  </div>
+  <button type="button" id="projectorFindResults" class="projector-find__row" disabled>
+    <span class="projector-find__suggestion">Start typing to find a match</span>
+    <span class="projector-find__count">0 / 0</span>
+  </button>
+  <div class="projector-find__footer"><span>↑ ↓ cycle · Enter open</span><span>Esc close</span></div>
+</section>
+{{ projector_entries|json_script:"projectorEntryData" }}
+{{ projector_screens_data|json_script:"projectorScreenData" }}
+<script src="{% static 'web/projector-library.js' %}"></script>
+<script src="{% static 'web/media-image.js' %}"></script>
+<script src="{% static 'web/media-audio.js' %}"></script>
+<script src="{% static 'web/media-video.js' %}"></script>
+<script src="{% static 'web/media-pdf.js' %}" data-pdfjs-source="{% static 'vendor/pdfjs/pdf.min.mjs' %}" data-pdfjs-worker="{% static 'vendor/pdfjs/pdf.worker.min.mjs' %}"></script>
+<script src="{% static 'web/display-session.js' %}"></script>
+<script src="{% static 'web/projector.js' %}"></script>
+</body>
+</html>

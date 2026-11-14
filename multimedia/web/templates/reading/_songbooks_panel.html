@@ -1,0 +1,25 @@
+{% comment %}Hymn songbooks, then the ordinary ones; the panel's own group rule draws
+the separator between them, and neither group carries a heading (spec 128).{% endcomment %}
+{% for group in songbook_groups %}
+<section class="group"><ul>
+  {% for book in group %}
+  <li><a class="book" href="{% url 'web-book' book.id %}"
+         data-name="{{ book.id }}" data-sim="{{ book.short }}"
+         aria-label="{{ book.name }}{% if book.short %} ({{ book.short }}){% endif %}"{% if book.current %} aria-current="true"{% endif %}>
+    <span class="book__n">{{ book.name }}</span>
+    {% if book.short %}<span class="book__s">{{ book.short }}</span>{% endif %}</a>{% if editor_enabled and not book.hymn %}
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="{{ book.id }}"
+            aria-label="Edit {{ book.name }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button>
+    <button class="row-delete" type="button" data-editor-delete="songbook" data-editor-id="{{ book.id }}"
+            aria-label="Delete {{ book.name }}">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 6h11M8 6V4.5c0-.8.7-1.5 1.5-1.5h1c.8 0 1.5.7 1.5 1.5V6M6.2 6l.6 9.2c.1.7.7 1.3 1.4 1.3h3.6c.7 0 1.3-.6 1.4-1.3l.6-9.2"/></svg>
+    </button>{% endif %}</li>
+  {% endfor %}
+</ul></section>
+{% endfor %}

@@ -118,8 +118,6 @@ const createBooksDropdownMenuItem = book => {
     return {
         value: book.id,
         name: book.name,
-        icon: book.lang === 2 ? 'id' : 'language',
-        iconClass: book.lang === 2 ? 'flag' : 'icon',
     }
 }
 

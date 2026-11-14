@@ -1,0 +1,22 @@
+{% comment %}The one modal every sidebar editor opens; its body is fetched (spec
+005). A closed <dialog> renders nothing, so this costs the page no pixels.{% endcomment %}
+{% if editor_enabled %}
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle"
+        data-editor-new="{% url 'web-editor-new' 'KIND' %}"
+        data-editor-edit="{% url 'web-editor-edit' 'KIND' 0 %}"
+        data-editor-delete-confirm="{% url 'web-editor-delete-confirm' 'KIND' 0 %}"
+        data-editor-delete-url="{% url 'web-editor-delete' 'KIND' 0 %}"
+        data-entry-new-url="{% url 'web-entry-new' %}"
+        data-entry-save-new-url="{% url 'web-entry-save-new' %}"
+        data-entry-validate-url="{% url 'web-entry-validate' %}"
+        data-entry-edit-url="{% url 'web-entry-edit' 0 %}"
+        data-entry-delete-url="{% url 'web-entry-delete' 0 %}"
+        data-entry-songs-url="{% url 'web-entry-song-options' %}"
+        data-entry-song-verses-url="{% url 'web-entry-song-verses' 0 %}"
+        data-entry-chapter-url="{% url 'web-entry-chapter-verses' 0 0 %}"
+        data-old-item-edit-url="{% url 'web-old-item-edit' 0 %}"
+        data-old-item-delete-url="{% url 'web-old-item-delete' 0 %}">
+  <div class="editor__content" id="editorContent" aria-live="polite"></div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+</dialog>
+{% endif %}

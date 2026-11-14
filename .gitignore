@@ -180,6 +180,8 @@ celerybeat.pid
 
 # Environments
 .env
+# Fonts an operator adds by hand; never committed (they are licensed with Office, not with us).
+.fonts/
 .venv
 env/
 venv/
@@ -213,3 +215,11 @@ cython_debug/
 
 # Django STATIC_ROOT
 _static/
+
+# Local working scratch (parity reference for spec 004; see ITEM-005) - never commit
+/scratch/
+db.sqlite3.bak-*
+
+# Spec previews: the probe writes its screenshots and its measurement report here
+specs/*/preview/shots/
+specs/*/preview/report.json

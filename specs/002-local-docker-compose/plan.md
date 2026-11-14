@@ -16,8 +16,8 @@ second checkout, is fiddly and easy to get wrong.
 
 This repository previously shipped exactly this capability on another line of
 history — tag `v0.5.2`, branch `archive/legacy-develop`
-(`specs/018-local-compose-ports`, `ITEM-011`). The repo later re-adopted vexbook
-onto a fresh `main`, and the Compose files are absent from the current tree, so
+(`specs/018-local-compose-ports`, `ITEM-011`). The repo later started a fresh
+`main`, and the Compose files are absent from the current tree, so
 the capability is missing today. This slice re-introduces it on the current
 line, with ports chosen to avoid the crowded well-known range.
 

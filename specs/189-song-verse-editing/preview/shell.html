@@ -1,0 +1,3401 @@
+
+<!doctype html>
+<html lang="en" data-theme="light" data-theme-mode="system"
+      data-nav="open"
+      data-ch="open"
+      data-read="on"
+      data-home="reading"
+      data-section="kidung"
+      
+      data-ch-mode="song">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lagu — Multimedia GKPS Klender</title>
+
+<!-- Resolve the saved mode before first paint. -->
+<script>
+(function () {
+  var mode = 'system';
+  try {
+    var saved = localStorage.getItem('gkps-theme');
+    if (saved === 'light' || saved === 'dark' || saved === 'system') mode = saved;
+  } catch (e) {}
+  document.documentElement.dataset.themeMode = mode;
+  document.documentElement.dataset.theme = mode === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : mode;
+})();
+</script>
+
+<link rel="shortcut icon" type="image/png" href="/static/assets/gkps.png">
+<link rel="stylesheet" href="/static/styles/design/tokens.css">
+<link rel="stylesheet" href="/static/styles/design/components.css">
+<link rel="stylesheet" href="/static/styles/design/generate.css">
+</head>
+<body>
+
+<!-- ============================================================
+     The phone's toolbar (spec 138). Hidden above 720px by the
+     stylesheet; the rail's own foot is positioned into its right end
+     there, so the theme control keeps its id and its handlers.
+     ============================================================ -->
+<header class="topbar" aria-label="Toolbar">
+  <button class="topbar__control" id="drawerControl" type="button" data-glyph="menu"
+          aria-controls="rail panel chapters" aria-expanded="false" aria-label="Open the menu">
+    <svg class="topbar__icon topbar__icon--menu" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+      <path d="M4 7h16M4 12h16M4 17h16"/>
+    </svg>
+    <svg class="topbar__icon topbar__icon--close" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+      <path d="m6 6 12 12M18 6 6 18"/>
+    </svg>
+  </button>
+  <a class="topbar__logo" href="/" aria-label="GKPS Klender — home">
+    <img src="/static/assets/gkps.png" alt="" width="30" height="30">
+  </a>
+</header>
+<div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+
+<!-- ============================================================
+     The rail: logo tile at top, icon menu in the middle,
+     theme choices pinned at the bottom.
+     ============================================================ -->
+<aside class="rail" aria-label="Main navigation">
+
+  <a class="rail__logo" href="/" aria-label="GKPS Klender — home">
+    <img src="/static/assets/gkps.png" alt="" width="40" height="40">
+  </a>
+
+  <ul class="rail__menu">
+    <!-- SEARCH: keeps the last result set (upgraded to it in reading.js) -->
+    <li>
+      <a class="rail__btn" id="railSearch" href="/"
+         data-tip="Search" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>
+        </svg>
+        <span class="rail__name">Search</span>
+      </a>
+    </li>
+    <!-- ALKITAB -->
+    <li>
+      <a class="rail__btn" data-tip="Alkitab"
+         aria-label="Alkitab" data-panel="alkitab"
+         aria-expanded="false"
+         aria-controls="panel chapters" href="/bible/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/>
+          <path d="M12 9.6v10.4"/>
+          <path d="M12 2.6v4.6M10.1 4.5h3.8"/>
+        </svg>
+        <span class="rail__name">Alkitab</span>
+      </a>
+    </li>
+
+    <!-- KIDUNG -->
+    <li>
+      <a class="rail__btn" data-tip="Kidung"
+         aria-label="Kidung" data-panel="kidung"
+         aria-expanded="true"
+         aria-controls="panel chapters" href="/songs/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 17.4V5.6l10.2-2v11.6"/>
+          <circle cx="6.7" cy="17.4" r="2.4"/>
+          <circle cx="16.9" cy="15.2" r="2.4"/>
+        </svg>
+        <span class="rail__name">Kidung</span>
+      </a>
+    </li>
+
+    <!-- TATA IBADAH -->
+    <li>
+      <a class="rail__btn" data-tip="Tata Ibadah"
+         aria-label="Tata Ibadah" data-panel="tatib"
+         aria-expanded="false"
+         aria-controls="panel chapters" href="/tatib/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4.6" y="3.4" width="14.8" height="17.2" rx="2"/>
+          <rect x="8.6" y="1.9" width="6.8" height="3.4" rx="1.4"/>
+          <path d="M8.2 9.6h7.6M8.2 13h7.6M8.2 16.4h4.8"/>
+        </svg>
+        <span class="rail__name">Tata Ibadah</span>
+      </a>
+    </li>
+    <li><a class="rail__btn" id="railMediaLibrary" href="/media-library/" data-tip="Media Library" aria-label="Media Library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7V5.8c0-1 .8-1.8 1.8-1.8h5.1l2 2h6.3c1 0 1.8.8 1.8 1.8v1.3"/><path d="M3.5 9.1h17l-1.5 10.1c-.1.6-.7 1.1-1.3 1.1H6.3c-.6 0-1.2-.5-1.3-1.1L3.5 9.1Z"/><path d="M8 13h8M8.7 16h6.6"/></svg><span class="rail__name">Media Library</span></a></li>
+  </ul>
+
+  <div class="rail__foot">
+    <button class="rail__btn media-transfer-rail" type="button" id="mediaTransferRail" data-tip="Transfer progress" aria-label="Transfer progress" hidden><span id="mediaTransferRailIcon" aria-hidden="true">⇄</span><span class="media-transfer-rail__dot" id="mediaTransferRailDot" data-state="active"></span></button>
+    <button class="rail__btn rail__theme" type="button" id="themeBtn"
+            data-tip="System mode" aria-label="System mode">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"/>
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/>
+      </svg>
+      <svg class="system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="13" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+      </svg>
+    </button>
+  </div>
+</aside>
+<!-- First list beside the rail: books / songbooks / services -->
+<aside class="panel" id="panel" role="region"
+       aria-labelledby="panelTitle">
+  <h2 class="sr" id="panelTitle">Songbooks</h2>
+
+  <div class="panel__filter">
+    <div class="filter-box">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="9" cy="9" r="6"/><path d="M14 14l4 4" stroke-linecap="round"/>
+      </svg>
+      <label class="sr" for="bookFilter">Filter songbooks</label>
+      <input id="bookFilter" type="search" placeholder="Filter songbooks..."
+             autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear the filter" hidden>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+      </button>
+    </div>
+    
+    <button class="ch__collapse" type="button" id="panelCollapse"
+            aria-controls="panel" aria-expanded="true"
+            aria-label="Close Kidung panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"/>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"/>
+      </svg>
+    </button>
+  </div>
+
+  
+  <button class="editor-add" type="button" id="panelAdd"
+          data-editor-open="songbook"
+          data-editor-label="Add songbook">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+    <span class="editor-add__label">Add songbook</span>
+  </button>
+  
+
+  <div class="panel__expand">
+    <button class="rail__btn" type="button" id="panelExpand"
+            data-tip="Expand Alkitab panel" aria-label="Expand Alkitab panel"
+            aria-controls="panel" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 5.5h15M4.5 12h9M4.5 18.5h15"/>
+        <path d="M16.5 10l2.8 2 2.8-2v7.5l-2.8 2-2.8-2z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="panel__scrollwrap">
+    <button class="panel__ind" type="button" id="indUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"/>
+      </svg>
+    </button>
+
+    <div class="panel__body" id="panelBody" tabindex="0">
+      
+
+<section class="group"><ul>
+  
+  <li><a class="book" href="/songs/book/1/"
+         data-name="1" data-sim="HAL"
+         aria-label="Haleluya (HAL)">
+    <span class="book__n">Haleluya</span>
+    <span class="book__s">HAL</span></a></li>
+  
+  <li><a class="book" href="/songs/book/2/"
+         data-name="2" data-sim="KJ"
+         aria-label="Kidung Jemaat (KJ)">
+    <span class="book__n">Kidung Jemaat</span>
+    <span class="book__s">KJ</span></a></li>
+  
+  <li><a class="book" href="/songs/book/3/"
+         data-name="3" data-sim="PKJ"
+         aria-label="Pelengkap Kidung Jemaat (PKJ)">
+    <span class="book__n">Pelengkap Kidung Jemaat</span>
+    <span class="book__s">PKJ</span></a></li>
+  
+  <li><a class="book" href="/songs/book/25/"
+         data-name="25" data-sim="NKB"
+         aria-label="Nyanyikanlah Kidung Baru (NKB)">
+    <span class="book__n">Nyanyikanlah Kidung Baru</span>
+    <span class="book__s">NKB</span></a></li>
+  
+</ul></section>
+
+<section class="group"><ul>
+  
+  <li><a class="book" href="/songs/book/35/"
+         data-name="35" data-sim=""
+         aria-label="ab">
+    <span class="book__n">ab</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="35"
+            aria-label="Edit ab">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/36/"
+         data-name="36" data-sim=""
+         aria-label="b">
+    <span class="book__n">b</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="36"
+            aria-label="Edit b">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/37/"
+         data-name="37" data-sim=""
+         aria-label="bb">
+    <span class="book__n">bb</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="37"
+            aria-label="Edit bb">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/32/"
+         data-name="32" data-sim=""
+         aria-label="Buku Ende HKBP">
+    <span class="book__n">Buku Ende HKBP</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="32"
+            aria-label="Edit Buku Ende HKBP">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/18/"
+         data-name="18" data-sim=""
+         aria-label="Lagu" aria-current="true">
+    <span class="book__n">Lagu</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="18"
+            aria-label="Edit Lagu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/28/"
+         data-name="28" data-sim=""
+         aria-label="Lagu Sekolah Minggu">
+    <span class="book__n">Lagu Sekolah Minggu</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="28"
+            aria-label="Edit Lagu Sekolah Minggu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/34/"
+         data-name="34" data-sim=""
+         aria-label="Lagu Setelah persembahan">
+    <span class="book__n">Lagu Setelah persembahan</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="34"
+            aria-label="Edit Lagu Setelah persembahan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/33/"
+         data-name="33" data-sim=""
+         aria-label="Lagu setelah persembahan">
+    <span class="book__n">Lagu setelah persembahan</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="33"
+            aria-label="Edit Lagu setelah persembahan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/31/"
+         data-name="31" data-sim=""
+         aria-label="Pengutusan Bahasa Indonesia">
+    <span class="book__n">Pengutusan Bahasa Indonesia</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="31"
+            aria-label="Edit Pengutusan Bahasa Indonesia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+  <li><a class="book" href="/songs/book/17/"
+         data-name="17" data-sim=""
+         aria-label="Tata Ibadah">
+    <span class="book__n">Tata Ibadah</span>
+    </a>
+    <button class="row-edit" type="button" data-editor-open="songbook" data-editor-id="17"
+            aria-label="Edit Tata Ibadah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+  
+</ul></section>
+
+
+    </div>
+
+    <button class="panel__ind" type="button" id="indDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"/>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="panelEmpty" role="status" hidden
+         data-empty-title="No songbooks yet."
+         data-empty-hint="Add a songbook to start collecting songs."
+         data-filter-title="No matching songbooks."
+         data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 17.4V5.6l10.2-2v11.6"/>
+          <circle cx="6.7" cy="17.4" r="2.4"/>
+          <circle cx="16.9" cy="15.2" r="2.4"/>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"/>
+          <path d="m15.4 15.4 5 5"/>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"/>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<!-- Second list: bible chapter tiles, the wide song list, or Tata Ibadah contents -->
+<aside class="chapters" id="chapters" role="region" aria-labelledby="chTitle">
+  <h2 class="sr" id="chTitle">Song list — Lagu</h2>
+
+  <div class="ch__top">
+    <div class="ch__tools">
+      <div class="ch__search">
+        <div class="filter-box">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="9" cy="9" r="6"/><path d="M14 14l4 4" stroke-linecap="round"/>
+          </svg>
+          <label class="sr" for="songFilter">Filter songs</label>
+          <input id="songFilter" type="search" placeholder="Filter songs..."
+                 autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear the filter" hidden>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+      </button>
+        </div>
+        <button class="ch__sort" type="button" id="songSort" data-order="m"
+                aria-label="Sort: last modified — switch to alphabetical"
+                title="Sort: last modified — switch to alphabetical">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 5.5h14M5 10h10M8 14.5h4"/>
+          </svg>
+          <span class="ch__sort-mark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+    <button class="ch__collapse" type="button" id="chCollapse"
+            aria-controls="chapters" aria-expanded="true"
+            aria-label="Close song list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"/>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"/>
+      </svg>
+    </button>
+  </div>
+
+  
+  <div class="ch__add">
+    <button class="editor-add" type="button" id="songAdd"
+            data-editor-open="song" data-editor-book="18"
+            data-editor-label="Add song">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+      <span class="editor-add__label">Add song</span>
+    </button>
+  </div>
+  
+
+  
+
+  <div class="ch__wrap">
+    <button class="ch__ind" type="button" id="chUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"/>
+      </svg>
+    </button>
+
+    <div class="ch__body" id="chBody" tabindex="0"><ul id="chList">
+<li><a class="songrow" href="/songs/1905/" data-i="1905"
+       data-t="a" data-o="0" data-m="1792544869060705"
+       >
+  
+  <span class="songrow__t">a</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1905"
+            aria-label="Edit a">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1350/" data-i="1350"
+       data-t="el shaddai" data-o="1" data-m="1792238476278652"
+       >
+  
+  <span class="songrow__t">El Shaddai</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1350"
+            aria-label="Edit El Shaddai">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1351/" data-i="1351"
+       data-t="boras tenger" data-o="2" data-m="1792238475278652"
+       >
+  
+  <span class="songrow__t">Boras Tenger</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1351"
+            aria-label="Edit Boras Tenger">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1352/" data-i="1352"
+       data-t="juru&#x27;slamatku" data-o="3" data-m="1792238474278652"
+       >
+  
+  <span class="songrow__t">Juru&#x27;slamatku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1352"
+            aria-label="Edit Juru&#x27;slamatku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1357/" data-i="1357"
+       data-t="pardear layak do ham jahowa" data-o="4" data-m="1792238469278652"
+       >
+  
+  <span class="songrow__t">Pardear Layak do Ham Jahowa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1357"
+            aria-label="Edit Pardear Layak do Ham Jahowa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1358/" data-i="1358"
+       data-t="persembahanku" data-o="5" data-m="1792238468278652"
+       >
+  
+  <span class="songrow__t">Persembahanku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1358"
+            aria-label="Edit Persembahanku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1373/" data-i="1373"
+       data-t="betapa hatiku" data-o="6" data-m="1792238453278652"
+       >
+  
+  <span class="songrow__t">Betapa Hatiku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1373"
+            aria-label="Edit Betapa Hatiku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1377/" data-i="1377"
+       data-t="mengampuni" data-o="7" data-m="1792238449278652"
+       >
+  
+  <span class="songrow__t">Mengampuni</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1377"
+            aria-label="Edit Mengampuni">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1378/" data-i="1378"
+       data-t="sejauh timur dari barat" data-o="8" data-m="1792238448278652"
+       >
+  
+  <span class="songrow__t">Sejauh Timur dari Barat</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1378"
+            aria-label="Edit Sejauh Timur dari Barat">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1379/" data-i="1379"
+       data-t="bersyukurlah" data-o="9" data-m="1792238447278652"
+       >
+  
+  <span class="songrow__t">Bersyukurlah</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1379"
+            aria-label="Edit Bersyukurlah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1380/" data-i="1380"
+       data-t="kami perlu kau tuhan" data-o="10" data-m="1792238446278652"
+       >
+  
+  <span class="songrow__t">Kami Perlu Kau Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1380"
+            aria-label="Edit Kami Perlu Kau Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1381/" data-i="1381"
+       data-t="hari ini harinya tuhan" data-o="11" data-m="1792238445278652"
+       >
+  
+  <span class="songrow__t">Hari Ini Harinya Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1381"
+            aria-label="Edit Hari Ini Harinya Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1382/" data-i="1382"
+       data-t="hari ini kurasa bahagia" data-o="12" data-m="1792238444278652"
+       >
+  
+  <span class="songrow__t">Hari Ini Kurasa Bahagia</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1382"
+            aria-label="Edit Hari Ini Kurasa Bahagia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1383/" data-i="1383"
+       data-t="tuhan holong ma ham" data-o="13" data-m="1792238443278652"
+       >
+  
+  <span class="songrow__t">Tuhan holong ma Ham</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1383"
+            aria-label="Edit Tuhan holong ma Ham">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1384/" data-i="1384"
+       data-t="do re mi" data-o="14" data-m="1792238442278652"
+       >
+  
+  <span class="songrow__t">Do Re Mi</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1384"
+            aria-label="Edit Do Re Mi">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1385/" data-i="1385"
+       data-t="bagaimana aku harus mengatakannya" data-o="15" data-m="1792238441278652"
+       >
+  
+  <span class="songrow__t">Bagaimana Aku Harus Mengatakannya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1385"
+            aria-label="Edit Bagaimana Aku Harus Mengatakannya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1386/" data-i="1386"
+       data-t="tonduy na pansing" data-o="16" data-m="1792238440278652"
+       >
+  
+  <span class="songrow__t">Tonduy Na Pansing</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1386"
+            aria-label="Edit Tonduy Na Pansing">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1387/" data-i="1387"
+       data-t="anggo marhorja tonduy in" data-o="17" data-m="1792238439278652"
+       >
+  
+  <span class="songrow__t">Anggo Marhorja Tonduy In</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1387"
+            aria-label="Edit Anggo Marhorja Tonduy In">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1389/" data-i="1389"
+       data-t="firman-mu p&#x27;lita bagi kakiku" data-o="18" data-m="1792238437278652"
+       >
+  
+  <span class="songrow__t">Firman-Mu P&#x27;lita Bagi Kakiku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1389"
+            aria-label="Edit Firman-Mu P&#x27;lita Bagi Kakiku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1629/" data-i="1629"
+       data-t="yang mahakasih (bahasa dayak nganju)" data-o="19" data-m="1792238197278652"
+       >
+  
+  <span class="songrow__t">Yang Mahakasih (Bahasa Dayak Nganju)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1629"
+            aria-label="Edit Yang Mahakasih (Bahasa Dayak Nganju)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1630/" data-i="1630"
+       data-t="yang mahakasih (bahasa dayak maanyan)" data-o="20" data-m="1792238196278652"
+       >
+  
+  <span class="songrow__t">Yang Mahakasih (Bahasa Dayak Maanyan)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1630"
+            aria-label="Edit Yang Mahakasih (Bahasa Dayak Maanyan)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1631/" data-i="1631"
+       data-t="s&#x27;bab dia hidup" data-o="21" data-m="1792238195278652"
+       >
+  
+  <span class="songrow__t">S&#x27;Bab Dia Hidup</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1631"
+            aria-label="Edit S&#x27;Bab Dia Hidup">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1632/" data-i="1632"
+       data-t="hidup hidup" data-o="22" data-m="1792238194278652"
+       >
+  
+  <span class="songrow__t">Hidup Hidup</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1632"
+            aria-label="Edit Hidup Hidup">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1633/" data-i="1633"
+       data-t="kumenang kumenang" data-o="23" data-m="1792238193278652"
+       >
+  
+  <span class="songrow__t">Kumenang Kumenang</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1633"
+            aria-label="Edit Kumenang Kumenang">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1634/" data-i="1634"
+       data-t="rayakan" data-o="24" data-m="1792238192278652"
+       >
+  
+  <span class="songrow__t">Rayakan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1634"
+            aria-label="Edit Rayakan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1635/" data-i="1635"
+       data-t="ijon adong huboan tuhan" data-o="25" data-m="1792238191278652"
+       >
+  
+  <span class="songrow__t">Ijon Adong Huboan Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1635"
+            aria-label="Edit Ijon Adong Huboan Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1636/" data-i="1636"
+       data-t="yesus sungguh berarti" data-o="26" data-m="1792238190278652"
+       >
+  
+  <span class="songrow__t">Yesus Sungguh Berarti</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1636"
+            aria-label="Edit Yesus Sungguh Berarti">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1637/" data-i="1637"
+       data-t="amazing grace" data-o="27" data-m="1792238189278652"
+       >
+  
+  <span class="songrow__t">Amazing Grace</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1637"
+            aria-label="Edit Amazing Grace">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1638/" data-i="1638"
+       data-t="galangan" data-o="28" data-m="1792238188278652"
+       >
+  
+  <span class="songrow__t">Galangan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1638"
+            aria-label="Edit Galangan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1639/" data-i="1639"
+       data-t="mars sekolah gkps" data-o="29" data-m="1792238187278652"
+       >
+  
+  <span class="songrow__t">Mars Sekolah GKPS</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1639"
+            aria-label="Edit Mars Sekolah GKPS">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1640/" data-i="1640"
+       data-t="terima kasih tuhan" data-o="30" data-m="1792238186278652"
+       >
+  
+  <span class="songrow__t">Terima Kasih Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1640"
+            aria-label="Edit Terima Kasih Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1641/" data-i="1641"
+       data-t="diatei tupa tuhan" data-o="31" data-m="1792238185278652"
+       >
+  
+  <span class="songrow__t">Diatei Tupa Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1641"
+            aria-label="Edit Diatei Tupa Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1642/" data-i="1642"
+       data-t="sihol do uhurnami (haleluya 450)" data-o="32" data-m="1792238184278652"
+       >
+  
+  <span class="songrow__t">Sihol do Uhurnami (Haleluya 450)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1642"
+            aria-label="Edit Sihol do Uhurnami (Haleluya 450)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1643/" data-i="1643"
+       data-t="disini aku bawa tuhan" data-o="33" data-m="1792238183278652"
+       >
+  
+  <span class="songrow__t">Disini Aku Bawa Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1643"
+            aria-label="Edit Disini Aku Bawa Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1645/" data-i="1645"
+       data-t="nyanyi bagi dia" data-o="34" data-m="1792238181278652"
+       >
+  
+  <span class="songrow__t">nyanyi bagi dia</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1645"
+            aria-label="Edit nyanyi bagi dia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1646/" data-i="1646"
+       data-t="trima suka cita surga" data-o="35" data-m="1792238180278652"
+       >
+  
+  <span class="songrow__t">trima suka cita surga</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1646"
+            aria-label="Edit trima suka cita surga">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1647/" data-i="1647"
+       data-t="ku masuk ruang maha kudus" data-o="36" data-m="1792238179278652"
+       >
+  
+  <span class="songrow__t">Ku Masuk Ruang Maha Kudus</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1647"
+            aria-label="Edit Ku Masuk Ruang Maha Kudus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1648/" data-i="1648"
+       data-t="ku mau berjalan dengan jurus&#x27;lamatku (kj 370)" data-o="37" data-m="1792238178278652"
+       >
+  
+  <span class="songrow__t">Ku Mau Berjalan dengan Jurus&#x27;lamatku (KJ 370)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1648"
+            aria-label="Edit Ku Mau Berjalan dengan Jurus&#x27;lamatku (KJ 370)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1649/" data-i="1649"
+       data-t="ku siapkan hatiku tuhan" data-o="38" data-m="1792238177278652"
+       >
+  
+  <span class="songrow__t">Ku Siapkan Hatiku Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1649"
+            aria-label="Edit Ku Siapkan Hatiku Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1650/" data-i="1650"
+       data-t="karna salibmu ku hidup" data-o="39" data-m="1792238176278652"
+       >
+  
+  <span class="songrow__t">Karna SalibMu ku Hidup</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1650"
+            aria-label="Edit Karna SalibMu ku Hidup">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1651/" data-i="1651"
+       data-t="karena salibmu" data-o="40" data-m="1792238175278652"
+       >
+  
+  <span class="songrow__t">Karena SalibMu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1651"
+            aria-label="Edit Karena SalibMu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1652/" data-i="1652"
+       data-t="bapa &#x27;ku datang padamu" data-o="41" data-m="1792238174278652"
+       >
+  
+  <span class="songrow__t">Bapa &#x27;Ku Datang PadaMu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1652"
+            aria-label="Edit Bapa &#x27;Ku Datang PadaMu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1653/" data-i="1653"
+       data-t="kubersyukur bapa" data-o="42" data-m="1792238173278652"
+       >
+  
+  <span class="songrow__t">Kubersyukur Bapa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1653"
+            aria-label="Edit Kubersyukur Bapa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1654/" data-i="1654"
+       data-t="bukti kebesaranmu" data-o="43" data-m="1792238172278652"
+       >
+  
+  <span class="songrow__t">Bukti KebesaranMu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1654"
+            aria-label="Edit Bukti KebesaranMu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1656/" data-i="1656"
+       data-t="hatahononta diatei tupa ma (haleluya 406)" data-o="44" data-m="1792238170278652"
+       >
+  
+  <span class="songrow__t">Hatahononta Diatei Tupa ma (Haleluya 406)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1656"
+            aria-label="Edit Hatahononta Diatei Tupa ma (Haleluya 406)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1657/" data-i="1657"
+       data-t="lang margogoh au" data-o="45" data-m="1792238169278652"
+       >
+  
+  <span class="songrow__t">Lang Margogoh Au</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1657"
+            aria-label="Edit Lang Margogoh Au">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1658/" data-i="1658"
+       data-t="seng tarbilangi" data-o="46" data-m="1792238168278652"
+       >
+  
+  <span class="songrow__t">Seng Tarbilangi</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1658"
+            aria-label="Edit Seng Tarbilangi">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1659/" data-i="1659"
+       data-t="mars seksi bapa gkps" data-o="47" data-m="1792238167278652"
+       >
+  
+  <span class="songrow__t">Mars Seksi Bapa GKPS</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1659"
+            aria-label="Edit Mars Seksi Bapa GKPS">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1661/" data-i="1661"
+       data-t="hati s&#x27;bagai hamba" data-o="48" data-m="1792238165278652"
+       >
+  
+  <span class="songrow__t">Hati S&#x27;bagai Hamba</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1661"
+            aria-label="Edit Hati S&#x27;bagai Hamba">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1662/" data-i="1662"
+       data-t="sanggah manabad ma mataniari (hal 487)" data-o="49" data-m="1792238164278652"
+       >
+  
+  <span class="songrow__t">Sanggah Manabad ma Mataniari (HAL 487)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1662"
+            aria-label="Edit Sanggah Manabad ma Mataniari (HAL 487)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1663/" data-i="1663"
+       data-t="hatamu ale tuhanku (model d)" data-o="50" data-m="1792238163278652"
+       >
+  
+  <span class="songrow__t">HataMu Ale Tuhanku (Model D)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1663"
+            aria-label="Edit HataMu Ale Tuhanku (Model D)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1664/" data-i="1664"
+       data-t="diateitupa ma" data-o="51" data-m="1792238162278652"
+       >
+  
+  <span class="songrow__t">Diateitupa ma</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1664"
+            aria-label="Edit Diateitupa ma">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1665/" data-i="1665"
+       data-t="doding galangan" data-o="52" data-m="1792238161278652"
+       >
+  
+  <span class="songrow__t">doding galangan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1665"
+            aria-label="Edit doding galangan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1666/" data-i="1666"
+       data-t="o holy night" data-o="53" data-m="1792238160278652"
+       >
+  
+  <span class="songrow__t">O Holy Night</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1666"
+            aria-label="Edit O Holy Night">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1667/" data-i="1667"
+       data-t="ge pe gerger" data-o="54" data-m="1792238159278652"
+       >
+  
+  <span class="songrow__t">Ge Pe Gerger</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1667"
+            aria-label="Edit Ge Pe Gerger">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1668/" data-i="1668"
+       data-t="pribadi yang mengenal hatiku" data-o="55" data-m="1792238158278652"
+       >
+  
+  <span class="songrow__t">Pribadi yang Mengenal Hatiku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1668"
+            aria-label="Edit Pribadi yang Mengenal Hatiku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1669/" data-i="1669"
+       data-t="ondos ganupan" data-o="56" data-m="1792238157278652"
+       >
+  
+  <span class="songrow__t">Ondos Ganupan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1669"
+            aria-label="Edit Ondos Ganupan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1670/" data-i="1670"
+       data-t="laho ma hita (reff. haleluya 299 : 2)" data-o="57" data-m="1792238156278652"
+       >
+  
+  <span class="songrow__t">Laho ma hita (Reff. Haleluya 299 : 2)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1670"
+            aria-label="Edit Laho ma hita (Reff. Haleluya 299 : 2)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1671/" data-i="1671"
+       data-t="mari masuk" data-o="58" data-m="1792238155278652"
+       >
+  
+  <span class="songrow__t">Mari Masuk</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1671"
+            aria-label="Edit Mari Masuk">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1672/" data-i="1672"
+       data-t="bujur do tuhan in" data-o="59" data-m="1792238154278652"
+       >
+  
+  <span class="songrow__t">Bujur do Tuhan in</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1672"
+            aria-label="Edit Bujur do Tuhan in">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1673/" data-i="1673"
+       data-t="pengampunan dosa model e (refrein pkj 37) 3x" data-o="60" data-m="1792238153278652"
+       >
+  
+  <span class="songrow__t">Pengampunan Dosa Model E (Refrein PKJ 37) 3x</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1673"
+            aria-label="Edit Pengampunan Dosa Model E (Refrein PKJ 37) 3x">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1675/" data-i="1675"
+       data-t="itompa naibata" data-o="61" data-m="1792238151278652"
+       >
+  
+  <span class="songrow__t">Itompa Naibata</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1675"
+            aria-label="Edit Itompa Naibata">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1676/" data-i="1676"
+       data-t="yesus jurumudiku" data-o="62" data-m="1792238150278652"
+       >
+  
+  <span class="songrow__t">Yesus Jurumudiku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1676"
+            aria-label="Edit Yesus Jurumudiku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1677/" data-i="1677"
+       data-t="bagai rajawali" data-o="63" data-m="1792238149278652"
+       >
+  
+  <span class="songrow__t">Bagai Rajawali</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1677"
+            aria-label="Edit Bagai Rajawali">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1678/" data-i="1678"
+       data-t="gb 164 : terpujilah allah, hikmatnya besar" data-o="64" data-m="1792238148278652"
+       >
+  
+  <span class="songrow__t">GB 164 : Terpujilah Allah, HikmatNya Besar</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1678"
+            aria-label="Edit GB 164 : Terpujilah Allah, HikmatNya Besar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1679/" data-i="1679"
+       data-t="abc" data-o="65" data-m="1792238147278652"
+       >
+  
+  <span class="songrow__t">abc</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1679"
+            aria-label="Edit abc">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1680/" data-i="1680"
+       data-t="huahap do" data-o="66" data-m="1792238146278652"
+       >
+  
+  <span class="songrow__t">Huahap Do</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1680"
+            aria-label="Edit Huahap Do">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1681/" data-i="1681"
+       data-t="aha ma sibahenonku tuhan" data-o="67" data-m="1792238145278652"
+       >
+  
+  <span class="songrow__t">Aha ma Sibahenonku Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1681"
+            aria-label="Edit Aha ma Sibahenonku Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1682/" data-i="1682"
+       data-t="persembahan lagu sm" data-o="68" data-m="1792238144278652"
+       >
+  
+  <span class="songrow__t">PERSEMBAHAN LAGU SM</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1682"
+            aria-label="Edit PERSEMBAHAN LAGU SM">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1683/" data-i="1683"
+       data-t="manis kau dengar" data-o="69" data-m="1792238143278652"
+       >
+  
+  <span class="songrow__t">Manis Kau Dengar</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1683"
+            aria-label="Edit Manis Kau Dengar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1684/" data-i="1684"
+       data-t="pakai aku tuhan" data-o="70" data-m="1792238142278652"
+       >
+  
+  <span class="songrow__t">Pakai Aku Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1684"
+            aria-label="Edit Pakai Aku Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1685/" data-i="1685"
+       data-t="allah sumber kuatku" data-o="71" data-m="1792238141278652"
+       >
+  
+  <span class="songrow__t">Allah Sumber Kuatku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1685"
+            aria-label="Edit Allah Sumber Kuatku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1686/" data-i="1686"
+       data-t="yesus kau sungguh baik" data-o="72" data-m="1792238140278652"
+       >
+  
+  <span class="songrow__t">Yesus Kau Sungguh Baik</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1686"
+            aria-label="Edit Yesus Kau Sungguh Baik">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1687/" data-i="1687"
+       data-t="bersyukurlah (datanglah ke bait-nya)" data-o="73" data-m="1792238139278652"
+       >
+  
+  <span class="songrow__t">Bersyukurlah (Datanglah ke Bait-Nya)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1687"
+            aria-label="Edit Bersyukurlah (Datanglah ke Bait-Nya)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1688/" data-i="1688"
+       data-t="kumelayani yesus" data-o="74" data-m="1792238138278652"
+       >
+  
+  <span class="songrow__t">Kumelayani Yesus</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1688"
+            aria-label="Edit Kumelayani Yesus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1689/" data-i="1689"
+       data-t="allah itu baik" data-o="75" data-m="1792238137278652"
+       >
+  
+  <span class="songrow__t">Allah Itu Baik</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1689"
+            aria-label="Edit Allah Itu Baik">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1690/" data-i="1690"
+       data-t="rigapankin" data-o="76" data-m="1792238136278652"
+       >
+  
+  <span class="songrow__t">Rigapankin</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1690"
+            aria-label="Edit Rigapankin">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1691/" data-i="1691"
+       data-t="kau tuhan" data-o="77" data-m="1792238135278652"
+       >
+  
+  <span class="songrow__t">Kau Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1691"
+            aria-label="Edit Kau Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1692/" data-i="1692"
+       data-t="karya terbesar" data-o="78" data-m="1792238134278652"
+       >
+  
+  <span class="songrow__t">Karya Terbesar</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1692"
+            aria-label="Edit Karya Terbesar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1693/" data-i="1693"
+       data-t="kumenang bersama yesus" data-o="79" data-m="1792238133278652"
+       >
+  
+  <span class="songrow__t">Kumenang Bersama Yesus</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1693"
+            aria-label="Edit Kumenang Bersama Yesus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1694/" data-i="1694"
+       data-t="kutemukan jawabannya" data-o="80" data-m="1792238132278652"
+       >
+  
+  <span class="songrow__t">Kutemukan Jawabannya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1694"
+            aria-label="Edit Kutemukan Jawabannya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1695/" data-i="1695"
+       data-t="dalam yesus kita bersaudara" data-o="81" data-m="1792238131278652"
+       >
+  
+  <span class="songrow__t">Dalam Yesus Kita Bersaudara</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1695"
+            aria-label="Edit Dalam Yesus Kita Bersaudara">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1696/" data-i="1696"
+       data-t="kumau bernyanyi (you are good to me)" data-o="82" data-m="1792238130278652"
+       >
+  
+  <span class="songrow__t">Kumau Bernyanyi (You Are Good To Me)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1696"
+            aria-label="Edit Kumau Bernyanyi (You Are Good To Me)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1697/" data-i="1697"
+       data-t="kj 64 (reff only)" data-o="83" data-m="1792238129278652"
+       >
+  
+  <span class="songrow__t">KJ 64 (Reff only)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1697"
+            aria-label="Edit KJ 64 (Reff only)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1700/" data-i="1700"
+       data-t="roh kudus kau hadir disini" data-o="84" data-m="1792238126278652"
+       >
+  
+  <span class="songrow__t">Roh Kudus Kau Hadir Disini</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1700"
+            aria-label="Edit Roh Kudus Kau Hadir Disini">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1703/" data-i="1703"
+       data-t="horas bei ma hita" data-o="85" data-m="1792238123278652"
+       >
+  
+  <span class="songrow__t">Horas Bei ma Hita</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1703"
+            aria-label="Edit Horas Bei ma Hita">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1705/" data-i="1705"
+       data-t="kurasakan kasih-mu tuhan" data-o="86" data-m="1792238121278652"
+       >
+  
+  <span class="songrow__t">Kurasakan Kasih-Mu Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1705"
+            aria-label="Edit Kurasakan Kasih-Mu Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1709/" data-i="1709"
+       data-t="haleluya 302 (puji hita naibatanta) hata mentawai" data-o="87" data-m="1792238117278652"
+       >
+  
+  <span class="songrow__t">Haleluya 302 (Puji Hita Naibatanta) hata Mentawai</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1709"
+            aria-label="Edit Haleluya 302 (Puji Hita Naibatanta) hata Mentawai">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1710/" data-i="1710"
+       data-t="kj 64 (bila kulihat bintang gemerlapan) hata mentawai" data-o="88" data-m="1792238116278652"
+       >
+  
+  <span class="songrow__t">KJ 64 (Bila Kulihat Bintang Gemerlapan) hata Mentawai</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1710"
+            aria-label="Edit KJ 64 (Bila Kulihat Bintang Gemerlapan) hata Mentawai">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1711/" data-i="1711"
+       data-t="jesus do parmahan" data-o="89" data-m="1792238115278652"
+       >
+  
+  <span class="songrow__t">Jesus do Parmahan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1711"
+            aria-label="Edit Jesus do Parmahan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1712/" data-i="1712"
+       data-t="kasih setiamu yang kurasakan" data-o="90" data-m="1792238114278652"
+       >
+  
+  <span class="songrow__t">Kasih SetiaMu Yang Kurasakan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1712"
+            aria-label="Edit Kasih SetiaMu Yang Kurasakan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1713/" data-i="1713"
+       data-t="bapa &#x27;ku datang padamu (simalungun)" data-o="91" data-m="1792238113278652"
+       >
+  
+  <span class="songrow__t">Bapa &#x27;Ku Datang PadaMu (Simalungun)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1713"
+            aria-label="Edit Bapa &#x27;Ku Datang PadaMu (Simalungun)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1714/" data-i="1714"
+       data-t="i lobei-mu tuhan" data-o="92" data-m="1792238112278652"
+       >
+  
+  <span class="songrow__t">I Lobei-Mu Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1714"
+            aria-label="Edit I Lobei-Mu Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1715/" data-i="1715"
+       data-t="martonggo" data-o="93" data-m="1792238111278652"
+       >
+  
+  <span class="songrow__t">Martonggo</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1715"
+            aria-label="Edit Martonggo">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1717/" data-i="1717"
+       data-t="ajal ni dunia" data-o="94" data-m="1792238109278652"
+       >
+  
+  <span class="songrow__t">Ajal ni Dunia</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1717"
+            aria-label="Edit Ajal ni Dunia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1718/" data-i="1718"
+       data-t="sukacita surga med. bersyukurlah" data-o="95" data-m="1792238108278652"
+       >
+  
+  <span class="songrow__t">Sukacita Surga med. Bersyukurlah</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1718"
+            aria-label="Edit Sukacita Surga med. Bersyukurlah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1720/" data-i="1720"
+       data-t="el shaddai" data-o="96" data-m="1792238106278652"
+       >
+  
+  <span class="songrow__t">El Shaddai</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1720"
+            aria-label="Edit El Shaddai">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1721/" data-i="1721"
+       data-t="janji-mu s&#x27;perti fajar" data-o="97" data-m="1792238105278652"
+       >
+  
+  <span class="songrow__t">Janji-Mu S&#x27;perti Fajar</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1721"
+            aria-label="Edit Janji-Mu S&#x27;perti Fajar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1722/" data-i="1722"
+       data-t="langit dan bumi pujilah tuhan" data-o="98" data-m="1792238104278652"
+       >
+  
+  <span class="songrow__t">Langit dan Bumi Pujilah Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1722"
+            aria-label="Edit Langit dan Bumi Pujilah Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1723/" data-i="1723"
+       data-t="menyenangkan-mu" data-o="99" data-m="1792238103278652"
+       >
+  
+  <span class="songrow__t">Menyenangkan-Mu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1723"
+            aria-label="Edit Menyenangkan-Mu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1724/" data-i="1724"
+       data-t="mujizat itu nyata" data-o="100" data-m="1792238102278652"
+       >
+  
+  <span class="songrow__t">Mujizat itu Nyata</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1724"
+            aria-label="Edit Mujizat itu Nyata">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1726/" data-i="1726"
+       data-t="waktu yang terbaik" data-o="101" data-m="1792238100278652"
+       >
+  
+  <span class="songrow__t">Waktu yang Terbaik</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1726"
+            aria-label="Edit Waktu yang Terbaik">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1727/" data-i="1727"
+       data-t="monang do au" data-o="102" data-m="1792238099278652"
+       >
+  
+  <span class="songrow__t">Monang do Au</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1727"
+            aria-label="Edit Monang do Au">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1728/" data-i="1728"
+       data-t="galangan odak-odak" data-o="103" data-m="1792238098278652"
+       >
+  
+  <span class="songrow__t">Galangan Odak-odak</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1728"
+            aria-label="Edit Galangan Odak-odak">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1729/" data-i="1729"
+       data-t="eta nasiam" data-o="104" data-m="1792238097278652"
+       >
+  
+  <span class="songrow__t">Eta Nasiam</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1729"
+            aria-label="Edit Eta Nasiam">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1730/" data-i="1730"
+       data-t="horom ma ringismu" data-o="105" data-m="1792238096278652"
+       >
+  
+  <span class="songrow__t">Horom ma Ringismu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1730"
+            aria-label="Edit Horom ma Ringismu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1731/" data-i="1731"
+       data-t="lang margogoh au" data-o="106" data-m="1792238095278652"
+       >
+  
+  <span class="songrow__t">Lang Margogoh Au</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1731"
+            aria-label="Edit Lang Margogoh Au">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1732/" data-i="1732"
+       data-t="bapa yang mengasihiku" data-o="107" data-m="1792238094278652"
+       >
+  
+  <span class="songrow__t">Bapa Yang Mengasihiku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1732"
+            aria-label="Edit Bapa Yang Mengasihiku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1733/" data-i="1733"
+       data-t="allah sanggup" data-o="108" data-m="1792238093278652"
+       >
+  
+  <span class="songrow__t">Allah Sanggup</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1733"
+            aria-label="Edit Allah Sanggup">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1734/" data-i="1734"
+       data-t="oh yerusalem" data-o="109" data-m="1792238092278652"
+       >
+  
+  <span class="songrow__t">Oh Yerusalem</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1734"
+            aria-label="Edit Oh Yerusalem">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1736/" data-i="1736"
+       data-t="semesta bernyanyi" data-o="110" data-m="1792238090278652"
+       >
+  
+  <span class="songrow__t">Semesta Bernyanyi</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1736"
+            aria-label="Edit Semesta Bernyanyi">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1737/" data-i="1737"
+       data-t="dari pulau dan benua" data-o="111" data-m="1792238089278652"
+       >
+  
+  <span class="songrow__t">Dari Pulau dan Benua</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1737"
+            aria-label="Edit Dari Pulau dan Benua">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1738/" data-i="1738"
+       data-t="persembahan pujian namaposo (natal sm)" data-o="112" data-m="1792238088278652"
+       >
+  
+  <span class="songrow__t">Persembahan Pujian Namaposo (Natal SM)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1738"
+            aria-label="Edit Persembahan Pujian Namaposo (Natal SM)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1739/" data-i="1739"
+       data-t="dia lahir untuk kami" data-o="113" data-m="1792238087278652"
+       >
+  
+  <span class="songrow__t">Dia Lahir untuk Kami</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1739"
+            aria-label="Edit Dia Lahir untuk Kami">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1740/" data-i="1740"
+       data-t="feliz navidad" data-o="114" data-m="1792238086278652"
+       >
+  
+  <span class="songrow__t">Feliz navidad</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1740"
+            aria-label="Edit Feliz navidad">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1741/" data-i="1741"
+       data-t="goodness of god" data-o="115" data-m="1792238085278652"
+       >
+  
+  <span class="songrow__t">Goodness of God</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1741"
+            aria-label="Edit Goodness of God">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1742/" data-i="1742"
+       data-t="tuhan yang besar" data-o="116" data-m="1792238084278652"
+       >
+  
+  <span class="songrow__t">Tuhan yang Besar</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1742"
+            aria-label="Edit Tuhan yang Besar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1743/" data-i="1743"
+       data-t="penuh harapan" data-o="117" data-m="1792238083278652"
+       >
+  
+  <span class="songrow__t">Penuh Harapan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1743"
+            aria-label="Edit Penuh Harapan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1744/" data-i="1744"
+       data-t="dia hanya sejauh doa" data-o="118" data-m="1792238082278652"
+       >
+  
+  <span class="songrow__t">Dia Hanya Sejauh Doa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1744"
+            aria-label="Edit Dia Hanya Sejauh Doa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1745/" data-i="1745"
+       data-t="gloria sambutlah dia" data-o="119" data-m="1792238081278652"
+       >
+  
+  <span class="songrow__t">Gloria Sambutlah Dia</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1745"
+            aria-label="Edit Gloria Sambutlah Dia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1746/" data-i="1746"
+       data-t="persembahan namaposo" data-o="120" data-m="1792238080278652"
+       >
+  
+  <span class="songrow__t">Persembahan namaposo</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1746"
+            aria-label="Edit Persembahan namaposo">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1747/" data-i="1747"
+       data-t="seorang anak tlah lahir" data-o="121" data-m="1792238079278652"
+       >
+  
+  <span class="songrow__t">seorang anak tlah lahir</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1747"
+            aria-label="Edit seorang anak tlah lahir">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1748/" data-i="1748"
+       data-t="sambutlah mesias - sie bapa" data-o="122" data-m="1792238078278652"
+       >
+  
+  <span class="songrow__t">sambutlah mesias - sie bapa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1748"
+            aria-label="Edit sambutlah mesias - sie bapa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1749/" data-i="1749"
+       data-t="kau sangat kucinta" data-o="123" data-m="1792238077278652"
+       >
+  
+  <span class="songrow__t">Kau Sangat Kucinta</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1749"
+            aria-label="Edit Kau Sangat Kucinta">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1750/" data-i="1750"
+       data-t="natal di hatiku medley natal kisah kasih terindah" data-o="124" data-m="1792238076278652"
+       >
+  
+  <span class="songrow__t">Natal di Hatiku medley Natal Kisah Kasih Terindah</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1750"
+            aria-label="Edit Natal di Hatiku medley Natal Kisah Kasih Terindah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1751/" data-i="1751"
+       data-t="tunas namajenges" data-o="125" data-m="1792238075278652"
+       >
+  
+  <span class="songrow__t">Tunas Namajenges</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1751"
+            aria-label="Edit Tunas Namajenges">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1752/" data-i="1752"
+       data-t="bapa tuntunlah kami tuhan" data-o="126" data-m="1792238074278652"
+       >
+  
+  <span class="songrow__t">Bapa Tuntunlah Kami Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1752"
+            aria-label="Edit Bapa Tuntunlah Kami Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1753/" data-i="1753"
+       data-t="doa mengubah segala sesuatu" data-o="127" data-m="1792238073278652"
+       >
+  
+  <span class="songrow__t">Doa Mengubah Segala Sesuatu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1753"
+            aria-label="Edit Doa Mengubah Segala Sesuatu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1754/" data-i="1754"
+       data-t="tuhan menetapkan langkah-langkah orang" data-o="128" data-m="1792238072278652"
+       >
+  
+  <span class="songrow__t">Tuhan Menetapkan Langkah-langkah Orang</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1754"
+            aria-label="Edit Tuhan Menetapkan Langkah-langkah Orang">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1755/" data-i="1755"
+       data-t="amen hupuji ham tuhan" data-o="129" data-m="1792238071278652"
+       >
+  
+  <span class="songrow__t">Amen Hupuji Ham Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1755"
+            aria-label="Edit Amen Hupuji Ham Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1756/" data-i="1756"
+       data-t="ingat kasih-nya" data-o="130" data-m="1792238070278652"
+       >
+  
+  <span class="songrow__t">Ingat Kasih-Nya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1756"
+            aria-label="Edit Ingat Kasih-Nya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1757/" data-i="1757"
+       data-t="bersama-mu bapa" data-o="131" data-m="1792238069278652"
+       >
+  
+  <span class="songrow__t">Bersama-Mu Bapa</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1757"
+            aria-label="Edit Bersama-Mu Bapa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1758/" data-i="1758"
+       data-t="galangan banggal niuhur" data-o="132" data-m="1792238068278652"
+       >
+  
+  <span class="songrow__t">Galangan Banggal Niuhur</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1758"
+            aria-label="Edit Galangan Banggal Niuhur">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1760/" data-i="1760"
+       data-t="dengan sayapmu" data-o="133" data-m="1792238066278652"
+       >
+  
+  <span class="songrow__t">Dengan Sayapmu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1760"
+            aria-label="Edit Dengan Sayapmu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1761/" data-i="1761"
+       data-t="tuhan selalu menolongku" data-o="134" data-m="1792238065278652"
+       >
+  
+  <span class="songrow__t">TUHAN SELALU MENOLONGKU</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1761"
+            aria-label="Edit TUHAN SELALU MENOLONGKU">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1762/" data-i="1762"
+       data-t="semua baik" data-o="135" data-m="1792238064278652"
+       >
+  
+  <span class="songrow__t">Semua Baik</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1762"
+            aria-label="Edit Semua Baik">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1764/" data-i="1764"
+       data-t="walau ku tak dapat melihat" data-o="136" data-m="1792238062278652"
+       >
+  
+  <span class="songrow__t">Walau Ku Tak Dapat Melihat</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1764"
+            aria-label="Edit Walau Ku Tak Dapat Melihat">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1765/" data-i="1765"
+       data-t="my beautiful mommy" data-o="137" data-m="1792238061278652"
+       >
+  
+  <span class="songrow__t">My Beautiful Mommy</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1765"
+            aria-label="Edit My Beautiful Mommy">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1767/" data-i="1767"
+       data-t="galangan (ijon huboan tuhan)" data-o="138" data-m="1792238059278652"
+       >
+  
+  <span class="songrow__t">Galangan (Ijon huboan Tuhan)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1767"
+            aria-label="Edit Galangan (Ijon huboan Tuhan)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1769/" data-i="1769"
+       data-t="kau yang terbaik bagiku" data-o="139" data-m="1792238057278652"
+       >
+  
+  <span class="songrow__t">Kau yang Terbaik Bagiku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1769"
+            aria-label="Edit Kau yang Terbaik Bagiku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1770/" data-i="1770"
+       data-t="tak terbatas" data-o="140" data-m="1792238056278652"
+       >
+  
+  <span class="songrow__t">Tak terbatas</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1770"
+            aria-label="Edit Tak terbatas">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1771/" data-i="1771"
+       data-t="penolong yang setia" data-o="141" data-m="1792238055278652"
+       >
+  
+  <span class="songrow__t">Penolong Yang Setia</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1771"
+            aria-label="Edit Penolong Yang Setia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1772/" data-i="1772"
+       data-t="tuhan adalah gembalaku" data-o="142" data-m="1792238054278652"
+       >
+  
+  <span class="songrow__t">Tuhan adalah Gembalaku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1772"
+            aria-label="Edit Tuhan adalah Gembalaku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1773/" data-i="1773"
+       data-t="persem....." data-o="143" data-m="1792238053278652"
+       >
+  
+  <span class="songrow__t">persem.....</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1773"
+            aria-label="Edit persem.....">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1774/" data-i="1774"
+       data-t="hari...." data-o="144" data-m="1792238052278652"
+       >
+  
+  <span class="songrow__t">hari....</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1774"
+            aria-label="Edit hari....">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1775/" data-i="1775"
+       data-t="panramotion" data-o="145" data-m="1792238051278652"
+       >
+  
+  <span class="songrow__t">PANRAMOTION</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1775"
+            aria-label="Edit PANRAMOTION">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1776/" data-i="1776"
+       data-t="hanya dekat allah saja" data-o="146" data-m="1792238050278652"
+       >
+  
+  <span class="songrow__t">Hanya Dekat Allah Saja</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1776"
+            aria-label="Edit Hanya Dekat Allah Saja">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1777/" data-i="1777"
+       data-t="bagi tuhan tak ada yang mustahil" data-o="147" data-m="1792238049278652"
+       >
+  
+  <span class="songrow__t">Bagi Tuhan Tak Ada Yang Mustahil</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1777"
+            aria-label="Edit Bagi Tuhan Tak Ada Yang Mustahil">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1778/" data-i="1778"
+       data-t="pekerja kristus" data-o="148" data-m="1792238048278652"
+       >
+  
+  <span class="songrow__t">PEKERJA KRISTUS</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1778"
+            aria-label="Edit PEKERJA KRISTUS">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1779/" data-i="1779"
+       data-t="aku anak terang" data-o="149" data-m="1792238047278652"
+       >
+  
+  <span class="songrow__t">AKU ANAK TERANG</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1779"
+            aria-label="Edit AKU ANAK TERANG">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1780/" data-i="1780"
+       data-t="jalan hidup orang benar" data-o="150" data-m="1792238046278652"
+       >
+  
+  <span class="songrow__t">Jalan Hidup Orang Benar</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1780"
+            aria-label="Edit Jalan Hidup Orang Benar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1781/" data-i="1781"
+       data-t="kasih pasti lemah lembut" data-o="151" data-m="1792238045278652"
+       >
+  
+  <span class="songrow__t">Kasih Pasti Lemah Lembut</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1781"
+            aria-label="Edit Kasih Pasti Lemah Lembut">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1782/" data-i="1782"
+       data-t="hidupmu berharga bagi allah" data-o="152" data-m="1792238044278652"
+       >
+  
+  <span class="songrow__t">HidupMu Berharga Bagi Allah</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1782"
+            aria-label="Edit HidupMu Berharga Bagi Allah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1783/" data-i="1783"
+       data-t="shout to the lord" data-o="153" data-m="1792238043278652"
+       >
+  
+  <span class="songrow__t">Shout to the Lord</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1783"
+            aria-label="Edit Shout to the Lord">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1785/" data-i="1785"
+       data-t="ulang ham mabiar" data-o="154" data-m="1792238041278652"
+       >
+  
+  <span class="songrow__t">Ulang Ham Mabiar</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1785"
+            aria-label="Edit Ulang Ham Mabiar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1786/" data-i="1786"
+       data-t="kasih setianya" data-o="155" data-m="1792238040278652"
+       >
+  
+  <span class="songrow__t">Kasih Setianya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1786"
+            aria-label="Edit Kasih Setianya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1788/" data-i="1788"
+       data-t="sujud di altarnya" data-o="156" data-m="1792238038278652"
+       >
+  
+  <span class="songrow__t">Sujud Di Altarnya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1788"
+            aria-label="Edit Sujud Di Altarnya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1789/" data-i="1789"
+       data-t="hanya yesus jawaban hidupku" data-o="157" data-m="1792238037278652"
+       >
+  
+  <span class="songrow__t">Hanya Yesus Jawaban Hidupku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1789"
+            aria-label="Edit Hanya Yesus Jawaban Hidupku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1790/" data-i="1790"
+       data-t="tidak pernah ku takut" data-o="158" data-m="1792238036278652"
+       >
+  
+  <span class="songrow__t">Tidak Pernah Ku Takut</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1790"
+            aria-label="Edit Tidak Pernah Ku Takut">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1791/" data-i="1791"
+       data-t="aku mengasihi engkau tuhan" data-o="159" data-m="1792238035278652"
+       >
+  
+  <span class="songrow__t">Aku Mengasihi Engkau Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1791"
+            aria-label="Edit Aku Mengasihi Engkau Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1792/" data-i="1792"
+       data-t="goodness of god (simalungun version)" data-o="160" data-m="1792238034278652"
+       >
+  
+  <span class="songrow__t">Goodness Of God (Simalungun Version)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1792"
+            aria-label="Edit Goodness Of God (Simalungun Version)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1793/" data-i="1793"
+       data-t="damei" data-o="161" data-m="1792238033278652"
+       >
+  
+  <span class="songrow__t">Damei</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1793"
+            aria-label="Edit Damei">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1794/" data-i="1794"
+       data-t="lagu sm buat minggu bapa&#x27;24" data-o="162" data-m="1792238032278652"
+       >
+  
+  <span class="songrow__t">LAGU SM BUAT MINGGU BAPA&#x27;24</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1794"
+            aria-label="Edit LAGU SM BUAT MINGGU BAPA&#x27;24">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1795/" data-i="1795"
+       data-t="ingat ma ari partubuhmu in" data-o="163" data-m="1792238031278652"
+       >
+  
+  <span class="songrow__t">Ingat Ma Ari Partubuhmu in</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1795"
+            aria-label="Edit Ingat Ma Ari Partubuhmu in">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1796/" data-i="1796"
+       data-t="na laho salpu" data-o="164" data-m="1792238030278652"
+       >
+  
+  <span class="songrow__t">Na Laho Salpu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1796"
+            aria-label="Edit Na Laho Salpu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1797/" data-i="1797"
+       data-t="natal di hatiku" data-o="165" data-m="1792238029278652"
+       >
+  
+  <span class="songrow__t">Natal Di Hatiku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1797"
+            aria-label="Edit Natal Di Hatiku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1798/" data-i="1798"
+       data-t="selamat hari natal" data-o="166" data-m="1792238028278652"
+       >
+  
+  <span class="songrow__t">Selamat Hari Natal</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1798"
+            aria-label="Edit Selamat Hari Natal">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1799/" data-i="1799"
+       data-t="galangan nami on" data-o="167" data-m="1792238027278652"
+       >
+  
+  <span class="songrow__t">Galangan Nami On</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1799"
+            aria-label="Edit Galangan Nami On">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1800/" data-i="1800"
+       data-t="seribu lilin" data-o="168" data-m="1792238026278652"
+       >
+  
+  <span class="songrow__t">Seribu Lilin</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1800"
+            aria-label="Edit Seribu Lilin">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1801/" data-i="1801"
+       data-t="ondos ganupan cst csy" data-o="169" data-m="1792238025278652"
+       >
+  
+  <span class="songrow__t">Ondos Ganupan Cst Csy</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1801"
+            aria-label="Edit Ondos Ganupan Cst Csy">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1802/" data-i="1802"
+       data-t="mardamei" data-o="170" data-m="1792238024278652"
+       >
+  
+  <span class="songrow__t">Mardamei</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1802"
+            aria-label="Edit Mardamei">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1803/" data-i="1803"
+       data-t="songon bunga na i talup" data-o="171" data-m="1792238023278652"
+       >
+  
+  <span class="songrow__t">songon bunga na i talup</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1803"
+            aria-label="Edit songon bunga na i talup">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1804/" data-i="1804"
+       data-t="sai marmegah-megah" data-o="172" data-m="1792238022278652"
+       >
+  
+  <span class="songrow__t">Sai Marmegah-Megah</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1804"
+            aria-label="Edit Sai Marmegah-Megah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1805/" data-i="1805"
+       data-t="roh do au hulobeimu" data-o="173" data-m="1792238021278652"
+       >
+  
+  <span class="songrow__t">Roh Do Au HulobeiMu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1805"
+            aria-label="Edit Roh Do Au HulobeiMu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1806/" data-i="1806"
+       data-t="persembahan namaposo pesta inang" data-o="174" data-m="1792238020278652"
+       >
+  
+  <span class="songrow__t">Persembahan Namaposo Pesta Inang</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1806"
+            aria-label="Edit Persembahan Namaposo Pesta Inang">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1807/" data-i="1807"
+       data-t="amen hupuji ham tuhan" data-o="175" data-m="1792238019278652"
+       >
+  
+  <span class="songrow__t">Amen Hupuji Ham Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1807"
+            aria-label="Edit Amen Hupuji Ham Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1808/" data-i="1808"
+       data-t="jalan serta yesus" data-o="176" data-m="1792238018278652"
+       >
+  
+  <span class="songrow__t">Jalan Serta Yesus</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1808"
+            aria-label="Edit Jalan Serta Yesus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1811/" data-i="1811"
+       data-t="dalam kegelapan/bai halotiran/dans nos obscurities" data-o="177" data-m="1792238015278652"
+       >
+  
+  <span class="songrow__t">Dalam Kegelapan/Bai Halotiran/Dans Nos Obscurities</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1811"
+            aria-label="Edit Dalam Kegelapan/Bai Halotiran/Dans Nos Obscurities">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1812/" data-i="1812"
+       data-t="shalom chaverim" data-o="178" data-m="1792238014278652"
+       >
+  
+  <span class="songrow__t">Shalom Chaverim</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1812"
+            aria-label="Edit Shalom Chaverim">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1813/" data-i="1813"
+       data-t="kasihmu tiada duanya" data-o="179" data-m="1792238013278652"
+       >
+  
+  <span class="songrow__t">KasihMu Tiada Duanya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1813"
+            aria-label="Edit KasihMu Tiada Duanya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1816/" data-i="1816"
+       data-t="bapa engkau sungguh baik" data-o="180" data-m="1792238010278652"
+       >
+  
+  <span class="songrow__t">Bapa Engkau Sungguh Baik</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1816"
+            aria-label="Edit Bapa Engkau Sungguh Baik">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1819/" data-i="1819"
+       data-t="kri 78:2 mengikut yesus keputusanku (?)" data-o="181" data-m="1792238007278652"
+       >
+  
+  <span class="songrow__t">KRI 78:2 Mengikut Yesus Keputusanku (?)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1819"
+            aria-label="Edit KRI 78:2 Mengikut Yesus Keputusanku (?)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1825/" data-i="1825"
+       data-t="bn. hkbp 730: berdayakan diriku" data-o="182" data-m="1792238001278652"
+        aria-current="true">
+  
+  <span class="songrow__t">BN. HKBP 730: Berdayakan Diriku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1825"
+            aria-label="Edit BN. HKBP 730: Berdayakan Diriku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1826/" data-i="1826"
+       data-t="abcd" data-o="183" data-m="1792238000278652"
+       >
+  
+  <span class="songrow__t">ABCD</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1826"
+            aria-label="Edit ABCD">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1830/" data-i="1830"
+       data-t="jesus mandilo hita" data-o="184" data-m="1792237996278652"
+       >
+  
+  <span class="songrow__t">Jesus Mandilo Hita</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1830"
+            aria-label="Edit Jesus Mandilo Hita">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1833/" data-i="1833"
+       data-t="bawa persembahanmu" data-o="185" data-m="1792237993278652"
+       >
+  
+  <span class="songrow__t">Bawa Persembahanmu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1833"
+            aria-label="Edit Bawa Persembahanmu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1835/" data-i="1835"
+       data-t="anggo mardingat au tuhan" data-o="186" data-m="1792237991278652"
+       >
+  
+  <span class="songrow__t">Anggo Mardingat Au Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1835"
+            aria-label="Edit Anggo Mardingat Au Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1838/" data-i="1838"
+       data-t="anggo mardingat au" data-o="187" data-m="1792237988278652"
+       >
+  
+  <span class="songrow__t">Anggo Mardingat Au</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1838"
+            aria-label="Edit Anggo Mardingat Au">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1839/" data-i="1839"
+       data-t="disini senang" data-o="188" data-m="1792237987278652"
+       >
+  
+  <span class="songrow__t">Disini senang</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1839"
+            aria-label="Edit Disini senang">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1840/" data-i="1840"
+       data-t="abcdefg" data-o="189" data-m="1792237986278652"
+       >
+  
+  <span class="songrow__t">abcdefg</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1840"
+            aria-label="Edit abcdefg">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1841/" data-i="1841"
+       data-t="efgh" data-o="190" data-m="1792237985278652"
+       >
+  
+  <span class="songrow__t">efgh</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1841"
+            aria-label="Edit efgh">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1842/" data-i="1842"
+       data-t="tetap setia - selidi aku" data-o="191" data-m="1792237984278652"
+       >
+  
+  <span class="songrow__t">Tetap Setia - Selidi Aku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1842"
+            aria-label="Edit Tetap Setia - Selidi Aku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1843/" data-i="1843"
+       data-t="terhubung" data-o="192" data-m="1792237983278652"
+       >
+  
+  <span class="songrow__t">Terhubung</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1843"
+            aria-label="Edit Terhubung">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1844/" data-i="1844"
+       data-t="sai ringgas bei ma - kanon olob-olob gkps 2025" data-o="193" data-m="1792237982278652"
+       >
+  
+  <span class="songrow__t">Sai Ringgas Bei Ma - Kanon Olob-olob GKPS 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1844"
+            aria-label="Edit Sai Ringgas Bei Ma - Kanon Olob-olob GKPS 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1845/" data-i="1845"
+       data-t="mengenalmu" data-o="194" data-m="1792237981278652"
+       >
+  
+  <span class="songrow__t">MengenalMu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1845"
+            aria-label="Edit MengenalMu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1846/" data-i="1846"
+       data-t="indonesia raya" data-o="195" data-m="1792237980278652"
+       >
+  
+  <span class="songrow__t">Indonesia Raya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1846"
+            aria-label="Edit Indonesia Raya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1847/" data-i="1847"
+       data-t="kala ku cari damai" data-o="196" data-m="1792237979278652"
+       >
+  
+  <span class="songrow__t">Kala Ku Cari damai</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1847"
+            aria-label="Edit Kala Ku Cari damai">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1848/" data-i="1848"
+       data-t="doa kami" data-o="197" data-m="1792237978278652"
+       >
+  
+  <span class="songrow__t">Doa Kami</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1848"
+            aria-label="Edit Doa Kami">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1849/" data-i="1849"
+       data-t="bagaikan bejana" data-o="198" data-m="1792237977278652"
+       >
+  
+  <span class="songrow__t">bagaikan bejana</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1849"
+            aria-label="Edit bagaikan bejana">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1854/" data-i="1854"
+       data-t="medley" data-o="199" data-m="1792237972278652"
+       >
+  
+  <span class="songrow__t">Medley</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1854"
+            aria-label="Edit Medley">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1857/" data-i="1857"
+       data-t="hu dilo goranmu" data-o="200" data-m="1792237969278652"
+       >
+  
+  <span class="songrow__t">Hu Dilo GoranMu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1857"
+            aria-label="Edit Hu Dilo GoranMu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1858/" data-i="1858"
+       data-t="hidup ini adalah kesempatan" data-o="201" data-m="1792237968278652"
+       >
+  
+  <span class="songrow__t">Hidup Ini Adalah Kesempatan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1858"
+            aria-label="Edit Hidup Ini Adalah Kesempatan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1859/" data-i="1859"
+       data-t="bujur do tuhan in" data-o="202" data-m="1792237967278652"
+       >
+  
+  <span class="songrow__t">BUJUR DO TUHAN IN</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1859"
+            aria-label="Edit BUJUR DO TUHAN IN">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1860/" data-i="1860"
+       data-t="kau ciptakan semua" data-o="203" data-m="1792237966278652"
+       >
+  
+  <span class="songrow__t">Kau Ciptakan Semua</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1860"
+            aria-label="Edit Kau Ciptakan Semua">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1861/" data-i="1861"
+       data-t="sentuh hatiku" data-o="204" data-m="1792237965278652"
+       >
+  
+  <span class="songrow__t">Sentuh hatiku</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1861"
+            aria-label="Edit Sentuh hatiku">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1862/" data-i="1862"
+       data-t="tiada terukur" data-o="205" data-m="1792237964278652"
+       >
+  
+  <span class="songrow__t">Tiada Terukur</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1862"
+            aria-label="Edit Tiada Terukur">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1874/" data-i="1874"
+       data-t="indahnya kasih tuhan" data-o="206" data-m="1792237952278652"
+       >
+  
+  <span class="songrow__t">Indahnya kasih Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1874"
+            aria-label="Edit Indahnya kasih Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1875/" data-i="1875"
+       data-t="kebaikanmu tuhan" data-o="207" data-m="1792237951278652"
+       >
+  
+  <span class="songrow__t">KebaikanMu Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1875"
+            aria-label="Edit KebaikanMu Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1876/" data-i="1876"
+       data-t="bukan dengan barang fana" data-o="208" data-m="1792237950278652"
+       >
+  
+  <span class="songrow__t">Bukan dengan barang fana</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1876"
+            aria-label="Edit Bukan dengan barang fana">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1877/" data-i="1877"
+       data-t="bapa t&#x27;rima kasih" data-o="209" data-m="1792237949278652"
+       >
+  
+  <span class="songrow__t">Bapa t&#x27;rima kasih</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1877"
+            aria-label="Edit Bapa t&#x27;rima kasih">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1879/" data-i="1879"
+       data-t="mari masuk" data-o="210" data-m="1792237947278652"
+       >
+  
+  <span class="songrow__t">Mari Masuk</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1879"
+            aria-label="Edit Mari Masuk">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1880/" data-i="1880"
+       data-t="haleluya sekolah minggu no. 48" data-o="211" data-m="1792237946278652"
+       >
+  
+  <span class="songrow__t">Haleluya Sekolah Minggu no. 48</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1880"
+            aria-label="Edit Haleluya Sekolah Minggu no. 48">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1881/" data-i="1881"
+       data-t="persembahan pemuda minggu inang 8 maret 2026" data-o="212" data-m="1792237945278652"
+       >
+  
+  <span class="songrow__t">Persembahan Pemuda Minggu Inang 8 Maret 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1881"
+            aria-label="Edit Persembahan Pemuda Minggu Inang 8 Maret 2026">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1882/" data-i="1882"
+       data-t="persembahan sekolah minggu kecil sedang 8 maret" data-o="213" data-m="1792237944278652"
+       >
+  
+  <span class="songrow__t">Persembahan Sekolah Minggu Kecil Sedang 8 Maret</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1882"
+            aria-label="Edit Persembahan Sekolah Minggu Kecil Sedang 8 Maret">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1883/" data-i="1883"
+       data-t="persembahan sekolah minggu kelas besar 8 maret" data-o="214" data-m="1792237943278652"
+       >
+  
+  <span class="songrow__t">Persembahan Sekolah Minggu Kelas Besar 8 Maret</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1883"
+            aria-label="Edit Persembahan Sekolah Minggu Kelas Besar 8 Maret">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1884/" data-i="1884"
+       data-t="terlalu besar" data-o="215" data-m="1792237942278652"
+       >
+  
+  <span class="songrow__t">Terlalu Besar</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1884"
+            aria-label="Edit Terlalu Besar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1886/" data-i="1886"
+       data-t="namaposo 28 juni 2026" data-o="216" data-m="1792237940278652"
+       >
+  
+  <span class="songrow__t">Namaposo 28 Juni 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1886"
+            aria-label="Edit Namaposo 28 Juni 2026">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1887/" data-i="1887"
+       data-t="ku tetap setia" data-o="217" data-m="1792237939278652"
+       >
+  
+  <span class="songrow__t">Ku tetap setia</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1887"
+            aria-label="Edit Ku tetap setia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1888/" data-i="1888"
+       data-t="ku temukan jawabannya" data-o="218" data-m="1792237938278652"
+       >
+  
+  <span class="songrow__t">Ku temukan jawabannya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1888"
+            aria-label="Edit Ku temukan jawabannya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1890/" data-i="1890"
+       data-t="ku masuki gerbangnya" data-o="219" data-m="1792237936278652"
+       >
+  
+  <span class="songrow__t">Ku Masuki Gerbangnya</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1890"
+            aria-label="Edit Ku Masuki Gerbangnya">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1891/" data-i="1891"
+       data-t="bila roh allah ada" data-o="220" data-m="1792237935278652"
+       >
+  
+  <span class="songrow__t">Bila Roh Allah Ada</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1891"
+            aria-label="Edit Bila Roh Allah Ada">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1892/" data-i="1892"
+       data-t="roh kudus hadir disini" data-o="221" data-m="1792237934278652"
+       >
+  
+  <span class="songrow__t">Roh Kudus Hadir Disini</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1892"
+            aria-label="Edit Roh Kudus Hadir Disini">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1894/" data-i="1894"
+       data-t="waktu yang tepat" data-o="222" data-m="1792237932278652"
+       >
+  
+  <span class="songrow__t">Waktu yang tepat</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1894"
+            aria-label="Edit Waktu yang tepat">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1895/" data-i="1895"
+       data-t="dengan apa kan kubalas" data-o="223" data-m="1792237931278652"
+       >
+  
+  <span class="songrow__t">Dengan Apa Kan kubalas</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1895"
+            aria-label="Edit Dengan Apa Kan kubalas">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1897/" data-i="1897"
+       data-t="indah rencanamu tuhan" data-o="224" data-m="1792237929278652"
+       >
+  
+  <span class="songrow__t">Indah rencanaMu Tuhan</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1897"
+            aria-label="Edit Indah rencanaMu Tuhan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1898/" data-i="1898"
+       data-t="eta nassiam hobaskon ma" data-o="225" data-m="1792237928278652"
+       >
+  
+  <span class="songrow__t">Eta Nassiam Hobaskon Ma</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1898"
+            aria-label="Edit Eta Nassiam Hobaskon Ma">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1899/" data-i="1899"
+       data-t="memandang wajahmu medley mengikut yesus" data-o="226" data-m="1792237927278652"
+       >
+  
+  <span class="songrow__t">Memandang Wajahmu Medley Mengikut Yesus</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1899"
+            aria-label="Edit Memandang Wajahmu Medley Mengikut Yesus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1901/" data-i="1901"
+       data-t="gok bai malas ni uhur (persembahaan pujian namaposo se-resort)" data-o="227" data-m="1792237925278652"
+       >
+  
+  <span class="songrow__t">Gok Bai Malas Ni Uhur (Persembahaan Pujian Namaposo Se-resort)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1901"
+            aria-label="Edit Gok Bai Malas Ni Uhur (Persembahaan Pujian Namaposo Se-resort)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1902/" data-i="1902"
+       data-t="gok bai malas ni uhur (lirik saja)" data-o="228" data-m="1792237924278652"
+       >
+  
+  <span class="songrow__t">Gok Bai Malas Ni Uhur (Lirik Saja)</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1902"
+            aria-label="Edit Gok Bai Malas Ni Uhur (Lirik Saja)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+<li><a class="songrow" href="/songs/1904/" data-i="1904"
+       data-t="jadi spertimu" data-o="229" data-m="1792237922278652"
+       >
+  
+  <span class="songrow__t">Jadi SpertiMu</span></a>
+    <button class="row-edit" type="button" data-editor-open="song" data-editor-id="1904"
+            aria-label="Edit Jadi SpertiMu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+    </button></li>
+
+</ul></div>
+
+    <button class="ch__ind" type="button" id="chDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"/>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="chEmpty" role="status" hidden
+         data-empty-title="No songs yet."
+         data-empty-hint="Add the first song to this songbook."
+         data-filter-title="No matching songs."
+         data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 17.4V5.6l10.2-2v11.6"/>
+          <circle cx="6.7" cy="17.4" r="2.4"/>
+          <circle cx="16.9" cy="15.2" r="2.4"/>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"/>
+          <path d="m15.4 15.4 5 5"/>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"/>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<main class="stage">
+ <section class="search-home" id="searchHome" aria-labelledby="searchHeading">
+  <div class="search-home__inner">
+   <h1 class="sr" id="searchHeading">Search GKPS Klender</h1>
+   <img class="search-home__logo" id="homeLogo" src="/static/assets/gkps.png" alt="GKPS Klender" width="96" height="96">
+   <form class="search-home__form" id="globalSearch" role="search" action="/search" method="get">
+    <label class="sr" for="searchQuery">Search Alkitab, Kidung, and Tata Ibadah</label>
+    <input class="search-home__input" id="searchQuery" type="search" name="q"
+           value=""
+           placeholder="Search Alkitab, Kidung, Tata Ibadah..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear the filter" hidden>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+      </button>
+    <button class="search-home__submit" type="submit" aria-label="Search">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>
+     </svg>
+    </button>
+   </form>
+  </div>
+ </section>
+ <section class="search-results" id="searchResults" aria-label="Search results" hidden>
+   
+ </section>
+
+ <article class="read" id="read" lang="id" tabindex="-1" data-kind="song">
+  <header class="read__head">
+   <div class="read__head-top">
+    <p class="read__eyebrow" id="readEyebrow">Lagu</p>
+    
+   </div>
+   <div class="read__row">
+    <h1 class="read__title"><span id="readName">BN. HKBP 730: Berdayakan Diriku</span> <span class="read__no" id="readNo"></span></h1>
+    
+   </div>
+  </header>
+  <div class="read__body" id="readBody">
+<p class="v"><span class="v__n">1</span><span>(1) Berdayakan diriku ya Tuhanku <br>Memancarkan keindahan kasihMu <br>Bagi sesamaku oleh Roh KudusMu <br>Dari hatiku terpancar kasihMu</span></p>
+<p class="v"><span class="v__n">2</span><span>(2) Berdayakan diriku ya Tuhanku <br>Memancarkan keindahan rahmatMu <br>Oleh Roh KudusMu nyatalah rahmatMu <br>Dari hatiku terpancar rahmatMu</span></p>
+<p class="v"><span class="v__n">3</span><span>(3) Berdayakan diriku ya Tuhanku <br>Memancarkan keindahan diriMU <br>Oleh Roh KudusMu, nyatalah diriMu <br>Oleh kesaksianku kepadaMu</span></p>
+<p class="v"><span class="v__n">4</span><span>(4) Berdayakan diriku ya Tuhanku <br>Memancarkan keindahan hatiku <br>Oleh Roh KudusMu, kuduslah hatiku <br>Kuduslah tutur kata perangaiku</span></p>
+
+</div>
+ </article>
+</main>
+
+
+
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle"
+        data-editor-new="/editor/KIND/new/"
+        data-editor-edit="/editor/KIND/0/"
+        data-entry-new-url="/editor/entry/new/"
+        data-entry-save-new-url="/editor/entry/new/save/"
+        data-entry-validate-url="/editor/entry/validate/"
+        data-entry-edit-url="/editor/entry/0/edit/"
+        data-entry-delete-url="/editor/entry/0/delete/"
+        data-entry-songs-url="/editor/entry/songs/"
+        data-entry-song-verses-url="/editor/entry/song/0/verses/"
+        data-entry-chapter-url="/editor/entry/chapter/0/0/"
+        data-old-item-edit-url="/editor/item/0/edit/"
+        data-old-item-delete-url="/editor/item/0/delete/">
+  <div class="editor__content" id="editorContent" aria-live="polite"></div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+</dialog>
+
+
+<dialog class="media-error-dialog" id="mediaErrorDialog" aria-labelledby="mediaErrorTitle"><h2 id="mediaErrorTitle">File not supported</h2><p id="mediaErrorMessage"></p><button type="button" id="mediaErrorClose">OK</button></dialog>
+
+<dialog class="preview" id="previewModal" aria-label="Preview">
+  
+  <div class="preview__head" data-preview-head hidden>
+    <span class="preview__title" id="previewTitle"></span>
+  </div>
+  <div class="preview__versetabs" data-preview-tabs-host hidden></div>
+  <div class="preview__body" id="previewContent" tabindex="0"></div>
+  <div class="preview__foot" data-screen-mode-footer hidden>
+    <div class="screen-mode preview__screen-mode" role="group" aria-label="Screen mode" data-preview-screen-mode>
+      <span class="screen-mode__thumb" aria-hidden="true"></span>
+      <button type="button" data-preview-mode="multi_line" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Multi-line
+      </button>
+      <span class="screen-mode__custom" data-preview-custom tabindex="0" role="status" aria-label="Custom breaks" title="Custom breaks">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M2.5 10h15"/></svg>
+      </span>
+      <button type="button" data-preview-mode="single_screen" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M5.5 8h9M5.5 11h9"/></svg>Single-screen
+      </button>
+    </div>
+    <p class="preview__mode-readonly" data-mode-readonly hidden></p>
+  </div>
+  <div class="preview__confirm-layer" data-mode-confirm hidden>
+    <div class="preview__confirm" role="alertdialog" aria-modal="true" aria-labelledby="modeConfirmTitle" aria-describedby="modeConfirmMessage">
+      <h3 id="modeConfirmTitle" data-confirm-title></h3>
+      <p id="modeConfirmMessage">Your custom screen breaks will be removed.</p>
+      <div class="preview__confirm-actions">
+        <button type="button" data-confirm-cancel>Keep custom</button>
+        <button type="button" data-confirm-accept>Switch &amp; remove</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList" class="media-transfers__list"></div></dialog>
+<div class="edit-toasts" id="editToastHost" popover="manual"
+     aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
+<script src="/static/web/focus.js"></script>
+<script src="/static/web/reading.js"></script>
+<script src="/static/web/display-session.js"></script>
+<script src="/static/web/display.js"></script>
+<script src="/static/web/feedback.js"></script>
+<script src="/static/web/editors.js"></script>
+<script src="/static/web/date-picker.js"></script>
+<script src="/static/web/media-image.js"></script>
+<script src="/static/web/media-audio.js"></script>
+<script src="/static/web/media-video.js"></script>
+<script src="/static/web/media-pdf.js" data-pdfjs-source="/static/vendor/pdfjs/pdf.min.mjs" data-pdfjs-worker="/static/vendor/pdfjs/pdf.worker.min.mjs"></script>
+<script src="/static/web/media-stage.js"></script>
+<script src="/static/web/media-size.js"></script>
+<script src="/static/web/media-entry.js"></script>
+<script src="/static/web/entries.js"></script>
+<script src="/static/web/generate.js"></script>
+<script src="/static/web/age-buckets.js"></script>
+<script src="/static/web/media-library.js"></script>
+<script src="/static/web/media-handoff.js"></script>
+<script src="/static/web/reorder.js"></script>
+<script src="/static/web/preview.js"></script>
+</body>
+</html>

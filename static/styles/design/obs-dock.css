@@ -1,0 +1,1074 @@
+/* The operator dock (spec 119) — ported from the approved mockup (v70).
+ *
+ * These are the mockup's own metrics, not a reinterpretation: flat rows (no cards,
+ * no chevrons), a 2.1rem number gutter, 14.5px/400 row text, a song's reference in
+ * 12px/600 beside its 14px/400 title with a 12px "Bait …" line under it, italic
+ * lines for untitled text, a hairline for a section break, a 44px-indented inner
+ * list, and a transport row whose arrows sit right of the chips.
+ *
+ * The mockup drew the panel as a 400×800 rounded card inside a page; in OBS the
+ * dock IS the panel, so it fills the viewport (no radius, no outer border). The
+ * inner anatomy is unchanged.
+ *
+ * Colours are the product tokens — the dark values are the mockup's own (#232019
+ * rail, #3A362F hairline, #F5F3EE ink); light mode comes from the same tokens.
+ */
+
+html, body.obs-dock {
+  margin: 0;
+  height: 100%;
+  background: var(--rail-bg);
+}
+
+body.obs-dock {
+  color: var(--ink);
+  font: 400 14.5px/1.35 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The panel is the page, at whatever size the dock is given: an OBS dock panel is
+ * a few hundred pixels wide in one layout and a second monitor in another, and the
+ * browser preview is wider than either. So the dock never caps itself and never
+ * centres inside a guessed width — one column, filled edge to edge. */
+.dock {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: var(--rail-bg);
+  overflow: clip;
+  outline: none;                      /* the panel is the keyboard's home, not a target */
+}
+
+/* ---------- the two views --------------------------------------------------- */
+
+.view {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.view.is-active { display: flex; }
+
+.view.is-in-forward { animation: viewInForward 200ms cubic-bezier(.4, 0, .2, 1); }
+.view.is-in-back { animation: viewInBack 200ms cubic-bezier(.4, 0, .2, 1); }
+
+@keyframes viewInForward {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes viewInBack {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- head ------------------------------------------------------------ */
+
+.dock__head {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 13px 14px 12px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.dock__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dock__title {
+  font-size: 14.5px;
+  font-weight: 650;
+  margin: 0;
+  min-width: 0;
+}
+
+.dock__logo {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 4px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  object-fit: contain;
+}
+
+.dock__tools {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.dock__runheadrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.dock__runtitles {
+  min-width: 0;
+  flex: 1;
+}
+
+.serviceline {
+  font-size: 15px;
+  font-weight: 650;
+  margin: 0;
+}
+
+.servicedate {
+  margin: 2px 0 0;
+  color: var(--head-ink);
+  font-size: 12.5px;
+}
+
+.iconbtn {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease), color var(--ease);
+}
+
+.iconbtn:hover {
+  border-color: var(--focus);
+  background: var(--icon-hover-bg);
+}
+
+.iconbtn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* One display-state button (spec 119): the slashed eye while this service is not on
+   screen ("Display this service"), the open eye while it is ("Hide words").
+   aria-pressed="true" means hidden. As the mockup draws it: FILLED while the words
+   are up (the active pair), muted while they are hidden. */
+#blankBtn[aria-pressed="false"] {
+  background: var(--active-bg);
+  border-color: var(--active-bg);
+  color: var(--active-ink);
+}
+
+#blankBtn[aria-pressed="false"]:hover {
+  background: var(--active-bg);
+  border-color: var(--active-bg);
+}
+
+#blankBtn[aria-pressed="true"] {
+  color: var(--head-ink);
+  opacity: .75;
+}
+
+#blankBtn[aria-pressed="true"]:hover {
+  background: var(--icon-hover-bg);
+  border-color: var(--focus);
+  opacity: 1;
+}
+
+#blankBtn .glyph { display: none; }
+#blankBtn[aria-pressed="true"] .glyph--display,
+#blankBtn[aria-pressed="false"] .glyph--onscreen { display: block; }
+
+/* The appearance button: one control, three glyphs, the mode's glyph alone visible;
+   the same shapes and morph as the public site's rail. */
+.iconbtn--theme svg {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: rotate(40deg) scale(.65);
+  transition: opacity var(--ease), transform var(--ease);
+}
+
+:root[data-theme-mode="system"] .iconbtn--theme .system,
+:root[data-theme-mode="dark"] .iconbtn--theme .moon,
+:root[data-theme-mode="light"] .iconbtn--theme .sun {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- body ------------------------------------------------------------ */
+
+.dock__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 8px 10px;
+  position: relative;                 /* rows' offsetTop is measured against this */
+  overflow-anchor: none;              /* the dock owns the scroll; no browser anchoring */
+  /* The month head is sticky over the list's top (32.5px tall, 36.5px from the
+     scrollport's top with the body's 4px padding): reserve that strip so a row
+     scrolled into view — by the picker's cursor or by the browser — never parks
+     half-hidden underneath it. */
+  scroll-padding-top: 37px;
+}
+
+/* The app's scrollbar (spec 087): 5px, bare, token-coloured. The standard
+   properties must NOT be set here — in Blink they win over ::-webkit-scrollbar and
+   paint the platform's 10px bar with steppers — so they are gated to engines that
+   have no ::-webkit-scrollbar at all. */
+@supports not selector(::-webkit-scrollbar) {
+  .dock__body { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+}
+
+.dock__body::-webkit-scrollbar { width: 5px; height: 5px; }
+.dock__body::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.dock__body::-webkit-scrollbar-track,
+.dock__body::-webkit-scrollbar-corner { background: transparent; }
+
+.dock__body::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 999px;
+}
+.dock__body::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+
+.dock__body ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- picker ---------------------------------------------------------- */
+
+.group__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 10px 6px 7px;
+  background: var(--rail-bg);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: var(--head-ink);
+}
+
+.servicerow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  /* 10px either side of a 19.6px line box fills the 40px row, so the name and the
+     date sit in the middle; 8px top left them riding 4.4px high. */
+  padding: 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: 400 14.5px/1.35 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease);
+}
+
+.servicerow:hover { background: var(--icon-hover-bg); }
+
+/* The picker's arrow cursor: the panel keeps the keyboard, so this ring marks the
+   row Enter would open. Inset so it never changes the row's size. */
+.servicerow.is-cursor {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.servicerow__n {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.servicerow__d {
+  flex: none;
+  color: var(--head-ink);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A today row carries the badge instead of a tint (spec 132): the tint was the same
+   token a selected row uses, and the bucket heading already says how old a row is.
+   Kept in step with `.book__today` in components.css — same numbers, other sheet. */
+.servicerow__today {
+  flex: none;
+  align-self: center;
+  margin-left: auto;
+  padding: 1px 7px 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--active-bg);
+  color: var(--active-ink);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+/* The mockup leaves 4px between service rows (44px pitch); without it the flat
+   rows read as one block. */
+#pickBody li + li { margin-top: 4px; }
+
+.onscreen {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  /* Baseline alignment (the row's default) hangs an 11px pill low beside a 14.5px
+     name — measured 1.5px under the row's middle; centre it on its own box. */
+  align-self: center;
+  gap: 5px;
+  color: var(--head-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.onscreen::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #17804D;
+}
+
+:root[data-theme="dark"] .onscreen::before { background: #55B485; }
+
+.onscreen[hidden] { display: none; }
+
+/* ---------- runner: entries ------------------------------------------------- */
+
+.entryrow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: 400 14.5px/1.35 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease);
+}
+
+.entryrow:hover { background: var(--icon-hover-bg); }
+
+.entryli + .entryli { margin-top: 4px; }
+
+.entryrow[aria-current="true"] {
+  background: var(--sidebar-selected-bg);
+  position: sticky;
+  top: -4px;
+  z-index: 3;
+}
+
+.entryrow[aria-current="true"].is-stuck {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.entryrow__c {
+  flex: none;
+  min-width: 2.1rem;
+  font: 560 13px/1.4 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.entryrow__t { min-width: 0; }
+
+.entryrow__t--song {
+  flex: 1;
+  line-height: 20px;
+}
+
+.entryrow__heading { display: block; }
+
+.entryrow__reference {
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.entryrow__title {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.entryrow__verses {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+  color: var(--head-ink);
+}
+
+.entryrow[aria-current="true"] .entryrow__verses { color: var(--ink); }
+
+.entryrow__t--lines {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.entryrow__line--quiet {
+  color: var(--head-ink);
+  font-style: italic;
+}
+
+.entryrow__break {
+  flex: 1;
+  padding: 12px 0;
+}
+
+.entryrow__break span {
+  display: block;
+  border-top: 1px solid var(--divider);
+}
+
+/* The entry's inner list opens and closes as one motion (spec 119): a clipped grid
+   track grows from 0fr to 1fr, so the rows are never stacked half-open. Collapsed
+   rows stay inert (no pointer, no focus) even though they are still laid out. */
+.entryinner {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms var(--ease-timing);
+  pointer-events: none;
+}
+
+.entryinner.is-open {
+  grid-template-rows: 1fr;
+  pointer-events: auto;
+}
+
+/* During a crossing both blocks are animated by hand (one curve, with the scroll
+   riding the same curve), so the CSS transition must stay out of the way. */
+.entryinner.is-morph { transition: none; }
+
+.entryinner__clip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.entryinner__body { padding: 2px 8px 7px 2.75rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .entryinner { transition: none; }
+}
+
+.baithead {
+  margin: 8px 0 0;
+  padding: 4px 10px 2px;
+  color: color-mix(in srgb, var(--head-ink) 90%, transparent);
+  font: 650 10px/1 var(--font-sans);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.screenerow {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font: 400 13px/1.45 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease);
+}
+
+.screenerow:hover { background: var(--icon-hover-bg); }
+.screenerow + .screenerow { margin-top: 3px; }
+
+/* The body's own 2px top padding already spaces the first head from the label:
+   6 + 2 = the same 8px a bait keeps from the bait above it. */
+.entryinner__body > .baithead:first-child { margin-top: 6px; }
+
+.screenerow[aria-current="true"] {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 55%, transparent);
+}
+
+.screenerow--rest {
+  /* Two steps below the BAIT head, which keeps the same --head-ink: the head is
+     slightly held back, the rest a third further, so a rest never reads as a
+     section label. */
+  color: color-mix(in srgb, var(--head-ink) 66%, transparent);
+  font-style: italic;
+}
+
+.screenerow--media .screenerow__media {
+  color: var(--head-ink);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.screenerow__v {
+  margin-right: 6px;
+  color: var(--head-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.screenerow__line { display: block; }
+
+.screenerow__t--lines {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.45;
+}
+
+.screenerow--verse .screenerow__t {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- the next entry, pinned under the current block ------------------ */
+
+.nextband {
+  position: sticky;
+  bottom: -10px;
+  z-index: 3;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  margin: 6px 0 0;
+  padding: 7px 10px 9px;
+  border: 0;
+  border-top: 1px solid var(--divider);
+  background: var(--rail-bg);
+  color: var(--ink);
+  font: 400 13px/1.4 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.nextband[hidden] { display: none; }
+.nextband:hover .nextband__label { color: var(--ink); }
+
+.nextband__cap {
+  flex: none;
+  min-width: 2.1rem;
+  color: var(--head-ink);
+  font: 650 10px/1.4 var(--font-sans);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.nextband__label {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--head-ink);
+}
+
+/* ---------- hover feedback on the states that own a fill -------------------- */
+
+/* The live row and the live screen keep their fill and answer the pointer on top of
+   it: their state rules outrank :hover, so each needs its own hover tone. The live
+   entry answers everywhere — in flow and while pinned. */
+.entryrow[aria-current="true"]:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+}
+
+.screenerow[aria-current="true"]:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 45%, var(--icon-hover-bg));
+}
+
+/* The next band is a control too. */
+.nextband:hover {
+  background: color-mix(in srgb, var(--rail-bg) 92%, var(--ink));
+}
+
+/* ---------- transport ------------------------------------------------------- */
+
+.dock__transport {
+  flex: none;
+  border-top: 1px solid var(--divider);
+  padding: 12px 14px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.transportrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.transchip {
+  flex: none;
+  height: 34px;
+  padding: 0 11px;
+  border-radius: 9px;
+  border: 1px solid var(--divider);
+  background: none;
+  color: var(--ink);
+  font: 650 11px/1 var(--font-sans);
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease), color var(--ease);
+}
+
+.transchip:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.transchip[aria-pressed="true"] { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+.transchip[hidden] { display: none; }
+
+.baits {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.baits[hidden] { display: none; }
+
+.baitstrip {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.baitstrip::-webkit-scrollbar { display: none; }
+
+/* A side's fade appears only while there is more content beyond that side. */
+.baitstrip.is-left { mask-image: linear-gradient(to right, transparent 0, #000 14px); }
+.baitstrip.is-right { mask-image: linear-gradient(to right, #000 calc(100% - 14px), transparent 100%); }
+.baitstrip.is-left.is-right {
+  mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+}
+
+.bait {
+  flex: none;
+  min-width: 32px;
+  height: 34px;
+  padding: 1.5px 8px 0;
+  border-radius: 9px;
+  border: 1px solid var(--divider);
+  background: none;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease), color var(--ease);
+}
+
+.bait:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.bait[aria-pressed="true"] { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); }
+
+.navpair {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 10px;
+}
+
+.navbtn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--divider);
+  border-radius: 10px;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease);
+}
+
+.navbtn:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.navbtn:disabled { opacity: .45; cursor: default; }
+.navbtn:disabled:hover { border-color: var(--divider); background: none; }
+
+/* The arrows fill while this window holds the keyboard — the dock is live and
+   Space/arrows/T will act; out of focus they fall back to the quiet outline. */
+html.win-focus .navbtn:not(:disabled),
+html.win-focus .navbtn:not(:disabled):hover {
+  background: var(--active-bg);
+  border-color: var(--active-bg);
+  color: var(--active-ink);
+}
+
+.navbtn svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dock__note {
+  margin: 14px 6px;
+  color: var(--head-ink);
+  font-size: 12.5px;
+}
+
+/* ---------- appearance morph (a user switch only; never at rest) ------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-morph,
+  html.theme-morph body.obs-dock,
+  html.theme-morph .dock,
+  html.theme-morph .dock__head,
+  html.theme-morph .dock__body,
+  html.theme-morph .dock__transport,
+  html.theme-morph .entryrow,
+  html.theme-morph .group__head {
+    transition: background-color 380ms var(--ease-timing), color 380ms var(--ease-timing),
+                border-color 380ms var(--ease-timing);
+  }
+
+  html.theme-morph .iconbtn--theme svg {
+    transition: opacity 280ms cubic-bezier(.2, .7, .3, 1),
+                transform 280ms cubic-bezier(.2, .7, .3, 1);
+  }
+}
+
+/* ---------- the go to (spec 185) -------------------------------------------
+   Ported from the approved preview (specs/185-dock-goto/preview/preview.css): the
+   find band takes the transport's place as a layer over the dock, and what is on
+   air is the list's live block while a go to runs. */
+
+/* The layer needs a containing block; the foot band stands above it with its own
+   rail fill, so the field and its suggestion stay at full strength. */
+.dock { position: relative; }
+.dock__transport { position: relative; z-index: 6; background: var(--rail-bg); }
+
+/* The footer is the runner's own; the find band is a layer over BOTH views, so the
+   footer shows wherever the band is open — including over the picker (FR-002). */
+.dock:not([data-view="run"]):not(.is-find) .dock__transport { display: none; }
+
+.findscrim {
+  position: absolute; inset: 0; z-index: 5;
+  background: var(--backdrop);
+  opacity: 0;
+  transition: opacity 160ms var(--ease-timing);
+}
+.findscrim.is-on { opacity: 1; }
+.findscrim[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) { .findscrim { transition: none; } }
+
+/* The band and the transport take turns as ONE motion: a clipped row grows while
+   the other collapses, so the foot band's height and the list above it move on one
+   curve instead of jumping. */
+.bandswap { display: grid; }
+.bandswap__row { overflow: hidden; height: 0; transition: height 200ms var(--ease-timing); }
+#transportRow { height: var(--transport-h, 40px); }
+.bandswap.is-find #transportRow { height: 0; }
+.bandswap.is-find #findBand { height: var(--band-h, 76px); }
+
+@media (prefers-reduced-motion: reduce) { .bandswap__row { transition: none; } }
+
+.findband { display: grid; gap: 8px; min-width: 0; }
+.findrow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+.findfield {
+  flex: 1; min-width: 0; height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: 400 13.5px/1.3 var(--font-sans);
+}
+.findfield::placeholder { color: var(--head-ink); }
+.findfield:focus { outline: none; border-color: var(--focus); }
+.findfield:disabled { opacity: .6; }
+
+.findcount {
+  flex: none;
+  color: var(--head-ink);
+  font: 650 11px/1 var(--font-sans);
+  letter-spacing: .08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.findresult {
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  width: 100%; height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--divider); border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: 400 13.5px/1.3 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.findresult:hover { background: var(--icon-hover-bg); border-color: var(--focus); }
+.findresult[data-match="true"] {
+  background: var(--sidebar-selected-bg);
+  border-color: var(--sidebar-selected-bg);
+}
+.findresult[data-match="true"]:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+  border-color: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
+}
+.findresult:disabled { color: var(--head-ink); font-style: italic; cursor: default; }
+.findresult:disabled:hover { background: none; border-color: var(--divider); }
+.findresult__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.findresult__edition { color: var(--head-ink); }
+
+/* The switch-service control is disabled, not hidden: the head keeps its width and
+   the exit stays visible while a go to is up (FR-019). */
+.iconbtn:disabled { opacity: .45; cursor: default; }
+.iconbtn:disabled:hover { border-color: var(--divider); background: none; }
+
+/* The go to is the list's live block: its label row pins at the top of the scroll
+   while its own screens run beneath it. */
+.offblock { display: block; margin-top: -4px; }
+.offblock[hidden] { display: none; }
+#entryList[hidden] { display: none; }
+
+.offstrip {
+  position: sticky; top: -4px; z-index: 4;
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 -8px;
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--divider);
+  background: var(--sidebar-selected-bg);
+  box-shadow: 0 -4px 0 var(--sidebar-selected-bg);
+}
+
+/* The go to's rows take the space a service entry gives its number and indent:
+   full-bleed under the header, at the column a service entry's number sits in. */
+.offblock .entryinner__body { padding-left: 0; }
+#offBody { padding-top: 3px; }
+
+.offstrip__label {
+  min-width: 0; flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 400 13px/1.4 var(--font-sans);
+}
+
+.offstrip__back {
+  flex: none; height: 28px; padding: 0 10px;
+  border: 1px solid var(--divider); border-radius: 8px;
+  background: var(--rail-bg); color: var(--ink);
+  font: 650 11px/1 var(--font-sans); letter-spacing: .06em;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.offstrip__back:hover {
+  border-color: var(--focus);
+  background: color-mix(in srgb, var(--rail-bg) 92%, var(--ink));
+}
+
+/* ---------- the shortcut sheet (K) — spec 187 --------------------------------- */
+
+/* One column, the dock's own vocabulary: a rail panel inset 8px over a backdrop
+   scrim, its heading and a close control, then the table as scrolling rows. The dock
+   is 320–520px wide; the projector's three-column sheet cannot be reproduced here. */
+
+.keysheet { position: absolute; inset: 0; z-index: 20; display: flex; }
+.keysheet[hidden] { display: none; }
+
+.keysheet__scrim {
+  position: absolute; inset: 0;
+  padding: 0; border: 0;
+  background: var(--backdrop);
+  opacity: 0;
+  transition: opacity 160ms var(--ease-timing);
+  cursor: default;
+}
+.keysheet.is-on .keysheet__scrim { opacity: 1; }
+
+.keysheet__panel {
+  position: relative; z-index: 1;
+  flex: 1; min-height: 0;
+  margin: 8px;
+  display: flex; flex-direction: column;
+  background: var(--rail-bg);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .34);
+  overflow: hidden;
+  animation: keysheetIn 180ms var(--ease-timing) both;
+}
+
+@keyframes keysheetIn {
+  from { opacity: 0; transform: translateY(6px) scale(.99); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keysheet__panel { animation: none; }
+  .keysheet__scrim { transition: none; }
+}
+
+.keysheet__head {
+  flex: none;
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px 9px 14px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.keysheet__title {
+  margin: 0;
+  font: 650 10.5px/1 var(--font-sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--head-ink);
+}
+
+.keysheet__close {
+  margin-left: auto;
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  background: none; color: var(--ink);
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease);
+}
+.keysheet__close:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.keysheet__close svg {
+  width: 15px; height: 15px;
+  fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round;
+}
+
+.keysheet__body {
+  flex: 1; min-height: 0;
+  overflow-y: auto;
+  padding: 2px 14px 16px;
+  overscroll-behavior: contain;
+}
+
+/* The app's scrollbar (spec 087): 5 px, bare, token-coloured, a capsule. The
+   standard properties must NOT be set in Blink — there they win over
+   ::-webkit-scrollbar and paint the platform's 10 px bar with steppers — so they
+   are gated to engines that have no ::-webkit-scrollbar at all, exactly as the
+   dock's list does it (obs-dock.css:224-241). */
+@supports not selector(::-webkit-scrollbar) {
+  .keysheet__body { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+}
+
+.keysheet__body::-webkit-scrollbar { width: 5px; height: 5px; }
+.keysheet__body::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.keysheet__body::-webkit-scrollbar-track,
+.keysheet__body::-webkit-scrollbar-corner { background: transparent; }
+
+.keysheet__body::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 999px;
+}
+.keysheet__body::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+
+.ksgroup h4 {
+  margin: 16px 0 3px;
+  font: 650 10px/1 var(--font-sans);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--head-ink);
+}
+.ksgroup--first h4 { margin-top: 10px; }
+/* The picker's group is first in the sheet; when the runner hides it, the group
+   that follows takes the first slot's tighter top margin. */
+.ksgroup--first[hidden] + .ksgroup h4 { margin-top: 10px; }
+
+.krow {
+  display: flex; align-items: center; gap: 10px; row-gap: 4px;
+  min-height: 30px; margin: 0;      /* 4 px of air above and below a 22 px cap */
+  flex-wrap: wrap;              /* a 320 px dock wraps the chords under the label */
+}
+
+/* The projector's own separator between rows (`.row + .row`), drawn as an inset
+   shadow so the hairline costs the table no height. */
+.krow + .krow {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.kfn {
+  min-width: 0;
+  font: 400 12.5px/1.25 var(--font-sans);
+  color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.chord {
+  margin-left: auto; flex: none;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+
+/* The projector's own separator between alternatives (projector_controls.html: `.or`),
+   and the keys inside one chord are pressed together. */
+.or {
+  margin: 0 4px;
+  font: 650 11px/1 var(--font-sans);
+  color: var(--head-ink);
+}
+
+/* The projector's own keycaps, scaled to the dock: one square `--u`, word keys two,
+   the space bar three, the 5 px radius scaled with them, a 1 px edge and the inset
+   top highlight. The projector's own cap is 28 px with 14 px text; the dock's panel
+   is 384 px wide, so the same proportions are drawn at 22 px with 11 px text, and the
+   row is 26 px so the caps have air above and below — the full table then fits an
+   800 px dock instead of scrolling. The dark theme wears the projector's exact
+   colours — it is the same surface the operator already reads — and the light theme
+   derives the same relationship from the dock's tokens. */
+.keysheet .k {
+  --u: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--u); min-width: var(--u); height: var(--u); padding: 0;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--rail-bg) 88%, var(--ink));
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255, 255, 255, .34);
+  color: var(--ink);
+  font: 400 11px/1 var(--font-sans);
+  line-height: 1;
+}
+
+[data-theme="dark"] .keysheet .k {
+  background: #2A2722;
+  border-color: #4A463F;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+
+.keysheet .k.glyph { font-size: 13px; font-weight: 400; font-family: "DejaVu Sans", sans-serif; }
+.keysheet .k.glyph svg { width: 11px; height: 11px; overflow: visible; }
+.keysheet .k.w, .keysheet .k.ww, .keysheet .k.nav, .keysheet .k.bk {
+  width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); font-size: 10.5px;
+}
+.keysheet .k.sp { width: calc(var(--u) * 3); min-width: calc(var(--u) * 3); font-size: 10.5px; }
+/* The projector's space cap: the open-box mark (␣) at glyph size, stretched 1.3× wide,
+   in place of the word. */
+.keysheet .k.sp.glyph { font-size: 14px; }
+.keysheet .space-mark { display: inline-block; transform: scaleX(1.3); }
+
+/* The runner with a go to and no service: the head names the mode, and the date line
+   has nothing to say. */
+.dock.is-alone .servicedate { display: none; }

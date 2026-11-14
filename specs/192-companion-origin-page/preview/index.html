@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media companion — this computer</title>
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<link rel="stylesheet" href="page.css?v=3">
+</head>
+<body>
+<p class="preview-note">static preview — the real page is served at http://127.0.0.1:63174/ once this slice runs; the origins below persist in this browser only</p>
+
+<main class="sheet">
+  <header class="sheet__head">
+    <h1>Media companion — this computer</h1>
+    <p class="sheet__sub">served at http://127.0.0.1:63174 — this computer only (loopback)</p>
+  </header>
+
+  <section class="group">
+    <h2 class="group__label">Origins this computer accepts</h2>
+    <p id="empty" class="empty" hidden>no origins recorded yet — add the production site's origin below; until then only this page and the always-allowed local origins may use the companion</p>
+    <ol id="list" class="rows"></ol>
+    <form id="addform" class="add">
+      <input id="origin" type="text" placeholder="https://multimedia.example.org" autocomplete="off" spellcheck="false" aria-label="origin">
+      <button class="btn-solid" type="submit">Add</button>
+    </form>
+    <p id="err" class="form-err" hidden></p>
+  </section>
+
+  <section class="group">
+    <h2 class="group__label">Always allowed on this computer</h2>
+    <ul class="rows rows--muted">
+      <li class="row"><span class="row__origin">http://localhost:63404</span></li>
+      <li class="row"><span class="row__origin">http://127.0.0.1:63404</span></li>
+    </ul>
+    <p class="help">compose seeds — read-only</p>
+  </section>
+
+  <section class="group">
+    <h2 class="group__label">Font directories the converter sees</h2>
+    <ul class="rows">
+      <li class="row"><span class="row__origin">/usr/share/fonts/host/1</span><span class="row__meta">mounted from C:/Windows/Fonts — 214 families</span></li>
+      <li class="row"><span class="row__origin">/usr/share/fonts/operator</span><span class="row__meta">mounted from .fonts/ — 2 families</span></li>
+    </ul>
+  </section>
+</main>
+
+<script src="page.js?v=5"></script>
+</body>
+</html>

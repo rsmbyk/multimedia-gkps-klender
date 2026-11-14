@@ -1,0 +1,38 @@
+{% comment %}Entry preview (spec 032): ordinary Text entries also edit screen breaks (spec 069).
+The body scrolls; the footer stays visible. Esc and the overlay dismiss it.{% endcomment %}
+<dialog class="preview" id="previewModal" aria-label="Preview">
+  {% comment %}The entry's own identity, pinned above the scroller: the payload in the page supplies
+  it and static/web/preview.js lifts it in here (spec 085). A song's verse tabs take a band of
+  their own under this one (spec 153), so a long title keeps the header's whole width. An entry with
+  nothing to name -- an untitled Text -- leaves the header hidden.{% endcomment %}
+  <div class="preview__head" data-preview-head hidden>
+    <span class="preview__title" id="previewTitle"></span>
+  </div>
+  <div class="preview__versetabs" data-preview-tabs-host hidden></div>
+  <div class="preview__body" id="previewContent" tabindex="0"></div>
+  <div class="preview__foot" data-screen-mode-footer hidden>
+    <div class="screen-mode preview__screen-mode" role="group" aria-label="Screen mode" data-preview-screen-mode>
+      <span class="screen-mode__thumb" aria-hidden="true"></span>
+      <button type="button" data-preview-mode="multi_line" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Multi-line
+      </button>
+      <span class="screen-mode__custom" data-preview-custom tabindex="0" role="status" aria-label="Custom breaks" title="Custom breaks">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M2.5 10h15"/></svg>
+      </span>
+      <button type="button" data-preview-mode="single_screen" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M5.5 8h9M5.5 11h9"/></svg>Single-screen
+      </button>
+    </div>
+    <p class="preview__mode-readonly" data-mode-readonly hidden></p>
+  </div>
+  <div class="preview__confirm-layer" data-mode-confirm hidden>
+    <div class="preview__confirm" role="alertdialog" aria-modal="true" aria-labelledby="modeConfirmTitle" aria-describedby="modeConfirmMessage">
+      <h3 id="modeConfirmTitle" data-confirm-title></h3>
+      <p id="modeConfirmMessage">Your custom screen breaks will be removed.</p>
+      <div class="preview__confirm-actions">
+        <button type="button" data-confirm-cancel>Keep custom</button>
+        <button type="button" data-confirm-accept>Switch &amp; remove</button>
+      </div>
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>What the corner says</title>
+<style>
+  :root {
+    --hall: #2a2823; --wall: #14130F; --ink: #F5F3EE; --head: #FFD166;
+    --whisper: #6E6A62; --on: #E8E4DC; --quiet: #8E8A80;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--hall); color: #C8C4BA;
+    font-family: "Source Sans 3", "Liberation Sans", "Noto Sans", sans-serif; }
+  .gallery { width: min(1000px, calc(100vw - 48px)); margin: 0 auto; padding: 32px 0 72px; }
+  header.intro h1 { margin: 0 0 8px; font-size: 22px; color: var(--ink); letter-spacing: -0.02em; }
+  header.intro p { margin: 0 0 26px; max-width: 72ch; color: var(--quiet); }
+  .dimensions { margin: 0 0 40px; }
+  .dimensions-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+  .dimensions-head h2 { margin: 0; }
+  .dimensions-head p { margin: 0; color: var(--quiet); font-size: 13px; }
+  .dimension-layout { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 16px; align-items: stretch; }
+  .dimension-drawing { display: block; width: 100%; height: auto; align-self: center; background: #100f0c; border: 1px solid #3a372f; }
+  .dimension-drawing text { font-family: "Source Sans 3", "Liberation Sans", sans-serif; }
+  .dim-total { fill: #c8c4ba; font-size: 24px; font-weight: 600; }
+  .dim-stage { fill: #8e8a80; font-size: 23px; font-weight: 600; letter-spacing: 1px; }
+  .dim-example { fill: #f5f3ee; font-size: 36px; font-weight: 700; }
+  .dim-cue { fill: #6e6a62; font-size: 16px; font-weight: 600; }
+  .dim-cue-box { fill: none; stroke: #6e6a62; stroke-width: 2; stroke-dasharray: 6 5; }
+  .dim-line { stroke: #c8c4ba; stroke-width: 2; fill: none; marker-start: url(#dimension-arrow); marker-end: url(#dimension-arrow); }
+  .dim-callout { fill: #1b1a16; fill-opacity: .98; stroke: #595448; stroke-width: 2; }
+  .dim-callout-title { fill: #ffd166; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+  .dim-callout-copy { fill: #f5f3ee; font-size: 20px; font-weight: 500; }
+  .dim-leader { fill: none; stroke: #8e8a80; stroke-width: 2; }
+  .dim-target { fill: #ffd166; }
+  .dimension-list { display: flex; flex-direction: column; justify-content: center; gap: 0; margin: 0; padding: 16px 18px; background: #1b1a16; border: 1px solid #3a372f; }
+  .dimension-list div { padding: 12px 0; border-bottom: 1px solid #ffffff10; }
+  .dimension-list div:last-child { border-bottom: 0; }
+  .dimension-list dt { margin: 0 0 3px; color: var(--quiet); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .dimension-list dd { margin: 0; color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+  .dimension-foot { margin: 9px 0 0; color: var(--quiet); font-size: 13px; }
+  .shot { margin: 0 0 36px; }
+  .kicker { margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--quiet); }
+  h2 { margin: 0 0 10px; font-size: 18px; color: var(--ink); letter-spacing: -0.02em; }
+  .bezel { width: 960px; height: 280px; overflow: hidden; background: var(--wall); border: 1px solid #3a372f; }
+  .bezel-mouse { width: 960px; height: 540px; overflow: hidden; background: var(--wall); border: 1px solid #3a372f; }
+  .bezel-mouse iframe {
+    display: block; width: 1366px; height: 768px; border: 0;
+    transform: scale(0.7027818448); transform-origin: 0 0;
+  }
+  .note a { color: #b7b1a6; text-decoration-color: #6e6a62; text-underline-offset: 2px; }
+  .note a:hover { color: #e8e4dc; text-decoration-color: #e8e4dc; }
+  .screen {
+    width: 1280px; height: 373px; transform: scale(0.75); transform-origin: 0 0;
+    position: relative; background: var(--wall); color: var(--ink);
+    font-family: "CMG Sans", "Source Sans 3", "Liberation Sans", sans-serif;
+    font-weight: 700; line-height: 1.3;
+  }
+  .words {
+    position: absolute; left: 64px; right: 64px; top: 28px; bottom: 52px;
+    display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+    gap: 0; text-align: center; font-size: 32px;
+  }
+  .words h1 { flex: 0 0 auto; width: 100%; margin: 0 0 1em; color: var(--head); font-size: 61.803398875%; }
+  .lines {
+    flex: 1 1 auto; min-height: 0; width: 100%; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: inherit;
+  }
+  .lines p { flex: 0 0 auto; width: 100%; margin: 0; }
+  .lines p + p { margin-top: 0.45em; }
+  .cue {
+    position: absolute; left: 32px; right: 84px; bottom: 15.6px;
+    font-size: 16px; font-weight: 550; color: #514d47; letter-spacing: 0.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cue .on, .sheet .key { color: var(--on); }
+  .cue .quote { font-style: oblique; }
+  .keys {
+    position: absolute; right: 32px; bottom: 14px;
+    margin: 0; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer;
+    color: var(--whisper);
+    line-height: 0;
+    transition: color 120ms ease, background-color 120ms ease, transform 120ms ease;
+  }
+  .keys svg { display: block; width: 34px; height: 24px; }
+  .keys:hover, .screen.keys-open .keys { color: var(--on); background: #2a2722; }
+  .keys:active, .screen.keys-open .keys:active { color: var(--ink); background: #49443c; transform: scale(0.96); }
+  .screen.cursor-hidden, .screen.cursor-hidden * { cursor: none !important; }
+  .cue, .keys { z-index: 3; }
+  .screen.keys-open::before {
+    content: "";
+    position: absolute; inset: 0; z-index: 1;
+    background: rgba(8, 7, 5, 0.62);
+  }
+  .sheet {
+    position: absolute; left: 50%; top: 50%; z-index: 2;
+    transform: translate(-50%, -50%);
+    display: none; gap: 32px;
+    padding: 20px 24px;
+    background: var(--wall);
+    border: 1px solid #3a372f; border-radius: 10px;
+    box-shadow: 0 16px 48px #0005;
+    font-size: 11px; font-weight: 400; letter-spacing: 0; line-height: 1.25;
+    color: var(--whisper);
+  }
+  .screen.keys-open .sheet { display: flex; }
+  .stack { display: flex; flex-direction: column; gap: 24px; }
+  .group h3 {
+    margin: 0 0 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--quiet);
+  }
+  .row {
+    display: flex; align-items: center; gap: 20px;
+    margin: 0; padding: 3px 0;
+  }
+  .row + .row { border-top: 1px solid #ffffff08; }
+  .combo { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+  .chord { display: inline-flex; gap: 4px; }
+  .or { color: var(--quiet); font-size: 11px; font-weight: 650; }
+  .k {
+    --u: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: var(--u); min-width: var(--u); height: var(--u); padding: 0;
+    border: 1px solid #4a463f; border-radius: 5px;
+    background: #2a2722; color: var(--on);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    font-size: 11px; font-weight: 400; line-height: 1;
+  }
+  .k.glyph { font-size: 13px; font-weight: 400; font-family: "DejaVu Sans", sans-serif; }
+  .arrow-mark { display: block; width: 14px; height: 14px; line-height: 0; }
+  .arrow-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .key-symbol, .shift-mark { display: block; width: 14px; height: 14px; line-height: 0; }
+  .key-symbol svg, .shift-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .space-mark { display: inline-block; transform: scaleX(1.3); }
+  .cue-arrow { display: inline-block; width: .8em; height: .8em; vertical-align: middle; line-height: 0; transform: translateY(-.1em); }
+  .cue-arrow:not(.on) { color: var(--whisper); }
+  .cue-arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .k.nav { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); font-size: 9px; }
+  .k.w { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.w:not(.glyph) { font-size: 9px; }
+  .k.ww { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.bk { width: calc(var(--u) * 2); min-width: calc(var(--u) * 2); }
+  .k.sp { width: calc(var(--u) * 3); min-width: calc(var(--u) * 3); font-size: 9px; }
+  .k.sp.glyph { font-size: 13px; }
+  .fn { white-space: nowrap; color: var(--on); }
+  .bezel-tall { height: 576px; }
+  .bezel-tall .screen { height: 768px; }
+  .note { margin: 8px 0 0; max-width: 78ch; color: var(--quiet); font-size: 15px; }
+  .pair { display: flex; gap: 14px; }
+  .pane { flex: 1; min-width: 0; }
+  .pane .label { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--quiet); }
+  .pair .bezel { width: auto; height: 220px; }
+  .pair .screen { width: 1280px; height: 400px; transform: scale(0.367); }
+  .keys:focus-visible { outline: 1px solid var(--on); outline-offset: 6px; border-radius: 3px; }
+  @media (max-width: 760px) {
+    .dimension-layout { grid-template-columns: 1fr; }
+    .dimension-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
+    .dimension-list div:nth-last-child(2) { border-bottom: 0; }
+    .dimensions-head { align-items: flex-start; flex-direction: column; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="kbd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M8 12h.01M12 12h.01M16 12h.01M7 15h10" stroke-width="2.4"/>
+  </symbol>
+  <symbol id="arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8h10m-4-4 4 4-4 4"/>
+  </symbol>
+  <symbol id="arrow-left" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 8H3m4-4-4 4 4 4"/>
+  </symbol>
+  <symbol id="arrow-up" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 13V3m-4 4 4-4 4 4"/>
+  </symbol>
+  <symbol id="arrow-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3v10m-4-4 4 4 4-4"/>
+  </symbol>
+  <symbol id="shift-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 2 14 8h-3v4H5V8H2zM4.5 14h7"/>
+  </symbol>
+  <symbol id="backspace" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h7a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 13 13H6L2 8z"/>
+    <path d="m8 6 4 4m0-4-4 4"/>
+  </symbol>
+  <symbol id="enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 3v8H3m0 0 3-3m-3 3 3 3"/>
+  </symbol>
+</svg>
+<main class="gallery">
+  <header class="intro">
+    <h1>The corner, line by line</h1>
+  <p>The heading stays at the top. In the live preview, lyric text starts at 200px and shrinks only as needed to fit the remaining space; the heading is always 1/φ of its size. The corner keeps one line: where you are on the left, the next entry after the arrow. On a blank or section break, the arrow and next entry highlight to show what Right will open. Space, the display-off key, is still a pure black.</p>
+  </header>
+
+  <section class="dimensions" aria-labelledby="dimensions-title">
+    <div class="dimensions-head">
+      <h2 id="dimensions-title">Projector area dimensions</h2>
+      <p>Layout measurements in CSS pixels</p>
+    </div>
+    <div class="dimension-layout">
+      <svg class="dimension-drawing" viewBox="0 0 1366 768" role="img" aria-labelledby="dimension-svg-title dimension-svg-desc">
+        <title id="dimension-svg-title">Projector output area with its padded lyric stage and bottom corner overlays</title>
+        <desc id="dimension-svg-desc">The full output is 1366 by 768 pixels. Padding is 32 pixels at the top and sides and 64 pixels at the bottom, leaving a 1302 by 672 pixel lyric stage. The header starts at the top, spans 1302 pixels, and scales to one divided by the golden ratio of body text. Its bottom margin is one em of header size, or about 61.8 percent of body text size, so it stays larger than the 0.45 em gap between literal entry lines. The header has no padding. The cue uses 16 pixel text in a 1250 by 24 pixel box, with no padding or margin and insets of 32 pixels left, 84 right, and 20 bottom. The keyboard button is 34 by 24 pixels, with no padding or margin and insets of 32 pixels right and 20 bottom. Both controls are centered vertically within the 64 pixel bottom padding band at y 736.</desc>
+        <defs>
+          <marker id="dimension-arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+            <path d="M8 1 1 4l7 3" fill="none" stroke="#c8c4ba" stroke-width="1.5" />
+          </marker>
+        </defs>
+        <rect width="1366" height="768" fill="#14130f" />
+        <rect x="1" y="1" width="1364" height="766" fill="none" stroke="#514c42" stroke-width="2" />
+        <rect x="32" y="32" width="1302" height="672" fill="#181711" stroke="#ffd166" stroke-width="3" />
+        <line class="dim-line" x1="14" y1="30" x2="1352" y2="30" />
+        <rect x="562" y="11" width="242" height="38" rx="4" fill="#14130f" />
+        <text class="dim-total" x="683" y="38" text-anchor="middle">1366 px total width</text>
+        <line class="dim-line" x1="1352" y1="14" x2="1352" y2="754" />
+        <text class="dim-total" x="1335" y="384" text-anchor="middle" transform="rotate(-90 1335 384)">768 px total height</text>
+        <text class="dim-stage" x="683" y="86" text-anchor="middle">TEXT STAGE · 1302 × 672 px</text>
+        <text class="dim-example" x="683" y="172" text-anchor="middle" fill="#ffd166">Mateus 5:13</text>
+        <text class="dim-example" x="683" y="418" text-anchor="middle">Hanima do garam ni dunia on.</text>
+        <rect class="dim-cue-box" x="32" y="724" width="1250" height="24" />
+        <text class="dim-cue" x="32" y="740">Mateus 5:13–16 · SIM → NKB 12</text>
+        <rect x="1300" y="724" width="34" height="24" rx="3" fill="none" stroke="#6e6a62" stroke-width="2" />
+        <path d="M1307 732h20m-17 5h14m-10 5h6" stroke="#6e6a62" stroke-width="2" stroke-linecap="round" />
+        <path class="dim-leader" d="M474 121 535 152" />
+        <circle class="dim-target" cx="535" cy="152" r="4" />
+        <rect class="dim-callout" x="84" y="82" width="390" height="136" rx="8" />
+        <text class="dim-callout-title" x="104" y="111">HEADER</text>
+        <text class="dim-callout-copy" x="104" y="143">Top of stage · width 1302 px</text>
+        <text class="dim-callout-copy" x="104" y="172">Up to 123.6 px (200 px ÷ φ)</text>
+        <text class="dim-callout-copy" x="104" y="201">Padding 0 · margin below 1em</text>
+        <path class="dim-leader" d="M518 644 659 736" />
+        <circle class="dim-target" cx="659" cy="736" r="4" />
+        <rect class="dim-callout" x="84" y="558" width="434" height="128" rx="8" />
+        <text class="dim-callout-title" x="104" y="588">CORNER CUE</text>
+        <text class="dim-callout-copy" x="104" y="618">Text 16 px · box 1250 × 24 px</text>
+        <text class="dim-callout-copy" x="104" y="648">Padding 0 · margin 0</text>
+        <text class="dim-callout-copy" x="104" y="678">Insets L32 · R84 · B20 px</text>
+        <path class="dim-leader" d="M1270 644 1317 721" />
+        <circle class="dim-target" cx="1317" cy="736" r="4" />
+        <rect class="dim-callout" x="820" y="558" width="450" height="128" rx="8" />
+        <text class="dim-callout-title" x="840" y="588">KEYBOARD BUTTON</text>
+        <text class="dim-callout-copy" x="840" y="618">Button 34 × 24 px</text>
+        <text class="dim-callout-copy" x="840" y="648">Padding 0 · margin 0</text>
+        <text class="dim-callout-copy" x="840" y="678">Insets R32 · B20 px</text>
+      </svg>
+      <dl class="dimension-list">
+        <div><dt>Total output</dt><dd>1366 × 768 px</dd></div>
+        <div><dt>Projector padding</dt><dd>Top/sides 32 · bottom 64 px</dd></div>
+        <div><dt>Lyric stage</dt><dd>1302 × 672 px</dd></div>
+        <div><dt>Header bottom margin</dt><dd>1em header · ≈123.6 px max</dd></div>
+        <div><dt>Corner cue margins</dt><dd>Left 32 · right 84 · bottom 20 px</dd></div>
+        <div><dt>Keyboard button inset</dt><dd>Right 32 · bottom 20 px</dd></div>
+      </dl>
+    </div>
+    <p class="dimension-foot">Both controls are centered at y=736px in the 64px bottom-padding band; their insets account for their different heights. The gold rectangle marks the padded text stage.</p>
+  </section>
+
+  <article class="shot" id="mouse">
+    <p class="kicker">Mouse controls · no visible zones</p>
+    <h2>Try the corner controls, then move across the wall to feel the 40 / 20 / 40 click areas.</h2>
+    <div class="bezel-mouse">
+      <iframe src="preview.html" title="Interactive full-size projector mouse-controls preview"></iframe>
+    </div>
+    <p class="note">The new Service button opens a compact, scrollable entry list above the corner. Choose a numbered row to jump directly to its entry; the current row has a quiet marker. A slight overlay gives one consistent close cursor; clicking it closes the list without navigating. The bait numbers jump directly to that bait. Between baits, a blank rest keeps the song cue and highlights the next bait; after the last bait, it highlights the next entry instead. The arrow and next-entry text act as one button. On a passage, the translation label highlights on hover and flips TB / SIM on click, just like T; the new label briefly brightens. Above the 64px bottom band, the left 40% steps back, the right 40% steps forward, and the middle 20% hides or shows the words. A muted arrow or eye cursor hints at the action, then disappears after two seconds without movement. The corner cue and keyboard button fade together after 30 seconds without mouse or keyboard activity, then return on the next activity. They stay visible while the service list, Go To popup, or keyboard sheet is open; the Go To overlay catches outside clicks without dimming the words. If hidden deliberately with C, only C brings them back. <a href="preview.html">Open the 1366 × 768 preview in this tab</a> to inspect it at projector size.</p>
+  </article>
+
+  <article class="shot" id="passage">
+    <p class="kicker">Passage · SIM, after the flash has passed</p>
+    <h2>The translation sits in the same gray as the rest of the line.</h2>
+    <div class="pair">
+      <div class="pane">
+        <p class="label">While you are reading</p>
+        <div class="bezel"><div class="screen">
+          <div class="words">
+            <h1>Mateus 5:13</h1>
+            <div class="lines"><p>Hanima do garam ni dunia on.</p></div>
+          </div>
+          <div class="cue">Mateus 5:13–16 · SIM <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> NKB 12</div>
+          <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+        </div></div>
+      </div>
+      <div class="pane">
+        <p class="label">The moment you press T</p>
+        <div class="bezel"><div class="screen">
+          <div class="words">
+            <h1>Mateus 5:13</h1>
+            <div class="lines"><p>Hanima do garam ni dunia on.</p></div>
+          </div>
+          <div class="cue">Mateus 5:13–16 · <span class="on">SIM</span> <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> NKB 12</div>
+          <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+        </div></div>
+      </div>
+    </div>
+    <p class="note">Pressing T changes the verse at once, and SIM brightens so you can see the flip. About a second later it returns to the same gray as the reference, and it stays that way while you read. TB does the same when you flip back.</p>
+  </article>
+
+  <article class="shot" id="hymn">
+    <p class="kicker">Hymn · checked baits 1, 2 and 4 · bait 2 has 4 lines</p>
+    <h2>Book, number, sub-number. The bait you are in. Which split of that bait.</h2>
+    <div class="bezel"><div class="screen">
+      <div class="words">
+        <div class="lines"><p>Bersama seluruh</p><p>ciptaan</p></div>
+      </div>
+      <div class="cue">NKB 12A · 1 <span class="on">2</span> 4 · <span class="on">1/2</span> <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> Pengakuan dosa</div>
+      <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+    </div></div>
+    <p class="note">Four lines is two screens, and this is the first of them, so 1/2. The blank after the bait is not counted. 2 is the bait on screen; 3 is missing because it was not checked. A song with no sub-number is NKB 12.</p>
+  </article>
+
+  <article class="shot" id="title-song">
+    <p class="kicker">Not a hymn book · opened with G, so every bait · bait 3, second split</p>
+    <h2>The title stands in for the book and number. Every bait is listed.</h2>
+    <div class="bezel"><div class="screen">
+      <div class="words">
+        <div class="lines"><p>baris ketiga</p><p>baris keempat</p></div>
+      </div>
+      <div class="cue">Di Waktu Malam · 1 2 <span class="on">3</span> 4 · <span class="on">2/2</span> <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> back to Mateus 5:13</div>
+      <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+    </div></div>
+    <p class="note">A hymn shows the book and number. Anything else shows the song title. Goto lists every bait; a song in the order lists only the checked ones. The arrow remembers the service screen you left.</p>
+  </article>
+
+  <article class="shot" id="untitled">
+    <p class="kicker">Untitled text · screen 3 of 8 · the wall is past the opening</p>
+    <h2>The first line of the body is its name.</h2>
+    <div class="pair">
+      <div class="pane">
+        <p class="label">On that text</p>
+        <div class="bezel"><div class="screen">
+          <div class="words">
+            <div class="lines"><p>Jadilah kehendak-Mu</p></div>
+          </div>
+          <div class="cue"><span class="quote">Bapa kami yang di sorga</span> · <span class="on">3/8</span> <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> NKB 128</div>
+          <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+        </div></div>
+      </div>
+      <div class="pane">
+        <p class="label">When it comes next</p>
+        <div class="bezel"><div class="screen">
+          <div class="cue">NKB 12A · 1 2 4 <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> <span class="on quote">Bapa kami yang di sorga</span></div>
+          <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+        </div></div>
+      </div>
+    </div>
+    <p class="note">The opening is oblique in both places, so a quoted first line reads apart from a real title. The count stays upright. On the blank before it, that same oblique opening is the lit “next”.</p>
+  </article>
+
+  <article class="shot" id="text">
+    <p class="kicker">Text · screen 3 of 8</p>
+    <h2>The title, when it has one, and which screen of the entry this is.</h2>
+    <div class="bezel"><div class="screen">
+      <div class="words">
+        <h1>Pengakuan dosa</h1>
+        <div class="lines"><p>Ampunilah segala dosa kami</p></div>
+      </div>
+      <div class="cue">Pengakuan dosa · <span class="on">3/8</span> <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> NKB 128</div>
+      <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+    </div></div>
+    <p class="note">8 is the entry’s lyric screens, counted the same way as a bait: a pair of lines is one screen. The rest after the entry is not part of the 8. A text with no title drops that word and reads 3/8 → NKB 128.</p>
+  </article>
+
+  <article class="shot" id="rest">
+    <p class="kicker">Blank after bait 2 · still NKB 12A</p>
+    <h2>Same song, same baits. The highlight sits on the next bait.</h2>
+    <div class="bezel"><div class="screen">
+      <div class="cue">NKB 12A · 1 2 <span class="on">4</span> <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> Pengakuan dosa</div>
+      <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+    </div></div>
+    <p class="note">4 is lit, because Right opens bait 4. The book, the number, and the checked baits stay. The 1/2 steps aside, because this screen is not a split of a lyric, and nothing is written in its place.</p>
+  </article>
+
+  <article class="shot" id="last">
+    <p class="kicker">Blank after the last bait · still NKB 12A</p>
+    <h2>No bait follows, so the highlight sits on the next entry.</h2>
+    <div class="bezel"><div class="screen">
+      <div class="cue">NKB 12A · 1 2 4 <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> <span class="on">Pengakuan dosa</span></div>
+      <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+    </div></div>
+    <p class="note">The song line stays. None of 1, 2, or 4 is lit. Pengakuan dosa is, because that is what Right opens.</p>
+  </article>
+
+  <article class="shot" id="break">
+    <p class="kicker">Section break · still this break</p>
+    <h2>The break label stays dim. The arrow and next entry are lit.</h2>
+    <div class="bezel"><div class="screen">
+      <div class="cue">Akhir liturgi <span class="cue-arrow on" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> <span class="on">Khotbah</span></div>
+      <span class="keys" aria-hidden="true"><svg><use href="#kbd"/></svg></span>
+    </div></div>
+    <p class="note">The break label stays dim. The arrow and next entry are lit; with no label, the lit arrow still leads to Khotbah.</p>
+  </article>
+
+  <article class="shot" id="keys">
+    <p class="kicker">Keys · the other end of the same line</p>
+    <h2>Click the keyboard and the list opens over the verse.</h2>
+    <div class="bezel bezel-tall"><div class="screen keys-open" id="keys-screen">
+      <div class="words">
+        <h1>Mateus 5:13</h1>
+        <div class="lines"><p>Hanima do garam ni dunia on.</p></div>
+      </div>
+      <div class="cue">Mateus 5:13–16 · SIM <span class="cue-arrow" role="img" aria-label="then"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span> NKB 12</div>
+      <button type="button" class="keys" aria-label="Shortcuts" aria-expanded="true" aria-controls="key-list"><svg aria-hidden="true"><use href="#kbd"/></svg></button>
+      <div class="sheet" id="key-list">
+        <div class="stack">
+          <section class="group">
+            <h3>Service</h3>
+            <p class="row"><span class="fn">Next</span><span class="combo"><span class="chord"><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Down Arrow"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k nav">PgDn</span></span></span></p>
+            <p class="row"><span class="fn">Previous</span><span class="combo"><span class="chord"><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Up Arrow"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k nav">PgUp</span></span></span></p>
+            <p class="row"><span class="fn">First</span><span class="combo"><span class="chord"><span class="k nav">Home</span></span></span></p>
+            <p class="row"><span class="fn">Last</span><span class="combo"><span class="chord"><span class="k nav">End</span></span></span></p>
+            <p class="row"><span class="fn">Next Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span></span></p>
+            <p class="row"><span class="fn">Previous Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span></span></p>
+            <p class="row"><span class="fn">First Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">Home</span></span></span></p>
+            <p class="row"><span class="fn">Last Entry</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">End</span></span></span></p>
+          </section>
+          <section class="group">
+            <h3>Song</h3>
+            <p class="row"><span class="fn">Next Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgDn</span></span></span></p>
+            <p class="row"><span class="fn">Previous Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgUp</span></span></span></p>
+            <p class="row"><span class="fn">First Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">Home</span></span></span></p>
+            <p class="row"><span class="fn">Last Bait</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">End</span></span></span></p>
+          </section>
+          <section class="group">
+            <h3>Passage</h3>
+            <p class="row"><span class="fn">Flip TB / SIM</span><span class="combo"><span class="chord"><span class="k">T</span></span></span></p>
+            <p class="row"><span class="fn">First Verse</span><span class="combo"><span class="chord"><span class="k nav">Home</span></span></span></p>
+            <p class="row"><span class="fn">Last Verse</span><span class="combo"><span class="chord"><span class="k nav">End</span></span></span></p>
+          </section>
+        </div>
+        <div class="stack">
+          <section class="group">
+            <h3>Library passage</h3>
+            <p class="row"><span class="fn">Next Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgDn</span></span></span></p>
+            <p class="row"><span class="fn">Previous Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span><span class="or">or</span><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">PgUp</span></span></span></p>
+            <p class="row"><span class="fn">First Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">Home</span></span></span></p>
+            <p class="row"><span class="fn">Last Chapter</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Shift" aria-label="Shift"><span class="shift-mark" aria-hidden="true"><svg><use href="#shift-arrow"/></svg></span></span><span class="k nav">End</span></span></span></p>
+            <p class="row"><span class="fn">Next Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Right Arrow"><svg aria-hidden="true"><use href="#arrow-right"/></svg></span></span></span></span></p>
+            <p class="row"><span class="fn">Previous Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k glyph horizontal-arrow"><span class="arrow-mark" aria-label="Left Arrow"><svg aria-hidden="true"><use href="#arrow-left"/></svg></span></span></span></span></p>
+            <p class="row"><span class="fn">First Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">Home</span></span></span></p>
+            <p class="row"><span class="fn">Last Book</span><span class="combo"><span class="chord"><span class="k w glyph" title="Ctrl (Command-style preview symbol)" aria-label="Control">⌘</span><span class="k nav">End</span></span></span></p>
+          </section>
+          <section class="group">
+            <h3>Library Detour</h3>
+            <p class="row"><span class="fn">Back to Service</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+          </section>
+        </div>
+        <div class="stack">
+          <section class="group">
+            <h3>Display</h3>
+            <p class="row"><span class="fn">Show or Hide Words</span><span class="combo"><span class="chord"><span class="k sp glyph" title="Space" aria-label="Space"><span class="space-mark">␣</span></span></span></span></p>
+            <p class="row"><span class="fn">Show or Hide Corner</span><span class="combo"><span class="chord"><span class="k">C</span></span></span></p>
+            <p class="row"><span class="fn">Keyboard Shortcuts</span><span class="combo"><span class="chord"><span class="k">K</span></span></span></p>
+          </section>
+          <section class="group">
+            <h3>Find</h3>
+            <p class="row"><span class="fn">Find in Service</span><span class="combo"><span class="chord"><span class="k">J</span></span></span></p>
+            <p class="row"><span class="fn">Passage or Song</span><span class="combo"><span class="chord"><span class="k">G</span></span></span></p>
+          </section>
+          <section class="group">
+            <h3>While Finding</h3>
+            <p class="row"><span class="fn">Previous Match</span><span class="combo"><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Up Arrow"><svg aria-hidden="true"><use href="#arrow-up"/></svg></span></span></span></span></p>
+            <p class="row"><span class="fn">Next Match</span><span class="combo"><span class="chord"><span class="k glyph"><span class="arrow-mark" aria-label="Down Arrow"><svg aria-hidden="true"><use href="#arrow-down"/></svg></span></span></span></span></p>
+            <p class="row"><span class="fn">Close When Empty</span><span class="combo"><span class="chord"><span class="k bk glyph" title="Backspace" aria-label="Backspace"><span class="key-symbol" aria-hidden="true"><svg><use href="#backspace"/></svg></span></span></span></span></p>
+            <p class="row"><span class="fn">Open Match</span><span class="combo"><span class="chord"><span class="k ww glyph" title="Enter" aria-label="Enter"><span class="key-symbol" aria-hidden="true"><svg><use href="#enter"/></svg></span></span></span></span></p>
+            <p class="row"><span class="fn">Close Find</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+          </section>
+          <section class="group">
+            <h3>Fullscreen</h3>
+            <p class="row"><span class="fn">Enter or Leave</span><span class="combo"><span class="chord"><span class="k">F</span></span></span></p>
+            <p class="row"><span class="fn">Hold to Leave</span><span class="combo"><span class="chord"><span class="k w">Esc</span></span></span></p>
+          </section>
+        </div>
+      </div>
+    </div></div>
+    <p class="note">The action sits on the left and the keys sit opposite it. Arrows and Shift are the marks on the keys. The left column covers service navigation, songs, and service passages. The middle has library-passage navigation, with the detour back to service at the bottom; display, find, and fullscreen stay on the right. Click the icon, the dimmed projector outside the sheet, or press Escape to close; the outside click does not navigate.</p>
+  </article>
+</main>
+<script>
+  document.querySelectorAll('.screen').forEach(function (screen) {
+    var cursorTimer;
+    function revealCursor() {
+      screen.classList.remove('cursor-hidden');
+      window.clearTimeout(cursorTimer);
+      cursorTimer = window.setTimeout(function () {
+        screen.classList.add('cursor-hidden');
+      }, 2000);
+    }
+    ['pointermove', 'pointerdown', 'click'].forEach(function (eventName) {
+      screen.addEventListener(eventName, revealCursor, { passive: true });
+    });
+    revealCursor();
+  });
+
+  var keysScreen = document.querySelector('#keys-screen');
+  var keysButton = keysScreen.querySelector('.keys');
+  function setKeysOpen(open) {
+    keysScreen.classList.toggle('keys-open', open);
+    keysButton.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  keysButton.addEventListener('click', function (event) {
+    event.stopPropagation();
+    setKeysOpen(!keysScreen.classList.contains('keys-open'));
+  });
+  keysScreen.addEventListener('click', function (event) {
+    if (keysScreen.classList.contains('keys-open') && !event.target.closest('.sheet')) setKeysOpen(false);
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') setKeysOpen(false);
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.repeat) return;
+    if (event.key.toLowerCase() === 'k') {
+      event.preventDefault(); setKeysOpen(!keysScreen.classList.contains('keys-open'));
+    }
+    if (event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {});
+    }
+  });
+</script>
+</body>
+</html>

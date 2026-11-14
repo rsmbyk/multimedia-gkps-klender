@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="id" data-read="on" data-labels="exact" data-data="fixtures">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media Library and Transfer history — age buckets</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/components.css">
+<style>
+  html, body { margin: 0; }
+  /* the app shell makes body a flex row; this preview page is a stack */
+  body { display: block; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); }
+  .bar {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    padding: 10px 16px;
+    background: color-mix(in srgb, var(--rail-bg) 92%, var(--canvas));
+    border-bottom: 1px solid var(--divider);
+  }
+  .bar button {
+    padding: 7px 12px; border: 1px solid var(--divider); border-radius: 8px;
+    background: var(--canvas); color: var(--ink);
+    font: 600 12.5px/1 var(--font-sans); cursor: pointer;
+  }
+  .bar button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
+  .bar .note { margin-left: 6px; font: 500 12px/1.35 var(--font-sans); color: var(--head-ink); }
+  .bar .spacer { flex: 1; }
+  .bar .group-label { font: 600 11px/1 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--head-ink); margin-right: 2px; }
+  .stage2 { width: min(880px, 100vw - 48px); margin: 0 auto; padding: 26px 0 120px; }
+  .frame { margin-top: 34px; padding-top: 8px; border-top: 2px solid var(--divider); }
+  .frame > h2 { font-size: 15px; letter-spacing: .02em; margin: 18px 0 2px; }
+  .frame > p { margin: 0 0 12px; color: var(--head-ink); font-size: 12.5px; }
+  /* the real dialog, un-modal: same frame, same width, no backdrop */
+  dialog.media-library__dialog.media-transfers__dialog[open] { position: static; margin: 0; max-height: none; }
+  .uses-odd { color: var(--head-ink); }
+  /* PROPOSED, not yet in components.css: the transfers dialog's bucket heading.
+     Same numbers as `.media-library__group`, tuned for a 22px-padded dialog. */
+  .media-transfers__group {
+    color: var(--head-ink); font-size: 12px; text-transform: uppercase;
+    letter-spacing: .07em; margin: 20px 0 2px;
+  }
+  .media-transfers__group:first-child { margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="bar" role="group" aria-label="Preview controls">
+  <span class="group-label">Transfer labels</span>
+  <button type="button" data-labels="friendly" aria-pressed="false">Today · Last week</button>
+  <button type="button" data-labels="exact" aria-pressed="true">Last 24 hours · Last 7 days</button>
+  <span class="spacer"></span>
+  <span class="group-label">Data</span>
+  <button type="button" data-data="fixtures" aria-pressed="true">Fixtures</button>
+  <button type="button" data-data="real" aria-pressed="false">Real snapshot</button>
+  <button type="button" id="theme">Dark</button>
+</div>
+
+<main class="stage2">
+  <header class="read__head">
+    <div class="read__head-top">
+      <h1 class="read__title"><span>Media Library</span></h1>
+    </div>
+  </header>
+  <div class="media-library" id="mediaLibrary">
+    <p class="media-library__intro">Files available on this computer. Add a file while editing a Tata Ibadah entry, or choose one already in this library.</p>
+    <div class="media-library__filters">
+      <div class="media-library__chips" role="group" aria-label="File type filters">
+        <button type="button" aria-pressed="false">Images</button>
+        <button type="button" aria-pressed="false">Audio</button>
+        <button type="button" aria-pressed="false">Video</button>
+        <button type="button" aria-pressed="false">PDF</button>
+        <button type="button" aria-pressed="false">Slides</button>
+        <span aria-hidden="true">·</span>
+        <button type="button" aria-pressed="false">Unused</button>
+      </div>
+      <p id="mediaResultCount"></p>
+      <div class="media-library__sort">
+        <button type="button" aria-expanded="false"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5v13m0-13-2.5 2.5m2.5-2.5L8 6m6.5 10.5v-13m0 13-2.5-2.5m2.5 2.5L17 14"/></svg><span>Upload date · newest</span></button>
+      </div>
+    </div>
+    <div id="mediaFileList"></div>
+    <p class="media-library__empty" id="mediaEmpty" hidden></p>
+  </div>
+
+  <section class="frame" aria-labelledby="transfersFrameTitle">
+    <h2 id="transfersFrameTitle">Transfers</h2>
+    <p>The dialog, opened from the clock control on this page — the same frame and width, drawn un-modal here.</p>
+    <dialog class="media-library__dialog media-transfers__dialog" open aria-label="Transfers">
+      <h2>Transfers</h2>
+      <div id="mediaTransfersList"></div>
+    </dialog>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var ICONS = {
+    image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3.5 3.5 2.5-2.5 5 5"/>',
+    audio: '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+    video: '<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M7 5l3 5m4-5 3 5"/><path d="m10 12 5 3-5 3z"/>',
+    pdf: '<path d="M6 2h8l5 5v15H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v5h5M8 16h8M8 19h6"/>',
+    slides: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M12 18v3m-4 0h8M7 9h10M7 12h7"/>'
+  };
+  var GLYPHS = {
+    upload: '<path d="M12 16V4m0 0L8 8m4-4 4 4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/>',
+    download: '<path d="M12 4v12m0 0-4-4m4 4 4-4M4.5 15.5v3.3c0 .9.7 1.7 1.7 1.7h11.6c1 0 1.7-.8 1.7-1.7v-3.3"/>',
+    cloudCheck: '<path d="M7 18.5H5.8A4.3 4.3 0 0 1 5.5 10a6.6 6.6 0 0 1 12.7-1.4A4.6 4.6 0 0 1 18 18.5h-1m-9.2-3 2.4 2.4 4.3-4.5"/>',
+    cloudUp: '<path d="M7 18.5H5.8A4.3 4.3 0 0 1 5.5 10a6.6 6.6 0 0 1 12.7-1.4A4.6 4.6 0 0 1 18 18.5h-1M12 20v-8m0 0-3.1 3.1M12 12l3.1 3.1"/>'
+  };
+  var FAMILY = { image: 'Image', audio: 'Audio', video: 'Video', pdf: 'PDF', slides: 'PowerPoint' };
+  var LABELS = {
+    friendly: { today: 'Today', week: 'Last week', last30: 'Last 30 days', year: 'Earlier this year', older: 'Older' },
+    exact: { today: 'Last 24 hours', week: 'Last 7 days', last30: 'Last 30 days', year: 'Earlier this year', older: 'Older' }
+  };
+  var DAY = 86400000, HOUR = 3600000;
+  var now = new Date();
+
+  function node(tag, className, content) {
+    var el = document.createElement(tag);
+    if (className) el.className = className;
+    if (content !== undefined) el.textContent = content;
+    return el;
+  }
+  function glyph(name) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + GLYPHS[name] + '</svg>'; }
+  function icon(kind) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[kind] || ICONS.pdf) + '</svg>'; }
+  function fmtSize(bytes) { return bytes < 1000000 ? Math.round(bytes / 1000) + ' KB' : (bytes / 1000000).toFixed(1) + ' MB'; }
+  function longDate(value) { return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(value)); }
+  function shortDate(value) { return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(value)); }
+  function jakartaDay(value) {
+    var parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(value));
+    var pick = function (name) { return Number(parts.find(function (part) { return part.type === name; }).value); };
+    return Date.UTC(pick('year'), pick('month') - 1, pick('day'));
+  }
+  var TODAY = jakartaDay(now);
+
+  /* the two bucket rules under test — one per surface, same ladder */
+  function fileBucket(file) {
+    var days = Math.round((TODAY - jakartaDay(file.uploaded_at)) / DAY);
+    if (days <= 30) return 'last30';
+    if (new Date(jakartaDay(file.uploaded_at)).getUTCFullYear() === new Date(TODAY).getUTCFullYear()) return 'year';
+    return 'older';
+  }
+  function transferBucket(transfer) {
+    var started = Date.parse(transfer.started_at);
+    var age = now - started;
+    if (age < 24 * HOUR) return 'today';
+    if (age < 7 * DAY) return 'week';
+    if (age < 30 * DAY) return 'last30';
+    if (new Date(jakartaDay(started)).getUTCFullYear() === new Date(TODAY).getUTCFullYear()) return 'year';
+    return 'older';
+  }
+
+  /* ---------- fixtures ---------- */
+  function iso(daysAgo, hour, minute) {
+    var day = new Date(jakartaDay(now) - daysAgo * DAY);
+    return new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), (hour || 14) - 7, minute || 0, 0)).toISOString();
+  }
+  var FILE_FIXTURES = [
+    { sha256: 'a1', name: 'random.jpg', family: 'image', size: 9400, uploaded_at: iso(0, 21, 29), uses: [{ service: 'Ibadah Minggu', date: iso(0, 0, 0).slice(0, 10), title: 'random.jpg', url: '#' }], cloud: iso(0, 0, 0), onlineDays: 7 },
+    { sha256: 'a2', name: 'images (1).jpeg', family: 'image', size: 15400, uploaded_at: iso(0, 21, 32), uses: [{ service: 'Ibadah Minggu', date: iso(0, 0, 0).slice(0, 10), title: 'images (1).jpeg', url: '#' }], cloud: iso(0, 0, 0), onlineDays: 7 },
+    { sha256: 'a3', name: 'Sujud & Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3', family: 'audio', size: 12100000, uploaded_at: iso(3, 20, 10), uses: [{ service: 'Ibadah Minggu', date: iso(-1, 0, 0).slice(0, 10), title: 'Sujud & Terima Kasih', url: '#' }] },
+    { sha256: 'a4', name: 'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx', family: 'slides', size: 2740000, uploaded_at: iso(12, 19, 40), uses: [{ service: 'Ibadah Minggu', date: iso(3, 0, 0).slice(0, 10), title: 'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx', url: '#' }], cloud: iso(0, 0, 0), onlineDays: 7 },
+    { sha256: 'a5', name: 'Invoice-AATTCSTN-0002.pdf', family: 'pdf', size: 86000, uploaded_at: iso(41, 11, 5), uses: [] },
+    { sha256: 'a6', name: 'side-view-silhouette-african-elephant-walking-across-green-ground-against-light-blue-sky-stately-wild-bull-marching-proudly-481645534.webp', family: 'image', size: 6976, uploaded_at: iso(330, 9, 15), uses: [] }
+  ];
+  var TRANSFER_FIXTURES = [
+    { id: 1, name: 'random.jpg', direction: 'upload', status: 'completed', size: 9400, bytes_done: 9400, started_at: iso(0, 21, 29), ended_at: iso(0, 21, 30) },
+    { id: 2, name: 'images (1).jpeg', direction: 'upload', status: 'completed', size: 15400, bytes_done: 15400, started_at: iso(0, 21, 32), ended_at: iso(0, 21, 33) },
+    { id: 3, name: 'Sujud & Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3', direction: 'upload', status: 'active', size: 12100000, bytes_done: 4300000, started_at: iso(0, 21, 35) },
+    { id: 4, name: 'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx', direction: 'upload', status: 'completed', size: 2740000, bytes_done: 2740000, started_at: iso(2, 20, 10), ended_at: iso(2, 20, 11) },
+    { id: 5, name: 'Warta Jemaat 18 Oktober.pdf', direction: 'download', status: 'completed', size: 512000, bytes_done: 512000, started_at: iso(4, 8, 30), ended_at: iso(4, 8, 31) },
+    { id: 6, name: 'Invoice-AATTCSTN-0002.pdf', direction: 'upload', status: 'completed', size: 86000, bytes_done: 86000, started_at: iso(12, 19, 40), ended_at: iso(12, 19, 41) },
+    { id: 7, name: 'notes-long-week.pdf', direction: 'download', status: 'failed', size: 2048000, bytes_done: 1024000, started_at: iso(45, 15, 2), ended_at: iso(45, 15, 4) },
+    { id: 8, name: 'Natal I — warta 2025.pptx', direction: 'upload', status: 'cancelled', size: 3230000, bytes_done: 830000, started_at: iso(330, 10, 0), ended_at: iso(330, 10, 1) }
+  ];
+  var REAL_FILES = [
+    { sha256: 'r1', name: 'side-view-silhouette-african-elephant-walking-across-green-ground-against-light-blue-sky-stately-wild-bull-marching-proudly-481645534.webp', family: 'image', size: 6976, uploaded_at: '2026-10-28T14:31:50.696364+00:00', uses: [{ service: 'Ibadah Minggu', date: '2026-10-20', title: 'side-view…534.webp', url: '#' }], cloud: '2026-11-04T00:00:00+00:00', onlineDays: 7 },
+    { sha256: 'r2', name: 'images (1).jpeg', family: 'image', size: 15400, uploaded_at: '2026-10-28T14:32:09.995730+00:00', uses: [{ service: 'Ibadah Minggu', date: '2026-10-20', title: 'images (1).jpeg', url: '#' }], cloud: '2026-11-04T00:00:00+00:00', onlineDays: 7 },
+    { sha256: 'r3', name: 'random.jpg', family: 'image', size: 9400, uploaded_at: '2026-10-28T14:29:21.238598+00:00', uses: [{ service: 'Ibadah Minggu', date: '2026-10-20', title: 'random.jpg', url: '#' }], cloud: '2026-11-04T00:00:00+00:00', onlineDays: 7 },
+    { sha256: 'r4', name: 'Sujud & Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3', family: 'audio', size: 12100000, uploaded_at: '2026-10-25T09:12:00+00:00', uses: [{ service: 'Ibadah Minggu', date: '2026-10-20', title: 'Sujud & Terima Kasih', url: '#' }], cloud: '2026-11-01T00:00:00+00:00', onlineDays: 7 },
+    { sha256: 'r5', name: 'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx', family: 'slides', size: 2740000, uploaded_at: '2026-10-25T09:10:00+00:00', uses: [{ service: 'Ibadah Minggu', date: '2026-10-25', title: 'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx', url: '#' }], cloud: '2026-11-01T00:00:00+00:00', onlineDays: 7 },
+    { sha256: 'r6', name: 'images.jpeg', family: 'image', size: 14400, uploaded_at: '2026-10-19T08:00:00+00:00', uses: [{ service: 'Ibadah Minggu', date: '2026-10-20', title: 'images.jpeg', url: '#' }], cloud: '2026-10-26T00:00:00+00:00', onlineDays: 7 },
+    { sha256: 'r7', name: 'Receipt-2773-9204.png', family: 'pdf', size: 86000, uploaded_at: '2026-10-19T07:59:00+00:00', uses: [{ service: 'Ibadah Minggu', date: '2026-10-20', title: 'Receipt-2773-9204.png', url: '#' }], cloud: '2026-10-26T00:00:00+00:00', onlineDays: 7 },
+    { sha256: 'r8', name: 'Invoice-AATTCSTN-0002.pdf', family: 'pdf', size: 86000, uploaded_at: '2026-10-18T10:35:00+00:00', uses: [{ service: 'Ibadah Minggu', date: '2026-10-18', title: 'Invoice-AATTCSTN-0002.pdf', url: '#' }], cloud: '2026-10-25T00:00:00+00:00', onlineDays: 7 }
+  ];
+  var REAL_TRANSFERS = [
+    { id: 9, name: 'images (1).jpeg', direction: 'upload', status: 'completed', size: 15400, bytes_done: 15400, started_at: '2026-10-28T14:32:09.995730+00:00', ended_at: '2026-10-28T14:32:10.940990+00:00' },
+    { id: 8, name: 'side-view-silhouette-african-elephant-walking-across-green-ground-against-light-blue-sky-stately-wild-bull-marching-proudly-481645534.webp', direction: 'upload', status: 'completed', size: 6976, bytes_done: 6976, started_at: '2026-10-28T14:32:09.177401+00:00', ended_at: '2026-10-28T14:32:09.780882+00:00' },
+    { id: 7, name: 'random.jpg', direction: 'upload', status: 'completed', size: 9400, bytes_done: 9400, started_at: '2026-10-28T14:29:21.238598+00:00', ended_at: '2026-10-28T14:29:21.936361+00:00' },
+    { id: 2, name: 'Sujud & Terima Kasih - JCC Worship [Official Music Video] - Impact Music Indonesia.mp3', direction: 'upload', status: 'completed', size: 12100000, bytes_done: 12100000, started_at: '2026-10-28T14:27:03.386904+00:00', ended_at: '2026-10-28T14:27:19.673199+00:00' },
+    { id: 3, name: 'Slide Warta Jemaat GKPS Klender Tgl 25 Oktober 2026.pptx', direction: 'upload', status: 'completed', size: 2740000, bytes_done: 2740000, started_at: '2026-10-28T14:27:04.618361+00:00', ended_at: '2026-10-28T14:27:09.602246+00:00' },
+    { id: 4, name: 'images.jpeg', direction: 'upload', status: 'completed', size: 14400, bytes_done: 14400, started_at: '2026-10-28T14:27:05.626144+00:00', ended_at: '2026-10-28T14:27:09.373506+00:00' },
+    { id: 6, name: 'Invoice-AATTCSTN-0002.pdf', direction: 'upload', status: 'completed', size: 86000, bytes_done: 86000, started_at: '2026-10-28T14:27:07.589665+00:00', ended_at: '2026-10-28T14:27:09.322790+00:00' },
+    { id: 5, name: 'Receipt-2773-9204.png', direction: 'upload', status: 'completed', size: 86000, bytes_done: 86000, started_at: '2026-10-28T14:27:06.674001+00:00', ended_at: '2026-10-28T14:27:09.292932+00:00' },
+    { id: 1, name: 'Invoice-AATTCSTN-0002.pdf', direction: 'upload', status: 'completed', size: 86000, bytes_done: 86000, started_at: '2026-10-18T10:35:04.025423+00:00', ended_at: '2026-10-18T10:35:05.190507+00:00' }
+  ];
+
+  /* ---------- rows, as the real scripts build them ---------- */
+  function fileRow(file) {
+    var el = node('div', 'media-library__file' + (file.uses && !file.uses.length ? ' is-unused' : ''));
+    var cell = node('div', 'media-library__file-icon'); cell.innerHTML = icon(file.family); el.appendChild(cell);
+    var main = node('div', 'media-library__file-main');
+    main.appendChild(node('div', 'media-library__filename', file.name));
+    main.appendChild(node('div', 'media-library__meta', (FAMILY[file.family] || 'File') + ' · ' + longDate(file.uploaded_at) + ' · ' + fmtSize(file.size)));
+    if (file.uses && file.uses.length) {
+      var links = node('div', 'media-library__uses');
+      file.uses.forEach(function (ref) {
+        var line = node('div');
+        var a = node('a', '', ref.service + ' (' + shortDate(ref.date + 'T05:00:00Z') + ')');
+        a.appendChild(node('span', '', ' · ' + (ref.title || file.name)));
+        a.href = ref.url;
+        line.appendChild(a); links.appendChild(line);
+      });
+      main.appendChild(links);
+    } else {
+      main.appendChild(node('div', 'media-library__unused', file.uploaded_at === iso(41, 11, 5) ? 'Unused · Deletes in 11 days' : 'Unused · Deleted tomorrow'));
+    }
+    el.appendChild(main);
+    var cloudControl = node('div', 'media-library__cloud');
+    if (file.cloud) {
+      var available = node('span', 'media-library__cloud-available');
+      available.innerHTML = glyph('cloudCheck'); available.title = 'Available online';
+      available.setAttribute('role', 'img'); available.setAttribute('aria-label', 'Available online');
+      cloudControl.appendChild(available);
+      cloudControl.appendChild(node('small', '', file.onlineDays + ' days'));
+    } else if (file.family === 'audio') {
+      var share = node('button', 'media-library__cloud-button');
+      share.type = 'button'; share.innerHTML = glyph('cloudUp'); share.title = 'Share online';
+      share.setAttribute('aria-label', 'Share ' + file.name + ' online');
+      cloudControl.appendChild(share);
+    }
+    el.appendChild(cloudControl);
+    var remove = node('button', 'media-library__remove'); remove.type = 'button';
+    remove.setAttribute('aria-label', 'Remove ' + file.name); remove.title = 'Remove file';
+    remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 4h4m-8 3 1 14h10l1-14M10 11v6m4-6v6"/></svg>';
+    el.appendChild(remove);
+    return el;
+  }
+  function transferRow(transfer) {
+    var row = node('div', 'media-transfers__row');
+    var mark = node('span', 'media-transfers__mark'); mark.innerHTML = glyph(transfer.direction);
+    var main = node('div', 'media-transfers__main');
+    main.appendChild(node('strong', '', transfer.name));
+    main.appendChild(node('span', '', transfer.status === 'active' ? Math.min(100, Math.round(100 * transfer.bytes_done / Math.max(1, transfer.size))) + '%' : transfer.status === 'completed' ? 'Completed' : transfer.status === 'cancelled' ? 'Cancelled' : 'Failed'));
+    row.append(mark, main);
+    return row;
+  }
+
+  /* ---------- render ---------- */
+  var FILE_ORDER = ['last30', 'year', 'older'];
+  var TRANSFER_ORDER = ['today', 'week', 'last30', 'year', 'older'];
+  function render() {
+    var labels = LABELS[document.documentElement.dataset.labels];
+    var files = document.documentElement.dataset.data === 'real' ? REAL_FILES : FILE_FIXTURES;
+    var transfers = document.documentElement.dataset.data === 'real' ? REAL_TRANSFERS : TRANSFER_FIXTURES;
+    files = files.slice().sort(function (a, b) { return b.uploaded_at.localeCompare(a.uploaded_at); });
+    document.getElementById('mediaResultCount').textContent = files.length + ' of ' + files.length + ' files shown';
+    var list = document.getElementById('mediaFileList'); list.replaceChildren();
+    var seen = null;
+    files.forEach(function (file) {
+      var key = fileBucket(file);
+      if (key !== seen) {
+        seen = key;
+        var head = node('h2', 'media-library__group', labels[key]);
+        head.dataset.bucket = key === 'last30' ? 'last-30-days' : key === 'year' ? 'earlier-this-year' : 'older';
+        list.appendChild(head);
+      }
+      list.appendChild(fileRow(file));
+    });
+
+    var host = document.getElementById('mediaTransfersList'); host.replaceChildren();
+    var shown = transfers.slice().sort(function (a, b) {
+      var active = function (t) { return t.status === 'active' ? 0 : 1; };
+      if (active(a) !== active(b)) return active(a) - active(b);
+      return (b.ended_at || b.started_at).localeCompare(a.ended_at || a.started_at);
+    });
+    var last = null;
+    if (!shown.length) host.appendChild(node('p', 'media-transfers__empty', 'No transfers yet.'));
+    shown.forEach(function (transfer) {
+      var key = transferBucket(transfer);
+      if (key !== last) {
+        last = key;
+        var head = node('h3', 'media-transfers__group', labels[key]);
+        head.dataset.bucket = { today: 'last-24-hours', week: 'last-7-days', last30: 'last-30-days', year: 'earlier-this-year', older: 'older' }[key];
+        host.appendChild(head);
+      }
+      host.appendChild(transferRow(transfer));
+    });
+  }
+
+  document.querySelectorAll('[data-labels]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      document.documentElement.dataset.labels = button.dataset.labels;
+      document.querySelectorAll('[data-labels]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === button)); });
+      render();
+    });
+  });
+  document.querySelectorAll('[data-data]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      document.documentElement.dataset.data = button.dataset.data;
+      document.querySelectorAll('[data-data]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === button)); });
+      render();
+    });
+  });
+  document.getElementById('theme').addEventListener('click', function () {
+    var dark = document.documentElement.dataset.theme !== 'dark';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    this.textContent = dark ? 'Light' : 'Dark';
+  });
+  render();
+})();
+</script>
+</body>
+</html>

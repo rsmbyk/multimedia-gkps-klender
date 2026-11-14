@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="id" data-read="on" data-option="now">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entry surface — comparison</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/components.css">
+<style>
+  html, body { margin: 0; }
+  body { display: block; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); }
+  .bar {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    padding: 10px 16px;
+    background: color-mix(in srgb, var(--rail-bg) 92%, var(--canvas));
+    border-bottom: 1px solid var(--divider);
+  }
+  .bar button {
+    padding: 7px 12px; border: 1px solid var(--divider); border-radius: 8px;
+    background: var(--canvas); color: var(--ink);
+    font: 600 12.5px/1 var(--font-sans); cursor: pointer;
+  }
+  .bar button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); border-color: var(--active-bg); }
+  .bar .note { margin-left: 6px; font: 500 12px/1.35 var(--font-sans); color: var(--head-ink); }
+  .bar .spacer { flex: 1; }
+  .cmp-stage { width: min(1040px, 100vw - 48px); margin: 0 auto; padding: 40px 0 120px; }
+  .read { display: block; }
+  .read__body { container: stage-pane / inline-size; }
+</style>
+<style>
+/* the rhythm knob is the add row between entries, not `.tatib__item + .tatib__item`:
+   that selector never matches while the editor draws the bars, so its 2px is dead code */
+[data-option="bare"] .tatib__item--acts,
+[data-option="bare"] .tatib__eos { background: transparent; box-shadow: none; }
+[data-option="bare"] .entry__add { margin-block: 10px; }
+
+[data-option="rules"] .tatib__item--acts,
+[data-option="rules"] .tatib__eos { background: transparent; box-shadow: none; }
+[data-option="rules"] .entry__add { margin-block: 2px; }
+[data-option="rules"] .tatib__item + .entry__add + .tatib__item,
+[data-option="rules"] .tatib__item + .entry__add + .tatib__eos,
+[data-option="rules"] .tatib__eos + .entry__add + .tatib__item,
+[data-option="rules"] .tatib__eos + .entry__add + .tatib__eos {
+  border-top: 1px solid color-mix(in srgb, var(--divider) 55%, transparent);
+  padding-top: 14px; margin-top: 14px;
+}
+
+[data-option="gutter"] .tatib__item--acts,
+[data-option="gutter"] .tatib__eos { background: transparent; box-shadow: none; }
+[data-option="gutter"] .entry__add { margin-block: 12px; }
+[data-option="gutter"] .read[data-kind="tatib"] .tatib__tx {
+  display: grid; grid-template-columns: 2.35rem minmax(0, 1fr);
+}
+[data-option="gutter"] .tatib__sp { margin-right: 0; }
+
+[data-option="felt"] .tatib__item--acts,
+[data-option="felt"] .tatib__eos {
+  background: color-mix(in srgb, var(--ink) 4%, var(--canvas));
+  box-shadow: none; border-radius: 12px;
+}
+</style>
+</head>
+<body>
+<div class="bar" role="group" aria-label="Entry surface candidates"><button type="button" data-opt="now" aria-pressed="true">Now</button><button type="button" data-opt="bare" aria-pressed="false">A · Bare</button><button type="button" data-opt="rules" aria-pressed="false">B · Rules</button><button type="button" data-opt="gutter" aria-pressed="false">C · Gutter</button><button type="button" data-opt="felt" aria-pressed="false">D · Felt</button><span class="note" id="note"></span><span class="spacer"></span><button type="button" id="hover" aria-label="Show the hover state on the second entry">Show hover</button><button type="button" id="theme">Dark</button></div>
+<div class="cmp-stage">
+<article class="read" id="read" lang="id" tabindex="-1" data-kind="tatib">
+  <header class="read__head">
+   <div class="read__head-top">
+    <p class="read__eyebrow" id="readEyebrow">4 Oktober 2026</p>
+    
+<div class="read__project" data-project-group data-display-channel="gkps-service-display">
+  
+  <button type="button" class="read__project-btn read__project-btn--icon" data-project-window
+          data-projector-url="/projector" data-project-service="142"
+          aria-label="Open projector window" title="Open projector window">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.5" y="6.6" width="9.6" height="9" rx="1.6"/>
+      <path d="M12.6 4.2h3.8v3.8M16.4 4.2 9.9 10.7"/>
+    </svg>
+  </button>
+  <button type="button" class="read__project-btn" data-project-open
+          data-projector-url="/projector?service=142" data-project-service="142"
+          data-label-project="Project" data-label-stop="Stop projecting"
+          aria-label="Project" title="Project">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+      <circle cx="6.7" cy="9.7" r="1.7"/>
+      <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+    </svg>
+    <span data-project-label>Project</span>
+  </button>
+</div>
+
+
+
+
+   </div>
+   <div class="read__row">
+    <h1 class="read__title"><span id="readName">Ibadah Minggu</span> <span class="read__no" id="readNo"></span></h1>
+    
+   </div>
+  </header>
+  <div class="read__body" id="readBody">
+
+<div class="entry__start" data-entry-start role="group" aria-label="Add at the start of this Tata Ibadah">
+  <span class="entry__start-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+  </span>
+</div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-1" data-anchor="1" data-old-item-pk="3138">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L :</span> Marilah kita bangkit berdiri! Di dalam nama Allah Bapa, dan Tuhan Yesus Kristus, serta Roh Kudus, Pencipta langit dan bumi.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J :</span> Amin.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3138">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3138">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3138" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-2" data-anchor="2" data-old-item-pk="3139">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> TUHAN adalah gembalaku,</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Takkan kekurangan aku.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3139">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3139">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3139" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-3" data-anchor="3" data-old-item-pk="3140">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Ia membaringkan aku di padang yang berumput hijau,</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Ia membimbing aku ke air yang tenang.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3140">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3140">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3140" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-4" data-anchor="4" data-old-item-pk="3141">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Ia menyegarkan jiwaku.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Ia menuntun aku di jalan yang benar oleh karena nama-Nya</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3141">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3141">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3141" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-5" data-anchor="5" data-old-item-pk="3142">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Sekalipun aku berjalan dalam lembah kekelaman, aku tidak takut bahaya,</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Sebab Engkau besertaku; gada-Mu dan tongkat-Mu, itulah yang menghibur aku.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3142">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3142">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3142" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-6" data-anchor="6" data-old-item-pk="3143">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Engkau menyediakan hidangan bagiku, di hadapan lawanku;</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Engkau mengurapi kepalaku dengan minyak; pialaku penuh melimpah.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3143">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3143">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3143" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-7" data-anchor="7" data-old-item-pk="3144">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Kebajikan dan kemurahan belaka akan mengikuti aku, seumur hidupku;</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Dan aku akan diam dalam rumah TUHAN sepanjang masa.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3144">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3144">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3144" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-8" data-anchor="8" data-old-item-pk="3145">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Haleluya, Haleluya, Haleluya.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> (Menyanyikan) Haleluya, Haleluya, Haleluya.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3145">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3145">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3145" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-9" data-anchor="9" data-old-item-pk="3146">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Marilah kita berdoa!</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3146">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3146">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3146" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-10" data-anchor="10" data-old-item-pk="3147"><span class="tatib__note">Bernyanyi</span><span class="entry__acts">
+  <button type="button" class="entry__ctrl" data-old-item-edit="3147">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3147">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="l3147" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-11" data-anchor="11" data-old-item-pk="3148">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L :</span> Marilah kita bangkit berdiri! Kita berdoa memohon ampunan dosa kita.</p>
+<p class="tatib__tx is-leader">Ya Tuhan Allah Maha Pengasih, ...</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3148">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3148">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3148" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-12" data-anchor="12" data-old-item-pk="3149"><span class="tatib__note">dengan kerendahan hati kami datang ke hadapan-Mu mengaku dan memohon pengampunan dosa. Kami mengaku, bahwa kami sering lalai melaksanakan tugas dan panggilan yang Engkau percayakan kepada kami.</span><span class="entry__acts">
+  <button type="button" class="entry__ctrl" data-old-item-edit="3149">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3149">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="l3149" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-13" data-anchor="13" data-old-item-pk="3150">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Oleh karenanya, kami patut menerima hukuman-Mu. Ya Tuhan Allah kasihanilah kami!</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J :</span> (Menyanyikan) Kasih sayang-Mu perlindunganku. Di bawah naungan sayap-Mu damai hatiku</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3150">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3150">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3150" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-14" data-anchor="14" data-old-item-pk="3151">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L :</span> Ya Tuhan, kami juga seringkali meninggalkan tanggung jawab kami untuk menegakkan keadilan dan kebenaran, dan kami enggan memikul salib karena tidak berani mengambil risiko.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3151">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3151">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3151" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-15" data-anchor="15" data-old-item-pk="3152">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Kami lebih mementingkan diri sendiri daripada mengutamakan kehendak-Mu. Jauhkanlah kami dari segala ketakutan dan kekuatiran dalam melakukan panggilan-Mu.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3152">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3152">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3152" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-16" data-anchor="16" data-old-item-pk="3153">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Ya Tuhan Allah, kasihanilah kami!</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J :</span> (Menyanyikan) Kasih sayang-Mu perlindunganku. Di bawah naungan sayap-Mu damai hatiku</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3153">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3153">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3153" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-17" data-anchor="17" data-old-item-pk="3154">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L :</span> Saat ini kami datang ke hadapan-Mu dengan segala dosa dan kesalahan kami. Baharuilah hati kami untuk melaksanakan firman-Mu dan curahkanlah Roh-Mu yang kudus menuntun hidup kami.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3154">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3154">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3154" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-18" data-anchor="18" data-old-item-pk="3155">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Ya Tuhan Allah, kasihanilah kami!</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J :</span> (Menyanyikan) Kasih sayang-Mu perlindunganku. Di bawah naungan sayap-Mu damai hatiku</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3155">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3155">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3155" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-19" data-anchor="19" data-old-item-pk="3156">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Dengarkan dan percayailah firman Allah, janji tentang pengampunan dosa.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3156">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3156">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3156" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-20" data-anchor="20" data-old-item-pk="3157">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Kemuliaan bagi Allah di tempat yang mahatinggi.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> (Menyanyikan) Amin, Amin, Amin.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3157">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3157">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3157" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<div class="tatib__eos" id="ti-21" data-anchor="21" data-old-item-pk="3158"><span class="tatib__note">Doa Bapa Kami</span><span class="entry__acts">
+  <button type="button" class="entry__ctrl" data-old-item-edit="3158">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3158">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+</span></div>
+
+
+<div class="entry__add" data-entry-after="l3158" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-22" data-anchor="22" data-old-item-pk="3159">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Bapa kami yang di sorga, dikuduskanlah nama-Mu.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J :</span> Ajarilah kami Tuhan untuk menguduskan nama-Mu, yaitu dengan mendorong kami supaya senantiasa setia mendengarkan dan melakukan firman-Mu di dalam kehidupan kami.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3159">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3159">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3159" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-23" data-anchor="23" data-old-item-pk="3160">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Datanglah kerajaan-Mu, jadilah kehendak-Mu di bumi seperti di sorga.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Kiranya Roh-Mu yang Kudus berdiam di dalam hati kami, supaya kami dikuatkan untuk menyatakan tanda-tanda Kerajaan-Mu dan melakukan khendak-Mu di bumi melalui ketaatan dan perbuatan kami sehari-hari.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3160">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3160">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3160" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-24" data-anchor="24" data-old-item-pk="3161">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Berikanlah kami pada hari ini makanan kami yang secukupnya.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Ajarilah kami supaya lebih sungguh mengenal dan mempercayai bahwa hanya Engkau saja sumber kehidupan kami, sehingga kami senantiasa mensyukuri pemberian-Mu yang telah dan yang akan Engkau berikan kepada kami.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3161">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3161">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3161" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-25" data-anchor="25" data-old-item-pk="3162">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Dan ampunilah kami akan kesalahan kami, seperti kami juga mengampuni orang yang bersalah kepada kami.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Ajarilah kami supaya mampu saling mengasihi seperti Engkau telah mengasihi kami, supaya kami dapat berbuat baik kepada orang yang berbuat jahat kepada kami, tidak iri dan dendam, dan tidak merendahkan atau menghina sesama kami. Kuatkanlah kami untuk selalu menaati-Mu dan mengasihi sesama kami.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3162">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3162">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3162" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-26" data-anchor="26" data-old-item-pk="3163">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Janganlah membawa kami ke dalam pencobaan, tetapi lepaskanlah kami dari yang jahat.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> Engkaulah Tuhan yang memelihara dan memimpin kami supaya mampu menjauhkan diri dari dosa dan jerat iblis; Engkau juga yang menyertai kami, supaya menang melawan segala pencobaan.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3163">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3163">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3163" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+<section class="tatib__item tatib__item--acts" id="ti-27" data-anchor="27" data-old-item-pk="3164">
+
+
+
+
+<p class="tatib__tx is-leader"><span class="tatib__sp">L:</span> Karena Engkaulah yang empunya Kerajaan, dan kuasa, dan kemuliaan sampai selama-lamanya. Amin.</p>
+<p class="tatib__tx is-assembly"><span class="tatib__sp">J:</span> (Menyanyikan) Amin, Amin, Amin.</p>
+
+
+
+<span class="entry__acts">
+  
+  
+  <button type="button" class="entry__ctrl" data-old-item-edit="3164">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-2.2z"/><path d="M11.6 5.4l3 3"/></svg>
+    <span class="entry__ctrl-label">Edit</span>
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-old-item-delete="3164">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/><path d="M8.6 8.6v4.4M11.4 8.6v4.4"/></svg>
+    <span class="entry__ctrl-label">Delete</span>
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="l3164" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="142">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="142">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="142">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="142">+ Media</button>
+</span></div>
+
+
+
+</div>
+ </article>
+</div>
+<script>
+  const root = document.documentElement;
+  const NOTES = {"now": "border + 1.2% fill \u2014 spec 068, what shipped before this slice", "bare": "no chrome at rest; the gap between entries carries the separation \u2014 ADOPTED", "rules": "one hairline between entries \u2014 the section break already owns a rule", "gutter": "L : / J : in a 37.6px hanging column", "felt": "no ring; the fill goes from 1.2% to 4% so it can be seen"};
+  const note = document.getElementById('note');
+  const showNote = () => { note.textContent = NOTES[root.dataset.option] || ''; };
+  showNote();
+  document.querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => {
+    root.dataset.option = b.dataset.opt;
+    document.querySelectorAll('[data-opt]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    showNote();
+  }));
+  const hoverBtn = document.getElementById('hover');
+  hoverBtn.addEventListener('click', () => {
+    const rows = document.querySelectorAll('.tatib__item, .tatib__eos');
+    hoverBtn.setAttribute('aria-pressed', String(rows[1].classList.toggle('is-modal-origin')));
+  });
+  const themeBtn = document.getElementById('theme');
+  themeBtn.addEventListener('click', () => {
+    const dark = root.dataset.theme !== 'dark';
+    root.dataset.theme = dark ? 'dark' : 'light';
+    themeBtn.textContent = dark ? 'Light' : 'Dark';
+  });
+</script>
+</body>
+</html>

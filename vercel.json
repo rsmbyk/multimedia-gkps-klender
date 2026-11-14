@@ -9,6 +9,9 @@
             }
         }
     ],
+    "crons": [
+        {"path": "/media-library/cloud/cleanup/", "schedule": "0 3 * * *"}
+    ],
     "routes": [
         {
             "src": "/(.*)",

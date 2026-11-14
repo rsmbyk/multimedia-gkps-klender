@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spec 100 — Bible translation labels preview</title>
+  <style>
+    :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif;
+      --canvas: #14130f; --rail: #232019; --ink: #f5f3ee; --muted: #9c9a91;
+      --divider: #3a362f; --selected: #393f4f; --active: #7c9cf0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0e0d0b; color: var(--ink); }
+    .draft { max-width: 1280px; margin: 0 auto; padding: 26px 24px 38px; }
+    h1 { margin: 0 0 7px; font: 620 23px/1.2 ui-sans-serif, system-ui, sans-serif; }
+    .intro { margin: 0 0 18px; color: #bcb9b2; font-size: 14px; line-height: 1.5; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 11px; margin-bottom: 18px; }
+    .controls label { color: var(--muted); font-size: 13px; }
+    .seg { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--divider);
+      border-radius: 9px; background: var(--canvas); }
+    .seg button { border: 0; border-radius: 6px; background: transparent; color: #b4b0a7;
+      padding: 7px 13px; font: 600 12px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer; }
+    .seg button[aria-pressed="true"] { background: var(--active); color: #0d1838; }
+    .shell { display: grid; grid-template-columns: 80px 296px 80px minmax(0, 1fr);
+      min-height: 620px; border: 1px solid var(--divider); border-radius: 12px; overflow: hidden;
+      background: var(--canvas); box-shadow: 0 18px 45px #0005; transition: grid-template-columns .2s; }
+    .shell[data-nav="mini"] { grid-template-columns: 80px 80px 80px minmax(0, 1fr); }
+    .rail { padding: 20px 12px; background: var(--rail); border-right: 1px solid var(--divider);
+      display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    .logo { width: 40px; height: 40px; border-radius: 50%; background: #f6f6f4; color: #175b4e;
+      display: grid; place-items: center; font-size: 13px; font-weight: 800; }
+    .rail-icon { width: 44px; height: 44px; border: 0; border-radius: 8px; display: grid;
+      place-items: center; color: #e8e6e0; background: transparent; font-size: 19px;
+      position: relative; cursor: default; }
+    .rail-icon.active { background: var(--active); color: #0d1838; }
+    .rail-icon[data-tip]:is(:hover, :focus-visible)::after { content: attr(data-tip);
+      position: absolute; left: calc(100% + 9px); top: 50%; transform: translateY(-50%);
+      z-index: 2; padding: 8px 10px; border-radius: 6px; color: #24221e;
+      background: #f5f3ee; white-space: nowrap; font: 12px/1 ui-sans-serif, system-ui; }
+    .panel { min-width: 0; background: var(--canvas); border-right: 1px solid var(--divider); }
+    .shell[data-nav="mini"] .panel { background: var(--rail); }
+    .panel-head { height: 80px; padding: 18px 16px; display: flex; align-items: center; gap: 8px; }
+    .filter { flex: 1; min-width: 0; height: 38px; padding: 0 12px; border: 1px solid var(--divider);
+      border-radius: 8px; background: #24221e; color: var(--ink); font: 13px ui-sans-serif, system-ui; }
+    .filter:focus { outline: 1px solid var(--active); }
+    .panel-head button { width: 38px; height: 38px; border: 0; border-radius: 8px;
+      background: transparent; color: var(--ink); font-size: 19px; cursor: pointer; }
+    .panel-head button:hover { background: #ffffff17; }
+    .panel-body { height: 540px; padding: 0 10px 20px; overflow: auto; scrollbar-color: #45413a transparent; }
+    .group-head { margin: 0; padding: 10px 8px 7px; color: var(--muted); background: var(--canvas);
+      font-size: 11.5px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
+    .group + .group { margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--divider); }
+    .book { min-height: 38px; padding: 7px 10px; border-radius: 9px; display: flex;
+      justify-content: space-between; gap: 12px; align-items: baseline; font-size: 14.5px; }
+    .book[hidden] { display: none !important; }
+    .book.selected { background: var(--selected); }
+    .book .main { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .book .other { white-space: nowrap; color: var(--muted); font-size: 12.5px; }
+    .book .code { display: none; }
+    .shell[data-nav="mini"] .panel-head { padding: 18px 16px; }
+    .shell[data-nav="mini"] .filter, .shell[data-nav="mini"] .group-head,
+    .shell[data-nav="mini"] .book .main, .shell[data-nav="mini"] .book .other { display: none; }
+    .shell[data-nav="mini"] .panel-body { padding: 0 18px 15px; }
+    .shell[data-nav="mini"] .book { width: 44px; height: 44px; min-height: 44px; margin: 0 0 16px;
+      padding: 0; display: grid; place-items: center; font-size: 12px; font-weight: 590; }
+    .shell[data-nav="mini"] .book .code { display: block; }
+    .chapters { padding: 94px 17px 20px; background: var(--rail); border-right: 1px solid var(--divider);
+      display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .chapter { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 8px;
+      font-size: 12px; font-weight: 600; }
+    .chapter.current { background: var(--selected); }
+    .stage { min-width: 0; padding: 34px clamp(24px, 5vw, 64px); }
+    .stage-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .stage h2 { margin: 0; font: 620 clamp(30px, 3.1vw, 43px)/1.08 ui-serif, Georgia, serif;
+      letter-spacing: -.02em; }
+    .stage h2 span { color: var(--muted); margin-left: .35em; }
+    .stage-switch { display: inline-flex; flex: none; padding: 3px; border: 1px solid var(--divider);
+      border-radius: 9px; font-size: 11px; font-weight: 700; }
+    .stage-switch span { padding: 6px 9px; color: var(--muted); }
+    .stage-switch .active { color: #0d1838; background: var(--active); border-radius: 6px; }
+    .verse-head { margin: 37px 0 22px; text-align: center; font: italic 21px/1.4 ui-serif, Georgia, serif; }
+    .verse { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 14px; margin: 0 0 16px;
+      color: #ece9e2; font: 18px/1.7 ui-serif, Georgia, serif; }
+    .verse span { color: var(--muted); text-align: right; font: 11px/2.7 ui-sans-serif, system-ui; }
+    .note { margin: 17px 0 0; color: #aba79f; font-size: 13px; line-height: 1.5; }
+    .goto-preview { margin-top: 26px; padding: 20px; border: 1px solid var(--divider);
+      border-radius: 12px; background: var(--canvas); box-shadow: 0 18px 45px #0005; }
+    .goto-preview h2 { margin: 0 0 7px; font-size: 18px; font-weight: 620; }
+    .goto-intro { margin: 0 0 16px; color: #bcb9b2; font-size: 13px; line-height: 1.5; }
+    .goto-examples { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .goto-example { min-width: 0; padding: 14px; border: 1px solid var(--divider); border-radius: 9px; }
+    .goto-example label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 11px; }
+    .goto-query { padding: 8px 10px; border: 1px solid #4a463f; border-radius: 5px;
+      background: #2a2722; color: var(--ink); font-size: 13px; }
+    .goto-result { display: flex; justify-content: space-between; gap: 9px; align-items: center;
+      margin-top: 7px; padding: 9px 8px; border-radius: 4px; background: #2a2722; font-size: 12px; }
+    .goto-edition { color: var(--muted); }
+    .goto-result-count { flex: none; color: var(--muted); font-size: 10px; }
+    .goto-opened { margin: 9px 0 0; color: #bcb9b2; font-size: 11px; }
+    .goto-opened strong { color: var(--ink); font-weight: 650; }
+    @media (max-width: 800px) {
+      .draft { padding: 18px 12px; }
+      .shell, .shell[data-nav="mini"] { grid-template-columns: 54px 80px minmax(0, 1fr); }
+      .shell .panel { display: none; }
+      .shell[data-nav="mini"] .panel { display: block; }
+      .chapters { display: none; }
+      .rail { padding: 16px 5px; }
+      .stage { padding: 26px 18px; }
+      .goto-examples { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="draft">
+    <h1>Spec 100 · Bible translation labels</h1>
+    <p class="intro">Text preview based on the current dark Bible layout. Switch editions and sidebar width to inspect the edition labels. Full book names remain in expanded rows.</p>
+    <div class="controls">
+      <label>Reading edition</label>
+      <div class="seg" role="group" aria-label="Preview reading edition">
+        <button type="button" data-edition="tb" aria-pressed="true">TB</button>
+        <button type="button" data-edition="sim" aria-pressed="false">SIM</button>
+      </div>
+      <label>Sidebar</label>
+      <div class="seg" role="group" aria-label="Preview sidebar state">
+        <button type="button" data-nav="open" aria-pressed="true">Expanded</button>
+        <button type="button" data-nav="mini" aria-pressed="false">Mini</button>
+      </div>
+    </div>
+    <div class="shell" id="shell" data-edition="tb" data-nav="open">
+      <aside class="rail" aria-label="Main rail">
+        <div class="logo">GKPS</div>
+        <div class="rail-icon">⌕</div>
+        <button class="rail-icon active" type="button" data-rail="bible" data-tip="Alkitab" aria-label="Alkitab">▤</button>
+        <button class="rail-icon" type="button" data-rail="songs" data-tip="Kidung" aria-label="Kidung">♫</button>
+        <button class="rail-icon" type="button" data-rail="service" data-tip="Tata Ibadah" aria-label="Tata Ibadah">▣</button>
+      </aside>
+      <aside class="panel" aria-label="Bible book sidebar">
+        <div class="panel-head">
+          <input class="filter" id="filter" type="search" placeholder="Filter books…" aria-label="Filter books in this preview">
+          <button id="panelToggle" type="button" aria-label="Toggle sidebar width">≪</button>
+        </div>
+        <div class="panel-body">
+          <section class="group">
+            <h3 class="group-head" data-testament="old"></h3>
+            <div class="book selected" data-tb="Kejadian" data-sim="1 Musa" data-tb-code="Kej" data-sim-code="1Mu">
+              <span class="main"></span><span class="code"></span><span class="other"></span>
+            </div>
+            <div class="book" data-tb="Keluaran" data-sim="2 Musa" data-tb-code="Kel" data-sim-code="2Mu">
+              <span class="main"></span><span class="code"></span><span class="other"></span>
+            </div>
+            <div class="book" data-tb="Imamat" data-sim="3 Musa" data-tb-code="Ima" data-sim-code="3Mu">
+              <span class="main"></span><span class="code"></span><span class="other"></span>
+            </div>
+            <div class="book" data-tb="Bilangan" data-sim="4 Musa" data-tb-code="Bil" data-sim-code="4Mu">
+              <span class="main"></span><span class="code"></span><span class="other"></span>
+            </div>
+            <div class="book" data-tb="Ulangan" data-sim="5 Musa" data-tb-code="Ula" data-sim-code="5Mu">
+              <span class="main"></span><span class="code"></span><span class="other"></span>
+            </div>
+          </section>
+          <section class="group">
+            <h3 class="group-head" data-testament="new"></h3>
+            <div class="book" data-tb="Matius" data-sim="Mateus" data-tb-code="Mat" data-sim-code="Mat">
+              <span class="main"></span><span class="code"></span><span class="other"></span>
+            </div>
+            <div class="book" data-tb="Markus" data-sim="Markus" data-tb-code="Mrk" data-sim-code="Mrk">
+              <span class="main"></span><span class="code"></span><span class="other"></span>
+            </div>
+          </section>
+        </div>
+      </aside>
+      <aside class="chapters" aria-label="Chapters">
+        <div class="chapter current">1</div><div class="chapter">2</div><div class="chapter">3</div>
+        <div class="chapter">4</div><div class="chapter">5</div>
+      </aside>
+      <section class="stage" aria-label="Bible chapter preview">
+        <div class="stage-top">
+          <h2><strong id="stageName">Kejadian</strong><span>1</span></h2>
+          <div class="stage-switch"><span id="stageTB" class="active">TB</span><span id="stageSIM">SIM</span></div>
+        </div>
+        <p class="verse-head">Chapter content stays in its existing position</p>
+        <p class="verse"><span>1</span>Existing Bible verse text remains here for the selected translation.</p>
+        <p class="verse"><span>2</span>The chapter layout, verse numbering, and controls are unchanged.</p>
+        <p class="verse"><span>3</span>The full book name above follows the verses now on screen.</p>
+      </section>
+    </div>
+    <p class="note">Both “Kej” and “1Mu” find the first book in the sidebar filter, passage book picker, and projector Go To reference search. The preview filter above demonstrates the sidebar behavior. Hover or focus the three rail icons to inspect their edition-specific popups.</p>
+    <section class="goto-preview" id="projector-goto-amendment" aria-labelledby="goto-title">
+      <h2 id="goto-title">Projector Go To · edition matching</h2>
+      <p class="goto-intro">Each result uses the full name for its matched edition. A code or full name shared by both editions returns both results; identical names get a muted edition suffix. Selecting a result opens that edition, with the Go To layout and controls unchanged.</p>
+      <div class="goto-examples">
+        <article class="goto-example">
+          <label>Search</label>
+          <div class="goto-query">Pah 1</div>
+          <div class="goto-result"><span>Panguhum 1</span><span class="goto-result-count">1 / 1</span></div>
+          <p class="goto-opened">Selecting opens the <strong>SIM</strong> passage.</p>
+        </article>
+        <article class="goto-example">
+          <label>Search</label>
+          <div class="goto-query">1Ta 2</div>
+          <div class="goto-result"><span>1 Tawarikh 2</span><span class="goto-result-count">1 / 1</span></div>
+          <p class="goto-opened">Selecting opens the <strong>TB</strong> passage.</p>
+        </article>
+        <article class="goto-example">
+          <label>Search · shared code · cycle states</label>
+          <div class="goto-query">Rut 1</div>
+          <div class="goto-result"><span>Rut 1 <span class="goto-edition">· TB</span></span><span class="goto-result-count">1 / 2</span></div>
+          <div class="goto-result"><span>Rut 1 <span class="goto-edition">· SIM</span></span><span class="goto-result-count">2 / 2</span></div>
+          <p class="goto-opened">The existing counter cycles between both editions; selecting a result opens its labeled edition.</p>
+        </article>
+        <article class="goto-example">
+          <label>Shared full name · cycle states</label>
+          <div class="goto-query">Markus 1</div>
+          <div class="goto-result"><span>Markus 1 <span class="goto-edition">· TB</span></span><span class="goto-result-count">1 / 2</span></div>
+          <div class="goto-result"><span>Markus 1 <span class="goto-edition">· SIM</span></span><span class="goto-result-count">2 / 2</span></div>
+          <p class="goto-opened">The same treatment would apply to 1 Samuel, 2 Samuel, and Lukas when both editions have the requested passage.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+  <script>
+    (function () {
+      var shell = document.getElementById('shell');
+      var filter = document.getElementById('filter');
+      function render() {
+        var sim = shell.dataset.edition === 'sim';
+        document.querySelector('[data-testament="old"]').textContent = sim ? 'Padan na Basaia' : 'Perjanjian Lama';
+        document.querySelector('[data-testament="new"]').textContent = sim ? 'Padan na Baru' : 'Perjanjian Baru';
+        document.querySelectorAll('.book').forEach(function (row) {
+          row.querySelector('.main').textContent = row.dataset[sim ? 'sim' : 'tb'];
+          row.querySelector('.other').textContent = row.dataset[sim ? 'tb' : 'sim'];
+          row.querySelector('.code').textContent = row.dataset[sim ? 'simCode' : 'tbCode'];
+        });
+        document.getElementById('stageName').textContent = sim ? '1 Musa' : 'Kejadian';
+        document.getElementById('stageTB').classList.toggle('active', !sim);
+        document.getElementById('stageSIM').classList.toggle('active', sim);
+        [['bible', sim ? 'Bibel' : 'Alkitab'],
+          ['songs', sim ? 'Doding' : 'Kidung'],
+          ['service', sim ? 'Agenda' : 'Tata Ibadah']].forEach(function (entry) {
+          var button = document.querySelector('[data-rail="' + entry[0] + '"]');
+          button.dataset.tip = entry[1];
+          button.setAttribute('aria-label', entry[1]);
+        });
+        document.getElementById('panelToggle').textContent = shell.dataset.nav === 'mini' ? '≫' : '≪';
+        document.querySelectorAll('.controls button').forEach(function (button) {
+          var matches = button.dataset.edition === shell.dataset.edition
+            || button.dataset.nav === shell.dataset.nav;
+          button.setAttribute('aria-pressed', String(matches));
+        });
+        applyFilter();
+      }
+      function applyFilter() {
+        var query = filter.value.trim().toLowerCase();
+        document.querySelectorAll('.book').forEach(function (row) {
+          var aliases = [row.dataset.tb, row.dataset.sim, row.dataset.tbCode, row.dataset.simCode];
+          row.hidden = !!query && !aliases.some(function (name) {
+            return name.toLowerCase().indexOf(query) !== -1;
+          });
+        });
+      }
+      document.querySelectorAll('[data-edition]').forEach(function (button) {
+        if (button === shell) return;
+        button.addEventListener('click', function () { shell.dataset.edition = button.dataset.edition; render(); });
+      });
+      document.querySelectorAll('[data-nav]').forEach(function (button) {
+        if (button === shell) return;
+        button.addEventListener('click', function () { shell.dataset.nav = button.dataset.nav; render(); });
+      });
+      document.getElementById('panelToggle').addEventListener('click', function () {
+        shell.dataset.nav = shell.dataset.nav === 'mini' ? 'open' : 'mini';
+        render();
+      });
+      filter.addEventListener('input', applyFilter);
+      render();
+    }());
+  </script>
+</body>
+</html>

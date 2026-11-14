@@ -1,7 +1,7 @@
 # Product
 
-Filled for this repository the way a spawned project fills it at kickoff, adapted for an existing
-product. Product facts below are **as-built** from the codebase; anything unconfirmed is marked.
+Filled at kickoff, adapted for an existing product. Product facts below are **as-built** from the
+codebase; anything unconfirmed is marked.
 
 ## Problem
 
@@ -45,20 +45,17 @@ Sequenced slices:
 
 ## Locked decisions
 
-- **Process:** vexbook at `v0.4.0` — SDD, TDD, ITEM board, SemVer (ADR 0001).
+- **Process:** specification-driven development with Spec Kit, TDD, Git Flow, SemVer, in-repo board (ADR 0001).
 - **Stack:** Python / Django / Django REST Framework / PostgreSQL, deployed on Vercel.
 - **Versioning:** SemVer; `VERSION` + `CHANGELOG.md` + annotated tag `vX.Y.Z`.
-- **Git:** Git Flow — `main` (production) / `develop` (integration); features **squash-merge** into
-  `develop`, releases/hotfixes **merge-commit** into `main`, remote branch deleted after merge
-  (local kept) ([ADR 0002](adr/0002-git-flow-merge-strategy.md)).
+- **Git:** Git Flow; the repository's deviations and additions are in
+  [ADR 0002](adr/0002-git-flow-merge-strategy.md).
 
 ## Non-goals
 
 - Not a public multi-tenant SaaS; it serves one congregation's content.
-- Not a runtime dependency on vexbook.
+- Not a runtime dependency on process tooling.
 
 ## Parked
 
 - Backfilling as-built behavior into numbered specs (owner-accepted slice).
-- Choosing the E2E tool for this stack.
-- CI for tests.

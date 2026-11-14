@@ -1,0 +1,1383 @@
+<html lang="en" data-theme="light" data-theme-mode="system" data-nav="open" data-ch="open" data-read="on" data-home="reading" data-section="tatib" data-ch-mode="song" data-bible-edition="tb"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh — Multimedia GKPS Klender</title>
+
+<!-- Resolve the saved mode before first paint. -->
+
+
+<link rel="shortcut icon" type="image/png" href="../../../static/assets/gkps.png">
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+</head>
+<body>
+
+<!-- ============================================================
+     The rail: logo tile at top, icon menu in the middle,
+     theme choices pinned at the bottom.
+     ============================================================ -->
+<aside class="rail" aria-label="Main navigation">
+
+  <a class="rail__logo" href="/" aria-label="GKPS Klender — home">
+    <img src="../../../static/assets/gkps.png" alt="" width="40" height="40">
+  </a>
+
+  <ul class="rail__menu">
+    <!-- SEARCH: keeps the last result set (upgraded to it in reading.js) -->
+    <li>
+      <a class="rail__btn" id="railSearch" href="/" data-tip="Search" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+        </svg>
+      </a>
+    </li>
+    <!-- ALKITAB -->
+    <li>
+      <a class="rail__btn" data-tip="Alkitab" aria-label="Alkitab" data-panel="alkitab" aria-expanded="false" aria-controls="panel chapters" href="/bible/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 6.6S10.1 4.2 6.4 4.2H3.3v13.6h3.1c3.7 0 5.6 2.4 5.6 2.4s1.9-2.4 5.6-2.4h3.1V4.2h-3.1C13.9 4.2 12 6.6 12 6.6z"></path>
+          <path d="M12 6.6v13.6"></path>
+        </svg>
+      </a>
+    </li>
+
+    <!-- KIDUNG -->
+    <li>
+      <a class="rail__btn" data-tip="Kidung" aria-label="Kidung" data-panel="kidung" aria-expanded="false" aria-controls="panel chapters" href="/songs/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 17.4V5.6l10.2-2v11.6"></path>
+          <circle cx="6.7" cy="17.4" r="2.4"></circle>
+          <circle cx="16.9" cy="15.2" r="2.4"></circle>
+        </svg>
+      </a>
+    </li>
+
+    <!-- TATA IBADAH -->
+    <li>
+      <a class="rail__btn" data-tip="Tata Ibadah" aria-label="Tata Ibadah" data-panel="tatib" aria-expanded="true" aria-controls="panel chapters" href="/tatib/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"></rect>
+          <path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"></path>
+        </svg>
+      </a>
+    </li>
+    <li><a class="rail__btn" id="railMediaLibrary" href="/media-library/" data-tip="Media Library" aria-label="Media Library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7V5.8c0-1 .8-1.8 1.8-1.8h5.1l2 2h6.3c1 0 1.8.8 1.8 1.8v1.3"></path><path d="M3.5 9.1h17l-1.5 10.1c-.1.6-.7 1.1-1.3 1.1H6.3c-.6 0-1.2-.5-1.3-1.1L3.5 9.1Z"></path><path d="M8 13h8M8.7 16h6.6"></path></svg></a></li>
+  </ul>
+
+  <div class="rail__foot">
+    <button class="rail__btn media-transfer-rail" type="button" id="mediaTransferRail" data-tip="Transfer progress" aria-label="Transfer progress" hidden=""><span id="mediaTransferRailIcon" aria-hidden="true">⇄</span><span class="media-transfer-rail__dot" id="mediaTransferRailDot" data-state="active"></span></button>
+    <button class="rail__btn rail__theme" type="button" id="themeBtn" data-tip="System mode" aria-label="System mode">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5"></path>
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"></path>
+      </svg>
+      <svg class="system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="13" rx="2"></rect>
+        <path d="M8 21h8M12 17v4"></path>
+      </svg>
+    </button>
+  </div>
+</aside>
+<!-- First list beside the rail: books / songbooks / services -->
+<aside class="panel" id="panel" role="region" aria-labelledby="panelTitle" data-mode-clicks-bound="true">
+  <h2 class="sr" id="panelTitle">Tata Ibadah</h2>
+
+  <div class="panel__filter">
+    <div class="filter-box">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="9" cy="9" r="6"></circle><path d="M14 14l4 4" stroke-linecap="round"></path>
+      </svg>
+      <label class="sr" for="bookFilter">Filter Tata Ibadah</label>
+      <input id="bookFilter" type="search" placeholder="Filter Tata Ibadah..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear Tata Ibadah" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+    </div>
+    
+    <a class="ch__sort panel__mode" id="tatibMode" href="/tatib/149/?mode=template" aria-pressed="false" aria-label="Show Tata Ibadah templates" title="Show Tata Ibadah templates">
+      <svg class="panel__mode-dated" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2.5" y="4.5" width="15" height="13" rx="2"></rect>
+        <path d="M2.5 8.5h15M6 2.5v4M14 2.5v4M6 12h2M12 12h2"></path>
+      </svg>
+      <svg class="panel__mode-template" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 2.5h8l4 4v11H4zM12 2.5v4h4M7 10h6M7 13h6"></path>
+      </svg>
+    </a>
+    
+    <button class="ch__collapse" type="button" id="panelCollapse" aria-controls="panel" aria-expanded="true" aria-label="Close Tata Ibadah panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"></path>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"></path>
+      </svg>
+    </button>
+  </div>
+
+  
+  <button class="editor-add" type="button" id="panelAdd" data-editor-open="tatib" data-editor-label="Add Tata Ibadah">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"></path></svg>
+    <span class="editor-add__label">Add Tata Ibadah</span>
+  </button>
+  
+
+  <div class="panel__expand">
+    <button class="rail__btn" type="button" id="panelExpand" data-tip="Expand Alkitab panel" aria-label="Expand Alkitab panel" aria-controls="panel" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 5.5h15M4.5 12h9M4.5 18.5h15"></path>
+        <path d="M16.5 10l2.8 2 2.8-2v7.5l-2.8 2-2.8-2z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="panel__scrollwrap">
+    <button class="panel__ind" type="button" id="indUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"></path>
+      </svg>
+    </button>
+
+    <div class="panel__body" id="panelBody" tabindex="0" data-tile-clicks-bound="true">
+      
+<section class="group" data-bucket="last-30-days">
+  <h3 class="group__head">Last 30 days</h3>
+  <ul>
+    
+    <li><a class="book" href="/tatib/149/" data-name="149" data-sim="149" aria-label="hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh (25 Okt 2026)" aria-current="true">
+      <span class="book__n">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</span>
+      <span class="book__s">25 Okt 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="149" aria-label="Edit hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/148/" data-name="148" data-sim="148" aria-label="a (25 Okt 2026)">
+      <span class="book__n">a</span>
+      <span class="book__s">25 Okt 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="148" aria-label="Edit a">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/147/" data-name="147" data-sim="147" aria-label="I (25 Okt 2026)">
+      <span class="book__n">I</span>
+      <span class="book__s">25 Okt 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="147" aria-label="Edit I">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/146/" data-name="146" data-sim="146" aria-label="Ibadah Minggu (25 Okt 2026)">
+      <span class="book__n">Ibadah Minggu</span>
+      <span class="book__s">25 Okt 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="146" aria-label="Edit Ibadah Minggu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/145/" data-name="145" data-sim="145" aria-label="Ibadah Minggu (25 Okt 2026)">
+      <span class="book__n">Ibadah Minggu</span>
+      <span class="book__s">25 Okt 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="145" aria-label="Edit Ibadah Minggu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/144/" data-name="144" data-sim="144" aria-label="Ibadah Minggu (20 Okt 2026)">
+      <span class="book__n">Ibadah Minggu</span>
+      <span class="book__s">20 Okt 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="144" aria-label="Edit Ibadah Minggu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/143/" data-name="143" data-sim="143" aria-label="11 Oktober 2026 (11 Okt 2026)">
+      <span class="book__n">11 Oktober 2026</span>
+      <span class="book__s">11 Okt 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="143" aria-label="Edit 11 Oktober 2026">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/142/" data-name="142" data-sim="142" aria-label="Ibadah Minggu (4 Okt 2026)">
+      <span class="book__n">Ibadah Minggu</span>
+      <span class="book__s">4 Okt 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="142" aria-label="Edit Ibadah Minggu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+  </ul>
+</section>
+
+<section class="group" data-bucket="earlier-this-year">
+  <h3 class="group__head">Earlier this year</h3>
+  <ul>
+    
+    <li><a class="book" href="/tatib/141/" data-name="141" data-sim="141" aria-label="30 Agustus 2026 (30 Agu 2026)">
+      <span class="book__n">30 Agustus 2026</span>
+      <span class="book__s">30 Agu 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="141" aria-label="Edit 30 Agustus 2026">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/140/" data-name="140" data-sim="140" aria-label="23 Agustus 2026 (Minggu sahabat) (23 Agu 2026)">
+      <span class="book__n">23 Agustus 2026 (Minggu sahabat)</span>
+      <span class="book__s">23 Agu 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="140" aria-label="Edit 23 Agustus 2026 (Minggu sahabat)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/139/" data-name="139" data-sim="139" aria-label="Tata Ibadah Olob Olob dan Angkat Sidi (9 Agu 2026)">
+      <span class="book__n">Tata Ibadah Olob Olob dan Angkat Sidi</span>
+      <span class="book__s">9 Agu 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="139" aria-label="Edit Tata Ibadah Olob Olob dan Angkat Sidi">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/138/" data-name="138" data-sim="138" aria-label="Pengakuan Iman (12 Jul 2026)">
+      <span class="book__n">Pengakuan Iman</span>
+      <span class="book__s">12 Jul 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="138" aria-label="Edit Pengakuan Iman">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/137/" data-name="137" data-sim="137" aria-label="Ibadah Minggu Pelajar (28 Jun 2026)">
+      <span class="book__n">Ibadah Minggu Pelajar</span>
+      <span class="book__s">28 Jun 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="137" aria-label="Edit Ibadah Minggu Pelajar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/136/" data-name="136" data-sim="136" aria-label="Ibadah 14 Juni 2026 (14 Jun 2026)">
+      <span class="book__n">Ibadah 14 Juni 2026</span>
+      <span class="book__s">14 Jun 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="136" aria-label="Edit Ibadah 14 Juni 2026">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/135/" data-name="135" data-sim="135" aria-label="Minggu UEM 31 Mei 2026 (31 Mei 2026)">
+      <span class="book__n">Minggu UEM 31 Mei 2026</span>
+      <span class="book__s">31 Mei 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="135" aria-label="Edit Minggu UEM 31 Mei 2026">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/134/" data-name="134" data-sim="134" aria-label="Ibadah Pentakosta &amp; Pesta SM (24 Mei 2026)">
+      <span class="book__n">Ibadah Pentakosta &amp; Pesta SM</span>
+      <span class="book__s">24 Mei 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="134" aria-label="Edit Ibadah Pentakosta &amp; Pesta SM">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/133/" data-name="133" data-sim="133" aria-label="Bulsn Oikumene (17 Mei 2026)">
+      <span class="book__n">Bulsn Oikumene</span>
+      <span class="book__s">17 Mei 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="133" aria-label="Edit Bulsn Oikumene">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/132/" data-name="132" data-sim="132" aria-label="Minggu Kemitraan (3 Mei 2026)">
+      <span class="book__n">Minggu Kemitraan</span>
+      <span class="book__s">3 Mei 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="132" aria-label="Edit Minggu Kemitraan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/131/" data-name="131" data-sim="131" aria-label="Hari Bumi (12 Apr 2026)">
+      <span class="book__n">Hari Bumi</span>
+      <span class="book__s">12 Apr 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="131" aria-label="Edit Hari Bumi">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/130/" data-name="130" data-sim="130" aria-label="PASKAH II (12 Apr 2026)">
+      <span class="book__n">PASKAH II</span>
+      <span class="book__s">12 Apr 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="130" aria-label="Edit PASKAH II">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/129/" data-name="129" data-sim="129" aria-label="Minggu Paskah 2026 (5 Apr 2026)">
+      <span class="book__n">Minggu Paskah 2026</span>
+      <span class="book__s">5 Apr 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="129" aria-label="Edit Minggu Paskah 2026">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/128/" data-name="128" data-sim="128" aria-label="Jumat Agung (3 Apr 2026)">
+      <span class="book__n">Jumat Agung</span>
+      <span class="book__s">3 Apr 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="128" aria-label="Edit Jumat Agung">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/127/" data-name="127" data-sim="127" aria-label="Ibadah Kamis Putih (2 Apr 2026)">
+      <span class="book__n">Ibadah Kamis Putih</span>
+      <span class="book__s">2 Apr 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="127" aria-label="Edit Ibadah Kamis Putih">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/126/" data-name="126" data-sim="126" aria-label="Hari Doa Sedunia (15 Mar 2026)">
+      <span class="book__n">Hari Doa Sedunia</span>
+      <span class="book__s">15 Mar 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="126" aria-label="Edit Hari Doa Sedunia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/125/" data-name="125" data-sim="125" aria-label="Minggu Seksi Inang (8 Mar 2026)">
+      <span class="book__n">Minggu Seksi Inang</span>
+      <span class="book__s">8 Mar 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="125" aria-label="Edit Minggu Seksi Inang">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/124/" data-name="124" data-sim="124" aria-label="18 Februari 2026 (18 Feb 2026)">
+      <span class="book__n">18 Februari 2026</span>
+      <span class="book__s">18 Feb 2026</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="124" aria-label="Edit 18 Februari 2026">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+  </ul>
+</section>
+
+<section class="group" data-bucket="older">
+  <h3 class="group__head">Older</h3>
+  <ul>
+    
+    <li><a class="book" href="/tatib/123/" data-name="123" data-sim="123" aria-label="31 DESEMBER 2025 (31 Des 2025)">
+      <span class="book__n">31 DESEMBER 2025</span>
+      <span class="book__s">31 Des 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="123" aria-label="Edit 31 DESEMBER 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/122/" data-name="122" data-sim="122" aria-label="26 dEsEmBeR 2025 (26 Des 2025)">
+      <span class="book__n">26 dEsEmBeR 2025</span>
+      <span class="book__s">26 Des 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="122" aria-label="Edit 26 dEsEmBeR 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/121/" data-name="121" data-sim="121" aria-label="24 dEsEmBeR 2025 (24 Des 2025)">
+      <span class="book__n">24 dEsEmBeR 2025</span>
+      <span class="book__s">24 Des 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="121" aria-label="Edit 24 dEsEmBeR 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/120/" data-name="120" data-sim="120" aria-label="23 November 2025 (23 Nov 2025)">
+      <span class="book__n">23 November 2025</span>
+      <span class="book__s">23 Nov 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="120" aria-label="Edit 23 November 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/119/" data-name="119" data-sim="119" aria-label="Tata Ibadah Minggu Bapa (9 Nov 2025)">
+      <span class="book__n">Tata Ibadah Minggu Bapa</span>
+      <span class="book__s">9 Nov 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="119" aria-label="Edit Tata Ibadah Minggu Bapa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/118/" data-name="118" data-sim="118" aria-label="2 November 2025 (2 Nov 2025)">
+      <span class="book__n">2 November 2025</span>
+      <span class="book__s">2 Nov 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="118" aria-label="Edit 2 November 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/117/" data-name="117" data-sim="117" aria-label="24 Agustus 2025 (24 Agu 2025)">
+      <span class="book__n">24 Agustus 2025</span>
+      <span class="book__s">24 Agu 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="117" aria-label="Edit 24 Agustus 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/115/" data-name="115" data-sim="115" aria-label="OLOB-OLOB KURIA GKPS (10 Agu 2025)">
+      <span class="book__n">OLOB-OLOB KURIA GKPS</span>
+      <span class="book__s">10 Agu 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="115" aria-label="Edit OLOB-OLOB KURIA GKPS">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/114/" data-name="114" data-sim="114" aria-label="Minggu Bertobat (10 Agu 2025)">
+      <span class="book__n">Minggu Bertobat</span>
+      <span class="book__s">10 Agu 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="114" aria-label="Edit Minggu Bertobat">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/113/" data-name="113" data-sim="113" aria-label="Minggu Doa (20 Jul 2025)">
+      <span class="book__n">Minggu Doa</span>
+      <span class="book__s">20 Jul 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="113" aria-label="Edit Minggu Doa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/110/" data-name="110" data-sim="110" aria-label="Minggu Pelajar (29 Jun 2025)">
+      <span class="book__n">Minggu Pelajar</span>
+      <span class="book__s">29 Jun 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="110" aria-label="Edit Minggu Pelajar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/108/" data-name="108" data-sim="108" aria-label="PESTA SEKOLAH MINGGU 2025 (8 Jun 2025)">
+      <span class="book__n">PESTA SEKOLAH MINGGU 2025</span>
+      <span class="book__s">8 Jun 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="108" aria-label="Edit PESTA SEKOLAH MINGGU 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/107/" data-name="107" data-sim="107" aria-label="minggu doa (1 Jun 2025)">
+      <span class="book__n">minggu doa</span>
+      <span class="book__s">1 Jun 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="107" aria-label="Edit minggu doa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/106/" data-name="106" data-sim="106" aria-label="Minggu UEM 1 Juni 2025 (1 Jun 2025)">
+      <span class="book__n">Minggu UEM 1 Juni 2025</span>
+      <span class="book__s">1 Jun 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="106" aria-label="Edit Minggu UEM 1 Juni 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/105/" data-name="105" data-sim="105" aria-label="Kenaikan 29 May 2025 (29 Mei 2025)">
+      <span class="book__n">Kenaikan 29 May 2025</span>
+      <span class="book__s">29 Mei 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="105" aria-label="Edit Kenaikan 29 May 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/104/" data-name="104" data-sim="104" aria-label="Minggu Kemitraan (4 Mei 2025)">
+      <span class="book__n">Minggu Kemitraan</span>
+      <span class="book__s">4 Mei 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="104" aria-label="Edit Minggu Kemitraan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/103/" data-name="103" data-sim="103" aria-label="Minggu Paskah 20 April 2025 (20 Apr 2025)">
+      <span class="book__n">Minggu Paskah 20 April 2025</span>
+      <span class="book__s">20 Apr 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="103" aria-label="Edit Minggu Paskah 20 April 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/102/" data-name="102" data-sim="102" aria-label="Jumat Agung 18 April (18 Apr 2025)">
+      <span class="book__n">Jumat Agung 18 April</span>
+      <span class="book__s">18 Apr 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="102" aria-label="Edit Jumat Agung 18 April">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/101/" data-name="101" data-sim="101" aria-label="Kamis putih 17 April 2025 (16 Apr 2025)">
+      <span class="book__n">Kamis putih 17 April 2025</span>
+      <span class="book__s">16 Apr 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="101" aria-label="Edit Kamis putih 17 April 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/100/" data-name="100" data-sim="100" aria-label="Hari Doa Sedunia (16 Mar 2025)">
+      <span class="book__n">Hari Doa Sedunia</span>
+      <span class="book__s">16 Mar 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="100" aria-label="Edit Hari Doa Sedunia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/99/" data-name="99" data-sim="99" aria-label="Pesta Inang (9 Mar 2025)">
+      <span class="book__n">Pesta Inang</span>
+      <span class="book__s">9 Mar 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="99" aria-label="Edit Pesta Inang">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/98/" data-name="98" data-sim="98" aria-label="Rabu Abu (5 Mar 2025)">
+      <span class="book__n">Rabu Abu</span>
+      <span class="book__s">5 Mar 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="98" aria-label="Edit Rabu Abu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/97/" data-name="97" data-sim="97" aria-label="Pelantikan  Pengurus Lansia (16 Feb 2025)">
+      <span class="book__n">Pelantikan  Pengurus Lansia</span>
+      <span class="book__s">16 Feb 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="97" aria-label="Edit Pelantikan  Pengurus Lansia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/96/" data-name="96" data-sim="96" aria-label="19 JANUARI (19 Jan 2025)">
+      <span class="book__n">19 JANUARI</span>
+      <span class="book__s">19 Jan 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="96" aria-label="Edit 19 JANUARI">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/95/" data-name="95" data-sim="95" aria-label="Ibadah Tahun Baru 1 Januari 2025 (5 Jan 2025)">
+      <span class="book__n">Ibadah Tahun Baru 1 Januari 2025</span>
+      <span class="book__s">5 Jan 2025</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="95" aria-label="Edit Ibadah Tahun Baru 1 Januari 2025">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/94/" data-name="94" data-sim="94" aria-label="Ujung Tahun 31 Desember 2024 (31 Des 2024)">
+      <span class="book__n">Ujung Tahun 31 Desember 2024</span>
+      <span class="book__s">31 Des 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="94" aria-label="Edit Ujung Tahun 31 Desember 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/93/" data-name="93" data-sim="93" aria-label="Natal 25 Desember 2024 (25 Des 2024)">
+      <span class="book__n">Natal 25 Desember 2024</span>
+      <span class="book__s">25 Des 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="93" aria-label="Edit Natal 25 Desember 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/92/" data-name="92" data-sim="92" aria-label="Malam Natal 24 Desember 2024 (24 Des 2024)">
+      <span class="book__n">Malam Natal 24 Desember 2024</span>
+      <span class="book__s">24 Des 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="92" aria-label="Edit Malam Natal 24 Desember 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/91/" data-name="91" data-sim="91" aria-label="NATAL SEKOLAH MINGGU (15 Des 2024)">
+      <span class="book__n">NATAL SEKOLAH MINGGU</span>
+      <span class="book__s">15 Des 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="91" aria-label="Edit NATAL SEKOLAH MINGGU">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/90/" data-name="90" data-sim="90" aria-label="MINGGU UJUNG TAHUN KURIA (24/11/24) (24 Nov 2024)">
+      <span class="book__n">MINGGU UJUNG TAHUN KURIA (24/11/24)</span>
+      <span class="book__s">24 Nov 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="90" aria-label="Edit MINGGU UJUNG TAHUN KURIA (24/11/24)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/89/" data-name="89" data-sim="89" aria-label="Minggu Seksi Bapa 10 November 2024 (10 Nov 2024)">
+      <span class="book__n">Minggu Seksi Bapa 10 November 2024</span>
+      <span class="book__s">10 Nov 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="89" aria-label="Edit Minggu Seksi Bapa 10 November 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/88/" data-name="88" data-sim="88" aria-label="20 Oktober 2024 (20 Okt 2024)">
+      <span class="book__n">20 Oktober 2024</span>
+      <span class="book__s">20 Okt 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="88" aria-label="Edit 20 Oktober 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/87/" data-name="87" data-sim="87" aria-label="29 september 2024 (29 Sep 2024)">
+      <span class="book__n">29 september 2024</span>
+      <span class="book__s">29 Sep 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="87" aria-label="Edit 29 september 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/86/" data-name="86" data-sim="86" aria-label="22 Sept 2024 (22 Sep 2024)">
+      <span class="book__n">22 Sept 2024</span>
+      <span class="book__s">22 Sep 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="86" aria-label="Edit 22 Sept 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/85/" data-name="85" data-sim="85" aria-label="VOTUM 8 SEPT (8 Sep 2024)">
+      <span class="book__n">VOTUM 8 SEPT</span>
+      <span class="book__s">8 Sep 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="85" aria-label="Edit VOTUM 8 SEPT">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/82/" data-name="82" data-sim="82" aria-label="Minggu Sahabat (18 Agu 2024)">
+      <span class="book__n">Minggu Sahabat</span>
+      <span class="book__s">18 Agu 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="82" aria-label="Edit Minggu Sahabat">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/80/" data-name="80" data-sim="80" aria-label="A (4 Agu 2024)">
+      <span class="book__n">A</span>
+      <span class="book__s">4 Agu 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="80" aria-label="Edit A">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/78/" data-name="78" data-sim="78" aria-label="minggu pelajar 2024 (23 Jun 2024)">
+      <span class="book__n">minggu pelajar 2024</span>
+      <span class="book__s">23 Jun 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="78" aria-label="Edit minggu pelajar 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/77/" data-name="77" data-sim="77" aria-label="HUT GKPS KLENDER 38 (9 Jun 2024)">
+      <span class="book__n">HUT GKPS KLENDER 38</span>
+      <span class="book__s">9 Jun 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="77" aria-label="Edit HUT GKPS KLENDER 38">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/76/" data-name="76" data-sim="76" aria-label="minggu hut SM (19 Mei 2024)">
+      <span class="book__n">minggu hut SM</span>
+      <span class="book__s">19 Mei 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="76" aria-label="Edit minggu hut SM">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/75/" data-name="75" data-sim="75" aria-label="Kenaikan Yesus (9 Mei 2024)">
+      <span class="book__n">Kenaikan Yesus</span>
+      <span class="book__s">9 Mei 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="75" aria-label="Edit Kenaikan Yesus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/74/" data-name="74" data-sim="74" aria-label="Minggu kemitraan 2024 (5 Mei 2024)">
+      <span class="book__n">Minggu kemitraan 2024</span>
+      <span class="book__s">5 Mei 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="74" aria-label="Edit Minggu kemitraan 2024">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/73/" data-name="73" data-sim="73" aria-label="Hari Bumi Sedunia (7 Apr 2024)">
+      <span class="book__n">Hari Bumi Sedunia</span>
+      <span class="book__s">7 Apr 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="73" aria-label="Edit Hari Bumi Sedunia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/72/" data-name="72" data-sim="72" aria-label="PASKAH (31 Mar 2024)">
+      <span class="book__n">PASKAH</span>
+      <span class="book__s">31 Mar 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="72" aria-label="Edit PASKAH">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/70/" data-name="70" data-sim="70" aria-label="JUMAT AGUNG (29 Mar 2024)">
+      <span class="book__n">JUMAT AGUNG</span>
+      <span class="book__s">29 Mar 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="70" aria-label="Edit JUMAT AGUNG">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/71/" data-name="71" data-sim="71" aria-label="KAMIS PUTIH (28 Mar 2024)">
+      <span class="book__n">KAMIS PUTIH</span>
+      <span class="book__s">28 Mar 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="71" aria-label="Edit KAMIS PUTIH">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/69/" data-name="69" data-sim="69" aria-label="17 M (17 Mar 2024)">
+      <span class="book__n">17 M</span>
+      <span class="book__s">17 Mar 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="69" aria-label="Edit 17 M">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/68/" data-name="68" data-sim="68" aria-label="17 Maret (17 Mar 2024)">
+      <span class="book__n">17 Maret</span>
+      <span class="book__s">17 Mar 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="68" aria-label="Edit 17 Maret">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/67/" data-name="67" data-sim="67" aria-label="Hari Doa Sedunia (10 Mar 2024)">
+      <span class="book__n">Hari Doa Sedunia</span>
+      <span class="book__s">10 Mar 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="67" aria-label="Edit Hari Doa Sedunia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/66/" data-name="66" data-sim="66" aria-label="Minggu Seksi Inang (3 Mar 2024)">
+      <span class="book__n">Minggu Seksi Inang</span>
+      <span class="book__s">3 Mar 2024</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="66" aria-label="Edit Minggu Seksi Inang">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/65/" data-name="65" data-sim="65" aria-label="Partonggoan Ujung Tahun (31 Des 2023)">
+      <span class="book__n">Partonggoan Ujung Tahun</span>
+      <span class="book__s">31 Des 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="65" aria-label="Edit Partonggoan Ujung Tahun">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/62/" data-name="62" data-sim="62" aria-label="Natal II &amp; HUT Namaposo (26 Des 2023)">
+      <span class="book__n">Natal II &amp; HUT Namaposo</span>
+      <span class="book__s">26 Des 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="62" aria-label="Edit Natal II &amp; HUT Namaposo">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/63/" data-name="63" data-sim="63" aria-label="Natal I (25 Des 2023)">
+      <span class="book__n">Natal I</span>
+      <span class="book__s">25 Des 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="63" aria-label="Edit Natal I">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/61/" data-name="61" data-sim="61" aria-label="Malam Natal (24 Des 2023)">
+      <span class="book__n">Malam Natal</span>
+      <span class="book__s">24 Des 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="61" aria-label="Edit Malam Natal">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/60/" data-name="60" data-sim="60" aria-label="Natal SM (9 Des 2023)">
+      <span class="book__n">Natal SM</span>
+      <span class="book__s">9 Des 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="60" aria-label="Edit Natal SM">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/57/" data-name="57" data-sim="57" aria-label="Minggu Bapa GKPS 2023 (5 Nov 2023)">
+      <span class="book__n">Minggu Bapa GKPS 2023</span>
+      <span class="book__s">5 Nov 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="57" aria-label="Edit Minggu Bapa GKPS 2023">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/56/" data-name="56" data-sim="56" aria-label="22 Oktober (HBN) (22 Okt 2023)">
+      <span class="book__n">22 Oktober (HBN)</span>
+      <span class="book__s">22 Okt 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="56" aria-label="Edit 22 Oktober (HBN)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/52/" data-name="52" data-sim="52" aria-label="Minggu Sahabat Khusus (20 Agu 2023)">
+      <span class="book__n">Minggu Sahabat Khusus</span>
+      <span class="book__s">20 Agu 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="52" aria-label="Edit Minggu Sahabat Khusus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/51/" data-name="51" data-sim="51" aria-label="Jubileum Kuria (13 Agu 2023)">
+      <span class="book__n">Jubileum Kuria</span>
+      <span class="book__s">13 Agu 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="51" aria-label="Edit Jubileum Kuria">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/48/" data-name="48" data-sim="48" aria-label="Minggu Pelajar (25 Jun 2023)">
+      <span class="book__n">Minggu Pelajar</span>
+      <span class="book__s">25 Jun 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="48" aria-label="Edit Minggu Pelajar">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/47/" data-name="47" data-sim="47" aria-label="Minggu UEM (4 Jun 2023)">
+      <span class="book__n">Minggu UEM</span>
+      <span class="book__s">4 Jun 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="47" aria-label="Edit Minggu UEM">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/46/" data-name="46" data-sim="46" aria-label="Pesta Sikolah Minggu (Pentakosta) (28 Mei 2023)">
+      <span class="book__n">Pesta Sikolah Minggu (Pentakosta)</span>
+      <span class="book__s">28 Mei 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="46" aria-label="Edit Pesta Sikolah Minggu (Pentakosta)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/45/" data-name="45" data-sim="45" aria-label="Ibadah Parnaik ni Tuhan Jesus (18 Mei 2023)">
+      <span class="book__n">Ibadah Parnaik ni Tuhan Jesus</span>
+      <span class="book__s">18 Mei 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="45" aria-label="Edit Ibadah Parnaik ni Tuhan Jesus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/44/" data-name="44" data-sim="44" aria-label="HUT Kuria (14 Mei 2023)">
+      <span class="book__n">HUT Kuria</span>
+      <span class="book__s">14 Mei 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="44" aria-label="Edit HUT Kuria">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/43/" data-name="43" data-sim="43" aria-label="Minggu Kemitraan (7 Mei 2023)">
+      <span class="book__n">Minggu Kemitraan</span>
+      <span class="book__s">7 Mei 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="43" aria-label="Edit Minggu Kemitraan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/41/" data-name="41" data-sim="41" aria-label="Paskah II (10 Apr 2023)">
+      <span class="book__n">Paskah II</span>
+      <span class="book__s">10 Apr 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="41" aria-label="Edit Paskah II">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/40/" data-name="40" data-sim="40" aria-label="Paskah (9 Apr 2023)">
+      <span class="book__n">Paskah</span>
+      <span class="book__s">9 Apr 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="40" aria-label="Edit Paskah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/39/" data-name="39" data-sim="39" aria-label="Jumat Agung (7 Apr 2023)">
+      <span class="book__n">Jumat Agung</span>
+      <span class="book__s">7 Apr 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="39" aria-label="Edit Jumat Agung">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/38/" data-name="38" data-sim="38" aria-label="HDS 2023 (12 Mar 2023)">
+      <span class="book__n">HDS 2023</span>
+      <span class="book__s">12 Mar 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="38" aria-label="Edit HDS 2023">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/36/" data-name="36" data-sim="36" aria-label="Minggu Inang (5 Mar 2023)">
+      <span class="book__n">Minggu Inang</span>
+      <span class="book__s">5 Mar 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="36" aria-label="Edit Minggu Inang">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/31/" data-name="31" data-sim="31" aria-label="Ibadah Awal Tahun 2023 (1 Jan 2023)">
+      <span class="book__n">Ibadah Awal Tahun 2023</span>
+      <span class="book__s">1 Jan 2023</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="31" aria-label="Edit Ibadah Awal Tahun 2023">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/30/" data-name="30" data-sim="30" aria-label="Ibadah Partonggoan Ujung Tahun (31 Des 2022)">
+      <span class="book__n">Ibadah Partonggoan Ujung Tahun</span>
+      <span class="book__s">31 Des 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="30" aria-label="Edit Ibadah Partonggoan Ujung Tahun">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/29/" data-name="29" data-sim="29" aria-label="HUT Namaposo (26 Des 2022)">
+      <span class="book__n">HUT Namaposo</span>
+      <span class="book__s">26 Des 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="29" aria-label="Edit HUT Namaposo">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/28/" data-name="28" data-sim="28" aria-label="Ibadah Natal (25 Des 2022)">
+      <span class="book__n">Ibadah Natal</span>
+      <span class="book__s">25 Des 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="28" aria-label="Edit Ibadah Natal">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/27/" data-name="27" data-sim="27" aria-label="Ibadah Malam Natal (24 Des 2022)">
+      <span class="book__n">Ibadah Malam Natal</span>
+      <span class="book__s">24 Des 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="27" aria-label="Edit Ibadah Malam Natal">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/26/" data-name="26" data-sim="26" aria-label="Natal Bapa Inang Lansia (10 Des 2022)">
+      <span class="book__n">Natal Bapa Inang Lansia</span>
+      <span class="book__s">10 Des 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="26" aria-label="Edit Natal Bapa Inang Lansia">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/24/" data-name="24" data-sim="24" aria-label="Minggu Akhir Tahun Gerejawi (20 Nov 2022)">
+      <span class="book__n">Minggu Akhir Tahun Gerejawi</span>
+      <span class="book__s">20 Nov 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="24" aria-label="Edit Minggu Akhir Tahun Gerejawi">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/23/" data-name="23" data-sim="23" aria-label="Minggu Pesta Bapa (6 Nov 2022)">
+      <span class="book__n">Minggu Pesta Bapa</span>
+      <span class="book__s">6 Nov 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="23" aria-label="Edit Minggu Pesta Bapa">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/21/" data-name="21" data-sim="21" aria-label="Bulan Doa Alkitab 2022 (23 Okt 2022)">
+      <span class="book__n">Bulan Doa Alkitab 2022</span>
+      <span class="book__s">23 Okt 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="21" aria-label="Edit Bulan Doa Alkitab 2022">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/19/" data-name="19" data-sim="19" aria-label="ibadah 28 agustus (28 Agu 2022)">
+      <span class="book__n">ibadah 28 agustus</span>
+      <span class="book__s">28 Agu 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="19" aria-label="Edit ibadah 28 agustus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/18/" data-name="18" data-sim="18" aria-label="MINGGU SAHABAT 21 AGUSTUS 2022 (21 Agu 2022)">
+      <span class="book__n">MINGGU SAHABAT 21 AGUSTUS 2022</span>
+      <span class="book__s">21 Agu 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="18" aria-label="Edit MINGGU SAHABAT 21 AGUSTUS 2022">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/17/" data-name="17" data-sim="17" aria-label="ibadah 7 agustus (7 Agu 2022)">
+      <span class="book__n">ibadah 7 agustus</span>
+      <span class="book__s">7 Agu 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="17" aria-label="Edit ibadah 7 agustus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/14/" data-name="14" data-sim="14" aria-label="Minggu Pelajar GKPS (26 Jun 2022)">
+      <span class="book__n">Minggu Pelajar GKPS</span>
+      <span class="book__s">26 Jun 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="14" aria-label="Edit Minggu Pelajar GKPS">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/6/" data-name="6" data-sim="6" aria-label="UEM Sunday (12 Jun 2022)">
+      <span class="book__n">UEM Sunday</span>
+      <span class="book__s">12 Jun 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="6" aria-label="Edit UEM Sunday">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/5/" data-name="5" data-sim="5" aria-label="Pesta Sekolah Minggu (5 Jun 2022)">
+      <span class="book__n">Pesta Sekolah Minggu</span>
+      <span class="book__s">5 Jun 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="5" aria-label="Edit Pesta Sekolah Minggu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/3/" data-name="3" data-sim="3" aria-label="Kenaikan Yesus (26 Mei 2022)">
+      <span class="book__n">Kenaikan Yesus</span>
+      <span class="book__s">26 Mei 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="3" aria-label="Edit Kenaikan Yesus">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/12/" data-name="12" data-sim="12" aria-label="1 Mei (1 Mei 2022)">
+      <span class="book__n">1 Mei</span>
+      <span class="book__s">1 Mei 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="12" aria-label="Edit 1 Mei">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/11/" data-name="11" data-sim="11" aria-label="Paskah (17 Apr 2022)">
+      <span class="book__n">Paskah</span>
+      <span class="book__s">17 Apr 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="11" aria-label="Edit Paskah">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+    <li><a class="book" href="/tatib/13/" data-name="13" data-sim="13" aria-label="Jumat Agung (15 Apr 2022)">
+      <span class="book__n">Jumat Agung</span>
+      <span class="book__s">15 Apr 2022</span></a>
+    <button class="row-edit" type="button" data-editor-open="tatib" data-editor-id="13" aria-label="Edit Jumat Agung">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12.5 4.5l3 3-8 8H4.5v-3z"></path></svg>
+    </button></li>
+    
+  </ul>
+</section>
+
+
+    </div>
+
+    <button class="panel__ind" type="button" id="indDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"></path>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="panelEmpty" role="status" hidden="" data-empty-title="No Tata Ibadah yet." data-empty-hint="Add the first service to start preparing it." data-filter-title="No matching Tata Ibadah." data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4.4" y="3.4" width="15.2" height="17.2" rx="1.8"></rect>
+          <path d="M8.6 8.8h6.8M8.6 12.6h6.8M8.6 16.4h4.2"></path>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"></circle>
+          <path d="m15.4 15.4 5 5"></path>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"></path>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<!-- Second list: bible chapter tiles, the wide song list, or Tata Ibadah contents -->
+<aside class="chapters" id="chapters" role="region" aria-labelledby="chTitle">
+  <h2 class="sr" id="chTitle">Chapters</h2>
+
+  <div class="ch__top">
+    <div class="ch__tools">
+      <div class="ch__search">
+        <div class="filter-box">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="9" cy="9" r="6"></circle><path d="M14 14l4 4" stroke-linecap="round"></path>
+          </svg>
+          <label class="sr" for="songFilter">Filter sections</label>
+          <input id="songFilter" type="search" placeholder="Filter sections..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear sections" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+        </div>
+        <button class="ch__sort" type="button" id="songSort" data-order="m" aria-label="Sort: last modified — switch to alphabetical" title="Sort: last modified — switch to alphabetical" hidden="">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 5.5h14M5 10h10M8 14.5h4"></path>
+          </svg>
+          <span class="ch__sort-mark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+    <button class="ch__collapse" type="button" id="chCollapse" aria-controls="chapters" aria-expanded="true" aria-label="Close Tata Ibadah sections">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"></path>
+        <path d="m18 5.5-6.5 6.5 6.5 6.5"></path>
+      </svg>
+    </button>
+  </div>
+
+  
+
+  
+  
+  <div class="ch__reorder" data-reorder-group="" data-reorder-endpoint="/editor/entry/reorder/" data-reorder-for="149">
+  </div>
+  
+
+  <div class="ch__wrap">
+    <button class="ch__ind" type="button" id="chUp" aria-label="Scroll up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 14.5l6-6 6 6"></path>
+      </svg>
+    </button>
+
+    <div class="ch__body" id="chBody" tabindex="0"><ul id="chList" data-row-clicks-bound="true">
+
+<li data-num="1" data-move-row=""><a class="songrow songrow--cont" href="#ti-e21" draggable="false" data-i="e21" data-num="1" data-txt="https://drive.google.com/drive/folders/18a0di3cwjxzsgtxim3enlj4gwrb2yatd  https://drive.google.com/drive/folders/18a0di3cwjxzsgtxim3enlj4gwrb2yatd ">
+  <span class="songrow__c">1</span>
+  <span class="songrow__t">https://drive.google.com/drive/folders/18A0dI3cwJxzSGTxim3ENlj4GwrB2Yatd</span></a>
+
+
+<button type="button" class="toc__grip" data-move-grip="21" aria-label="Reorder https://drive.google.com/drive/folders/18A0dI3cwJxzSGTxim3ENlj4GwrB2Yatd: drag, or move it with the arrow keys" title="Drag to reorder">
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+    <path d="M7 5.5h.01M13 5.5h.01M7 10h.01M13 10h.01M7 14.5h.01M13 14.5h.01"></path>
+  </svg>
+</button>
+
+</li>
+
+
+</ul></div>
+
+    <button class="ch__ind" type="button" id="chDown" aria-label="Scroll down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9.5l6 6 6-6"></path>
+      </svg>
+    </button>
+
+    
+    <div class="listempty" id="chEmpty" role="status" hidden="" data-empty-title="No sections yet." data-empty-hint="Add the first item to start preparing the service." data-filter-title="No matching sections." data-filter-hint="Try a different search.">
+      <span class="listempty__icon" data-when="empty" aria-hidden="true">
+        
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4.5 6.5h3.2M4.5 12h3.2M4.5 17.5h3.2"></path>
+          <path d="M11 6.5h8.5M11 12h8.5M11 17.5h8.5"></path>
+        </svg>
+        
+      </span>
+      <span class="listempty__icon" data-when="filter" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4"></circle>
+          <path d="m15.4 15.4 5 5"></path>
+          <path d="m8.2 8.2 4.8 4.8M13 8.2l-4.8 4.8"></path>
+        </svg>
+      </span>
+      <p class="listempty__title"></p>
+      <p class="listempty__hint"></p>
+    </div>
+  </div>
+</aside>
+
+<main class="stage" data-lang-links-bound="true" data-stage-clicks-bound="true">
+ <section class="search-home" id="searchHome" aria-labelledby="searchHeading">
+  <div class="search-home__inner">
+   <h1 class="sr" id="searchHeading">Search GKPS Klender</h1>
+   <img class="search-home__logo" id="homeLogo" src="../../../static/assets/gkps.png" alt="GKPS Klender" width="96" height="96">
+   <form class="search-home__form" id="globalSearch" role="search" action="/search" method="get">
+    <label class="sr" for="searchQuery">Search Alkitab, Kidung, and Tata Ibadah</label>
+    <input class="search-home__input" id="searchQuery" type="search" name="q" value="" placeholder="Search Alkitab, Kidung, Tata Ibadah..." autocomplete="off" spellcheck="false">
+      <button class="field-clear" type="button" aria-label="Clear search" hidden="" data-bound="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"></path></svg>
+      </button>
+    <button class="search-home__submit" type="submit" aria-label="Search">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+     </svg>
+    </button>
+   </form>
+  </div>
+ </section>
+ <section class="search-results" id="searchResults" aria-label="Search results" hidden="">
+   
+ </section>
+
+ <article class="read" id="read" lang="id" tabindex="-1" data-kind="tatib">
+  <header class="read__head">
+   <div class="read__head-top">
+    <p class="read__eyebrow" id="readEyebrow">25 Oktober 2026</p>
+    
+<div class="read__project" data-project-group="" data-display-channel="gkps-service-display" data-displaying="false">
+  
+  <button type="button" class="read__project-btn" data-project-open="" data-projector-url="/projector?service=149" data-project-service="149" data-label-project="Project" data-label-stop="Stop projecting" aria-label="Project" title="Project">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"></rect>
+      <circle cx="6.7" cy="9.7" r="1.7"></circle>
+      <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"></path>
+    </svg>
+    <span data-project-label="">Project</span>
+  </button>
+</div>
+
+
+
+
+
+   </div>
+   <div class="read__row">
+    <h1 class="read__title"><span id="readName">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</span> <span class="read__no" id="readNo"></span></h1>
+    
+   </div>
+  </header>
+  <div class="read__body" id="readBody">
+
+<div class="entry__start" data-entry-start="" role="group" aria-label="Add at the start of this Tata Ibadah">
+  <span class="entry__start-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="149">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="149">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="149">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="149">+ Media</button>
+  </span>
+</div>
+
+
+
+<section class="tatib__item tatib__item--entry tatib__item--acts" id="ti-e21" data-anchor="e21" data-entry-pk="21">
+
+
+
+
+<p class="tatib__tx">https://drive.google.com/drive/folders/18A0dI3cwJxzSGTxim3ENlj4GwrB2Yatd</p>
+
+
+
+<span class="entry__acts">
+  
+  <button type="button" class="entry__ctrl" data-preview-open="" data-preview-for="e21" aria-label="Preview this entry">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"></path><circle cx="10" cy="10" r="2.1"></circle></svg>
+    Preview
+  </button>
+  
+  
+  <button type="button" class="entry__ctrl" data-entry-edit="21">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"></path><path d="M11.6 5.4l3 3"></path></svg>
+    Edit
+  </button>
+  <button type="button" class="entry__ctrl entry__ctrl--danger" data-entry-delete="21">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"></path><path d="M8.2 5.4V3.8h3.6v1.6"></path><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"></path><path d="M8.6 8.6v4.4M11.4 8.6v4.4"></path></svg>
+    Delete
+  </button>
+  
+</span>
+
+</section>
+
+
+<div class="entry__add" data-entry-after="e21" role="group" aria-label="Add after this item"><span class="entry__add-inner">
+  <button type="button" class="entry__add-btn" data-entry-open="scripture" data-entry-tatib="149">+ Passage</button>
+  <button type="button" class="entry__add-btn" data-entry-open="song" data-entry-tatib="149">+ Song</button>
+  <button type="button" class="entry__add-btn" data-entry-open="text" data-entry-tatib="149">+ Text</button>
+  <button type="button" class="entry__add-btn" data-entry-open="media" data-entry-tatib="149">+ Media</button>
+</span></div>
+
+
+
+</div>
+ </article>
+</main>
+
+
+
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle" data-editor-new="/editor/KIND/new/" data-editor-edit="/editor/KIND/0/" data-entry-new-url="/editor/entry/new/" data-entry-save-new-url="/editor/entry/new/save/" data-entry-edit-url="/editor/entry/0/edit/" data-entry-delete-url="/editor/entry/0/delete/" data-entry-songs-url="/editor/entry/songs/" data-entry-song-verses-url="/editor/entry/song/0/verses/" data-entry-chapter-url="/editor/entry/chapter/0/0/" data-old-item-edit-url="/editor/item/0/edit/" data-old-item-delete-url="/editor/item/0/delete/" data-feedback-guarded="true">
+  <div class="editor__content" id="editorContent" aria-live="polite"></div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+</dialog>
+
+
+<dialog class="media-error-dialog" id="mediaErrorDialog" aria-labelledby="mediaErrorTitle"><h2 id="mediaErrorTitle">File not supported</h2><p id="mediaErrorMessage"></p><button type="button" id="mediaErrorClose">OK</button></dialog>
+
+<dialog class="preview" id="previewModal" aria-label="Preview" data-feedback-guarded="true">
+  
+  <div class="preview__head" data-preview-head="" hidden="">
+    <span class="preview__title" id="previewTitle"></span>
+    <div class="preview__versetabs" data-preview-tabs-host="" hidden=""></div>
+  </div>
+  <div class="preview__body" id="previewContent" tabindex="0"></div>
+  <div class="preview__foot" data-screen-mode-footer="" hidden="">
+    <div class="screen-mode preview__screen-mode" role="group" aria-label="Screen mode" data-preview-screen-mode="">
+      <span class="screen-mode__thumb" aria-hidden="true"></span>
+      <button type="button" data-preview-mode="multi_line" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"></path></svg>Multi-line
+      </button>
+      <span class="screen-mode__custom" data-preview-custom="" tabindex="0" role="status" aria-label="Custom breaks" title="Custom breaks">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"></rect><path d="M2.5 10h15"></path></svg>
+      </span>
+      <button type="button" data-preview-mode="single_screen" aria-pressed="false">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"></rect><path d="M5.5 8h9M5.5 11h9"></path></svg>Single-screen
+      </button>
+    </div>
+    <p class="preview__mode-readonly" data-mode-readonly="" hidden=""></p>
+  </div>
+  <div class="preview__confirm-layer" data-mode-confirm="" hidden="">
+    <div class="preview__confirm" role="alertdialog" aria-modal="true" aria-labelledby="modeConfirmTitle" aria-describedby="modeConfirmMessage">
+      <h3 id="modeConfirmTitle" data-confirm-title=""></h3>
+      <p id="modeConfirmMessage">Your custom screen breaks will be removed.</p>
+      <div class="preview__confirm-actions">
+        <button type="button" data-confirm-cancel="">Keep custom</button>
+        <button type="button" data-confirm-accept="">Switch &amp; remove</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="media-library__dialog media-transfers__dialog" id="mediaTransfersDialog" aria-label="Transfers"><h2>Transfers</h2><div id="mediaTransfersList"><p class="media-transfers__empty">Local library unavailable on this computer.</p></div></dialog>
+<div class="edit-toasts" id="editToastHost" popover="manual" aria-live="polite" aria-relevant="additions text" aria-atomic="false" role="region" aria-label="Edit request feedback"></div>
+
+<div class="ftip" id="ftip" role="tooltip"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>

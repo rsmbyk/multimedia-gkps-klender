@@ -1,0 +1,14 @@
+{% comment %}The Copy as template confirmation (spec 167, FR-020). It names the three facts a
+person has to know before accepting: no date, no way back, and a template can be copied again.{% endcomment %}
+<div class="editor__confirm-layer" data-copy-confirm hidden>
+  <div class="editor__confirm" role="alertdialog" aria-modal="true"
+       aria-labelledby="copyConfirmTitle" aria-describedby="copyConfirmMessage">
+    <h3 id="copyConfirmTitle">Copy as template?</h3>
+    <p id="copyConfirmMessage">The copy has no date, can never become a normal Tata Ibadah, and keeps
+      every entry as it is. A template can be copied again.</p>
+    <div class="editor__confirm-actions">
+      <button type="button" class="editor__cancel" data-copy-cancel>Cancel</button>
+      <button type="button" class="editor__save" data-copy-accept>Copy as template</button>
+    </div>
+  </div>
+</div>

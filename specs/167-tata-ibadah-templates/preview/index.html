@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-read="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec 167 preview — Tata Ibadah templates</title>
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<link rel="stylesheet" href="preview.css">
+</head>
+<body class="pv">
+<!-- HARNESS CHROME — not part of the product. It names the states below and lets
+     the owner reach every one of them by hand. -->
+<header class="pv-bar">
+  <p class="pv-name">Spec 167 · Tata Ibadah templates</p>
+  <nav class="pv-surfaces" aria-label="Preview states">
+    <button type="button" data-surface="template" aria-pressed="true">Template page</button>
+    <button type="button" data-surface="kinds">Entry kinds</button>
+    <button type="button" data-surface="new">New Tata Ibadah</button>
+    <button type="button" data-surface="edit">Edit Tata Ibadah</button>
+    <button type="button" data-surface="generate">Use template</button>
+    <button type="button" data-surface="empty">Empty choice</button>
+  </nav>
+  <div class="pv-tools">
+    <button type="button" data-toggle-bars aria-pressed="false">Show add bars</button>
+    <button type="button" data-toggle-theme>Dark</button>
+  </div>
+</header>
+<p class="pv-hint" data-hint>Hover an entry for its add bar, or use “Show add bars”.</p>
+
+<main class="pv-stage">
+<article class="read" id="read" data-kind="tatib" lang="id">
+  <header class="read__head">
+    <div class="read__head-top">
+      <p class="read__eyebrow" id="readEyebrow">Template</p>
+      <div class="read__project" data-project-group>
+        <button type="button" class="read__project-btn" aria-label="Media files">Media files</button>
+        <button type="button" class="read__project-btn read__project-btn--primary" data-use-template>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3.4" width="11.4" height="13.2" rx="1.8"/>
+            <path d="M6.2 6.8h5M6.2 9.6h5M6.2 12.4h3"/>
+            <path d="M16.2 10.2v5.6M13.4 13h5.6"/>
+          </svg>
+          <span>Use template</span>
+        </button>
+      </div>
+    </div>
+    <div class="read__row">
+      <h1 class="read__title"><span id="readName">Ibadah Minggu</span></h1>
+    </div>
+  </header>
+
+  <div class="read__body" id="readBody">
+    <div class="entry__start" data-entry-start>
+      <span class="entry__start-inner">
+        <button type="button" class="entry__add-btn">+ Text</button>
+        <button type="button" class="entry__add-btn">+ Song</button>
+        <button type="button" class="entry__add-btn">+ Passage</button>
+        <button type="button" class="entry__add-btn">+ Media</button>
+        <span class="entry__add-split" aria-hidden="true"></span>
+        <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="fillin">+ Fill-in</button>
+        <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="choice">+ Choice</button>
+      </span>
+    </div>
+
+    <!-- fixed text entry -->
+    <section class="tatib__item tatib__item--entry tatib__item--acts">
+      <h2 class="read__sec">Votum</h2>
+      <p class="tatib__tx"><span class="tatib__sp">P.</span> Pertolongan kita adalah dalam nama Tuhan.</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+          <span class="entry__ctrl-label">Edit</span>
+        </button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/></svg>
+          <span class="entry__ctrl-label">Delete</span>
+        </button>
+      </span>
+    </section>
+
+    <div class="entry__add"><span class="entry__add-inner">
+      <button type="button" class="entry__add-btn">+ Text</button>
+      <button type="button" class="entry__add-btn">+ Song</button>
+      <button type="button" class="entry__add-btn">+ Passage</button>
+      <button type="button" class="entry__add-btn">+ Media</button>
+      <span class="entry__add-split" aria-hidden="true"></span>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="fillin">+ Fill-in</button>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="choice">+ Choice</button>
+    </span></div>
+
+    <!-- fixed song entry -->
+    <section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--song">
+      <span class="entry__kind-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/></svg></span>
+      <h2 class="read__sec"><span>KJ 152 — Ada Kuasa</span></h2>
+      <p class="read__sub">Bait 1, 3</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+          <span class="entry__ctrl-label">Edit</span>
+        </button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/></svg>
+          <span class="entry__ctrl-label">Delete</span>
+        </button>
+      </span>
+    </section>
+
+    <div class="entry__add"><span class="entry__add-inner">
+      <button type="button" class="entry__add-btn">+ Text</button>
+      <button type="button" class="entry__add-btn">+ Song</button>
+      <button type="button" class="entry__add-btn">+ Passage</button>
+      <button type="button" class="entry__add-btn">+ Media</button>
+      <span class="entry__add-split" aria-hidden="true"></span>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="fillin">+ Fill-in</button>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="choice">+ Choice</button>
+    </span></div>
+
+    <!-- fill-in: not set -->
+    <section class="tatib__item tatib__item--slot tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><path d="M10 6.3v7.4M6.3 10h7.4"/></svg></span>
+      <p class="slot__kind">Fill-in · Passage</p>
+      <h2 class="slot__title">Renungan</h2>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+          <span class="entry__ctrl-label">Edit</span>
+        </button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/></svg>
+          <span class="entry__ctrl-label">Delete</span>
+        </button>
+      </span>
+    </section>
+
+    <div class="entry__add"><span class="entry__add-inner">
+      <button type="button" class="entry__add-btn">+ Text</button>
+      <button type="button" class="entry__add-btn">+ Song</button>
+      <button type="button" class="entry__add-btn">+ Passage</button>
+      <button type="button" class="entry__add-btn">+ Media</button>
+      <span class="entry__add-split" aria-hidden="true"></span>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="fillin">+ Fill-in</button>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="choice">+ Choice</button>
+    </span></div>
+
+    <!-- choice with two options -->
+    <section class="tatib__item tatib__item--choice tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><circle cx="10" cy="10" r="4"/><circle cx="10" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+      <p class="slot__kind">Choice · Song</p>
+      <h2 class="slot__title">Nyanyian Pembuka</h2>
+      <p class="slot__state">2 options</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+          <span class="entry__ctrl-label">Edit</span>
+        </button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/></svg>
+          <span class="entry__ctrl-label">Delete</span>
+        </button>
+      </span>
+      <div class="choice__options">
+        <div class="choice__option">
+          <p class="choice__ref">KJ 152 — Ada Kuasa</p>
+          <p class="choice__sub">Bait 1, 2, 3</p>
+        </div>
+        <div class="choice__option">
+          <p class="choice__ref">NKB 12 — Nyanyikanlah Nyanyian Baru</p>
+          <p class="choice__sub">Bait 1, 4</p>
+        </div>
+        <button type="button" class="choice__add">+ Add option</button>
+      </div>
+    </section>
+
+    <div class="entry__add"><span class="entry__add-inner">
+      <button type="button" class="entry__add-btn">+ Text</button>
+      <button type="button" class="entry__add-btn">+ Song</button>
+      <button type="button" class="entry__add-btn">+ Passage</button>
+      <button type="button" class="entry__add-btn">+ Media</button>
+      <span class="entry__add-split" aria-hidden="true"></span>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="fillin">+ Fill-in</button>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="choice">+ Choice</button>
+    </span></div>
+
+    <!-- fixed passage -->
+    <section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--scripture">
+      <span class="entry__kind-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/><path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/></svg></span>
+      <h2 class="read__sec"><span>Yohanes 3:16</span></h2>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+          <span class="entry__ctrl-label">Edit</span>
+        </button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/></svg>
+          <span class="entry__ctrl-label">Delete</span>
+        </button>
+      </span>
+    </section>
+
+    <div class="entry__add"><span class="entry__add-inner">
+      <button type="button" class="entry__add-btn">+ Text</button>
+      <button type="button" class="entry__add-btn">+ Song</button>
+      <button type="button" class="entry__add-btn">+ Passage</button>
+      <button type="button" class="entry__add-btn">+ Media</button>
+      <span class="entry__add-split" aria-hidden="true"></span>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="fillin">+ Fill-in</button>
+      <button type="button" class="entry__add-btn entry__add-btn--slot" data-add="choice">+ Choice</button>
+    </span></div>
+
+    <!-- fill-in: song -->
+    <section class="tatib__item tatib__item--slot tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><path d="M10 6.3v7.4M6.3 10h7.4"/></svg></span>
+      <p class="slot__kind">Fill-in · Song</p>
+      <h2 class="slot__title">Persembahan</h2>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 3.6l3 3-8.6 8.6H4.4v-3z"/><path d="M11.6 5.4l3 3"/></svg>
+          <span class="entry__ctrl-label">Edit</span>
+        </button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.6 5.4h12.8"/><path d="M8.2 5.4V3.8h3.6v1.6"/><path d="M5.4 5.4l.8 10.4h7.6l.8-10.4"/></svg>
+          <span class="entry__ctrl-label">Delete</span>
+        </button>
+      </span>
+    </section>
+  </div>
+</article>
+
+<article class="read kinds" id="kinds" data-kind="tatib" lang="id" hidden>
+  <header class="read__head">
+    <p class="read__eyebrow">Entry kinds</p>
+    <h1 class="read__title">Every kind, in every role</h1>
+    <p class="kinds__lede">Four kinds — Passage, Song, Text, Media — as a fixed entry, as a fill-in, and as a
+      choice. These are the template page's own rows; the generate modal speaks the same labels.</p>
+  </header>
+  <div class="read__body">
+    <h2 class="kinds__head">Fixed entries <span>written now; copied into every service</span></h2>
+
+    <section class="tatib__item tatib__item--entry tatib__item--acts">
+      <h2 class="read__sec">Votum</h2>
+      <p class="tatib__tx"><span class="tatib__sp">P.</span> Pertolongan kita adalah dalam nama Tuhan.</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+    </section>
+
+    <section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--scripture">
+      <span class="entry__kind-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/><path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/></svg></span>
+      <h2 class="read__sec"><span>Yohanes 3:16</span></h2>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+    </section>
+
+    <section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--song">
+      <span class="entry__kind-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/></svg></span>
+      <h2 class="read__sec"><span>KJ 152 — Ada Kuasa</span></h2>
+      <p class="read__sub">Bait 1, 3</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+    </section>
+
+    <section class="tatib__item tatib__item--entry tatib__item--acts tatib__item--media">
+      <span class="entry__media-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3.5 3.5 2.5-2.5 5 5"/></svg></span>
+      <h2 class="read__sec"><span>Warta Jemaat</span></h2>
+      <p class="read__sub">Image · warta-jemaat.jpg</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+    </section>
+
+    <h2 class="kinds__head">Fill-ins <span>a kind, named now; its content chosen at generation</span></h2>
+
+    <section class="tatib__item tatib__item--slot tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><path d="M10 6.3v7.4M6.3 10h7.4"/></svg></span>
+      <p class="slot__kind">Fill-in · Text</p>
+      <h2 class="slot__title">Doa Syafaat</h2>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+    </section>
+
+    <section class="tatib__item tatib__item--slot tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><path d="M10 6.3v7.4M6.3 10h7.4"/></svg></span>
+      <p class="slot__kind">Fill-in · Passage</p>
+      <h2 class="slot__title">Renungan</h2>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+    </section>
+
+    <section class="tatib__item tatib__item--slot tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><path d="M10 6.3v7.4M6.3 10h7.4"/></svg></span>
+      <p class="slot__kind">Fill-in · Song</p>
+      <h2 class="slot__title">Persembahan</h2>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+    </section>
+
+    <section class="tatib__item tatib__item--slot tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><path d="M10 6.3v7.4M6.3 10h7.4"/></svg></span>
+      <p class="slot__kind">Fill-in · Media</p>
+      <h2 class="slot__title">Video Kesaksian</h2>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+    </section>
+
+    <h2 class="kinds__head">Choices <span>one of its options, chosen at generation</span></h2>
+
+    <section class="tatib__item tatib__item--choice tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><circle cx="10" cy="10" r="4"/><circle cx="10" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+      <p class="slot__kind">Choice · Text</p>
+      <h2 class="slot__title">Doa Pengutusan</h2>
+      <p class="slot__state">2 options</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+      <div class="choice__options">
+        <div class="choice__option"><p class="choice__ref">Doa Damai</p><p class="choice__sub">Ya Tuhan, berikan damai-Mu kepada kami.</p></div>
+        <div class="choice__option"><p class="choice__ref">Doa Berkat</p><p class="choice__sub">Tuhan, berkati jemaat ini dan utuslah kami.</p></div>
+        <button type="button" class="choice__add">+ Add option</button>
+      </div>
+    </section>
+
+    <section class="tatib__item tatib__item--choice tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><circle cx="10" cy="10" r="4"/><circle cx="10" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+      <p class="slot__kind">Choice · Passage</p>
+      <h2 class="slot__title">Bacaan</h2>
+      <p class="slot__state">2 options</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+      <div class="choice__options">
+        <div class="choice__option"><p class="choice__ref">Matius 5:13</p></div>
+        <div class="choice__option"><p class="choice__ref">Roma 12:1</p></div>
+        <button type="button" class="choice__add">+ Add option</button>
+      </div>
+    </section>
+
+    <section class="tatib__item tatib__item--choice tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><circle cx="10" cy="10" r="4"/><circle cx="10" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+      <p class="slot__kind">Choice · Song</p>
+      <h2 class="slot__title">Nyanyian Pembuka</h2>
+      <p class="slot__state">2 options</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+      <div class="choice__options">
+        <div class="choice__option"><p class="choice__ref">KJ 152 — Ada Kuasa</p><p class="choice__sub">Bait 1, 2, 3</p></div>
+        <div class="choice__option"><p class="choice__ref">NKB 12 — Nyanyikanlah Nyanyian Baru</p><p class="choice__sub">Bait 1, 4</p></div>
+        <button type="button" class="choice__add">+ Add option</button>
+      </div>
+    </section>
+
+    <section class="tatib__item tatib__item--choice tatib__item--acts">
+      <span class="slot__mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="2.5" width="15" height="15" rx="3.6" stroke-dasharray="2.8 2.4"/><circle cx="10" cy="10" r="4"/><circle cx="10" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+      <p class="slot__kind">Choice · Media</p>
+      <h2 class="slot__title">Tampilan Video</h2>
+      <p class="slot__state">2 options</p>
+      <span class="entry__acts">
+        <button type="button" class="entry__ctrl"><span class="entry__ctrl-label">Edit</span></button>
+        <button type="button" class="entry__ctrl entry__ctrl--danger"><span class="entry__ctrl-label">Delete</span></button>
+      </span>
+      <div class="choice__options">
+        <div class="choice__option"><p class="choice__ref">kesaksian.mp4</p><p class="choice__sub">Video</p></div>
+        <div class="choice__option"><p class="choice__ref">warta.pdf</p><p class="choice__sub">PDF</p></div>
+        <button type="button" class="choice__add">+ Add option</button>
+      </div>
+    </section>
+  </div>
+</article>
+
+</main>
+
+<!-- ===================== New Tata Ibadah ===================== -->
+<dialog class="editor" id="newModal" aria-labelledby="newTitle">
+  <div class="editor__content">
+    <h2 class="editor__title" id="newTitle">New Tata Ibadah</h2>
+    <form class="editor__form" data-new-form>
+      <div class="editor__screen-mode-wrap">
+        <div class="screen-mode editor__screen-mode" role="group" aria-label="Tata Ibadah type"
+             data-kind-switch data-selected="normal">
+          <span class="screen-mode__thumb" aria-hidden="true"></span>
+          <button type="button" data-kind="normal" aria-pressed="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.8" y="4" width="14.4" height="13" rx="2"/><path d="M2.8 8h14.4M6.4 2.4v3.2M13.6 2.4v3.2"/></svg>
+            Normal
+          </button>
+          <button type="button" data-kind="template" aria-pressed="false">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.8" y="4" width="14.4" height="13" rx="2" stroke-dasharray="2.6 2.4"/><path d="M6 8.4h8M6 12h5"/></svg>
+            Template
+          </button>
+        </div>
+      </div>
+      <div class="editor__field">
+        <label for="newName">Name</label>
+        <input type="text" id="newName" maxlength="64" value="Ibadah Minggu">
+      </div>
+      <div class="editor__field editor__date-field" data-new-date>
+        <label>Date</label>
+        <div class="editor__date-picker">
+          <div class="editor__date-controls">
+            <button class="editor__date-trigger" type="button">
+              <span data-date-picker-label>Sunday, 1 November 2026</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="editor__actions">
+        <button class="editor__save" type="button">Save</button>
+        <button class="editor__cancel" type="button" data-close>Cancel</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- ===================== Edit Tata Ibadah ===================== -->
+<dialog class="editor" id="editModal" aria-labelledby="editTitle">
+  <div class="editor__content">
+    <div class="editor__head">
+      <h2 class="editor__title" id="editTitle">Edit Tata Ibadah</h2>
+      <button class="editor__copy-btn" type="button" data-copy-open>Copy as template</button>
+    </div>
+    <form class="editor__form" onsubmit="return false">
+      <div class="editor__field">
+        <label for="editName">Name</label>
+        <input type="text" id="editName" maxlength="64" value="Ibadah Minggu">
+      </div>
+      <div class="editor__field editor__date-field">
+        <label>Date</label>
+        <div class="editor__date-picker">
+          <div class="editor__date-controls">
+            <button class="editor__date-trigger" type="button">
+              <span data-date-picker-label>Sunday, 25 October 2026</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="editor__actions">
+        <button class="editor__save" type="button">Save</button>
+        <button class="editor__cancel" type="button" data-close>Cancel</button>
+      </div>
+    </form>
+  </div>
+  <div class="confirm-layer" data-copy-confirm hidden>
+    <div class="confirm" role="alertdialog" aria-modal="true" aria-labelledby="copyTitle" aria-describedby="copyMessage">
+      <h3 id="copyTitle">Copy as template?</h3>
+      <p id="copyMessage">The copy has no date, and it can never become a normal Tata Ibadah. Its entries stay as they are; you add the fill-ins and choices afterwards. A template can be copied again as another template.</p>
+      <div class="confirm__actions">
+        <button type="button" data-copy-cancel>Cancel</button>
+        <button type="button" data-copy-accept>Copy as template</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- ===================== Add a fill-in ===================== -->
+<dialog class="editor" id="fillinModal" aria-labelledby="fillinTitle">
+  <div class="editor__content">
+    <h2 class="editor__title" id="fillinTitle">New fill-in</h2>
+    <form class="editor__form">
+      <div class="editor__field">
+        <label for="fillinName">Title or note</label>
+        <input type="text" id="fillinName" maxlength="64" placeholder="Optional — leave empty to show the kind alone">
+      </div>
+      <div class="editor__field">
+        <label>Kind</label>
+        <div class="kind-pick" role="group" aria-label="Kind">
+          <button type="button" aria-pressed="true">Text</button>
+          <button type="button" aria-pressed="false">Song</button>
+          <button type="button" aria-pressed="false">Passage</button>
+          <button type="button" aria-pressed="false">Media</button>
+        </div>
+      </div>
+      <p class="editor__screen-mode-help">The operator chooses this entry's content when the template is used.</p>
+      <div class="editor__actions">
+        <button class="editor__save" type="button" data-close>Add fill-in</button>
+        <button class="editor__cancel" type="button" data-close>Cancel</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- ===================== Add a choice ===================== -->
+<dialog class="editor" id="choiceModal" aria-labelledby="choiceTitle">
+  <div class="editor__content">
+    <h2 class="editor__title" id="choiceTitle">New choice</h2>
+    <form class="editor__form">
+      <div class="editor__field">
+        <label for="choiceName">Title</label>
+        <input type="text" id="choiceName" maxlength="64" placeholder="Optional — leave empty to show the kind alone">
+      </div>
+      <div class="editor__field">
+        <label>Kind</label>
+        <div class="kind-pick" role="group" aria-label="Kind">
+          <button type="button" aria-pressed="true">Text</button>
+          <button type="button" aria-pressed="false">Song</button>
+          <button type="button" aria-pressed="false">Passage</button>
+          <button type="button" aria-pressed="false">Media</button>
+        </div>
+      </div>
+      <p class="editor__screen-mode-help">The operator picks one of its options when the template is used. Add the options on the row afterwards.</p>
+      <div class="editor__actions">
+        <button class="editor__save" type="button" data-close>Add choice</button>
+        <button class="editor__cancel" type="button" data-close>Cancel</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- ===================== Use template (generate) ===================== -->
+<dialog class="editor generate" id="generateModal" aria-labelledby="generateTitle">
+  <div class="editor__content" data-editor-size="large">
+    <header class="generate__head">
+      <ol class="generate__steps" aria-label="Steps">
+        <li data-step="1" aria-current="step"><span class="generate__step-mark"><i>1</i></span><span class="generate__step-label">Fill in the entries</span></li>
+        <li data-step="2"><span class="generate__step-mark"><i>2</i></span><span class="generate__step-label">Name and date</span></li>
+      </ol>
+      <h2 class="editor__title" id="generateTitle">New Tata Ibadah</h2>
+      <p class="generate__from">From template · <strong>Ibadah Minggu</strong></p>
+    </header>
+
+    <div class="generate__body" data-generate-step="1">
+      <div class="g-stage-row" data-fixed>
+        <section class="tatib__item tatib__item--entry">
+          <h2 class="read__sec">Votum</h2>
+          <p class="tatib__tx"><span class="tatib__sp">P.</span> Pertolongan kita adalah dalam nama Tuhan.</p>
+        </section>
+      </div>
+      <div class="g-stage-row" data-fixed>
+        <section class="tatib__item tatib__item--entry tatib__item--song">
+          <span class="entry__kind-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 17.4V5.6l10.2-2v11.6"/><circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/></svg></span>
+          <h2 class="read__sec"><span>KJ 152 — Ada Kuasa</span></h2>
+          <p class="read__sub">Bait 1, 3</p>
+        </section>
+      </div>
+      <div class="g-row is-slot" data-slot-row="passage" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Passage</p>
+          <p class="g-title">Renungan</p>
+          <p class="g-value" data-slot-value>Matius 5:13</p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot" data-choice-row="song" data-set="false" data-options="2">
+        <div class="g-main">
+          <p class="g-label">Choice · Song</p>
+          <p class="g-title">Nyanyian Pembuka</p>
+          <p class="g-value" data-choice-value>Not set · 2 options</p>
+        </div>
+        <button class="g-action" type="button" data-choice-open>Choose</button>
+      </div>
+      <div class="g-stage-row" data-fixed>
+        <section class="tatib__item tatib__item--entry tatib__item--scripture">
+          <span class="entry__kind-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/><path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/></svg></span>
+          <h2 class="read__sec"><span>Yohanes 3:16</span></h2>
+        </section>
+      </div>
+      <div class="g-stage-row" data-fixed>
+        <section class="tatib__item tatib__item--entry tatib__item--media">
+          <span class="entry__media-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3.5 3.5 2.5-2.5 5 5"/></svg></span>
+          <h2 class="read__sec"><span>Warta Jemaat</span></h2>
+          <p class="read__sub">Image · warta-jemaat.jpg</p>
+        </section>
+      </div>
+      <div class="g-row is-slot" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-title">Warta Jemaat</p>
+          <p class="g-value" data-slot-value>Image · Warta Jemaat</p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot is-untitled" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-value" data-slot-value>Image · <span class="g-quiet">warta-jemaat.jpg</span></p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-title">Kesaksian</p>
+          <p class="g-value" data-slot-value>Video · Kesaksian</p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot is-untitled" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-value" data-slot-value>Video · <span class="g-quiet">kesaksian.mp4</span></p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-title">Doa Malam</p>
+          <p class="g-value" data-slot-value>Audio · Doa Malam</p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot is-untitled" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-value" data-slot-value>Audio · <span class="g-quiet">doa-malam.mp3</span></p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-title">Liturgi</p>
+          <p class="g-value" data-slot-value>PDF · Liturgi</p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot is-untitled" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-value" data-slot-value>PDF · <span class="g-quiet">liturgi.pdf</span></p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-title">Slide Ibadah</p>
+          <p class="g-value" data-slot-value>PowerPoint · Slide Ibadah</p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot is-untitled" data-slot-row="media" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Media</p>
+          <p class="g-value" data-slot-value>PowerPoint · <span class="g-quiet">slide-ibadah.pptx</span></p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Change</button>
+      </div>
+      <div class="g-row is-slot" data-slot-row="song" data-set="false">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Song</p>
+          <p class="g-value" data-slot-value>Not set</p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Set</button>
+      </div>
+      <div class="g-row is-slot" data-slot-row="text" data-set="false">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Text</p>
+          <p class="g-title">Doa Syafaat</p>
+          <p class="g-value" data-slot-value>Not set</p>
+        </div>
+        <button class="g-action" type="button" data-slot-action>Set</button>
+      </div>
+      <div class="g-row is-slot is-untitled" data-choice-row="passage" data-set="false" data-options="2">
+        <div class="g-main">
+          <p class="g-label">Choice · Passage</p>
+          <p class="g-value" data-choice-value>Not set · 2 options</p>
+        </div>
+        <button class="g-action" type="button" data-choice-open>Choose</button>
+      </div>
+      <div class="g-row is-slot" data-choice-row="text" data-set="false" data-options="3">
+        <div class="g-main">
+          <p class="g-label">Choice · Text</p>
+          <p class="g-title">Doa Pengutusan</p>
+          <p class="g-value" data-choice-value>Not set · 3 options</p>
+        </div>
+        <button class="g-action" type="button" data-choice-open>Choose</button>
+      </div>
+      <div class="g-row is-slot" data-choice-row="media" data-set="false" data-options="5">
+        <div class="g-main">
+          <p class="g-label">Choice · Media</p>
+          <p class="g-title">Tampilan</p>
+          <p class="g-value" data-choice-value>Not set · 5 options</p>
+        </div>
+        <button class="g-action" type="button" data-choice-open>Choose</button>
+      </div>
+      <div class="g-row is-slot is-untitled" data-choice-row="media-plain" data-set="false" data-options="5">
+        <div class="g-main">
+          <p class="g-label">Choice · Media</p>
+          <p class="g-value" data-choice-value>Not set · 5 options</p>
+        </div>
+        <button class="g-action" type="button" data-choice-open>Choose</button>
+      </div>
+      <div class="g-row is-slot is-untitled" data-choice-row="text-plain" data-set="false" data-options="2">
+        <div class="g-main">
+          <p class="g-label">Choice · Text</p>
+          <p class="g-value" data-choice-value>Not set · 2 options</p>
+        </div>
+        <button class="g-action" type="button" data-choice-open>Choose</button>
+      </div>
+    </div>
+
+    <div class="generate__body generate__body--form" data-generate-step="2" hidden>
+      <div class="editor__field">
+        <label for="generateName">Name</label>
+        <input type="text" id="generateName" maxlength="64" value="Ibadah Minggu">
+      </div>
+      <div class="editor__field editor__date-field">
+        <label>Date</label>
+        <div class="editor__date-picker">
+          <div class="editor__date-controls">
+            <button class="editor__date-trigger" type="button">
+              <span data-date-picker-label>Sunday, 1 November 2026</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="generate__summary">23 entries · 4 from the template, 19 chosen here</p>
+    </div>
+
+    <footer class="generate__foot">
+      <p class="generate__status" data-generate-status role="status">11 of 19 settled — 8 left to fill in.</p>
+      <div class="generate__actions">
+        <button class="generate__back" type="button" data-generate-back hidden>Back</button>
+        <button class="editor__cancel" type="button" data-close>Cancel</button>
+        <button class="generate__next" type="button" data-generate-next disabled>Next</button>
+        <button class="generate__next" type="button" data-generate-create hidden>Create</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- the song choice's options, viewed and picked in place -->
+  <div class="choose-layer" data-choose="song" hidden>
+    <div class="choose" role="dialog" aria-modal="true" aria-labelledby="chooseSongTitle">
+      <header class="choose__head">
+        <h3 id="chooseSongTitle">Nyanyian Pembuka</h3>
+        <p>Choose one of the two songs for this service.</p>
+      </header>
+      <div class="choose__list">
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">KJ 152 — Ada Kuasa</span>
+            <span class="choose__meta">Bait 1, 2, 3</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="KJ 152 — Ada Kuasa" aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>1&nbsp;&nbsp;Ada kuasa dalam nama Yesus,<br>kuasa yang sanggup menyelamatkan.</p>
+            <p>2&nbsp;&nbsp;Datanglah pada-Nya dengan percaya,<br>hati yang lembut dib'rikan-Nya.</p>
+            <p>3&nbsp;&nbsp;Pujilah Dia, pujilah Dia,<br>sampai selama-lamanya.</p>
+          </div>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">NKB 12 — Nyanyikanlah Nyanyian Baru</span>
+            <span class="choose__meta">Bait 1, 4</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="NKB 12 — Nyanyikanlah Nyanyian Baru" aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>1&nbsp;&nbsp;Nyanyikanlah nyanyian baru<br>bagi Allah yang Mahakuasa.</p>
+            <p>4&nbsp;&nbsp;Segala puji bagi-Mu, Tuhan,<br>kini dan selama-lamanya.</p>
+          </div>
+        </div>
+      </div>
+      <footer class="choose__foot">
+        <button type="button" data-choose-close>Cancel</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- the passage choice's options -->
+  <div class="choose-layer" data-choose="passage" hidden>
+    <div class="choose" role="dialog" aria-modal="true" aria-labelledby="choosePassageTitle">
+      <header class="choose__head">
+        <h3 id="choosePassageTitle">Passage</h3>
+        <p>Choose one of the two passages for this service.</p>
+      </header>
+      <div class="choose__list">
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">Matius 5:13</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Matius 5:13" aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>13&nbsp;&nbsp;Kamu adalah garam dunia. Jika garam itu menjadi tawar, dengan apakah ia diasinkan?</p>
+          </div>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">Roma 12:1</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Roma 12:1" aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>1&nbsp;&nbsp;Karena itu, saudara-saudara, demi kemurahan Allah aku menasihatkan kamu, supaya kamu mempersembahkan tubuhmu sebagai persembahan yang hidup.</p>
+          </div>
+        </div>
+      </div>
+      <footer class="choose__foot">
+        <button type="button" data-choose-close>Cancel</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- the text choice's options, viewed and picked in place -->
+  <div class="choose-layer" data-choose="text" hidden>
+    <div class="choose" role="dialog" aria-modal="true" aria-labelledby="chooseTextTitle">
+      <header class="choose__head">
+        <h3 id="chooseTextTitle">Doa Pengutusan</h3>
+        <p>Choose one of the three prayers for this service.</p>
+      </header>
+      <div class="choose__list">
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">Doa Damai</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Doa Damai" aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>Ya Tuhan, berikan damai-Mu kepada kami,<br>sehingga kami pergi dengan hati yang tenang.</p>
+          </div>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">Doa Berkat</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Doa Berkat" aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>Tuhan, berkati jemaat ini dan utuslah kami<br>menjadi saksi-Mu di tengah dunia.</p>
+          </div>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref choose__ref--body">Tuhan, sertailah kami di sepanjang minggu ini dengan hikmat-Mu.</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Tuhan, sertailah kami di sepanjang minggu ini dengan hikmat-Mu." aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>Tuhan, sertailah kami di sepanjang minggu ini dengan hikmat-Mu,<br>agar setiap langkah kami menjadi kesaksian.</p>
+          </div>
+        </div>
+      </div>
+      <footer class="choose__foot">
+        <button type="button" data-choose-close>Cancel</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="choose-layer" data-choose="media" hidden>
+    <div class="choose" role="dialog" aria-modal="true" aria-labelledby="choose-mediaTitle">
+      <header class="choose__head">
+        <h3 id="choose-mediaTitle">Tampilan</h3>
+        <p>Choose one of the options for this service.</p>
+      </header>
+      <div class="choose__list">
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">Warta Jemaat</span>
+            <span class="choose__meta">Image · warta-jemaat.jpg</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Warta Jemaat" aria-pressed="false">Choose</button>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">Kesaksian</span>
+            <span class="choose__meta">Video · kesaksian.mp4</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Kesaksian" aria-pressed="false">Choose</button>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">Doa Malam</span>
+            <span class="choose__meta">Audio · doa-malam.mp3</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Doa Malam" aria-pressed="false">Choose</button>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">Liturgi</span>
+            <span class="choose__meta">PDF · liturgi.pdf</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Liturgi" aria-pressed="false">Choose</button>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">slide-ibadah.pptx</span>
+            <span class="choose__meta">PowerPoint</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="slide-ibadah.pptx" aria-pressed="false">Choose</button>
+        </div>
+      </div>
+      <footer class="choose__foot">
+        <button type="button" data-choose-close>Cancel</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="choose-layer" data-choose="media-plain" hidden>
+    <div class="choose" role="dialog" aria-modal="true" aria-labelledby="choose-media-plainTitle">
+      <header class="choose__head">
+        <h3 id="choose-media-plainTitle">Media</h3>
+        <p>Choose one of the options for this service.</p>
+      </header>
+      <div class="choose__list">
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">warta-jemaat.jpg</span>
+            <span class="choose__meta">Image</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="warta-jemaat.jpg" aria-pressed="false">Choose</button>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">kesaksian.mp4</span>
+            <span class="choose__meta">Video</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="kesaksian.mp4" aria-pressed="false">Choose</button>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">doa-malam.mp3</span>
+            <span class="choose__meta">Audio</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="doa-malam.mp3" aria-pressed="false">Choose</button>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">liturgi.pdf</span>
+            <span class="choose__meta">PDF</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="liturgi.pdf" aria-pressed="false">Choose</button>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref">slide-ibadah.pptx</span>
+            <span class="choose__meta">PowerPoint</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="slide-ibadah.pptx" aria-pressed="false">Choose</button>
+        </div>
+      </div>
+      <footer class="choose__foot">
+        <button type="button" data-choose-close>Cancel</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="choose-layer" data-choose="text-plain" hidden>
+    <div class="choose" role="dialog" aria-modal="true" aria-labelledby="choose-text-plainTitle">
+      <header class="choose__head">
+        <h3 id="choose-text-plainTitle">Text</h3>
+        <p>Choose one of the options for this service.</p>
+      </header>
+      <div class="choose__list">
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref choose__ref--body">Tuhan, sertailah kami di sepanjang minggu ini dengan hikmat-Mu.</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Tuhan, sertailah kami di sepanjang minggu ini dengan hikmat-Mu." aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>Tuhan, sertailah kami di sepanjang minggu ini dengan hikmat-Mu.</p>
+          </div>
+        </div>
+        <div class="choose__item">
+          <div class="choose__main">
+            <span class="choose__ref choose__ref--body">Bapa, terima kasih untuk hari ini; jagalah kami dalam perjalanan pulang.</span>
+          </div>
+          <button class="choose__preview" type="button" data-choose-preview aria-expanded="false">Preview</button>
+          <button class="choose__pick" type="button" data-choose-pick="Bapa, terima kasih untuk hari ini; jagalah kami dalam perjalanan pulang." aria-pressed="false">Choose</button>
+          <div class="choose__content" hidden>
+            <p>Bapa, terima kasih untuk hari ini; jagalah kami dalam perjalanan pulang.</p>
+          </div>
+        </div>
+      </div>
+      <footer class="choose__foot">
+        <button type="button" data-choose-close>Cancel</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- the step-2 confirmation -->
+  <div class="confirm-layer" data-create-confirm hidden>
+    <div class="confirm" role="alertdialog" aria-modal="true" aria-labelledby="createTitle" aria-describedby="createMessage">
+      <h3 id="createTitle">Create this Tata Ibadah?</h3>
+      <p id="createMessage">Ibadah Minggu · Sunday, 1 November 2026.<br>23 entries in the template\'s order; the template itself stays as it is.</p>
+      <div class="confirm__actions">
+        <button type="button" data-create-cancel>Back</button>
+        <button type="button" data-create-accept>Create</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- ===================== Use template: a choice with no options ===================== -->
+<dialog class="editor generate" id="emptyChoiceModal" aria-labelledby="emptyChoiceTitle">
+  <div class="editor__content" data-editor-size="large">
+    <header class="generate__head">
+      <ol class="generate__steps" aria-label="Steps">
+        <li data-step="1" aria-current="step"><span class="generate__step-mark"><i>1</i></span><span class="generate__step-label">Fill in the entries</span></li>
+        <li data-step="2"><span class="generate__step-mark"><i>2</i></span><span class="generate__step-label">Name and date</span></li>
+      </ol>
+      <h2 class="editor__title" id="emptyChoiceTitle">New Tata Ibadah</h2>
+      <p class="generate__from">From template · <strong>Ibadah Minggu</strong></p>
+    </header>
+
+    <div class="generate__body" data-generate-step="1">
+      <div class="g-stage-row" data-fixed>
+        <section class="tatib__item tatib__item--entry">
+          <h2 class="read__sec">Votum</h2>
+          <p class="tatib__tx"><span class="tatib__sp">P.</span> Pertolongan kita adalah dalam nama Tuhan.</p>
+        </section>
+      </div>
+      <div class="g-row is-slot" data-slot-row="passage" data-set="true">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Passage</p>
+          <p class="g-title">Renungan</p>
+          <p class="g-value" data-slot-value>Matius 5:13</p>
+        </div>
+        <button class="g-action" type="button">Change</button>
+      </div>
+      <div class="g-row is-slot" data-choice-row="none" data-set="false" data-options="0">
+        <div class="g-main">
+          <p class="g-label">Choice · Song</p>
+          <p class="g-title">Nyanyian Penutup</p>
+          <p class="g-value">No options yet</p>
+        </div>
+        <button class="g-action" type="button" disabled>No options</button>
+      </div>
+      <div class="g-row is-slot" data-slot-row="song" data-set="false">
+        <div class="g-main">
+          <p class="g-label">Fill-in · Song</p>
+          <p class="g-title">Persembahan</p>
+          <p class="g-value" data-slot-value>Not set</p>
+        </div>
+        <button class="g-action" type="button">Set</button>
+      </div>
+    </div>
+
+    <footer class="generate__foot">
+      <p class="generate__status" role="status">1 of 3 settled — 2 left to fill in · one choice has no options.</p>
+      <div class="generate__actions">
+        <button class="editor__cancel" type="button" data-close>Cancel</button>
+        <button class="generate__next" type="button" disabled>Next</button>
+      </div>
+    </footer>
+  </div>
+</dialog>
+
+<!-- __APPEND2__ -->
+
+
+<script src="preview.js"></script>
+</body>
+</html>

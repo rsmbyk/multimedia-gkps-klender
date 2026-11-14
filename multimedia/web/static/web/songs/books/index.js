@@ -63,11 +63,6 @@ const createBookListItem = book => {
                         classList: ['header'],
                         innerText: book.name,
                     },
-                    {
-                        tag: 'div',
-                        classList: ['description'],
-                        innerText: book.lang === 1 ? 'Simalungun' : 'Indonesia',
-                    },
                 ],
             },
             {
