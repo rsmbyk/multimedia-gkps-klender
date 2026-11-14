@@ -41,12 +41,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-199](./items/ITEM-199-retired-routes.md) | The old addresses answer the new app | The old OBS docks go to the one dock, the old overlays to a page that paints nothing, `/home/` and `/manage/` to `/`, and the old version is reachable through one `/archive/` namespace for a single release | feat | P1 | S | [194](../specs/194-legacy-route-retirement/spec.md) | [#514](https://github.com/rsmbyk/multimedia-gkps-klender/pull/514) | 2026-11-15 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-199](./items/ITEM-199-retired-routes.md) | The old addresses answer the new app | The old OBS docks go to the one dock, the old overlays to a page that paints nothing, `/home/` and `/manage/` to `/`, and the old version is reachable through one `/archive/` namespace for a single release | feat | P1 | S | [194](../specs/194-legacy-route-retirement/spec.md) | develop via [#514](https://github.com/rsmbyk/multimedia-gkps-klender/pull/514) | 2026-11-15 |
 | [ITEM-196](./items/ITEM-196-companion-origin-page.md) | The companion's page manages this computer's origins | The stack needs no origin variable any more: the companion serves a loopback page that adds, edits and deletes the recorded origins, enforces them per request, and shows the font directories the converter sees; the launcher loses the origin setup entirely | feat | P1 | M | [192](../specs/192-companion-origin-page/spec.md) | develop via [#508](https://github.com/rsmbyk/multimedia-gkps-klender/pull/508) | 2026-11-14 |
 | [ITEM-197](./items/ITEM-197-reading-project-button.md) | Project button on the song and Bible pages | A Project control in the stage header puts the open song or chapter on air as a Go To detour and brings the `gkps-projector` window forward | feat | P1 | S | [193](../specs/193-reading-project-button/spec.md) | develop via [#510](https://github.com/rsmbyk/multimedia-gkps-klender/pull/510) | 2026-11-14 |
 | [ITEM-195](./items/ITEM-195-compose-restart.md) | The local stack stays down after a reboot | web and db carry no restart policy, so a restart's daemon shutdown leaves them exited (web 255) and only media returns; the fix is the policy written in the compose file | fix | P1 | S | [191](../specs/191-compose-restart/spec.md) | develop via [#504](https://github.com/rsmbyk/multimedia-gkps-klender/pull/504) | 2026-11-14 |

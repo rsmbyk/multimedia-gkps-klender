@@ -1,6 +1,6 @@
 ---
 id: ITEM-199
-status: in-review
+status: done
 title: "The old addresses answer the new app"
 type: feat
 priority: P1
@@ -11,8 +11,8 @@ spec: specs/194-legacy-route-retirement/spec.md
 branch: feat/194-legacy-route-retirement
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/514
 issue: 513
-closed_at:
-closed_reason:
+closed_at: 2026-11-15
+closed_reason: merged into develop (PR #514)
 bump: minor
 release_version:
 ---
