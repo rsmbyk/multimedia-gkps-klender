@@ -90,7 +90,7 @@ class ImmediateEditorOpenE2ETests(StaticLiveServerTestCase):
         page.wait_for_function("!document.querySelector('#editorModal').open")
 
     def test_sidebar_editor_forms_open_immediately_and_ignore_repeat_activation(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         routes = self._hold_editor_requests(page)
         page.locator('.rail__btn[aria-label="Kidung"]').click()
 
@@ -170,7 +170,7 @@ class ImmediateEditorOpenE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#editorContent')).not_to_contain_text('Stale sidebar form')
 
     def test_failed_load_closes_the_modal_and_a_later_click_can_retry(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         routes = []
 
         def hold_for_failure(route):
@@ -193,7 +193,7 @@ class ImmediateEditorOpenE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#editorTitle')).to_have_text('Loaded form')
 
     def test_loading_layout_is_responsive_and_cancel_or_backdrop_invalidates_response(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.set_viewport_size({'width': 320, 'height': 480})
         page.emulate_media(reduced_motion='reduce')
         page.emulate_media(color_scheme='light')

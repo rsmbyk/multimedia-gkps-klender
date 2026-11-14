@@ -193,7 +193,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
         }""", picker)
 
     def test_passage_form_layout_fits_modal_at_narrow_viewport(self):
-        home_url = self.live_server_url + reverse('web-home')
+        home_url = self.live_server_url + reverse('web-index')
         service_path = reverse('web-tatib-service', args=[self.tatib.pk])
 
         for width, height, range_stacks in ((536, 426, False), (320, 720, True),

@@ -21,6 +21,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-174](./items/ITEM-174-drawer-backdrop-pointer-events.md) | The drawer backdrop stays over the page and swallows every pointer in the browser suite | `<div id="drawerBackdrop" class="drawer-backdrop">` is left covering the reading page, so `item.hover()` and rail clicks time out across `test_entry_pickers` (21), `test_entry_preview` (3) and `test_immediate_editor_open` (2); identical on `3e005688^` | fix | P1 | M | — | 2026-10-29 |
 | [ITEM-175](./items/ITEM-175-section-break-divider-box.md) | The section-break divider measures 8px where its test expects 0px | `test_the_divider_takes_the_same_box_as_the_entries` reads `['8px', '8px']` against `['0px', '0px']`; identical on `3e005688^` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-185](./items/ITEM-185-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
+| [ITEM-198](./items/ITEM-198-not-found-page.md) | A wrong address answers a page of its own | `DEBUG = False` answers every unknown address with bare `Not Found` text; the maintenance card's component becomes the not-found screen, with one class added and a link back to `/` | feat | P2 | S | — | 2026-11-14 |
 
 ## Speccing
 
@@ -42,6 +43,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-196](./items/ITEM-196-companion-origin-page.md) | The companion's page manages this computer's origins | The stack needs no origin variable any more: the companion serves a loopback page that adds, edits and deletes the recorded origins, enforces them per request, and shows the font directories the converter sees; the launcher loses the origin setup entirely | feat | P1 | M | [192](../specs/192-companion-origin-page/spec.md) | [#508](https://github.com/rsmbyk/multimedia-gkps-klender/pull/508) | 2026-11-14 |
+| [ITEM-199](./items/ITEM-199-retired-routes.md) | The old addresses answer the new app | The old OBS docks go to the one dock, the old overlays to a page that paints nothing, `/home/` and `/manage/` to `/`, and the old version is reachable through one `/archive/` namespace for a single release | feat | P1 | S | [194](../specs/194-legacy-route-retirement/spec.md) | — | 2026-11-15 |
 
 ## Done
 

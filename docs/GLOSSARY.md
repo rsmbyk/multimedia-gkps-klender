@@ -59,7 +59,8 @@ still found in the codebase.
 | Canonical | Also called | Definition |
 | --- | --- | --- |
 | **Public site** | — | The public reading experience at `/` and `/songs/…` (later `/bible/…`). |
-| **Editor** | Web admin UI, `web` | The content-management surface, moving to `/manage/…`. |
+| **Editor** | Web admin UI, `web` | The content-management surface at `/editor/…`. |
 | **Design language** | Design system | This project's own tokens and components, drifting off Semantic/Fomantic UI; palette drawn from the GKPS logo. |
 | **Maintenance page** | — | The notice served at `/` while maintenance mode is on. | `reading/maintenance.html` |
-| **Temporary home** | — | The reading home at `/home/` while maintenance mode is on. | `web/urls.py` (`web-home`) |
+| **Retired address** | Legacy route | An address a release stops serving, answering one 302 to its live successor for one release; the next release decides between a 301 and reuse. | `multimedia/retirement.py` |
+| **Archive namespace** | — | `/archive/<old path>`: the temporary namespace that answers a retired address's successor in one hop, removed the release after it was added. | `multimedia/retirement.py` |

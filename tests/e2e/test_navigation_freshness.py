@@ -50,7 +50,7 @@ class NavigationFreshnessTests(StaticLiveServerTestCase):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
             page = browser.new_page()
-            page.goto(self.live_server_url + '/home/')
+            page.goto(self.live_server_url + '/')
             with ThreadPoolExecutor(max_workers=1) as pool:
                 pool.submit(write_from_worker, tatib.TataIbadah.objects.create,
                             name='Added service', date=date(2026, 10, 20),
@@ -73,7 +73,7 @@ class NavigationFreshnessTests(StaticLiveServerTestCase):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
             page = browser.new_page()
-            page.goto(self.live_server_url + '/home/')
+            page.goto(self.live_server_url + '/')
             with ThreadPoolExecutor(max_workers=1) as pool:
                 pool.submit(write_from_worker,
                             songs.Song.objects.filter(pk=self.song.pk).update,

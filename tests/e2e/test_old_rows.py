@@ -56,7 +56,7 @@ class LegacyRowE2ETests(StaticLiveServerTestCase):
 
     def _open_from_home(self):
         page = self.browser.new_page(viewport={'width': 1440, 'height': 900})
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         page.wait_for_load_state('networkidle')
         page.locator('[data-panel="tatib"]').click()
         page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.service.pk])}"]').click()

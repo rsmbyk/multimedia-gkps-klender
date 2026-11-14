@@ -69,7 +69,7 @@ class EditRequestFeedbackE2ETests(StaticLiveServerTestCase):
         }''', {'fragment': url_fragment, 'status': status, 'body': body})
 
     def test_pending_form_write_locks_the_dialog_and_failure_toast_sits_above_it(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.locator('.rail__btn[aria-label="Kidung"]').click()
         page.locator('#panelAdd').click()
         dialog = page.locator('#editorModal')
@@ -113,7 +113,7 @@ class EditRequestFeedbackE2ETests(StaticLiveServerTestCase):
         expect(dialog).to_be_visible()
 
     def test_fast_success_shows_one_result_toast_and_closes_the_editor(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.locator('.rail__btn[aria-label="Kidung"]').click()
         page.locator('#panelAdd').click()
         page.locator('[name="name"]').fill('Toast success book')
@@ -125,7 +125,7 @@ class EditRequestFeedbackE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.edit-toast')).to_have_count(1)
 
     def test_failed_editor_load_shows_a_toast_without_opening_an_empty_dialog(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.locator('.rail__btn[aria-label="Kidung"]').click()
         page.route('**/editor/songbook/new/**', lambda route: route.fulfill(
             status=503, body='Temporarily unavailable'))
@@ -195,7 +195,7 @@ class EditRequestFeedbackE2ETests(StaticLiveServerTestCase):
             .to_have_attribute('data-selected', 'multi_line')
 
     def test_four_toasts_use_short_result_durations_and_append_newest_at_bottom(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.evaluate('''() => {
           const actions = Array.from({length: 4}, (_, index) =>
             window.gkpsEditFeedback.beginAction({
@@ -218,7 +218,7 @@ class EditRequestFeedbackE2ETests(StaticLiveServerTestCase):
         context = self.browser.new_context(viewport={'width': 1440, 'height': 900},
                                            color_scheme='dark', reduced_motion='reduce')
         page = context.new_page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         page.wait_for_load_state('networkidle')
         page.evaluate('''() => {
           window.__feedbackAction = window.gkpsEditFeedback.beginAction({
