@@ -1,6 +1,6 @@
 ---
 id: ITEM-194
-status: in-review
+status: done
 title: 'Delete songs, songbooks and Tata Ibadah records from their sidebars'
 type: feat
 priority: P2
@@ -11,10 +11,10 @@ spec: specs/190-sidebar-delete/spec.md
 branch: feat/190-sidebar-delete
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/501
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-14
+closed_reason: merged into develop (PR #501)
 bump: minor
-release_version:
+release_version: 1.29.0
 ---
 
 # ITEM-194: Delete songs, songbooks and Tata Ibadah records from their sidebars
