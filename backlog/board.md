@@ -41,12 +41,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-195](./items/ITEM-195-compose-restart.md) | The local stack stays down after a reboot | web and db carry no restart policy, so a restart's daemon shutdown leaves them exited (web 255) and only media returns; the fix is the policy written in the compose file | fix | P1 | S | [191](../specs/191-compose-restart/spec.md) | [#504](https://github.com/rsmbyk/multimedia-gkps-klender/pull/504) | 2026-11-14 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-195](./items/ITEM-195-compose-restart.md) | The local stack stays down after a reboot | web and db carry no restart policy, so a restart's daemon shutdown leaves them exited (web 255) and only media returns; the fix is the policy written in the compose file | fix | P1 | S | [191](../specs/191-compose-restart/spec.md) | develop via [#504](https://github.com/rsmbyk/multimedia-gkps-klender/pull/504) | 2026-11-14 |
 | [ITEM-194](./items/ITEM-194-sidebar-delete.md) | Delete songs, songbooks and Tata Ibadah records from their sidebars | Hover reveals trash beside pencil on eligible rows; confirm names the record and its kind; songs/songbooks soft-delete, services leave by their active flag; on-stage delete returns to the parent list with history replaced | feat | P2 | S | [190](../specs/190-sidebar-delete/spec.md) | develop via [#501](https://github.com/rsmbyk/multimedia-gkps-klender/pull/501) | 2026-11-14 |
 | [ITEM-191](./items/ITEM-191-keyboard-parity.md) | The dock and the projector share one keyboard grammar | The dock gains the projector's go-to steps, `K`, `G` on the picker, a held `Esc` and a fetch guard; the picker narrows to `↑`/`↓`; the projector takes `⌘`; a go to can stand with no service | feat | P2 | M | [187](../specs/187-keyboard-parity/spec.md) | develop via [#493](https://github.com/rsmbyk/multimedia-gkps-klender/pull/493) | 2026-11-05 |
 | [ITEM-192](./items/ITEM-192-legacy-bookmarks-to-services.md) | The old bookmarks stand as services | A migration turns each active, dated, song-holding bookmark into a dated Tata Ibadah of song entries — 157 of them — and leaves the bookmark rows for the legacy dock to keep reading | feat | P1 | M | [188](../specs/188-legacy-bookmarks-to-services/spec.md) | develop via [#496](https://github.com/rsmbyk/multimedia-gkps-klender/pull/496) | 2026-11-05 |
