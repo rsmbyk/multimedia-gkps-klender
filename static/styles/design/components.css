@@ -471,7 +471,7 @@ body {
 /* the rows are the positioning context for their own control */
 #panelBody li, #chList li { position: relative; }
 .row-edit {
-  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  position: absolute; right: 38px; top: 50%; transform: translateY(-50%);
   width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
   cursor: pointer;
   border: 1px solid var(--divider); border-radius: 7px;
@@ -487,6 +487,22 @@ body {
 li:hover > .row-edit,
 .row-edit:focus-visible { opacity: 1; pointer-events: auto; }
 .row-edit:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+/* Delete (spec 190) takes the trailing edge; the pencil sits left of it: the
+   same box and the same reveal, in the danger colour only on its own hover. */
+.row-delete {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
+  cursor: pointer;
+  border: 1px solid var(--divider); border-radius: 7px;
+  background: var(--rail-bg); color: var(--head-ink);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--ease), color var(--ease);
+}
+.row-delete svg { width: 13px; height: 13px; }
+.row-delete:hover { color: var(--danger); }
+li:hover > .row-delete,
+.row-delete:focus-visible { opacity: 1; pointer-events: auto; }
+.row-delete:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .focus-restore-quiet:focus-visible { outline: none !important; outline-offset: 0; }
 .row-flash { animation: tatibRowFlash 2.6s linear 1; }
 
@@ -1398,6 +1414,15 @@ li:hover > .row-edit,
   color: var(--head-ink);
 }
 .book[aria-current="true"] .book__s { color: inherit; opacity: 1; }
+/* A dated Tata Ibadah row clears its own date while its actions are revealed
+   (spec 190, FR-004): the controls sit over the trailing edge, where the date
+   ends. The accessible label keeps the date, so nothing is lost to assistive
+   tech; rows without a date are untouched. Hover-capable pointers only -- a
+   phone's sticky hover must not blink the date away. */
+@media (hover: hover) {
+  li[data-editor-kind]:hover .book__s,
+  li[data-editor-kind]:focus-within .book__s { display: none; }
+}
 /* A today row leads Upcoming, and the badge is what says why (spec 132). The action
    accent is the mark: forest green in light, royal blue in dark. Kept in step with
    `.servicerow__today` in obs-dock.css — same numbers, other sheet. */
@@ -3188,7 +3213,9 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
   .panel__body li .book__n { grid-column: 1; }
   .panel__body li .book__today { grid-column: 2; }
   .panel__body li .book__s { grid-column: 1 / -1; }
-  .row-edit { opacity: 1; pointer-events: auto; }
+  /* a row with actions keeps its name clear of BOTH controls (spec 190) */
+  #panelBody li:has(> .row-delete) .book { padding-right: 74px; }
+  .row-edit, .row-delete { opacity: 1; pointer-events: auto; }
   /* the phone's drawers are touch-first: the order's handle is always drawn and
      owns the gesture */
   .toc__grip { opacity: 1; touch-action: none; }
@@ -3197,7 +3224,7 @@ html[data-theme="dark"] .edit-toast.is-success { --toast-accent: #83c5a2; }
 /* A touch screen has no hover to give: the row's pencil is the same control the
    entry pane and the add tiles already exempt from it. */
 @media (hover: none) and (pointer: coarse) {
-  .row-edit { opacity: 1; pointer-events: auto; }
+  .row-edit, .row-delete { opacity: 1; pointer-events: auto; }
   /* The order's handle has no hover to reveal it on a touch screen, and the
      gesture must belong to the handle rather than to the list's scroll — or a
      drag dies as a scroll the moment the finger moves (spec 138). */

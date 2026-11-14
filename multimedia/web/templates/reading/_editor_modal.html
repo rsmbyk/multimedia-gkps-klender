@@ -4,6 +4,8 @@
 <dialog class="editor" id="editorModal" aria-labelledby="editorTitle"
         data-editor-new="{% url 'web-editor-new' 'KIND' %}"
         data-editor-edit="{% url 'web-editor-edit' 'KIND' 0 %}"
+        data-editor-delete-confirm="{% url 'web-editor-delete-confirm' 'KIND' 0 %}"
+        data-editor-delete-url="{% url 'web-editor-delete' 'KIND' 0 %}"
         data-entry-new-url="{% url 'web-entry-new' %}"
         data-entry-save-new-url="{% url 'web-entry-save-new' %}"
         data-entry-validate-url="{% url 'web-entry-validate' %}"

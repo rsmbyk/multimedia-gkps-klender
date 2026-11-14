@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-09
-**slices**: `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-14
+**slices**: `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1253,5 +1253,36 @@ grab-frozen midpoints of the other verses, not from the origin slot.
 #### Scenario: hymn and restricted pages
 - WHEN the page is a hymn song's or editing is restricted
 - THEN no verse control is drawn and every endpoint refuses the write
+
+### R41 — Sidebar records are deleted through a confirmed, guarded action
+
+Where editing is allowed, a non-hymn songbook row, a song of a non-hymn songbook, and every Tata Ibadah
+service and template row SHALL carry a delete control beside the edit control — the same 26px box,
+hidden at rest, revealed while the row is hovered or focused, drawn outright on touch screens. A dated
+service row SHALL hide its displayed date while the row is hovered or focused for that reveal, so the
+controls never cover it; the row's accessible label keeps the date. Clicking delete SHALL open the
+shared editor modal on a confirm state fetched from the server — naming the record and its kind's noun
+(`song`, `songbook`, `Tata Ibadah`, `template`) — and only the confirmed submit SHALL POST to the
+record's delete endpoint with the CSRF token. Hymn songbooks, their songs, a song of an already-deleted
+songbook, and a record named through the wrong kind SHALL be refused by the endpoints. A deleted song
+or songbook soft-deletes; a deleted service or template leaves the lists by its active flag. On success
+the row leaves its sidebar and a neighbour takes focus; when the deleted record was the one on stage,
+the shell swaps to the parent list with the history entry replaced, so Back never revisits the removal.
+
+#### Scenario: revealing the delete control
+- WHEN an eligible row is hovered or keyboard-focused (on a touch screen, drawn outright)
+- THEN the trash control is drawn beside the pencil, and a dated service row's date is hidden for that reveal
+
+#### Scenario: confirming the delete
+- WHEN the trash control is clicked
+- THEN the shared modal shows the record's name and its kind's noun with Delete and Cancel, and no request is made until Delete is pressed
+
+#### Scenario: a confirmed delete lands
+- WHEN the confirm submits and the server answers ok
+- THEN the row leaves its sidebar and a neighbour takes focus; if the record was on stage the shell returns to the parent list with the history entry replaced
+
+#### Scenario: refused and restricted records
+- WHEN the row is a hymn songbook or a hymn song, the songbook is already deleted, editing is restricted, or the kind does not match the record
+- THEN no control is drawn where the row can be identified, and the endpoints answer 404 or 403
 
 

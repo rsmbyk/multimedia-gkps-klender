@@ -71,6 +71,12 @@ urlpatterns = [
     path('editor/<str:kind>/new/save/', reading_views.editor_save, name='web-editor-save-new'),
     path('editor/<str:kind>/<int:pk>/', reading_views.editor_form, name='web-editor-edit'),
     path('editor/<str:kind>/<int:pk>/save/', reading_views.editor_save, name='web-editor-save'),
+    # Sidebar record deletes (spec 190): the confirm fragment is fetched (GET),
+    # the destructive step is a POST carrying the form's CSRF token.
+    path('editor/<str:kind>/<int:pk>/delete/confirm/', reading_views.editor_delete_confirm,
+         name='web-editor-delete-confirm'),
+    path('editor/<str:kind>/<int:pk>/delete/', reading_views.editor_delete,
+         name='web-editor-delete'),
 
     # Content editor, moved off the public paths.
     path('manage/', include('multimedia.web.manage.urls')),
