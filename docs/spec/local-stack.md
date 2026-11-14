@@ -1,8 +1,8 @@
 # local-stack
 
 **capability**: `local-stack`
-**last folded**: 2026-11-01
-**slices**: `182-host-font-detection`
+**last folded**: 2026-11-14
+**slices**: `191-compose-restart`, `182-host-font-detection`
 
 The local Docker Compose stack on an operator's computer: what it needs from the machine it runs on,
 and how it reaches the fonts that machine already has. Created by spec 182 — before it, the stack's
@@ -43,3 +43,20 @@ named rather than mounted as an empty directory. (spec 182)
 - **Given** a Docker daemon that shares only part of the host filesystem, **When** the launcher runs,
   **Then** the unreadable directory is skipped with a message naming it, and a start that mounted
   nothing visible is reported rather than passing silently.
+
+### R3 — The stack returns when the daemon restarts
+
+Every always-on service SHALL declare the `unless-stopped` restart policy: a machine or daemon
+restart returns the web, database and media services without a manual start, and a stack the
+operator stopped on purpose stays stopped across daemon restarts. (spec 191)
+
+**Scenarios**
+
+- **Given** the stack running, **When** the machine restarts and the Docker daemon comes back,
+  **Then** the web, database and media services are running again and the web service answers on
+  its published port with no manual step.
+- **Given** the operator stopped the stack (`docker compose stop` or `down`), **When** the daemon
+  restarts, **Then** no service starts itself.
+- **Given** the web service starts while the database is still initialising after a restart,
+  **When** its entrypoint fails, **Then** the policy retries with backoff and the stack converges
+  to healthy with no manual step.

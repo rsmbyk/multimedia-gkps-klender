@@ -27,6 +27,7 @@ services:
       db:
         condition: service_healthy
     command: python manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped
 
   db:
     image: postgres:16-alpine
@@ -45,6 +46,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   media:
     build: .

@@ -1,7 +1,9 @@
 """Guards for the local Docker Compose stack (spec 002).
 
 These pin the port rules so the stack cannot drift back onto the crowded
-well-known range, and keep ``.env.example`` in step with the compose defaults.
+well-known range, keep ``.env.example`` in step with the compose defaults,
+and pin the restart policy that returns the stack after a daemon restart
+(spec 191).
 """
 
 from __future__ import annotations
@@ -143,3 +145,28 @@ class DockerComposePortRulesTests(SimpleTestCase):
         self.assertIn(f"WEB_PORT={web_default}", text)
         self.assertIn(f"DB_PORT={db_default}", text)
         self.assertIn("GKPS_MEDIA_PRODUCTION_ORIGIN=", text)
+
+
+class DockerComposeRestartPolicyTests(SimpleTestCase):
+    """The stack returns after a daemon restart (spec 191).
+
+    A machine restart kills every container at daemon shutdown; without a
+    restart policy the web and database containers stay exited until someone
+    starts them by hand. ``unless-stopped`` returns them and still honours a
+    deliberate ``docker compose stop`` — which is why it is not ``always``.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        if not COMPOSE_FILE.exists():
+            raise AssertionError("docker-compose.yml is missing")
+        cls.compose = yaml.safe_load(COMPOSE_FILE.read_text(encoding="utf-8"))
+
+    def test_web_and_db_restart_on_daemon_restart(self):
+        for service in ("web", "db"):
+            self.assertEqual(
+                self.compose["services"][service].get("restart"),
+                "unless-stopped",
+                f"{service} stays exited after a daemon restart without a restart policy",
+            )
