@@ -9,6 +9,7 @@ from django.core.validators import MaxValueValidator
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
+from multimedia import retirement
 from multimedia.bible import models as bible
 from multimedia.songs import models as songs
 from multimedia.tatib import models as tatib
@@ -72,7 +73,7 @@ class ReadingViewTests(TestCase):
     # --- shell ---
 
     def test_home_is_search_first(self):
-        response = self.client.get(reverse('web-home'))
+        response = self.client.get(reverse('web-index'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="q"')
         self.assertContains(response, 'class="field-clear"')          # the clear control
@@ -95,7 +96,7 @@ class ReadingViewTests(TestCase):
                          'Alkitab — Multimedia GKPS Klender')
 
     def test_reading_pages_do_not_use_fomantic(self):
-        self.assertNotContains(self.client.get(reverse('web-home')), 'semantic.min.css')
+        self.assertNotContains(self.client.get(reverse('web-index')), 'semantic.min.css')
 
     # --- sidebar empty states (spec 129) ---
 
@@ -461,14 +462,6 @@ class ReadingViewTests(TestCase):
         self.assertNotContains(detail, 'Di waktu pagi aku bersyukur')
         self.assertNotContains(search, 'Di Waktu Pagi')
 
-    def test_legacy_song_pages_hide_deleted_books_and_songs(self):
-        self.harian.delete()
-        self.next_song.delete()
-        book_page = self.client.get(reverse('web-songs-songs', args=[self.harian.pk]))
-        song_page = self.client.get(reverse('web-songs-verses', args=[self.next_song.pk]))
-        self.assertEqual(book_page.status_code, 404)
-        self.assertEqual(song_page.status_code, 404)
-
     def test_unknown_song_is_404(self):
         self.assertEqual(self.client.get(reverse('web-song', args=[9999])).status_code, 404)
 
@@ -553,23 +546,6 @@ class ReadingViewTests(TestCase):
         self.assertIn('aria-label="Besok (26 Okt 2026)"', html)
         self.assertIn('aria-label="Ibadah Minggu III (23 Agu 2026)"', html)
 
-    # --- editor relocation ---
-
-    def test_manage_root_serves_editor(self):
-        self.assertEqual(self.client.get(reverse('web-root')).status_code, 200)
-
-    def test_legacy_book_list_redirects_to_manage(self):
-        response = self.client.get('/songs/books')
-        self.assertRedirects(response, reverse('web-songs-books'), status_code=301)
-
-    def test_legacy_song_list_redirects_to_manage(self):
-        response = self.client.get(f'/songs/books/{self.nkb.id}')
-        self.assertRedirects(response, reverse('web-songs-songs', args=[self.nkb.id]), status_code=301)
-
-    def test_legacy_verse_list_redirects_to_manage(self):
-        response = self.client.get(f'/songs/songs/{self.song.id}')
-        self.assertRedirects(response, reverse('web-songs-verses', args=[self.song.id]), status_code=301)
-
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class MaintenanceModeTests(TestCase):
@@ -597,15 +573,8 @@ class MaintenanceModeTests(TestCase):
         self.assertContains(response, 'Search Alkitab, Kidung, and Tata Ibadah')
 
     @override_settings(MAINTENANCE_MODE=True)
-    def test_temporary_home_serves_home_when_on(self):
-        self.assertEqual(reverse('web-home'), '/home/')
-        response = self.client.get(reverse('web-home'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'name="q"')
-
-    @override_settings(MAINTENANCE_MODE=True)
     def test_other_surfaces_unaffected(self):
-        for url in ('/songs/', '/manage/'):
+        for url in ('/songs/', '/tatib/'):
             with self.subTest(url=url):
                 self.assertNotEqual(self.client.get(url).status_code, 503)
 
@@ -3136,30 +3105,180 @@ class ServiceProjectorTests(TestCase):
         self.assertNotIn('bait 1', pane)
 
     def test_the_project_button_is_only_on_a_service(self):
-        for name, args in (('web-home', []), ('web-tatib', []), ('web-search', [])):
+        for name, args in (('web-index', []), ('web-tatib', []), ('web-search', [])):
             with self.subTest(url=name):
                 response = self.client.get(reverse(name, args=args))
                 self.assertNotIn('data-project-open', response.content.decode())
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
-class LegacyObsRouteCompatibilityTests(TestCase):
-    def test_existing_obs_pages_keep_their_paths_and_render(self):
-        routes = {
-            'obs-bible-dock': '/obs/bible/dock',
-            'obs-bible-source': '/obs/bible/source',
-            'obs-songs-dock': '/obs/songs/dock',
-            'obs-songs-source': '/obs/songs/source',
-            'obs-tatib-dock': '/obs/tatib/dock',
-            'obs-tatib-source': '/obs/tatib/source',
-            'obs-project-source': '/obs/project/source',
-            'obs-project-settings': '/obs/project/settings',
-        }
-        for name, path in routes.items():
-            with self.subTest(route=name):
-                self.assertEqual(reverse(name), path)
-                response = self.client.get(reverse(name))
-                self.assertEqual(response.status_code, 200)
+class RetiredWebRouteTests(TestCase):
+    """The addresses this release retires (spec 193), and the archive over them.
+
+    Every retired address is one 302 to its live successor: the three old OBS docks
+    to /obs/dock, the four old OBS sources to /obs/blank, /home/ and every /manage/…
+    address to /. The three /songs/books* moves predate the slice, keep their 301 and
+    are re-pointed at the reading pages. /archive/… answers the successor in one hop,
+    computed from the same table, so the next release can delete the retirement and
+    keep the site.
+    """
+
+    ARCHIVE_CASES = (
+        ('/archive', '/'),
+        ('/archive/', '/'),
+        ('/archive/home/', '/'),
+        ('/archive/manage/songs/12/', '/'),
+        ('/archive/songs/', '/songs/'),
+        ('/archive/songs/books', '/songs/'),
+        ('/archive/obs/songs/source', '/obs/blank'),
+        ('/archive/obs/songs/dock/', '/obs/dock'),
+    )
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.book = songs.Book.objects.create(
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        cls.song = songs.Song.objects.create(book=cls.book, title='Di Waktu Malam')
+        songs.Verse.objects.create(song=cls.song, number=1, lyric='Di waktu malam')
+        cls.service = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu III', date=date(2026, 8, 23), is_active=True)
+
+    # --- /home/ and /manage/ (FR-001, FR-002) --------------------------------
+
+    def test_home_answers_302_to_the_root(self):
+        for url in ('/home', '/home/'):
+            with self.subTest(url=url):
+                self.assertRedirects(self.client.get(url), '/')
+        self.assertRedirects(self.client.get('/home/?from=mail'), '/?from=mail')
+
+    @override_settings(MAINTENANCE_MODE=True)
+    def test_home_answers_302_even_while_maintenance_is_on(self):
+        """The retirement is not the maintenance notice: /home/ must not serve the
+        temporary page again just because MAINTENANCE_MODE is on."""
+        response = self.client.get('/home/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/')
+
+    def test_every_manage_address_answers_302_to_the_root(self):
+        for url in ('/manage', '/manage/', '/manage/songs/', '/manage/songs/12/'):
+            with self.subTest(url=url):
+                self.assertRedirects(self.client.get(url), '/')
+        self.assertRedirects(self.client.get('/manage/songs/?page=2'), '/?page=2')
+
+    # --- the old OBS addresses (FR-003, FR-004, FR-005) ----------------------
+
+    def test_each_old_dock_answers_302_to_the_one_dock(self):
+        for path in ('obs/bible/dock', 'obs/songs/dock', 'obs/tatib/dock'):
+            for url in ('/%s' % path, '/%s/' % path):
+                with self.subTest(url=url):
+                    self.assertRedirects(self.client.get(url), '/obs/dock')
+
+    def test_each_old_source_answers_302_to_the_blank_page(self):
+        for path in ('obs/bible/source', 'obs/songs/source',
+                     'obs/tatib/source', 'obs/project/source'):
+            for url in ('/%s' % path, '/%s/' % path):
+                with self.subTest(url=url):
+                    self.assertRedirects(self.client.get(url), '/obs/blank')
+
+    def test_the_old_settings_page_answers_302_to_the_root(self):
+        for url in ('/obs/project/settings', '/obs/project/settings/'):
+            with self.subTest(url=url):
+                self.assertRedirects(self.client.get(url), '/')
+
+    def test_no_old_obs_address_renders_a_page(self):
+        """SC-001: seven of seven old addresses answer 302 with no body at all."""
+        addresses = [
+            '/%s%s' % (path, edge)
+            for path in ('obs/bible/dock', 'obs/songs/dock', 'obs/tatib/dock',
+                         'obs/bible/source', 'obs/songs/source',
+                         'obs/tatib/source', 'obs/project/settings')
+            for edge in ('', '/')
+        ]
+        for url in addresses:
+            response = self.client.get(url)
+            with self.subTest(url=url):
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(response.content, b'')
+
+    # --- the page the old sources land on (FR-006) ---------------------------
+
+    def test_the_blank_page_is_transparent_and_uncached(self):
+        response = self.client.get('/obs/blank')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Cache-Control'], 'no-store')
+        html = response.content.decode()
+        self.assertIn('html, body { margin: 0; padding: 0; background: transparent; }', html)
+
+    def test_the_blank_page_paints_only_the_note(self):
+        html = self.client.get('/obs/blank').content.decode()
+        for marker in ('<script', '<img', '<link'):
+            with self.subTest(marker=marker):
+                self.assertNotIn(marker, html)
+        body = html.split('<body>', 1)[1]
+        text = ' '.join(re.sub(r'<[^>]+>', ' ', body).split())
+        self.assertEqual(text, 'Old OBS source Switch to /obs/source/overlay')
+
+    # --- what stays live (FR-007, FR-011) ------------------------------------
+
+    def test_the_reading_addresses_keep_their_answers(self):
+        addresses = ('/songs/', '/songs/%d/' % self.song.pk,
+                     '/tatib/', '/tatib/%d/' % self.service.pk)
+        for url in addresses:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_the_legacy_song_lists_redirect_to_the_reading_pages(self):
+        cases = (
+            ('/songs/books', '/songs/'),
+            ('/songs/books/%d' % self.book.pk, '/songs/book/%d/' % self.book.pk),
+            ('/songs/songs/%d' % self.song.pk, '/songs/%d/' % self.song.pk),
+        )
+        for url, destination in cases:
+            with self.subTest(url=url):
+                self.assertRedirects(self.client.get(url), destination, status_code=301)
+
+    # --- the archive (FR-008, FR-009, SC-004, SC-005) ------------------------
+
+    def test_the_archive_answers_the_successor_in_one_hop(self):
+        for url, destination in self.ARCHIVE_CASES:
+            with self.subTest(url=url):
+                self.assertRedirects(self.client.get(url), destination)
+
+    def test_the_archive_keeps_an_unknown_address_as_it_is(self):
+        response = self.client.get('/archive/nowhere/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/nowhere/')
+
+    def test_the_archive_never_names_another_host(self):
+        """A browser reads /\\evil.example and //evil.example as //evil.example."""
+        response = self.client.get('/archive/%5Cevil.example')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/')
+        response = self.client.get('/archive//evil.example')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/evil.example')
+
+    def test_the_archive_keeps_the_query_string(self):
+        self.assertRedirects(self.client.get('/archive/home/?from=mail'), '/?from=mail')
+
+    def test_no_retired_or_archived_address_answers_301(self):
+        addresses = []
+        for old, _ in retirement.RETIRED:
+            addresses += ['/%s' % old, '/%s/' % old]
+        for old, _ in retirement.RETIRED_PREFIXES:
+            addresses += ['/%s' % old, '/%s/' % old, '/%s/songs/12/' % old]
+        addresses += [url for url, _ in self.ARCHIVE_CASES]
+        for url in addresses:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 302)
+
+    def test_every_retired_location_resolves_to_a_200(self):
+        addresses = ['/%s' % old for old, _ in retirement.RETIRED]
+        addresses += [url for url, _ in self.ARCHIVE_CASES]
+        for url in addresses:
+            location = self.client.get(url)['Location']
+            with self.subTest(url=url, location=location):
+                self.assertEqual(self.client.get(location).status_code, 200)
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class LegacyTatibItemEditorTests(TestCase):
     @classmethod

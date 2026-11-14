@@ -1,6 +1,7 @@
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+from multimedia import retirement
 from multimedia.web import views
 from multimedia.web.reading import views as reading_views
 from multimedia.web.reading import verses as verse_views
@@ -8,8 +9,10 @@ from multimedia.web.reading import verses as verse_views
 urlpatterns = [
     # Site root: a maintenance notice while MAINTENANCE_MODE is on, else the home.
     path('', views.IndexView.as_view(), name='web-index'),
-    # Search-first home; a temporary URL while maintenance is on.
-    path('home/', views.HomeView.as_view(), name='web-home'),
+    # spec 193 — retired web addresses: /home/ and every /manage/… address answer
+    # 302 to /. This block and multimedia/retirement.py are deleted next release;
+    # the web/manage/ package stays in the tree, unreachable.
+    *retirement.routes(),
     # Full-corpus search across Alkitab, Kidung, and Tata Ibadah.
     path('search', reading_views.SearchView.as_view(), name='web-search'),
     path('search/', RedirectView.as_view(url='/search', query_string=True), name='web-search-legacy'),
@@ -78,11 +81,7 @@ urlpatterns = [
     path('editor/<str:kind>/<int:pk>/delete/', reading_views.editor_delete,
          name='web-editor-delete'),
 
-    # Content editor, moved off the public paths.
-    path('manage/', include('multimedia.web.manage.urls')),
-
-    # Legacy editor paths -> /manage/ equivalents.
-    path('songs/books', RedirectView.as_view(pattern_name='web-songs-books', permanent=True)),
-    path('songs/books/<int:id>', RedirectView.as_view(pattern_name='web-songs-songs', permanent=True)),
-    path('songs/songs/<int:id>', RedirectView.as_view(pattern_name='web-songs-verses', permanent=True)),
+    # spec 193 — the pre-existing /songs/books* moves, re-pointed at the reading
+    # pages because their old targets lived under /manage/. The 301 stays.
+    *retirement.legacy_routes(),
 ]

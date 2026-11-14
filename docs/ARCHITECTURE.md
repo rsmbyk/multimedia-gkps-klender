@@ -38,12 +38,16 @@ Django project `multimedia` with apps:
 | `obs` | OBS projection source pages and their static JS |
 | `web` | Server-rendered web management UI |
 
-URL roots (`multimedia/urls.py`): `/admin/`, `/api/`, `/obs/`, and the Django app at `/` — public
-reading at `/songs/…`, editor at `/manage/…`.
+URL roots (`multimedia/urls.py`): `/admin/`, `/api/`, `/obs/`, `/archive/`, and the Django app at
+`/` — public reading at `/songs/…`, editor at `/editor/…`.
 
 The site root `/` serves the empty-search public reading index by default. Setting
-`MAINTENANCE_MODE=true` serves a 503 notice (`reading/maintenance.html`) at `/`; `/home/` remains a
-compatible reading-home route. Only `/` is gated; every other surface is unaffected.
+`MAINTENANCE_MODE=true` serves a 503 notice (`reading/maintenance.html`) at `/`; only `/` is gated.
+The addresses the last release retired — `/home/`, every `/manage/…` path, the old OBS docks and
+sources — answer one 302 to their live successor, and `/songs/books*` keep their 301 to the reading
+pages (spec 193). The old version stays reachable for one release at `/archive/…`, which answers the
+same successor in one hop, and `/obs/blank` is the transparent watermark page an old OBS source lands
+on.
 
 Public reading pages use the project's own design language (`static/styles/design/tokens.css`,
 `components.css`); Fomantic UI remains in use by the editor and OBS surfaces until they migrate.

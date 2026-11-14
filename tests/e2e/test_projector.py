@@ -1454,7 +1454,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
     # --- the button, its two states, and the lock across tabs ----------------
 
     def test_project_action_uses_primary_then_danger_treatment_in_both_themes(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.locator('.rail [data-panel="tatib"]').click()
         page.locator(f'#panelBody .book[data-name="{self.service.pk}"]').click()
         page.wait_for_selector('[data-project-open]')
@@ -1807,7 +1807,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         reading pane IN PLACE, so a project button bound to the node it sat on at
         load is present and dead on exactly this path -- and works on a deep link."""
         context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
-        page = self._page(reverse('web-home'), context)
+        page = self._page(reverse('web-index'), context)
         page.locator('[data-panel="tatib"]').click()
         page.wait_for_timeout(700)
         page.locator(f'.book[href="{self._service_url()}"]').click()   # the service row
@@ -2084,8 +2084,8 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
           request.onerror = () => reject(request.error);
         })""")
         page.evaluate("""() => caches.open('gkps-public-shell-test').then(
-          (cache) => cache.put('/home/', new Response('saved shell')))""")
-        page.goto(self.live_server_url + '/home/')
+          (cache) => cache.put('/', new Response('saved shell')))""")
+        page.goto(self.live_server_url + '/')
         page.wait_for_timeout(400)
         state = page.evaluate("""async () => ({
           databases: (await indexedDB.databases()).map((row) => row.name),
@@ -2196,7 +2196,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(self._notice_state(page)['display'], 'block')
 
     def test_the_reading_shell_carries_no_offline_control(self):
-        page = self._page('/home/')
+        page = self._page('/')
         self.assertEqual(page.locator('#offlineSyncButton').count(), 0)
         self.assertEqual(page.locator('#offlineSyncPanel').count(), 0)
         self.assertEqual(page.locator('#offlineSavedSource').count(), 0)

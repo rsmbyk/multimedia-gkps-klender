@@ -7,7 +7,6 @@ search keeping its last result set).
 
 URL map:
     /                                       maintenance (on) or the search-first home
-    /home/                                  the search-first home (kept while maintenance is on)
     /search/?q=                             grouped results across Bible, Kidung, Tata Ibadah
     /bible/ /bible/<book>/ /bible/<book>/<chapter>/     Alkitab
     /songs/ /songs/book/<book>/ /songs/<song>/          Kidung
@@ -1849,6 +1848,19 @@ def obs_overlay(request):
     return render(request, 'reading/obs_overlay.html', {'page_title': 'Overlay'})
 
 
+def obs_blank(request):
+    """Where an old OBS source lands after this release (spec 193).
+
+    Transparent, with one corner note at 20% white that reveals the live overlay's
+    address on hover. No script, image or stylesheet: a browser source that cannot
+    load an asset still paints the note, and the note is what tells the operator
+    something is off without putting anything on the viewer's screen.
+    """
+    response = render(request, 'reading/obs_blank.html', {'page_title': 'Old OBS source'})
+    response['Cache-Control'] = 'no-store'
+    return response
+
+
 def _projector_chapter_prefix(query):
     """Resolve a book alias plus chapter prefix; None means it is not a reference."""
     match = re.fullmatch(r'(.+?)\s+([0-9]{1,3})', query)
@@ -2400,7 +2412,7 @@ class TatibView(TemplateView):
             'tatib_groups': _tatib_groups(mode, service),
             'show_tatib_mode': True,
             # Absolute on purpose: the search-first home swaps this button into the live
-            # page, where a relative "?mode=..." resolves against /home/ and lands on the
+            # page, where a relative "?mode=..." resolves against / and lands on the
             # search home -- which closes the panel and shows Alkitab (review report).
             'tatib_mode_url': (reverse('web-tatib-service', args=[service.pk])
                                if service else reverse('web-tatib')) + f'?mode={other_mode}',

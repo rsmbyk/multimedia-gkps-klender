@@ -105,7 +105,7 @@ class HomeSearchCenterE2ETests(StaticLiveServerTestCase):
             expect(self.page.locator('.search-home__input')).to_be_visible()
 
     def open_home(self):
-        self.open(reverse('web-home'))
+        self.open(reverse('web-index'))
 
     def at(self, width, height):
         self.page.set_viewport_size({'width': width, 'height': height})

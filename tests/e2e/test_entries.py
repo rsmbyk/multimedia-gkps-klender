@@ -118,7 +118,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         self.assertEqual(page.locator('[data-entry-after]').count(), 1)
 
     def test_legacy_item_controls_stay_revealed_between_item_and_button_row(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.locator('[data-panel="tatib"]').click()
         page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.legacy.pk])}"]').click()
         page.wait_for_function(
@@ -140,7 +140,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         expect(row).to_have_css('opacity', '1')
 
     def test_save_from_home_keeps_the_tata_ibadah_on_stage(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.locator('[data-panel="tatib"]').click()
         page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.full.pk])}"]').click()
         page.wait_for_function("document.querySelector('#readName').textContent.trim() === 'Ibadah Sore'")
@@ -155,7 +155,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         expect(page.locator('.tatib__item--entry .tatib__tx')).to_contain_text('Saved on the service')
 
     def test_add_after_first_entry_from_home_inserts_before_second(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.locator('[data-panel="tatib"]').click()
         page.locator(f'.book[href="{reverse("web-tatib-service", args=[self.ordered.pk])}"]').click()
         page.wait_for_function("document.querySelector('#readName').textContent.trim() === 'Ordered service'")
@@ -177,7 +177,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
     # --- a passage ------------------------------------------------------------
 
     def test_adding_and_editing_a_passage_through_custom_pickers(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.locator('[data-panel="tatib"]').click()
         service_url = reverse('web-tatib-service', args=[self.service.pk])
         page.locator(f'.book[href="{service_url}"]').click()

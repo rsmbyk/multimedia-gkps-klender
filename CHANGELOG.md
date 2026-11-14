@@ -5,9 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.31.0] - 2026-11-14
 
 ### Added
+
+- **The old addresses answer the new app.** Every retired OBS dock answers `/obs/dock`, every retired
+  overlay source `/obs/blank` — a transparent page carrying only a faint `Old OBS source` corner note,
+  legible on hover with the live overlay's address — while `/home/` and every `/manage/…` address
+  answer `/` in one 302; `/archive/<old path>` keeps the old version reachable for this one release,
+  resolving to the live successor in a single hop; the three `/songs/books*` moves keep their 301 and
+  re-point at the reading pages (spec 193).
 
 - **The media companion configures this computer's origins on its own page.** `http://127.0.0.1:63174/`
   records, edits and removes the browser origins the companion accepts — the exact-origin grammar

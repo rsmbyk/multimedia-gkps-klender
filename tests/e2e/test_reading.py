@@ -295,7 +295,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_first_home_renders(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         expect(page.locator('#homeLogo')).to_be_visible()
         expect(page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')).to_be_visible()
         expect(page.locator('.search-home__hint')).to_have_count(0)
@@ -303,7 +303,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_finds_a_song(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'waktu pagi')
         expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
         expect(page.locator('.result-group__title').filter(has_text='Kidung')).to_be_visible()
@@ -311,7 +311,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_page_reads_the_query_grammar(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
 
         # A quoted phrase matches only consecutively, and the status line shows it.
         self._search(page, '"Kasih dan kasih"')
@@ -334,7 +334,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_lists_no_bible_reference(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'Matius 5:13')
         # Digits are tokens (spec 105), so other verses can match '5'; the point is
         # that the reference itself resolves to no row.
@@ -345,7 +345,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_short_query_searches_and_empty_submit_returns_to_index(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'waktu pagi')
         expect(page.get_by_text('Di Waktu Pagi', exact=True)).to_be_visible()
         field = page.get_by_label('Search Alkitab, Kidung, and Tata Ibadah')
@@ -364,7 +364,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_keeps_last_result_set(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'waktu pagi')
         page.locator('.result-group[data-kind="songs"] .result-row').first.click()
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
@@ -382,7 +382,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_icon_exclusive_to_closed_sidebars(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         expect(page.locator('#railSearch[aria-current="page"]')).to_have_count(1)
         click_section(page, 'alkitab')
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
@@ -539,7 +539,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_dark_mode_toggles_and_persists(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         page.locator('#themeBtn').click()
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
         page.reload()
@@ -548,7 +548,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_system_theme_is_default_and_follows_os_changes(self):
         page = self._page()
         page.emulate_media(color_scheme='dark')
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
         # The rail's foot holds the theme button alone since the offline control left
@@ -564,7 +564,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_theme_button_cycles_modes_and_current_labels(self):
         page = self._page()
         page.emulate_media(color_scheme='light')
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         for mode, icon in [('dark', 'moon'), ('light', 'sun'), ('system', 'system')]:
             page.locator('#themeBtn').click()
             expect(page.locator('html')).to_have_attribute('data-theme-mode', mode)
@@ -575,7 +575,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_theme_button_keeps_original_rail_style(self):
         for width, expected_size in [(1280, 44), (500, 40)]:
             page = self._page(width=width)
-            page.goto(self.live_server_url + reverse('web-home'))
+            page.goto(self.live_server_url + reverse('web-index'))
             button = page.locator('#themeBtn')
             self.assertEqual(button.bounding_box()['width'], expected_size)
             self.assertEqual(button.bounding_box()['height'], expected_size)
@@ -585,7 +585,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_system_mode_can_be_restored_after_manual_override(self):
         page = self._page()
         page.emulate_media(color_scheme='light')
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         page.locator('#themeBtn').click()
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'dark')
         page.emulate_media(color_scheme='dark')
@@ -603,7 +603,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_invalid_theme_storage_defaults_to_system(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         page.evaluate("localStorage.setItem('gkps-theme', 'unknown')")
         page.reload()
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
@@ -612,7 +612,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page = self._page()
         page.emulate_media(color_scheme='dark')
         page.add_init_script("Object.defineProperty(window, 'localStorage', {get: () => {throw new Error('blocked')}})")
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         expect(page.locator('html')).to_have_attribute('data-theme-mode', 'system')
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
         page.locator('#themeBtn').click()
@@ -751,7 +751,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_sidebar_selection_tint_matches_theme_for_all_current_rows(self):
         page = self._page()
-        home_url = self.live_server_url + reverse('web-home')
+        home_url = self.live_server_url + reverse('web-index')
         expected = {
             'light': {'background': 'rgb(185, 215, 201)', 'color': 'rgb(31, 31, 29)'},
             'dark': {'background': 'rgb(57, 63, 79)', 'color': 'rgb(245, 243, 238)'},
@@ -839,7 +839,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_no_horizontal_scroll(self):
         page = self._page()
-        urls = [reverse('web-home'), reverse('web-search') + '?q=waktu pagi',
+        urls = [reverse('web-index'), reverse('web-search') + '?q=waktu pagi',
                 reverse('web-song', args=[self.song.id])]
         for width in (320, 1440):
             page.set_viewport_size({'width': width, 'height': 900})
@@ -859,7 +859,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_shell_navigates_in_place(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         start = page.url
         click_section(page, 'alkitab')
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
@@ -875,7 +875,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         for width in (1440, 390):
             with self.subTest(width=width):
                 page = self._page(width=width)
-                page.goto(self.live_server_url + reverse('web-home'))
+                page.goto(self.live_server_url + reverse('web-index'))
                 click_section(page, 'alkitab')
                 page.locator('#panelBody .book').filter(has_text='Matius').first.click()
                 page.locator('#chList .ch-num').nth(4).click()
@@ -942,7 +942,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_same_name_edition_blocks_keep_the_verse_text(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
@@ -1175,7 +1175,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_bible_language_highlight_slides_without_reflow(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
@@ -1216,7 +1216,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_bible_language_highlight_static_and_reduced_motion(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(19).click()  # TB-only chapter
@@ -1234,7 +1234,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
         page = self._page()
         page.emulate_media(reduced_motion='reduce')
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
@@ -1306,7 +1306,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_bible_language_links_keep_keyboard_and_no_js_navigation(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         click_section(page, 'alkitab')
         page.locator('#panelBody .book').filter(has_text='Matius').first.click()
         page.locator('#chList .ch-num').nth(4).click()
@@ -1334,7 +1334,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_populated_reading_headers_keep_their_space(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'waktu pagi')
         page.locator('.result-group[data-kind="songs"] .result-row').first.click()
         expect(page.get_by_text('Di waktu pagi aku bersyukur')).to_be_visible()
@@ -1353,7 +1353,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         for width in (1440, 390):
             with self.subTest(width=width):
                 page = self._page(width=width)
-                page.goto(self.live_server_url + reverse('web-home'))
+                page.goto(self.live_server_url + reverse('web-index'))
                 click_section(page, 'tatib')
                 page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                 expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
@@ -1394,7 +1394,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
     def test_tatib_date_header_matches_songbook_header(self):
         """The service date and the songbook header are the same element and must read the same."""
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'waktu pagi')
         page.locator('.result-group[data-kind="songs"] .result-row').first.click()
         expect(page.locator('#readEyebrow')).to_be_visible()
@@ -1427,7 +1427,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             with self.subTest(width=width):
                 page = self._page(width=width)
                 try:
-                    page.goto(self.live_server_url + reverse('web-home'))
+                    page.goto(self.live_server_url + reverse('web-index'))
                     click_section(page, 'tatib')
                     page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                     expect(page.locator('#readEyebrow')).to_have_text('23 Agustus 2026')
@@ -1463,7 +1463,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_a_text_sidebar_row_is_three_lines_and_keeps_its_grip_centered(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         click_section(page, 'tatib')
         page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
 
@@ -1503,7 +1503,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         for width in (1440, 390):
             with self.subTest(width=width):
                 page = self._page(width=width)
-                page.goto(self.live_server_url + reverse('web-home'))
+                page.goto(self.live_server_url + reverse('web-index'))
                 click_section(page, 'tatib')
                 page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                 page.wait_for_selector('#chList .songrow__t', state='attached')
@@ -1521,7 +1521,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         for width in (1440, 390):
             with self.subTest(width=width):
                 page = self._page(width=width)
-                page.goto(self.live_server_url + reverse('web-home'))
+                page.goto(self.live_server_url + reverse('web-index'))
                 click_section(page, 'tatib')
                 page.locator('#panelBody').get_by_text('Ibadah Minggu III').first.click()
                 page.wait_for_selector('#chList .songrow__t', state='attached')
@@ -1592,7 +1592,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             "document.activeElement === document.getElementById('bookFilter')"))
 
         # the search field
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         search_clear = page.locator('.search-home .field-clear')
         expect(search_clear).to_be_hidden()
         expect(search_clear).to_have_attribute('aria-label', 'Clear search')
@@ -1734,7 +1734,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         for url, field, wrapper in (
             (reverse('web-book', args=[self.harian.id]), '#songFilter', '.ch__search .filter-box'),
             (reverse('web-tatib'), '#bookFilter', '.panel__filter .filter-box'),
-            (reverse('web-home'), '#searchQuery', '.search-home__form'),
+            (reverse('web-index'), '#searchQuery', '.search-home__form'),
         ):
             page.goto(self.live_server_url + url)
             page.fill(field, 'test')
@@ -1811,7 +1811,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_menu_resets_sidebar_filters_without_erasing_query(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'kasih')
         page.wait_for_selector('#searchStatus')
         click_section(page, 'tatib')
@@ -1824,7 +1824,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_hymn_song_order_is_visible_after_browsing_from_home(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         click_section(page, 'kidung')
         page.locator('#panelBody .book').filter(has_text=self.book.name).first.click()
 
@@ -1890,7 +1890,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_song_result_centres_the_sidebar_row(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'Lagu 17')
         row = page.locator('.result-group[data-kind="songs"] .result-row').first
         expect(row).to_contain_text('Lagu 17')
@@ -1905,7 +1905,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_tata_ibadah_service_result_centres_the_service_row(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'Ibadah 07')
         page.locator('.result-group[data-kind="tatib"] .result-row').first.click()
         expect(page.locator('html')).to_have_attribute('data-read', 'on')
@@ -1918,7 +1918,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_tata_ibadah_item_result_centres_and_flashes_the_contents_row(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'Bagian 25')
         page.wait_for_function(
             "document.getElementById('searchStatus') && "
@@ -2067,7 +2067,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_icon_never_opens_a_stale_stored_url(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         page.evaluate("localStorage.setItem('gkps-search', '/tatib/1/')")   # what an older build wrote
         page.reload()
         expect(page.locator('#railSearch')).to_have_attribute('href', '/')
@@ -2109,7 +2109,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
     def test_search_state_survives_sidebar_browsing(self):
         page = self._page()
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         self._search(page, 'kasih')
         page.wait_for_selector('#searchStatus')
         for _ in range(3):                       # make the result page tall enough to scroll
@@ -2410,7 +2410,7 @@ class ScrollbarE2ETests(StaticLiveServerTestCase):
 
     def _page(self):
         page = self.browser.new_page(viewport={'width': 1440, 'height': 720})
-        page.goto(self.live_server_url + reverse('web-home'))
+        page.goto(self.live_server_url + reverse('web-index'))
         page.wait_for_load_state('networkidle')
         page.click('.rail__btn[aria-label="Kidung"]')
         page.wait_for_selector('#panelBody li')
