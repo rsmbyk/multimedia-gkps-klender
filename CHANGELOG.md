@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The media companion configures this computer's origins on its own page.** `http://127.0.0.1:63174/`
+  records, edits and removes the browser origins the companion accepts — the exact-origin grammar
+  naming the first broken rule under the form, duplicates refused, deletions renumbering — beside the
+  read-only local seeds and the font directories the converter sees, each with its family count; the
+  set is enforced on every request, a refusal names the page, and the web app's local-media popup
+  shows that reason when the companion is unavailable. The stack needs no `.env` anymore: the required
+  `GKPS_MEDIA_PRODUCTION_ORIGIN` is gone, plain `docker compose up` starts everything, and both
+  launchers name the font directories they mount together with each one's on-disk source (spec 192).
+
 - **Delete controls in the reading sidebars.** Non-hymn songs, songbooks and Tata Ibadah services and
   templates are removed through a confirmed, guarded delete — trash beside the pencil, revealed on
   hover/focus, confirmed in the shared modal with the record's kind named; a dated service row hides

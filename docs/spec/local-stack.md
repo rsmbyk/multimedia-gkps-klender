@@ -14,13 +14,18 @@ The stack SHALL start on a computer that follows the documented setup, whatever 
 no value the compose file relies on may be one that some platform does not define. A source it mounts
 SHALL resolve on every platform it supports, and a font directory the machine does not provide SHALL
 not prevent the other services from starting. A machine that provides no font directory at all SHALL
-start exactly as it does with none. (spec 182)
+start exactly as it does with none. (spec 182) The stack SHALL start with no `.env` at all — the
+media companion's origin set is configured on the companion's own page after the start, not in the
+project's environment. (spec 192)
 
 **Scenarios**
 
 - **Given** a Windows computer that does not export `HOME` and a checkout with `.env` filled as
   documented, **When** the stack is started, **Then** the web, database and media services start and
   the font mount resolves to a directory inside the checkout.
+- **Given** a fresh checkout with no `.env` whatsoever, **When** the stack is started through the
+  launcher or plain Compose, **Then** every service starts and the companion's page is where origins
+  are recorded. (spec 192)
 - **Given** a computer whose `~/.local/share/gkps-fonts` holds fonts from an older setup, **When** the
   stack is started through the launcher, **Then** that directory is still mounted.
 - **Given** a computer with no font directory whatsoever, **When** the stack is started, **Then** the
@@ -32,7 +37,9 @@ Started through the launcher, the stack SHALL mount the computer's own font dire
 beside the operator's directory, and the converter SHALL draw a family so mounted in that family. The
 image SHALL keep shipping only free substitutes — no file from a computer's font directory SHALL be
 copied into the repository or the image — and a directory the daemon cannot read SHALL be skipped and
-named rather than mounted as an empty directory. (spec 182)
+named rather than mounted as an empty directory. (spec 182) The launcher SHALL name what it mounts —
+the count and each directory's path, zero said outright — and SHALL pass each mount's on-disk source
+to the companion so the page can show where the faces came from. (spec 192)
 
 **Scenarios**
 
@@ -43,6 +50,9 @@ named rather than mounted as an empty directory. (spec 182)
 - **Given** a Docker daemon that shares only part of the host filesystem, **When** the launcher runs,
   **Then** the unreadable directory is skipped with a message naming it, and a start that mounted
   nothing visible is reported rather than passing silently.
+- **Given** a launcher start that mounts font directories, **When** the listing prints, **Then** the
+  count and the paths are named line by line, and each path reaches the companion as a label on its
+  mount. (spec 192)
 
 ### R3 — The stack returns when the daemon restarts
 

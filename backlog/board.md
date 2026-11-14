@@ -41,6 +41,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-196](./items/ITEM-196-companion-origin-page.md) | The companion's page manages this computer's origins | The stack needs no origin variable any more: the companion serves a loopback page that adds, edits and deletes the recorded origins, enforces them per request, and shows the font directories the converter sees; the launcher loses the origin setup entirely | feat | P1 | M | [192](../specs/192-companion-origin-page/spec.md) | [#508](https://github.com/rsmbyk/multimedia-gkps-klender/pull/508) | 2026-11-14 |
 
 ## Done
 

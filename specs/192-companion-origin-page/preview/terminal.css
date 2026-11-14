@@ -1,0 +1,148 @@
+/* Terminal preview for slice 192 — themed by the frame's variables only. */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--foreground);
+}
+
+header h1 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+header #desc {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin: 0 0 10px;
+  max-width: 88ch;
+}
+
+.term {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: 120px;
+}
+
+.term .line { display: block; }
+.term .cmd { font-weight: 700; }
+.term .input .label { color: var(--muted-foreground); }
+.term .input .val { color: var(--accent); }
+.term .reject { color: var(--accent); font-weight: 700; }
+.term .ok { font-weight: 600; }
+.term .meta { color: var(--muted-foreground); font-style: italic; }
+.term .cur::after {
+  content: '▮';
+  color: var(--accent);
+  margin-left: 1px;
+}
+
+footer { margin-top: 10px; }
+
+#pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+#pills button {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+#pills button[aria-current='true'] {
+  color: var(--foreground);
+  border-color: var(--accent);
+}
+
+.controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.controls button {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.controls button:hover { border-color: var(--accent); }
+.controls .sep { width: 10px; }
+
+.hint {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin: 8px 0 0;
+}
+
+/* Mode switch + live-setup input row. */
+.modes { display: flex; gap: 6px; margin: 0 0 10px; }
+
+.modebtn {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.modebtn[aria-pressed='true'] {
+  color: var(--foreground);
+  border-color: var(--accent);
+}
+
+#liverow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 110ch;
+  margin-top: 8px;
+  font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+#liverow .prompt { color: var(--muted-foreground); }
+
+#livein {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
+  font: inherit;
+  padding: 2px 4px;
+  outline: none;
+}
+
+#livein:focus { border-bottom-color: var(--accent); }
+
+/* Opened directly over file:// the desktop frame's theme variables are absent —
+   the page themes itself rather than collapsing to unstyled black-on-white. */
+html.standalone {
+  --foreground: #e8e6e3;
+  --muted-foreground: #a0a09a;
+  --accent: #5aa2e8;
+  --border: #2e3238;
+  --card: #17191e;
+  background: #101216;
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Wide monitors: cap the reading column, flush left. */
+header, main, footer { max-width: 110ch; }

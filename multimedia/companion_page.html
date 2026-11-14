@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media companion — this computer</title>
+<style>
+/* Design tokens from static/styles/design/tokens.css (spec 004), dark review theme.
+   Kept inline so this page stays self-contained inside the companion's image. */
+:root {
+  --canvas: #14130F;
+  --rail-bg: #232019;
+  --ink: #F5F3EE;
+  --divider: #3A362F;
+  --head-ink: #9C9A91;
+  --danger: #FF9E9A;
+  --focus: #7C9CF0;
+  --active-bg: #7C9CF0;
+  --active-ink: #0D1838;
+  --icon-hover-bg: rgba(255, 255, 255, .09);
+  --shadow-dialog: 0 20px 52px -22px rgba(0, 0, 0, .9), 0 2px 8px -4px rgba(0, 0, 0, .7);
+  --ease: 200ms cubic-bezier(.32, .72, .28, 1);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--canvas);
+  color: var(--ink);
+  font: 400 14px/1.5 var(--font-sans);
+  padding: 28px 24px 48px;
+  caret-color: var(--ink);
+}
+
+::selection { background: color-mix(in srgb, var(--active-bg) 32%, transparent); }
+
+.sheet {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 24px 26px 26px;
+  background: var(--canvas);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  box-shadow: var(--shadow-dialog);
+}
+
+.sheet__head { margin: 0 0 6px; }
+
+h1 {
+  margin: 0;
+  font: 600 18px/1.3 var(--font-sans);
+  letter-spacing: -.01em;
+  color: var(--ink);
+}
+
+.sheet__sub { margin: 3px 0 0; font-size: 12px; color: var(--head-ink); }
+
+.group { margin: 0; padding: 18px 0 4px; }
+.group + .group { border-top: 1px solid var(--divider); margin-top: 14px; }
+
+.group__label {
+  margin: 0 0 10px;
+  font: 600 11px/1.2 var(--font-sans);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--head-ink);
+}
+
+.empty {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--rail-bg);
+  font-size: 13px;
+  color: var(--head-ink);
+}
+
+.rows { margin: 0; padding: 0; list-style: none; }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  transition: background var(--ease);
+}
+
+.rows .row:hover { background: var(--icon-hover-bg); }
+
+.row__origin {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font: 500 14px/1.4 var(--font-sans);
+  color: var(--ink);
+}
+
+.rows--muted .row__origin { color: var(--head-ink); }
+.row__meta { font-size: 12px; color: var(--head-ink); }
+
+.row__act {
+  width: 26px; height: 26px; padding: 0;
+  display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: none;
+  color: var(--head-ink);
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+}
+.row__act svg { width: 14px; height: 14px; }
+.row__act:hover { background: var(--icon-hover-bg); color: var(--ink); }
+.row__act:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.row__act--danger { color: var(--danger); }
+.row__act--danger:hover { color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); }
+
+.add { display: flex; gap: 10px; margin-top: 10px; }
+
+#origin {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  background: var(--rail-bg);
+  color: var(--ink);
+  font: 500 14px/1.35 var(--font-sans);
+  caret-color: var(--ink);
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+
+#origin::placeholder { color: var(--head-ink); }
+#origin:focus {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+#origin.is-invalid { border-color: var(--danger); }
+#origin.is-invalid:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 24%, transparent); }
+
+.btn-solid {
+  min-height: 38px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--active-bg);
+  color: var(--active-ink);
+  font: 600 14px/1.35 var(--font-sans);
+  cursor: pointer;
+  transition: background var(--ease), box-shadow var(--ease);
+}
+.btn-solid:hover { background: color-mix(in srgb, var(--active-bg) 90%, #000); }
+.btn-solid:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+
+.form-err { margin: 7px 2px 0; font-size: 12px; color: var(--danger); }
+.help { margin: 6px 2px 0; font-size: 12px; color: var(--head-ink); }
+
+.row__field {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  background: var(--rail-bg);
+  color: var(--ink);
+  font: 500 14px/1.35 var(--font-sans);
+  caret-color: var(--ink);
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+.row__field:focus {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+.row__field.is-invalid { border-color: var(--danger); }
+
+.btn-confirm {
+  min-height: 34px;
+  padding: 5px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--active-bg);
+  color: var(--active-ink);
+  font: 600 13px/1.3 var(--font-sans);
+  cursor: pointer;
+  transition: background var(--ease), box-shadow var(--ease);
+}
+.btn-confirm:hover { background: color-mix(in srgb, var(--active-bg) 90%, #000); }
+.btn-confirm:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+
+.btn-discard {
+  min-height: 34px;
+  padding: 5px 14px;
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--head-ink);
+  font: 600 13px/1.3 var(--font-sans);
+  cursor: pointer;
+  transition: border-color var(--ease), color var(--ease), background var(--ease);
+}
+.btn-discard:hover { border-color: var(--focus); color: var(--ink); background: var(--icon-hover-bg); }
+.btn-discard:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+</style>
+</head>
+<body>
+
+<main class="sheet">
+  <header class="sheet__head">
+    <h1>Media companion — this computer</h1>
+    <p class="sheet__sub">served at http://127.0.0.1:63174 — this computer only (loopback)</p>
+  </header>
+
+  <section class="group">
+    <h2 class="group__label">Origins this computer accepts</h2>
+    <p id="empty" class="empty" hidden>no origins recorded yet — add the production site's origin below; until then only this page and the always-allowed local origins may use the companion</p>
+    <ol id="list" class="rows"></ol>
+    <form id="addform" class="add">
+      <input id="origin" type="text" placeholder="https://multimedia.example.org" autocomplete="off" spellcheck="false" aria-label="origin">
+      <button class="btn-solid" type="submit">Add</button>
+    </form>
+    <p id="err" class="form-err" hidden></p>
+  </section>
+
+  <section class="group">
+    <h2 class="group__label">Always allowed on this computer</h2>
+    <ul id="seeds" class="rows rows--muted"></ul>
+    <p class="help">compose seeds — read-only</p>
+  </section>
+
+  <section class="group">
+    <h2 class="group__label">Font directories the converter sees</h2>
+    <ul id="fonts" class="rows"></ul>
+    <p id="fonts-empty" class="empty" hidden>no font directory found on this computer</p>
+  </section>
+</main>
+
+<script>
+'use strict';
+
+var ICON_EDIT = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.3 2.5a1.6 1.6 0 0 1 2.3 2.3L5.2 13.2l-3.1.9.9-3.1 8.3-8.5z"/></svg>';
+var ICON_TRASH = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M5.5 4V2.8a.8.8 0 0 1 .8-.8h3.4a.8.8 0 0 1 .8.8V4M4 4l.6 9.2a1 1 0 0 0 1 .8h4.8a1 1 0 0 0 1-.8L12 4"/></svg>';
+
+var list = document.getElementById('list');
+var empty = document.getElementById('empty');
+var form = document.getElementById('addform');
+var input = document.getElementById('origin');
+var err = document.getElementById('err');
+var seeds = document.getElementById('seeds');
+var fonts = document.getElementById('fonts');
+var fontsEmpty = document.getElementById('fonts-empty');
+
+var recorded = [];
+
+function api(path, method, body) {
+  return fetch(path, {
+    method: method || 'GET',
+    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  }).then(function (response) {
+    return response.json().then(function (data) {
+      if (!response.ok) throw new Error(data.error || 'The companion refused the request.');
+      return data;
+    });
+  });
+}
+
+function showErr(text) {
+  err.textContent = text;
+  err.hidden = false;
+  input.classList.add('is-invalid');
+}
+
+function clearErr() {
+  err.hidden = true;
+  input.classList.remove('is-invalid');
+}
+
+function actButton(cls, icon, label, fn) {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'row__act ' + cls;
+  b.title = label;
+  b.setAttribute('aria-label', label);
+  b.innerHTML = icon;
+  b.addEventListener('click', fn);
+  return b;
+}
+
+function render() {
+  list.textContent = '';
+  empty.hidden = recorded.length > 0;
+  recorded.forEach(function (o, i) {
+    var li = document.createElement('li');
+    li.className = 'row';
+    var num = document.createElement('span');
+    num.className = 'row__num';
+    num.textContent = (i + 1) + '.';
+    num.style.color = 'var(--head-ink)';
+    var origin = document.createElement('span');
+    origin.className = 'row__origin';
+    origin.textContent = o;
+    li.appendChild(num);
+    li.appendChild(origin);
+    li.appendChild(actButton('', ICON_EDIT, 'Edit', function () { startEdit(li, i); }));
+    li.appendChild(actButton('row__act--danger', ICON_TRASH, 'Delete', function () {
+      api('/v1/origins/' + (i + 1), 'DELETE').then(load).catch(function (error) { showErr(error.message); });
+    }));
+    list.appendChild(li);
+  });
+}
+
+function startEdit(li, i) {
+  render();
+  var row = list.children[i];
+  row.innerHTML = '';
+  var field = document.createElement('input');
+  field.className = 'row__field';
+  field.value = recorded[i];
+  row.appendChild(field);
+  var confirm = document.createElement('button');
+  confirm.type = 'button';
+  confirm.className = 'btn-confirm';
+  confirm.textContent = 'Confirm';
+  confirm.addEventListener('click', function () { commitEdit(i, field.value); });
+  var discard = document.createElement('button');
+  discard.type = 'button';
+  discard.className = 'btn-discard';
+  discard.textContent = 'Discard';
+  discard.addEventListener('click', render);
+  row.appendChild(confirm);
+  row.appendChild(discard);
+  field.focus();
+  field.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') commitEdit(i, field.value);
+    if (e.key === 'Escape') render();
+  });
+}
+
+function commitEdit(i, value) {
+  var field = list.querySelector('.row__field');
+  api('/v1/origins/' + (i + 1), 'PUT', { origin: value }).then(function () {
+    return load();
+  }).catch(function (error) {
+    showErr(error.message);
+    if (field) field.classList.add('is-invalid');
+  });
+}
+
+function load() {
+  return api('/v1/origins').then(function (data) {
+    recorded = data.recorded || [];
+    seeds.textContent = '';
+    (data.seeds || []).forEach(function (seed) {
+      var li = document.createElement('li');
+      li.className = 'row';
+      li.textContent = seed;
+      seeds.appendChild(li);
+    });
+    render();
+    return api('/v1/fonts').then(function (fontsData) {
+      var dirs = fontsData.directories || [];
+      fonts.textContent = '';
+      fontsEmpty.hidden = dirs.length > 0;
+      dirs.forEach(function (dir) {
+        var li = document.createElement('li');
+        li.className = 'row';
+        var path = document.createElement('span');
+        path.className = 'row__origin';
+        path.textContent = dir.path;
+        var meta = document.createElement('span');
+        meta.className = 'row__meta';
+        meta.textContent = (dir.source ? 'mounted from ' + dir.source + ' — ' : '') + dir.families + ' families';
+        li.appendChild(path);
+        li.appendChild(meta);
+        fonts.appendChild(li);
+      });
+    });
+  }).catch(function (error) {
+    showErr(error.message);
+  });
+}
+
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  var t = input.value.replace(/^\s+|\s+$/g, '');
+  if (!t) return;
+  api('/v1/origins', 'POST', { origin: t }).then(function () {
+    input.value = '';
+    clearErr();
+    return load();
+  }).catch(function (error) {
+    showErr(error.message);
+  });
+});
+
+document.addEventListener('pointerdown', function (e) {
+  var field = list.querySelector('.row__field');
+  if (!field || field.closest('.row').contains(e.target)) return;
+  render();
+});
+
+load();
+</script>
+</body>
+</html>

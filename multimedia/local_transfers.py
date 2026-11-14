@@ -30,9 +30,8 @@ class Cancelled(Exception):
 
 
 class TransferManager:
-    def __init__(self, library, app_origins=()):
+    def __init__(self, library):
         self.library = library
-        self.app_origins = frozenset(app_origins)
         self.cancel_events = {}
         self.lock = threading.RLock()
         self.thread = threading.Thread(target=self._schedule, daemon=True)
@@ -105,7 +104,7 @@ class TransferManager:
         validate_url(url)
         parsed = urlsplit(complete_url)
         origin = parsed.scheme + '://' + parsed.netloc
-        if origin not in self.app_origins or parsed.path != f'/media-library/cloud/{sha}/complete/':
+        if origin not in self.library.allowed_origins() or parsed.path != f'/media-library/cloud/{sha}/complete/':
             raise ValueError('Upload completion endpoint is not allowed.')
         if not completion_token or len(completion_token) > 256:
             raise ValueError('Upload completion token is missing.')

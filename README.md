@@ -11,15 +11,15 @@ and bookmarks, plus live OBS projection sources.
 
 Requires Docker with the Compose plugin.
 
-On a new computer, first copy `.env.example` to `.env` and set
-`GKPS_MEDIA_PRODUCTION_ORIGIN` to the production site's exact origin (scheme
-and hostname, without a path or trailing slash). Then start the stack:
-
 ```sh
 docker compose up --build
 ```
 
-Then open <http://127.0.0.1:63404/>.
+Then open <http://127.0.0.1:63404/>. The media companion's allowed origins
+are configured on its own page — open <http://127.0.0.1:63174/> and record
+the production site's origin (scheme and hostname, without a path or trailing
+slash); the local origins are always allowed. No `.env` is required; copy
+`.env.example` to `.env` only to override the defaults.
 
 - `db` is PostgreSQL 16; `web` runs Django's development server with the repo
   bind-mounted for autoreload. `media` runs the local Media Library companion

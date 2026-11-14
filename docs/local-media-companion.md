@@ -9,20 +9,8 @@ process needs to be started separately and no host folder needs to be chosen.
 
 1. Install Docker Desktop (Windows or macOS) or Docker Engine with the Compose
    plugin (Linux), and configure Docker to start when you log in.
-2. Get the project checkout on that computer and copy `.env.example` to `.env`
-   in the project root.
-3. Set `GKPS_MEDIA_PRODUCTION_ORIGIN` in `.env` to the exact production site's
-   origin: scheme and hostname (and port only if the site uses a nonstandard
-   port), with no path or trailing slash. For example:
-
-   ```dotenv
-   GKPS_MEDIA_PRODUCTION_ORIGIN=https://multimedia.example.org
-   ```
-
-   This is local Compose configuration, not a Vercel environment variable. The
-   value must match the origin in the production browser address bar.
-4. Start the stack from the project root with the launcher, which also mounts this
-   computer's own fonts:
+2. Get the project checkout on that computer and start the stack from the
+   project root with the launcher, which also mounts this computer's fonts:
 
    ```sh
    docker\up.ps1 --build     # Windows PowerShell
@@ -30,20 +18,25 @@ process needs to be started separately and no host folder needs to be chosen.
    ```
 
    Plain `docker compose up --build -d` still works: it starts the same stack
-   without the computer's font directories.
+   without the computer's font directories. No `.env` is needed; copy
+   `.env.example` to `.env` only to override the ports or other defaults.
 
-   Compose starts Django, PostgreSQL, and the media companion. The companion's
-   allowed origins include the configured production origin and both local
-   origins at the effective `WEB_PORT` (`63404` by default):
-   `http://localhost:<WEB_PORT>` and `http://127.0.0.1:<WEB_PORT>`.
+3. Open the companion's configuration page at `http://127.0.0.1:63174/` and
+   record the origins this computer accepts — the production site's origin
+   first (scheme and hostname, with a nonstandard port only if the site uses
+   one), then any other environment you project from, such as staging. The
+   local origins at the effective `WEB_PORT` (`63404` by default) are always
+   allowed and are shown read-only.
 
 Once the stack is running, the production site and local web app can use the
 Media Library. The browser reaches the helper at `http://127.0.0.1:63174`.
 Compose binds that port to host loopback only; do not expose it through a proxy
-or a public network interface. The companion also checks the request host,
-exact browser origin, and a session token for writes. A browser may ask for
-permission to access a local network service; allow it for the configured app
-origin.
+or a public network interface. The companion checks the request host and the
+exact browser origin against the recorded origins on every request, plus a
+session token for writes from the recorded origins. A request from an origin
+that is not recorded is refused with a message naming this page. A browser may
+ask for permission to access a local network service; allow it for the
+configured app origin.
 
 ## Starting it later
 
@@ -63,9 +56,9 @@ browse the volume or know its path. The status popup shows connection, file
 count, and total size when connected, without disclosing a folder location.
 
 Removing only the companion volume permanently deletes that computer's local
-Media Library. `docker compose down -v` removes all volumes for this Compose
-project, including both the media library and the local PostgreSQL database.
-Do not use it as a routine restart command. Cloud sync, volume migration, and
+Media Library, including its recorded origins. `docker compose down -v` removes
+all volumes for this Compose project, including both the media library and the
+local PostgreSQL database. Do not use it as a routine restart command. Cloud sync, volume migration, and
 backup/restore controls are not part of this version.
 
 ## Availability and file behavior

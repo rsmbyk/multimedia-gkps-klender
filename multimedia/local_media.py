@@ -29,7 +29,9 @@ from urllib.parse import urlparse, urlsplit
 from pypdf import PdfReader
 
 MAX_BYTES = 200_000_000
-PORT = 63174
+PORT = int(os.environ.get('GKPS_MEDIA_PORT') or '63174')
+REFUSAL_MESSAGE = ('Origin is not allowed. Record this computer\'s origins on '
+                   f'the companion\'s page at http://127.0.0.1:{PORT}/.')
 
 # Bumped when the converter's command or its export filter changes, so a derivative made by the old
 # one is not mistaken for this one's. The renderer's own identity — its version and its fonts — is
@@ -103,6 +105,81 @@ def parse_allowed_origins(value):
     return frozenset(parsed_origins)
 
 
+def validate_recorded_origin(value):
+    """One recorded origin, in the page's own words: the first broken rule is raised (spec 192)."""
+    origin = value.strip() if isinstance(value, str) else ''
+    if any(char.isspace() for char in origin):
+        raise ValueError('an origin is one line with no spaces')
+    if not origin.startswith(('http://', 'https://')):
+        raise ValueError('an origin starts with its scheme — http:// or https://')
+    if '@' in origin:
+        raise ValueError('an origin carries no credentials — no @')
+    parsed = urlsplit(origin)
+    if parsed.path or parsed.query or parsed.fragment:
+        raise ValueError('an origin carries no path, query or trailing slash')
+    if not parsed.hostname:
+        raise ValueError('an origin needs a hostname after the scheme')
+    try:
+        parsed.port
+    except ValueError:
+        raise ValueError('an origin needs a numeric port in range')
+    return origin
+
+
+def fc_listing():
+    """One full fc-list pass: every font's file path and family, as interleaved lines."""
+    output = subprocess.run(['fc-list', '--format', '%{file}\n%{family}\n'],
+                            capture_output=True, text=True, timeout=10, check=True).stdout
+    return output
+
+
+def families_by_directory(listing):
+    """Group one fc-list pass into {directory: set(family)} — pairs of file, family lines."""
+    counts = {}
+    lines = listing.splitlines()
+    for i in range(0, len(lines) - 1, 2):
+        family = lines[i + 1].strip()
+        if not family:
+            continue
+        directory = str(Path(lines[i]).parent)
+        counts.setdefault(directory, set()).add(family)
+    return counts
+
+
+def font_mounts():
+    """The container's font directories in listing order, with the launcher's host labels."""
+    labels = {}
+    for part in os.environ.get('GKPS_MEDIA_FONT_LABELS', '').split(','):
+        if '=' in part:
+            key, _, value = part.partition('=')
+            labels[key.strip()] = value.strip()
+    mounts = []
+    host_base = Path('/usr/share/fonts/host')
+    if host_base.is_dir():
+        for child in sorted(host_base.iterdir()):
+            if child.is_dir():
+                mounts.append((child, labels.get(child.name, '')))
+    operator = Path('/usr/share/fonts/operator')
+    if operator.is_dir():
+        mounts.append((operator, labels.get('operator', '.fonts/')))
+    return mounts
+
+
+def font_directories(lister=fc_listing, mounts=None):
+    """The directories the converter sees, with a family count each (spec 192).
+
+    The launcher names the host sources it mounted through GKPS_MEDIA_FONT_LABELS
+    ('1=C:/Windows/Fonts,…'), keyed on the mount's last path segment.
+    """
+    try:
+        counts = families_by_directory(lister())
+    except (OSError, subprocess.SubprocessError):
+        counts = {}
+    mounts = font_mounts() if mounts is None else mounts
+    return [{'path': str(path), 'source': label, 'families': len(counts.get(str(path), set()))}
+            for path, label in mounts]
+
+
 def detect_family(path):
     """Inspect container signatures; filename and browser MIME are untrusted."""
     with path.open('rb') as stream:
@@ -168,13 +245,15 @@ def detect_family(path):
 
 
 class LocalLibrary:
-    def __init__(self, root=None):
+    def __init__(self, root=None, app_origins=()):
+        self.app_origins = frozenset(app_origins)
         self.root = Path(root or default_root()).expanduser().resolve()
         self.files_dir = self.root / 'files'
         self.files_dir.mkdir(parents=True, exist_ok=True)
         self.derived_dir = self.root / 'derived-slides'
         self.derived_dir.mkdir(parents=True, exist_ok=True)
         self._slide_lock = threading.RLock()
+        self._origin_lock = threading.RLock()
         self.db_path = self.root / 'index.sqlite3'
         with self._db() as db:
             db.execute('''CREATE TABLE IF NOT EXISTS files (
@@ -210,6 +289,14 @@ class LocalLibrary:
                                (attempts, (restarted_at + timedelta(seconds=delay)).isoformat(), sha))
             db.execute('''CREATE TABLE IF NOT EXISTS reference_inventory (
                 sha256 TEXT PRIMARY KEY, protected INTEGER NOT NULL)''')
+
+        with self._db() as db:
+            row = db.execute("SELECT value FROM settings WHERE key='origins'").fetchone()
+        try:
+            origins = json.loads(row['value']) if row else []
+        except ValueError:
+            origins = []
+        self._origins = origins if isinstance(origins, list) else []
 
     @contextmanager
     def _db(self):
@@ -253,6 +340,43 @@ class LocalLibrary:
                     db.execute('UPDATE files SET delete_at=? WHERE sha256=?', (deadline.isoformat(), row['sha256']))
             else:
                 db.execute('UPDATE files SET delete_at=NULL WHERE unused_since IS NOT NULL')
+
+    def recorded_origins(self):
+        return list(self._origins)
+
+    def allowed_origins(self):
+        return self.app_origins | frozenset(self._origins)
+
+    def add_origin(self, value):
+        origin = validate_recorded_origin(value)
+        with self._origin_lock, self._db() as db:
+            if origin in self._origins:
+                raise ValueError('that origin is already recorded')
+            self._origins.append(origin)
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('origins', ?)",
+                       (json.dumps(self._origins),))
+        return list(self._origins)
+
+    def update_origin(self, index, value):
+        origin = validate_recorded_origin(value)
+        with self._origin_lock, self._db() as db:
+            if not 1 <= index <= len(self._origins):
+                raise ValueError(f'no origin {index} is recorded')
+            if any(o == origin for j, o in enumerate(self._origins) if j != index - 1):
+                raise ValueError('that origin is already recorded')
+            self._origins[index - 1] = origin
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('origins', ?)",
+                       (json.dumps(self._origins),))
+        return list(self._origins)
+
+    def remove_origin(self, index):
+        with self._origin_lock, self._db() as db:
+            if not 1 <= index <= len(self._origins):
+                raise ValueError(f'no origin {index} is recorded')
+            self._origins.pop(index - 1)
+            db.execute("INSERT OR REPLACE INTO settings VALUES ('origins', ?)",
+                       (json.dumps(self._origins),))
+        return list(self._origins)
 
     def sync_references(self, used_hashes, protected_hashes=()):
         """Only a fresh complete server inventory authorizes automatic deletion."""
@@ -464,13 +588,38 @@ def convert_slides(input_path, output_path):
 class MediaHandler(BaseHTTPRequestHandler):
     library = None
     transfers = None
-    origins = frozenset()
     token = ''
+    font_view = staticmethod(font_directories)
+
+    def _config_allowed(self):
+        """The page and its endpoints: loopback Host, own-or-absent Origin, no token (spec 192)."""
+        host = self.headers.get('Host', '')
+        if host not in (f'127.0.0.1:{PORT}', f'localhost:{PORT}'):
+            return False
+        origin = self.headers.get('Origin')
+        return origin is None or origin in (f'http://127.0.0.1:{PORT}', f'http://localhost:{PORT}')
 
     def _allowed(self):
         origin = self.headers.get('Origin')
         host = self.headers.get('Host', '')
-        return host in (f'127.0.0.1:{PORT}', f'localhost:{PORT}') and origin in self.origins
+        return (host in (f'127.0.0.1:{PORT}', f'localhost:{PORT}')
+                and origin in self.library.allowed_origins())
+
+    def _refuse(self):
+        return self._reply(403, {'error': REFUSAL_MESSAGE})
+
+    def _serve_page(self):
+        page = Path(__file__).with_name('companion_page.html')
+        try:
+            body = page.read_bytes()
+        except FileNotFoundError:
+            return self._reply(404, {'error': 'Not found.'})
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('Cache-Control', 'no-store')
+        self.end_headers()
+        self.wfile.write(body)
 
     def _reply(self, status, payload):
         body = json.dumps(payload).encode('utf-8')
@@ -486,7 +635,7 @@ class MediaHandler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         if not self._allowed():
-            return self._reply(403, {'error': 'Origin is not allowed.'})
+            return self._refuse()
         self.send_response(204)
         self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
@@ -496,8 +645,18 @@ class MediaHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        path = urlparse(self.path).path
+        if self._config_allowed() and path in ('/', '/v1/origins', '/v1/fonts'):
+            if path == '/':
+                return self._serve_page()
+            if path == '/v1/origins':
+                return self._reply(200, {'recorded': self.library.recorded_origins(),
+                                         'seeds': sorted(self.library.app_origins)})
+            return self._reply(200, {'directories': self.font_view()})
+        if path in ('/', '/v1/origins', '/v1/fonts'):
+            return self._refuse()
         if not self._allowed():
-            return self._reply(403, {'error': 'Origin is not allowed.'})
+            return self._refuse()
         path = urlparse(self.path).path
         if path == '/v1/status':
             return self._reply(200, status_payload(self.library, self.token))
@@ -536,8 +695,25 @@ class MediaHandler(BaseHTTPRequestHandler):
                 self.wfile.write(block)
 
     def do_POST(self):
-        if not self._allowed() or not secrets.compare_digest(
-                self.headers.get('X-GKPS-Media-Token', ''), self.token):
+        path = urlparse(self.path).path
+        if path == '/v1/origins':
+            if not self._config_allowed():
+                return self._refuse()
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 1000000:
+                    raise ValueError('Invalid request size.')
+                payload = json.loads(self.rfile.read(length))
+                self.library.add_origin(payload['origin'])
+                return self._reply(200, {'recorded': self.library.recorded_origins()})
+            except ValueError as exc:
+                status = 409 if 'already recorded' in str(exc) else 400
+                return self._reply(status, {'error': str(exc)})
+            except (KeyError, TypeError, json.JSONDecodeError) as exc:
+                return self._reply(400, {'error': str(exc)})
+        if not self._allowed():
+            return self._refuse()
+        if not secrets.compare_digest(self.headers.get('X-GKPS-Media-Token', ''), self.token):
             return self._reply(403, {'error': 'Not authorized.'})
         path = urlparse(self.path).path
         if path in ('/v1/settings', '/v1/references', '/v1/transfers', '/v1/auto-downloads/sync'):
@@ -585,9 +761,46 @@ class MediaHandler(BaseHTTPRequestHandler):
             return self._reply(400, {'error': str(exc)})
         return self._reply(200, result)
 
+    def do_PUT(self):
+        path = urlparse(self.path).path
+        if not path.startswith('/v1/origins/'):
+            return self._reply(404, {'error': 'Not found.'})
+        if not self._config_allowed():
+            return self._refuse()
+        try:
+            index = int(path.rsplit('/', 1)[-1])
+        except ValueError:
+            return self._reply(404, {'error': 'No origin is recorded at that slot.'})
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+            if not 0 < length <= 1000000:
+                raise ValueError('Invalid request size.')
+            payload = json.loads(self.rfile.read(length))
+            self.library.update_origin(index, payload['origin'])
+            return self._reply(200, {'recorded': self.library.recorded_origins()})
+        except ValueError as exc:
+            status = 404 if 'no origin' in str(exc) else 409 if 'already recorded' in str(exc) else 400
+            return self._reply(status, {'error': str(exc)})
+        except (KeyError, TypeError, json.JSONDecodeError) as exc:
+            return self._reply(400, {'error': str(exc)})
+
     def do_DELETE(self):
-        if not self._allowed() or not secrets.compare_digest(
-                self.headers.get('X-GKPS-Media-Token', ''), self.token):
+        path = urlparse(self.path).path
+        if path.startswith('/v1/origins/'):
+            if not self._config_allowed():
+                return self._refuse()
+            try:
+                index = int(path.rsplit('/', 1)[-1])
+            except ValueError:
+                return self._reply(404, {'error': 'No origin is recorded at that slot.'})
+            try:
+                self.library.remove_origin(index)
+                return self._reply(200, {'recorded': self.library.recorded_origins()})
+            except ValueError as exc:
+                return self._reply(404, {'error': str(exc)})
+        if not self._allowed():
+            return self._refuse()
+        if not secrets.compare_digest(self.headers.get('X-GKPS-Media-Token', ''), self.token):
             return self._reply(403, {'error': 'Not authorized.'})
         path = urlparse(self.path).path
         if path.startswith('/v1/transfers/'):
@@ -614,16 +827,13 @@ def status_payload(library, token):
 
 
 def main():
-    try:
-        origins = parse_allowed_origins(os.environ.get('GKPS_MEDIA_ALLOWED_ORIGINS', ''))
-        library = LocalLibrary()
-        from multimedia.local_transfers import TransferManager
-        transfers = TransferManager(library, origins)
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
+    from multimedia.local_transfers import TransferManager
+    raw_origins = os.environ.get('GKPS_MEDIA_ALLOWED_ORIGINS', '')
+    seeds = frozenset() if not raw_origins.strip() else parse_allowed_origins(raw_origins)
+    library = LocalLibrary(app_origins=seeds)
+    transfers = TransferManager(library)
     MediaHandler.library = library
     MediaHandler.transfers = transfers
-    MediaHandler.origins = origins
     MediaHandler.token = secrets.token_urlsafe(32)
     server = ThreadingHTTPServer(('0.0.0.0', PORT), MediaHandler)
     print(f'Media Library companion listening on container port {PORT}', flush=True)

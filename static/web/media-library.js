@@ -7,7 +7,7 @@
   page.dataset.mediaInitialized = 'true';
   var endpoint = 'http://127.0.0.1:63174/v1';
   var familyNames = { image: 'Image', audio: 'Audio', video: 'Video', pdf: 'PDF', slides: 'PowerPoint' };
-  var files = [], uses = null, protectedFiles = new Set(), cloud = {}, jobs = [], token = '', retention = '30', connected = false;
+  var files = [], uses = null, protectedFiles = new Set(), cloud = {}, jobs = [], token = '', retention = '30', connected = false, refusal = '';
   var types = new Set(), unusedOnly = false, sort = 'date-desc', pendingRemove = null;
   var $ = function (id) { return document.getElementById(id); };
   var fmtSize = function (bytes) { return window.gkpsFormatSize(bytes); };
@@ -26,13 +26,18 @@
     var el = document.createElement(tag); if (className) el.className = className;
     if (content !== undefined) el.textContent = content; return el;
   }
-  function setStatus(status) {
+  function setStatus(status, reason) {
     connected = !!status;
+    refusal = (connected ? '' : (reason || ''));
     $('mediaSettingsButton').disabled = !connected;
     $('mediaStatusDot').classList.toggle('is-connected', connected);
     $('mediaStatusPopup').classList.toggle('is-unavailable', !connected);
     $('mediaConnection').dataset.state = connected ? 'connected' : 'unavailable';
     $('mediaConnectionLabel').textContent = connected ? 'Connected' : 'Unavailable';
+    var reasonText = $('mediaStatusReasonText');
+    var reasonRow = $('mediaStatusReason');
+    if (reasonText) reasonText.textContent = refusal;
+    if (reasonRow) reasonRow.hidden = connected || !refusal;
     document.querySelectorAll('[data-media-connected]').forEach(function (el) { el.hidden = !connected; });
     if (connected) {
       token = status.write_token; retention = status.retention;
@@ -167,9 +172,9 @@
           next.files = synced.files || []; next.ready = true;
         });
       }).catch(function () { next.uses = null; next.protected = new Set(); });
-    }).catch(function () { next.files = []; next.uses = null; next.status = null; next.ready = false; }).then(function () {
+    }).catch(function (error) { next.files = []; next.uses = null; next.status = null; next.ready = false; next.reason = error && error.message || ''; }).then(function () {
       files = next.files; uses = next.uses; protectedFiles = next.protected;
-      setStatus(next.status); render();
+      setStatus(next.status, next.reason); render();
       return next.ready;
     });
   }
