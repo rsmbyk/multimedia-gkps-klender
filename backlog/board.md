@@ -36,12 +36,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-194](./items/ITEM-194-sidebar-delete.md) | Delete songs, songbooks and Tata Ibadah records from their sidebars | Hover reveals trash beside pencil on eligible rows; confirm names the record and its kind; songs/songbooks soft-delete, services leave by their active flag; on-stage delete returns to the parent list with history replaced | feat | P2 | S | [190](../specs/190-sidebar-delete/spec.md) | feat/190-sidebar-delete | 2026-11-14 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-194](./items/ITEM-194-sidebar-delete.md) | Delete songs, songbooks and Tata Ibadah records from their sidebars | Hover reveals trash beside pencil on eligible rows; confirm names the record and its kind; songs/songbooks soft-delete, services leave by their active flag; on-stage delete returns to the parent list with history replaced | feat | P2 | S | [190](../specs/190-sidebar-delete/spec.md) | [#501](https://github.com/rsmbyk/multimedia-gkps-klender/pull/501) | 2026-11-14 |
 
 ## Done
 
