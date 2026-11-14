@@ -9,8 +9,8 @@ created: 2026-11-14
 updated: 2026-11-15
 spec: specs/194-legacy-route-retirement/spec.md
 branch: feat/194-legacy-route-retirement
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/514
+issue: 513
 closed_at:
 closed_reason:
 bump: minor
