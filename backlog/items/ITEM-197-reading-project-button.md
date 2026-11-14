@@ -1,6 +1,6 @@
 ---
-id: ITEM-196
-status: in-progress
+id: ITEM-197
+status: in-review
 title: 'Project button on the song and Bible pages'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-14
 updated: 2026-11-14
 spec: specs/193-reading-project-button/spec.md
 branch: feat/193-reading-project-button
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/510
 issue: 507
 closed_at:
 closed_reason:
@@ -17,7 +17,7 @@ bump: minor
 release_version:
 ---
 
-# ITEM-196: Project button on the song and Bible pages
+# ITEM-197: Project button on the song and Bible pages
 
 ## Summary
 

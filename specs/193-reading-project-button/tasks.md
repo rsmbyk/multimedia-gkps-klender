@@ -37,7 +37,7 @@ Ordered by user story; `[P]` means order-independent. The run states the order i
 
 - [ ] T014 Fold: typed deltas into `docs/spec/reading.md` (R42), `docs/spec/dock.md` (R12), `docs/spec/projector.md` (R1 modified); `fold.md`; `specs/README.md` index row.
 - [ ] T015 Converge + `converge.md`; `analysis.md` at zero CRITICAL and full coverage; every checklist item presented to the owner.
-- [ ] T016 Pre-merge commit: `VERSION` bumped one **minor** level from `develop`'s number at merge time (declared level: minor — the number is taken at the merge, never pinned here), the `[Unreleased]` changelog line, card ITEM-196 → `In review` once the PR exists (`pr:` filled when the PR is opened), board row move, push as draft PR → ready (`Refs #507`).
+- [ ] T016 Pre-merge commit: `VERSION` bumped one **minor** level from `develop`'s number at merge time (declared level: minor — the number is taken at the merge, never pinned here), the `[Unreleased]` changelog line, card ITEM-197 → `In review` once the PR exists (`pr:` filled when the PR is opened), board row move, push as draft PR → ready (`Refs #507`).
 
 ## Convergence (added at Implement)
 

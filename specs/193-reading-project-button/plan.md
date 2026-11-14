@@ -96,5 +96,5 @@ static/styles/design/components.css               (:3202 selector gains [data-pr
 multimedia/web/tests.py                           (+ render pins)
 tests/e2e/test_reading_project.py                 (new)
 specs/193-reading-project-button/                 (spec pack)
-backlog/board.md, backlog/items/ITEM-196-…md      (card moves)
+backlog/board.md, backlog/items/ITEM-197-…md      (card moves)
 ```
