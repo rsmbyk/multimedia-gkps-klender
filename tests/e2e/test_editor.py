@@ -103,7 +103,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
     # --- the add buttons ---
 
     def test_add_songbook_through_the_modal(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         expect(page.locator('dialog[open]')).to_have_count(0)
         page.click('.rail__btn[aria-label="Kidung"]')
         page.click('#panelAdd')
@@ -119,7 +119,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self.assertFalse(book.is_hymn_book)
 
     def test_edit_songbook_modal_omits_fields_and_preserves_their_values(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
         row.hover()
@@ -136,7 +136,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
 
     def test_the_editor_dialog_sits_on_the_shared_scrim(self):
         """A modal has to read as a sheet above the page, not a panel in it (spec 086)."""
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
         row.hover()
@@ -183,7 +183,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
         those swapped regions, so a page that never had one has to have it inserted
         -- updating in place left them missing on exactly this path (spec 005).
         """
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         expect(page.locator('.editor-add')).to_have_count(0)
         page.click('.rail__btn[aria-label="Kidung"]')
         panel_add = page.locator('#panelAdd')
@@ -212,7 +212,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
 
     def test_escape_inside_the_modal_does_not_also_close_the_sidebar(self):
         """The modal is the innermost layer: Esc must stop there (review report)."""
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         page.click('#panelAdd')
         page.wait_for_selector('dialog[open]')
@@ -224,7 +224,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
 
     def test_the_tata_ibadah_mode_toggle_exists_after_clicking_through(self):
         """It is part of the Tata Ibadah toolbar only, and the home path swaps that in."""
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         expect(page.locator('#tatibMode')).to_have_count(0)
         page.click('.rail__btn[aria-label="Tata Ibadah"]')
@@ -239,7 +239,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
 
     def test_closing_a_sidebar_reveals_no_row_control_and_no_rail_label(self):
         """Closing the song list left the row's control lit and a tile's label hanging."""
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         page.get_by_text(self.book.name, exact=True).first.click()
         page.wait_for_function("document.documentElement.dataset.ch === 'open'")
@@ -347,7 +347,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
     def test_date_picker_cells_are_square_across_widths_and_month_lengths(self):
         for width, height in ((1440, 900), (390, 844), (320, 500), (1440, 360)):
             with self.subTest(viewport=(width, height)):
-                page = self._page(reverse('web-home'))
+                page = self._page(reverse('web-index'))
                 page.set_viewport_size({'width': width, 'height': height})
                 page.reload(wait_until='networkidle')
                 page.clock.install(time=datetime(2027, 2, 7, 12, tzinfo=timezone.utc))
@@ -391,7 +391,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
                 page.close()
 
     def test_date_picker_emphasizes_sundays_in_light_and_dark_themes(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.clock.install(time=datetime(2026, 10, 4, 12, tzinfo=timezone.utc))
         page.click('.rail__btn[aria-label="Tata Ibadah"]')
         page.click('#panelAdd')
@@ -684,7 +684,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self.assertEqual(self.service.name, 'Ibadah Minggu IV')
 
     def test_pointer_closed_editor_does_not_leave_its_row_control_visible(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         book_row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
         book_edit = book_row.locator('.row-edit')
@@ -721,7 +721,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(tatib_edit).to_have_css('opacity', '0')
 
     def test_sidebar_save_restores_focus_to_the_matching_kind_row(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         page.click('#panelAdd')
         page.wait_for_selector('dialog[open]')
@@ -776,7 +776,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self._close_browser()
 
     def test_modal_restoration_quiets_row_outlines_but_keyboard_focus_remains_visible(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
 
         def close_editor(row, key):
@@ -811,7 +811,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self._close_browser()
 
     def test_keyboard_close_does_not_leave_row_edit_control_visible(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
         link = row.locator('.book')
@@ -837,7 +837,7 @@ class EditorE2ETests(StaticLiveServerTestCase):
             page.mouse.move(1400, 850)
 
     def test_keyboard_can_tab_to_a_hidden_row_edit_control(self):
-        page = self._page(reverse('web-home'))
+        page = self._page(reverse('web-index'))
         page.click('.rail__btn[aria-label="Kidung"]')
         row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
         control = row.locator('.row-edit')

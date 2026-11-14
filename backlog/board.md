@@ -41,6 +41,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-199](./items/ITEM-199-retired-routes.md) | The old addresses answer the new app | The old OBS docks go to the one dock, the old overlays to a page that paints nothing, `/home/` and `/manage/` to `/`, and the old version is reachable through one `/archive/` namespace for a single release | feat | P1 | S | [194](../specs/194-legacy-route-retirement/spec.md) | [#514](https://github.com/rsmbyk/multimedia-gkps-klender/pull/514) | 2026-11-15 |
 
 ## Done
 

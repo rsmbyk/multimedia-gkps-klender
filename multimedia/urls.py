@@ -14,8 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, re_path, include
 
+from multimedia import retirement
 from multimedia.web.reading import views as reading_views
 from multimedia.web.reading import goto as goto_views
 
@@ -41,6 +42,14 @@ urlpatterns = [
     # The operator dock and the OBS caption overlay (spec 119).
     path('obs/dock', reading_views.obs_dock, name='web-obs-dock'),
     path('obs/source/overlay', reading_views.obs_overlay, name='web-obs-overlay'),
+    # spec 194 — where an old OBS source lands: transparent, one watermark note.
+    # A live surface that outlives the retirement, so it is registered here beside
+    # /obs/dock, not in multimedia/obs/, and next release does not delete it.
+    path('obs/blank', reading_views.obs_blank, name='web-obs-blank'),
+    # spec 194 — the old version, reachable for one release. One root route, so
+    # every retired address has an /archive/ twin; the view answers one 302 to
+    # successor(). Delete this route and multimedia/retirement.py next release.
+    re_path(r'^archive(?:/(?P<rest>.*))?$', retirement.archive, name='web-archive'),
     path('obs/', include('multimedia.obs.urls')),
     path('', include('multimedia.web.urls')),
 ]
