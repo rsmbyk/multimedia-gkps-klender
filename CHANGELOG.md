@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Delete controls in the reading sidebars.** Non-hymn songs, songbooks and Tata Ibadah services and
+  templates are removed through a confirmed, guarded delete — trash beside the pencil, revealed on
+  hover/focus, confirmed in the shared modal with the record's kind named; a dated service row hides
+  its date while the actions are revealed, and deleting the record on stage returns to the parent list
+  with history replaced (spec 190).
 - **The team's old bookmarks now stand as services.** Every active, dated bookmark holding at least
   one song becomes a dated Tata Ibadah of song entries — its songs in its order, with its verse
   numbers — beside any service already standing on that name and date; the bookmarks themselves are
