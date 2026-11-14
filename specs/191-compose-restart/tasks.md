@@ -22,4 +22,4 @@ means order-independent, not concurrent.
 
 - [x] T005 [Polish] Fold: add R3 to `docs/spec/local-stack.md` as a typed `added` delta with its scenarios; write `fold.md` (capabilities touched, operations, before/after counts).
 - [x] T006 [Polish] First commit at Fold — spec pack, `docker-compose.yml`, test, card and board row together, targeted suite green (`tests.test_docker_compose`; full suite runs before the push per the owner's standing practice).
-- [ ] T007 [Polish] Delivery: PR opened as a draft with the owner's word to deliver (push is GIT-07's, not assumed); card to `In review` in a commit after the PR number exists; `VERSION` → 1.29.1 and the `CHANGELOG.md` Fixed line in the pre-merge commit; `bump: patch` on the card.
+- [x] T007 [Polish] Delivery: PR opened as a draft with the owner's word to deliver (push is GIT-07's, not assumed); card to `In review` in a commit after the PR number exists; `VERSION` → 1.29.1 and the `CHANGELOG.md` Fixed line in the pre-merge commit; `bump: patch` on the card.
