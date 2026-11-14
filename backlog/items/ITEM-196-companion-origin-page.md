@@ -1,6 +1,6 @@
 ---
 id: ITEM-196
-status: in-review
+status: done
 title: "The companion's page manages this computer's origins"
 type: feat
 priority: P1
@@ -8,11 +8,11 @@ effort: M
 created: 2026-11-14
 updated: 2026-11-14
 spec: specs/192-companion-origin-page/spec.md
-branch:
-pr:
+branch: feat/192-companion-origin-page
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/508
 issue: 506
-closed_at:
-closed_reason:
+closed_at: 2026-11-15
+closed_reason: merged into develop (PR #508)
 bump: minor
 release_version:
 ---
