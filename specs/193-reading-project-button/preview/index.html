@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project button on song and Bible pages — preview (spec 193)</title>
+<style>
+  /* ---- the product's own tokens (static/styles/design/tokens.css) ---------- */
+  :root {
+    --canvas: #F7F5F1;
+    --rail-bg: #EDEAE3;
+    --ink: #1F1F1D;
+    --icon-hover-bg: rgba(31, 31, 29, .08);
+    --active-bg: #1C5C3C;
+    --active-ink: #FFFFFF;
+    --divider: #D9D6CD;
+    --head-ink: #646357;
+    --focus: #1C5C3C;
+    --ease: 200ms cubic-bezier(.32, .72, .28, 1);
+  }
+  :root[data-theme="dark"] {
+    --canvas: #14130F;
+    --rail-bg: #232019;
+    --ink: #F5F3EE;
+    --icon-hover-bg: rgba(255, 255, 255, .09);
+    --active-bg: #7C9CF0;
+    --active-ink: #0D1838;
+    --divider: #3A362F;
+    --head-ink: #9C9A91;
+    --focus: #7C9CF0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 24px 60px;
+    font: 14px/1.5 ui-sans-serif, system-ui, sans-serif;
+    background: var(--canvas); color: var(--ink);
+  }
+  .preview-head { max-width: 860px; margin: 0 auto 8px; }
+  .preview-head h1 { font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+  .preview-head p { color: var(--head-ink); font-size: 13px; margin: 0 0 4px; }
+  .theme-toggle {
+    margin: 10px 0 22px; padding: 6px 14px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--divider); background: none; color: var(--head-ink);
+    font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+  }
+  .theme-toggle:hover { color: var(--ink); border-color: var(--focus); }
+
+  /* ---- the product's own header rules (components.css 853–895, 1085–1200,
+         2956–2981) — copied verbatim, only the page wrapper is the preview's -- */
+  .stage-sample { max-width: 860px; margin: 0 auto 30px; }
+  .sample-label { font: 600 12px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--head-ink); margin: 0 0 10px; }
+  .read__head { margin-bottom: 30px; }
+  .read__head-top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .read__eyebrow {
+    margin: 0 0 10px;
+    font-size: 16.5px;
+    font-weight: 600;
+    line-height: 1.65;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: .78;
+  }
+  /* spec 123: the eyebrow rides the actions row on Tata Ibadah only */
+  .read[data-kind="tatib"] .read__head-top .read__eyebrow { margin-bottom: 0; }
+  .read__row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; row-gap: 10px;
+  }
+  .read__title {
+    margin: 0; min-width: 0;
+    font: 620 clamp(1.9rem, 1.2rem + 2vw, 2.7rem)/1.08 ui-serif, Georgia, 'Times New Roman', serif;
+    letter-spacing: -.02em;
+  }
+  .read__no { font-variant-numeric: lining-nums tabular-nums; line-height: inherit; color: var(--head-ink); margin-left: .35em; }
+  .read__lang {
+    display: inline-flex; flex: none; position: relative; margin: 0 0 0 auto;
+    padding: 3px; background: var(--rail-bg);
+    border: 1px solid var(--divider); border-radius: 9px;
+  }
+  .read__lang a {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 52px; height: 30px; padding: 0 12px;
+    font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .03em;
+    color: var(--head-ink); background: none; border: 0; border-radius: 6px;
+    cursor: pointer; text-decoration: none;
+    transition: background var(--ease), color var(--ease);
+  }
+  .read__lang a:hover:not([aria-pressed="true"]) { color: var(--ink); background: var(--icon-hover-bg); }
+  .read__lang a[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); font-weight: 640; }
+
+  .read__project { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin: 0; }
+  .read__project-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 34px; padding: 0 14px; border-radius: 9px;
+    border: 1px solid var(--divider); background: none; color: var(--head-ink);
+    font: 600 13px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
+    transition: border-color var(--ease), color var(--ease), background var(--ease);
+  }
+  .read__project-btn svg { width: 15px; height: 15px; flex: none; }
+  .read__project-btn:hover { color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg); }
+  .read__project-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  /* the tatib comparison sample's own rules (components.css 2956–2981) */
+  .read[data-kind="tatib"] .read__head-top { flex-wrap: wrap; row-gap: 8px; }
+  .read[data-kind="tatib"] .read__head-top .read__eyebrow { white-space: nowrap; }
+  .read[data-kind="tatib"] .read__project { flex-wrap: nowrap; flex: none; }
+  .read[data-kind="tatib"] .read__project-btn { white-space: nowrap; padding-inline: 10px; }
+  .read__project-btn--icon { width: 34px; padding: 0; justify-content: center; }
+  .read__project-btn[data-project-window] { display: none; }
+  @media (min-width: 721px) {
+    .read__project[data-displaying="true"] .read__project-btn[data-project-window] { display: inline-flex; }
+    .read[data-kind="tatib"] .read__project { flex-wrap: wrap; max-width: 100%; }
+  }
+
+  /* the ≤720px rule, as FR-007 promises: the new control joins the existing one
+     (components.css:3202 "[data-project-open] { display: none; }", with the
+     slice's addition named). Resize this window to watch the buttons go. */
+  @media (max-width: 720px) {
+    [data-project-open], [data-project-goto] { display: none; }
+  }
+
+  /* ---- states strip --------------------------------------------------------- */
+  .states { max-width: 860px; margin: 0 auto 30px; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+  .states figure { margin: 0; display: grid; gap: 6px; justify-items: center; }
+  .states figcaption { font-size: 11.5px; color: var(--head-ink); }
+  .force-hover .read__project-btn { color: var(--ink); border-color: var(--focus); background: var(--icon-hover-bg); }
+
+  /* ---- the markup the two pages would carry ---------------------------------- */
+  pre { max-width: 860px; margin: 0 auto; padding: 14px 16px; border: 1px solid var(--divider); border-radius: 10px; overflow: auto; font-size: 12px; line-height: 1.55; color: var(--ink); background: var(--rail-bg); }
+  pre .c { color: var(--head-ink); }
+  .footnote { max-width: 860px; margin: 14px auto 0; font-size: 12.5px; color: var(--head-ink); }
+</style>
+</head>
+<body>
+
+<div class="preview-head">
+  <h1>Project button on the song and Bible pages — spec 193</h1>
+  <p>Static preview assembled from the product's real header markup and stylesheet rules (components.css, tokens.css). Dark mode shown; the toggle flips the real token values.</p>
+  <p>The control is the Tata Ibadah page's Project button, ported: same anatomy and tokens, minus the Stop toggle — because the projector's Back ends a detour. On the song page it takes the Tata Ibadah slot (right end of <code>read__head-top</code>); on the Bible chapter page it sits in the title row, right of the TB/SIM switch (gate-1 revision).</p>
+  <button type="button" class="theme-toggle" onclick="var r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';this.textContent=r.dataset.theme==='dark'?'Light mode':'Dark mode'">Light mode</button>
+</div>
+
+<!-- US1: song page, hymn song -->
+<div class="stage-sample">
+  <p class="sample-label">Song page · hymn song · /songs/&lt;id&gt;/</p>
+  <div class="read" data-kind="song">
+    <header class="read__head">
+      <div class="read__head-top">
+        <p class="read__eyebrow" id="readEyebrow">PKJ 4</p>
+        <div class="read__project">
+          <button type="button" class="read__project-btn" data-project-goto
+                  data-projector-url="/projector" data-goto-song="1823"
+                  aria-label="Project" title="Project">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+              <circle cx="6.7" cy="9.7" r="1.7"/>
+              <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+            </svg>
+            <span>Project</span>
+          </button>
+        </div>
+      </div>
+      <div class="read__row">
+        <h1 class="read__title"><span id="readName">Kasihnya Melimpah</span> <span class="read__no" id="readNo"></span></h1>
+      </div>
+    </header>
+  </div>
+</div>
+
+<!-- US1: song page, ordinary songbook song -->
+<div class="stage-sample">
+  <p class="sample-label">Song page · ordinary songbook (eyebrow = songbook name)</p>
+  <div class="read" data-kind="song">
+    <header class="read__head">
+      <div class="read__head-top">
+        <p class="read__eyebrow" id="readEyebrow2">Doding Ni Hordoan</p>
+        <div class="read__project">
+          <button type="button" class="read__project-btn" data-project-goto
+                  data-projector-url="/projector" data-goto-song="77"
+                  aria-label="Project" title="Project">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+              <circle cx="6.7" cy="9.7" r="1.7"/>
+              <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+            </svg>
+            <span>Project</span>
+          </button>
+        </div>
+      </div>
+      <div class="read__row">
+        <h1 class="read__title"><span id="readName2">Hama hami rajai</span> <span class="read__no" id="readNo2"></span></h1>
+      </div>
+    </header>
+  </div>
+</div>
+
+<!-- US2: Bible chapter page -->
+<div class="stage-sample">
+  <p class="sample-label">Bible chapter page · /bible/&lt;book&gt;/&lt;chapter&gt;/ (eyebrow hidden on Bible)</p>
+  <div class="read" data-kind="bible">
+    <header class="read__head">
+      <div class="read__head-top">
+        <p class="read__eyebrow" id="readEyebrow3" hidden></p>
+      </div>
+      <div class="read__row">
+        <h1 class="read__title"><span id="readName3">Kejadian</span> <span class="read__no" id="readNo3">2</span></h1>
+        <div class="read__lang" role="group" aria-label="Choose reading translation" data-edition="tb">
+          <a id="langTb" href="#" aria-pressed="true" title="New Translation (Indonesian)">TB</a>
+          <a id="langSim" href="#" aria-pressed="false" title="Simalungun translation">SIM</a>
+        </div>
+        <div class="read__project">
+          <button type="button" class="read__project-btn" data-project-goto
+                  data-projector-url="/projector" data-goto-book="1" data-goto-chapter="2"
+                  data-goto-edition="TB"
+                  aria-label="Project" title="Project">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+              <circle cx="6.7" cy="9.7" r="1.7"/>
+              <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+            </svg>
+            <span>Project</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  </div>
+</div>
+
+<!-- comparison: the Tata Ibadah header as it ships today -->
+<div class="stage-sample">
+  <p class="sample-label">Tata Ibadah today (comparison — unchanged by this slice)</p>
+  <div class="read" data-kind="tatib">
+    <header class="read__head">
+      <div class="read__head-top">
+        <p class="read__eyebrow">16 Nov 2026</p>
+        <div class="read__project" data-displaying="true">
+          <button type="button" class="read__project-btn read__project-btn--icon" data-project-window
+                  data-projector-url="/projector" data-project-service="144"
+                  aria-label="Open projector window" title="Open projector window">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="6.6" width="9.6" height="9" rx="1.6"/>
+              <path d="M12.6 4.2h3.8v3.8M16.4 4.2 9.9 10.7"/>
+            </svg>
+          </button>
+          <button type="button" class="read__project-btn" data-project-open
+                  data-projector-url="/projector" data-project-service="144"
+                  data-label-project="Project" data-label-stop="Stop projecting"
+                  aria-label="Stop projecting" title="Stop projecting">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+              <circle cx="6.7" cy="9.7" r="1.7"/>
+              <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+            </svg>
+            <span>Stop projecting</span>
+          </button>
+        </div>
+      </div>
+      <div class="read__row">
+        <h1 class="read__title"><span>Ibadah Minggu</span></h1>
+      </div>
+    </header>
+  </div>
+</div>
+
+<!-- states -->
+<div class="states-wrap">
+  <p class="sample-label" style="max-width:860px;margin:0 auto 10px;font:600 12px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--head-ink)">States of the new control (rest · hover · focus-visible)</p>
+  <div class="states">
+    <figure>
+      <button type="button" class="read__project-btn" aria-label="Project" title="Project">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/><circle cx="6.7" cy="9.7" r="1.7"/><path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/></svg>
+        <span>Project</span>
+      </button>
+      <figcaption>rest — border --divider, ink --head-ink</figcaption>
+    </figure>
+    <figure class="force-hover">
+      <button type="button" class="read__project-btn" aria-label="Project" title="Project">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/><circle cx="6.7" cy="9.7" r="1.7"/><path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/></svg>
+        <span>Project</span>
+      </button>
+      <figcaption>hover — ink --ink, border --focus, bg --icon-hover-bg</figcaption>
+    </figure>
+    <figure>
+      <button type="button" class="read__project-btn" aria-label="Project" title="Project" style="outline: 2px solid var(--focus); outline-offset: 2px;">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/><circle cx="6.7" cy="9.7" r="1.7"/><path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/></svg>
+        <span>Project</span>
+      </button>
+      <figcaption>focus-visible — 2px --focus outline, offset 2px</figcaption>
+    </figure>
+    <figure>
+      <button type="button" class="read__project-btn" style="display:none" aria-hidden="true"></button>
+      <figcaption>≤720px — not drawn (resize this window)</figcaption>
+    </figure>
+  </div>
+</div>
+
+<pre>
+<span class="c">&lt;!-- song.html — the whole read_actions block --&gt;</span>
+{% block read_actions %}
+&lt;div class="read__project"&gt;
+  &lt;button type="button" class="read__project-btn" <b>data-project-goto</b>
+          data-projector-url="/projector" <b>data-goto-song="{{ song.pk }}"</b>
+          aria-label="Project" title="Project"&gt;
+    &lt;svg …projector glyph, copied from tatib.html…&gt;&lt;/svg&gt;
+    &lt;span&gt;Project&lt;/span&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+{% endblock %}
+
+<span class="c">&lt;!-- bible.html — drawn only while a chapter is on stage --&gt;</span>
+&lt;button … <b>data-goto-book="{{ book_id }}" data-goto-chapter="{{ read_no }}"
+        data-goto-edition="TB|SIM"</b> …&gt;
+</pre>
+
+<p class="footnote">Static preview bound: markup, CSS and states only — it cannot show what fetches. The click act (write the Go To pointer, broadcast, open or focus the <code>gkps-projector</code> window) is shown live on the worktree dev server during implementation review.</p>
+
+</body>
+</html>

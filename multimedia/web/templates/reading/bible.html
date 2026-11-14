@@ -6,6 +6,25 @@
 
 {% block ch_rows %}{% if book_id %}{% include 'reading/_chapters.html' %}{% endif %}{% endblock %}
 
+{% comment %}The Project control sits in the title row, right of the edition switch (spec 193), and only while a chapter is on stage: the pointer names the chapter, the edition the page shows, and verse 1 (the owner's call at Clarify).{% endcomment %}
+{% block read_row_actions %}{% if read_state == 'on' %}
+<div class="read__project">
+  <button type="button" class="read__project-btn" data-project-goto
+          data-projector-url="{% url 'web-projector' %}"
+          data-goto-book="{{ book_id }}" data-goto-chapter="{{ read_no }}"
+          data-goto-edition="{% if read_lang == 'sim' %}SIM{% else %}TB{% endif %}"
+          aria-label="Project" title="Project">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+      <circle cx="6.7" cy="9.7" r="1.7"/>
+      <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+    </svg>
+    <span>Project</span>
+  </button>
+</div>
+{% endif %}{% endblock %}
+
 {% block read_body %}
 <div class="read__ed" data-ed="tb" data-name="{{ tb_book_name }}"{% if read_lang == 'sim' %} hidden{% endif %}>
 {% for v in tb_verses %}{% if v.title %}<h2 class="read__sec">{{ v.title }}</h2>{% endif %}<p class="v"{% if v.target %} data-search-target="true"{% endif %}><span class="v__n">{{ v.n }}</span><span>{{ v.text }}</span></p>

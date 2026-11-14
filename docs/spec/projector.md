@@ -1,8 +1,8 @@
 # projector
 
 **capability**: `projector`
-**last folded**: 2026-11-05
-**slices**: `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**last folded**: 2026-11-14
+**slices**: `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -50,6 +50,21 @@ ends it SHALL leave the page idle — no screen and no detour. (spec 187)
 #### Scenario: a fetch fails
 - WHEN a chapter or song request fails
 - THEN the lock ends, the panel stays open, the field is usable and the row says the content could not be loaded
+
+A Go To that names the detour already open — the same content at the same position, from any
+surface — SHALL neither fetch nor repaint, so the open detour keeps its place; a genuinely different
+pointer, the page's own verse and screen navigation, and a fresh boot SHALL fetch and paint as
+always. A Go To already carried in the display state SHALL ride on top of a boot-time adoption: the
+adoption paints the service first, and the stored Go To is applied once it settles, so a cold open
+shows the detour over the service, never the bare service. (spec 193)
+
+#### Scenario: an identical Go To is inert
+- WHEN a Go To arrives naming the detour already open at its current position
+- THEN nothing is fetched and nothing is repainted, and the detour keeps its place
+
+#### Scenario: a stored Go To rides an adoption
+- WHEN the page boots adopting a service while the display state carries a Go To
+- THEN the adoption paints the service first and the Go To is applied once it settles
 
 The Go To SHALL be written to the display state rather than kept in the page: choosing a result SHALL
 write `goto`, a step SHALL write its position, and Back SHALL write `goto: null` — the service's own

@@ -449,6 +449,7 @@
      <a id="langSim" href="{{ lang_sim_url|default:'?ed=sim' }}" aria-pressed="{% if read_lang == 'sim' %}true{% else %}false{% endif %}" title="Simalungun translation"{% if not has_sim %} data-empty="true" aria-disabled="true"{% endif %}>SIM</a>
     </div>
     {% endif %}
+{% block read_row_actions %}{% endblock %}
    </div>
   </header>
   <div class="read__body" id="readBody">{% block read_body %}{% endblock %}</div>

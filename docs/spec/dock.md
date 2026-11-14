@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-05
-**slices**: `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-14
+**slices**: `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -262,3 +262,22 @@ is on air, and when the state names a service this picker does not list. (spec 1
 #### Scenario: a go to stands alone
 - WHEN the dock is reloaded while a go to with no service is up
 - THEN the runner is the view and the go to's block is drawn
+
+### R12 — A reading page starts a Go To
+
+The song page and the Bible chapter page SHALL start a Go To through their Project control
+(`reading/R42`): the display state gains the same pointer the dock's find band writes —
+`{kind: 'song', song_id, index: 0}` for the open song, `{kind: 'passage', book_id, chapter, verse,
+translation}` for the open chapter, `verse: 1` and the page's own shown edition — and `{type:
+'goto'}` is broadcast on the display channel. The control SHALL NOT adopt or release a service, and
+an adopted service keeps its screen and edition underneath the detour. The dock's own re-pick stays
+an explicit restart: the never-reset rule is the reading control's, not the shared verb's. (spec 193)
+
+#### Scenario: the pointer
+- WHEN a reading page's control is clicked with this detour not already open
+- THEN the state carries the same pointer shape a dock find writes, with the service untouched
+
+#### Scenario: the control never resets
+- WHEN the stored state already opens that song or chapter
+- THEN the pointer is left untouched (hidden words resume where they kept), and the dock keeps
+  re-picking from its own first screen or verse

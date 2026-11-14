@@ -6,6 +6,23 @@
 
 {% block ch_rows %}{% include 'reading/_song_list.html' %}{% endblock %}
 
+{% comment %}The Project control rides with the eyebrow (spec 193): the open song goes on air as a Go To detour. It is drawn only while the song has verses to paint, and it never toggles to Stop — the projector's Back ends a detour.{% endcomment %}
+{% block read_actions %}{% if verse_rows %}
+<div class="read__project">
+  <button type="button" class="read__project-btn" data-project-goto
+          data-projector-url="{% url 'web-projector' %}" data-goto-song="{{ song.pk }}"
+          aria-label="Project" title="Project">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.4" y="5.2" width="8.6" height="9" rx="1.6"/>
+      <circle cx="6.7" cy="9.7" r="1.7"/>
+      <path d="M12.4 7.6l4.4-2.1M12.4 9.7h5M12.4 11.8l4.4 2.1"/>
+    </svg>
+    <span>Project</span>
+  </button>
+</div>
+{% endif %}{% endblock %}
+
 {% block read_body %}
 {% if verse_rows %}
   {% for v in verse_rows %}

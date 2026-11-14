@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-196](./items/ITEM-196-reading-project-button.md) | Project button on the song and Bible pages | A Project control in the stage header puts the open song or chapter on air as a Go To detour and brings the `gkps-projector` window forward | feat | P1 | S | specs/193-reading-project-button/spec.md | `feat/193-reading-project-button` | 2026-11-14 |
 
 ## In review
 

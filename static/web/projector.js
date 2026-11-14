@@ -1334,6 +1334,23 @@
 
   var gotoCache = {key: '', payload: null, loading: false};
 
+  /* The pointer the detour on air was applied from (spec 193): a Go To that names the
+     same content at the same position, from any surface, is neither fetched nor
+     repainted, so a repeated Project click keeps the detour's place. Back clears it. */
+  var appliedGoto = null;
+
+  function sameGoto(a, b) {
+    if (!a || !b || a.kind !== b.kind) return false;
+    if (a.kind === 'song') {
+      return Number(a.song_id) === Number(b.song_id)
+        && (Number(a.index) || 0) === (Number(b.index) || 0);
+    }
+    return Number(a.book_id) === Number(b.book_id)
+      && Number(a.chapter) === Number(b.chapter)
+      && Number(a.verse) === Number(b.verse)
+      && (a.translation || null) === (b.translation || null);
+  }
+
   function gotoKey(goto) {
     if (!goto) return '';
     return goto.kind === 'song' ? 'song:' + goto.song_id
@@ -1399,6 +1416,7 @@
        every go to change — a stale local flag left the service blank after Back. */
     showing = stored.on === true;
     if (!goto) {
+      appliedGoto = null;
       var hadDetour = Boolean(detour);
       detour = null;
       detourNode.classList.remove('is-active');
@@ -1409,6 +1427,14 @@
       if (hadDetour) render();
       return;
     }
+    if (sameGoto(appliedGoto, goto)) {
+      /* The detour already open, at the place it sits (spec 193): no fetch, no repaint
+         of the pointer — but `showing` may have flipped underneath it (a resume), so
+         what is on air is repainted quietly. */
+      render(true);
+      return;
+    }
+    appliedGoto = goto;
     fetchGotoPayload(goto, function (payload) {
       var made = detourFrom(goto, payload);
       if (!made) return;
@@ -1444,6 +1470,7 @@
   function leaveDetour() {
     if (!detour) return;
     writeGoto(null);
+    appliedGoto = null;
     detour = null;
     detourNode.classList.remove('is-active');
     showing = true;
@@ -1846,22 +1873,30 @@
     translation = '';
     render(true);
   }
+  /* A go to already in the state rides on top of an adopt: the adoption paints the
+     service first, and its fetch would otherwise wipe the detour the bare apply below
+     painted while it was in flight (spec 193). The adopt's own settle re-applies it. */
+  var bootRidesGoto = false;
   if (adoptId) {
     if (adoptId === service) {
       write({service: adoptId, screen: 0, on: true, translation: null, at: Date.now()});
       post({type: 'show', service: adoptId, screen: 0});
       settle(0, true);
     } else {
+      bootRidesGoto = true;
       adoptService(adoptId, 0, function () {
         write({service: adoptId, screen: 0, on: true, translation: null, at: Date.now()});
         post({type: 'show', service: adoptId, screen: 0});
         settle(0, true);
+        applyGoto();
       });
     }
   } else if (stored && stored.service && Number(stored.service) !== service) {
+    bootRidesGoto = true;
     adoptService(Number(stored.service), stored.screen, function () {
       settle(stored.screen, stored.on);
       if (stored.translation) { translation = stored.translation; render(true); }
+      applyGoto();
     });
   } else if (stored && Number(stored.service) === service) {
     settle(stored.screen, stored.on);
@@ -1931,7 +1966,7 @@
   window.addEventListener('storage', function (event) {
     if (event.key === KEY) applyGoto();
   });
-  applyGoto();
+  if (!bootRidesGoto) applyGoto();
   window.addEventListener('pagehide', clearImageScreen);
   window.addEventListener('pagehide', clearVideoScreen);
 })();

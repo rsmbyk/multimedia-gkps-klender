@@ -439,6 +439,40 @@ class ReadingViewTests(TestCase):
         response = self.client.get(reverse('web-song', args=[song.id]))
         self.assertEqual(self._eyebrow(response), 'Kidung Harian Baru')
 
+    # --- the Project control (spec 193) ---
+
+    def test_song_page_draws_project_control(self):
+        response = self.client.get(reverse('web-song', args=[self.song.pk]))
+        self.assertContains(response, 'data-project-goto')
+        self.assertContains(response, f'data-goto-song="{self.song.pk}"')
+        self.assertContains(response, 'aria-label="Project"')
+
+    def test_bible_chapter_draws_project_control_beside_the_switch(self):
+        response = self.client.get(reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        self.assertContains(response, 'data-project-goto')
+        self.assertContains(response, f'data-goto-book="{self.mat.pk}"')
+        self.assertContains(response, 'data-goto-chapter="5"')
+        self.assertContains(response, 'data-goto-edition="TB"')
+        html = response.content.decode()
+        self.assertLess(html.index('id="langSim"'), html.index('data-project-goto'),
+                        'the control sits right of the translation switch')
+
+    def test_project_control_is_absent_where_it_has_nothing_to_say(self):
+        # NKB 13 holds no verses: a detour with nothing to paint is not offered.
+        self.assertNotContains(self.client.get(reverse('web-song', args=[self.next_song.pk])),
+                               'data-project-goto')
+        # A book landing names no chapter to paint.
+        self.assertNotContains(self.client.get(reverse('web-bible-book', args=[self.mat.pk])),
+                               'data-project-goto')
+        # The landing Bible page has neither chapter nor control.
+        self.assertNotContains(self.client.get(reverse('web-bible')),
+                               'data-project-goto')
+
+    def test_the_bible_control_carries_the_shown_edition(self):
+        response = self.client.get(
+            reverse('web-bible-chapter', args=[self.mat.pk, 5]), {'ed': 'tb'})
+        self.assertContains(response, 'data-goto-edition="TB"')
+
     def test_deleted_song_is_hidden_from_song_detail_and_search(self):
         self.next_song.delete()
         detail = self.client.get(reverse('web-song', args=[self.next_song.pk]))
