@@ -2033,6 +2033,24 @@
     if (event.detail) event.detail.viewUpdate = viewUpdate;
   });
 
+  /* Sidebar deletes (spec 190): the editor flow asks the shell where the stage
+     is and, when the deleted record was the one on stage, swaps to the parent
+     list with the history entry replaced instead of appended. */
+  window.gkpsStage = function () {
+    return { section: stageSection(), tile: stageInfo.tile,
+             song: stageInfo.song, url: stageInfo.url };
+  };
+  window.gkpsNavigate = function (url, opts) { return navigate(url, opts); };
+  document.addEventListener('shell:sidebar-delete', function () {
+    var books = panelBody.querySelectorAll('.book').length;
+    paintListEmpty(panelEmpty, books > 0, books);
+    if (activeSection !== 'alkitab') {
+      var rows = chList.querySelectorAll('.songrow').length;
+      paintListEmpty(songEmpty, rows > 0 || chList.querySelectorAll('.toc__eos').length > 0,
+                     rows);
+    }
+  });
+
   /* ---------- reveal search targets ---------- */
   function revealSearchTarget(target) {
     target.scrollIntoView({ block: 'start', behavior: 'instant' });

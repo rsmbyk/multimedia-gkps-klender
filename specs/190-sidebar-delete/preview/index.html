@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sidebar delete — preview (spec 190)</title>
+<style>
+  :root {
+    --canvas: #171a1d;
+    --rail-bg: #1f2328;
+    --panel-bg: #1b1f23;
+    --ink: #e8edf2;
+    --head-ink: #a9b4bf;
+    --divider: #2d353d;
+    --icon-hover-bg: #252b31;
+    --selection-bg: #243427;
+    --selection-ink: #e8edf2;
+    --focus: #4f8cff;
+    --ease: 140ms ease;
+    --danger: #d24b4b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; font: 14px/1.4 system-ui, -apple-system, sans-serif;
+    background: var(--canvas); color: var(--ink);
+  }
+  h1 { font-size: 16px; margin: 0 0 8px; font-weight: 600; }
+  p.note { color: var(--head-ink); margin: 0 0 20px; font-size: 13px; max-width: 720px; }
+  .preview {
+    width: 320px; background: var(--panel-bg); border: 1px solid var(--divider);
+    border-radius: 12px; padding: 12px;
+  }
+  .group__head {
+    font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--head-ink); margin: 12px 8px 6px; font-weight: 600;
+  }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { position: relative; }
+  .book {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 7px 36px 7px 10px; border-radius: 8px; color: inherit;
+    text-decoration: none; min-height: 40px;
+  }
+  .book:hover { background: var(--icon-hover-bg); }
+  .book__n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 22px; flex: 1; }
+  .book__s {
+    flex: none; white-space: nowrap; font-size: 12.5px; line-height: 22px; color: var(--head-ink);
+  }
+  /* Row actions: hidden at rest, revealed on hover/focus-within (FR-003). */
+  .row-edit, .row-delete {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
+    cursor: pointer; border: 1px solid var(--divider); border-radius: 7px;
+    background: var(--rail-bg); color: var(--head-ink);
+    opacity: 0; pointer-events: none; transition: opacity var(--ease), color var(--ease);
+  }
+  .row-edit { right: 38px; }
+  .row-delete { right: 6px; }
+  .row-edit svg, .row-delete svg { width: 13px; height: 13px; }
+  li:hover .row-edit, li:hover .row-delete,
+  li:focus-within .row-edit, li:focus-within .row-delete,
+  .row-edit:focus-visible, .row-delete:focus-visible { opacity: 1; pointer-events: auto; }
+  .row-edit:hover, .row-delete:hover { color: var(--ink); }
+  .row-edit:focus-visible, .row-delete:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  /* FR-004 / US3.2: hide dated Tata Ibadah service row date while hovered/focused for action reveal. */
+  li:hover .book__s,
+  li:focus-within .book__s { visibility: hidden; }
+
+  .label { margin-top: 18px; font-size: 12px; color: var(--head-ink); }
+  .state { display: inline-block; margin-top: 6px; padding: 4px 8px; border-radius: 6px; background: #243427; color: #cfe9d2; font-size: 12px; }
+</style>
+</head>
+<body>
+  <h1>Spec 190 — Sidebar delete (preview)</h1>
+  <p class="note">Demonstrates FR-004: on a dated Tata Ibadah service row, the displayed date is hidden while the row is hovered/focused so the revealed row actions (edit + delete) are not obscured. Template rows without a date are unaffected.</p>
+
+  <div class="preview" aria-label="Tata Ibadah sidebar preview">
+    <section class="group">
+      <h3 class="group__head">Earlier this year</h3>
+      <ul>
+        <li>
+          <a class="book" href="#" data-editor-kind="tatib"
+             aria-label="Minggu Biasa (23 Agustus 2026)">
+            <span class="book__n">Minggu Biasa</span>
+            <span class="book__s">23 Agu 2026</span>
+          </a>
+          <button class="row-edit" type="button" aria-label="Edit Minggu Biasa">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/>
+            </svg>
+          </button>
+          <button class="row-delete" type="button" aria-label="Delete Minggu Biasa">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.2 5.9h11.6M8 5.9V4.2h4v1.7M6.1 5.9l.7 10.1h6.4l.7-10.1M8.6 9.2v4M11.4 9.2v4"/>
+            </svg>
+          </button>
+        </li>
+      </ul>
+    </section>
+
+    <section class="group">
+      <h3 class="group__head">Templates</h3>
+      <ul>
+        <li>
+          <a class="book" href="#" data-editor-kind="template"
+             aria-label="Liturgi Minggu Pagi">
+            <span class="book__n">Liturgi Minggu Pagi</span>
+          </a>
+          <button class="row-edit" type="button" aria-label="Edit Liturgi Minggu Pagi">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12.5 4.5l3 3-8 8H4.5v-3z"/>
+            </svg>
+          </button>
+          <button class="row-delete" type="button" aria-label="Delete Liturgi Minggu Pagi">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.2 5.9h11.6M8 5.9V4.2h4v1.7M6.1 5.9l.7 10.1h6.4l.7-10.1M8.6 9.2v4M11.4 9.2v4"/>
+            </svg>
+          </button>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="label">Required state for FR-004: hover/focus the dated service row above — its date (<code>23 Agu 2026</code>) hides while the edit/delete controls are visible.</div>
+  <div class="state">Preview updated: hovered dated Tata Ibadah row hides date</div>
+</body>
+</html>

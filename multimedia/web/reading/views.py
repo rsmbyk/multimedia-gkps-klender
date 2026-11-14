@@ -186,6 +186,76 @@ def editor_save(request, kind, pk=None):
     return JsonResponse({'ok': True, 'id': saved.pk, 'kind': kind})
 
 
+# Sidebar record deletes (spec 190). The guard set mirrors the editors: the
+# owner's open-write decision stands, hymn songbooks and their songs stay
+# read-only, and a record only ever leaves through the kind that names it --
+# a template is not deletable as a service, nor the other way round.
+DELETE_NOUNS = {'songbook': 'songbook', 'song': 'song',
+                'tatib': 'Tata Ibadah', 'template': 'template'}
+
+
+def _deletable_record(kind, pk):
+    """The sidebar record a delete names, or None when the kind/target is not."""
+    if kind not in DELETE_NOUNS:
+        return None
+    try:
+        key = int(pk)
+    except (TypeError, ValueError):
+        return None
+    if kind == 'songbook':
+        return song_models.Book.objects.filter(
+            pk=key, is_deleted=False, is_hymn_book=False).first()
+    if kind == 'song':
+        return song_models.Song.objects.filter(
+            pk=key, is_deleted=False, book__is_deleted=False,
+            book__is_hymn_book=False).first()
+    wanted = (tatib_models.TataIbadahKind.TEMPLATE if kind == 'template'
+              else tatib_models.TataIbadahKind.SERVICE)
+    return tatib_models.TataIbadah.objects.filter(
+        pk=key, is_active=True, kind=wanted).first()
+
+
+def _delete_record_name(record):
+    return record.title if isinstance(record, song_models.Song) else record.name
+
+
+def editor_delete_confirm(request, kind, pk):
+    """The confirm fragment the shared editor modal swaps in (spec 190)."""
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    record = _deletable_record(kind, pk)
+    if record is None:
+        raise Http404('Not deletable.')
+    return render(request, 'reading/_editor_delete_confirm.html', {
+        'kind': kind,
+        'noun': DELETE_NOUNS[kind],
+        'record_name': _delete_record_name(record),
+        'target_id': record.pk,
+        'delete_url': reverse('web-editor-delete', args=[kind, record.pk]),
+    })
+
+
+def editor_delete(request, kind, pk):
+    """Retire one sidebar record (spec 190): songs and songbooks soft-delete
+    like every other write here; a Tata Ibadah leaves the lists by its own
+    active flag. Entries keep their references either way."""
+    if not editors.editors_allowed(request):
+        return HttpResponseForbidden('Editing is restricted.')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    record = _deletable_record(kind, pk)
+    if record is None:
+        raise Http404('Not deletable.')
+    if kind in ('tatib', 'template'):
+        record.is_active = False
+        record.save(update_fields=['is_active'])
+    else:
+        record.delete()
+    return JsonResponse({'ok': True, 'id': record.pk, 'kind': kind})
+
+
 def old_item_form(request, pk):
     if not editors.editors_allowed(request):
         return HttpResponseForbidden('Editing is restricted.')
@@ -1129,7 +1199,7 @@ def _tatib_groups(mode, selected_service=None):
         templates = sorted(services.filter(kind=tatib_models.TataIbadahKind.TEMPLATE),
                            key=lambda service: search_lib.normalize(service.name).replace('|', ''))
         rows = [{'id': service.pk, 'name': service.name, 'date_display': '',
-                 'current': service.pk == selected_id}
+                 'kind': 'template', 'current': service.pk == selected_id}
                 for service in templates]
         groups = [{'label': 'Templates', 'key': '', 'services': rows}]
     else:
@@ -1144,7 +1214,7 @@ def _tatib_groups(mode, selected_service=None):
                 {'id': service.pk, 'name': service.name, 'date': service.date,
                  'date_display': search_lib.format_date_short(service.date),
                  'today': service.date == today,
-                 'current': service.pk == selected_id}
+                 'kind': 'tatib', 'current': service.pk == selected_id}
                 for service in rows]})
     # A service the shown mode does not hold is not listed at all -- no synthetic row and no
     # "currently open" card under the last one (spec 082). The open service is highlighted

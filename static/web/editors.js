@@ -178,6 +178,17 @@
     });
   }
 
+  /* A 403 has two honest readings: the server's own "Editing is restricted."
+     body means permission; anything else -- a refused CSRF check, say -- must
+     not wear that message. The response body tells them apart. */
+  function forbiddenFrom(text) {
+    var error = new Error('forbidden');
+    error.userMessage = /restricted/i.test(text)
+      ? 'Editing is restricted to signed-in staff.'
+      : 'The change was refused. Reload the page and try again.';
+    return error;
+  }
+
   function submit(form) {
     if (feedback && feedback.isDialogBusy(modal)) return;
     var body = new FormData(form);
@@ -211,9 +222,7 @@
         });
       }
       if (response.status === 403) {
-        var restricted = new Error('forbidden');
-        restricted.userMessage = 'Editing is restricted to signed-in staff.';
-        throw restricted;
+        return response.text().then(function (text) { throw forbiddenFrom(text); });
       }
       if (!response.ok) {
         throw new Error('request-failed');
@@ -242,10 +251,139 @@
     });
   }
 
+  /* ---------- delete a sidebar record (spec 190) ------------------------------ */
+  var DELETE_NOUNS = { songbook: 'songbook', song: 'song',
+                       tatib: 'Tata Ibadah', template: 'template' };
+  function nounFor(kind) { return DELETE_NOUNS[kind] || 'record'; }
+  function deleteUrl(dataset, kind, id) {
+    return dataset.replace('KIND', kind).replace('/0/', '/' + id + '/');
+  }
+  function openDeleteConfirm(kind, id) {
+    announce('');
+    return window.gkpsEditorLoadForm.open({
+      url: deleteUrl(modal.dataset.editorDeleteConfirm, kind, id),
+      title: 'Delete ' + nounFor(kind),
+      onLoad: function (html) {
+        document.dispatchEvent(new CustomEvent('date-picker:cleanup'));
+        content.innerHTML = html;
+        document.dispatchEvent(new CustomEvent('date-picker:initialize'));
+        var accept = content.querySelector('.editor__danger');
+        if (accept) accept.focus();
+      },
+      onFailure: function (error) {
+        announce('');
+        if (feedback) feedback.showFailure('Could not open delete confirmation',
+          error.message === 'forbidden'
+            ? 'Editing is restricted to signed-in staff.'
+            : 'The confirmation could not be loaded. Try again.');
+      }
+    });
+  }
+  /* The row lives in the song list (songs) or the section panel (everything
+     else). It leaves the list, and its neighbour quietly takes the focus. */
+  function applyDelete(kind, id) {
+    var scope = document.getElementById(kind === 'song' ? 'chList' : 'panelBody');
+    if (!scope) return null;
+    var link = scope.querySelector(kind === 'song'
+      ? '.songrow[data-i="' + id + '"]' : '.book[data-name="' + id + '"]');
+    var row = link && link.closest('li');
+    if (!row || !row.parentNode) return null;
+    var neighbourLink = null;
+    var candidate = row.previousElementSibling;
+    while (candidate && !neighbourLink) {
+      neighbourLink = candidate.querySelector('a.book, a.songrow');
+      candidate = neighbourLink ? null : candidate.previousElementSibling;
+    }
+    candidate = row.nextElementSibling;
+    while (candidate && !neighbourLink) {
+      neighbourLink = candidate.querySelector('a.book, a.songrow');
+      candidate = neighbourLink ? null : candidate.nextElementSibling;
+    }
+    row.parentNode.removeChild(row);
+    return neighbourLink;
+  }
+  /* Reading what you are deleting? The stage's section, tile and song say so. */
+  function wasOnStage(kind, id) {
+    var stage = window.gkpsStage ? window.gkpsStage() : null;
+    if (!stage || !stage.section) return false;
+    if (kind === 'song') return stage.section === 'kidung' && String(stage.song) === String(id);
+    if (kind === 'songbook') return stage.section === 'kidung' && String(stage.tile) === String(id);
+    return stage.section === 'tatib' && String(stage.tile) === String(id);
+  }
+  /* Where a deleted-on-stage reader lands: the list the record belonged to. */
+  function parentListUrl(kind) {
+    if (kind === 'song') {
+      var tile = document.querySelector('#panelBody .book[aria-current="true"]');
+      if (tile) return tile.getAttribute('href');
+      return '/songs/';
+    }
+    if (kind === 'template') return '/tatib/?mode=template';
+    if (kind === 'tatib') return '/tatib/';
+    return '/songs/';
+  }
+  function submitDelete(form) {
+    var kind = form.dataset.editorDeleteKind;
+    var id = form.dataset.editorDeleteId;
+    var noun = nounFor(kind);
+    announce('');
+    var body = new FormData(form);   /* before setDialogBusy: it disables the
+                                        fields, and FormData skips disabled ones
+                                        -- the CSRF input must be read first */
+    var action = feedback && feedback.beginAction({
+      pendingTitle: 'Deleting ' + noun + '…',
+      successTitle: noun.charAt(0).toUpperCase() + noun.slice(1) + ' deleted',
+      failureTitle: 'Could not delete the ' + noun,
+      failureMessage: 'It was not deleted. Try again.'
+    });
+    var release = feedback ? feedback.setDialogBusy(modal) : null;
+    fetch(form.action, {
+      method: 'POST', body: body, credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'fetch' }
+    }).then(function (response) {
+      if (response.status === 403) {
+        return response.text().then(function (text) { throw forbiddenFrom(text); });
+      }
+      if (!response.ok) throw new Error('request-failed');
+      return response.json();
+    }).then(function (data) {
+      if (!data || !data.ok) throw new Error('unexpected');
+      if (release) { release(); release = null; }
+      trigger = null;
+      var onStage = wasOnStage(kind, id);
+      var neighbourLink = onStage ? null : applyDelete(kind, id);
+      close();
+      if (neighbourLink && !neighbourLink.closest('.is-hidden')) {
+        focusTools.restoreQuietly(neighbourLink);
+      }
+      if (!onStage) document.dispatchEvent(new CustomEvent('shell:sidebar-delete'));
+      if (action) action.success();
+      if (onStage && window.gkpsNavigate) {
+        /* The stage was showing what was just deleted: swap to the parent list
+           and replace the history entry, so Back never revisits the removal. */
+        window.gkpsNavigate(parentListUrl(kind), { kind: 'refresh', replaceUrl: true });
+      }
+    }).catch(function (error) {
+      announce('');
+      if (action) action.failure(error.userMessage
+        || (error.message === 'unexpected'
+          ? 'The server returned an unexpected response.'
+          : 'It was not deleted. Try again.'));
+    }).finally(function () {
+      if (release) release();
+    });
+  }
+
   /* One delegated listener each: the shells replace their rows on every swap. */
   document.addEventListener('click', function (event) {
     var closeButton = event.target.closest('[data-editor-close]');
     if (closeButton && modal.contains(closeButton)) { close(); return; }
+    var deleteOpener = event.target.closest('[data-editor-delete]');
+    if (deleteOpener && !deleteOpener.disabled && window.gkpsEditorLoadForm.canOpen()) {
+      event.preventDefault();
+      trigger = deleteOpener;
+      openDeleteConfirm(deleteOpener.dataset.editorDelete, deleteOpener.dataset.editorId);
+      return;
+    }
     var opener = event.target.closest('[data-editor-open]');
     if (!opener || opener.disabled || !window.gkpsEditorLoadForm.canOpen()) return;
     event.preventDefault();
@@ -258,6 +396,7 @@
     if (!form.classList.contains('editor__form')) return;
     event.preventDefault();
     if (feedback && feedback.isDialogBusy(modal)) return;
+    if (form.dataset.editorDeleteForm) { submitDelete(form); return; }
     submit(form);
   });
 
@@ -272,7 +411,8 @@
     announce('');
     if (trigger && document.contains(trigger)) {
       var focusTarget = trigger;
-      if (trigger.classList.contains('row-edit')) {
+      if (trigger.classList.contains('row-edit')
+          || trigger.classList.contains('row-delete')) {
         var row = trigger.closest('li');
         focusTarget = row && row.querySelector('a.book, a.songrow') || trigger;
       }

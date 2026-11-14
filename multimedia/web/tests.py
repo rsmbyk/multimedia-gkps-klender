@@ -845,6 +845,102 @@ class EditorViewTests(TestCase):
         self.assertNotContains(self.client.get(reverse('web-bible')), 'data-editor-open')
 
 
+class SidebarRecordDeleteTests(TestCase):
+    """Sidebar record deletes (spec 190): the confirm fragment and the endpoints."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.nkb = songs.Book.objects.create(
+            name='Nyanyikanlah Kidung Baru', short_name='NKB', is_hymn_book=True)
+        songs.Song.objects.create(book=cls.nkb, number=12, title='Di Waktu Pagi')
+        cls.harian = songs.Book.objects.create(
+            name='Kidung Harian', short_name='KH', is_hymn_book=False)
+        cls.harian_song = songs.Song.objects.create(book=cls.harian, title='Lagu Harian')
+        cls.service = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu Delete', date=date(2026, 8, 23), is_active=True)
+        cls.template = tatib.TataIbadah.objects.create(name='Liturgi Template')
+
+    def confirm_url(self, kind, pk):
+        return reverse('web-editor-delete-confirm', kwargs={'kind': kind, 'pk': pk})
+
+    def delete_url(self, kind, pk):
+        return reverse('web-editor-delete', kwargs={'kind': kind, 'pk': pk})
+
+    def test_confirm_fragment_names_the_record_and_the_noun(self):
+        response = self.client.get(self.confirm_url('songbook', self.harian.pk))
+        self.assertContains(response, 'Delete songbook')
+        self.assertContains(response, 'Kidung Harian')
+        self.assertContains(response, 'data-editor-delete-kind="songbook"')
+        self.assertContains(response, 'csrfmiddlewaretoken')
+
+    def test_confirm_fragment_uses_the_template_noun(self):
+        response = self.client.get(self.confirm_url('template', self.template.pk))
+        self.assertContains(response, 'Delete template')
+        self.assertNotContains(response, 'Delete Tata Ibadah')
+
+    def test_a_service_is_not_deletable_as_a_template_nor_the_other_way(self):
+        self.assertEqual(
+            self.client.get(self.confirm_url('template', self.service.pk)).status_code, 404)
+        self.assertEqual(
+            self.client.get(self.confirm_url('tatib', self.template.pk)).status_code, 404)
+        self.assertEqual(
+            self.client.post(self.delete_url('template', self.service.pk)).status_code, 404)
+        self.assertTrue(
+            tatib.TataIbadah.objects.filter(pk=self.service.pk, is_active=True).exists())
+
+    def test_deleting_a_songbook_soft_deletes_it(self):
+        response = self.client.post(self.delete_url('songbook', self.harian.pk))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'ok': True, 'id': self.harian.pk, 'kind': 'songbook'})
+        self.harian.refresh_from_db()
+        self.assertTrue(self.harian.is_deleted)
+        self.assertFalse(songs.Book.objects.active().filter(pk=self.harian.pk).exists())
+
+    def test_deleting_a_song_soft_deletes_it(self):
+        response = self.client.post(self.delete_url('song', self.harian_song.pk))
+        self.assertEqual(response.status_code, 200)
+        self.harian_song.refresh_from_db()
+        self.assertTrue(self.harian_song.is_deleted)
+
+    def test_deleting_a_service_deactivates_it(self):
+        response = self.client.post(self.delete_url('tatib', self.service.pk))
+        self.assertEqual(response.status_code, 200)
+        self.service.refresh_from_db()
+        self.assertFalse(self.service.is_active)
+
+    def test_deleting_a_template_deactivates_it(self):
+        response = self.client.post(self.delete_url('template', self.template.pk))
+        self.assertEqual(response.status_code, 200)
+        self.template.refresh_from_db()
+        self.assertFalse(self.template.is_active)
+
+    def test_hymn_songbook_and_hymn_song_are_not_deletable(self):
+        self.assertEqual(self.client.get(
+            self.confirm_url('songbook', self.nkb.pk)).status_code, 404)
+        self.assertEqual(self.client.post(
+            self.delete_url('songbook', self.nkb.pk)).status_code, 404)
+        hymn_song = songs.Song.objects.get(book=self.nkb, number=12)
+        self.assertEqual(self.client.post(
+            self.delete_url('song', hymn_song.pk)).status_code, 404)
+        self.assertTrue(songs.Book.objects.filter(pk=self.nkb.pk, is_deleted=False).exists())
+
+    def test_a_song_of_a_deleted_songbook_is_not_deletable(self):
+        deleted_book = songs.Book.objects.create(name='Buku Mati', short_name='MT')
+        orphan = songs.Song.objects.create(book=deleted_book, title='Anak')
+        deleted_book.delete()
+        self.assertEqual(self.client.post(
+            self.delete_url('song', orphan.pk)).status_code, 404)
+
+    def test_confirm_is_get_only_and_delete_is_post_only(self):
+        self.assertEqual(
+            self.client.post(self.confirm_url('songbook', self.harian.pk)).status_code, 405)
+        self.assertEqual(
+            self.client.get(self.delete_url('songbook', self.harian.pk)).status_code, 405)
+
+    def test_unknown_kind_is_404(self):
+        self.assertEqual(self.client.get(self.confirm_url('bible', 1)).status_code, 404)
+
+
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class ServiceEntryViewTests(TestCase):
     """The service entry endpoints (spec 006, slice 2).
