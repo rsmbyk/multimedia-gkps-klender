@@ -1137,7 +1137,36 @@
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
     updateBand();
-    if (live && !morphing) scheduleCenter();       /* the morph brings its own curve */
+    if (live && !morphing) {
+      /* Edge-snap (spec 196): when the live entry is entirely out of view, park it
+         at the edge it left — top flush or foot just above the NEXT band. A partly
+         visible entry keeps today's centring. */
+      var liveLi = entryList.querySelector('.entryli[data-live="true"]');
+      if (liveLi) {
+        var liTop = liveLi.offsetTop;
+        var liBottom = liTop + liveLi.offsetHeight;
+        var viewTop = runBody.scrollTop;
+        var viewBottom = viewTop + runBody.clientHeight;
+        if (liBottom <= viewTop) {
+          /* Entirely above: park flush at the scroller's top edge. */
+          glideScroll(liTop);
+        } else if (liTop >= viewBottom) {
+          /* Entirely below: with a next entry the band must stay pinned and
+             visible at the scroller's bottom edge, so the foot lands just above
+             it — the band protrudes `bottom: -10px` past the edge, so parking
+             the li's foot there keeps it 10px below the scroller's bottom
+             edge, outside updateBand's "the entry's own end is in view" hide
+             rule. With no next entry the band is already hidden and the
+             foot goes flush at the bottom edge. */
+          var protrude = nextBand.hidden ? 0
+            : Math.abs(parseFloat(getComputedStyle(nextBand).bottom) || 0);
+          glideScroll(liBottom - runBody.clientHeight - protrude);
+        } else {
+          /* Partly visible: today's centring target. */
+          scheduleCenter();
+        }
+      }
+    }       /* the morph brings its own curve */
     dock.lastEntry = live ? activeEntry : null;
   }
 
