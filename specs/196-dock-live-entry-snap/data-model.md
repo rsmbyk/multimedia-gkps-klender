@@ -10,7 +10,7 @@ This slice changes where the runner parks the live entry; it stores nothing, sen
 
 | Quantity | Where | Computed from |
 | --- | --- | --- |
-| Live entry's layout top | `liveLi.offsetTop` in `sync()` (`obs-dock.js:1146`) | the non-sticky `.entryli` element, never the pinned row's own `offsetTop` |
+| Live entry's layout top | `liveLi.offsetTop` in `sync()` (`obs-dock.js:1161`) | the non-sticky `.entryli` element, never the pinned row's own `offsetTop` |
 | Live entry's box height | `.entryli.offsetHeight` | the `.entryli` element |
 | Scroller's view height | `runBody.clientHeight` | `#runBody` |
 | Scroller's scroll range | `runBody.scrollHeight - runBody.clientHeight` | `#runBody` |
@@ -20,11 +20,11 @@ This slice changes where the runner parks the live entry; it stores nothing, sen
 
 - A live entry taller than the scroller can never be entirely out of view (`clientHeight < offsetHeight` makes both conditions impossible), so the snap never fires for it — it keeps today's pinned-row behaviour.
 - A section-break (divider) entry has no live row and never gets a `data-live="true"` marker (`sync()` skips dividers: `:1085`), so there is nothing to park.
-- A go-to block on air follows spec 185's own path (no centring, no snap) — `sync()` returns before the parking code runs (`obs-dock.js:1069-1081`).
+- A go-to block on air follows spec 185's own path (no centring, no snap) — `sync()` returns before the parking code runs (`obs-dock.js:1084-1095`).
 
 ## Invariants the tests hold
 
-1. **One live entry at most.** `data-live="true"` is set only on `index === activeEntry` (`obs-dock.js:1105-1106`).
+1. **One live entry at most.** `data-live="true"` is set only on `index === activeEntry` (`obs-dock.js:1118-1120`).
 2. **The snap never moves a partly-visible entry.** Any overlap of the `.entryli` box with `[0, clientHeight)` falls back to today's centring target.
 3. **The snap never collides with `updateBand`.** The bottom target parks the li's foot 10px below the scroller's bottom edge (the band's `bottom: -10px` protrude), outside the hide rule (`liveEntry.bottom <= box.bottom + 6`) that would otherwise hide the band; with no band (last entry) the protrude is `0` and the foot lands flush at the bottom edge — and the band is hidden by FR-003's rule.
 4. **Hand wins.** `wheel` / `pointerdown` call `cancelPendingCenter`, which cancels any pending snap glide before it starts.

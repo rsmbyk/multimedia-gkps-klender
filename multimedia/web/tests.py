@@ -1480,10 +1480,52 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(entry.resolve(), ('Matius 5:2-4', '2 ayat 2\n\n3 ayat 3\n\n4 ayat 4'))
 
     def test_creating_a_song_entry_stores_the_verses_it_includes(self):
+        ids = [str(verse.pk) for verse in
+               self.song.verse_set.filter(is_deleted=False).order_by('number') if verse.number in (1, 3)]
         response = self.client.post(self.save_new_url(),
-                                    {'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': ['1', '3']})
+                                    {'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': ids})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.tatib.service_entries.get().verses, [1, 3])
+        self.assertEqual(self.tatib.service_entries.get().verses, [int(value) for value in ids])
+
+    def _offset_song(self):
+        """A song whose live verse IDs differ from their numbers, so the two can
+        never be confused in an assertion (the picker speaks IDs; numbers are labels)."""
+        offset = songs.Song.objects.create(book=self.songbook, number=999, title='Offset song')
+        return (offset, [songs.Verse.objects.create(song=offset, number=number, lyric=f'bait {number}')
+                         for number in (1, 2, 3)])
+
+    def test_the_song_verses_picker_answers_id_and_number_pairs(self):
+        offset, verses = self._offset_song()
+        self.assertTrue(min(verse.pk for verse in verses) > 3)   # ids genuinely differ from numbers
+        response = self.client.get(reverse('web-entry-song-verses', args=[offset.pk]))
+        self.assertEqual(response.json(), {
+            'verses': [{'id': verses[0].pk, 'number': 1},
+                       {'id': verses[1].pk, 'number': 2},
+                       {'id': verses[2].pk, 'number': 3}],
+            'title': 'Offset song'})
+
+    def test_a_song_entry_saves_verse_ids_and_refuses_verse_numbers(self):
+        offset, verses = self._offset_song()
+        verse_two = verses[1]
+
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': offset.pk, 'verses': [str(verse_two.pk)]})
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        self.assertEqual(self.tatib.service_entries.get().verses, [verse_two.pk])
+
+        self.tatib.service_entries.all().delete()
+        response = self.client.post(self.save_new_url(), {
+            'kind': tatib.ServiceEntryKind.SONG, 'song': offset.pk, 'verses': ['2']})
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'Select a valid choice', status_code=400)
+        self.assertFalse(self.tatib.service_entries.exists())
+
+    def test_the_verses_checkbox_names_its_number_beside_its_id(self):
+        offset, verses = self._offset_song()
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=offset, verses=[verses[1].pk])
+        html = self.client.get(reverse('web-entry-edit', args=[entry.pk])).content.decode()
+        self.assertRegex(html, 'name="verses" value="%d"[^>]*data-number="2"' % verses[1].pk)
+        self.assertRegex(html, 'name="verses" value="%d"[^>]*data-number="1"' % verses[0].pk)
 
     def test_a_section_break_cannot_be_created_any_more(self):
         """Spec 131 retired the kind; the write path refuses it and writes nothing."""
@@ -1580,7 +1622,9 @@ class ServiceEntryViewTests(TestCase):
         form = self.client.get(reverse('web-entry-edit', kwargs={'pk': entry.pk}))
         self.assertEqual(form.status_code, 200)
         response = self.client.post(reverse('web-entry-save', kwargs={'pk': entry.pk}), {
-            'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk, 'verses': ['1', '2', '3'],
+            'kind': tatib.ServiceEntryKind.SONG, 'song': self.song.pk,
+            'verses': [str(verse.pk) for verse in
+                       self.song.verse_set.filter(is_deleted=False).order_by('number')],
         })
         self.assertEqual(response.status_code, 200, response.content[:500])
         entry.refresh_from_db()
@@ -1797,7 +1841,9 @@ class ServiceEntryViewTests(TestCase):
         verses = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))
         self.assertNotContains(options, f'data-song="{deleted_song.pk}"')
         self.assertNotContains(options, f'data-song="{child_song.pk}"')
-        self.assertEqual(verses.json()['verses'], [1, 3])
+        live = [verse for verse in self.song.verse_set.filter(is_deleted=False).order_by('number')]
+        self.assertEqual(verses.json()['verses'],
+                         [{'id': verse.pk, 'number': verse.number} for verse in live])
 
     def test_the_song_fragment_checks_every_verse_of_its_song(self):
         entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
@@ -1805,8 +1851,10 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="verses"')
         html = response.content.decode()
-        for number in (1, 2, 3):                       # checked, whatever the attribute order
-            self.assertRegex(html, rf'value="{number}"[^>]*checked')
+        for verse in self.song.verse_set.filter(is_deleted=False).order_by('number'):
+            # the ID is the value, the number sits beside it (spec 189's storage)
+            self.assertRegex(html, rf'value="{verse.pk}"[^>]*data-number="{verse.number}"')
+            self.assertRegex(html, rf'value="{verse.pk}"[^>]*checked')
 
     def test_song_edit_fragment_shows_the_hymn_reference_as_its_label(self):
         entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
@@ -2340,7 +2388,9 @@ class ServiceEntryViewTests(TestCase):
     def test_the_verses_of_a_song_come_back_all_included(self):
         response = self.client.get(reverse('web-entry-song-verses', kwargs={'pk': self.song.pk}))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['verses'], [1, 2, 3])
+        live = [verse for verse in self.song.verse_set.filter(is_deleted=False).order_by('number')]
+        self.assertEqual(response.json()['verses'],
+                         [{'id': verse.pk, 'number': verse.number} for verse in live])
 
     def test_the_verse_count_of_a_chapter(self):
         response = self.client.get(reverse('web-entry-chapter-verses',

@@ -11,7 +11,7 @@ is off screen at the bottom (image 3). it should snap at the bottom (above the n
 
 ## What the runner does today
 
-Every state notice reaches `sync()` (`static/web/obs-dock.js:1034`). With a service live and no
+Every state notice reaches `sync()` (`static/web/obs-dock.js:1049`). With a service live and no
 crossing morph, it calls `scheduleCenter()` (`:1140`), which on the next frame runs `centerRow()`
 on the live row (`:530-535`) — the live screen row, or the entry's label row when the screen has
 no row of its own. The target is the row's layout top minus half the scroller's free height
@@ -87,7 +87,7 @@ NEXT band, which stays visible and names the next entry.
    the scroller's bottom edge and still visible, still naming the next entry.
 2. **Given** the live entry is the service's last entry **When** the snap fires **Then** the foot
    rests flush at the scroller's bottom edge, with the band hidden — `updateBand` already hides
-   it when no next entry exists (`obs-dock.js:623-646`).
+   it when no next entry exists (`obs-dock.js:638-661`).
 3. **Given** the operator prefers reduced motion **When** the snap fires **Then** it is instant.
 
 ### US3 — A partly visible live entry keeps today's centring (P2)
@@ -141,15 +141,15 @@ the hand left it for as long as the hand is on it.
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | When the runner re-settles with the live entry's whole box above the scroller's top edge, it SHALL glide the scroller so the entry's row sits flush at the top edge (the pinned row's `-4px` treatment), with the entry's block open beneath it | `new: dock/R13` |
-| FR-002 | When the runner re-settles with the live entry's whole box below the scroller's bottom edge, it SHALL glide so the entry's foot rests just above the sticky NEXT band, the band remaining visible and naming the next entry | `new: dock/R13` |
-| FR-003 | With no next entry, FR-002's target SHALL be the entry's foot flush at the scroller's bottom edge, with the band hidden | `dock/R13` |
-| FR-004 | A live entry at least partly inside the scroller SHALL keep today's centred target | `dock/R13` |
-| FR-005 | The snap SHALL fire at the moments today's centring fires — every state notice with a live service and no morph, the morph's finish, the first paint after load — firing only when the live entry is entirely out of view (Q1 closed) | `dock/R13` |
-| FR-006 | A snap glide SHALL be cancelled by `wheel` and `pointerdown`, and none SHALL start while a gesture is in progress | `dock/R13` |
-| FR-007 | Under `prefers-reduced-motion: reduce` the snap SHALL be instant, reusing `glideScroll`'s existing path | `dock/R13` |
-| FR-008 | The NEXT band's own show/hide and `is-stuck` rules SHALL be unchanged | `dock/R13` |
-| FR-009 | With no measurable live row (no live service, or a go to on air, which keeps today's behaviour per Q2) the runner SHALL do nothing, as today | `dock/R13` |
+| FR-001 | When the runner re-settles with the live entry's whole box above the scroller's top edge, it SHALL glide the scroller so the entry's row sits flush at the top edge (the pinned row's `-4px` treatment), with the entry's block open beneath it | `new: dock/R14` |
+| FR-002 | When the runner re-settles with the live entry's whole box below the scroller's bottom edge, it SHALL glide so the entry's foot rests just above the sticky NEXT band, the band remaining visible and naming the next entry | `new: dock/R14` |
+| FR-003 | With no next entry, FR-002's target SHALL be the entry's foot flush at the scroller's bottom edge, with the band hidden | `dock/R14` |
+| FR-004 | A live entry at least partly inside the scroller SHALL keep today's centred target | `dock/R14` |
+| FR-005 | The snap SHALL fire at the moments today's centring fires — every state notice with a live service and no morph, the morph's finish, the first paint after load — firing only when the live entry is entirely out of view (Q1 closed) | `dock/R14` |
+| FR-006 | A snap glide SHALL be cancelled by `wheel` and `pointerdown`, and none SHALL start while a gesture is in progress | `dock/R14` |
+| FR-007 | Under `prefers-reduced-motion: reduce` the snap SHALL be instant, reusing `glideScroll`'s existing path | `dock/R14` |
+| FR-008 | The NEXT band's own show/hide and `is-stuck` rules SHALL be unchanged | `dock/R14` |
+| FR-009 | With no measurable live row (no live service, or a go to on air, which keeps today's behaviour per Q2) the runner SHALL do nothing, as today | `dock/R14` |
 
 ### Key Entities
 

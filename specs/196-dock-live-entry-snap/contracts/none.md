@@ -8,8 +8,8 @@ The only names it touches are already internal to the dock:
 
 - `#runBody` (`obs-dock.js:41`) — the scroller whose `scrollTop` the snap drives; this element is already the target of every centring and glide call in the dock.
 - `dock` (`obs-dock.js:70-76`) — its fields (`entries`, `screens`, `screen`, `lastEntry`, `on`) are read inside `sync()` and updated without change to their shape or the service they key off.
-- `.entryli[data-live="true"]` — the live entry's container, already marked and inspected during `sync()` rendering (`obs-dock.js:1103-1119`).
-- `.nextband` — the sticky NEXT band, already controlled by `updateBand()` (`obs-dock.js:623-646`); the snap's bottom target uses the band's top edge as its floor, without changing how the band is shown/hidden.
+- `.entryli[data-live="true"]` — the live entry's container, already marked and inspected during `sync()` rendering (`obs-dock.js:1116-1132`).
+- `.nextband` — the sticky NEXT band, already controlled by `updateBand()` (`obs-dock.js:638-661`); the snap's bottom target uses the band's top edge as its floor, without changing how the band is shown/hidden.
 - `glideScroll()` — the existing snap glide reuses this function (`glideTarget`, `glideFrame`, `reduceMotion`); it does not create a new path or timer.
 - `scheduleCenter()` — unchanged; the snap replaces `scheduleCenter` when the entry is off-screen, not adds to it.
 

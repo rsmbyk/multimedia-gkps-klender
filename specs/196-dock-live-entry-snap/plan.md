@@ -38,7 +38,7 @@ See `research.md`. Unknowns remaining: 0.
 | FR-006 | `static/web/obs-dock.js` — `cancelPendingCenter` on wheel / pointerdown | `inspection` | no snap starts while gesture in progress |
 | FR-007 | `static/web/obs-dock.js` — reduced motion instant path | `test` | `glideScroll`'s `reduceMotion.matches` jump reused |
 | FR-008 | `static/styles/design/obs-dock.css` — band show/hide unchanged | `inspection` | diff shows no CSS change |
-| FR-009 | `static/web/obs-dock.js` — go-to keeps today's behaviour | `inspection` | `sync()` returns before the parking code — the `if (dock.goto)` branch ends in `return;` (~1070–1081) |
+| FR-009 | `static/web/obs-dock.js` — go-to keeps today's behaviour | `inspection` | `sync()` returns before the parking code — the `if (dock.goto)` branch ends in `return;` (~1084–1095) |
 | SC-001 | as FR-001 | `test` → `tests/e2e/test_obs_dock_snap.py::SnapE2ETests::test_off_top_snaps_flush_at_top` | `scrollTop` settles at `li.offsetTop`, ±1 px |
 | SC-002 | as FR-002 / FR-003 | `test` → `tests/e2e/test_obs_dock_snap.py::SnapE2ETests::test_off_bottom_foot_just_above_next_band`, `…::test_last_entry_snaps_flush_at_bottom` | `scrollTop` ≈ `liBottom − clientHeight − 10`; band bottom flush at scroller's bottom edge, not `hidden`; last entry: ≈ `liBottom − clientHeight`, band hidden |
 | SC-003 | as FR-004 | `test` → `tests/e2e/test_obs_dock_snap.py::SnapE2ETests::test_partly_visible_keeps_centring` | `scrollTop` settles at today's centre formula, ±2 px |

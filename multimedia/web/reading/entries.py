@@ -121,10 +121,26 @@ class ScriptureEntryForm(ServiceEntryForm):
         field_classes = {'book_translation': RangeCheckedModelChoiceField}
 
 
+class VerseNumberCheckboxSelect(forms.CheckboxSelectMultiple):
+    """The verse checklist (spec 189's storage): the value is the verse's ID and
+    `data-number` carries the number its label shows, so the picker's summary can
+    name numbers from either render — the client-built one and this one."""
+
+    def __init__(self, *args, verse_numbers=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.verse_numbers = verse_numbers or {}
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index,
+                                       subindex=subindex, attrs=attrs)
+        option['attrs']['data-number'] = str(self.verse_numbers.get(str(value), value))
+        return option
+
+
 class SongEntryForm(ServiceEntryForm):
     """Verses are stored by ID; the checkbox label is the current number (spec 189)."""
 
-    verses = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
+    verses = forms.MultipleChoiceField(required=False, widget=VerseNumberCheckboxSelect)
 
     class Meta(ServiceEntryForm.Meta):
         fields = ['kind', 'song', 'verses']
@@ -145,7 +161,8 @@ class SongEntryForm(ServiceEntryForm):
             number_by_id = dict(live)
             # stale ids (deleted) would show as their id; picker forbids new writes of those
             live = [(vid, number_by_id.get(vid, vid)) for vid in live_ids]
-        self.fields['verses'].choices = [(vid, str(num)) for vid, num in live]
+        self.fields['verses'].choices = [(str(vid), str(num)) for vid, num in live]
+        self.fields['verses'].widget.verse_numbers = {str(vid): num for vid, num in live}
 
     def _chosen_song(self):
         if self.is_bound:

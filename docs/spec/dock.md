@@ -2,7 +2,7 @@
 
 **capability**: `dock`
 **last folded**: 2026-11-15
-**slices**: `196-dock-live-entry-snap`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**slices**: `196-dock-live-entry-snap`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -282,7 +282,23 @@ an explicit restart: the never-reset rule is the reading control's, not the shar
 - THEN the pointer is left untouched (hidden words resume where they kept), and the dock keeps
   re-picking from its own first screen or verse
 
-### R13 — A live entry entirely out of view snaps to the edge it left
+### R13 — A saved change re-reads the open service
+
+The dock caches each service's screen and entry data for its session; a saved change SHALL reach it
+anyway. A re-read message (`update`) SHALL drop that cache and load again, and — because OBS is its own
+browser, separate from the one editing the service — the dock SHALL also re-read the open service on a
+timer (10 s), only while the page is visible, rebuilding the step list in place. A re-read SHALL land
+where the operator already is (R11's rule). (spec 195)
+
+#### Scenario: an entry edited in another browser
+- WHEN the dock's open service has an entry edited in the editing browser
+- THEN within one poll interval the step list and the painted screen follow the change, without a reload
+
+#### Scenario: a background tab
+- WHEN the dock's page is hidden
+- THEN the timer does not fetch; OBS paints its docks continuously, so the guard rests while the dock shows
+
+### R14 — A live entry entirely out of view snaps to the edge it left
 
 When the runner re-settles — every state notice with a live service and no morph, and the first
 paint after load — and the live entry's whole `entryli` box sits above the scroller's top edge or
