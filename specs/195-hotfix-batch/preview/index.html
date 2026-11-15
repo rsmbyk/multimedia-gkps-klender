@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Production hotfixes — preview (spec 195)</title>
+<style>
+  :root {
+    --canvas: #171a1d;
+    --rail-bg: #1f2328;
+    --panel-bg: #1b1f23;
+    --ink: #e8edf2;
+    --head-ink: #a9b4bf;
+    --divider: #2d353d;
+    --icon-hover-bg: #252b31;
+    --active-bg: #243427;
+    --active-ink: #7fd08a;
+    --focus: #4f8cff;
+    --ease: 140ms ease;
+    --danger: #d24b4b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; font: 14px/1.4 system-ui, -apple-system, sans-serif;
+    background: var(--canvas); color: var(--ink);
+  }
+  h1 { font-size: 16px; margin: 0 0 8px; font-weight: 600; }
+  h2 { font-size: 14px; margin: 32px 0 8px; font-weight: 600; }
+  p.note { color: var(--head-ink); margin: 0 0 16px; font-size: 13px; max-width: 760px; }
+  .label { margin: 14px 0 6px; font-size: 12px; color: var(--head-ink); }
+  .state { display: inline-block; margin: 6px 8px 0 0; padding: 4px 8px; border-radius: 6px;
+           background: var(--active-bg); color: #cfe9d2; font-size: 12px; }
+  .readout { font: 12px/1.5 ui-monospace, monospace; color: var(--head-ink); margin-top: 6px; }
+
+  /* ---------- US1: the Tata Ibadah sidebar row (real markup + numbers) ---------- */
+  .preview {
+    width: 320px; background: var(--panel-bg); border: 1px solid var(--divider);
+    border-radius: 12px; padding: 12px;
+  }
+  .group__head {
+    font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--head-ink); margin: 12px 8px 6px; font-weight: 600;
+  }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { position: relative; }
+  .book {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 7px 36px 7px 10px; border-radius: 8px; color: inherit;
+    text-decoration: none; min-height: 40px;
+  }
+  .book:hover { background: var(--icon-hover-bg); }
+  .book__n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 22px; flex: 1; }
+  .book__s { flex: none; white-space: nowrap; font-size: 12.5px; line-height: 22px; color: var(--head-ink); }
+  .book__today {
+    flex: none; align-self: center; margin-left: auto;
+    padding: 1px 7px 2px; border: 0; border-radius: 999px;
+    background: var(--active-bg); color: var(--active-ink);
+    font-size: 10px; font-weight: 650; letter-spacing: .08em;
+    line-height: 1.35; text-transform: uppercase;
+  }
+  .row-edit, .row-delete {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
+    cursor: pointer; border: 1px solid var(--divider); border-radius: 7px;
+    background: var(--rail-bg); color: var(--head-ink);
+    opacity: 0; pointer-events: none; transition: opacity var(--ease), color var(--ease);
+  }
+  .row-edit { right: 38px; }
+  .row-delete { right: 6px; }
+  .row-edit svg, .row-delete svg { width: 13px; height: 13px; }
+  li:hover .row-edit, li:hover .row-delete,
+  li:focus-within .row-edit, li:focus-within .row-delete,
+  .row-edit:focus-visible, .row-delete:focus-visible { opacity: 1; pointer-events: auto; }
+  .row-delete:hover { color: var(--danger); }
+  .row-edit:focus-visible, .row-delete:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  /* The accepted date hide (spec 190). */
+  li:hover .book__s, li:focus-within .book__s { display: none; }
+  /* US1: the badge follows the same reveal. */
+  li:hover .book__today, li:focus-within .book__today { display: none; }
+
+  /* ---------- US2: the edit modal header (spec 167's numbers, ported) ---------- */
+  .editor { width: 480px; background: var(--panel-bg); border: 1px solid var(--divider);
+            border-radius: 14px; padding: 22px; }
+  .editor__head {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    margin: 0 0 16px; padding: 0 0 14px; border-bottom: 1px solid var(--divider);
+  }
+  .editor__title { margin: 0; padding: 0; border: 0; font: 600 20px/1.3 system-ui, sans-serif; color: var(--ink); }
+  .editor__copy-btn {
+    flex: none; height: 34px; padding: 0 13px; border: 1px solid var(--divider); border-radius: 8px;
+    background: none; color: var(--ink); cursor: pointer;
+    font: 560 13px/1 system-ui, -apple-system, sans-serif;
+  }
+  .editor__copy-btn:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+  .editor__copy-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .editor__field { margin: 14px 0 0; }
+  .editor__field label { display: block; font-size: 12px; color: var(--head-ink); margin: 0 0 6px; }
+  .editor__field input { width: 100%; height: 38px; border: 1px solid var(--divider); border-radius: 8px;
+                         background: var(--rail-bg); color: var(--ink); padding: 0 10px; }
+
+  /* ---------- US5: the overlay caption fit (real caption CSS + the fit) -------- */
+  .stage-wrap { display: flex; gap: 16px; flex-wrap: wrap; }
+  .stage {
+    position: relative; width: 480px; height: 270px; overflow: hidden;
+    container-type: size;
+    background: linear-gradient(180deg, #1d2b22 0%, #0e1410 100%);
+    border: 1px solid var(--divider); border-radius: 10px;
+  }
+  .stage .name { position: absolute; top: 8px; left: 10px; font-size: 11px; color: rgba(255,255,255,.55); }
+  .obs-overlay__caption {
+    position: absolute; left: 5%; right: 5%; bottom: 5%;
+    margin: 0; text-align: center; color: #FFFFFF;
+    font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(11px, 3.75cqw, 80px);
+    font-weight: 800; line-height: 1.4; letter-spacing: .01em; text-wrap: balance;
+    text-shadow:
+      0 .04em 0 #000, .04em 0 0 #000, -.04em 0 0 #000, 0 -.04em 0 #000,
+      .03em .03em 0 #000, -.03em -.03em 0 #000, .03em -.03em 0 #000, -.03em .03em 0 #000,
+      0 .025em .22em rgba(0, 0, 0, .62);
+  }
+  .obs-overlay__caption span { display: block; }
+</style>
+</head>
+<body>
+  <h1>Spec 195 — Production hotfixes (preview)</h1>
+  <p class="note">Static states for US1, US2 and US5. US3, US4 and US6 are live-only (they involve fetches and server
+     rendering) — see <code>preview/README.md</code> for the click paths on the slice worktree server.</p>
+
+  <h2>US1 — the Today badge steps aside while a row's actions are revealed</h2>
+  <p class="note">Hover either row. At rest the badge paints exactly as spec 132 accepted; while the edit/delete
+     controls are revealed the badge is not painted — the same rule the date has followed since spec 190. The badge
+     stays in the row's accessible label.</p>
+  <div class="preview" aria-label="Tata Ibadah sidebar preview">
+    <section class="group">
+      <h3 class="group__head">Upcoming</h3>
+      <ul>
+        <li data-editor-kind="tatib">
+          <a class="book" href="#" aria-label="Ibadah Minggu (15 November 2026) — today">
+            <span class="book__n">Ibadah Minggu</span><span class="book__today">Today</span>
+            <span class="book__s">15 Nov 2026</span>
+          </a>
+          <button class="row-edit" type="button" aria-label="Edit Ibadah Minggu">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+          </button>
+          <button class="row-delete" type="button" aria-label="Delete Ibadah Minggu">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6h11M8 6V4.5c0-.8.7-1.5 1.5-1.5h1c.8 0 1.5.7 1.5 1.5V6M6.2 6l.6 9.2c.1.7.7 1.3 1.4 1.3h3.6c.7 0 1.3-.6 1.4-1.3l.6-9.2"/></svg>
+          </button>
+        </li>
+        <li data-editor-kind="tatib">
+          <a class="book" href="#" aria-label="Minggu Seksi Bapa (8 November 2026)">
+            <span class="book__n">Minggu Seksi Bapa</span>
+            <span class="book__s">8 Nov 2026</span>
+          </a>
+          <button class="row-edit" type="button" aria-label="Edit Minggu Seksi Bapa">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4.5l3 3-8 8H4.5v-3z"/></svg>
+          </button>
+          <button class="row-delete" type="button" aria-label="Delete Minggu Seksi Bapa">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6h11M8 6V4.5c0-.8.7-1.5 1.5-1.5h1c.8 0 1.5.7 1.5 1.5V6M6.2 6l.6 9.2c.1.7.7 1.3 1.4 1.3h3.6c.7 0 1.3-.6 1.4-1.3l.6-9.2"/></svg>
+          </button>
+        </li>
+      </ul>
+    </section>
+  </div>
+  <div><span class="state">at rest</span><span class="state">hovered: badge hidden, date hidden, controls up</span></div>
+
+  <h2>US2 — Copy as template in the edit modal's header, right of the title</h2>
+  <p class="note">The header block and the button rule ported from spec 167's accepted preview: one row, title left,
+     button right (34px tall), hairline rule under the row.</p>
+  <div class="editor" aria-label="Edit Tata Ibadah modal preview">
+    <div class="editor__head">
+      <h2 class="editor__title" id="editorTitle">Edit Tata Ibadah</h2>
+      <button class="editor__copy-btn" type="button">Copy as template</button>
+    </div>
+    <div class="editor__field">
+      <label for="p-name">Name</label>
+      <input id="p-name" type="text" value="Ibadah Minggu" readonly>
+    </div>
+    <div class="editor__field">
+      <label for="p-date">Date</label>
+      <input id="p-date" type="text" value="15 November 2026" readonly>
+    </div>
+  </div>
+  <div><span class="state">head: flex row · gap 16 · rule 14px under · button 34px tall</span></div>
+
+  <h2>US5 — a song lyric never paints more than two visual lines</h2>
+  <p class="note">Left: a lyric that already fits paints at the accepted size (72px at 1080p — scaled here to the
+     480×270 fixture). Right: a lyric whose lines would wrap shrinks its type until the block fits two visual lines.
+     The fit changes only <code>font-size</code>; the look (weight, outline, inset, centring, balance) is untouched.</p>
+  <div class="stage-wrap">
+    <div class="stage" data-fit>
+      <span class="name">fits — unchanged</span>
+      <p class="obs-overlay__caption"><span>Ku heran, Allah mau memb'ri</span><span>Apa yang ku pinta</span></p>
+    </div>
+    <div class="stage" data-fit>
+      <span class="name">wraps — fitted to two lines</span>
+      <p class="obs-overlay__caption"><span>KasihNya memanggil setiap jemaat yang bernama di dalam Dia</span><span>untuk mau datang dan beribarah kepada Bapa yang di surga</span></p>
+    </div>
+  </div>
+  <div class="readout" id="fit-readout">measuring…</div>
+  <p class="note">The 11px floor is the real sheet's absolute floor, so on this 480px fixture it is proportionally larger
+     than on a 1920×1080 stage — a lyric long enough to still exceed two lines at the floor stays as it lands (spec US5,
+     scenario 4). On the real stage the floor is rarely reached.</p>
+
+<script>
+/* The planned fit, exercised on the real caption CSS: shrink font-size until the block
+   paints at most two visual lines, never below the stylesheet's 11px floor. */
+(function () {
+  'use strict';
+  var FLOOR = 11;
+  var LINES = 2;
+  var readout = document.getElementById('fit-readout');
+  var notes = [];
+
+  function visualLines(node) {
+    var fs = parseFloat(getComputedStyle(node).fontSize);
+    var lh = fs * 1.4;
+    return node.getBoundingClientRect().height / lh;
+  }
+
+  document.querySelectorAll('[data-fit]').forEach(function (stage) {
+    var caption = stage.querySelector('.obs-overlay__caption');
+    if (!caption) return;
+    var guard = 0;
+    while (visualLines(caption) > LINES + 0.02 && caption.getBoundingClientRect().height > 0 && guard < 60) {
+      var fs = parseFloat(getComputedStyle(caption).fontSize);
+      var next = Math.max(FLOOR, fs * 0.94);
+      if (next === fs) break;
+      caption.style.fontSize = next + 'px';
+      guard += 1;
+    }
+    var lines = visualLines(caption).toFixed(2);
+    var fs = parseFloat(getComputedStyle(caption).fontSize).toFixed(1);
+    notes.push(stage.querySelector('.name').textContent + ' → ' + lines + ' visual lines at ' + fs + 'px');
+  });
+  if (readout) readout.textContent = notes.join('  ·  ');
+})();
+</script>
+</body>
+</html>

@@ -676,6 +676,21 @@ li:hover > .row-delete,
   max-height: min(calc(100dvh - 40px), 46rem);
 }
 .editor.is-loading .editor__content { padding: 24px; }
+/* The modal's header row: the title and, on a Tata Ibadah, Copy as template
+   (spec 167) share one line -- the numbers come from the slice's accepted
+   preview, which the product sheet never received (spec 195). */
+.editor__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin: 0 0 16px; padding: 0 0 14px; border-bottom: 1px solid var(--divider);
+}
+.editor__head .editor__title { margin: 0; padding: 0; border: 0; }
+.editor__copy-btn {
+  flex: none; height: 34px; padding: 0 13px; border: 1px solid var(--divider); border-radius: 8px;
+  background: none; color: var(--ink); cursor: pointer;
+  font: 560 13px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__copy-btn:hover { border-color: var(--focus); background: var(--icon-hover-bg); }
+.editor__copy-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .editor__title {
   margin: 0 0 16px; padding: 0 34px 14px 0;
   font-size: 18px; font-weight: 640; letter-spacing: -.01em;
@@ -1418,13 +1433,15 @@ li:hover > .row-delete,
 }
 .book[aria-current="true"] .book__s { color: inherit; opacity: 1; }
 /* A dated Tata Ibadah row clears its own date while its actions are revealed
-   (spec 190, FR-004): the controls sit over the trailing edge, where the date
-   ends. The accessible label keeps the date, so nothing is lost to assistive
-   tech; rows without a date are untouched. Hover-capable pointers only -- a
-   phone's sticky hover must not blink the date away. */
+   (spec 190, FR-004), and the Today badge steps aside with it (spec 195): both
+   sit on the trailing edge, exactly where the controls land. The accessible
+   label keeps both, so nothing is lost to assistive tech. Hover-capable
+   pointers only -- a phone's sticky hover must not blink either away. */
 @media (hover: hover) {
   li[data-editor-kind]:hover .book__s,
-  li[data-editor-kind]:focus-within .book__s { display: none; }
+  li[data-editor-kind]:focus-within .book__s,
+  li[data-editor-kind]:hover .book__today,
+  li[data-editor-kind]:focus-within .book__today { display: none; }
 }
 /* A today row leads Upcoming, and the badge is what says why (spec 132). The action
    accent is the mark: forest green in light, royal blue in dark. Kept in step with
