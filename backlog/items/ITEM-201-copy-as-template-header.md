@@ -1,6 +1,6 @@
 ---
 id: ITEM-201
-status: in-progress
+status: in-review
 title: 'Copy as template stands in the edit modal header'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-15
 updated: 2026-11-15
 spec: 195
 branch: fix/195-hotfix-batch
-pr:
-issue:
+pr: 523
+issue: 518
 closed_at:
 closed_reason:
 bump:

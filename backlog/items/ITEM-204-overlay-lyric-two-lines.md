@@ -1,6 +1,6 @@
 ---
 id: ITEM-204
-status: in-progress
+status: in-review
 title: 'A song lyric never paints more than two lines on the overlay'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-15
 updated: 2026-11-15
 spec: 195
 branch: fix/195-hotfix-batch
-pr:
-issue:
+pr: 523
+issue: 521
 closed_at:
 closed_reason:
 bump:

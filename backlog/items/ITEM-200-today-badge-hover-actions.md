@@ -1,6 +1,6 @@
 ---
 id: ITEM-200
-status: in-progress
+status: in-review
 title: 'The Today badge sits under the revealed row actions'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-15
 updated: 2026-11-15
 spec: 195
 branch: fix/195-hotfix-batch
-pr:
-issue:
+pr: 523
+issue: 517
 closed_at:
 closed_reason:
 bump:
