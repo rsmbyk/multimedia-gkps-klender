@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-14
-**slices**: `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-15
+**slices**: `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -281,3 +281,19 @@ an explicit restart: the never-reset rule is the reading control's, not the shar
 - WHEN the stored state already opens that song or chapter
 - THEN the pointer is left untouched (hidden words resume where they kept), and the dock keeps
   re-picking from its own first screen or verse
+
+### R13 — A saved change re-reads the open service
+
+The dock caches each service's screen and entry data for its session; a saved change SHALL reach it
+anyway. A re-read message (`update`) SHALL drop that cache and load again, and — because OBS is its own
+browser, separate from the one editing the service — the dock SHALL also re-read the open service on a
+timer (10 s), only while the page is visible, rebuilding the step list in place. A re-read SHALL land
+where the operator already is (R11's rule). (spec 195)
+
+#### Scenario: an entry edited in another browser
+- WHEN the dock's open service has an entry edited in the editing browser
+- THEN within one poll interval the step list and the painted screen follow the change, without a reload
+
+#### Scenario: a background tab
+- WHEN the dock's page is hidden
+- THEN the timer does not fetch; OBS paints its docks continuously, so the guard rests while the dock shows

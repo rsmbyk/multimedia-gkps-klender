@@ -286,5 +286,10 @@
   document.addEventListener('date-picker:initialize', function () {
     initialize(document.getElementById('editorContent') || document);
   });
+  /* The reading shell swaps the stage in place and announces it here (display.js
+     listens on the same seam): a dialog that arrived with the swap -- the
+     create-from-template one, say -- carries a picker this module has never seen
+     (spec 195). The ready guard makes the rescan cheap. */
+  document.addEventListener('shell:page', function () { initialize(document); });
   initialize(document);
 })();

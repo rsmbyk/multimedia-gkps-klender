@@ -1074,9 +1074,9 @@ def entry_song_options(request):
 def entry_song_verses(request, pk):
     song = get_object_or_404(
         song_models.Song.objects.active().filter(book__is_deleted=False), pk=pk)
-    numbers = list(song.verse_set.filter(is_deleted=False)
-                   .order_by('number').values_list('number', flat=True))
-    return JsonResponse({'verses': numbers, 'title': song.title or ''})
+    verses = list(song.verse_set.filter(is_deleted=False)
+                  .order_by('number').values('id', 'number'))
+    return JsonResponse({'verses': verses, 'title': song.title or ''})
 
 
 def entry_chapter_verses(request, pk, chapter):
