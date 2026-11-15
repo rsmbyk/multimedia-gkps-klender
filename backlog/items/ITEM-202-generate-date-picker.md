@@ -1,6 +1,6 @@
 ---
 id: ITEM-202
-status: in-review
+status: done
 title: 'The date picker opens in the create-from-template dialog'
 type: fix
 priority: P1
@@ -11,10 +11,10 @@ spec: 195
 branch: fix/195-hotfix-batch
 pr: 523
 issue: 519
-closed_at:
-closed_reason:
-bump:
-release_version:
+closed_at: 2026-11-15
+closed_reason: merged into develop (PR #523)
+bump: patch
+release_version: 1.32.1
 ---
 
 # ITEM-202: The date picker opens in the create-from-template dialog
