@@ -381,6 +381,11 @@
     entryList.replaceChildren();
     runNote.hidden = true;
     setView('run', false);
+    loadServiceData(id);
+  }
+
+  /* The one load path: fetch (or read from cache), rebuild the list, repaint in place. */
+  function loadServiceData(id) {
     var wanted = id;
     fetchService(id).then(function (data) {
       if (dock.service !== wanted) return;
@@ -395,6 +400,16 @@
       renderList();
       sync(gkpsDisplay.read());
     });
+  }
+
+  /* Re-read what is on air (spec 195 US6): the dock drops its per-service cache and
+     loads again. The editing browser cannot reach this one -- OBS is its own browser
+     -- so a channel message covers the same-browser case and a timer discovers the
+     rest, the same islands the projector re-reads. */
+  function refreshService() {
+    if (dock.service == null) return;
+    delete cache[dock.service];
+    loadServiceData(dock.service);
   }
 
   /* ---------- projection (the state's verbs) -------------------------------- */
@@ -1650,6 +1665,31 @@
   applyTheme(root.dataset.themeMode || 'dark', false);
   gkpsDisplay.subscribe(sync);
   if (pickRows().length) setPickCursor(0, false);
+
+  /* ---------- the re-read (spec 195 US6) -------------------------------------- */
+
+  /* A saved change in the editing browser cannot reach this one (OBS is its own
+     browser), so the dock listens for the same-browser `update` message and, when
+     no message can arrive, discovers the change on a 10 s re-read while a service
+     is open and the page is visible. renderList paints only what changed rows. */
+  (function wireReread() {
+    var channelName = window.gkpsDisplay ? window.gkpsDisplay.channel : 'gkps-service-display';
+    var channel = null;
+    try { channel = new BroadcastChannel(channelName); } catch (e) { channel = null; }
+    if (channel) {
+      channel.addEventListener('message', function (event) {
+        var message = event.data || {};
+        if (message.type !== 'update') return;
+        cache = {};
+        refreshService();
+      });
+    }
+    window.setInterval(function () {
+      if (document.hidden || dock.service == null) return;
+      delete cache[dock.service];
+      loadServiceData(dock.service);
+    }, 10000);
+  })();
 
   /* A refresh lands where the operator already is (FR-016): the service on air opens
      in the runner — or, when the go to stands alone, the runner holding its block.

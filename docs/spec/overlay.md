@@ -1,8 +1,8 @@
 # overlay
 
 **capability**: `overlay`
-**last folded**: 2026-11-05
-**slices**: `187-keyboard-parity`, `185-dock-goto`, `183-overlay-text-wrap`, `180-overlay-text-styles`
+**last folded**: 2026-11-15
+**slices**: `195-hotfix-batch`, `187-keyboard-parity`, `185-dock-goto`, `183-overlay-text-wrap`, `180-overlay-text-styles`
 
 The OBS browser source: what the stream shows the congregation while a service runs. It is a listen-only page — the
 dock drives it and the projector shows the room the same screens — so everything here is what the page *paints* from a
@@ -40,17 +40,45 @@ card comes from the go to's own payload, and `back` from it SHALL leave the stag
 - WHEN `goto` returns to null
 - THEN the service's screen named beside it is painted again
 
+The overlay fetches its service's screen and entry data once per service and caches it; a saved change SHALL
+reach it anyway. A re-read message (`update`) SHALL drop that cache before the re-read, and — because OBS is
+its own browser, separate from the one editing the service — the overlay SHALL also re-read the service's
+data on a timer while a service is on air, only while the page is visible, and repaint only when the words
+changed. (spec 165's cache; invalidation added by spec 195)
+
+#### Scenario: an entry edited in another browser
+- WHEN a service is on air and one of its entries is edited in the editing browser
+- THEN within one poll interval the overlay repaints the screen it is showing with the new words, with no reload
+
+#### Scenario: the words did not change
+- WHEN the re-read returns the same screens
+- THEN nothing repaints
+
 ### R2 — A song screen paints the caption
 
 A screen belonging to a `song` entry SHALL paint the accepted lyric caption: one block of white text at weight 800,
 an eight-way black outline that scales with the type, no fill, no border, no heading, centred at the caption's 5 %
 inset. A lyric line wider than that box SHALL break at its own edge rather than being painted past it, keeping the
-caption's centring and its balanced lines; the block grows taller by the rows the wrap adds. (spec 180, carrying spec
-119; wrap folded by spec 183)
+caption's centring and its balanced lines. A block that would grow past two visual rows SHALL instead shrink its
+type — `font-size` only, per paint, never below the stylesheet's 11px floor — until the whole block fits two visual
+lines; a screen that already fits SHALL paint at the accepted size unchanged. (spec 180, carrying spec 119; wrap
+folded by spec 183; two-line cap added by spec 195)
 
 #### Scenario: a two-line lyric at 1080p
 - WHEN a song screen with two lines is on air at 1920×1080
 - THEN the caption paints 1728×202 at (96, 824), 72 px, weight 800, transparent fill
+
+#### Scenario: a lyric that would wrap
+- WHEN a lyric line is long enough to wrap at the accepted size
+- THEN the type shrinks so the block paints at most two visual lines, the look (weight, outline, inset, centring) unchanged
+
+#### Scenario: the next screen is fitted on its own
+- WHEN the caption steps from a fitted lyric to one that fits at the accepted size
+- THEN the sheet's size governs again — no fit carried over
+
+#### Scenario: a lyric the floor cannot save
+- WHEN even at the 11px floor the block would exceed two visual lines
+- THEN the type stops at the floor and the block lands as it lands
 
 #### Scenario: the entry's title is not painted
 - WHEN the song entry carries a citation such as `KJ 152 Bait 1`

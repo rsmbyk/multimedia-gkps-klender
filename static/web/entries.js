@@ -689,7 +689,10 @@
     var summary = picker.querySelector('[data-verses-summary]');
     var boxes = box ? [].slice.call(box.querySelectorAll('input[type=checkbox]')) : [];
     var checked = boxes.filter(function (input) { return input.checked; })
-      .map(function (input) { return Number(input.value); })
+      .map(function (input) {
+        /* the number beside the box, never the ID it submits (spec 195 US4) */
+        return Number(input.dataset.number != null ? input.dataset.number : input.value);
+      })
       .sort(function (a, b) { return a - b; });
     if (!trigger || !summary) return;
     if (!boxes.length) {
@@ -708,12 +711,15 @@
     }
   }
 
-  function renderVerses(box, numbers, chosen) {
-    var wanted = chosen || numbers;               /* a new pick starts with all of them */
-    box.innerHTML = numbers.map(function (n) {
-      var on = wanted.indexOf(n) !== -1 ? ' checked' : '';
-      return '<div><label class="editor__verse"><input type="checkbox" name="verses" value="' + n
-        + '"' + on + '> <span>' + n + '</span></label></div>';
+  function renderVerses(box, verses, chosenIds) {
+    /* The picker speaks IDs (spec 189's storage): the checkbox value is the verse's
+       ID, its label is the number, and `data-number` carries that number so the
+       summary can read either render. A new pick starts with all of them. */
+    var wanted = chosenIds || verses.map(function (verse) { return verse.id; });
+    box.innerHTML = verses.map(function (verse) {
+      var on = wanted.indexOf(verse.id) !== -1 ? ' checked' : '';
+      return '<div><label class="editor__verse"><input type="checkbox" name="verses" value="' + verse.id
+        + '" data-number="' + verse.number + '"' + on + '> <span>' + verse.number + '</span></label></div>';
     }).join('');
   }
 

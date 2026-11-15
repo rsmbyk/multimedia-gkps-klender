@@ -228,6 +228,34 @@
     if (body && widest) body.style.setProperty('--speaker-col', widest + 'px');
   }
 
+  /* ---------- the two-line lyric (spec 195 US5) -------------------------------- */
+
+  /* A song screen is a two-line object: a line that would wrap shrinks the type until
+     the whole block fits two visual rows, floored at the stylesheet's own clamp floor.
+     A screen that already fits is left exactly as the accepted numbers drew it; the fit
+     changes font-size and nothing else. */
+  var CAPTION_LINES = 2;
+  var CAPTION_FLOOR = 11;         /* obs-overlay.css clamps the caption at 11px */
+  var CAPTION_LINE_HEIGHT = 1.4;  /* obs-overlay.css sets line-height: 1.4 */
+
+  function visualLines(node) {
+    var fontSize = parseFloat(getComputedStyle(node).fontSize);
+    if (!fontSize) return 0;
+    return node.getBoundingClientRect().height / (fontSize * CAPTION_LINE_HEIGHT);
+  }
+
+  function fitCaption(node) {
+    node.style.fontSize = '';                     /* measure the sheet's size, not a stale fit */
+    var guard = 0;
+    while (visualLines(node) > CAPTION_LINES + 0.02 && guard < 60) {
+      var fontSize = parseFloat(getComputedStyle(node).fontSize);
+      var next = Math.max(CAPTION_FLOOR, fontSize * 0.94);
+      if (next >= fontSize) break;                /* at the floor: the accepted edge (US5) */
+      node.style.fontSize = next + 'px';
+      guard += 1;
+    }
+  }
+
   function paint(model) {
     var signature = model ? JSON.stringify(model) : '';
     if (signature === painted) return;
@@ -248,6 +276,7 @@
       var hadCaption = stage.querySelector('.obs-overlay__caption');
       var line = caption(model);
       stage.replaceChildren(line);
+      fitCaption(line);
       if (!hadCaption) animateIn(line);
       return;
     }
@@ -369,6 +398,9 @@
   if (channel) {
     channel.addEventListener('message', function (event) {
       var message = event.data || {};
+      /* A saved change asks every surface to re-read (spec 026); the per-service
+         cache would answer with the old screens, so it drops (spec 195 US6). */
+      if (message.type === 'update') cache = {};
       if (message.type && message.type !== 'state') sync();
     });
   }
@@ -377,9 +409,23 @@
   });
   document.addEventListener('visibilitychange', sync);
   window.addEventListener('focus', sync);
+  /* OBS is its own browser, separate from the one editing the service (spec 195
+     US6): no channel message or storage event can arrive here, so the surface
+     discovers changes itself. While a service is on air and the page is visible
+     it re-reads the service's data -- the same islands the projector re-reads --
+     every 10 s. paint's signature keeps a same-content answer from repainting. */
+  window.setInterval(function () {
+    if (document.hidden) return;
+    var state = readState();
+    if (state.on !== true || !state.service || state.goto) return;
+    delete cache[state.service];
+    sync();
+  }, 10000);
   window.addEventListener('resize', function () {
     var current = stage.querySelector('.obs-overlay__plate');
     if (current) applySpeakerColumn(current);
+    var caption = stage.querySelector('.obs-overlay__caption');
+    if (caption) fitCaption(caption);      /* the stage's size drives the sheet's clamp */
   });
 
   sync();

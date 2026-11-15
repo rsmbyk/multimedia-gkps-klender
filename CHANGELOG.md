@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.32.1] - 2026-11-15
+
+### Fixed
+
+- **The Today badge steps aside while a row's actions are revealed.** Hovering or focusing a today
+  Tata Ibadah row no longer paints the edit and delete controls over the badge — it hides the way the
+  row's date already does, and returns at rest; the accessible name keeps it (spec 195).
+- **Copy as template stands in the edit modal's header.** The button sits right of the title at its
+  accepted 34×137.8 under a hairline rule instead of falling below it as an unstyled element; the
+  confirmation flow is untouched (spec 195).
+- **The date picker opens in the create-from-template dialog.** The dialog arrived with a stage swap
+  the picker never saw, so its Date field was dead; the calendar now initialises whichever way the
+  dialog arrived — sidebar click or deep link (spec 195).
+- **A new song entry saves with the verses that were picked.** The checklist submits verse IDs as the
+  storage expects, its summary names verse numbers (`Verses 1, 3`) in both the fresh and the
+  server-rendered checklist, and the empty-verses refusal stays (spec 195).
+- **A song lyric never paints more than two lines on the overlay.** A lyric that would wrap shrinks its
+  type until the block fits two visual lines (floor at the stylesheet's 11px); a screen that already
+  fits keeps the accepted numbers (spec 195).
+- **A saved change reaches the on-air surfaces.** The overlay and the dock drop their per-service cache
+  on the re-read message and re-read the on-air service every 10 seconds while visible, so an edit made
+  in another browser repaints them without a reload (spec 195).
+
 ## [1.32.0] - 2026-11-15
 
 ### Added

@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-14
-**slices**: `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-15
+**slices**: `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -229,7 +229,14 @@ creation time, newest first.
 
 A row dated today SHALL carry a `Today` badge between its name and its date, and no other row SHALL carry
 one; the badge SHALL be drawn on the action accent (`--active-bg` fill with `--active-ink` ink), and the
-row's accessible name SHALL end `— today`.
+row's accessible name SHALL end `— today`. While the row's actions are revealed (hover or focus), the
+badge SHALL be hidden the way the row's date is — the controls take the trailing edge where the badge
+sits — and SHALL return when the reveal ends. (spec 132; reveal hide added by spec 195)
+
+#### Scenario: the badge steps aside for the row's actions
+- WHEN a today row is hovered or its actions take focus
+- THEN the badge is not painted while the edit and delete controls are up, and paints again at rest
+- AND the row's accessible name still ends `— today`
 
 The operator dock's picker SHALL group by the same four buckets, in the same order and under the same
 labels, and SHALL mark today with the same badge. It SHALL NOT tint a row for being today or for being
@@ -1150,7 +1157,13 @@ template — and a choice by **Choose**, which lists its options with their Prev
 disabled until every slot is settled, with the count on screen; step 2 SHALL be the normal Tata Ibadah form,
 the name prefilled and the date at the nearest Sunday; **Create** SHALL ask for confirmation and SHALL create
 the service in one transaction, copying the template's order with each slot replaced in place and each
-legacy row copied as a legacy row. Generating or abandoning SHALL leave the template byte-identical.
+legacy row copied as a legacy row. Generating or abandoning SHALL leave the template byte-identical. The
+date picker SHALL initialise whichever way the dialog arrived — a full page load or the sidebar's in-place
+stage swap alike. (spec 167; swap-path binding added by spec 195)
+
+#### Scenario: the dialog arrives with a stage swap
+- WHEN the template's page is reached by clicking through the sidebar and **Next** opens step 2
+- THEN clicking the Date field opens the calendar, exactly as it does after a deep-link load
 
 #### Scenario: a settled order
 - WHEN every fill-in and choice is settled and **Next** is pressed
@@ -1163,14 +1176,19 @@ legacy row copied as a legacy row. Generating or abandoning SHALL leave the temp
 ### R37 — Any Tata Ibadah copies as a template
 
 The Edit modal SHALL offer **Copy as template** for a Normal service and a template alike, after a
-confirmation that names the consequence. The copy SHALL keep the name and every entry in order as ordinary
+confirmation that names the consequence. The button SHALL stand in the modal's header, right of the
+title — one row under a hairline rule, the button 34px tall. The copy SHALL keep the name and every entry in order as ordinary
 editable entries — nothing is converted to a fill-in or a choice — and a template source SHALL also bring
 its fill-ins, choices and options. The copy SHALL have no date and SHALL be a template, and the app SHALL
-land on it with the panel on Templates.
+land on it with the panel on Templates. (spec 167; header placement folded by spec 195)
 
 #### Scenario: copying a service
 - WHEN a dated service is copied as a template
 - THEN the copy is undated, its entries keep their kinds and order, and it opens under Templates
+
+#### Scenario: the button's place
+- WHEN the Edit modal renders for a Tata Ibadah
+- THEN the title and the button share the header row, the button right-aligned and 34px tall
 
 ### R38 — A template never reaches a screen, and its media is kept but not fetched
 
@@ -1323,3 +1341,25 @@ reset or re-fetched by the control: the detour keeps its place, and the window a
 - THEN no control is drawn
 
 
+
+
+### R43 — A song entry's verse checklist speaks verse IDs and names numbers
+
+The song entry's verse checklist SHALL submit verse IDs — the storage contract since the checklist was
+rebuilt (spec 189) — and SHALL show each verse's number as its label, with that number carried on the
+box (`data-number`) so the summary can name numbers from the script-rendered and the server-rendered
+checklist alike. The picker's fetch SHALL answer `{id, number}` pairs, never bare numbers, and the
+verses summary SHALL read `Verses 1, 3` — numbers, never IDs — whichever render produced the boxes.
+The stored list SHALL stay a list of verse IDs. (spec 195)
+
+#### Scenario: a fresh pick saves
+- WHEN a song is picked, its verses checked and the entry saved
+- THEN the entry is created with those verse IDs, and the stage names the picked verse numbers
+
+#### Scenario: the re-rendered checklist reads like the fresh one
+- WHEN the form is re-rendered by the server — after a refusal, or when editing a stored entry
+- THEN each box carries its verse's ID as the value and its number beside it, and the summary names numbers
+
+#### Scenario: the refusal stands
+- WHEN every box is cleared and the entry is saved
+- THEN the refusal is `Keep at least one verse in the service.`, as before
