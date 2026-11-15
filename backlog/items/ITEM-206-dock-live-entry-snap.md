@@ -1,6 +1,6 @@
 ---
 id: ITEM-206
-status: in-progress
+status: in-review
 title: 'The runner keeps its live entry in view'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-15
 updated: 2026-11-15
 spec: specs/196-dock-live-entry-snap/spec.md
 branch: feat/196-dock-live-entry-snap
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/526
 issue: 525
 closed_at:
 closed_reason:

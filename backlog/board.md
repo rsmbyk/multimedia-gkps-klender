@@ -36,12 +36,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-206](./items/ITEM-206-dock-live-entry-snap.md) | The runner keeps its live entry in view | When the live entry entirely leaves the scroll area, the runner snaps it back edge-aligned — flush at the top, above the NEXT band at the bottom | fix | P1 | S | [196](../specs/196-dock-live-entry-snap/spec.md) | feat/196-dock-live-entry-snap | 2026-11-15 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-206](./items/ITEM-206-dock-live-entry-snap.md) | The runner keeps its live entry in view | When the live entry entirely leaves the scroll area, the runner snaps it back edge-aligned — flush at the top, above the NEXT band at the bottom | fix | P1 | S | [196](../specs/196-dock-live-entry-snap/spec.md) | [#526](https://github.com/rsmbyk/multimedia-gkps-klender/pull/526) | 2026-11-15 |
 
 ## Done
 
