@@ -2,7 +2,7 @@
 
 **capability**: `dock`
 **last folded**: 2026-11-15
-**slices**: `196-dock-live-entry-snap`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**slices**: `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -297,52 +297,3 @@ where the operator already is (R11's rule). (spec 195)
 #### Scenario: a background tab
 - WHEN the dock's page is hidden
 - THEN the timer does not fetch; OBS paints its docks continuously, so the guard rests while the dock shows
-
-### R14 — A live entry entirely out of view snaps to the edge it left
-
-When the runner re-settles — every state notice with a live service and no morph, and the first
-paint after load — and the live entry's whole `entryli` box sits above the scroller's top edge or
-below its bottom edge, the scroller SHALL park the entry at the edge it left: flush at the top
-edge with its block open beneath it; or with its foot just above the sticky NEXT band, the band
-remaining visible and naming the next entry; with no next entry, with the foot flush at the
-scroller's bottom edge and the band hidden. A live entry at least partly inside the scroller SHALL
-keep today's centred target (spec 119's centring, never folded here until this rule). A snap glide
-SHALL reuse `glideScroll` — 190 ms ease-out, cancelled by `wheel` and `pointerdown`, none starting
-while a gesture is in progress — and under `prefers-reduced-motion: reduce` it SHALL land
-instantly. With no measurable live row (no live service, or a go to on air) the runner SHALL do
-nothing. The NEXT band's own show/hide and `is-stuck` rules SHALL be unchanged, and the crossing
-morph keeps its own 230 ms curve: `finishMorph`'s re-centre is unchanged, the arriving block being
-on screen by then. (specs 196, 119)
-
-#### Scenario: entirely above
-- WHEN the live entry's whole box sits above the scroller's top edge at a re-settle
-- THEN the scroller glides until the entry's row sits flush at the top edge, its block open beneath
-
-#### Scenario: entirely below, with a next entry
-- WHEN the live entry's whole box sits below the scroller's bottom edge at a re-settle
-- THEN the scroller glides until the entry's foot rests just above the NEXT band, the band visible
-  and naming the next entry
-
-#### Scenario: entirely below, with no next entry
-- WHEN the last entry is live and entirely below the scroller's bottom edge
-- THEN the foot lands flush at the scroller's bottom edge and the band is hidden
-
-#### Scenario: partly visible
-- WHEN any part of the live entry is inside the scroller
-- THEN the scroller glides to today's centred target
-
-#### Scenario: already centred
-- WHEN the live entry already sits at the centred position
-- THEN nothing moves
-
-#### Scenario: a hand takes the list
-- WHEN `wheel` or `pointerdown` happens during a snap glide
-- THEN the glide is cancelled and the scroll stays where the gesture parked it
-
-#### Scenario: reduced motion
-- WHEN `prefers-reduced-motion: reduce` is set
-- THEN the snap lands synchronously, with no glide frames
-
-#### Scenario: a go to is on air
-- WHEN the detour is up
-- THEN the runner does nothing — the go to's block is not re-parked
