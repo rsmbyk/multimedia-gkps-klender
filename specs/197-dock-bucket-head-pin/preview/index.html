@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-theme-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec 197 — the bucket head pins flush</title>
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/obs-dock.css">
+<link rel="stylesheet" href="preview.css">
+</head>
+<body>
+<div class="page">
+
+  <h1>The dock picker's bucket head, pinned</h1>
+  <p class="lede">
+    Both panes are the product's own dock picker at 449×520, drawn by
+    <code>static/styles/design/obs-dock.css</code>. The before pane keeps develop's numbers — the head's
+    10px padding over a 4px body padding, and no air between buckets. The after pane has this slice's: 14px
+    of padding on the head over a picker body with no top padding (so the strip above the label belongs to
+    the head and the label does not move when the scroll starts), and 12px of air between one bucket and the
+    next.
+  </p>
+
+  <div class="controls">
+    <button type="button" id="btnPinned">Pinned (98px)</button>
+    <button type="button" id="btnBoundary">Group boundary</button>
+    <button type="button" id="btnRest">Rest (0px)</button>
+    <span>the strip under the divider and the air between two groups are the two things this slice changes</span>
+  </div>
+
+  <div class="panes">
+
+    <figure class="pane-wrap">
+      <figcaption><b>Before</b> — develop: the head's box starts 4px below the scroller's top, so the row above paints in that band.</figcaption>
+      <div class="pane pane--before">
+        <main class="dock">
+          <section class="view is-active">
+            <div class="dock__head">
+              <div class="dock__titlerow">
+                <img class="dock__logo" src="../../../static/assets/gkps.png" alt="GKPS Klender" width="34" height="34">
+                <div style="min-width:0"><h2 class="dock__title">Tata Ibadah</h2></div>
+                <span class="dock__tools">
+                  <button type="button" class="iconbtn" tabindex="-1" aria-label="Reload services">
+                    <svg viewBox="0 0 20 20"><path d="M16.2 8.6a6.3 6.3 0 1 0 .3 3.1"></path><path d="M16.7 4.5v4.4h-4.4"></path></svg>
+                  </button>
+                  <button type="button" class="iconbtn iconbtn--theme" tabindex="-1" aria-label="Appearance: Dark">
+                    <svg class="moon" viewBox="0 0 24 24"><path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/></svg>
+                  </button>
+                </span>
+              </div>
+            </div>
+            <div class="dock__body" id="beforeBody">
+              <section data-bucket="last-30-days">
+                <h3 class="group__head">Last 30 days</h3>
+                <ul>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">111ojo</span><span class="servicerow__d">1 Nov 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</span><span class="servicerow__d">25 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">a</span><span class="servicerow__d">25 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Ibadah Minggu</span><span class="servicerow__d">25 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Ibadah Minggu</span><span class="servicerow__d">18 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Minggu, 11 Oktober 2026</span><span class="servicerow__d">11 Okt 2026</span></button></li>
+                </ul>
+              </section>
+              <section data-bucket="earlier-this-year">
+                <h3 class="group__head">Earlier this year</h3>
+                <ul>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">11 Oktober 2026</span><span class="servicerow__d">11 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Minggu, 4 Oktober 2026</span><span class="servicerow__d">4 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Ibadah Minggu</span><span class="servicerow__d">4 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">27 September</span><span class="servicerow__d">27 Sep 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">20 Sept</span><span class="servicerow__d">20 Sep 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Minggu, 13 September 2026</span><span class="servicerow__d">13 Sep 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">30 Agustus 2026</span><span class="servicerow__d">30 Agu 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">23 Agustus</span><span class="servicerow__d">23 Agu 2026</span></button></li>
+                </ul>
+              </section>
+              <section data-bucket="older">
+                <h3 class="group__head">Older</h3>
+                <ul>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">31 Desember 2025</span><span class="servicerow__d">31 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">28 Desember 2025</span><span class="servicerow__d">28 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Ibadah Natal</span><span class="servicerow__d">24 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Minggu, 21 Desember 2025</span><span class="servicerow__d">21 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">14 Desember 2025</span><span class="servicerow__d">14 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">30 November 2025</span><span class="servicerow__d">30 Nov 2025</span></button></li>
+                </ul>
+              </section>
+            </div>
+          </section>
+        </main>
+      </div>
+      <p class="readout" id="beforeOut">—</p>
+    </figure>
+
+    <figure class="pane-wrap">
+      <figcaption><b>After</b> — this slice: the head's box starts at the scroller's top and its own 14px padding is the sky above the label, so the band is covered and the label stays 14px down in both states.</figcaption>
+      <div class="pane pane--after">
+        <main class="dock">
+          <section class="view is-active">
+            <div class="dock__head">
+              <div class="dock__titlerow">
+                <img class="dock__logo" src="../../../static/assets/gkps.png" alt="GKPS Klender" width="34" height="34">
+                <div style="min-width:0"><h2 class="dock__title">Tata Ibadah</h2></div>
+                <span class="dock__tools">
+                  <button type="button" class="iconbtn" tabindex="-1" aria-label="Reload services">
+                    <svg viewBox="0 0 20 20"><path d="M16.2 8.6a6.3 6.3 0 1 0 .3 3.1"></path><path d="M16.7 4.5v4.4h-4.4"></path></svg>
+                  </button>
+                  <button type="button" class="iconbtn iconbtn--theme" tabindex="-1" aria-label="Appearance: Dark">
+                    <svg class="moon" viewBox="0 0 24 24"><path d="M20.6 14.9A8.7 8.7 0 019.1 3.4a8.7 8.7 0 1011.5 11.5z"/></svg>
+                  </button>
+                </span>
+              </div>
+            </div>
+            <div class="dock__body" id="afterBody">
+              <section data-bucket="last-30-days">
+                <h3 class="group__head">Last 30 days</h3>
+                <ul>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">111ojo</span><span class="servicerow__d">1 Nov 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</span><span class="servicerow__d">25 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">a</span><span class="servicerow__d">25 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Ibadah Minggu</span><span class="servicerow__d">25 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Ibadah Minggu</span><span class="servicerow__d">18 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Minggu, 11 Oktober 2026</span><span class="servicerow__d">11 Okt 2026</span></button></li>
+                </ul>
+              </section>
+              <section data-bucket="earlier-this-year">
+                <h3 class="group__head">Earlier this year</h3>
+                <ul>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">11 Oktober 2026</span><span class="servicerow__d">11 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Minggu, 4 Oktober 2026</span><span class="servicerow__d">4 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Ibadah Minggu</span><span class="servicerow__d">4 Okt 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">27 September</span><span class="servicerow__d">27 Sep 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">20 Sept</span><span class="servicerow__d">20 Sep 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Minggu, 13 September 2026</span><span class="servicerow__d">13 Sep 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">30 Agustus 2026</span><span class="servicerow__d">30 Agu 2026</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">23 Agustus</span><span class="servicerow__d">23 Agu 2026</span></button></li>
+                </ul>
+              </section>
+              <section data-bucket="older">
+                <h3 class="group__head">Older</h3>
+                <ul>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">31 Desember 2025</span><span class="servicerow__d">31 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">28 Desember 2025</span><span class="servicerow__d">28 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Ibadah Natal</span><span class="servicerow__d">24 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">Minggu, 21 Desember 2025</span><span class="servicerow__d">21 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">14 Desember 2025</span><span class="servicerow__d">14 Des 2025</span></button></li>
+                  <li><button type="button" class="servicerow" tabindex="-1"><span class="servicerow__n">30 November 2025</span><span class="servicerow__d">30 Nov 2025</span></button></li>
+                </ul>
+              </section>
+            </div>
+          </section>
+        </main>
+      </div>
+      <p class="readout" id="afterOut">—</p>
+    </figure>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  var PINNED = 98;
+
+  function report(bodyId, outId) {
+    var body = document.getElementById(bodyId);
+    var out = document.getElementById(outId);
+    var b = body.getBoundingClientRect();
+    var heads = [].slice.call(body.querySelectorAll('.group__head'));
+    var visible = heads.filter(function (h) { return h.getBoundingClientRect().bottom > b.top + 1; });
+    if (!visible.length) {
+      out.textContent = 'scrollTop ' + Math.round(body.scrollTop) + ' — no bucket head in view';
+      return;
+    }
+    var top = visible[0];
+    var tr = top.getBoundingClientRect();
+    var pinned = Math.abs(tr.top - b.top) < 6 && body.scrollTop > 0;
+    var line1 = 'head top − scroller top = ' + (tr.top - b.top).toFixed(1) + 'px' +
+      (pinned ? ' (pinned)' : ' (in flow)');
+    if (pinned) {
+      var at = document.elementFromPoint(Math.max(1, b.left + 20), b.top + 2);
+      if (at) {
+        line1 += ' · painted at +2px: ' + at.tagName.toLowerCase() +
+          (at.className && typeof at.className === 'string'
+            ? '.' + at.className.trim().split(/\s+/).join('.') : '');
+      }
+    }
+    var lines = [line1];
+
+    var inFlow = visible.filter(function (h) { return h.getBoundingClientRect().top > b.top + 6; })[0];
+    if (inFlow) {
+      var range = document.createRange();
+      range.selectNodeContents(inFlow);
+      var labelTop = range.getBoundingClientRect().top;
+      var prev = inFlow.parentElement.previousElementSibling;
+      if (prev) {
+        var rows = prev.querySelectorAll('.servicerow');
+        var last = rows[rows.length - 1].getBoundingClientRect();
+        lines.push('gap above "' + inFlow.textContent.trim() + '": ' +
+          (labelTop - last.bottom).toFixed(1) + 'px from the previous group\'s last row');
+      } else {
+        lines.push('"' + inFlow.textContent.trim() + '" is the first group: ' +
+          (labelTop - b.top).toFixed(1) + 'px below the divider');
+      }
+    } else {
+      lines.push('no further bucket label in view');
+    }
+    out.innerHTML = lines.map(function (t) { return '<span>' + t + '</span>'; }).join('');
+  }
+
+  function both() { report('beforeBody', 'beforeOut'); report('afterBody', 'afterOut'); }
+
+  function setBoth(value) {
+    ['beforeBody', 'afterBody'].forEach(function (id) {
+      document.getElementById(id).scrollTop = value;
+    });
+    both();
+  }
+
+  function boundary() {
+    var body = document.getElementById('afterBody');
+    var secs = body.querySelectorAll('section');
+    if (secs.length > 1) setBoth(Math.max(0, secs[1].offsetTop - 150));
+    else both();
+  }
+
+  document.getElementById('btnPinned').addEventListener('click', function () { setBoth(PINNED); });
+  document.getElementById('btnRest').addEventListener('click', function () { setBoth(0); });
+  document.getElementById('btnBoundary').addEventListener('click', boundary);
+  ['beforeBody', 'afterBody'].forEach(function (id) {
+    document.getElementById(id).addEventListener('scroll', function () { both(); });
+  });
+  setBoth(PINNED);
+})();
+</script>
+</body>
+</html>
