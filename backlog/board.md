@@ -41,12 +41,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-207](./items/ITEM-207-dock-bucket-head-pin.md) | The dock's pinned bucket head leaves a 4px gap under the toolbar | The head's `top: 0` resolves inside the scroll body's 4px padding, so it pins below the scroller's edge and the row above shows in the band | fix | P2 | S | [197](../specs/197-dock-bucket-head-pin/spec.md) | [#529](https://github.com/rsmbyk/multimedia-gkps-klender/pull/529) | 2026-11-16 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-207](./items/ITEM-207-dock-bucket-head-pin.md) | The dock's pinned bucket head leaves a 4px gap under the toolbar | The head's `top: 0` resolves inside the scroll body's 4px padding, so it pins below the scroller's edge and the row above shows in the band | fix | P2 | S | [197](../specs/197-dock-bucket-head-pin/spec.md) | develop via [#529](https://github.com/rsmbyk/multimedia-gkps-klender/pull/529) | 2026-11-17 |
 | [ITEM-200](./items/ITEM-200-today-badge-hover-actions.md) | The Today badge sits under the revealed row actions | Hovering a dated Tata Ibadah row paints edit/delete over the Today badge; the badge steps aside the way the row's date already does while the actions are up | fix | P1 | S | [195](../specs/195-hotfix-batch/spec.md) | develop via [#523](https://github.com/rsmbyk/multimedia-gkps-klender/pull/523) | 2026-11-15 |
 | [ITEM-201](./items/ITEM-201-copy-as-template-header.md) | Copy as template stands in the edit modal header | The edit modal renders the button but no product CSS carries the header rules spec 167 accepted, so it falls below the title unstyled | fix | P1 | S | [195](../specs/195-hotfix-batch/spec.md) | develop via [#523](https://github.com/rsmbyk/multimedia-gkps-klender/pull/523) | 2026-11-15 |
 | [ITEM-202](./items/ITEM-202-generate-date-picker.md) | The date picker opens in the create-from-template dialog | The dialog arrives with a stage swap, so its picker is never initialised and the Date field is dead on the click path people use | fix | P1 | S | [195](../specs/195-hotfix-batch/spec.md) | develop via [#523](https://github.com/rsmbyk/multimedia-gkps-klender/pull/523) | 2026-11-15 |
