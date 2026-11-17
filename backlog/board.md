@@ -36,12 +36,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-207](./items/ITEM-207-dock-bucket-head-pin.md) | The dock's pinned bucket head leaves a 4px gap under the toolbar | The head's `top: 0` resolves inside the scroll body's 4px padding, so it pins below the scroller's edge and the row above shows in the band | fix | P2 | S | [197](../specs/197-dock-bucket-head-pin/spec.md) | `fix/197-dock-bucket-head-pin` | 2026-11-16 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-207](./items/ITEM-207-dock-bucket-head-pin.md) | The dock's pinned bucket head leaves a 4px gap under the toolbar | The head's `top: 0` resolves inside the scroll body's 4px padding, so it pins below the scroller's edge and the row above shows in the band | fix | P2 | S | [197](../specs/197-dock-bucket-head-pin/spec.md) | [#529](https://github.com/rsmbyk/multimedia-gkps-klender/pull/529) | 2026-11-16 |
 
 ## Done
 

@@ -1,6 +1,6 @@
 ---
 id: ITEM-207
-status: in-progress
+status: in-review
 title: "The dock's pinned bucket head leaves a 4px gap under the toolbar"
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-16
 updated: 2026-11-16
 spec: specs/197-dock-bucket-head-pin/spec.md
 branch: fix/197-dock-bucket-head-pin
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/529
 issue: 528
 closed_at:
 closed_reason:
