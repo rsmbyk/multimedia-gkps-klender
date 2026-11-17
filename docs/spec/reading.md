@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-15
-**slices**: `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-16
+**slices**: `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1084,12 +1084,22 @@ the page SHALL NOT scroll horizontally at any width.
 The picker SHALL stay a single column at every width: its body keeps block layout, no rule lays its age
 buckets out side by side, and every row SHALL span the picker body's content width — the panel's width
 less the body's 8px side padding — with its name at the row's left padding and its date right-aligned on
-its right padding. A bucket head SHALL keep sticking to the top of the picker's scroller, as at the
-narrow width it was drawn for.
+its right padding.
 
-No other metric SHALL change: the head's padding, the row's 40px minimum height and 10px padding, the
-`Today` and `On screen` badges, the transport's 40px arrows and the 5px scrollbar keep their values, and
-every box at a width of 560px or less SHALL be identical to the dock spec 119 delivered. The runner is
+A bucket head SHALL own the strip above its label (specs 197): its box SHALL start at the picker scroller's
+own top edge, so no row is painted between the dock's head and the bucket's label, whether the head is at rest
+or pinned. Its 14px top padding SHALL be that strip, and the picker's scroll body SHALL carry no top padding
+of its own; the label SHALL sit 14px below the divider in both states, so nothing moves when the scroll
+begins. The head's foot SHALL stay at the first row it precedes, and the scroller's reserve
+(`scroll-padding-top: 37px`) SHALL cover the pinned head so a row scrolled into view is never hidden under it.
+
+Consecutive buckets SHALL be separated by 12px of air carried by the bucket's own section, so it scrolls away
+with that bucket and never enters a pinned head; the first bucket's label SHALL stay 14px below the divider.
+That puts a bucket's label 26px below the previous group's last row (specs 197).
+
+No other metric SHALL change: the row's 40px minimum height and 10px padding, the `Today` and `On screen`
+badges, the transport's 40px arrows and the 5px scrollbar keep their values, and every box at a width of
+560px or less SHALL be identical to the dock spec 119 delivered except where specs 197 names it. The runner is
 not re-flowed by this requirement: it already filled the panel, and its entries are a sequence.
 
 #### Scenario: a wide dock
@@ -1107,7 +1117,12 @@ not re-flowed by this requirement: it already filled the panel, and its entries 
 
 #### Scenario: the scroller
 - WHEN the picker is scrolled past a bucket's rows
-- THEN that bucket's head stays at the top of the scroller
+- THEN that bucket's head's box starts at the top of the scroller, its label 14px below the divider
+- AND no row paints above it
+
+#### Scenario: two buckets meet
+- WHEN a bucket's rows end and the next bucket's label comes into view
+- THEN the label sits 26px below the last row of the bucket above it
 
 ### R34 — A Tata Ibadah is a service or a template
 

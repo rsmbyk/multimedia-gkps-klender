@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The dock's pinned date-group header sits flush under the toolbar.** The strip above the label belongs to
+  the head, so the row above no longer paints through it, and the label keeps its height whether the list is
+  at rest or scrolled (spec 197).
+- **A dock picker's date groups are separated by more air.** A group's label sits 26px below the previous
+  group's last row, from 10px; the extra space scrolls away and never rides the pinned head (spec 197).
+
 ## [1.32.1] - 2026-11-15
 
 ### Fixed
