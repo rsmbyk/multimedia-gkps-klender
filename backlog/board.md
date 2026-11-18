@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-210](./items/ITEM-210-dock-centre-triggers.md) | The dock centres its live entry only when asked | Following keeps advances centred while a service runs; scrolling or opening another entry drops to browsing, and the centre control, an item click (including the sticky Next band) or a 15 s idle re-centre brings following back | feat | P2 | M | [200](../specs/200-dock-centre-triggers/spec.md) | feat/200-dock-centre-triggers | 2026-11-18 |
 
 ## In review
 

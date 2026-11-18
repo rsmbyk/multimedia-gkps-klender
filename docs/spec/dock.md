@@ -2,7 +2,7 @@
 
 **capability**: `dock`
 **last folded**: 2026-11-18
-**slices**: `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**slices**: `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -326,3 +326,55 @@ fill (never the generic hover face). (spec 198)
 #### Scenario: a hand-opened block forgets the reload
 - WHEN the page reloads after the operator opened several blocks by hand
 - THEN no override survives; only the live entry's block is open
+
+### R15 — The dock follows the live entry while following, and only re-centres on named acts
+
+The dock has two modes. It **begins following** on load: an advance of the service — forward or
+backward, within an entry or across one — keeps the live row centred, with other entries open and
+with the words hidden, provided the dock shows the service that is on air on the projector and
+overlay. A go to on air suspends following. **Scrolling the list or expanding another entry** ends
+following; in that browsing state the same advances change what is on air but leave the list where
+the operator put it, and the transport's Next and Back buttons never change the mode.
+
+Four acts bring following back: a new centre control in the transport between Previous and Next;
+a click on an item inside an entry — which includes the sticky **Next** band, whose screen belongs
+to the **next** entry, so that click also moves the live pointer and marks that entry's first row;
+a successful 15 s idle re-centre; and nothing else. The centre control is disabled with no live row
+and centres the go to's marked row when a go to is up. The idle clock is restarted by a scroll, a
+click or a press held down — a drag included — and by a key press, never by plain pointer movement;
+while a press is held the count is suspended until release. When the clock fires it centres only if
+the runner shows the service on air with words up and no go to, no layer is open, no other entry's
+block is open, and the live row lies entirely outside the scrollport; the conditions are read at
+that moment. A centring is one 190 ms ease-out motion, clamped at the list's ends, instant under
+reduced motion, and cancelled by a hand on the list. (spec 200)
+
+#### Scenario: a service runs undisturbed
+- WHEN the service advances forward or backward, including across an entry
+- THEN the live row stays centred, even with other entries open or the words hidden
+
+#### Scenario: the operator takes the list over
+- WHEN the operator scrolls the list or expands another entry's block
+- THEN following ends, and later advances change the screen but leave the list still
+
+#### Scenario: the centre control returns following
+- GIVEN the dock is browsing
+- WHEN the operator presses the new control between Previous and Next
+- THEN the list glides the live row to the middle and the next advance follows without another press
+
+#### Scenario: the Next band is an item
+- GIVEN the dock is browsing
+- WHEN the sticky Next band is clicked
+- THEN the live pointer moves to the next entry, its first row is marked, that row is centred and following returns
+
+#### Scenario: the transport buttons are mode-neutral
+- WHEN the operator presses the transport's Next or Back button in either mode
+- THEN the mode is unchanged — they centre only when already following
+
+#### Scenario: the idle return
+- GIVEN the words are up, this service is on air, nothing is open, no other block is expanded and the live row is entirely off screen
+- WHEN 15 s pass with no scroll, click, held press or key
+- THEN the list centres the live row and following returns
+
+#### Scenario: a held press is not idleness
+- WHEN a button is held down past the 15 s with the live row off screen
+- THEN the count is suspended until release and nothing moves

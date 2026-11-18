@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-theme-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dock — when the list centres the live entry (spec 200 preview)</title>
+<style>/*__STYLES__*/</style>
+</head>
+<body class="obs-dock pvbody">
+
+<div class="pv">
+  <div class="pv__stage">
+    <!-- The runner, assembled from the real template's markup and classes
+         (reading/obs_dock.html + the DOM static/web/obs-dock.js builds). -->
+    <main class="dock" id="dockPanel" data-view="run" tabindex="-1" aria-label="Operator dock">
+      <section class="view is-active" id="viewRun" aria-label="Runner">
+        <div class="dock__head">
+          <div class="dock__runheadrow">
+            <div class="dock__runtitles">
+              <p class="serviceline" id="runService">Tata Ibadah — Minggu, 18 Oktober 2026</p>
+              <p class="servicedate" id="runDate">18 Okt 2026</p>
+            </div>
+            <button type="button" class="iconbtn" id="findBtn" title="Go to a passage or song"
+                    aria-label="Go to a passage or song" tabindex="-1">
+              <svg viewBox="0 0 20 20"><circle cx="8.7" cy="8.7" r="5.1"></circle><path d="M12.5 12.5 16.6 16.6"></path></svg>
+            </button>
+            <button type="button" class="iconbtn" id="switchBtn" title="Switch service"
+                    aria-label="Switch service" tabindex="-1">
+              <svg viewBox="0 0 20 20"><path d="M6 4h10M6 10h10M6 16h10"></path><path d="M3 4h.01M3 10h.01M3 16h.01" stroke-width="2.4"></path></svg>
+            </button>
+            <button type="button" class="iconbtn" id="blankBtn" aria-pressed="false"
+                    title="Hide words" aria-label="Hide words" tabindex="-1">
+              <svg class="glyph glyph--display" viewBox="0 0 20 20">
+                <path d="M3 3l14 14"></path>
+                <path d="M6.6 6.7C4.1 8.2 2.6 10 2.6 10s2.8 4.6 7.4 4.6c1.5 0 2.8-.4 3.9-1"></path>
+                <path d="M9 5.5c.3 0 .7-.1 1-.1 4.6 0 7.4 4.6 7.4 4.6s-.8 1.4-2.2 2.6"></path>
+              </svg>
+              <svg class="glyph glyph--onscreen" viewBox="0 0 20 20">
+                <path d="M2.6 10s2.8-4.6 7.4-4.6S17.4 10 17.4 10s-2.8 4.6-7.4 4.6S2.6 10 2.6 10z"></path>
+                <circle cx="10" cy="10" r="2.6"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="dock__body" id="runBody">
+          <ul id="entryList"></ul>
+        </div>
+      </section>
+
+      <div class="dock__transport">
+        <div class="bandswap" id="bandSwap">
+          <div class="bandswap__row transportrow" id="transportRow">
+            <button type="button" class="transchip" id="transChip" hidden tabindex="-1"
+                    aria-pressed="false" title="Flip TB / SIM (T)">TB</button>
+            <div class="baits" id="baitStrip" hidden>
+              <span class="baitstrip" id="baitChips"></span>
+            </div>
+            <span class="navpair">
+              <button type="button" class="navbtn" id="prevBtn" tabindex="-1"
+                      title="Previous screen" aria-label="Previous screen">
+                <svg viewBox="0 0 20 20"><path d="M12 4 6 10l6 6"></path></svg>
+              </button>
+              <!-- THE NEW CONTROL (FR-001): between Previous and Next, the same navbtn face. -->
+              <button type="button" class="navbtn" id="centreBtn" tabindex="-1"
+                      title="Centre the live entry" aria-label="Centre the live entry">
+                <svg viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="5.2"></circle>
+                  <path d="M10 2.6v2.6M10 14.8v2.6M2.6 10h2.6M14.8 10h2.6"></path>
+                </svg>
+              </button>
+              <button type="button" class="navbtn" id="nextBtn" tabindex="-1"
+                      title="Next screen" aria-label="Next screen">
+                <svg viewBox="0 0 20 20"><path d="M8 4l6 6-6 6"></path></svg>
+              </button>
+            </span>
+          </div>
+          <div class="bandswap__row" id="findBand">
+            <div class="findband">
+              <div class="findrow">
+                <input class="findfield" id="findInput" type="search" autocomplete="off"
+                       spellcheck="false" placeholder="Passage or song" tabindex="-1">
+              </div>
+              <button type="button" class="findresult" id="findResult" disabled tabindex="-1">
+                <span class="findresult__label" id="findLabel">Start typing to find a match</span>
+                <span class="findcount" id="findCount">0 / 0</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="findscrim" id="findScrim" hidden></div>
+    </main>
+  </div>
+
+  <aside class="pv__panel">
+    <h1 class="pv__h1">When does the list move?</h1>
+    <p class="pv__note">Press <b>the crosshair</b>, click <b>an item inside an entry</b>, or
+      <b>stop scrolling and clicking for 15 s</b> with every condition true. Moving the pointer
+      alone is not activity; a scroll, a click and a held-down button are. The sticky <b>Next</b> band
+      re-enters following; the transport's Next and Back buttons keep the current mode. Anything
+      else leaves the list where you put it.</p>
+
+    <div class="pv__group">
+      <h2 class="pv__h2">The clock</h2>
+      <p class="pv__clock"><span id="idleClock">15.0 s</span> of stillness left</p>
+      <p class="pv__clock" id="pvMode">mode: following</p>
+      <label class="pv__row"><input type="checkbox" id="idleOn" checked> idle timer running</label>
+    </div>
+
+    <div class="pv__group">
+      <h2 class="pv__h2">Conditions on the idle centring</h2>
+      <label class="pv__row"><input type="checkbox" id="cLive"> the display is on <span class="pv__tag">on</span></label>
+      <label class="pv__row"><input type="checkbox" id="cBrowsed"> the service shown is the one open here <span class="pv__tag">on</span></label>
+      <label class="pv__row"><input type="checkbox" id="cLayer"> a layer is open (find band)</label>
+      <label class="pv__row"><input type="checkbox" id="cOther"> another entry's header is open</label>
+    </div>
+
+    <div class="pv__group">
+      <h2 class="pv__h2">Put the live entry where you want it</h2>
+      <button class="pv__btn" id="scrollAway">Scroll the live row out of view</button>
+      <button class="pv__btn" id="scrollBack">Scroll it into view</button>
+    </div>
+
+    <div class="pv__group">
+      <h2 class="pv__h2">What just happened</h2>
+      <p class="pv__log" id="pvLog">nothing yet</p>
+      <p class="pv__num" id="pvRead">scrollTop 0 · live row off centre —</p>
+    </div>
+  </aside>
+</div>
+
+<script>/*__SCRIPT__*/</script>
+</body>
+</html>
