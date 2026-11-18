@@ -1,6 +1,6 @@
 ---
 id: ITEM-209
-status: in progress
+status: in-review
 title: "The first sidebar's idle interval counts every scroll and waits fifteen minutes"
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-18
 updated: 2026-11-18
 spec: specs/199-sidebar-activity/spec.md
 branch: fix/199-sidebar-activity
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/534
 issue: 533
 closed_at:
 closed_reason:
@@ -75,6 +75,7 @@ number changes, in one constant, with no setting exposed.
 
 - Spec: [199](../specs/199-sidebar-activity/spec.md)
 - Anchor issue: [#533](https://github.com/rsmbyk/multimedia-gkps-klender/issues/533) — backfilled at
-  Implement; the PR and the move to `Done` wait for the push that opens the PR.
+  Implement. PR: [#534](https://github.com/rsmbyk/multimedia-gkps-klender/pull/534) — opened as a
+  draft, then marked ready with the card's `In review` move. `Done` waits for the merge.
 - Related items: ITEM-075 (spec 072 — the idle collapse rule this restores), ITEM-106 (spec 128 —
   Kidung/Tata Ibadah have no mini state).
