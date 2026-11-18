@@ -68,6 +68,9 @@
   var root = document.documentElement;
 
   var cache = {};                 /* service id -> {entries, screens} */
+  /* The 10 s re-read must not rebuild an unchanged list under the operator's
+     pointer — that drops hover and repaints the whole dock (spec 195). */
+  var lastLoad = {id: null, json: null};
 
   /* Spec 200: whether advances keep the live row centred. Page memory only —
      the mode is this dock's relationship with its list, never display state. */
@@ -428,7 +431,7 @@
   }
 
   /* The one load path: fetch (or read from cache), rebuild the list, repaint in place. */
-  function loadServiceData(id) {
+  function loadServiceData(id, quietIfSame) {
     var wanted = id;
     fetchService(id).then(function (data) {
       if (dock.service !== wanted) return;
@@ -437,6 +440,9 @@
         runNote.textContent = 'The service could not be loaded.';
         return;
       }
+      var json = JSON.stringify(data);
+      if (quietIfSame && lastLoad.id === wanted && lastLoad.json === json) return;
+      lastLoad = {id: wanted, json: json};
       dock.entries = data.entries;
       dock.screens = data.screens;
       buildStops();
@@ -452,7 +458,7 @@
   function refreshService() {
     if (dock.service == null) return;
     delete cache[dock.service];
-    loadServiceData(dock.service);
+    loadServiceData(dock.service, true);
   }
 
   /* ---------- projection (the state's verbs) -------------------------------- */
@@ -1983,7 +1989,7 @@
     window.setInterval(function () {
       if (document.hidden || dock.service == null) return;
       delete cache[dock.service];
-      loadServiceData(dock.service);
+      loadServiceData(dock.service, true);
     }, 10000);
   })();
 

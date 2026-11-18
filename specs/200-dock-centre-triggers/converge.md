@@ -34,3 +34,9 @@ every `test` row was actually run, `inspection` rows were read, `manual` rows ar
 
 - Pass 1, 2026-11-18 — 69 traceability rows checked; six defects found, five fixed in code/tests and
   one carried as the gate-2-accepted reflow gap; two inspection items and one regression probe green.
+- Pass 2, 2026-11-18 — owner reported a flash at the idle threshold. Live probing showed it was the
+  spec-195 10 s re-read, not the 15 s clock: 445 DOM mutations in one frame at 9.284 s, including a
+  full `entryList.replaceChildren()` that dropped the hovered header and repainted under the pointer.
+  Fixed by comparing the fresh payload with the painted one and skipping the rebuild when unchanged;
+  same probe now records zero mutations after startup. New test
+  `test_the_reread_does_not_rebuild_an_unchanged_list` added; suite 15/15 green. Outcome: Converged.

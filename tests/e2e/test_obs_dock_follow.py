@@ -298,6 +298,18 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
             if (climb[i] - climb[i - 1]) * (climb[i - 1] - climb[i - 2]) < 0)
         self.assertEqual(reversals, 0, frames[:20])
 
+    def test_the_reread_does_not_rebuild_an_unchanged_list(self):
+        page = self._dock()
+        self._open_service(page)
+        self._place(page)
+        page.evaluate(
+            """() => { window.__rebuilds = 0;
+                 new MutationObserver((ms) => ms.forEach((m) => {
+                   if (m.type === 'childList') window.__rebuilds++;
+                 })).observe(document.querySelector('#entryList'), {childList: true}); }""")
+        page.wait_for_timeout(10800)
+        self.assertEqual(page.evaluate('window.__rebuilds'), 0)
+
     def test_reduced_motion_jumps_instead_of_gliding(self):
         page = self._dock(reduced=True)
         self._open_service(page)

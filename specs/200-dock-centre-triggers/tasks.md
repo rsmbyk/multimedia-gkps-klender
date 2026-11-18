@@ -129,6 +129,11 @@ control, advance (centres again).
 - [ ] T032 Fold the typed delta for `dock/R15` into `docs/spec/dock.md`, write `fold.md`, and move
   `last folded` to the fold date with the slice ID prepended (SDD-23).
 
+- [ ] T037 Fix a same-frame flash at the 10 s re-read: skip `renderList()` when the freshly fetched
+  payload equals the one already painted (`loadServiceData(id, true)` from the timer and the update
+  message only; an explicit service open still rebuilds). Verified by
+  `::test_the_reread_does_not_rebuild_an_unchanged_list`.
+
 ## Phase 9 — Delivery (after Converge)
 
 - [ ] T033 Commit at Fold — spec pack, code, E2E suite, capability delta and board row together,
