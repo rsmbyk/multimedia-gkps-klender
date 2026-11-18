@@ -571,7 +571,7 @@
     }
   }
 
-  /* ---------- glide and centring (190 ms ease-out, clamped) ------------------ */
+  /* ---------- glide and centring (270 ms ease-out, clamped) ------------------ */
 
   var glideFrame = null;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -602,7 +602,7 @@
          than freezing a target that was measured too early. */
       var max = runBody.scrollHeight - runBody.clientHeight;
       var to = Math.max(0, Math.min(target, max));
-      var t = Math.min(1, (now - started) / 190);
+      var t = Math.min(1, (now - started) / 270);
       runBody.scrollTop = from + (to - from) * (1 - Math.pow(1 - t, 3));
       if (t < 1) glideFrame = window.requestAnimationFrame(frame);
       else { glideFrame = null; bandHoldUntil = performance.now() + 300; }
@@ -623,7 +623,7 @@
   }
 
   /* Spec 200: drive the row's own offset from the scrollport centre to zero on the
-     same 190 ms cubic curve. Deriving the target from the row each frame keeps a
+     same 270 ms cubic curve. Deriving the target from the row each frame keeps a
      crossing's block reflow or the band's hide from landing the glide short. */
   function rowOffset(node) {
     var box = runBody.getBoundingClientRect();
@@ -639,7 +639,7 @@
     function current() { return liveNode() || node; }
     function frame(now) {
       if (start === null) { start = rowOffset(current()); started = now; }
-      var t = Math.min(1, (now - started) / 190);
+      var t = Math.min(1, (now - started) / 270);
       var eased = 1 - Math.pow(1 - t, 3);
       var want = start * (1 - eased);
       if (t < 1) {

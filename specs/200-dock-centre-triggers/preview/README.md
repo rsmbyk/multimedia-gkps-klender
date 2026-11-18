@@ -32,7 +32,7 @@ seconds; the harness uses 800 ms.
 | back to following | press the centre control, click an item or the sticky Next band, or let the idle elapse fire | "mode: following"; the next advance centres again |
 | sticky Next band from browsing | scroll, then click the sticky "Next" band | "mode: following"; the live pointer moves to the next entry, its first row is marked, and that row centres |
 | browsing by expansion | click another entry's header, then press Next or Back | "mode: browsing"; the list stays put |
-| centred by the control | press it with the live row off the middle | the list glides until the live row's centre is on the pane's centre (~190 ms, no bounce) |
+| centred by the control | press it with the live row off the middle | the list glides until the live row's centre is on the pane's centre (~270 ms, no bounce) |
 | centred by an item click | click any row inside an open block | that row goes on air and the list centres it |
 | the live row out of view | "Scroll the live row out of view" | the list stays where it is — no automatic centring |
 | the idle elapse | leave it alone for 15 s with every condition true | the list glides the live row back |

@@ -36,7 +36,7 @@ order-independent, not concurrent — one agent in one thread will run them in t
 the live row and the next advance follow without another press.
 
 - [ ] T006 [P] [US1] Write a failing `::test_the_centre_control_centres_and_enters_following` —
-  control placement, 190 ms landing within 1 px, no display write, re-entry (FR-002, US1/AC1–2/6).
+  control placement, 270 ms landing within 1 px, no display write, re-entry (FR-002, US1/AC1–2/6).
 - [ ] T007 [P] [US1] Write a failing
   `::test_the_control_is_disabled_without_a_live_row_and_centres_a_goto` — disabled with nothing
   live, go-to marked row centred (FR-003, US1/AC4–5, D009).
@@ -108,7 +108,7 @@ control, advance (centres again).
 - [ ] T024 [P] Write a failing `::test_centring_stays_one_motion_and_clamps_at_the_ends` — no
   reversal, no visible move when already centred, clamp at both list ends (SC-004, FR-010).
 - [ ] T025 Keep the one-motion and clamp rules intact while implementing T019–T024: no change to
-  `layoutTop`, `overflow-anchor`, the same-frame scroll clamp or the 190/230 ms durations; the
+  `layoutTop`, `overflow-anchor`, the same-frame scroll clamp or the 270/230 ms durations; the
   crossing's `carry` is the only new branch (D008, SC-004).
 
 ## Phase 8 — Polish and verification

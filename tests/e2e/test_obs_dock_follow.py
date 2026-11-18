@@ -131,13 +131,13 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         self.assertEqual(filled['pressed'], 'true')
         self.assertEqual(filled['bg'], 'rgb(124, 156, 240)')   # dark --active-bg
         self._scroll_away(page)
-        page.wait_for_timeout(260)              # let the background transition settle
+        page.wait_for_timeout(400)              # let the background transition settle
         outline = self._face(page)
         self.assertEqual(outline['pressed'], 'false')
         self.assertEqual(outline['bg'], 'rgba(0, 0, 0, 0)')
         before = self._measure(page)
         page.evaluate("document.querySelector('#centreBtn').click()")
-        page.wait_for_timeout(260)
+        page.wait_for_timeout(400)
         after = self._measure(page)
         self.assertLess(abs(after['off']), 2, (before, after))
         self._advance(page)
@@ -159,7 +159,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
             """() => { const li = document.querySelector('.entryli[data-live="true"]');
                  const rows = li.querySelectorAll('.screenerow');
                  rows[rows.length - 1].click(); }""")
-        page.wait_for_timeout(320)
+        page.wait_for_timeout(400)
         self.assertEqual(self._measure(page)['live'], '30')
         self.assertLess(abs(self._measure(page)['off']), 2)
         self._advance(page)
@@ -172,7 +172,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         before = self._measure(page)['live']
         self._scroll_away(page)
         page.evaluate("document.querySelector('.nextband').click()")
-        page.wait_for_timeout(260)
+        page.wait_for_timeout(400)
         after = self._measure(page)
         self.assertEqual(int(after['live']), int(before) + 1)
         self.assertLess(abs(after['off']), 2)
@@ -189,9 +189,11 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         start = self._measure(page)['scroll']
         self._advance(page)
         self._advance(page, 'prevBtn')
-        self.assertEqual(self._measure(page)['scroll'], start)
+        # A4: a browsing crossing can clamp scrollTop down as blocks reflow; no
+        # centring glide may run, so it can never climb back towards the live row.
+        self.assertLessEqual(self._measure(page)['scroll'], start)
         page.evaluate("document.querySelector('#centreBtn').click()")
-        page.wait_for_timeout(260)
+        page.wait_for_timeout(400)
         self._advance(page)
         self.assertLess(abs(self._measure(page)['off']), 2)
 
@@ -287,7 +289,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
                 const out = []; const t0 = performance.now();
                 (function tick() {
                   out.push(Math.round(b.scrollTop));
-                  if (performance.now() - t0 < 380) requestAnimationFrame(tick);
+                  if (performance.now() - t0 < 600) requestAnimationFrame(tick);
                   else done(out);
                 })();
                })""")

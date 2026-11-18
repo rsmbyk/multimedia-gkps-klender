@@ -345,7 +345,7 @@ click or a press held down — a drag included — and by a key press, never by 
 while a press is held the count is suspended until release. When the clock fires it centres only if
 the runner shows the service on air with words up and no go to, no layer is open, no other entry's
 block is open, and the live row lies entirely outside the scrollport; the conditions are read at
-that moment. A centring is one 190 ms ease-out motion, clamped at the list's ends, instant under
+that moment. A centring is one 270 ms ease-out motion, clamped at the list's ends, instant under
 reduced motion, and cancelled by a hand on the list. (spec 200)
 
 #### Scenario: a service runs undisturbed
