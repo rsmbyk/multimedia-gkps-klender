@@ -97,6 +97,21 @@ class ReadingE2ETests(StaticLiveServerTestCase):
             tatib=self.service, item_type=tatib.TataIbadahItemType.TEXT,
             title='Nyanyian Pembukaan', text='KJ 120', order_number=1)
         if self._testMethodName in (
+            # only the scroll test needs a list that overflows (spec 199 US1);
+            # the wheel guard deliberately has none, so no late `scroll` can
+            # restart the interval and the wheel alone explains its pin
+            'test_panel_scroll_restarts_sidebar_idle_timeout',
+        ):
+            # A shelf tall enough for the first panel to scroll at 900 px. The
+            # suite's baseline is one book; production carries 66 (spec 199 US1).
+            for n in range(1, 41):
+                shelf = bible.Book.objects.create(
+                    name='X%02d' % n, testament='old' if n % 2 else 'new',
+                    number_of_chapters=1)
+                bible.BookTranslation.objects.create(
+                    version=version, book=shelf, translation='Buku %02d' % n,
+                    abbreviation='X%02d' % n)
+        if self._testMethodName in (
             'test_tatib_quicklink_flash_repeats_after_animation_ends',
             'test_tatib_quicklink_during_flash_is_ignored_not_queued',
             'test_tatib_quicklink_flash_releases_when_stage_is_replaced',
@@ -142,6 +157,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
         if self._testMethodName in (
             'test_drag_defers_sidebar_idle_collapse_then_restarts',
+            'test_short_drag_restarts_sidebar_idle_timeout',
         ):
             self.idle_drag_entry = tatib.ServiceEntry.objects.create(
                 tatib=self.service, kind=tatib.ServiceEntryKind.TEXT,
@@ -406,7 +422,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
         page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
-        page.clock.run_for(59000)
+        page.clock.run_for(899000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         page.clock.run_for(1000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
@@ -417,7 +433,7 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
         page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
         current_url = page.url
-        page.clock.run_for(60000)
+        page.clock.run_for(900000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
 
         click_section(page, 'alkitab')
@@ -432,9 +448,63 @@ class ReadingE2ETests(StaticLiveServerTestCase):
 
         page.clock.run_for(30000)
         page.mouse.move(16, 16)
-        page.clock.run_for(30000)
+        page.clock.run_for(899000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(1000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+    def test_panel_scroll_restarts_sidebar_idle_timeout(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+
         page.clock.run_for(30000)
+        # A thumb drag emits a non-bubbling `scroll` at the scroller. The list
+        # is a real scroller; dispatch that exact event rather than assigning
+        # scrollTop, whose compositor flush can land at an arbitrary later frame.
+        self.assertGreater(page.evaluate(
+            "document.getElementById('panelBody').scrollHeight "
+            "- document.getElementById('panelBody').clientHeight"), 0)
+        page.evaluate("document.getElementById('panelBody').dispatchEvent(new Event('scroll'))")
+        page.clock.fast_forward(899000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(1000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+    def test_panel_wheel_restarts_sidebar_idle_timeout(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+
+        page.clock.run_for(30000)
+        # directly on the descendant, as a wheel over the list bubbles there;
+        # no mouse, because a real wheel through a faked clock is not repeatable
+        page.evaluate("""document.getElementById('panelBody').dispatchEvent(
+            new WheelEvent('wheel', { bubbles: true, deltaY: 240 }))""")
+        # jump the quiet span: `run_for` would pump ~54 000 animation frames,
+        # and a flushed scroll in any of them would restart the interval
+        page.clock.fast_forward(899000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(1000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
+
+    def test_second_sidebar_and_stage_activity_does_not_restart_sidebar_idle_timeout(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        page.clock.run_for(30000)
+
+        # the second sidebar really scrolls; scroll does not bubble to #panel
+        page.evaluate("document.getElementById('chBody').scrollTop = 240")
+        self.assertGreater(page.evaluate("document.getElementById('chBody').scrollTop"), 0)
+        # and the stage is not an activity surface either
+        page.mouse.move(900, 450)
+        page.mouse.wheel(0, 300)
+
+        page.clock.fast_forward(869000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(1000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
 
     def test_sidebar_timeout_waits_while_filter_has_focus(self):
@@ -443,10 +513,10 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
 
         page.locator('#bookFilter').focus()
-        page.clock.run_for(60000)
+        page.clock.run_for(900000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         page.evaluate('document.activeElement.blur()')
-        page.clock.run_for(59000)
+        page.clock.run_for(899000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         page.clock.run_for(1000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'mini')
@@ -459,19 +529,22 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('html')).to_have_attribute('data-section', 'kidung')
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
 
-        page.clock.run_for(60000)
+        page.clock.run_for(900000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         expect(page.get_by_text('Kamu adalah garam dunia.')).to_be_visible()
 
     def test_narrow_layout_keeps_matching_sidebar_open(self):
         page = self._page(width=390, height=844)
         page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
-        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.pk, 5]))
+        page.goto(self.live_server_url + reverse('web-index'))
         # a phone boots on the page (spec 138): the drawer is the operator's own action
-        click_section(page, 'alkitab')
+        click_section(page, 'tatib')
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        # the open drawer is the first panel; scrolling it arms no timer at all
+        page.evaluate("document.getElementById('panelBody').scrollTop = 120")
+        self.assertGreater(page.evaluate("document.getElementById('panelBody').scrollTop"), 0)
 
-        page.clock.run_for(60000)
+        page.clock.run_for(900000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
 
     def test_matching_idle_tatib_sidebar_closes_without_navigating(self):
@@ -480,11 +553,32 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
         current_url = page.url
 
-        page.clock.run_for(60000)
+        page.clock.run_for(900000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
         expect(page.locator('html')).to_have_attribute('data-ch', 'open')
         self.assertEqual(page.url, current_url)
         expect(page.locator('#read[data-kind="tatib"]')).to_be_visible()
+
+    def test_short_drag_restarts_sidebar_idle_timeout(self):
+        page = self._page()
+        page.clock.install(time=datetime(2026, 10, 13, 12, tzinfo=timezone.utc))
+        page.goto(self.live_server_url + reverse('web-tatib-service', args=[self.service.pk]))
+        grip = page.locator(f'[data-move-grip="{self.idle_drag_entry.pk}"]')
+        box = grip.bounding_box()
+
+        page.clock.fast_forward(840000)            # 14:00 — the old deadline is 15:00
+        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+        page.mouse.down()
+        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2 + 12)
+        expect(page.locator('#chList.is-dragging')).to_have_count(1)
+        page.clock.run_for(5000)                   # released at 14:05, before expiry
+        page.mouse.up()
+        expect(page.locator('#chList.is-dragging')).to_have_count(0)
+
+        page.clock.fast_forward(899000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'open')
+        page.clock.run_for(1000)
+        expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
 
     def test_dialog_defers_sidebar_idle_collapse_then_restarts(self):
         page = self._page()
@@ -493,15 +587,16 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.click('#panelAdd')
         page.wait_for_selector('dialog[open]')
 
-        page.clock.run_for(60000)
+        page.clock.fast_forward(900000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         page.keyboard.press('Escape')
         page.wait_for_function("!document.querySelector('dialog[open]')")
         page.evaluate('document.activeElement.blur()')
-        page.clock.run_for(1000)
-        page.clock.run_for(58000)
+        page.clock.fast_forward(899000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
-        page.clock.run_for(2000)
+        # closing the dialog returns focus to its opener and the blur restarts
+        # again; give those two restarts a few seconds to settle before the pin
+        page.clock.run_for(5000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
 
     def test_drag_defers_sidebar_idle_collapse_then_restarts(self):
@@ -515,11 +610,11 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2 + 12)
         expect(page.locator('#chList.is-dragging')).to_have_count(1)
 
-        page.clock.run_for(60000)
+        page.clock.fast_forward(900000)            # the drag outlives the interval
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         page.mouse.up()
-        page.clock.run_for(1000)
-        page.clock.run_for(59000)
+        expect(page.locator('#chList.is-dragging')).to_have_count(0)
+        page.clock.fast_forward(899000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'open')
         page.clock.run_for(1000)
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')

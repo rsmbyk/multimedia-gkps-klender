@@ -61,7 +61,8 @@
   var activeSection = root.dataset.section || 'alkitab';
   var songSort = 'm';                    /* 'm' = last modified, 'title' = alphabetical */
   var idleCollapseTimer = null;
-  var IDLE_COLLAPSE_DELAY = 60000;
+  var deferralHeld = false;
+  var IDLE_COLLAPSE_DELAY = 900000;
   var navBeforeCh = null;
   var pendingAnchor = null;
   var railCloseTimer = null;
@@ -118,7 +119,9 @@
       if (document.visibilityState === 'hidden') return;
       if (idleCollapseIsDeferred()) {
         /* A modal or an active drag can outlive the idle interval. Check again
-           until it ends, then give the operator a full quiet interval. */
+           until it ends, then give the operator a full quiet interval. The
+           state watcher below does the same thing without waiting a second. */
+        deferralHeld = true;
         if (!panel.contains(document.activeElement)) scheduleIdleCollapse(1000, true);
         return;
       }
@@ -130,13 +133,40 @@
   function noteSidebarActivity() {
     scheduleIdleCollapse();
   }
-  ['pointerdown', 'pointermove', 'keydown', 'focusin', 'wheel', 'scroll'].forEach(function (eventName) {
-    rail.addEventListener(eventName, noteSidebarActivity, { passive: true });
-    panel.addEventListener(eventName, noteSidebarActivity, { passive: true });
+  /* One closed list, two surfaces. Capture is not decoration: `scroll` is
+     dispatched at the scroller (#panelBody) and never bubbles to #panel, so a
+     bubble listener misses the scrollbar drag spec 072 meant to count. Capture
+     also covers any scroller a future list adds under the same surface. */
+  var ACTIVITY_EVENTS = ['pointerdown', 'pointermove', 'keydown', 'focusin', 'wheel', 'scroll'];
+  ACTIVITY_EVENTS.forEach(function (eventName) {
+    rail.addEventListener(eventName, noteSidebarActivity, { capture: true, passive: true });
+    panel.addEventListener(eventName, noteSidebarActivity, { capture: true, passive: true });
   });
   panel.addEventListener('focusout', function (event) {
-    if (!panel.contains(event.relatedTarget)) noteSidebarActivity();
+    if (!panel.contains(event.relatedTarget)) {
+      deferralHeld = false;              /* focus leaving is a deferral ending */
+      noteSidebarActivity();
+    }
   });
+  /* The end of a deferral is state, not a seventh activity event: the grip's
+     .is-dragging class, a dialog's [open], a modal's .visible. Watching those
+     attributes in the body's subtree restarts the interval the moment the last
+     one clears, rather than up to a second later on the expiry poll. The poll
+     stays as the backstop for browsers with no MutationObserver. */
+  function onDeferralChanged() {
+    if (idleCollapseIsDeferred()) {
+      deferralHeld = true;
+      return;
+    }
+    if (!deferralHeld) return;
+    deferralHeld = false;
+    scheduleIdleCollapse();
+  }
+  if (window.MutationObserver) {
+    new window.MutationObserver(onDeferralChanged).observe(document.body, {
+      attributes: true, subtree: true, attributeFilter: ['class', 'open']
+    });
+  }
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') cancelIdleCollapse();
     else scheduleIdleCollapse();
