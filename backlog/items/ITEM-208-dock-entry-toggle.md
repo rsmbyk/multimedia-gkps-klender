@@ -1,6 +1,6 @@
 ---
 id: ITEM-208
-status: speccing
+status: in-review
 title: "Dock entry headers expand and collapse their block; items do the jumping"
 type: feat
 priority: P2
@@ -9,8 +9,8 @@ created: 2026-11-18
 updated: 2026-11-18
 spec: specs/198-dock-entry-toggle/spec.md
 branch: feat/198-dock-entry-toggle
-pr:
-issue:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/532
+issue: 531
 closed_at:
 closed_reason:
 bump: minor
