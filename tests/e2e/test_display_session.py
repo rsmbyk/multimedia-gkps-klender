@@ -88,6 +88,7 @@ class DisplaySessionE2ETests(StaticLiveServerTestCase):
         dock.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
         dock.wait_for_selector('.entryrow')
         dock.locator('.entryrow').first.click()
+        dock.locator('.entryli[data-index="0"] .screenerow').first.click()
         dock.wait_for_function(
             """service => {
                  const state = JSON.parse(localStorage.getItem('gkps-display') || 'null');
@@ -262,6 +263,7 @@ class DisplaySessionE2ETests(StaticLiveServerTestCase):
             dock.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
             dock.wait_for_selector('.entryrow')
             dock.locator('.entryrow').first.click()
+            dock.locator('.entryli[data-index="0"] .screenerow').first.click()
             dock.wait_for_function(
                 """service => {
                      const state = JSON.parse(localStorage.getItem('gkps-display') || 'null');
@@ -349,6 +351,7 @@ class DisplaySessionE2ETests(StaticLiveServerTestCase):
         dock.locator(f'.servicerow[data-service="{self.service.pk}"]').click()
         dock.wait_for_selector('.entryrow')
         dock.locator('.entryrow').first.click()
+        dock.locator('.entryli[data-index="0"] .screenerow').first.click()
         dock.wait_for_function("() => window.gkpsDisplay.read().on === true")
         self.assertEqual(errors, [])
 

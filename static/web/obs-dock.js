@@ -75,6 +75,12 @@
     lastEntry: null,
   };
 
+  /* Which entry blocks stand open, apart from the live one: page memory only
+     (FR-006). A header's toggle records here; nothing is ever stored, so a reload
+     starts every block shut. The live entry never consults this — its block is
+     open and locked. */
+  var entryOverrides = new Map();
+
   function el(tag, cls, text) {
     var node = document.createElement(tag);
     if (cls) node.className = cls;
@@ -247,9 +253,10 @@
     return row;
   }
 
-  function buildInner(entry) {
+  function buildInner(entry, index) {
     if (isDivider(entry)) return null;             /* a hairline has nothing to open */
     var inner = el('div', 'entryinner');
+    inner.id = 'entryinner-' + index;              /* aria-controls' referent (FR-008) */
     inner.setAttribute('aria-hidden', 'true');
     if ('inert' in inner) inner.inert = true;
     var clip = el('div', 'entryinner__clip');
@@ -298,8 +305,29 @@
       var item = el('li', 'entryli');
       item.dataset.index = String(index);
       item.appendChild(entryRowContent(entry, index));
-      var inner = buildInner(entry);
-      if (inner) item.appendChild(inner);
+      var inner = buildInner(entry, index);
+      if (inner) {
+        item.appendChild(inner);
+        /* The header names its block (FR-008). An entry with no inner — a break,
+           an empty block — never gets the pair: there is nothing to expand. */
+        var row = item.querySelector('.entryrow');
+        if (row) {
+          row.setAttribute('aria-controls', inner.id);
+          /* ...and shows its state (FR-001, research D007): one stroked chevron,
+             trailing in the header line, aria-hidden because the row's own name
+             carries the entry. Only a header that got an inner gets one — a
+             break or an empty block renders nothing to point with (FR-010). */
+          var chev = el('span', 'entrychev');
+          chev.setAttribute('aria-hidden', 'true');
+          var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 20 20');
+          var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+          poly.setAttribute('points', '7 4 13 10 7 16');
+          svg.appendChild(poly);
+          chev.appendChild(svg);
+          row.appendChild(chev);
+        }
+      }
       entryList.appendChild(item);
     });
     runNote.hidden = dock.entries.length > 0;
@@ -475,6 +503,53 @@
     });
   }
 
+  /* Which entry of this dock's service is on air right now (-1: none) — the
+     liveness fact every effective-state question starts from. */
+  function liveEntry() {
+    var state = gkpsDisplay.read();
+    if (state && state.service != null && state.service === dock.service) {
+      return entryOfScreen(state.screen);
+    }
+    return -1;
+  }
+
+  /* The one question every painter asks (FR-006): does this entry's block stand
+     open? The live entry's does — locked open while its service is on air — and
+     any other answers the page-memory override its header's toggle recorded
+     (absent = closed). Nothing here is persisted: a reload forgets every
+     override. */
+  function effectiveOpen(index) {
+    if (liveEntry() === index) return true;
+    return entryOverrides.get(index) === true;
+  }
+
+  /* The same question asked of a block element — finishMorph only holds the node.
+     Its id carries the index; an unparseable one never closes a block by accident. */
+  function effectiveOpenFor(inner) {
+    var n = Number(String(inner.id || '').replace('entryinner-', ''));
+    if (isNaN(n)) return true;
+    return effectiveOpen(n);
+  }
+
+  /* The painters of a block's state (D003): one input everywhere — crossing,
+     repaint and hand toggle can never disagree about the same block. */
+  function paintInner(inner, open) {
+    inner.classList.toggle('is-open', open);
+    inner.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if ('inert' in inner) inner.inert = !open;
+  }
+
+  /* The header mirrors the same state (FR-008) — and only a header that names a
+     block carries the pair; a break or an empty entry never got aria-controls. */
+  function paintEntry(inner, open) {
+    paintInner(inner, open);
+    var li = inner.closest('.entryli');
+    var row = li && li.querySelector('.entryrow');
+    if (row && row.hasAttribute('aria-controls')) {
+      row.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+  }
+
   /* ---------- glide and centring (190 ms ease-out, clamped) ------------------ */
 
   var glideFrame = null;
@@ -562,13 +637,20 @@
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  function startMorph(outInner, inInner, node) {
+  function startMorph(outInner, inInner, node, outEffectiveOpen) {
     cancelPendingCenter();
+    cancelToggleMorph(outInner);
+    cancelToggleMorph(inInner);
     if (morphState) finishMorph();
     var outBody = outInner.querySelector('.entryinner__body');
     var inBody = inInner.querySelector('.entryinner__body');
     var hOut = outBody ? outBody.offsetHeight : outInner.offsetHeight;
     var hIn = inBody ? inBody.offsetHeight : 0;
+    /* A hand-opened override (SC-005) keeps the departing block open: the crossing
+       does not collapse it. An arriving block already peeked open keeps its height:
+       only a closed block is opened by the morph. */
+    var keepOutOpen = !!outEffectiveOpen;
+    var inWasOpen = inInner.classList.contains('is-open');
     var box = runBody.getBoundingClientRect();
     var rect = node.getBoundingClientRect();
     var startY = rect.top - box.top;
@@ -576,22 +658,24 @@
     var started = performance.now();
     var duration = 230;
 
-    outInner.classList.add('is-morph');
-    inInner.classList.add('is-morph');
-    inInner.classList.add('is-open');              /* pointer events; height is inline */
-    /* sync() skips both inners while the morph runs, so the arriving block's
-       inert/aria-hidden must be cleared HERE — otherwise the block opens visible
-       but unclickable. */
-    inInner.setAttribute('aria-hidden', 'false');
-    if ('inert' in inInner) inInner.inert = false;
+    if (!keepOutOpen) outInner.classList.add('is-morph');
+    if (!inWasOpen) {
+      inInner.classList.add('is-morph');
+      inInner.classList.add('is-open');              /* pointer events; height is inline */
+      /* sync() skips both inners while the morph runs, so the arriving block's
+         inert/aria-hidden must be cleared HERE — otherwise the block opens visible
+         but unclickable. */
+      inInner.setAttribute('aria-hidden', 'false');
+      if ('inert' in inInner) inInner.inert = false;
+    }
     morphState = {out: outInner, inn: inInner, node: node};
     if (reduceMotion.matches) { finishMorph(); return; }
 
     function frame(now) {
       var t = Math.min(1, (now - started) / duration);
       var e = easeInOut(t);
-      outInner.style.gridTemplateRows = Math.max(0, hOut * (1 - e)) + 'px';
-      inInner.style.gridTemplateRows = Math.max(0, hIn * e) + 'px';
+      if (!keepOutOpen) outInner.style.gridTemplateRows = Math.max(0, hOut * (1 - e)) + 'px';
+      if (!inWasOpen) inInner.style.gridTemplateRows = Math.max(0, hIn * e) + 'px';
       /* The row's layout position already includes both height changes, so this
          puts it exactly where the curve says it should be on screen. */
       var desired = startY + (centreY - startY) * e;
@@ -612,15 +696,79 @@
     morphState = null;
     out.classList.remove('is-morph');
     inn.classList.remove('is-morph');
-    out.classList.remove('is-open');
-    inn.classList.add('is-open');
-    out.setAttribute('aria-hidden', 'true');
-    if ('inert' in out) out.inert = true;
-    inn.setAttribute('aria-hidden', 'false');
-    if ('inert' in inn) inn.inert = false;
     out.style.gridTemplateRows = '';
     inn.style.gridTemplateRows = '';
+    /* Both blocks land in their effective state (D010): a departing block the
+       operator opened by hand stays open, and a mid-crossing toggle's recorded
+       request lands exactly here — at the end of a crossing this settle paint is
+       the single writer. */
+    paintEntry(out, effectiveOpenFor(out));
+    paintEntry(inn, effectiveOpenFor(inn));
     if (node) centerRow(node);
+  }
+
+  /* A hand toggle morphs its one block the way the crossing morphs its pair:
+     measured pixels on grid-template-rows over 230 ms of the same easeInOut(t),
+     .is-morph suppressing the CSS transition. Several blocks may be mid-flight at
+     once, so each animation is tracked by its inner element. No scroll, no glide,
+     no centring is touched — expanding is peeking (FR-007/A4). */
+  var toggleMorphs = new Map();          /* inner element -> frame handle */
+
+  function cancelToggleMorph(inner) {
+    var frame = toggleMorphs.get(inner);
+    if (frame) { window.cancelAnimationFrame(frame); toggleMorphs.delete(inner); }
+  }
+
+  function startToggleMorph(inner, open) {
+    var body = inner.querySelector('.entryinner__body');
+    var full = body ? body.offsetHeight : 0;
+    /* Where the height stands right now: mid-morph (a second click flips the
+       target), open, or shut. */
+    var from = inner.classList.contains('is-morph') && inner.style.gridTemplateRows
+      ? parseFloat(inner.style.gridTemplateRows)
+      : (inner.classList.contains('is-open') ? full : 0);
+    var to = open ? full : 0;
+    cancelToggleMorph(inner);
+    inner.classList.add('is-morph');
+    inner.classList.add('is-open');       /* pointer events; height is inline */
+    inner.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if ('inert' in inner) inner.inert = !open;
+    var started = performance.now();
+    var duration = 230;
+    if (from === to) { finishToggleMorph(inner, open); return; }
+
+    function frame(now) {
+      var t = Math.min(1, (now - started) / duration);
+      var e = easeInOut(t);
+      inner.style.gridTemplateRows = Math.max(0, from + (to - from) * e) + 'px';
+      if (t < 1) toggleMorphs.set(inner, window.requestAnimationFrame(frame));
+      else finishToggleMorph(inner, open);
+    }
+    toggleMorphs.set(inner, window.requestAnimationFrame(frame));
+  }
+
+  function finishToggleMorph(inner, open) {
+    cancelToggleMorph(inner);
+    inner.classList.remove('is-morph');
+    inner.style.gridTemplateRows = '';
+    paintEntry(inner, open);
+  }
+
+  /* The header's one job (FR-002/FR-005): flip this entry's block, nothing else.
+     The override is page memory only (A2); the live entry is locked open and a
+     crossing's morph owns its block until it settles — the recorded request lands
+     in the settle paint (D005). */
+  function toggleBlock(index) {
+    if (liveEntry() === index) return;              /* live = locked open (FR-006) */
+    var inner = document.getElementById('entryinner-' + index);
+    if (!inner) return;                             /* a break or an empty block */
+    var next = !effectiveOpen(index);
+    entryOverrides.set(index, next);
+    if (morphState && (morphState.out === inner || morphState.inn === inner)) return;
+    /* FR-005's reduce half (US3/AC5): the swap paints at once — the same finish
+       path a morph lands on, without ever requesting a frame. */
+    if (reduceMotion.matches) { finishToggleMorph(inner, next); return; }
+    startToggleMorph(inner, next);
   }
 
   function cancelPendingCenter() {
@@ -1113,20 +1261,34 @@
       : null;
     var morphing = !!(departingInner && arrivingInner && arrivingInner !== departingInner &&
                       arrivingRow && departingInner.classList.contains('is-open'));
-    if (morphing) startMorph(departingInner, arrivingInner, arrivingRow);
+    /* A hand-opened override keeps the departing block open through the hand-off
+       (SC-005): the crossing animates only what the effective state says closes. */
+    var outEffectiveOpen = departingLi
+      ? effectiveOpen(Number(departingLi.dataset.index)) : false;
+    if (morphing) startMorph(departingInner, arrivingInner, arrivingRow, outEffectiveOpen);
 
     entryList.querySelectorAll('.entryli').forEach(function (li) {
       var index = Number(li.dataset.index);
       var current = live && index === activeEntry;
       li.dataset.live = current ? 'true' : 'false';
+      var open = effectiveOpen(index);
       var row = li.querySelector('.entryrow');
-      if (row) row.setAttribute('aria-current', current ? 'true' : 'false');
-      var inner = li.querySelector('.entryinner');
-      if (inner && !(morphing && (inner === departingInner || inner === arrivingInner))) {
-        inner.classList.toggle('is-open', current);
-        inner.setAttribute('aria-hidden', current ? 'false' : 'true');
-        if ('inert' in inner) inner.inert = !current;
+      if (row) {
+        row.setAttribute('aria-current', current ? 'true' : 'false');
+        if (row.hasAttribute('aria-controls')) {
+          row.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
       }
+      var inner = li.querySelector('.entryinner');
+      /* A morphing block's classes belong to the animation that owns it — the
+         settle paint is its single writer (D010). Everything else paints from
+         the effective state here. */
+      if (inner && !inner.classList.contains('is-morph') &&
+          !(morphing && (inner === departingInner || inner === arrivingInner))) {
+        paintInner(inner, open);
+      }
+      var chev = li.querySelector('.entrychev');
+      if (chev) chev.hidden = current;              /* the live row has no chevron */
       li.querySelectorAll('.screenerow').forEach(function (screenRow) {
         screenRow.setAttribute('aria-current',
           current && Number(screenRow.dataset.screen) === state.screen ? 'true' : 'false');
@@ -1181,9 +1343,12 @@
     }
     var row = event.target.closest('.entryrow');
     if (!row) return;
-    var entry = dock.entries[Number(row.dataset.index)];
-    if (!entry || isDivider(entry)) return;
-    projectScreen(entry.start);
+    /* No block, no action: a break or an empty entry's header is inert — no
+       toggle, no projection, no write (FR-010). Every other header flips its
+       own block and hands the keyboard back to the panel; it never projects —
+       the items inside are the jump targets (FR-002, US2). */
+    if (!row.hasAttribute('aria-controls')) return;
+    toggleBlock(Number(row.dataset.index));
     focusPanel();
   });
 
