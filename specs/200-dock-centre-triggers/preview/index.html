@@ -883,8 +883,19 @@ body.obs-dock {
 
 /* The arrows fill while this window holds the keyboard — the dock is live and
    Space/arrows/T will act; out of focus they fall back to the quiet outline. */
-html.win-focus .navbtn:not(:disabled),
-html.win-focus .navbtn:not(:disabled):hover {
+html.win-focus .navbtn:not(:disabled):not([aria-pressed]),
+html.win-focus .navbtn:not(:disabled):not([aria-pressed]):hover {
+  background: var(--active-bg);
+  border-color: var(--active-bg);
+  color: var(--active-ink);
+}
+
+/* Spec 200: the centre control shows the mode in its own face — filled while
+   following, the quiet outline while browsing, whether or not the window has focus. */
+.navbtn[aria-pressed="true"],
+.navbtn[aria-pressed="true"]:hover,
+html.win-focus .navbtn[aria-pressed="true"]:not(:disabled),
+html.win-focus .navbtn[aria-pressed="true"]:not(:disabled):hover {
   background: var(--active-bg);
   border-color: var(--active-bg);
   color: var(--active-ink);
@@ -1354,7 +1365,7 @@ body.pvbody {
               </button>
               <!-- THE NEW CONTROL (FR-001): between Previous and Next, the same navbtn face. -->
               <button type="button" class="navbtn" id="centreBtn" tabindex="-1"
-                      title="Centre the live entry" aria-label="Centre the live entry">
+                      aria-pressed="true" title="Centre the live entry" aria-label="Centre the live entry">
                 <svg viewBox="0 0 20 20">
                   <circle cx="10" cy="10" r="5.2"></circle>
                   <path d="M10 2.6v2.6M10 14.8v2.6M2.6 10h2.6M14.8 10h2.6"></path>
@@ -1763,6 +1774,8 @@ body.pvbody {
       '\nconditions: ' + (held ? 'held by — ' + held : 'all true');
     var modeOut = document.getElementById('pvMode');
     if (modeOut) modeOut.textContent = 'mode: ' + (following ? 'following' : 'browsing');
+    var centre = document.getElementById('centreBtn');
+    if (centre) centre.setAttribute('aria-pressed', following ? 'true' : 'false');
     if (cb.idleOn.checked && left === 0 && !held) {
       following = true;                 /* the idle re-centre is a re-entry */
       centre('15 s idle, every condition true');

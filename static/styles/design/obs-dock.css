@@ -757,8 +757,19 @@ body.obs-dock {
 
 /* The arrows fill while this window holds the keyboard — the dock is live and
    Space/arrows/T will act; out of focus they fall back to the quiet outline. */
-html.win-focus .navbtn:not(:disabled),
-html.win-focus .navbtn:not(:disabled):hover {
+html.win-focus .navbtn:not(:disabled):not([aria-pressed]),
+html.win-focus .navbtn:not(:disabled):not([aria-pressed]):hover {
+  background: var(--active-bg);
+  border-color: var(--active-bg);
+  color: var(--active-ink);
+}
+
+/* Spec 200: the centre control shows the mode in its own face — filled while
+   following, the quiet outline while browsing, whether or not the window has focus. */
+.navbtn[aria-pressed="true"],
+.navbtn[aria-pressed="true"]:hover,
+html.win-focus .navbtn[aria-pressed="true"]:not(:disabled),
+html.win-focus .navbtn[aria-pressed="true"]:not(:disabled):hover {
   background: var(--active-bg);
   border-color: var(--active-bg);
   color: var(--active-ink);

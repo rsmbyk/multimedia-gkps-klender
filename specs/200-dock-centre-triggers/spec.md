@@ -80,6 +80,10 @@ centre is on the scrollport's centre.
 6. **Given** the dock is browsing — the operator has scrolled or opened another entry, so advances
    no longer centre **When** the control is pressed **Then** the dock is following again, and the
    **next** advance centres without another press.
+7. **Given** the dock is following **When** the control is looked at **Then** it is filled in
+   `--active-bg`/`--active-ink` with `aria-pressed="true"`; after a scroll or an expanded entry puts
+   the dock in browsing mode **Then** the same control shows the plain `navbtn` outline with
+   `aria-pressed="false"`.
 
 ### US2 — Clicking an item inside an entry centres the live row (P1)
 
@@ -205,7 +209,7 @@ or click the sticky **Next** band — it follows again.
 | ID | Requirement | Capability |
 | --- | --- | --- |
 | FR-001 | The runner's transport SHALL render exactly one new control, placed between Previous and Next in the same row, carrying the same `navbtn` height and face as those two. | `dock` (R15 new) |
-| FR-002 | Pressing the control SHALL centre the live row (the current screen row, or the entry's label row when the screen has no row of its own) on the scrollport's centre: a 190 ms ease-out glide, clamped to the list's ends, and an instant jump under `prefers-reduced-motion: reduce`. It SHALL write no display state and change no selection, and SHALL put the dock into following mode. | `dock` (R15 new) |
+| FR-002 | Pressing the control SHALL centre the live row (the current screen row, or the entry's label row when the screen has no row of its own) on the scrollport's centre: a 190 ms ease-out glide, clamped to the list's ends, and an instant jump under `prefers-reduced-motion: reduce`. It SHALL write no display state and change no selection, and SHALL put the dock into following mode. The control SHALL carry `aria-pressed="true"` with the filled `--active-bg`/`--active-ink` face while following, and `aria-pressed="false"` with the plain `navbtn` outline while browsing. | `dock` (R15 new) |
 | FR-003 | The control SHALL be disabled while the dock has no live row (nothing on air from this dock, or the picker is the view). | `dock` (R15 new) |
 | FR-004 | Clicking a screen row inside an entry's block, or the live entry's Next band, SHALL centre the live row that results from that projection — a glide when the live entry is unchanged, the crossing motion when it changed — and SHALL put the dock into following mode. The Next band's screen belongs to the **next** entry: clicking it SHALL move the live pointer to that entry and mark its first row. | `dock` (R15 new) |
 | FR-005 | An entry header's click SHALL NOT centre the list (spec 198 R14's "no scroll" holds). Opening another entry's block by hand SHALL put the dock into browsing mode. | `dock` (R14 unaffected, R15 new) |
@@ -264,6 +268,9 @@ a 420 × 780 px pane by `preview/probe.py`:
   `currentColor` ink, stroke-width 1.8, round caps; no text;
 - **States**: at rest · hover (`--focus` border + `--icon-hover-bg`) · the window-focus fill
   (`html.win-focus .navbtn:not(:disabled)`) · disabled at `opacity: .45` with no live row;
+  **following** — crosshair filled `--active-bg` (#7C9CF0 in dark, #1C5C3C in light) with
+  `--active-ink`, `aria-pressed="true"`; **browsing** — transparent face, `--divider` border,
+  `aria-pressed="false"`.
 - **Motion**: the control only starts the list's own 190 ms ease-out glide — sampled over 28 frames
   at 60 fps, 0 direction reversals, landing 0.0 px off the scrollport's centre;
 - **Responsive**: `flex: none`, so it takes its width from `.baits`, which already shrinks; the

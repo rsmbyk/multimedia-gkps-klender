@@ -339,6 +339,8 @@
       '\nconditions: ' + (held ? 'held by — ' + held : 'all true');
     var modeOut = document.getElementById('pvMode');
     if (modeOut) modeOut.textContent = 'mode: ' + (following ? 'following' : 'browsing');
+    var centre = document.getElementById('centreBtn');
+    if (centre) centre.setAttribute('aria-pressed', following ? 'true' : 'false');
     if (cb.idleOn.checked && left === 0 && !held) {
       following = true;                 /* the idle re-centre is a re-entry */
       centre('15 s idle, every condition true');

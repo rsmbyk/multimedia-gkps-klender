@@ -101,6 +101,13 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
                 };
             }""")
 
+    def _face(self, page):
+        return page.evaluate(
+            """() => { const b = document.querySelector('#centreBtn');
+                 const s = getComputedStyle(b);
+                 return {bg: s.backgroundColor, border: s.borderColor,
+                         colour: s.color, pressed: b.getAttribute('aria-pressed')}; }""")
+
     def _advance(self, page, button='nextBtn'):
         page.evaluate(
             """id => document.getElementById(id).click()""", button)
@@ -120,7 +127,14 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         page = self._dock()
         self._open_service(page)
         self._place(page)
+        filled = self._face(page)
+        self.assertEqual(filled['pressed'], 'true')
+        self.assertEqual(filled['bg'], 'rgb(124, 156, 240)')   # dark --active-bg
         self._scroll_away(page)
+        page.wait_for_timeout(260)              # let the background transition settle
+        outline = self._face(page)
+        self.assertEqual(outline['pressed'], 'false')
+        self.assertEqual(outline['bg'], 'rgba(0, 0, 0, 0)')
         before = self._measure(page)
         page.evaluate("document.querySelector('#centreBtn').click()")
         page.wait_for_timeout(260)

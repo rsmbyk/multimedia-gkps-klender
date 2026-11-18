@@ -72,6 +72,10 @@
   /* Spec 200: whether advances keep the live row centred. Page memory only —
      the mode is this dock's relationship with its list, never display state. */
   var following = true;
+  function setFollowing(value) {
+    following = !!value;
+    if (centreBtn) centreBtn.setAttribute('aria-pressed', following ? 'true' : 'false');
+  }
   var lastNotice = null;          /* previous {service, screen, goto} */
   var IDLE_MS = 15000;
   var idleLastActivity = performance.now();
@@ -818,7 +822,7 @@
     if (!inner) return;                             /* a break or an empty block */
     var next = !effectiveOpen(index);
     entryOverrides.set(index, next);
-    if (next) following = false;              /* spec 200: opening another entry browses */
+    if (next) setFollowing(false);              /* opening another entry browses */
     if (morphState && (morphState.out === inner || morphState.inn === inner)) return;
     /* FR-005's reduce half (US3/AC5): the swap paints at once — the same finish
        path a morph lands on, without ever requesting a frame. */
@@ -836,7 +840,7 @@
   runBody.addEventListener('wheel', cancelPendingCenter, {passive: true});
   runBody.addEventListener('pointerdown', cancelPendingCenter);
   /* The same hand that wins a glide also hands the list back to the operator. */
-  runBody.addEventListener('wheel', function () { following = false; }, {passive: true});
+  runBody.addEventListener('wheel', function () { setFollowing(false); }, {passive: true});
 
   /* ---------- the pinned row and the NEXT band ------------------------------ */
 
@@ -1405,14 +1409,14 @@
     if (gotoBusy) return;                    /* nothing changes what is on air */
     var band = event.target.closest('.nextband');
     if (band) {
-      following = true;                      /* the sticky band re-enters following */
+      setFollowing(true);                      /* the sticky band re-enters following */
       projectScreen(Number(band.dataset.screen));
       focusPanel();
       return;
     }
     var screenRow = event.target.closest('.screenerow');
     if (screenRow) {
-      following = true;                      /* an item click re-enters following */
+      setFollowing(true);                      /* an item click re-enters following */
       projectScreen(Number(screenRow.dataset.screen));
       focusPanel();
       return;
@@ -1517,7 +1521,7 @@
   prevBtn.addEventListener('click', function () { if (gotoBusy) return; step(-1); focusPanel(); });
   centreBtn.addEventListener('click', function () {
     if (gotoBusy || centreBtn.disabled) return;
-    following = true;
+    setFollowing(true);
     var node = liveNode();                   /* includes the go to's marked row */
     if (node) centerRow(node);
     focusPanel();
@@ -1911,6 +1915,7 @@
   /* ---------- boot ----------------------------------------------------------- */
 
   applyTheme(root.dataset.themeMode || 'dark', false);
+  setFollowing(true);
   gkpsDisplay.subscribe(sync);
   if (pickRows().length) setPickCursor(0, false);
 
@@ -1951,7 +1956,7 @@
       quiet = !otherOpen && !!node && offScreen(node);
     }
     if (quiet) {
-      following = true;                       /* the idle return is a re-entry */
+      setFollowing(true);                       /* the idle return is a re-entry */
       centerRow(node);
     }
     idleLastActivity = now;                    /* one glide per idle stretch */
