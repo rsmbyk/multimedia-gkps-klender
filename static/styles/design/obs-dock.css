@@ -399,6 +399,39 @@ body.obs-dock {
   border-top-right-radius: 0;
 }
 
+/* The header's painted state (spec 198, FR-001/FR-003/FR-011, research D007/D008):
+   one stroked chevron trailing the line. The row lays out on baselines and the
+   chevron carries no text, so it opts out with `align-self: center` — the owner's
+   ask (2026-11-18), probed at 0 px off the row's centre. It lives inside the row,
+   so the hover face tints it with everything else; the live row hides it and a
+   break or an empty header never got a node (FR-010). */
+.entrychev {
+  display: inline-flex;
+  align-items: center;
+  flex: none;                        /* the chevron never squeezes the title */
+  margin-left: auto;                 /* trailing end of the header line */
+  align-self: center;                /* D008: opt out of the row's baseline row */
+}
+
+.entrychev svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;              /* ink via the header's color (FR-003) */
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--ease); /* the 90° state flip (FR-003) */
+}
+
+.entryrow[aria-expanded="true"] .entrychev svg { transform: rotate(90deg); }
+
+.entrychev[hidden] { display: none; } /* the live row renders none (FR-001) */
+
+@media (prefers-reduced-motion: reduce) {
+  .entrychev svg { transition: none; }
+}
+
 .entryrow__c {
   flex: none;
   min-width: 2.1rem;

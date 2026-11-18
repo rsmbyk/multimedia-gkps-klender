@@ -26,6 +26,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-208](./items/ITEM-208-dock-entry-toggle.md) | Dock entry headers expand and collapse their block; items do the jumping | A full restart: headers only toggle (chevron per state, live locked open), projection moves to items inside the block | feat | P2 | L | [198](../specs/198-dock-entry-toggle/spec.md) | 2026-11-18 |
 
 ## Ready
 

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Entry headers in the OBS dock now expand and collapse their own block.** Each header carries a chevron
+  for its state; projection happens only when an item inside the block is clicked. The live entry stays open
+  and chevronless, breaks and empty blocks are inert, and reduced motion swaps instantly (spec 198).
+
 ### Fixed
 
 - **The dock's pinned date-group header sits flush under the toolbar.** The strip above the label belongs to

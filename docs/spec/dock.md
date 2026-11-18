@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-15
-**slices**: `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-18
+**slices**: `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -297,3 +297,32 @@ where the operator already is (R11's rule). (spec 195)
 #### Scenario: a background tab
 - WHEN the dock's page is hidden
 - THEN the timer does not fetch; OBS paints its docks continuously, so the guard rests while the dock shows
+
+### R14 — An entry header expands its block; only an item jumps
+
+The entry list's headers are disclosure controls, never projection controls. A header click SHALL toggle only
+its own block — morphing its height over 230 ms on the shared ease — and SHALL NOT write the display state,
+move the selection, scroll the list or select a screen; an item inside the block remains the only projection
+path from the list. Every header with a block to open SHALL carry one stroked chevron at its trailing end,
+centred vertically on the line: right-pointing at rest, rotated 90° down when open. The live entry's header
+SHALL render no chevron and SHALL NOT collapse; a section break or an entry whose block is empty SHALL render
+no chevron and its click SHALL be a no-op. Hand-opened blocks SHALL survive a live-entry crossing but SHALL
+NOT survive a reload; under reduced motion every swap SHALL be instant, with no morph or transition. A
+hovered header SHALL tint its whole line, chevron included, while the live row keeps its selected family of
+fill (never the generic hover face). (spec 198)
+
+#### Scenario: a header expands without projecting
+- WHEN the operator clicks a non-live entry's header
+- THEN only that block opens and its chevron turns down, while the display state, the selected screen and the scroll position stay as they were
+
+#### Scenario: an item inside the block jumps
+- WHEN the operator clicks a screen row inside an open block
+- THEN exactly that screen goes on air — the header click never does
+
+#### Scenario: the live header stays locked open
+- WHEN the live entry's header is clicked
+- THEN nothing changes: its block stays open, the row shows no chevron, and its selected fill holds
+
+#### Scenario: a hand-opened block forgets the reload
+- WHEN the page reloads after the operator opened several blocks by hand
+- THEN no override survives; only the live entry's block is open
