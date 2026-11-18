@@ -1,5 +1,5 @@
 /* The preview's behaviour, not the product's: it replays the dock's own centring
-   maths (270 ms ease-out glide, clamped, same layout coordinates as
+   maths (190 ms ease-out glide, clamped, same layout coordinates as
    static/web/obs-dock.js:560-607) and gates it on the three triggers this slice
    keeps. Every condition the owner named is a control on the page, so each state
    is reachable by hand. */
@@ -222,7 +222,7 @@
     function frame(now) {
       var max = runBody.scrollHeight - runBody.clientHeight;
       var to = Math.max(0, Math.min(target, max));
-      var t = Math.min(1, (now - started) / 270);
+      var t = Math.min(1, (now - started) / 190);
       runBody.scrollTop = from + (to - from) * (1 - Math.pow(1 - t, 3));
       glideFrame = t < 1 ? requestAnimationFrame(frame) : null;
     }
