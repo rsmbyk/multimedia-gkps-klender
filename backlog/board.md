@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-209](./items/ITEM-209-sidebar-activity.md) | The first sidebar's idle interval counts every scroll and waits fifteen minutes | The `scroll` listener sits on `#panel` while `#panelBody` scrolls, and scroll does not bubble — a scrollbar drag never resets the timer; widened to the deferral's other half (a released drag now gives a full interval) and to the owner's fifteen-minute wait | fix | P2 | M | [199](../specs/199-sidebar-activity/spec.md) | `fix/199-sidebar-activity` | 2026-11-18 |
 
 ## In review
 
