@@ -41,12 +41,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-209](./items/ITEM-209-sidebar-activity.md) | The first sidebar's idle interval counts every scroll and waits fifteen minutes | The `scroll` listener sits on `#panel` while `#panelBody` scrolls, and scroll does not bubble — a scrollbar drag never resets the timer; widened to the deferral's other half (a released drag now gives a full interval) and to the owner's fifteen-minute wait | fix | P2 | M | [199](../specs/199-sidebar-activity/spec.md) | [#534](https://github.com/rsmbyk/multimedia-gkps-klender/pull/534) | 2026-11-18 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-209](./items/ITEM-209-sidebar-activity.md) | The first sidebar's idle interval counts every scroll and waits fifteen minutes | The `scroll` listener sits on `#panel` while `#panelBody` scrolls, and scroll does not bubble — a scrollbar drag never resets the timer; widened to the deferral's other half (a released drag now gives a full interval) and to the owner's fifteen-minute wait | fix | P2 | M | [199](../specs/199-sidebar-activity/spec.md) | develop via [#534](https://github.com/rsmbyk/multimedia-gkps-klender/pull/534) | 2026-11-18 |
 | [ITEM-208](./items/ITEM-208-dock-entry-toggle.md) | Dock entry headers expand and collapse their block; items do the jumping | A full restart: headers only toggle (chevron per state, live locked open), projection moves to items inside the block | feat | P2 | L | [198](../specs/198-dock-entry-toggle/spec.md) | develop via #532 | 2026-11-18 |
 | [ITEM-207](./items/ITEM-207-dock-bucket-head-pin.md) | The dock's pinned bucket head leaves a 4px gap under the toolbar | The head's `top: 0` resolves inside the scroll body's 4px padding, so it pins below the scroller's edge and the row above shows in the band | fix | P2 | S | [197](../specs/197-dock-bucket-head-pin/spec.md) | develop via [#529](https://github.com/rsmbyk/multimedia-gkps-klender/pull/529) | 2026-11-17 |
 | [ITEM-200](./items/ITEM-200-today-badge-hover-actions.md) | The Today badge sits under the revealed row actions | Hovering a dated Tata Ibadah row paints edit/delete over the Today badge; the badge steps aside the way the row's date already does while the actions are up | fix | P1 | S | [195](../specs/195-hotfix-batch/spec.md) | develop via [#523](https://github.com/rsmbyk/multimedia-gkps-klender/pull/523) | 2026-11-15 |
