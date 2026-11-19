@@ -75,6 +75,7 @@
   /* Spec 200: whether advances keep the live row centred. Page memory only —
      the mode is this dock's relationship with its list, never display state. */
   var following = true;
+  var centreOnOpen = false;       /* re-centre once, after an on-air service is painted */
   function setFollowing(value) {
     following = !!value;
     if (centreBtn) centreBtn.setAttribute('aria-pressed', following ? 'true' : 'false');
@@ -415,6 +416,13 @@
   }
 
   function openService(id, name, date) {
+    /* Spec 200: opening the service that is already on air is a deliberate return
+       to the live show — re-enter following before its rows are painted, so sync
+       centres the live entry as part of this same open. Only an explicit open does
+       this: the 10 s re-read and a display echo must never drag a browsing hand. */
+    var onAir = gkpsDisplay.read();
+    centreOnOpen = !!(onAir && onAir.service === id && onAir.on === true && !onAir.goto);
+    if (centreOnOpen) setFollowing(true);
     dock.service = id;
     dock.name = name;
     dock.date = date;
@@ -448,6 +456,12 @@
       buildStops();
       renderList();
       sync(gkpsDisplay.read());
+      /* Opening the on-air service is a return to the live show: centre once,
+         after its rows are painted, as part of this same open. */
+      if (centreOnOpen) {
+        centreOnOpen = false;
+        scheduleCenter();
+      }
     });
   }
 

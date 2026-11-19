@@ -72,3 +72,9 @@ every `test` row was actually run, `inspection` rows were read, `manual` rows ar
   27 px, still 24 frames and 0 px off target. Added a `sine 400` preset beside `smooth 400` in the
   harness so the two curves can be compared directly. Suite 16/16 green. Outcome: Converged,
   pending owner's pick.
+- Pass 9, 2026-11-19 — owner required that opening a service already on the projector and overlay
+  re-enters following. FR-014 was narrowed to exclude the on-air case and FR-015 added; `openService`
+  now sets following before the rows are painted and `loadServiceData` centres once after `sync()`.
+  The new E2E was red on the mode flag and then on the missing centre; a first draft also projected
+  screen 0 (unreachable from the list top), fixed by placing a deep screen. 17/17 green. Outcome:
+  Converged.

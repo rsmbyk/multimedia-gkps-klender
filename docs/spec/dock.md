@@ -380,3 +380,8 @@ the list. (spec 200)
 #### Scenario: a held press is not idleness
 - WHEN a button is held down past the 15 s with the live row off screen
 - THEN the count is suspended until release and nothing moves
+
+#### Scenario: opening the service on air
+- GIVEN the dock is browsing a different service while another service is on the projector and overlay
+- WHEN that on-air service is opened from the picker
+- THEN following returns and the list centres that service's live entry as part of the open

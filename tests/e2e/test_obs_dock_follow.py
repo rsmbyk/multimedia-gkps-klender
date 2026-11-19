@@ -335,6 +335,23 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         self.assertLess(steps[0], 0.35 * peak, (steps, peak))
         self.assertLess(steps[-1], 0.35 * peak, (steps, peak))
 
+    def test_opening_the_service_on_air_enters_following(self):
+        page = self._dock()
+        self._open_service(page)
+        page.evaluate("id => window.gkpsDisplay.show(id, 0)", [self.service.pk])
+        self._place(page)                            # put the live screen deep in the list
+        page.evaluate("document.querySelector('#switchBtn').click()")
+        page.wait_for_selector('.servicerow', state='visible')
+        self._open_service(page, 'Ibadah Lain')
+        self._scroll_away(page)                      # browsing, following is off
+        self.assertEqual(self._face(page)['pressed'], 'false')
+        page.evaluate("document.querySelector('#switchBtn').click()")  # back to the picker
+        page.wait_for_selector('.servicerow', state='visible')
+        self._open_service(page)                     # open the service on air
+        page.wait_for_timeout(900)
+        self.assertEqual(self._face(page)['pressed'], 'true')
+        self.assertLess(abs(self._measure(page)['off']), 2)
+
     def test_reduced_motion_jumps_instead_of_gliding(self):
         page = self._dock(reduced=True)
         self._open_service(page)

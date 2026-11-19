@@ -96,6 +96,7 @@ names M1–M3 in `quickstart.md`.
 | US1/AC7 | Next from browsing | `test` → `test_advances_follow_when_following_and_not_when_browsing` | mode unchanged, list still |
 | US2/AC1 | item click path | `test` → `test_an_item_click_centres_and_reenters_following` | projects and centres |
 | US2/AC2 | item click, same entry | `test` → `test_an_item_click_centres_and_reenters_following` | glide to the new live screen row |
+| US1/AC8 | open the service on air | `test` → `test_opening_the_service_on_air_enters_following` | following returns and the live row is centred on open; opening another service does not |
 | US2/AC3 | item click, crossing | `test` → `test_an_item_click_centres_and_reenters_following` | crossing morph carries the scroll |
 | US2/AC4 | sticky band branch | `test` → `test_the_next_band_jumps_the_pointer_and_reenters_following` | band projects the next entry's first screen |
 | US2/AC5 | header click | `test` → `test_scrolling_and_expanding_another_entry_end_following` | toggles, ends following, never centres |

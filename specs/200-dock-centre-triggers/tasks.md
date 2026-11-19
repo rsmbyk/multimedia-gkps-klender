@@ -151,6 +151,9 @@ control, advance (centres again).
   Retune E2E waits and the motion guard.
 - [ ] T043 Ease both ends one notch further: blend the 400 ms sine in-out with quintic smootherstep
   (50/50), add the `sine 400` preset to the harness for side-by-side comparison.
+- [ ] T044 Open the service already on air from browsing: re-enter following in `openService`,
+  centre once after its rows are painted, and narrow FR-014 with FR-015. Covered by
+  `::test_opening_the_service_on_air_enters_following`.
 
 ## Phase 9 — Delivery (after Converge)
 

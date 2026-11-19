@@ -84,6 +84,9 @@ centre is on the scrollport's centre.
    `--active-bg`/`--active-ink` with `aria-pressed="true"`; after a scroll or an expanded entry puts
    the dock in browsing mode **Then** the same control shows the plain `navbtn` outline with
    `aria-pressed="false"`.
+8. **Given** the dock is browsing another service while a different service is on air **When** the
+   on-air service is opened from the picker **Then** the dock enters following mode and centres that
+   service's live entry as part of the open (FR-015).
 
 ### US2 — Clicking an item inside an entry centres the live row (P1)
 
@@ -221,7 +224,8 @@ or click the sticky **Next** band — it follows again.
 | FR-011 | The dock SHALL begin in following mode (the behaviour it has today). | `dock` (R15 new) |
 | FR-012 | A scroll of the list, or the expansion of another entry's block by hand, SHALL put the dock into browsing mode; neither act SHALL centre the list itself. Browsing mode SHALL last until one of FR-002, FR-004 (which includes the sticky Next band) or FR-007's successful elapse. | `dock` (R15 new) |
 | FR-013 | Following SHALL apply only while the runner is showing the service that is on air on the projector and overlay. With the picker as the view, a different service open, or a go to on air, no advance SHALL centre. | `dock` (R15 new) |
-| FR-014 | In either mode the following SHALL NOT centre the list: a display switch, a saved-change re-read, a session refresh, a load, opening a service, entering the runner from the picker, a go to's own rows, and a layer closing. | `dock` (R15 new) |
+| FR-014 | In either mode the following SHALL NOT centre the list: a display switch, a saved-change re-read, a session refresh, a load, entering the runner from the picker, a go to's own rows, and a layer closing. Opening a service that is not on air SHALL NOT centre either; opening the service on air is FR-015's exception. | `dock` (R15 new) |
+| FR-015 | Opening a service that is currently on air (on the projector and overlay, words up, no go to) SHALL put the dock into following mode and centre the live entry as part of that open. Opening any other service SHALL leave the current mode alone. | `dock` (R15 new) |
 
 ### Key Entities
 
