@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with no hyphens now breaks inside the box that owns it — the title, the entry header and the screen row —
   instead of painting past it and giving the list a horizontal scrollbar. Text that already fits, the row's
   number and chevron, and the labels that truncate are unchanged (spec 203).
+- **The dock's following-mode centring keeps pace with fast advancing.** The live row re-centres over
+  200 ms on a plain sine instead of 400 ms on a softened curve, so stepping quickly no longer leaves the
+  list lagging and bobbing up and down; a single centring still lands smooth, and the hand block-toggle
+  keeps its own pace (spec 205).
 
 ## [1.32.1] - 2026-11-15
 
