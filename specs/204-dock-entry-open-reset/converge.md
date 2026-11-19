@@ -86,6 +86,23 @@ the re-read now forces a real rebuild (`rebuilds=13`) and keeps the hand-opened 
 the traceability table; one pass, no cap reached. The two reds are base-identical and carded, so
 they are not gaps in this slice's behaviour.
 
+## Push-step suite (2026-11-19, after the PR opened)
+
+The repo has **no CI pipeline** (`.github/workflows/` is absent on the base), so the push-step
+matrix is a manual run and its result is recorded here rather than pointed at a gate.
+
+| Lane | Result | Attribution |
+| --- | --- | --- |
+| `tests.e2e.test_dock_open_reset` (the slice's own) | 11 tests, **OK**, re-run after merging `develop` | green |
+| the seven-module dock lane | 89 tests, 87 pass, 2 fail | both `1832 != 1873`, identical on the base with the change stashed; `ITEM-215` |
+| `manage.py test multimedia` (the whole unit lane, 543 tests) | 8 failures, 0 errors after `collectstatic` | the identical eight on the base with `static/web/obs-dock.js` reverted to `origin/develop`; carded as `ITEM-217` |
+| the full browser matrix (756 E2E methods) | **not run** — hours of wall clock; the dock's own modules and the unit lane are the evidence above | the pre-existing browser reds are carded (`ITEM-137/139/140/141/144/153/156/174/175/184/185/215`) |
+
+The nine `Missing staticfiles manifest entry` errors the unit lane first showed were environmental
+— this worktree had no `_static/` — and cleared with `collectstatic`; they are not product defects
+and are not part of `ITEM-217`. A `--parallel 4` attempt aborted on Django's own
+`cannot pickle 'traceback' object` limitation once a test failed, so the lane ran sequentially.
+
 ## History
 
 - **2026-11-19** — pass 1: 30 test rows run (13 targeted green; the 89-test lane 87/89 with two
