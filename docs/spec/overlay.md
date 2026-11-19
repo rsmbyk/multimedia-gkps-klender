@@ -59,26 +59,34 @@ changed. (spec 165's cache; invalidation added by spec 195)
 A screen belonging to a `song` entry SHALL paint the accepted lyric caption: one block of white text at weight 800,
 an eight-way black outline that scales with the type, no fill, no border, no heading, centred at the caption's 5 %
 inset. A lyric line wider than that box SHALL break at its own edge rather than being painted past it, keeping the
-caption's centring and its balanced lines. A block that would grow past two visual rows SHALL instead shrink its
-type — `font-size` only, per paint, never below the stylesheet's 11px floor — until the whole block fits two visual
-lines; a screen that already fits SHALL paint at the accepted size unchanged. (spec 180, carrying spec 119; wrap
-folded by spec 183; two-line cap added by spec 195)
+caption's centring and its balanced lines. The rest size SHALL be **5 % of the stage height** (`5cqh`), so the type
+keeps its proportion on any source size. A block that would grow past two visual rows SHALL instead shrink its
+`font-size` only, per paint, by 4 % of the rest size per step (exactly 15 steps from 5 % to 2 %), never below
+**2 % of that same height** — until the whole block fits two
+visual lines; a screen that already fits SHALL paint at the rest size. At the floor a block that still cannot fit
+two rows SHALL stop there and land as it lands. (spec 180, carrying spec 119; wrap folded by spec 183; two-line cap
+added by spec 195; height-bound scale added by spec 202)
 
 #### Scenario: a two-line lyric at 1080p
 - WHEN a song screen with two lines is on air at 1920×1080
-- THEN the caption paints 1728×202 at (96, 824), 72 px, weight 800, transparent fill
+- THEN the caption paints 1728×151.2 at (96, 874.8), 54 px, weight 800, transparent fill
+
+#### Scenario: the rest follows the stage height
+- WHEN the same lyric is on air at 1280×720
+- THEN the caption's font reads 36 px — 5 % of the stage height, not a share of its width
 
 #### Scenario: a lyric that would wrap
-- WHEN a lyric line is long enough to wrap at the accepted size
-- THEN the type shrinks so the block paints at most two visual lines, the look (weight, outline, inset, centring) unchanged
+- WHEN a lyric line is long enough to wrap at the rest size
+- THEN the type shrinks by 4 % of the rest size per step so the block paints at most two visual lines, never below 2 % of the stage height,
+  the look (weight, outline, inset, centring) unchanged
 
 #### Scenario: the next screen is fitted on its own
 - WHEN the caption steps from a fitted lyric to one that fits at the accepted size
 - THEN the sheet's size governs again — no fit carried over
 
 #### Scenario: a lyric the floor cannot save
-- WHEN even at the 11px floor the block would exceed two visual lines
-- THEN the type stops at the floor and the block lands as it lands
+- WHEN even at 2 % of the stage height the block would exceed two visual lines
+- THEN the type stops at that floor and the block lands as it lands — the accepted edge
 
 #### Scenario: the entry's title is not painted
 - WHEN the song entry carries a citation such as `KJ 152 Bait 1`
@@ -86,8 +94,8 @@ folded by spec 183; two-line cap added by spec 195)
 
 #### Scenario: a lyric with no space in it
 - WHEN a lyric carries a 66-character run and is on air at 1920×1080
-- THEN it draws 5 rows inside the 1728 px box, 403.19 px tall, with no ink past the box (2,035.20 px past it before
-  spec 183)
+- THEN it shrinks to 23.76 px and draws 1 row inside the 1728 px box, 33.27 px tall, with no ink past the box
+  (2,035.20 px past it before spec 183; 5 rows at 403.19 px before spec 202)
 
 ### R3 — A passage screen paints a quotation card
 

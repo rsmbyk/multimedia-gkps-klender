@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   at rest or scrolled (spec 197).
 - **A dock picker's date groups are separated by more air.** A group's label sits 26px below the previous
   group's last row, from 10px; the extra space scrolls away and never rides the pinned head (spec 197).
+- **The song caption's size follows the stage height.** It rests at 5 % of that height and shrinks to fit two
+  lines no smaller than 2 %; the words stay in proportion on any OBS source size (spec 202).
 
 ## [1.32.1] - 2026-11-15
 
