@@ -13,8 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for its state; projection happens only when an item inside the block is clicked. The live entry stays open
   and chevronless, breaks and empty blocks are inert, and reduced motion swaps instantly (spec 198).
 
+### Changed
+
+- **The first sidebar now rests for fifteen quiet minutes before collapsing, not sixty seconds.**
+  Activity restarts the whole wait; the narrow drawer still keeps its panel open (spec 199).
+
 ### Fixed
 
+- **Scrolling the first sidebar's list counts as activity again.** A scrollbar-thumb drag emits
+  `scroll` at the list inside the panel, where the old listener could not see it; the panel no longer
+  collapses mid-scroll. A drag or dialog that ends now gives a full interval at that moment, rather
+  than leaving the old deadline standing (spec 199).
 - **The dock's pinned date-group header sits flush under the toolbar.** The strip above the label belongs to
   the head, so the row above no longer paints through it, and the label keeps its height whether the list is
   at rest or scrolled (spec 197).
