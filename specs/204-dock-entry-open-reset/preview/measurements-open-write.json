@@ -1,0 +1,500 @@
+{
+ "url": "http://127.0.0.1:8899/index.html",
+ "opens": [
+  {
+   "opened": "155",
+   "bytes_before": "null",
+   "bytes_after": "null",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [],
+   "scroll_samples": [
+    [
+     37,
+     0,
+     0
+    ],
+    [
+     199,
+     0,
+     0
+    ],
+    [
+     293,
+     0,
+     0
+    ],
+    [
+     469,
+     0,
+     0
+    ],
+    [
+     560,
+     0,
+     0
+    ],
+    [
+     659,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "149",
+   "bytes_before": "null",
+   "bytes_after": "null",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [],
+   "scroll_samples": [
+    [
+     14,
+     0,
+     0
+    ],
+    [
+     100,
+     0,
+     0
+    ],
+    [
+     200,
+     0,
+     0
+    ],
+    [
+     300,
+     0,
+     0
+    ],
+    [
+     400,
+     0,
+     0
+    ],
+    [
+     500,
+     0,
+     0
+    ],
+    [
+     600,
+     0,
+     0
+    ],
+    [
+     700,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "155",
+   "bytes_before": "null",
+   "bytes_after": "null",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [],
+   "scroll_samples": [
+    [
+     18,
+     0,
+     0
+    ],
+    [
+     111,
+     0,
+     0
+    ],
+    [
+     211,
+     0,
+     0
+    ],
+    [
+     311,
+     0,
+     0
+    ],
+    [
+     411,
+     0,
+     0
+    ],
+    [
+     511,
+     0,
+     0
+    ],
+    [
+     611,
+     0,
+     0
+    ],
+    [
+     711,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "149",
+   "bytes_before": "{\"service\":155,\"screen\":6,\"on\":true,\"translation\":null,\"at\":1795103548932,\"goto\":null,\"session\":\"5398fc7f-5648-423b-9aeb-c88ac5068074\"}",
+   "bytes_after": "{\"service\":155,\"screen\":6,\"on\":true,\"translation\":null,\"at\":1795103548932,\"goto\":null,\"session\":\"5398fc7f-5648-423b-9aeb-c88ac5068074\"}",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [],
+   "scroll_samples": [
+    [
+     5,
+     0,
+     0
+    ],
+    [
+     110,
+     0,
+     0
+    ],
+    [
+     208,
+     0,
+     0
+    ],
+    [
+     308,
+     0,
+     0
+    ],
+    [
+     409,
+     0,
+     0
+    ],
+    [
+     509,
+     0,
+     0
+    ],
+    [
+     624,
+     0,
+     0
+    ],
+    [
+     708,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "155",
+   "bytes_before": "{\"service\":155,\"screen\":6,\"on\":true,\"translation\":null,\"at\":1795103548932,\"goto\":null,\"session\":\"5398fc7f-5648-423b-9aeb-c88ac5068074\"}",
+   "bytes_after": "{\"service\":155,\"screen\":6,\"on\":true,\"translation\":null,\"at\":1795103548932,\"goto\":null,\"session\":\"5398fc7f-5648-423b-9aeb-c88ac5068074\"}",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [
+    3
+   ],
+   "scroll_samples": [
+    [
+     14,
+     0,
+     0
+    ],
+    [
+     172,
+     0,
+     0
+    ],
+    [
+     271,
+     0,
+     0
+    ],
+    [
+     371,
+     0,
+     0
+    ],
+    [
+     481,
+     0,
+     0
+    ],
+    [
+     571,
+     0,
+     0
+    ],
+    [
+     672,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "155",
+   "bytes_before": "null",
+   "bytes_after": "null",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [],
+   "scroll_samples": [
+    [
+     48,
+     0,
+     0
+    ],
+    [
+     227,
+     0,
+     0
+    ],
+    [
+     313,
+     0,
+     0
+    ],
+    [
+     413,
+     0,
+     0
+    ],
+    [
+     530,
+     0,
+     0
+    ],
+    [
+     629,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "149",
+   "bytes_before": "null",
+   "bytes_after": "null",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [
+    3
+   ],
+   "scroll_samples": [
+    [
+     1,
+     0,
+     0
+    ],
+    [
+     104,
+     0,
+     0
+    ],
+    [
+     221,
+     0,
+     0
+    ],
+    [
+     321,
+     0,
+     0
+    ],
+    [
+     420,
+     0,
+     0
+    ],
+    [
+     520,
+     0,
+     0
+    ],
+    [
+     620,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "155",
+   "bytes_before": "null",
+   "bytes_after": "null",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [
+    3
+   ],
+   "scroll_samples": [
+    [
+     6,
+     0,
+     0
+    ],
+    [
+     128,
+     0,
+     0
+    ],
+    [
+     221,
+     0,
+     0
+    ],
+    [
+     321,
+     0,
+     0
+    ],
+    [
+     421,
+     0,
+     0
+    ],
+    [
+     525,
+     0,
+     0
+    ],
+    [
+     621,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "149",
+   "bytes_before": "{\"service\":155,\"screen\":6,\"on\":true,\"translation\":null,\"at\":1795103561842,\"goto\":null,\"session\":\"44471bed-f589-4cf5-a8fd-8767189f4e56\"}",
+   "bytes_after": "{\"service\":155,\"screen\":6,\"on\":true,\"translation\":null,\"at\":1795103561842,\"goto\":null,\"session\":\"44471bed-f589-4cf5-a8fd-8767189f4e56\"}",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [
+    3
+   ],
+   "scroll_samples": [
+    [
+     26,
+     0,
+     0
+    ],
+    [
+     119,
+     0,
+     0
+    ],
+    [
+     217,
+     0,
+     0
+    ],
+    [
+     317,
+     0,
+     0
+    ],
+    [
+     417,
+     0,
+     0
+    ],
+    [
+     523,
+     0,
+     0
+    ],
+    [
+     617,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  },
+  {
+   "opened": "155",
+   "bytes_before": "{\"service\":155,\"screen\":6,\"on\":true,\"translation\":null,\"at\":1795103561842,\"goto\":null,\"session\":\"44471bed-f589-4cf5-a8fd-8767189f4e56\"}",
+   "bytes_after": "{\"service\":155,\"screen\":6,\"on\":true,\"translation\":null,\"at\":1795103561842,\"goto\":null,\"session\":\"44471bed-f589-4cf5-a8fd-8767189f4e56\"}",
+   "bytes_identical": true,
+   "channel_messages": [],
+   "morph_ids": [],
+   "open_blocks": [
+    3
+   ],
+   "scroll_samples": [
+    [
+     40,
+     0,
+     0
+    ],
+    [
+     144,
+     0,
+     0
+    ],
+    [
+     246,
+     0,
+     0
+    ],
+    [
+     344,
+     0,
+     0
+    ],
+    [
+     487,
+     0,
+     0
+    ],
+    [
+     577,
+     0,
+     0
+    ],
+    [
+     677,
+     0,
+     0
+    ]
+   ],
+   "scroll_max": 0,
+   "morph_frames": 0
+  }
+ ]
+}

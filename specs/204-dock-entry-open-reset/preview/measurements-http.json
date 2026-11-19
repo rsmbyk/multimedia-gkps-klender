@@ -1,0 +1,7339 @@
+{
+ "url": "http://127.0.0.1:8899/index.html",
+ "results": [
+  {
+   "state": "drafted: picker at rest",
+   "view": "pick",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": null,
+   "rows": [],
+   "note": ""
+  },
+  {
+   "state": "drafted: 155 opened",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: position 4 expanded",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [
+    3
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: 149 opened after 4 was expanded",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: 155 re-opened",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: three blocks open by hand",
+   "view": "run",
+   "open": [
+    1,
+    3,
+    8
+   ],
+   "non_live_open": [
+    1,
+    3,
+    8
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 1027,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: 149 after three hand-opens",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: position 4 live",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [],
+   "live": [
+    3
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103400785,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 126,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: 149 while 155 is on air",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103400785,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: back on the on-air service",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [],
+   "live": [
+    3
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103400785,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 126,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: crossed to 1 with 6 hand-open",
+   "view": "run",
+   "open": [
+    0,
+    6
+   ],
+   "non_live_open": [
+    6
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103408327,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: after a re-read",
+   "view": "run",
+   "open": [
+    0,
+    6,
+    9
+   ],
+   "non_live_open": [
+    6,
+    9
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103408327,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media · rev1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 470,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": "before=[0, 6, 9] rebuilds=13"
+  },
+  {
+   "state": "drafted: after reload",
+   "view": "run",
+   "open": [
+    0
+   ],
+   "non_live_open": [],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103408327,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": null,
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: 142 (27 entries, 3 breaks)",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103408327,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of Ibadah Minggu → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "L : Marilah kita bangkit ber",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "L: TUHAN adalah gembalaku,",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "L: Ia membaringkan aku di pa",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "L: Ia menyegarkan jiwaku.",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "L: Sekalipun aku berjalan da",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "L: Engkau menyediakan hidang",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "L: Kebajikan dan kemurahan b",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "L: Haleluya, Haleluya, Halel",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "L: Marilah kita berdoa!",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 10,
+     "label": "L : Marilah kita bangkit ber",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 12,
+     "label": "L: Oleh karenanya, kami patu",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 13,
+     "label": "L : Ya Tuhan, kami juga seri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 14,
+     "label": "L: Kami lebih mementingkan d",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 15,
+     "label": "L: Ya Tuhan Allah, kasihanil",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 16,
+     "label": "L : Saat ini kami datang ke ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 17,
+     "label": "L: Ya Tuhan Allah, kasihanil",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 18,
+     "label": "L: Dengarkan dan percayailah",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 19,
+     "label": "L: Kemuliaan bagi Allah di t",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 20,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 21,
+     "label": "L: Bapa kami yang di sorga, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 22,
+     "label": "L: Datanglah kerajaan-Mu, ja",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 23,
+     "label": "L: Berikanlah kami pada hari",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 24,
+     "label": "L: Dan ampunilah kami akan k",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 25,
+     "label": "L: Janganlah membawa kami ke",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 26,
+     "label": "L: Karena Engkaulah yang emp",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted: 145 (empty service)",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103408327,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of Ibadah Minggu → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [],
+   "note": ""
+  },
+  {
+   "state": "drafted: light theme",
+   "view": "pick",
+   "open": [
+    0
+   ],
+   "non_live_open": [],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103408327,
+    "goto": null,
+    "session": "84973340-7be1-44c3-ad9a-74afc9cb5330"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [0], live [0], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: picker at rest",
+   "view": "pick",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": null,
+   "rows": [],
+   "note": ""
+  },
+  {
+   "state": "today: 155 opened",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: position 4 expanded",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [
+    3
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: 149 opened after 4 was expanded",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [
+    3
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [3], live [], non-live open [3] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: 155 re-opened",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [
+    3
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of 111ojo → open blocks [3], live [], non-live open [3] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: three blocks open by hand",
+   "view": "run",
+   "open": [
+    1,
+    3,
+    8
+   ],
+   "non_live_open": [
+    1,
+    3,
+    8
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of 111ojo → open blocks [3], live [], non-live open [3] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 1027,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: 149 after three hand-opens",
+   "view": "run",
+   "open": [
+    1,
+    3
+   ],
+   "non_live_open": [
+    1,
+    3
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [1, 3], live [], non-live open [1, 3] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: position 4 live",
+   "view": "run",
+   "open": [
+    1,
+    3,
+    8
+   ],
+   "non_live_open": [
+    1,
+    8
+   ],
+   "live": [
+    3
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103438760,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of 111ojo → open blocks [1, 3, 8], live [], non-live open [1, 3, 8] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 126,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 1027,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: 149 while 155 is on air",
+   "view": "run",
+   "open": [
+    1,
+    3
+   ],
+   "non_live_open": [
+    1,
+    3
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103438760,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [1, 3], live [], non-live open [1, 3] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: back on the on-air service",
+   "view": "run",
+   "open": [
+    1,
+    3,
+    8
+   ],
+   "non_live_open": [
+    1,
+    8
+   ],
+   "live": [
+    3
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103438760,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of 111ojo → open blocks [1, 3, 8], live [3], non-live open [1, 8] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 126,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 1027,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: crossed to 1 with 6 hand-open",
+   "view": "run",
+   "open": [
+    0,
+    1,
+    3,
+    6,
+    8
+   ],
+   "non_live_open": [
+    1,
+    3,
+    6,
+    8
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103446059,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of 111ojo → open blocks [1, 3, 8], live [3], non-live open [1, 8] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 1027,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: after a re-read",
+   "view": "run",
+   "open": [
+    0,
+    1,
+    3,
+    6,
+    8,
+    9
+   ],
+   "non_live_open": [
+    1,
+    3,
+    6,
+    8,
+    9
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 1180,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103446059,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of 111ojo → open blocks [1, 3, 8], live [3], non-live open [1, 8] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media · rev1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 1027,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 470,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": "before=[0, 1, 3, 6, 8, 9] rebuilds=13"
+  },
+  {
+   "state": "today: after reload",
+   "view": "run",
+   "open": [
+    0
+   ],
+   "non_live_open": [],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103446059,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": null,
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: 142 (27 entries, 3 breaks)",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103446059,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of Ibadah Minggu → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "L : Marilah kita bangkit ber",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "L: TUHAN adalah gembalaku,",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "L: Ia membaringkan aku di pa",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "L: Ia menyegarkan jiwaku.",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "L: Sekalipun aku berjalan da",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "L: Engkau menyediakan hidang",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "L: Kebajikan dan kemurahan b",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "L: Haleluya, Haleluya, Halel",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "L: Marilah kita berdoa!",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 10,
+     "label": "L : Marilah kita bangkit ber",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 12,
+     "label": "L: Oleh karenanya, kami patu",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 13,
+     "label": "L : Ya Tuhan, kami juga seri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 14,
+     "label": "L: Kami lebih mementingkan d",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 15,
+     "label": "L: Ya Tuhan Allah, kasihanil",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 16,
+     "label": "L : Saat ini kami datang ke ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 17,
+     "label": "L: Ya Tuhan Allah, kasihanil",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 18,
+     "label": "L: Dengarkan dan percayailah",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 19,
+     "label": "L: Kemuliaan bagi Allah di t",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 20,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 21,
+     "label": "L: Bapa kami yang di sorga, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 22,
+     "label": "L: Datanglah kerajaan-Mu, ja",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 23,
+     "label": "L: Berikanlah kami pada hari",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 24,
+     "label": "L: Dan ampunilah kami akan k",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 25,
+     "label": "L: Janganlah membawa kami ke",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 26,
+     "label": "L: Karena Engkaulah yang emp",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "today: 145 (empty service)",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103446059,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of Ibadah Minggu → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [],
+   "note": ""
+  },
+  {
+   "state": "today: light theme",
+   "view": "pick",
+   "open": [
+    0,
+    4
+   ],
+   "non_live_open": [
+    4
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103446059,
+    "goto": null,
+    "session": "b7d1db2a-7924-4c57-a539-58415519a99c"
+   },
+   "verdict": {
+    "ok": "false",
+    "text": "at the open of 111ojo → open blocks [0, 4], live [0], non-live open [4] — CARRIED OVER by position  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: picker at rest",
+   "view": "pick",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": null,
+   "rows": [],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: 155 opened",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: position 4 expanded",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [
+    3
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: 149 opened after 4 was expanded",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: 155 re-opened",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: three blocks open by hand",
+   "view": "run",
+   "open": [
+    1,
+    3,
+    8
+   ],
+   "non_live_open": [
+    1,
+    3,
+    8
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 126,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 1027,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: 149 after three hand-opens",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: position 4 live",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [],
+   "live": [
+    3
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103476832,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 126,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: 149 while 155 is on air",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103476832,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: back on the on-air service",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [],
+   "live": [
+    3
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103476832,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 126,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: crossed to 1 with 6 hand-open",
+   "view": "run",
+   "open": [
+    0,
+    6
+   ],
+   "non_live_open": [
+    6
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103484144,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: after a re-read",
+   "view": "run",
+   "open": [
+    0,
+    6,
+    9
+   ],
+   "non_live_open": [
+    6,
+    9
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103484144,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media · rev1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 470,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": "before=[0, 6, 9] rebuilds=13"
+  },
+  {
+   "state": "drafted-reduce: after reload",
+   "view": "run",
+   "open": [
+    0
+   ],
+   "non_live_open": [],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103484144,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": null,
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: 142 (27 entries, 3 breaks)",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103484144,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of Ibadah Minggu → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "L : Marilah kita bangkit ber",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "L: TUHAN adalah gembalaku,",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "L: Ia membaringkan aku di pa",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "L: Ia menyegarkan jiwaku.",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "L: Sekalipun aku berjalan da",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "L: Engkau menyediakan hidang",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "L: Kebajikan dan kemurahan b",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "L: Haleluya, Haleluya, Halel",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "L: Marilah kita berdoa!",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 10,
+     "label": "L : Marilah kita bangkit ber",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 12,
+     "label": "L: Oleh karenanya, kami patu",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 13,
+     "label": "L : Ya Tuhan, kami juga seri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 14,
+     "label": "L: Kami lebih mementingkan d",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 15,
+     "label": "L: Ya Tuhan Allah, kasihanil",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 16,
+     "label": "L : Saat ini kami datang ke ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 17,
+     "label": "L: Ya Tuhan Allah, kasihanil",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 18,
+     "label": "L: Dengarkan dan percayailah",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 19,
+     "label": "L: Kemuliaan bagi Allah di t",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 20,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 21,
+     "label": "L: Bapa kami yang di sorga, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 22,
+     "label": "L: Datanglah kerajaan-Mu, ja",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 23,
+     "label": "L: Berikanlah kami pada hari",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 24,
+     "label": "L: Dan ampunilah kami akan k",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 25,
+     "label": "L: Janganlah membawa kami ke",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 26,
+     "label": "L: Karena Engkaulah yang emp",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: 145 (empty service)",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103484144,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of Ibadah Minggu → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [],
+   "note": ""
+  },
+  {
+   "state": "drafted-reduce: light theme",
+   "view": "pick",
+   "open": [
+    0
+   ],
+   "non_live_open": [],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103484144,
+    "goto": null,
+    "session": "5c26a8fc-b845-413a-bee1-d8bcb5a19226"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [0], live [0], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: picker at rest",
+   "view": "pick",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": null,
+   "rows": [],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: 155 opened",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: position 4 expanded",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [
+    3
+   ],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 89,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: 149 opened after 4 was expanded",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: 155 re-opened",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: three blocks open by hand",
+   "view": "run",
+   "open": [
+    1,
+    3,
+    8
+   ],
+   "non_live_open": [
+    1,
+    3,
+    8
+   ],
+   "live": [],
+   "scrollTop": 318,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 89,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 819,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: 149 after three hand-opens",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": null,
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: position 4 live",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [],
+   "live": [
+    3
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103515159,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 89,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: 149 while 155 is on air",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103515159,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of hhhhhhhhhhhhhhhhhhhhhhhh → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "https://drive.google.com/dri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "images (1).jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "side-view-silhouette-african",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "random.jpg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: back on the on-air service",
+   "view": "run",
+   "open": [
+    3
+   ],
+   "non_live_open": [],
+   "live": [
+    3
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 6,
+    "on": true,
+    "translation": null,
+    "at": 1795103515159,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 89,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: crossed to 1 with 6 hand-open",
+   "view": "run",
+   "open": [
+    0,
+    6
+   ],
+   "non_live_open": [
+    6
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103522027,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: after a re-read",
+   "view": "run",
+   "open": [
+    0,
+    6,
+    9
+   ],
+   "non_live_open": [
+    6,
+    9
+   ],
+   "live": [
+    0
+   ],
+   "scrollTop": 299,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103522027,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [3], live [3], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media · rev1",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 70,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "true",
+     "live": false,
+     "open": true,
+     "h": 470,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": "before=[0, 6, 9] rebuilds=13"
+  },
+  {
+   "state": "drafted-narrow: after reload",
+   "view": "run",
+   "open": [
+    0
+   ],
+   "non_live_open": [],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103522027,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": null,
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 70,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: 142 (27 entries, 3 breaks)",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103522027,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of Ibadah Minggu → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "L : Marilah kita bangkit ber",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 1,
+     "label": "L: TUHAN adalah gembalaku,",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 2,
+     "label": "L: Ia membaringkan aku di pa",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 3,
+     "label": "L: Ia menyegarkan jiwaku.",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 4,
+     "label": "L: Sekalipun aku berjalan da",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 5,
+     "label": "L: Engkau menyediakan hidang",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 6,
+     "label": "L: Kebajikan dan kemurahan b",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 7,
+     "label": "L: Haleluya, Haleluya, Halel",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 8,
+     "label": "L: Marilah kita berdoa!",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 9,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 10,
+     "label": "L : Marilah kita bangkit ber",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 11,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 12,
+     "label": "L: Oleh karenanya, kami patu",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 13,
+     "label": "L : Ya Tuhan, kami juga seri",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 14,
+     "label": "L: Kami lebih mementingkan d",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 15,
+     "label": "L: Ya Tuhan Allah, kasihanil",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 16,
+     "label": "L : Saat ini kami datang ke ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 17,
+     "label": "L: Ya Tuhan Allah, kasihanil",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 18,
+     "label": "L: Dengarkan dan percayailah",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 19,
+     "label": "L: Kemuliaan bagi Allah di t",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 20,
+     "label": "",
+     "expanded": null,
+     "live": false,
+     "open": null,
+     "h": null,
+     "chev": 0
+    },
+    {
+     "index": 21,
+     "label": "L: Bapa kami yang di sorga, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 22,
+     "label": "L: Datanglah kerajaan-Mu, ja",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 23,
+     "label": "L: Berikanlah kami pada hari",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 24,
+     "label": "L: Dan ampunilah kami akan k",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 25,
+     "label": "L: Janganlah membawa kami ke",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    },
+    {
+     "index": 26,
+     "label": "L: Karena Engkaulah yang emp",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 1
+    }
+   ],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: 145 (empty service)",
+   "view": "run",
+   "open": [],
+   "non_live_open": [],
+   "live": [],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103522027,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of Ibadah Minggu → open blocks [], live [], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [],
+   "note": ""
+  },
+  {
+   "state": "drafted-narrow: light theme",
+   "view": "pick",
+   "open": [
+    0
+   ],
+   "non_live_open": [],
+   "live": [
+    0
+   ],
+   "scrollTop": 0,
+   "display": {
+    "service": 155,
+    "screen": 0,
+    "on": true,
+    "translation": null,
+    "at": 1795103522027,
+    "goto": null,
+    "session": "74ad7a8a-69fd-45a6-844f-a446d1144027"
+   },
+   "verdict": {
+    "ok": "true",
+    "text": "at the open of 111ojo → open blocks [0], live [0], non-live open [] — nothing carried over  (the state box below is now)"
+   },
+   "rows": [
+    {
+     "index": 0,
+     "label": "Titled Media",
+     "expanded": "true",
+     "live": true,
+     "open": true,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 1,
+     "label": "a short untitled text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 2,
+     "label": "Title",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 3,
+     "label": "Bilangan 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 4,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 5,
+     "label": "HAL 1Bait 1, 2, 3, 4, 5, 6, ",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 6,
+     "label": "images.jpeg",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 7,
+     "label": "Keluaran 1:1",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 8,
+     "label": "HAL 5Bait 1, 2, 3, 4, 5, 6",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 9,
+     "label": "HAL 3Bait 1, 2, 3",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 10,
+     "label": "Title Text",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    },
+    {
+     "index": 11,
+     "label": "Sample Media",
+     "expanded": "false",
+     "live": false,
+     "open": false,
+     "h": 0,
+     "chev": 0
+    }
+   ],
+   "note": ""
+  }
+ ],
+ "page_errors": []
+}
