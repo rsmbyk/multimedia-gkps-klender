@@ -134,8 +134,8 @@ names M1–M3 in `quickstart.md`.
 | Manual M2 | dark-mode face | `manual` | the control follows the navpair's focus fill |
 | Manual M3 | live 15 s | `manual` | the real clock reads and behaves like the preview |
 
-**Verification split**: `60 test · 5 inspection · 4 manual` (69 traceability rows). Every `test`
-row is written red-first before its implementation task; the rows share 14 E2E methods, grouped in
+**Verification split**: `61 test · 5 inspection · 4 manual` (70 traceability rows). Every `test`
+row is written red-first before its implementation task; the rows share 17 E2E methods, grouped in
 `tasks.md` by method rather than repeated verbatim.
 
 ## Complexity Tracking

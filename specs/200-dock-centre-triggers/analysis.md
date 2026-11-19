@@ -9,8 +9,8 @@
 
 ## Metrics
 
-`14 FR · 7 SC · 31 acceptance scenarios · 7 edge cases · 69 traceability rows
-(60 test · 5 inspection · 4 manual) · 36 tasks · 14 E2E methods`
+`15 FR · 7 SC · 32 acceptance scenarios · 7 edge cases · 70 traceability rows
+(61 test · 5 inspection · 4 manual) · 44 tasks · 17 E2E methods`
 
 ## Findings
 
