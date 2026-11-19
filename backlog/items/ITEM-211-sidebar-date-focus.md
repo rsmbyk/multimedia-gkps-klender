@@ -1,6 +1,6 @@
 ---
 id: ITEM-211
-status: in-progress
+status: in-review
 title: 'A clicked service keeps its sidebar date'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-19
 updated: 2026-11-19
 spec: specs/201-sidebar-date-focus/spec.md
 branch: fix/201-sidebar-date-focus
-pr:
-issue:
+pr: 537
+issue: 536
 closed_at:
 closed_reason:
 bump: patch

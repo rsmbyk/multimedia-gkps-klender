@@ -34,7 +34,7 @@
 
 - [X] T009 Run the focused module plus `tests.e2e.test_reading` and `tests.e2e.test_drawer_shell`; re-run the preview probe after the CSS change (the frozen base sheet must keep the TODAY column unchanged).
 - [X] T010 Fold the clarified wording into `docs/spec/reading.md` `R41` and `R9`; write `fold.md` with the typed deltas and counts.
-- [ ] T011 Delivery commit: `VERSION` 1.34.0 → 1.34.1, one `## Fixed` changelog line, card `ITEM-211` moved with its bump — only after the closing report.
+- [X] T011 Delivery commit: `VERSION` 1.34.0 → 1.34.1, one `## Fixed` changelog line, card `ITEM-211` moved with its bump — only after the closing report.
 
 ## Phase N+1 — Convergence
 
