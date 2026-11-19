@@ -37,13 +37,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-216](./items/ITEM-216-dock-entry-open-reset.md) | Opening a service starts its entry blocks shut | A hand-opened block leaks to the same position in the next service opened, including the same one again; the live entry keeps its open block | fix | P1 | S | [204](../specs/204-dock-entry-open-reset/spec.md) | `fix/204-dock-entry-open-reset` | 2026-11-19 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-211](./items/ITEM-211-sidebar-date-focus.md) | A clicked service keeps its sidebar date | A click leaves the row link focused, so `li:focus-within` keeps the date hidden after the pointer leaves | fix | P1 | S | [201](../specs/201-sidebar-date-focus/spec.md) | [#537](https://github.com/rsmbyk/multimedia-gkps-klender/pull/537) | 2026-11-19 |
+| [ITEM-216](./items/ITEM-216-dock-entry-open-reset.md) | Opening a service starts its entry blocks shut | A hand-opened block leaks to the same position in the next service opened, including the same one again; the live entry keeps its open block | fix | P1 | S | [204](../specs/204-dock-entry-open-reset/spec.md) | [#548](https://github.com/rsmbyk/multimedia-gkps-klender/pull/548) | 2026-11-19 |
 
 ## Done
 

@@ -1,6 +1,6 @@
 ---
 id: ITEM-216
-status: in-progress
+status: in-review
 title: 'Opening a service starts its entry blocks shut'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-19
 updated: 2026-11-19
 spec: 204
 branch: fix/204-dock-entry-open-reset
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/548
 issue: 546
 closed_at:
 closed_reason:
