@@ -44,12 +44,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-211](./items/ITEM-211-sidebar-date-focus.md) | A clicked service keeps its sidebar date | A click leaves the row link focused, so `li:focus-within` keeps the date hidden after the pointer leaves | fix | P1 | S | [201](../specs/201-sidebar-date-focus/spec.md) | [#537](https://github.com/rsmbyk/multimedia-gkps-klender/pull/537) | 2026-11-19 |
-| [ITEM-216](./items/ITEM-216-dock-entry-open-reset.md) | Opening a service starts its entry blocks shut | A hand-opened block leaks to the same position in the next service opened, including the same one again; the live entry keeps its open block | fix | P1 | S | [204](../specs/204-dock-entry-open-reset/spec.md) | [#548](https://github.com/rsmbyk/multimedia-gkps-klender/pull/548) | 2026-11-19 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-216](./items/ITEM-216-dock-entry-open-reset.md) | Opening a service starts its entry blocks shut | A hand-opened block leaks to the same position in the next service opened, including the same one again; the live entry keeps its open block | fix | P1 | S | [204](../specs/204-dock-entry-open-reset/spec.md) | develop via [#548](https://github.com/rsmbyk/multimedia-gkps-klender/pull/548) | 2026-11-19 |
 | [ITEM-214](./items/ITEM-214-dock-centre-pace.md) | The dock's re-centring keeps pace with fast advancing | Following-mode centring is halved to 200 ms on a plain sine so rapid advances stop bobbing the list | fix | P2 | S | [205](../specs/205-dock-centre-pace/spec.md) | develop via [#544](https://github.com/rsmbyk/multimedia-gkps-klender/pull/544) | 2026-11-19 |
 | [ITEM-213](./items/ITEM-213-dock-long-word-wrap.md) | A long word wraps in the dock runner's service title and entry headers | An unbroken run paints past its own box — the title under the head buttons, a pasted URL past the panel — and the body grows a horizontal scrollbar; a hyphenated name in the same list already wraps | fix | P1 | S | [203](../specs/203-dock-long-word-wrap/spec.md) | develop via [#541](https://github.com/rsmbyk/multimedia-gkps-klender/pull/541) | 2026-11-19 |
 | [ITEM-212](./items/ITEM-212-overlay-caption-height-cap.md) | The song caption type is bound to the stage height | 5 % of stage height at rest, 2 % as the floor the two-line fit cannot pass — OBS caption only | fix | P1 | S | [202](../specs/202-overlay-caption-height-cap/spec.md) | develop via [#539](https://github.com/rsmbyk/multimedia-gkps-klender/pull/539) | 2026-11-19 |
