@@ -111,7 +111,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
     def _advance(self, page, button='nextBtn'):
         page.evaluate(
             """id => document.getElementById(id).click()""", button)
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(650)
 
     def _scroll_away(self, page):
         """A real wheel scroll — the dock exits following on the wheel event."""
@@ -131,13 +131,13 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         self.assertEqual(filled['pressed'], 'true')
         self.assertEqual(filled['bg'], 'rgb(124, 156, 240)')   # dark --active-bg
         self._scroll_away(page)
-        page.wait_for_timeout(260)              # let the background transition settle
+        page.wait_for_timeout(600)              # let the background transition settle
         outline = self._face(page)
         self.assertEqual(outline['pressed'], 'false')
         self.assertEqual(outline['bg'], 'rgba(0, 0, 0, 0)')
         before = self._measure(page)
         page.evaluate("document.querySelector('#centreBtn').click()")
-        page.wait_for_timeout(260)
+        page.wait_for_timeout(600)
         after = self._measure(page)
         self.assertLess(abs(after['off']), 2, (before, after))
         self._advance(page)
@@ -159,7 +159,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
             """() => { const li = document.querySelector('.entryli[data-live="true"]');
                  const rows = li.querySelectorAll('.screenerow');
                  rows[rows.length - 1].click(); }""")
-        page.wait_for_timeout(320)
+        page.wait_for_timeout(600)
         self.assertEqual(self._measure(page)['live'], '30')
         self.assertLess(abs(self._measure(page)['off']), 2)
         self._advance(page)
@@ -172,7 +172,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         before = self._measure(page)['live']
         self._scroll_away(page)
         page.evaluate("document.querySelector('.nextband').click()")
-        page.wait_for_timeout(260)
+        page.wait_for_timeout(600)
         after = self._measure(page)
         self.assertEqual(int(after['live']), int(before) + 1)
         self.assertLess(abs(after['off']), 2)
@@ -182,7 +182,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         self._open_service(page)
         self._place(page)
         page.evaluate("document.querySelector('#centreBtn').click()")
-        page.wait_for_timeout(300)
+        page.wait_for_timeout(600)
         self._advance(page)
         self.assertLess(abs(self._measure(page)['off']), 2)
         self._scroll_away(page)
@@ -191,7 +191,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         self._advance(page, 'prevBtn')
         self.assertEqual(self._measure(page)['scroll'], start)
         page.evaluate("document.querySelector('#centreBtn').click()")
-        page.wait_for_timeout(260)
+        page.wait_for_timeout(600)
         self._advance(page)
         self.assertLess(abs(self._measure(page)['off']), 2)
 
@@ -265,7 +265,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         page.evaluate(
             """() => { const s = window.gkpsDisplay.read();
                  window.gkpsDisplay.hide(); window.gkpsDisplay.show(s.service, s.screen); }""")
-        page.wait_for_timeout(300)
+        page.wait_for_timeout(600)
         self.assertEqual(self._measure(page)['scroll'], start)
 
     def test_the_dock_does_not_follow_a_service_it_is_not_showing(self):
@@ -273,7 +273,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         self._open_service(page, 'Ibadah Lain')
         page.evaluate(
             """id => window.gkpsDisplay.show(id, 0)""", [self.service.pk])
-        page.wait_for_timeout(300)
+        page.wait_for_timeout(600)
         self.assertEqual(self._measure(page)['off'], None)  # no live row in this dock
 
     def test_centring_stays_one_motion_and_clamps_at_the_ends(self):
@@ -287,7 +287,7 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
                 const out = []; const t0 = performance.now();
                 (function tick() {
                   out.push(Math.round(b.scrollTop));
-                  if (performance.now() - t0 < 380) requestAnimationFrame(tick);
+                  if (performance.now() - t0 < 900) requestAnimationFrame(tick);
                   else done(out);
                 })();
                })""")
@@ -322,18 +322,18 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
                  document.querySelector('#centreBtn').click();
                  (function tick() {
                    out.push([Math.round(performance.now() - t0), Math.round(b.scrollTop)]);
-                   if (performance.now() - t0 < 350) requestAnimationFrame(tick);
+                   if (performance.now() - t0 < 700) requestAnimationFrame(tick);
                    else done(out);
                  })();
                })""")
-        total = abs(out[-1][1] - out[0][1])
-        self.assertGreater(total, 20, out)
-        early = sum(abs(out[i][1] - out[i-1][1]) for i in range(1, len(out))
-                    if out[i][0] < 60)
-        late = sum(abs(out[i][1] - out[i-1][1]) for i in range(1, len(out))
-                   if out[i-1][0] > 140)
-        self.assertGreater(early, 0.15 * total, out)
-        self.assertLess(late, 0.25 * total, out)
+        steps = [abs(out[i][1] - out[i - 1][1]) for i in range(1, len(out))
+                 if out[i][1] != out[i - 1][1]]
+        self.assertGreater(len(steps), 10, out)
+        peak = max(steps)
+        # A sine in-out starts and finishes slowly, with its fastest frames in
+        # the middle. Both outer frames must be well below the peak step.
+        self.assertLess(steps[0], 0.35 * peak, (steps, peak))
+        self.assertLess(steps[-1], 0.35 * peak, (steps, peak))
 
     def test_reduced_motion_jumps_instead_of_gliding(self):
         page = self._dock(reduced=True)

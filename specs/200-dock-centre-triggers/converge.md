@@ -14,7 +14,7 @@ three inspection items and the source tree. Method per row: `test` → the named
 | ID | Type | Requirement / area | Evidence | Outcome |
 | --- | --- | --- | --- | --- |
 | C1 | partial → fixed | FR-006 browsing crossings centred anyway | `finishMorph()` called `centerRow` for every morph; corrected to centre only on the instant reduced-motion path (`carry && !moved`). `test_advances_follow_when_following_and_not_when_browsing` passes | fixed |
-| C2 | partial → fixed | SC-001 ≤1 px landing after an advance | the old `offsetTop`/rect mix and a mid-glide band move landed 32–69 px short; `glideRow()` now drives the live row's own offset to zero on the same 190 ms soft ease-out curve, and `updateBand()` holds during a centring. All landing assertions pass | fixed |
+| C2 | partial → fixed | SC-001 ≤1 px landing after an advance | the old `offsetTop`/rect mix and a mid-glide band move landed 32–69 px short; `glideRow()` now drives the live row's own offset to zero on the same 400 ms sine in-out curve, and `updateBand()` holds during a centring. All landing assertions pass | fixed |
 | C3 | contradicts → fixed | FR-006 transport Next must not change the mode | the first implementation put re-entry on `#nextBtn`; the owner corrected it to the sticky band, and the handler was reverted to a plain `step(1)`. US1/AC7 and US4/AC3 pass | fixed |
 | C4 | partial → fixed | FR-007 held press suspends the clock | the earlier E2E asserted an exact `scrollTop` and failed on an unrelated re-read clamp; changed to assert no upward centring glide, which is what the requirement says | fixed |
 | C5 | unrequested | `bandHoldUntil`, `glideRow`, `rowOffset` | implementation refinements needed to keep one motion and an exact landing; no new behaviour is exposed, no display record or interface changed | retained — declared as refinement, not a behaviour change |
@@ -59,3 +59,11 @@ every `test` row was actually run, `inspection` rows were read, `manual` rows ar
 - Pass 6, 2026-11-19 — owner asked for more softening. Exponent 1.6 → 1.3 at 190 ms: first-frame
   step 51 px → 42 px, last third 54 px → 77 px, so the pace is nearly even while still easing into
   the target. Guard retuned; suite 16/16 green. Outcome: Converged.
+- Pass 7, 2026-11-19 — the owner noted the exponent changes achieved nothing: duration was still
+  190 ms. Re-based the problem: discovered a self-contained tuning harness (`preview/tune-built.html`,
+  built by `build_tune.py` from real dock CSS) that plays two candidates side by side, at 1× or
+  slowed, with per-frame speed traces. Applied the smoother candidate to the product — 400 ms sine
+  in-out for glides and the crossing morph, the operator's own toggle left at 230 ms ease-in-out.
+  Live steps now `2, 5, 8 … 24 … 5, 2` px over 24 frames with 0 px off target; E2E waits and the
+  motion guard retuned, suite 16/16 green. This is a candidate for the owner to compare in the
+  harness, not a final comfort verdict. Outcome: Converged, pending owner's pick.

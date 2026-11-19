@@ -571,7 +571,7 @@
     }
   }
 
-  /* ---------- glide and centring (190 ms ease-out, clamped) ------------------ */
+  /* ---------- glide and centring (400 ms sine in-out, clamped) -------------- */
 
   var glideFrame = null;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -602,8 +602,8 @@
          than freezing a target that was measured too early. */
       var max = runBody.scrollHeight - runBody.clientHeight;
       var to = Math.max(0, Math.min(target, max));
-      var t = Math.min(1, (now - started) / 190);
-      runBody.scrollTop = from + (to - from) * easeOut(t);
+      var t = Math.min(1, (now - started) / 400);
+      runBody.scrollTop = from + (to - from) * ease(t);
       if (t < 1) glideFrame = window.requestAnimationFrame(frame);
       else { glideFrame = null; bandHoldUntil = performance.now() + 300; }
     }
@@ -623,7 +623,7 @@
   }
 
   /* Spec 200: drive the row's own offset from the scrollport centre to zero on the
-     same 190 ms soft ease-out. Deriving the target from the row each frame keeps a
+     same 400 ms sine in-out. Deriving the target from the row each frame keeps a
      crossing's block reflow or the band's hide from landing the glide short. */
   function rowOffset(node) {
     var box = runBody.getBoundingClientRect();
@@ -639,8 +639,8 @@
     function current() { return liveNode() || node; }
     function frame(now) {
       if (start === null) { start = rowOffset(current()); started = now; }
-      var t = Math.min(1, (now - started) / 190);
-      var eased = easeOut(t);
+      var t = Math.min(1, (now - started) / 400);
+      var eased = ease(t);
       var want = start * (1 - eased);
       if (t < 1) {
         runBody.scrollTop += rowOffset(current()) - want;
@@ -692,11 +692,11 @@
   }
 
   /* Spec 200: every re-centre — a glide or the carried part of a crossing morph —
-     lands on this softened ease-out (exponent 1.3). The first frames no longer
-     sprint, and the remaining travel keeps easing away until the row settles. The
-     operator's own block toggle keeps its ease-in-out below. */
-  function easeOut(t) {
-    return 1 - Math.pow(1 - t, 1.3);
+     shares this sine in-out over 400 ms. It starts gently, spends its speed in
+     the middle of the travel and eases off before the row settles. The
+     operator's own block toggle keeps its 230 ms ease-in-out below. */
+  function ease(t) {
+    return .5 - Math.cos(Math.PI * t) / 2;
   }
 
   function startMorph(outInner, inInner, node, outEffectiveOpen, carry) {
@@ -718,7 +718,7 @@
     var startY = rect.top - box.top;
     var centreY = (runBody.clientHeight - node.offsetHeight) / 2;
     var started = performance.now();
-    var duration = 230;
+    var duration = 400;
 
     if (!keepOutOpen) outInner.classList.add('is-morph');
     if (!inWasOpen) {
@@ -737,7 +737,7 @@
     function frame(now) {
       morphState.moved = true;
       var t = Math.min(1, (now - started) / duration);
-      var e = easeOut(t);
+      var e = ease(t);
       if (!keepOutOpen) outInner.style.gridTemplateRows = Math.max(0, hOut * (1 - e)) + 'px';
       if (!inWasOpen) inInner.style.gridTemplateRows = Math.max(0, hIn * e) + 'px';
       /* Spec 200: in browsing the morph animates the two block heights only —

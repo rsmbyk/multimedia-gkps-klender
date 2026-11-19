@@ -145,6 +145,11 @@ control, advance (centres again).
   deceleration guard retuned to the flatter tail.
 - [ ] T041 Soften again: exponent 1.6 → 1.3 at 190 ms, guard retuned for the flatter pace.
 
+- [ ] T042 Re-base the motion work on duration as well as curve: add the side-by-side tuning harness
+  (`tune.html` / `tune.css` / `tune.js` / `build_tune.py`), then apply a candidate to the product —
+  400 ms sine in-out for glides and crossing morphs, operator's block toggle unchanged at 230 ms.
+  Retune E2E waits and the motion guard.
+
 ## Phase 9 — Delivery (after Converge)
 
 - [ ] T033 Commit at Fold — spec pack, code, E2E suite, capability delta and board row together,

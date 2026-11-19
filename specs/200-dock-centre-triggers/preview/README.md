@@ -12,7 +12,17 @@ desktop chat's preview pane
 none: open the file directly   # index.html is self-contained (no server, no external asset)
 python3 preview/build.py       # rebuild index.html after editing panel.html / preview.js / preview.css
 ~/Projects/multimedia-gkps-klender/.venv/bin/python preview/probe.py   # the numbers in spec's UI/UX
+python3 preview/build_tune.py  # rebuild tune-built.html after editing tune.html / tune.js / tune.css
 ```
+
+## Motion tuning harness — `tune-built.html`
+
+A second, self-contained page for finding a comfortable duration/curve pair. Two panes replay the
+same ~460 px move on real dock rows; each has its own duration slider, easing select and preset
+chips. **Play both** runs them together, the **Slow** buttons stretch time 2×/4× without changing
+the curve, and each pane prints elapsed time, scrollTop, instantaneous px/s and a speed trace.
+Space plays, `r` resets. Presets: current 190, brisk 260, gentle 320, smooth 400, slow 500.
+The product's current candidate is 400 ms sine in-out (the *smooth 400* preset).
 
 `index.html` is generated. Its stylesheet is a verbatim copy of `tokens.css` + `obs-dock.css` at the
 branch's commit, inlined by `build.py` so the page can never drift from them silently — re-run the
