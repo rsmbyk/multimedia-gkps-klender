@@ -149,6 +149,8 @@ control, advance (centres again).
   (`tune.html` / `tune.css` / `tune.js` / `build_tune.py`), then apply a candidate to the product —
   400 ms sine in-out for glides and crossing morphs, operator's block toggle unchanged at 230 ms.
   Retune E2E waits and the motion guard.
+- [ ] T043 Ease both ends one notch further: blend the 400 ms sine in-out with quintic smootherstep
+  (50/50), add the `sine 400` preset to the harness for side-by-side comparison.
 
 ## Phase 9 — Delivery (after Converge)
 

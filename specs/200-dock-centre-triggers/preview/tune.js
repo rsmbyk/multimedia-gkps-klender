@@ -11,18 +11,25 @@
     inout:  function (t) { return t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; },
     smooth: function (t) { return t * t * (3 - 2 * t); },
     sin:    function (t) { return .5 - Math.cos(Math.PI * t) / 2; },
+    soft:   function (t) {
+      var s = .5 - Math.cos(Math.PI * t) / 2;
+      var q = t * t * t * (t * (6 * t - 15) + 10);
+      return .5 * (s + q);
+    },
     linear: function (t) { return t; }
   };
   var EASE_LABELS = [
-    ['out1_3', 'ease-out 1.3 (current)'], ['out2', 'ease-out 2'],
+    ['out1_3', 'ease-out 1.3'], ['out2', 'ease-out 2'],
     ['out3', 'ease-out 3'], ['inout', 'ease-in-out (quad)'],
-    ['smooth', 'smoothstep'], ['sin', 'sine in-out'], ['linear', 'linear']
+    ['smooth', 'smoothstep'], ['sin', 'sine in-out'], ['soft', 'soft in-out (current)'],
+    ['linear', 'linear']
   ];
   var PRESETS = {
     current: {dur: 190, ease: 'out1_3', label: 'current 190'},
     brisk:   {dur: 260, ease: 'out3',   label: 'brisk 260'},
     gentle:  {dur: 320, ease: 'out2',   label: 'gentle 320'},
-    smooth:  {dur: 400, ease: 'sin',    label: 'smooth 400'},
+    smooth:  {dur: 400, ease: 'soft',   label: 'smooth 400'},
+    sine:    {dur: 400, ease: 'sin',    label: 'sine 400'},
     slow:    {dur: 500, ease: 'out2',   label: 'slow 500'}
   };
   var LIVE = 12;

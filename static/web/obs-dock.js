@@ -571,7 +571,7 @@
     }
   }
 
-  /* ---------- glide and centring (400 ms sine in-out, clamped) -------------- */
+  /* ---------- glide and centring (400 ms softened in-out, clamped) --------- */
 
   var glideFrame = null;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -623,7 +623,7 @@
   }
 
   /* Spec 200: drive the row's own offset from the scrollport centre to zero on the
-     same 400 ms sine in-out. Deriving the target from the row each frame keeps a
+     same 400 ms softened in-out. Deriving the target from the row each frame keeps a
      crossing's block reflow or the band's hide from landing the glide short. */
   function rowOffset(node) {
     var box = runBody.getBoundingClientRect();
@@ -692,11 +692,13 @@
   }
 
   /* Spec 200: every re-centre — a glide or the carried part of a crossing morph —
-     shares this sine in-out over 400 ms. It starts gently, spends its speed in
-     the middle of the travel and eases off before the row settles. The
-     operator's own block toggle keeps its 230 ms ease-in-out below. */
+     shares this softened in-out over 400 ms. Half sine, half quintic smootherstep:
+     both ends are flatter than plain sine, while the middle keeps the same pace.
+     The operator's own block toggle keeps its 230 ms ease-in-out below. */
   function ease(t) {
-    return .5 - Math.cos(Math.PI * t) / 2;
+    var sine = .5 - Math.cos(Math.PI * t) / 2;
+    var smoother = t * t * t * (t * (6 * t - 15) + 10);
+    return .5 * (sine + smoother);
   }
 
   function startMorph(outInner, inInner, node, outEffectiveOpen, carry) {
