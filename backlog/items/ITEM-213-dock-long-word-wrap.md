@@ -1,18 +1,18 @@
 ---
 id: ITEM-213
-status: in-review
+status: done
 title: 'A long word wraps in the dock runner''s service title and entry headers'
 type: fix
 priority: P1
 effort: S
 created: 2026-11-19
 updated: 2026-11-19
-spec: 203-dock-long-word-wrap
+spec: 203
 branch: fix/203-dock-long-word-wrap
-pr: 541
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/541
 issue: 540
-closed_at:
-closed_reason:
+closed_at: 2026-11-19
+closed_reason: merged into develop (PR #541)
 bump: patch
 release_version:
 ---
