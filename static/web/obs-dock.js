@@ -623,7 +623,7 @@
   }
 
   /* Spec 200: drive the row's own offset from the scrollport centre to zero on the
-     same 190 ms quadratic ease-out. Deriving the target from the row each frame keeps a
+     same 190 ms soft ease-out. Deriving the target from the row each frame keeps a
      crossing's block reflow or the band's hide from landing the glide short. */
   function rowOffset(node) {
     var box = runBody.getBoundingClientRect();
@@ -692,11 +692,11 @@
   }
 
   /* Spec 200: every re-centre — a glide or the carried part of a crossing morph —
-     lands on this quadratic ease-out. The first frames no longer sprint, and the
-     remaining travel keeps easing away until the row settles. The operator's own
-     block toggle keeps its ease-in-out below. */
+     lands on this softened ease-out (exponent 1.6). The first frames no longer
+     sprint, and the remaining travel keeps easing away until the row settles. The
+     operator's own block toggle keeps its ease-in-out below. */
   function easeOut(t) {
-    return 1 - Math.pow(1 - t, 2);
+    return 1 - Math.pow(1 - t, 1.6);
   }
 
   function startMorph(outInner, inInner, node, outEffectiveOpen, carry) {

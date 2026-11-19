@@ -141,6 +141,8 @@ control, advance (centres again).
 - [ ] T039 Soften the shared re-centre curve again on owner feedback: quintic → quadratic (`easeOut`),
   still 190 ms, leaving more of the travel for the final stretch. Retune the deceleration guard's
   thresholds; the operator's block toggle stays on ease-in-out.
+- [ ] T040 Soften one more notch on owner feedback: exponent 2 → 1.6 at the same 190 ms, with the
+  deceleration guard retuned to the flatter tail.
 
 ## Phase 9 — Delivery (after Converge)
 

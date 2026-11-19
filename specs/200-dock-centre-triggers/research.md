@@ -102,7 +102,7 @@
 ## D008 — Geometry and scroll invariants are untouched
 
 - **Decision**: keep `overflow-anchor: none` on `.dock__body`, the same-frame scroll clamp in
-  `sync()`, `layoutTop()`'s non-sticky-parent rule, the 190 ms quadratic ease-out glide, the 230 ms morph, and
+  `sync()`, `layoutTop()`'s non-sticky-parent rule, the 190 ms soft ease-out (exponent 1.6) glide, the 230 ms morph, and
   the reduced-motion instant branches. The new control adds no CSS: `.navbtn` at 40 × 40, radius
   10, 17 px SVG and stroke 1.8 already produce the gate-1 numbers.
 - **Rationale**: the accepted preview measured those numbers from the real stylesheet; changing
