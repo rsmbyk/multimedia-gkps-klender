@@ -313,11 +313,18 @@ start every block shut except the live entry's, whose block stays open because l
 display state rather than from the override; the reset SHALL write no display state, broadcast nothing and
 animate nothing. Under reduced motion every swap SHALL be instant, with no morph or transition. A
 hovered header SHALL tint its whole line, chevron included, while the live row keeps its selected family of
-fill (never the generic hover face). (specs 198, 204)
+fill (never the generic hover face). An open header SHALL wear one flat wash of its rail mixed 4 % ink —
+`color-mix(in srgb, var(--rail-bg) 96%, var(--ink))` — for as long as its block stands open, a step softer
+than the hover face so the pointer stays the louder state; the wash rides the row's own 200 ms background
+ease and adds none of its own, and the live row's selected fill always outranks it (specs 198, 204, 206).
 
 #### Scenario: a header expands without projecting
 - WHEN the operator clicks a non-live entry's header
 - THEN only that block opens and its chevron turns down, while the display state, the selected screen and the scroll position stay as they were
+
+#### Scenario: an open header wears the wash
+- WHEN a non-live header's block stands open
+- THEN its whole line, chevron included, carries the 4 % rail-and-ink wash — softer than the hover face, which replaces it under the pointer — and closing the block returns it to bare rail
 
 #### Scenario: an item inside the block jumps
 - WHEN the operator clicks a screen row inside an open block

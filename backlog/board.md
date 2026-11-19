@@ -38,6 +38,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-218](./items/ITEM-218-dock-expanded-tint.md) | An open entry header wears a whisper of a tint | 4 % ink over the rail on `aria-expanded="true"` — half the hover face, so the pointer still outranks the state; the live row keeps its selected fill | feat | P2 | S | [206](../specs/206-dock-expanded-tint/spec.md) | develop via [#550](https://github.com/rsmbyk/multimedia-gkps-klender/pull/550) | 2026-11-19 |
 
 ## In review
 
