@@ -271,9 +271,10 @@ a 420 × 780 px pane by `preview/probe.py`:
   **following** — crosshair filled `--active-bg` (#7C9CF0 in dark, #1C5C3C in light) with
   `--active-ink`, `aria-pressed="true"`; **browsing** — transparent face, `--divider` border,
   `aria-pressed="false"`.
-- **Motion**: the control only starts the list's own 190 ms quintic ease-out glide — measured on the
-  live dock at 60 fps: per-frame steps `137, 93, 61, 38, 22, 12, 5, 3, 1` px (first third 291 px,
-  last third 9 px), 0 direction reversals, landing 0.0 px off the scrollport's centre;
+- **Motion**: the control only starts the list's own 190 ms quadratic ease-out glide — measured on
+  the live dock at 60 fps: per-frame steps `63, 56, 51, 45, 40, 33, 28, 23, 16, 11, 5, 1` px
+  (first third 215 px, last third 33 px), 0 direction reversals, landing 0.0 px off the scrollport's
+  centre;
 - **Responsive**: `flex: none`, so it takes its width from `.baits`, which already shrinks; the
   fixture's pane is 623 px tall over 1715 px of list.
 

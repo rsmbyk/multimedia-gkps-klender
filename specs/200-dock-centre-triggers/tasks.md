@@ -134,10 +134,13 @@ control, advance (centres again).
   message only; an explicit service open still rebuilds). Verified by
   `::test_the_reread_does_not_rebuild_an_unchanged_list`.
 
-- [ ] T038 Ease all re-centring paths onto one quintic ease-out: the same-entry glide, the carried
+- [ ] T038 Ease all re-centring paths onto one quadratic ease-out: the same-entry glide, the carried
   part of a crossing morph and the idle return shed speed into the target, while the operator's own
   block toggle keeps its ease-in-out. `::test_the_centring_decelerates_into_its_target` is red on the
   old cubic (first 60 ms moved 414 px, below the 563 px floor) and green on the new curve.
+- [ ] T039 Soften the shared re-centre curve again on owner feedback: quintic → quadratic (`easeOut`),
+  still 190 ms, leaving more of the travel for the final stretch. Retune the deceleration guard's
+  thresholds; the operator's block toggle stays on ease-in-out.
 
 ## Phase 9 — Delivery (after Converge)
 

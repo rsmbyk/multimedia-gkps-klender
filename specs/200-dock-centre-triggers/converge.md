@@ -14,7 +14,7 @@ three inspection items and the source tree. Method per row: `test` → the named
 | ID | Type | Requirement / area | Evidence | Outcome |
 | --- | --- | --- | --- | --- |
 | C1 | partial → fixed | FR-006 browsing crossings centred anyway | `finishMorph()` called `centerRow` for every morph; corrected to centre only on the instant reduced-motion path (`carry && !moved`). `test_advances_follow_when_following_and_not_when_browsing` passes | fixed |
-| C2 | partial → fixed | SC-001 ≤1 px landing after an advance | the old `offsetTop`/rect mix and a mid-glide band move landed 32–69 px short; `glideRow()` now drives the live row's own offset to zero on the same 190 ms quintic ease-out curve, and `updateBand()` holds during a centring. All landing assertions pass | fixed |
+| C2 | partial → fixed | SC-001 ≤1 px landing after an advance | the old `offsetTop`/rect mix and a mid-glide band move landed 32–69 px short; `glideRow()` now drives the live row's own offset to zero on the same 190 ms quadratic ease-out curve, and `updateBand()` holds during a centring. All landing assertions pass | fixed |
 | C3 | contradicts → fixed | FR-006 transport Next must not change the mode | the first implementation put re-entry on `#nextBtn`; the owner corrected it to the sticky band, and the handler was reverted to a plain `step(1)`. US1/AC7 and US4/AC3 pass | fixed |
 | C4 | partial → fixed | FR-007 held press suspends the clock | the earlier E2E asserted an exact `scrollTop` and failed on an unrelated re-read clamp; changed to assert no upward centring glide, which is what the requirement says | fixed |
 | C5 | unrequested | `bandHoldUntil`, `glideRow`, `rowOffset` | implementation refinements needed to keep one motion and an exact landing; no new behaviour is exposed, no display record or interface changed | retained — declared as refinement, not a behaviour change |
@@ -46,3 +46,9 @@ every `test` row was actually run, `inspection` rows were read, `manual` rows ar
   `90, 74, 59, 47, 36, 26, 18, 12, 6, 3, 1` to `137, 93, 61, 38, 22, 12, 5, 3, 1` px; the last
   third fell from 9.9% to 3.1% of the first third. New deceleration test red before / green after,
   suite 16/16 green. Outcome: Converged.
+- Pass 4, 2026-11-19 — owner said the quintic still felt too fast and wanted the last stretch eased
+  out. Changed the shared curve to quadratic (`easeOut`), which cuts the first frame from 137 px to
+  63 px and leaves 33 px in the last third (was 9 px) so the row visibly settles into place.
+  Duration stays 190 ms; the operator's toggle stays ease-in-out. Threshold in
+  `test_the_centring_decelerates_into_its_target` retuned to the gentler curve; suite 16/16 green.
+  Outcome: Converged.

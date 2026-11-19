@@ -14,7 +14,7 @@ artifact; the design below follows its measured numbers, not a reinterpretation.
 | --- | --- |
 | Language / stack | Python 3.12, Django 4.0, DRF; server-rendered `multimedia/web/templates/reading/obs_dock.html`; vanilla `static/web/obs-dock.js`; design CSS `static/styles/design/obs-dock.css` + `tokens.css` |
 | Surfaces | `obs-dock.js`: `dock` state object (`:38`), `liveNode` (`:612`), `glideScroll`/`layoutTop`/`centerRow`/`scheduleCenter` (`:560–626`), `startMorph`/`finishMorph` (`:640–708`), `cancelPendingCenter` + wheel/pointerdown (`:774–782`), `updateBand` (`:786`, sets `nextBand.dataset.screen = next.start`), `toggleBlock` (`:764`), `sync` (`:1197–1319`, subscribe at `:1831`), `step`/`stepUnit`/`projectScreen`, `entryList` click (`:1330`), prev/next handlers (`:1441–1442`), 100 ms re-read poll (`:1852`) |
-| Existing patterns | the 230 ms `easeInOut` crossing morph with `.is-morph` and hand-managed `inert`/`aria-hidden`; the 190 ms quintic ease-out glide; `reduceMotion.matches` instant branches; `navbtn` stroked-SVG markup; `tabindex="-1"` panel-owned keyboard; `focusPanel()` after activation |
+| Existing patterns | the 230 ms `easeInOut` crossing morph with `.is-morph` and hand-managed `inert`/`aria-hidden`; the 190 ms quadratic ease-out glide; `reduceMotion.matches` instant branches; `navbtn` stroked-SVG markup; `tabindex="-1"` panel-owned keyboard; `focusPanel()` after activation |
 | Storage | none new — `following`, the previous-notice snapshot and the idle clock are page memory; `gkps-display` is read only |
 | Testing | Django runner; Playwright (Python) E2E under `tests/e2e/` with `StaticLiveServerTestCase`, fixtures in `setUp`, ORM assertions after the browser closes; red-first per TDD. Heavy browser suites run at the push step |
 | Target platform | OBS's embedded browser dock first; any current Chromium/Firefox/Safari opening `/obs/dock` |
@@ -64,7 +64,7 @@ names M1–M3 in `quickstart.md`.
 | Requirement | Component / file | Verified by | Notes |
 | --- | --- | --- | --- |
 | FR-001 | `obs_dock.html` `.navpair` + `obs-dock.css` `.navbtn` (D008/D009) | `inspection` → I1 | one control between prev and next, 40 × 40, radius 10, 10 px gap |
-| FR-002 | `#centreBtn` click → `centre()` + `following = true` | `test` → `test_the_centre_control_centres_and_enters_following` | 190 ms quintic ease-out glide, clamped, instant under reduce, no display write |
+| FR-002 | `#centreBtn` click → `centre()` + `following = true` | `test` → `test_the_centre_control_centres_and_enters_following` | 190 ms quadratic ease-out glide, clamped, instant under reduce, no display write |
 | FR-003 | `sync()` paints `centreBtn.disabled` (D009) | `test` → `test_the_control_is_disabled_without_a_live_row_and_centres_a_goto` | no live row → disabled; go-to marked row is still a target |
 | FR-004 | `entryList` click screen-row/band branch + `syncLivePos` (D006) | `test` → `test_an_item_click_centres_and_reenters_following` | item click centres and re-enters following |
 | FR-004 (band) | `updateBand()`'s `dataset.screen` + band branch | `test` → `test_the_next_band_jumps_the_pointer_and_reenters_following` | pointer jumps to the next entry, first row marked |
