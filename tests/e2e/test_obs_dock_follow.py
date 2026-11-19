@@ -332,8 +332,8 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
                     if out[i][0] < 60)
         late = sum(abs(out[i][1] - out[i-1][1]) for i in range(1, len(out))
                    if out[i-1][0] > 140)
-        self.assertGreater(early, 0.20 * total, out)
-        self.assertLess(late, 0.18 * total, out)
+        self.assertGreater(early, 0.15 * total, out)
+        self.assertLess(late, 0.25 * total, out)
 
     def test_reduced_motion_jumps_instead_of_gliding(self):
         page = self._dock(reduced=True)

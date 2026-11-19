@@ -56,3 +56,6 @@ every `test` row was actually run, `inspection` rows were read, `manual` rows ar
   1.6 at the same 190 ms: first-frame step 63 px → 51 px, last third 33 px → 54 px, so the row keeps
   moving gently as it settles instead of arriving in a few tiny steps. Deceleration guard retuned;
   suite 16/16 green. Outcome: Converged.
+- Pass 6, 2026-11-19 — owner asked for more softening. Exponent 1.6 → 1.3 at 190 ms: first-frame
+  step 51 px → 42 px, last third 54 px → 77 px, so the pace is nearly even while still easing into
+  the target. Guard retuned; suite 16/16 green. Outcome: Converged.

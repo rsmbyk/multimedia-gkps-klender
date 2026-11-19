@@ -692,11 +692,11 @@
   }
 
   /* Spec 200: every re-centre — a glide or the carried part of a crossing morph —
-     lands on this softened ease-out (exponent 1.6). The first frames no longer
+     lands on this softened ease-out (exponent 1.3). The first frames no longer
      sprint, and the remaining travel keeps easing away until the row settles. The
      operator's own block toggle keeps its ease-in-out below. */
   function easeOut(t) {
-    return 1 - Math.pow(1 - t, 1.6);
+    return 1 - Math.pow(1 - t, 1.3);
   }
 
   function startMorph(outInner, inInner, node, outEffectiveOpen, carry) {

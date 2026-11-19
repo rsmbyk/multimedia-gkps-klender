@@ -143,6 +143,7 @@ control, advance (centres again).
   thresholds; the operator's block toggle stays on ease-in-out.
 - [ ] T040 Soften one more notch on owner feedback: exponent 2 → 1.6 at the same 190 ms, with the
   deceleration guard retuned to the flatter tail.
+- [ ] T041 Soften again: exponent 1.6 → 1.3 at 190 ms, guard retuned for the flatter pace.
 
 ## Phase 9 — Delivery (after Converge)
 
