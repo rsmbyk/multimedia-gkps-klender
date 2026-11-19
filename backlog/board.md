@@ -31,7 +31,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-214](./items/ITEM-214-dock-centre-pace.md) | The dock's re-centring keeps pace with fast advancing | Following-mode centring is halved to 200 ms on a plain sine so rapid advances stop bobbing the list | fix | P2 | S | [205](../specs/205-dock-centre-pace/spec.md) | 2026-11-19 |
 
 ## In progress
 
@@ -43,6 +42,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-211](./items/ITEM-211-sidebar-date-focus.md) | A clicked service keeps its sidebar date | A click leaves the row link focused, so `li:focus-within` keeps the date hidden after the pointer leaves | fix | P1 | S | [201](../specs/201-sidebar-date-focus/spec.md) | [#537](https://github.com/rsmbyk/multimedia-gkps-klender/pull/537) | 2026-11-19 |
+| [ITEM-214](./items/ITEM-214-dock-centre-pace.md) | The dock's re-centring keeps pace with fast advancing | Following-mode centring is halved to 200 ms on a plain sine so rapid advances stop bobbing the list | fix | P2 | S | [205](../specs/205-dock-centre-pace/spec.md) | [#544](https://github.com/rsmbyk/multimedia-gkps-klender/pull/544) | 2026-11-19 |
 
 ## Done
 

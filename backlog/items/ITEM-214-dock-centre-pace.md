@@ -1,6 +1,6 @@
 ---
 id: ITEM-214
-status: ready
+status: in-review
 title: 'The dock''s re-centring keeps pace with fast advancing'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-19
 updated: 2026-11-19
 spec: 205
 branch: fix/205-dock-centre-pace
-pr: —
+pr: 544
 issue: 542
 closed_at: —
 closed_reason: —
