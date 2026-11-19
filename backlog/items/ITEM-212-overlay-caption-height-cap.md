@@ -1,5 +1,5 @@
 ---
-id: ITEM-209
+id: ITEM-212
 status: in-review
 title: 'The song caption type is bound to the stage height'
 type: fix
@@ -15,7 +15,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-209: The song caption type is bound to the stage height
+# ITEM-212: The song caption type is bound to the stage height
 
 ## Summary
 

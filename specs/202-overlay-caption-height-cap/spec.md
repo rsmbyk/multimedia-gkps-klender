@@ -2,7 +2,7 @@
 
 - **ID:** 202
 - **Status:** Accepted — owner, 2026-11-19 (the plan was accepted in conversation; this pack records it)
-- **Item:** ITEM-209
+- **Item:** ITEM-212
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch

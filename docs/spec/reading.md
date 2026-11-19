@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-16
-**slices**: `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-19
+**slices**: `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -229,13 +229,16 @@ creation time, newest first.
 
 A row dated today SHALL carry a `Today` badge between its name and its date, and no other row SHALL carry
 one; the badge SHALL be drawn on the action accent (`--active-bg` fill with `--active-ink` ink), and the
-row's accessible name SHALL end `— today`. While the row's actions are revealed (hover or focus), the
-badge SHALL be hidden the way the row's date is — the controls take the trailing edge where the badge
-sits — and SHALL return when the reveal ends. (spec 132; reveal hide added by spec 195)
+row's accessible name SHALL end `— today`. While the row's actions are revealed (hover or an action
+button's `:focus-visible`), the badge SHALL be hidden the way the row's date is — the controls take the
+trailing edge where the badge sits — and SHALL return when the reveal ends; focusing the row's link
+alone SHALL NOT hide it. (spec 132; reveal hide added by spec 195, clarified by spec 201)
 
 #### Scenario: the badge steps aside for the row's actions
-- WHEN a today row is hovered or its actions take focus
+- WHEN a today row is hovered or one of its action buttons takes focus
 - THEN the badge is not painted while the edit and delete controls are up, and paints again at rest
+- WHEN the row's link is clicked and the pointer leaves
+- THEN the badge paints again
 - AND the row's accessible name still ends `— today`
 
 The operator dock's picker SHALL group by the same four buckets, in the same order and under the same
@@ -1291,9 +1294,11 @@ grab-frozen midpoints of the other verses, not from the origin slot.
 
 Where editing is allowed, a non-hymn songbook row, a song of a non-hymn songbook, and every Tata Ibadah
 service and template row SHALL carry a delete control beside the edit control — the same 26px box,
-hidden at rest, revealed while the row is hovered or focused, drawn outright on touch screens. A dated
-service row SHALL hide its displayed date while the row is hovered or focused for that reveal, so the
-controls never cover it; the row's accessible label keeps the date. Clicking delete SHALL open the
+hidden at rest, revealed while the row is hovered or while its own edit/delete control takes
+`:focus-visible`, drawn outright on touch screens. A dated service row SHALL hide its displayed date
+while the row is hovered or one of those controls is focus-visible for that reveal, so the controls never
+cover it; the row's accessible label keeps the date. Focusing the row's own link — for example by clicking
+it — SHALL NOT hide the date or the Today badge (spec 201). Clicking delete SHALL open the
 shared editor modal on a confirm state fetched from the server — naming the record and its kind's noun
 (`song`, `songbook`, `Tata Ibadah`, `template`) — and only the confirmed submit SHALL POST to the
 record's delete endpoint with the CSRF token. Hymn songbooks, their songs, a song of an already-deleted
@@ -1303,8 +1308,10 @@ the row leaves its sidebar and a neighbour takes focus; when the deleted record 
 the shell swaps to the parent list with the history entry replaced, so Back never revisits the removal.
 
 #### Scenario: revealing the delete control
-- WHEN an eligible row is hovered or keyboard-focused (on a touch screen, drawn outright)
+- WHEN an eligible row is hovered or one of its action buttons is keyboard-focused (on a touch screen, drawn outright)
 - THEN the trash control is drawn beside the pencil, and a dated service row's date is hidden for that reveal
+- WHEN the row's link is clicked and the pointer leaves
+- THEN the date is painted again while the row keeps its highlight
 
 #### Scenario: confirming the delete
 - WHEN the trash control is clicked
@@ -1378,3 +1385,54 @@ The stored list SHALL stay a list of verse IDs. (spec 195)
 #### Scenario: the refusal stands
 - WHEN every box is cleared and the entry is saved
 - THEN the refusal is `Keep at least one verse in the service.`, as before
+
+### R44 — The first sidebar rests for fifteen quiet minutes
+
+The first sidebar's idle interval SHALL be 900 000 ms — fifteen minutes — measured from the last
+activity it counts. It SHALL be armed only while the viewport is wider than 720 px, the first panel
+is open and its section matches the reading stage; outside those conditions no interval is armed.
+The activity surface SHALL be exactly the rail and the first panel: `pointerdown`, `pointermove`,
+`keydown`, `focusin`, `wheel` and `scroll` on those two elements restart the whole interval, and
+nothing else does — not the second sidebar, the reading stage, a dialog, a modal or global search.
+`scroll` SHALL be observed in the capture phase so a scroll of any descendant scroller counts,
+including a scrollbar-thumb drag, which emits `scroll` without `wheel`; a future second scroller
+under the same panel needs no new rule. A `focusout` that leaves the panel restarts the interval;
+focus moving within it does not. A hidden tab cancels the interval and becoming visible arms a fresh
+one. When the interval expires the Alkitab panel collapses to mini and the Kidung and Tata Ibadah
+panels close, without navigating; the narrow drawer arms no interval at all. No setting, query
+parameter, data attribute or notification exposes the delay. (spec 199; restores spec 072's rule)
+
+#### Scenario: the panel is left quiet
+- WHEN an eligible open panel is left alone for 899 000 ms
+- THEN it is still open, and it collapses 1 000 ms later to mini for Alkitab or closed otherwise
+
+#### Scenario: the panel's list is scrolled
+- WHEN the operator scrolls the first panel's list — by wheel, keyboard or scrollbar thumb
+- THEN a full fifteen minutes starts at that scroll, however the list was scrolled
+
+#### Scenario: activity outside the two surfaces
+- WHEN the second sidebar or the reading stage is scrolled or pointed at for the whole interval
+- THEN the first panel collapses on its original schedule
+
+### R45 — A held interaction gives the interval back when it ends
+
+An open first panel's collapse SHALL be deferred while a control inside the panel has focus, a modal
+or dialog is open, or a drag gesture is underway; expiry during that time SHALL re-check every
+1 s and SHALL NOT collapse. The end of the last held condition SHALL restart a full interval at the
+moment it clears — focus leaving the panel, `.is-dragging` clearing, a modal's `.visible` or a
+dialog's `[open]` being removed — rather than at the next re-check. That restart SHALL be read from
+the condition's own state turning false, never from a seventh activity event and never by treating
+the dialog, the modal or the second sidebar as an activity surface. An interaction that ends before
+expiry SHALL NOT leave the old deadline standing. (spec 199; completes spec 072's second clause)
+
+#### Scenario: a drag is released before expiry
+- WHEN a reorder grip is held at fourteen minutes and released at fourteen minutes five seconds
+- THEN the panel is still open fourteen minutes fifty-nine seconds after the release and collapses a second later
+
+#### Scenario: a drag or dialog outlives the interval
+- WHEN the interaction is still held when fifteen minutes pass and then ends
+- THEN the panel stayed open throughout and a fresh fifteen minutes begins at the release or close
+
+#### Scenario: the deferred expiry re-check
+- WHEN a browser has no state observer
+- THEN the 1 s re-check still defers while the condition holds and gives a full interval when it clears

@@ -44,6 +44,7 @@
   var runNote = document.getElementById('runNote');
   var blankBtn = document.getElementById('blankBtn');
   var prevBtn = document.getElementById('prevBtn');
+  var centreBtn = document.getElementById('centreBtn');
   var nextBtn = document.getElementById('nextBtn');
   var transChip = document.getElementById('transChip');
   var baitStrip = document.getElementById('baitStrip');
@@ -67,6 +68,24 @@
   var root = document.documentElement;
 
   var cache = {};                 /* service id -> {entries, screens} */
+  /* The 10 s re-read must not rebuild an unchanged list under the operator's
+     pointer — that drops hover and repaints the whole dock (spec 195). */
+  var lastLoad = {id: null, json: null};
+
+  /* Spec 200: whether advances keep the live row centred. Page memory only —
+     the mode is this dock's relationship with its list, never display state. */
+  var following = true;
+  var centreOnOpen = false;       /* re-centre once, after an on-air service is painted */
+  function setFollowing(value) {
+    following = !!value;
+    if (centreBtn) centreBtn.setAttribute('aria-pressed', following ? 'true' : 'false');
+  }
+  var lastNotice = null;          /* previous {service, screen, goto} */
+  var IDLE_MS = 15000;
+  var idleLastActivity = performance.now();
+  var idleHolding = false;
+  var bandHoldUntil = 0;          /* keep the band still until a centring has settled */
+
   var dock = {
     service: null, name: '', date: '',
     entries: [], screens: [], stops: [],
@@ -397,6 +416,13 @@
   }
 
   function openService(id, name, date) {
+    /* Spec 200: opening the service that is already on air is a deliberate return
+       to the live show — re-enter following before its rows are painted, so sync
+       centres the live entry as part of this same open. Only an explicit open does
+       this: the 10 s re-read and a display echo must never drag a browsing hand. */
+    var onAir = gkpsDisplay.read();
+    centreOnOpen = !!(onAir && onAir.service === id && onAir.on === true && !onAir.goto);
+    if (centreOnOpen) setFollowing(true);
     dock.service = id;
     dock.name = name;
     dock.date = date;
@@ -413,7 +439,7 @@
   }
 
   /* The one load path: fetch (or read from cache), rebuild the list, repaint in place. */
-  function loadServiceData(id) {
+  function loadServiceData(id, quietIfSame) {
     var wanted = id;
     fetchService(id).then(function (data) {
       if (dock.service !== wanted) return;
@@ -422,11 +448,20 @@
         runNote.textContent = 'The service could not be loaded.';
         return;
       }
+      var json = JSON.stringify(data);
+      if (quietIfSame && lastLoad.id === wanted && lastLoad.json === json) return;
+      lastLoad = {id: wanted, json: json};
       dock.entries = data.entries;
       dock.screens = data.screens;
       buildStops();
       renderList();
       sync(gkpsDisplay.read());
+      /* Opening the on-air service is a return to the live show: centre once,
+         after its rows are painted, as part of this same open. */
+      if (centreOnOpen) {
+        centreOnOpen = false;
+        scheduleCenter();
+      }
     });
   }
 
@@ -437,7 +472,7 @@
   function refreshService() {
     if (dock.service == null) return;
     delete cache[dock.service];
-    loadServiceData(dock.service);
+    loadServiceData(dock.service, true);
   }
 
   /* ---------- projection (the state's verbs) -------------------------------- */
@@ -550,7 +585,7 @@
     }
   }
 
-  /* ---------- glide and centring (190 ms ease-out, clamped) ------------------ */
+  /* ---------- glide and centring (400 ms softened in-out, clamped) --------- */
 
   var glideFrame = null;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -581,9 +616,10 @@
          than freezing a target that was measured too early. */
       var max = runBody.scrollHeight - runBody.clientHeight;
       var to = Math.max(0, Math.min(target, max));
-      var t = Math.min(1, (now - started) / 190);
-      runBody.scrollTop = from + (to - from) * (1 - Math.pow(1 - t, 3));
-      glideFrame = t < 1 ? window.requestAnimationFrame(frame) : null;
+      var t = Math.min(1, (now - started) / 400);
+      runBody.scrollTop = from + (to - from) * ease(t);
+      if (t < 1) glideFrame = window.requestAnimationFrame(frame);
+      else { glideFrame = null; bandHoldUntil = performance.now() + 300; }
     }
     glideFrame = window.requestAnimationFrame(frame);
   }
@@ -600,10 +636,41 @@
     return node.offsetTop;
   }
 
+  /* Spec 200: drive the row's own offset from the scrollport centre to zero on the
+     same 400 ms softened in-out. Deriving the target from the row each frame keeps a
+     crossing's block reflow or the band's hide from landing the glide short. */
+  function rowOffset(node) {
+    var box = runBody.getBoundingClientRect();
+    var r = node.getBoundingClientRect();
+    return ((r.top + r.bottom) / 2) - ((box.top + box.bottom) / 2);
+  }
+
+  function glideRow(node) {
+    if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
+    if (reduceMotion.matches) { runBody.scrollTop += rowOffset(node); return; }
+    var start = null;
+    var started = performance.now();
+    function current() { return liveNode() || node; }
+    function frame(now) {
+      if (start === null) { start = rowOffset(current()); started = now; }
+      var t = Math.min(1, (now - started) / 400);
+      var eased = ease(t);
+      var want = start * (1 - eased);
+      if (t < 1) {
+        runBody.scrollTop += rowOffset(current()) - want;
+        glideFrame = window.requestAnimationFrame(frame);
+      } else {
+        runBody.scrollTop += rowOffset(current());   /* land exactly on the centre */
+        glideFrame = null;
+        bandHoldUntil = performance.now() + 300;
+      }
+    }
+    glideFrame = window.requestAnimationFrame(frame);
+  }
+
   function centerRow(node) {
     if (!node) return;
-    var target = layoutTop(node) - (runBody.clientHeight - node.offsetHeight) / 2;
-    glideScroll(target);
+    glideRow(node);
   }
 
   /* The centring target is always the live INNER row (the current screen, or a
@@ -611,7 +678,8 @@
      has no row of its own. */
   function liveNode() {
     return entryList.querySelector('.screenerow[aria-current="true"]') ||
-           entryList.querySelector('.entryrow[aria-current="true"]');
+           entryList.querySelector('.entryrow[aria-current="true"]') ||
+           offBody.querySelector('.offrow[aria-current="true"]');
   }
 
   /* One centring per frame, whatever number of state notices arrived. */
@@ -637,7 +705,17 @@
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  function startMorph(outInner, inInner, node, outEffectiveOpen) {
+  /* Spec 200: every re-centre — a glide or the carried part of a crossing morph —
+     shares this softened in-out over 400 ms. Half sine, half quintic smootherstep:
+     both ends are flatter than plain sine, while the middle keeps the same pace.
+     The operator's own block toggle keeps its 230 ms ease-in-out below. */
+  function ease(t) {
+    var sine = .5 - Math.cos(Math.PI * t) / 2;
+    var smoother = t * t * t * (t * (6 * t - 15) + 10);
+    return .5 * (sine + smoother);
+  }
+
+  function startMorph(outInner, inInner, node, outEffectiveOpen, carry) {
     cancelPendingCenter();
     cancelToggleMorph(outInner);
     cancelToggleMorph(inInner);
@@ -656,7 +734,7 @@
     var startY = rect.top - box.top;
     var centreY = (runBody.clientHeight - node.offsetHeight) / 2;
     var started = performance.now();
-    var duration = 230;
+    var duration = 400;
 
     if (!keepOutOpen) outInner.classList.add('is-morph');
     if (!inWasOpen) {
@@ -668,19 +746,24 @@
       inInner.setAttribute('aria-hidden', 'false');
       if ('inert' in inInner) inInner.inert = false;
     }
-    morphState = {out: outInner, inn: inInner, node: node};
+    morphState = {out: outInner, inn: inInner, node: node,
+                  carry: carry !== false, moved: false};
     if (reduceMotion.matches) { finishMorph(); return; }
 
     function frame(now) {
+      morphState.moved = true;
       var t = Math.min(1, (now - started) / duration);
-      var e = easeInOut(t);
+      var e = ease(t);
       if (!keepOutOpen) outInner.style.gridTemplateRows = Math.max(0, hOut * (1 - e)) + 'px';
       if (!inWasOpen) inInner.style.gridTemplateRows = Math.max(0, hIn * e) + 'px';
-      /* The row's layout position already includes both height changes, so this
-         puts it exactly where the curve says it should be on screen. */
-      var desired = startY + (centreY - startY) * e;
-      var max = runBody.scrollHeight - runBody.clientHeight;
-      runBody.scrollTop = Math.max(0, Math.min(layoutTop(node) - desired, max));
+      /* Spec 200: in browsing the morph animates the two block heights only —
+         no second motion may drag the list after the operator's hand. */
+      if (morphState.carry) {
+        /* Drive the row's live viewport position to the centre on this same curve:
+           no offsetTop/rect coordinate mismatch, and no second glide at the end. */
+        var rowTop = node.getBoundingClientRect().top - runBody.getBoundingClientRect().top;
+        runBody.scrollTop += rowTop - centreY;
+      }
       if (t < 1) morphFrame = window.requestAnimationFrame(frame);
       else finishMorph();
     }
@@ -689,10 +772,13 @@
 
   function finishMorph() {
     if (morphFrame) { window.cancelAnimationFrame(morphFrame); morphFrame = 0; }
+    bandHoldUntil = performance.now() + 300;
     if (!morphState) return;
     var out = morphState.out;
     var inn = morphState.inn;
     var node = morphState.node;
+    var carry = morphState.carry;
+    var moved = morphState.moved;
     morphState = null;
     out.classList.remove('is-morph');
     inn.classList.remove('is-morph');
@@ -704,7 +790,9 @@
        the single writer. */
     paintEntry(out, effectiveOpenFor(out));
     paintEntry(inn, effectiveOpenFor(inn));
-    if (node) centerRow(node);
+    /* Only the instant (reduced-motion) path ran no frames; a carried morph already
+       placed its row, and a browsing morph must never move the list. */
+    if (node && carry && !moved) centerRow(node);
   }
 
   /* A hand toggle morphs its one block the way the crossing morphs its pair:
@@ -764,6 +852,7 @@
     if (!inner) return;                             /* a break or an empty block */
     var next = !effectiveOpen(index);
     entryOverrides.set(index, next);
+    if (next) setFollowing(false);              /* opening another entry browses */
     if (morphState && (morphState.out === inner || morphState.inn === inner)) return;
     /* FR-005's reduce half (US3/AC5): the swap paints at once — the same finish
        path a morph lands on, without ever requesting a frame. */
@@ -780,10 +869,15 @@
   /* A hand on the list wins over any pending centring or glide. */
   runBody.addEventListener('wheel', cancelPendingCenter, {passive: true});
   runBody.addEventListener('pointerdown', cancelPendingCenter);
+  /* The same hand that wins a glide also hands the list back to the operator. */
+  runBody.addEventListener('wheel', function () { setFollowing(false); }, {passive: true});
 
   /* ---------- the pinned row and the NEXT band ------------------------------ */
 
   function updateBand() {
+    /* A centring owns the layout while it runs: moving the band between entries
+       mid-glide shifts the very row it is trying to place. The next scroll settles it. */
+    if (glideFrame || morphFrame || performance.now() < bandHoldUntil) return;
     var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
     if (!liveEntry) {
       nextBand.hidden = true;
@@ -1265,7 +1359,8 @@
        (SC-005): the crossing animates only what the effective state says closes. */
     var outEffectiveOpen = departingLi
       ? effectiveOpen(Number(departingLi.dataset.index)) : false;
-    if (morphing) startMorph(departingInner, arrivingInner, arrivingRow, outEffectiveOpen);
+    /* The morph starts after the repaint and the band move (below): its target must
+       be measured against the layout the arriving row will actually have. */
 
     entryList.querySelectorAll('.entryli').forEach(function (li) {
       var index = Number(li.dataset.index);
@@ -1314,7 +1409,20 @@
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
     updateBand();
-    if (live && !morphing) scheduleCenter();       /* the morph brings its own curve */
+    if (morphing) startMorph(departingInner, arrivingInner, arrivingRow, outEffectiveOpen, following);
+
+    /* Spec 200: an advance is a notice for the same service, no go to, and a moved
+       screen. Display flips, re-reads, reloads, service changes and go to rows all
+       fail this test, so the list stays exactly where the operator left it. */
+    var notice = {service: state.service, screen: state.screen,
+                  goto: state.goto ? JSON.stringify(state.goto) : null};
+    var advance = !!lastNotice && !state.goto &&
+                  lastNotice.goto === null &&
+                  lastNotice.service === state.service &&
+                  lastNotice.screen !== state.screen;
+    lastNotice = notice;
+    if (centreBtn) centreBtn.disabled = !liveNode();
+    if (live && following && advance && !morphing) scheduleCenter();
     dock.lastEntry = live ? activeEntry : null;
   }
 
@@ -1331,12 +1439,14 @@
     if (gotoBusy) return;                    /* nothing changes what is on air */
     var band = event.target.closest('.nextband');
     if (band) {
+      setFollowing(true);                      /* the sticky band re-enters following */
       projectScreen(Number(band.dataset.screen));
       focusPanel();
       return;
     }
     var screenRow = event.target.closest('.screenerow');
     if (screenRow) {
+      setFollowing(true);                      /* an item click re-enters following */
       projectScreen(Number(screenRow.dataset.screen));
       focusPanel();
       return;
@@ -1439,6 +1549,13 @@
 
   transChip.addEventListener('click', function () { if (gotoBusy) return; flipEdition(); focusPanel(); });
   prevBtn.addEventListener('click', function () { if (gotoBusy) return; step(-1); focusPanel(); });
+  centreBtn.addEventListener('click', function () {
+    if (gotoBusy || centreBtn.disabled) return;
+    setFollowing(true);
+    var node = liveNode();                   /* includes the go to's marked row */
+    if (node) centerRow(node);
+    focusPanel();
+  });
   nextBtn.addEventListener('click', function () { if (gotoBusy) return; step(1); focusPanel(); });
   switchBtn.addEventListener('click', function () { setView('pick', true); });
   reloadBtn.addEventListener('click', function () { window.location.reload(); });
@@ -1828,8 +1945,52 @@
   /* ---------- boot ----------------------------------------------------------- */
 
   applyTheme(root.dataset.themeMode || 'dark', false);
+  setFollowing(true);
   gkpsDisplay.subscribe(sync);
   if (pickRows().length) setPickCursor(0, false);
+
+  /* ---------- the 15 s idle return (spec 200) ------------------------------- */
+
+  /* Scrolls, presses and keys mark activity; a moving pointer with no button down
+     does not. A press still held suspends the count until it is released. */
+  ['wheel', 'pointerdown', 'pointerup', 'pointercancel', 'keydown'].forEach(function (name) {
+    document.addEventListener(name, function (event) {
+      if (event.type === 'pointerdown') idleHolding = true;
+      if (event.type === 'pointerup' || event.type === 'pointercancel') idleHolding = false;
+      idleLastActivity = performance.now();
+    }, {passive: true});
+  });
+
+  function offScreen(node) {
+    var box = runBody.getBoundingClientRect();
+    var r = node.getBoundingClientRect();
+    return r.bottom <= box.top || r.top >= box.bottom;
+  }
+
+  window.setInterval(function () {
+    var now = performance.now();
+    if (idleHolding) idleLastActivity = now;
+    if (now - idleLastActivity < IDLE_MS) return;
+    /* FR-008: read every condition here, at the moment the clock fires. */
+    var state = gkpsDisplay.read();
+    var quiet = panel.dataset.view === 'run' && dock.service != null &&
+                state.service === dock.service && state.on === true && !state.goto &&
+                !find.open && !keysOpen && !document.hidden;
+    var node = quiet ? liveNode() : null;
+    if (quiet) {
+      var otherOpen = false;
+      entryList.querySelectorAll('.entryinner.is-open').forEach(function (inner) {
+        var li = inner.closest('.entryli');
+        if (li && li.dataset.live !== 'true') otherOpen = true;
+      });
+      quiet = !otherOpen && !!node && offScreen(node);
+    }
+    if (quiet) {
+      setFollowing(true);                       /* the idle return is a re-entry */
+      centerRow(node);
+    }
+    idleLastActivity = now;                    /* one glide per idle stretch */
+  }, 100);
 
   /* ---------- the re-read (spec 195 US6) -------------------------------------- */
 
@@ -1852,7 +2013,7 @@
     window.setInterval(function () {
       if (document.hidden || dock.service == null) return;
       delete cache[dock.service];
-      loadServiceData(dock.service);
+      loadServiceData(dock.service, true);
     }, 10000);
   })();
 
