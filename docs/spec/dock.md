@@ -2,7 +2,7 @@
 
 **capability**: `dock`
 **last folded**: 2026-11-19
-**slices**: `205-dock-centre-pace`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**slices**: `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -386,3 +386,45 @@ curve modified by spec 205)
 - GIVEN the dock is browsing a different service while another service is on the projector and overlay
 - WHEN that on-air service is opened from the picker
 - THEN following returns and the list centres that service's live entry as part of the open
+
+### R16 — The runner's text wraps at its own box
+
+A run of text wider than the box that owns it SHALL wrap at that box's edge in the dock's runner — the
+service title, every entry header shape (a media filename, an untitled entry's quiet lines, a song's
+reference and title) and a screen row inside an open block — and SHALL NOT be painted past it. The runner
+body SHALL NOT scroll horizontally because of text.
+
+Wrapping SHALL NOT change the layout's own measuring: a run that already fits keeps its line count, height
+and width; the number column keeps its width and its place; every chevron keeps its trailing offset and its
+vertical centre on the row. A run that already carries break opportunities — a hyphenated filename — wraps
+exactly as it did before. No line clamp is added: a header grows to as many lines as its run needs, and the
+live row pins at its own taller height.
+
+A label that declares its own cut SHALL keep truncating: the Next band's label and the off-strip's label stay
+one line ending `…`. The picker's service name keeps the wrap it already had; this requirement adds nothing
+to the picker. (spec 203)
+
+#### Scenario: an unbroken service name
+- WHEN a service whose name is 64 characters with no spaces is opened in the runner at a 320, 456 or 900px panel
+- THEN the title wraps inside its own column, no part of it is painted past that column, and the head's buttons keep their place beside it
+
+#### Scenario: a pasted URL as an entry and as a screen
+- WHEN an untitled Text entry's body is a URL wider than the header's text box
+- THEN the header's quiet line wraps inside the header, and the same URL drawn as a screen row inside the open block wraps inside that row
+
+#### Scenario: a filename with no break opportunity
+- WHEN a media entry's filename is an unbroken run wider than the header's text box
+- THEN it wraps inside the header rather than running past it, and the runner body does not scroll sideways
+
+#### Scenario: text that fits
+- WHEN a name, filename or title already fits its box
+- THEN it keeps the same line count, height and width, and the row's number column and chevron keep their geometry
+
+#### Scenario: a wide panel
+- WHEN the panel is wide enough that the whole service name fits
+- THEN the title stays on one line at the same height and width; a run wider than the panel itself still wraps
+
+#### Scenario: a label that truncates
+- WHEN the Next band names an entry whose label is wider than the band
+- THEN the label stays one line ending `…`, and the picker's service name still wraps as it did
+

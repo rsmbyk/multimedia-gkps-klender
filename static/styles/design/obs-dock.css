@@ -117,10 +117,21 @@ body.obs-dock {
   flex: 1;
 }
 
+/* The runner's text wraps at its own box (spec 203). An unbroken run — a service name
+   with no spaces, a pasted URL, a filename with no hyphens — breaks inside the box that
+   owns it instead of painting past it and giving the body a horizontal scrollbar. A run
+   that already carries break opportunities (a hyphenated filename) wrapped before this
+   rule and wraps identically after it. The picker's name has held this since spec 119
+   (`.servicerow__n`); the runner's three text surfaces take the same declaration.
+   `anywhere`, not the reading page's `break-word` (spec 137): every box here is a block
+   in a `min-width: 0` column or a flex item with `min-width: 0`, so the min-content
+   collapse that moved the reading page's language toggle cannot move a control here —
+   the number column and every chevron measure identical with and without the rule. */
 .serviceline {
   font-size: 15px;
   font-weight: 650;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .servicedate {
@@ -439,7 +450,10 @@ body.obs-dock {
   font-variant-numeric: tabular-nums;
 }
 
-.entryrow__t { min-width: 0; }
+/* The header's text box: a media filename, an untitled entry's quiet lines, a song's
+   reference and title. `min-width: 0` lets it shrink; the wrap (spec 203) breaks the run
+   inside it, inherited by every span it holds. */
+.entryrow__t { min-width: 0; overflow-wrap: anywhere; }
 
 .entryrow__t--song {
   flex: 1;
@@ -529,6 +543,10 @@ body.obs-dock {
   text-transform: uppercase;
 }
 
+/* A screen row inside an open block wraps its own line (spec 203) — the same URL the
+   header shows, drawn again here, breaks inside the row rather than past it. The labels
+   that declare their own cut (`.nextband__label`, `.offstrip__label`) keep it: a
+   `nowrap` line cannot wrap, whatever it inherits. */
 .screenerow {
   display: block;
   width: 100%;
@@ -541,6 +559,7 @@ body.obs-dock {
   font: 400 13px/1.45 var(--font-sans);
   text-align: left;
   cursor: pointer;
+  overflow-wrap: anywhere;
   transition: background var(--ease);
 }
 
