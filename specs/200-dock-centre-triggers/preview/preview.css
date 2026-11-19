@@ -1,0 +1,49 @@
+/* Preview chrome only — never restyles the dock. The dock's own face comes from
+   styles/design/tokens.css + styles/design/obs-dock.css, inlined by build.py. */
+
+html, body.pvbody { height: 100%; }
+
+body.pvbody {
+  margin: 0;
+  background: #14161a;
+  color: #e8eaee;
+  font: 400 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.pv {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* An OBS dock pane runs from ~300px to half a monitor; judge it at ~420px. */
+.pv__stage { flex: none; width: 420px; height: 780px; }
+.pv__stage .dock { height: 100%; border: 1px solid #2a2f37; border-radius: 10px; }
+
+.pv__panel {
+  flex: 1 1 auto;
+  min-width: 260px;
+  max-width: 420px;
+  overflow-y: auto;
+  border-left: 1px solid #2a2f37;
+  padding-left: 20px;
+}
+
+.pv__h1 { margin: 0 0 6px; font-size: 15px; letter-spacing: .01em; }
+.pv__note { margin: 0 0 16px; color: #a8b0bb; font-size: 12.5px; }
+.pv__group { margin: 0 0 16px; }
+.pv__h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: #8d97a3; }
+.pv__row { display: flex; gap: 8px; align-items: center; padding: 3px 0; font-size: 12.5px; }
+.pv__tag { font: 650 10px/1 inherit; letter-spacing: .08em; text-transform: uppercase; color: #7fd6a1; }
+.pv__clock { margin: 0 0 4px; font: 650 16px/1.2 ui-monospace, monospace; }
+.pv__btn {
+  display: block; width: 100%; margin: 0 0 6px; padding: 7px 10px; text-align: left;
+  background: #1d222a; color: inherit; border: 1px solid #2f3641; border-radius: 8px;
+  font: inherit; font-size: 12.5px; cursor: pointer;
+}
+.pv__btn:hover { border-color: #4b93ff; }
+.pv__log { margin: 0 0 6px; font-size: 12.5px; color: #ffd479; }
+.pv__num { margin: 0; font: 400 11.5px/1.5 ui-monospace, monospace; color: #a8b0bb; }

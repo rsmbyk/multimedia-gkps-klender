@@ -69,6 +69,7 @@ class DisplaySessionRefreshE2ETests(StaticLiveServerTestCase):
 
     def _project(self, page, index=1):
         page.locator('.entryrow').nth(index).click()
+        page.locator(f'.entryli[data-index="{index}"] .screenerow').first.click()
         page.wait_for_function(
             "() => { const s = JSON.parse(localStorage.getItem('gkps-display') || 'null');"
             " return !!(s && s.service && s.on === true); }")

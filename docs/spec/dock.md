@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-15
-**slices**: `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-18
+**slices**: `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -297,3 +297,99 @@ where the operator already is (R11's rule). (spec 195)
 #### Scenario: a background tab
 - WHEN the dock's page is hidden
 - THEN the timer does not fetch; OBS paints its docks continuously, so the guard rests while the dock shows
+
+### R14 — An entry header expands its block; only an item jumps
+
+The entry list's headers are disclosure controls, never projection controls. A header click SHALL toggle only
+its own block — morphing its height over 230 ms on the shared ease — and SHALL NOT write the display state,
+move the selection, scroll the list or select a screen; an item inside the block remains the only projection
+path from the list. Every header with a block to open SHALL carry one stroked chevron at its trailing end,
+centred vertically on the line: right-pointing at rest, rotated 90° down when open. The live entry's header
+SHALL render no chevron and SHALL NOT collapse; a section break or an entry whose block is empty SHALL render
+no chevron and its click SHALL be a no-op. Hand-opened blocks SHALL survive a live-entry crossing but SHALL
+NOT survive a reload; under reduced motion every swap SHALL be instant, with no morph or transition. A
+hovered header SHALL tint its whole line, chevron included, while the live row keeps its selected family of
+fill (never the generic hover face). An open header SHALL wear one flat wash of its rail mixed 4 % ink —
+`color-mix(in srgb, var(--rail-bg) 96%, var(--ink))` — for as long as its block stands open, a step softer
+than the hover face so the pointer stays the louder state; the wash rides the row's own 200 ms background
+ease and adds none of its own, and the live row's selected fill always outranks it (spec 198, wash spec
+206).
+
+#### Scenario: a header expands without projecting
+- WHEN the operator clicks a non-live entry's header
+- THEN only that block opens and its chevron turns down, while the display state, the selected screen and the scroll position stay as they were
+
+#### Scenario: an open header wears the wash
+- WHEN a non-live header's block stands open
+- THEN its whole line, chevron included, carries the 4 % rail-and-ink wash — softer than the hover face, which replaces it under the pointer — and closing the block returns it to bare rail
+
+#### Scenario: an item inside the block jumps
+- WHEN the operator clicks a screen row inside an open block
+- THEN exactly that screen goes on air — the header click never does
+
+#### Scenario: the live header stays locked open
+- WHEN the live entry's header is clicked
+- THEN nothing changes: its block stays open, the row shows no chevron, and its selected fill holds
+
+#### Scenario: a hand-opened block forgets the reload
+- WHEN the page reloads after the operator opened several blocks by hand
+- THEN no override survives; only the live entry's block is open
+
+### R15 — The dock follows the live entry while following, and only re-centres on named acts
+
+The dock has two modes. It **begins following** on load: an advance of the service — forward or
+backward, within an entry or across one — keeps the live row centred, with other entries open and
+with the words hidden, provided the dock shows the service that is on air on the projector and
+overlay. A go to on air suspends following. **Scrolling the list or expanding another entry** ends
+following; in that browsing state the same advances change what is on air but leave the list where
+the operator put it, and the transport's Next and Back buttons never change the mode.
+
+Four acts bring following back: a new centre control in the transport between Previous and Next;
+a click on an item inside an entry — which includes the sticky **Next** band, whose screen belongs
+to the **next** entry, so that click also moves the live pointer and marks that entry's first row;
+a successful 15 s idle re-centre; and nothing else. The centre control is disabled with no live row
+and centres the go to's marked row when a go to is up. The idle clock is restarted by a scroll, a
+click or a press held down — a drag included — and by a key press, never by plain pointer movement;
+while a press is held the count is suspended until release. When the clock fires it centres only if
+the runner shows the service on air with words up and no go to, no layer is open, no other entry's
+block is open, and the live row lies entirely outside the scrollport; the conditions are read at
+that moment. A centring is one 400 ms soft in-out motion (half sine, half quintic smootherstep):
+the first and last frames move ~1 px and the middle frames ~27 px, so both ends are flatter than a
+plain sine. Clamped at the list's ends, instant under reduced motion, and cancelled by a hand on
+the list. (spec 200)
+
+#### Scenario: a service runs undisturbed
+- WHEN the service advances forward or backward, including across an entry
+- THEN the live row stays centred, even with other entries open or the words hidden
+
+#### Scenario: the operator takes the list over
+- WHEN the operator scrolls the list or expands another entry's block
+- THEN following ends, and later advances change the screen but leave the list still
+
+#### Scenario: the centre control returns following
+- GIVEN the dock is browsing
+- WHEN the operator presses the new control between Previous and Next
+- THEN the list glides the live row to the middle and the next advance follows without another press
+
+#### Scenario: the Next band is an item
+- GIVEN the dock is browsing
+- WHEN the sticky Next band is clicked
+- THEN the live pointer moves to the next entry, its first row is marked, that row is centred and following returns
+
+#### Scenario: the transport buttons are mode-neutral
+- WHEN the operator presses the transport's Next or Back button in either mode
+- THEN the mode is unchanged — they centre only when already following
+
+#### Scenario: the idle return
+- GIVEN the words are up, this service is on air, nothing is open, no other block is expanded and the live row is entirely off screen
+- WHEN 15 s pass with no scroll, click, held press or key
+- THEN the list centres the live row and following returns
+
+#### Scenario: a held press is not idleness
+- WHEN a button is held down past the 15 s with the live row off screen
+- THEN the count is suspended until release and nothing moves
+
+#### Scenario: opening the service on air
+- GIVEN the dock is browsing a different service while another service is on the projector and overlay
+- WHEN that on-air service is opened from the picker
+- THEN following returns and the list centres that service's live entry as part of the open
