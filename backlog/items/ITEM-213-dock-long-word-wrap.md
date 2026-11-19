@@ -1,6 +1,6 @@
 ---
 id: ITEM-213
-status: in-progress
+status: in-review
 title: 'A long word wraps in the dock runner''s service title and entry headers'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-19
 updated: 2026-11-19
 spec: 203-dock-long-word-wrap
 branch: fix/203-dock-long-word-wrap
-pr:
+pr: 541
 issue: 540
 closed_at:
 closed_reason:

@@ -71,7 +71,8 @@ every fitting box is equal.
 
 - [X] T015 Run the dock's own suites for regression: `tests.e2e.test_obs_dock`, `test_obs_dock_follow`,
   `test_dock_bucket_head`, `test_dock_goto`, `test_dock_keys` — 66 tests, all green.
-- [ ] T016 Write the board row's `pr:` and move the card to `In review` once the PR exists.
+- [X] T016 Write the board row's `pr:` and move the card to `In review` once the PR exists — PR #541,
+  card `pr: 541`, row moved to In review (oldest first, behind ITEM-211).
 - [X] T017 `CHANGELOG.md` under `## [Unreleased]` (Fixed) and `VERSION` 1.34.2 → 1.34.3, in the delivery
   commit. Re-stamped from `origin/develop` at Fold: spec 202 (PR #539) took 1.34.2 while this slice waited
   at gate 2, so the plan's 1.34.2 is superseded.
