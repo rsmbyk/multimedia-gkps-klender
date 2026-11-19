@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The OBS dock follows the live entry only while following.** A centre control between Previous and Next
+  sits filled while the dock is following and outlined while browsing; scrolling or expanding another entry
+  drops to browsing, and the control, an item click (including the sticky Next band), or a gated 15 s idle
+  return brings following back. Re-centring is one 400 ms soft in-out motion, and opening a service already
+  on the projector and overlay follows it immediately (spec 200).
 - **Entry headers in the OBS dock now expand and collapse their own block.** Each header carries a chevron
   for its state; projection happens only when an item inside the block is clicked. The live entry stays open
   and chevronless, breaks and empty blocks are inert, and reduced motion swaps instantly (spec 198).
