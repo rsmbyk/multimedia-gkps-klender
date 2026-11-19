@@ -2,7 +2,7 @@
 
 **capability**: `dock`
 **last folded**: 2026-11-19
-**slices**: `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**slices**: `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -306,10 +306,14 @@ move the selection, scroll the list or select a screen; an item inside the block
 path from the list. Every header with a block to open SHALL carry one stroked chevron at its trailing end,
 centred vertically on the line: right-pointing at rest, rotated 90° down when open. The live entry's header
 SHALL render no chevron and SHALL NOT collapse; a section break or an entry whose block is empty SHALL render
-no chevron and its click SHALL be a no-op. Hand-opened blocks SHALL survive a live-entry crossing but SHALL
-NOT survive a reload; under reduced motion every swap SHALL be instant, with no morph or transition. A
+no chevron and its click SHALL be a no-op. Hand-opened blocks SHALL survive a live-entry crossing and a
+re-read of the open service, but SHALL NOT survive an explicit open of a service — a picker row's click,
+`Enter` on the marked picker row, or the on-load resume of the service on air — nor a reload. An open SHALL
+start every block shut except the live entry's, whose block stays open because liveness is read from the
+display state rather than from the override; the reset SHALL write no display state, broadcast nothing and
+animate nothing. Under reduced motion every swap SHALL be instant, with no morph or transition. A
 hovered header SHALL tint its whole line, chevron included, while the live row keeps its selected family of
-fill (never the generic hover face). (spec 198)
+fill (never the generic hover face). (specs 198, 204)
 
 #### Scenario: a header expands without projecting
 - WHEN the operator clicks a non-live entry's header
@@ -322,6 +326,14 @@ fill (never the generic hover face). (spec 198)
 #### Scenario: the live header stays locked open
 - WHEN the live entry's header is clicked
 - THEN nothing changes: its block stays open, the row shows no chevron, and its selected fill holds
+
+#### Scenario: a service is opened after a hand-open
+- WHEN the operator opens another service from the picker, or the same one again, after opening blocks by hand
+- THEN every block in the opened service is shut except a live entry's, and nothing on air changes
+
+#### Scenario: the on-air service is opened
+- WHEN the operator opens the service that is on air
+- THEN its live entry's block is open and every other block is shut
 
 #### Scenario: a hand-opened block forgets the reload
 - WHEN the page reloads after the operator opened several blocks by hand

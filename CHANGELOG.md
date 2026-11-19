@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Opening a service in the OBS dock starts its entry blocks shut.** A block opened by hand no longer
+  reappears at the same position in the next service opened — or in the same service opened again. The live
+  entry keeps its open block, and a crossing or a re-read still keeps what the operator opened (spec 204).
 - **A service's date stays visible after its row is clicked.** A click leaves the link focused; the date
   and Today badge no longer stay hidden once the pointer leaves, while hover and keyboard action focus
   still clear them (spec 201).

@@ -37,6 +37,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-216](./items/ITEM-216-dock-entry-open-reset.md) | Opening a service starts its entry blocks shut | A hand-opened block leaks to the same position in the next service opened, including the same one again; the live entry keeps its open block | fix | P1 | S | [204](../specs/204-dock-entry-open-reset/spec.md) | `fix/204-dock-entry-open-reset` | 2026-11-19 |
 
 ## In review
 

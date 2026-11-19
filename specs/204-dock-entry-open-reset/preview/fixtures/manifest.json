@@ -1,0 +1,62 @@
+{
+ "base": "http://127.0.0.1:63404",
+ "services": [
+  {
+   "service": "155",
+   "name": "111ojo",
+   "date": "1 November 2026",
+   "entries": 12,
+   "screens": 85,
+   "kinds": {
+    "media": 3,
+    "text": 3,
+    "passage": 2,
+    "song": 4
+   }
+  },
+  {
+   "service": "149",
+   "name": "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+   "date": "25 Oktober 2026",
+   "entries": 5,
+   "screens": 10,
+   "kinds": {
+    "text": 1,
+    "media": 4
+   }
+  },
+  {
+   "service": "142",
+   "name": "Ibadah Minggu",
+   "date": "4 Oktober 2026",
+   "entries": 27,
+   "screens": 51,
+   "kinds": {
+    "text": 24,
+    "break": 3
+   }
+  },
+  {
+   "service": "144",
+   "name": "Ibadah Minggu",
+   "date": "20 Oktober 2026",
+   "entries": 16,
+   "screens": 171,
+   "kinds": {
+    "passage": 1,
+    "media": 4,
+    "song": 4,
+    "text": 1,
+    "break": 6
+   }
+  },
+  {
+   "service": "145",
+   "name": "Ibadah Minggu",
+   "date": "25 Oktober 2026",
+   "entries": 0,
+   "screens": 0,
+   "kinds": {}
+  }
+ ]
+}

@@ -1,0 +1,145 @@
+/* Preview chrome for spec 204 — NOT product CSS.
+ *
+ * The dock panel on the left is the product's own markup running the product's own
+ * obs-dock.css, untouched. This file only draws the frame around it and the review
+ * rail beside it, with the product's tokens so both read as one surface.
+ *
+ * The dock's page-level rules are scoped to `body.obs-dock` (height, background,
+ * colour, font). Inside a frame those five declarations are repeated on .dockframe
+ * so the panel measures exactly what it measures in OBS: 100% of the box it is given.
+ */
+
+body.obs-dock {
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) minmax(340px, 1fr);
+  gap: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dockframe {
+  /* the five body.obs-dock declarations, repeated on the panel's own box */
+  margin: 0;
+  height: 100vh;
+  background: var(--rail-bg);
+  color: var(--ink);
+  font: 400 14.5px/1.35 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  border-right: 1px solid var(--divider);
+  overflow: clip;
+  position: relative;
+}
+
+/* ---------- the review rail -------------------------------------------------- */
+
+.rail {
+  height: 100vh;
+  overflow-y: auto;
+  padding: 16px 18px 28px;
+  background: var(--canvas);
+  color: var(--ink);
+  font: 400 13.5px/1.45 var(--font-sans);
+}
+
+.rail h1 {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+.rail h2 {
+  margin: 20px 0 7px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--head-ink);
+}
+
+.rail p { margin: 0 0 8px; color: var(--head-ink); }
+.rail code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+
+.rail__sub { font-size: 12.5px; margin-bottom: 14px; }
+
+/* behaviour switch */
+.switch { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.switch label {
+  flex: 1 1 150px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 9px 11px;
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+  cursor: pointer;
+  background: var(--rail-bg);
+}
+
+.switch label:has(input:checked) {
+  border-color: var(--active-bg);
+  background: var(--sidebar-selected-bg);
+}
+
+.switch input { margin: 2px 0 0; accent-color: var(--active-bg); }
+.switch b { display: block; font-size: 13px; font-weight: 600; }
+.switch span { display: block; font-size: 11.5px; color: var(--head-ink); }
+
+/* step buttons */
+.steps { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.steps button {
+  padding: 7px 10px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  background: var(--rail-bg);
+  color: var(--ink);
+  font: 500 12.5px/1.2 var(--font-sans);
+  cursor: pointer;
+}
+
+.steps button:hover { background: var(--icon-hover-bg); }
+.steps button[data-run] { border-color: var(--active-bg); font-weight: 600; }
+.steps button:disabled { opacity: .45; cursor: default; }
+
+/* readout */
+.readout { width: 100%; border-collapse: collapse; font-size: 12px; }
+.readout th, .readout td {
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--divider);
+  vertical-align: top;
+}
+.readout th { color: var(--head-ink); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.readout td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.readout tr.is-open td { background: var(--sidebar-selected-bg); }
+.readout tr.is-live td:first-child::after { content: " ●"; color: var(--active-bg); }
+.readout .label { max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.state {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  background: var(--rail-bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.log { margin: 0; padding-left: 18px; font-size: 12px; color: var(--head-ink); }
+.log li { margin-bottom: 3px; }
+.log li:last-child { color: var(--ink); }
+
+.verdict { margin-top: 10px; padding: 9px 11px; border-radius: 8px; font-size: 12.5px; font-weight: 600; }
+.verdict[data-ok="true"] { background: var(--sidebar-selected-bg); color: var(--ink); }
+.verdict[data-ok="false"] { background: var(--active-flash); color: var(--danger); }
+
+/* narrow: the panel keeps a usable height and the rail moves under it */
+@media (max-width: 860px) {
+  body.obs-dock { grid-template-columns: 1fr; grid-template-rows: 62vh auto; overflow-y: auto; }
+  .dockframe { height: 62vh; border-right: 0; border-bottom: 1px solid var(--divider); }
+  .rail { height: auto; overflow: visible; }
+}

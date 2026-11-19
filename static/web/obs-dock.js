@@ -416,6 +416,12 @@
   }
 
   function openService(id, name, date) {
+    /* Spec 204: an explicit open starts every block shut. The overrides are keyed by
+       entry index alone, so keeping them would open the same POSITION of the next
+       service — including this one opened again. The live entry needs no exception
+       here: effectiveOpen() asks liveEntry() first, which reads the display state.
+       A crossing and a re-read are not opens and keep what the operator opened. */
+    entryOverrides.clear();
     /* Spec 200: opening the service that is already on air is a deliberate return
        to the live show — re-enter following before its rows are painted, so sync
        centres the live entry as part of this same open. Only an explicit open does
