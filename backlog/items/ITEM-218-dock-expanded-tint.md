@@ -1,6 +1,6 @@
 ---
 id: ITEM-218
-status: in progress
+status: done
 title: 'An open entry header wears a whisper of a tint'
 type: feat
 priority: P2
@@ -9,12 +9,12 @@ created: 2026-11-19
 updated: 2026-11-19
 spec: specs/206-dock-expanded-tint/spec.md
 branch: feat/206-dock-expanded-tint
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/550
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-20
+closed_reason: merged into develop (PR #550)
 bump: patch
-release_version:
+release_version: 1.34.6
 ---
 
 # ITEM-218: An open entry header wears a whisper of a tint
