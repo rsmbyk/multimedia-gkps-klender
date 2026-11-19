@@ -383,6 +383,16 @@ body.obs-dock {
   transition: background var(--ease);
 }
 
+/* Spec 206: an open header wears the sheet's own rail-and-ink mix, one step at
+   96 % rail — about half the generic hover face below, so the pointer stays the
+   louder state. Every rule here weighs (0,2,0); source order is the cascade:
+   base → open → pointer → live. The live row is always aria-expanded="true",
+   which is why its rule has to stay last. The wash rides the row's own
+   `background var(--ease)`; it adds no transition. */
+.entryrow[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--rail-bg) 96%, var(--ink));
+}
+
 .entryrow:hover { background: var(--icon-hover-bg); }
 
 .entryli + .entryli { margin-top: 4px; }

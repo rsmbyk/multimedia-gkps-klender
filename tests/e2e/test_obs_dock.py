@@ -950,6 +950,181 @@ class ObsDockE2ETests(StaticLiveServerTestCase):
                             'the live row fell back to the generic hover face')
         context.close()
 
+    def test_an_open_header_tints_at_half_the_hover_face(self):
+        """Spec 206: an open header wears the 4 % rail-and-ink wash (FR-001), the
+        pointer replaces it rather than blending (FR-004), and the live row keeps
+        its selected fill (FR-005) — in both themes, against the same expression."""
+
+        def computed(page, expression):
+            """The colour `expression` resolves to, measured in the page."""
+            return page.evaluate(
+                """expression => { const probe = document.createElement('div');
+                     probe.style.cssText = 'position:absolute;visibility:hidden;';
+                     probe.style.backgroundColor = expression;
+                     document.body.appendChild(probe);
+                     const value = getComputedStyle(probe).backgroundColor;
+                     probe.remove();
+                     return value; }""", expression)
+
+        def background(page, index):
+            return page.evaluate(
+                """index => getComputedStyle(document.querySelector(
+                     '.entryli[data-index="' + index + '"] .entryrow')).backgroundColor""",
+                index)
+
+        def settle(page, index, colour):
+            page.wait_for_function(
+                """([index, colour]) => getComputedStyle(document.querySelector(
+                     '.entryli[data-index="' + index + '"] .entryrow')).backgroundColor
+                     === colour""", arg=[index, colour])
+
+        def rgb(value):
+            """A computed colour as 8-bit channels: hex, rgb(), or color(srgb …)."""
+            value = value.strip()
+            if value.startswith('#'):
+                return tuple(int(value[i:i + 2], 16) for i in (1, 3, 5))
+            numbers = (value[value.index('(') + 1:value.rindex(')')]
+                       .replace('/', ' ').replace(',', ' ').split())
+            if value.startswith('color('):
+                numbers = numbers[1:]  # drop the colour space
+                return tuple(round(float(number) * 255) for number in numbers[:3])
+            return tuple(int(round(float(number))) for number in numbers[:3])
+
+        def overlay(rail, face):
+            """The hover face as it lands on the rail — its own alpha composited."""
+            numbers = (face[face.index('(') + 1:face.rindex(')')]
+                       .replace('/', ' ').replace(',', ' ').split())
+            alpha = float(numbers[3])
+            return tuple(round(alpha * channel + (1 - alpha) * rail[index])
+                         for index, channel in enumerate(rgb(face)))
+
+        for theme in ('light', 'dark'):
+            with self.subTest(theme=theme):
+                context = self.browser.new_context(viewport={'width': 1440, 'height': 900})
+                context.add_init_script(
+                    "localStorage.setItem('gkps-theme', %r)" % theme)
+                dock = self._open(context, '/obs/dock')
+                self._open_service(dock, 'Ibadah Matriks')
+                self.assertEqual(
+                    dock.evaluate("() => document.documentElement.dataset.theme"), theme,
+                    'the dock did not start in the theme under test')
+
+                wash = computed(dock, 'color-mix(in srgb, var(--rail-bg) 96%, var(--ink))')
+                hover_face = computed(dock, 'var(--icon-hover-bg)')
+                self.assertNotEqual(wash, hover_face,
+                                    'the wash equals the hover face — nothing to tell apart')
+
+                # FR-002 / SC-001 — a closed header paints no face of its own.
+                self.assertEqual(background(dock, 2), 'rgba(0, 0, 0, 0)',
+                                 'a closed header already paints a background')
+
+                # SC-002 — the pointer keeps its existing face on a closed header.
+                dock.locator('.entryli[data-index="2"] .entryrow').hover()
+                settle(dock, 2, hover_face)
+
+                # US1/AC1, FR-001 — opening lands the wash, and only the opened row.
+                self.assertEqual(
+                    dock.locator('.entryli[data-index="1"] .entryrow')
+                        .get_attribute('aria-expanded'), 'false')
+                dock.locator('.entryli[data-index="1"] .entryrow').click()
+                dock.wait_for_function(
+                    """() => document.querySelector(
+                         '.entryli[data-index="1"] .entryrow')
+                         .getAttribute('aria-expanded') === 'true'""")
+                dock.mouse.move(2, 2)  # off the row the click left the pointer on
+                settle(dock, 1, wash)
+                self.assertEqual(background(dock, 2), 'rgba(0, 0, 0, 0)',
+                                 'a closed header picked up the open wash')
+
+                # FR-006 — the wash covers the line, chevron inside it.
+                inside = dock.evaluate(
+                    """() => { const row = document.querySelector(
+                         '.entryli[data-index="1"] .entryrow');
+                         const chev = row.querySelector('.entrychev');
+                         if (!chev) return null;
+                         const r = row.getBoundingClientRect();
+                         const c = chev.getBoundingClientRect();
+                         return c.left >= r.left - 0.5 && c.right <= r.right + 0.5 &&
+                                c.top >= r.top - 0.5 && c.bottom <= r.bottom + 0.5;
+                       }""")
+                self.assertIsNotNone(inside, 'an open header renders no chevron')
+                self.assertTrue(inside, 'the chevron sits outside the tinted line')
+
+                # FR-007 — the wash rides the row's existing transition, adds none.
+                timing = dock.evaluate(
+                    """() => { const s = getComputedStyle(document.querySelector(
+                         '.entryli[data-index="1"] .entryrow'));
+                         return [s.transitionProperty, s.transitionDuration]; }""")
+                self.assertEqual(timing, ['background', '0.2s'], timing)
+
+                # US2/AC1, FR-004 — on an open header the pointer face replaces
+                # the wash; it is never a blend of the two.
+                dock.locator('.entryli[data-index="1"] .entryrow').hover()
+                settle(dock, 1, hover_face)
+
+                # US2/AC2 — leaving it returns to the wash, not to bare rail.
+                dock.mouse.move(2, 2)
+                settle(dock, 1, wash)
+
+                # US1/AC3 — closing takes the wash with it.
+                dock.locator('.entryli[data-index="1"] .entryrow').click()
+                dock.wait_for_function(
+                    """() => document.querySelector(
+                         '.entryli[data-index="1"] .entryrow')
+                         .getAttribute('aria-expanded') === 'false'""")
+                dock.mouse.move(2, 2)
+                settle(dock, 1, 'rgba(0, 0, 0, 0)')
+
+                # FR-008 — rows that cannot expand carry no attribute and no wash:
+                # index 3 is a song with no verses (no block), index 4 a section break.
+                for index in (3, 4):
+                    state = dock.evaluate(
+                        """index => { const row = document.querySelector(
+                             '.entryli[data-index="' + index + '"] .entryrow');
+                             return {expanded: row.hasAttribute('aria-expanded'),
+                                     controls: row.hasAttribute('aria-controls')}; }""",
+                        index)
+                    self.assertEqual(state, {'expanded': False, 'controls': False},
+                                     f'row {index} names a block it cannot open: {state}')
+                    self.assertEqual(background(dock, index), 'rgba(0, 0, 0, 0)',
+                                     f'row {index} paints the open wash without expanding')
+
+                # US1/AC4, FR-005 — the live entry is always aria-expanded="true",
+                # so its selected fill has to outrank the wash at rest...
+                self._project_first_entry(dock)
+                dock.wait_for_function(
+                    """() => { const row = document.querySelector(
+                         '.entryli[data-index="0"] .entryrow');
+                         return row.getAttribute('aria-current') === 'true' &&
+                                row.getAttribute('aria-expanded') === 'true'; }""")
+                selected = computed(dock, 'var(--sidebar-selected-bg)')
+                dock.mouse.move(2, 2)
+                settle(dock, 0, selected)
+
+                # ...and its own hover tone under the pointer, never the generic
+                # face and never the wash.
+                live_tone = computed(
+                    dock,
+                    'color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink))')
+                self.assertNotEqual(live_tone, wash)
+                self.assertNotEqual(live_tone, hover_face)
+                dock.locator('.entryli[data-index="0"] .entryrow').hover()
+                settle(dock, 0, live_tone)
+
+                # SC-005 — "softer than the pointer" as a measurement, not an
+                # adjective: the wash's farthest channel is a smaller step from
+                # the rail than the hover face's, in this theme.
+                rail = rgb(dock.evaluate(
+                    """() => getComputedStyle(document.documentElement)
+                         .getPropertyValue('--rail-bg').trim()"""))
+                wash_step = max(abs(rail[i] - rgb(wash)[i]) for i in range(3))
+                face_step = max(abs(rail[i] - overlay(rail, hover_face)[i])
+                                for i in range(3))
+                self.assertLess(wash_step, face_step,
+                                f'{theme}: wash {wash_step} is not softer than '
+                                f'hover {face_step}')
+                context.close()
+
     def test_the_toggle_swaps_instantly_under_reduced_motion(self):
         """US3/AC5: under reduce the block swaps instantly — no morph runs, and the
         chevron flip has no transition of its own (FR-003/FR-005 reduce halves)."""

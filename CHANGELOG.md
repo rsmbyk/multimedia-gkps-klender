@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   drops to browsing, and the control, an item click (including the sticky Next band), or a gated 15 s idle
   return brings following back. Re-centring is one 400 ms soft in-out motion, and opening a service already
   on the projector and overlay follows it immediately (spec 200).
+- **An open entry header in the OBS dock wears a whisper of a tint.** While a header's block stands open
+  its whole line, chevron included, carries a flat wash of the rail mixed 4 % ink — half the generic
+  hover face, so the pointer stays the louder state and a closed header still reads as bare rail. The
+  wash rides the row's own 200 ms ease, adds no transition of its own, and the live entry's selected
+  fill always outranks it (spec 206).
 - **Entry headers in the OBS dock now expand and collapse their own block.** Each header carries a chevron
   for its state; projection happens only when an item inside the block is clicked. The live entry stays open
   and chevronless, breaks and empty blocks are inert, and reduced motion swaps instantly (spec 198).
