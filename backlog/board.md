@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-209](./items/ITEM-209-overlay-caption-height-cap.md) | The song caption type is bound to the stage height | 5 % of stage height at rest, 2 % as the floor the two-line fit cannot pass — OBS caption only | fix | P1 | S | [202](../specs/202-overlay-caption-height-cap/spec.md) | `fix/202-overlay-caption-height-cap` | 2026-11-19 |
 
 ## In review
 

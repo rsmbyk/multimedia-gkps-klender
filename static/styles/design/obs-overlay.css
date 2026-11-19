@@ -49,7 +49,11 @@ html, body.obs-overlay {
   text-align: center;
   color: #FFFFFF;
   font-family: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: clamp(11px, 3.75cqw, 80px);
+  /* The rest is 5 % of the stage HEIGHT (spec 202), not a share of its width:
+     the type stays in proportion on a short or a tall source. The fit in
+     obs-overlay.js shrinks from here until the lyric fits two rows, never
+     past 2 % of the same height. */
+  font-size: 5cqh;
   font-weight: 800;
   line-height: 1.4;
   letter-spacing: .01em;

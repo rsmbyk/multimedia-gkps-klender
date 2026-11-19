@@ -170,13 +170,11 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         self.assertEqual(style['fontWeight'], '800')
         self.assertEqual(style['backgroundColor'], 'rgba(0, 0, 0, 0)')
         self.assertIn('rgb(0, 0, 0)', style['textShadow'])
-        # The caption still paints the stylesheet's own clamp at this width.
+        # The caption's rest is 5 % of the stage height (spec 202).
         css = (Path(settings.BASE_DIR) / 'static' / 'styles' / 'design'
                / 'obs-overlay.css').read_text(encoding='utf-8')
-        clamp = re.search(r'\.obs-overlay__caption\s*\{[^}]*font-size: clamp\('
-                          r'(\d+)px, ([\d.]+)cqw, (\d+)px\)', css)
-        floor, cqw, cap = (float(clamp.group(1)), float(clamp.group(2)), float(clamp.group(3)))
-        expected = min(max(floor, cqw * 1280 / 100), cap)
+        scale = re.search(r'\.obs-overlay__caption\s*\{[^}]*font-size: ([\d.]+)cqh', css)
+        expected = float(scale.group(1)) * 720 / 100
         size = float(self._computed(overlay, '.obs-overlay__caption', 'fontSize')['fontSize'][:-2])
         self.assertAlmostEqual(size, expected, places=1)
         context.close()
