@@ -134,6 +134,11 @@ control, advance (centres again).
   message only; an explicit service open still rebuilds). Verified by
   `::test_the_reread_does_not_rebuild_an_unchanged_list`.
 
+- [ ] T038 Ease all re-centring paths onto one quintic ease-out: the same-entry glide, the carried
+  part of a crossing morph and the idle return shed speed into the target, while the operator's own
+  block toggle keeps its ease-in-out. `::test_the_centring_decelerates_into_its_target` is red on the
+  old cubic (first 60 ms moved 414 px, below the 563 px floor) and green on the new curve.
+
 ## Phase 9 — Delivery (after Converge)
 
 - [ ] T033 Commit at Fold — spec pack, code, E2E suite, capability delta and board row together,

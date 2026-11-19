@@ -603,7 +603,7 @@
       var max = runBody.scrollHeight - runBody.clientHeight;
       var to = Math.max(0, Math.min(target, max));
       var t = Math.min(1, (now - started) / 190);
-      runBody.scrollTop = from + (to - from) * (1 - Math.pow(1 - t, 3));
+      runBody.scrollTop = from + (to - from) * easeOutQuint(t);
       if (t < 1) glideFrame = window.requestAnimationFrame(frame);
       else { glideFrame = null; bandHoldUntil = performance.now() + 300; }
     }
@@ -623,7 +623,7 @@
   }
 
   /* Spec 200: drive the row's own offset from the scrollport centre to zero on the
-     same 190 ms cubic curve. Deriving the target from the row each frame keeps a
+     same 190 ms quintic ease-out. Deriving the target from the row each frame keeps a
      crossing's block reflow or the band's hide from landing the glide short. */
   function rowOffset(node) {
     var box = runBody.getBoundingClientRect();
@@ -640,7 +640,7 @@
     function frame(now) {
       if (start === null) { start = rowOffset(current()); started = now; }
       var t = Math.min(1, (now - started) / 190);
-      var eased = 1 - Math.pow(1 - t, 3);
+      var eased = easeOutQuint(t);
       var want = start * (1 - eased);
       if (t < 1) {
         runBody.scrollTop += rowOffset(current()) - want;
@@ -691,6 +691,13 @@
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
+  /* Spec 200: every re-centre — a glide or the carried part of a crossing morph —
+     now lands on this quintic ease-out, which keeps shedding speed right up to
+     the target. The operator's own block toggle keeps its ease-in-out below. */
+  function easeOutQuint(t) {
+    return 1 - Math.pow(1 - t, 5);
+  }
+
   function startMorph(outInner, inInner, node, outEffectiveOpen, carry) {
     cancelPendingCenter();
     cancelToggleMorph(outInner);
@@ -729,7 +736,7 @@
     function frame(now) {
       morphState.moved = true;
       var t = Math.min(1, (now - started) / duration);
-      var e = easeInOut(t);
+      var e = easeOutQuint(t);
       if (!keepOutOpen) outInner.style.gridTemplateRows = Math.max(0, hOut * (1 - e)) + 'px';
       if (!inWasOpen) inInner.style.gridTemplateRows = Math.max(0, hIn * e) + 'px';
       /* Spec 200: in browsing the morph animates the two block heights only —

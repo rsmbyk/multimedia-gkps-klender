@@ -310,6 +310,31 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         page.wait_for_timeout(10800)
         self.assertEqual(page.evaluate('window.__rebuilds'), 0)
 
+    def test_the_centring_decelerates_into_its_target(self):
+        page = self._dock()
+        self._open_service(page)
+        self._place(page)
+        self._scroll_away(page)
+        out = page.evaluate(
+            """() => new Promise((done) => {
+                 const b = document.querySelector('#runBody'); const out = [];
+                 const t0 = performance.now();
+                 document.querySelector('#centreBtn').click();
+                 (function tick() {
+                   out.push([Math.round(performance.now() - t0), Math.round(b.scrollTop)]);
+                   if (performance.now() - t0 < 350) requestAnimationFrame(tick);
+                   else done(out);
+                 })();
+               })""")
+        total = abs(out[-1][1] - out[0][1])
+        self.assertGreater(total, 20, out)
+        early = sum(abs(out[i][1] - out[i-1][1]) for i in range(1, len(out))
+                    if out[i][0] < 60)
+        late = sum(abs(out[i][1] - out[i-1][1]) for i in range(1, len(out))
+                   if out[i-1][0] > 140)
+        self.assertGreater(early, 0.6 * total, out)
+        self.assertLess(late, 0.01 * total, out)
+
     def test_reduced_motion_jumps_instead_of_gliding(self):
         page = self._dock(reduced=True)
         self._open_service(page)
