@@ -1,5 +1,5 @@
 ---
-id: ITEM-214
+id: ITEM-218
 status: in progress
 title: 'An open entry header wears a whisper of a tint'
 type: feat
@@ -17,7 +17,7 @@ bump: patch
 release_version:
 ---
 
-# ITEM-214: An open entry header wears a whisper of a tint
+# ITEM-218: An open entry header wears a whisper of a tint
 
 ## Summary
 

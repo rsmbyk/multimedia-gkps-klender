@@ -2,7 +2,7 @@
 
 - **ID:** 206
 - **Status:** Accepted — gate 1, 2026-11-19, at 4 % (the four strengths were shown as static panes of the real dock at 400 px; 3 % and 6 % declined)
-- **Item:** ITEM-214
+- **Item:** ITEM-218
 - **Plan:** [./plan.md](./plan.md)
 - **Tasks:** [./tasks.md](./tasks.md)
 - **Bump:** patch
