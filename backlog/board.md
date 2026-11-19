@@ -31,6 +31,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-214](./items/ITEM-214-dock-centre-pace.md) | The dock's re-centring keeps pace with fast advancing | Following-mode centring is halved to 200 ms on a plain sine so rapid advances stop bobbing the list | fix | P2 | S | [205](../specs/205-dock-centre-pace/spec.md) | 2026-11-19 |
 
 ## In progress
 

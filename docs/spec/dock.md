@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-18
-**slices**: `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-19
+**slices**: `205-dock-centre-pace`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -345,10 +345,11 @@ click or a press held down — a drag included — and by a key press, never by 
 while a press is held the count is suspended until release. When the clock fires it centres only if
 the runner shows the service on air with words up and no go to, no layer is open, no other entry's
 block is open, and the live row lies entirely outside the scrollport; the conditions are read at
-that moment. A centring is one 400 ms soft in-out motion (half sine, half quintic smootherstep):
-the first and last frames move ~1 px and the middle frames ~27 px, so both ends are flatter than a
-plain sine. Clamped at the list's ends, instant under reduced motion, and cancelled by a hand on
-the list. (spec 200)
+that moment. A centring is one 200 ms sine in-out motion (half-cosine ease, `½ − cos(πt)/2`), shared
+by the glide and the crossing morph's carried scroll so expand, collapse and scroll remain one
+motion. Clamped at the list's ends, instant under reduced motion, and cancelled by a hand on the
+list; the operator's hand block-toggle keeps its own 230 ms ease-in-out (R14). (spec 200; pace and
+curve modified by spec 205)
 
 #### Scenario: a service runs undisturbed
 - WHEN the service advances forward or backward, including across an entry
