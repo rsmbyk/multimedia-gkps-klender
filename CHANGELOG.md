@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A service's date stays visible after its row is clicked.** A click leaves the link focused; the date
+  and Today badge no longer stay hidden once the pointer leaves, while hover and keyboard action focus
+  still clear them (spec 201).
 - **Scrolling the first sidebar's list counts as activity again.** A scrollbar-thumb drag emits
   `scroll` at the list inside the panel, where the old listener could not see it; the panel no longer
   collapses mid-scroll. A drag or dialog that ends now gives a full interval at that moment, rather

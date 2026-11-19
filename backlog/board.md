@@ -41,6 +41,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-211](./items/ITEM-211-sidebar-date-focus.md) | A clicked service keeps its sidebar date | A click leaves the row link focused, so `li:focus-within` keeps the date hidden after the pointer leaves | fix | P1 | S | [201](../specs/201-sidebar-date-focus/spec.md) | [#537](https://github.com/rsmbyk/multimedia-gkps-klender/pull/537) | 2026-11-19 |
 
 ## Done
 
