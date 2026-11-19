@@ -78,3 +78,6 @@ every `test` row was actually run, `inspection` rows were read, `manual` rows ar
   The new E2E was red on the mode flag and then on the missing centre; a first draft also projected
   screen 0 (unreachable from the list top), fixed by placing a deep screen. 17/17 green. Outcome:
   Converged.
+- Owner acceptance, 2026-11-19 — the owner accepted the slice as it stands: the 400 ms soft in-out
+  re-centre (the *smooth 400* candidate in the harness) and following on opening the on-air service.
+  No push, PR, merge, version bump or card closure is authorised by this word.
