@@ -1,6 +1,6 @@
 ---
 id: ITEM-214
-status: in progress
+status: in-review
 title: 'An open entry header wears a whisper of a tint'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-19
 updated: 2026-11-19
 spec: specs/206-dock-expanded-tint/spec.md
 branch: feat/206-dock-expanded-tint
-pr:
+pr: 547
 issue:
 closed_at:
 closed_reason:
