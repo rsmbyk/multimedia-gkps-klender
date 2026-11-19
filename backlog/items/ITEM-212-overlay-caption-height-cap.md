@@ -1,6 +1,6 @@
 ---
 id: ITEM-212
-status: in-review
+status: done
 title: 'The song caption type is bound to the stage height'
 type: fix
 priority: P1
@@ -9,8 +9,10 @@ created: 2026-11-19
 updated: 2026-11-19
 spec: 202
 branch: fix/202-overlay-caption-height-cap
-pr: 539
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/539
 issue: 538
+closed_at: 2026-11-19
+closed_reason: merged into develop (PR #539)
 bump: patch
 release_version:
 ---
