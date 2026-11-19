@@ -1,6 +1,6 @@
 ---
 id: ITEM-203
-status: done
+status: in-review
 title: 'A new song entry saves with the verses that were picked'
 type: fix
 priority: P1
@@ -11,10 +11,10 @@ spec: 195
 branch: fix/195-hotfix-batch
 pr: 523
 issue: 520
-closed_at: 2026-11-15
-closed_reason: merged into develop (PR #523)
-bump: patch
-release_version: 1.32.1
+closed_at:
+closed_reason:
+bump:
+release_version:
 ---
 
 # ITEM-203: A new song entry saves with the verses that were picked

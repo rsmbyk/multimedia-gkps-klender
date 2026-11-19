@@ -47,12 +47,12 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         songbook = songs.Book.objects.create(
             name='Kidung Jemaat', short_name='KJ', is_hymn_book=True)
         song = songs.Song.objects.create(book=songbook, number=152, title='Ada Kuasa')
-        song_verse = songs.Verse.objects.create(
+        songs.Verse.objects.create(
             song=song, number=1,
             lyric='Bait satu baris yang pertama\nBait satu baris yang kedua')
         tatib.ServiceEntry.objects.create(
             tatib=self.service, order_number=2, kind=tatib.ServiceEntryKind.SONG,
-            song=song, verses=[song_verse.pk])
+            song=song, verses=[1])
         # 3 — a passage in its own edition, with a second edition to flip to.
         lang = bible.Language.objects.create(name='Indonesia')
         version = bible.Version.objects.create(
@@ -119,7 +119,6 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         """Open the dock, project the entry at that index, and hand the dock back."""
         dock = self._dock(context)
         dock.locator('.entryrow').nth(entry_index).click()
-        dock.locator(f'.entryli[data-index="{entry_index}"] .screenerow').first.click()
         dock.wait_for_function(
             "service => { const s = JSON.parse(localStorage.getItem('gkps-display') || 'null');"
             " return s && s.service === service && s.on === true; }", arg=self.service.pk)
@@ -129,17 +128,6 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         overlay = context.new_page()
         overlay.goto(self.live_server_url + '/obs/source/overlay')
         overlay.wait_for_selector(selector)
-        # Pixel measurements (lefts, wrap rows) read positions and glyph runs:
-        # the enter motion scales the plate (a mid-flight read shifts the words'
-        # x by a couple of pixels) and a mid-swap read measures the fallback
-        # font's metrics. Both waits are cheap once the page is settled.
-        overlay.wait_for_function(
-            """sel => { const el = document.querySelector(sel);
-                 if (!el) return false;
-                 const t = getComputedStyle(el).transform;
-                 return t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)'; }""",
-            arg=selector)
-        overlay.evaluate("() => document.fonts.ready")
         return overlay
 
     def _computed(self, page, selector, *properties):
@@ -170,11 +158,13 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         self.assertEqual(style['fontWeight'], '800')
         self.assertEqual(style['backgroundColor'], 'rgba(0, 0, 0, 0)')
         self.assertIn('rgb(0, 0, 0)', style['textShadow'])
-        # The caption's rest is 5 % of the stage height (spec 202).
+        # The caption still paints the stylesheet's own clamp at this width.
         css = (Path(settings.BASE_DIR) / 'static' / 'styles' / 'design'
                / 'obs-overlay.css').read_text(encoding='utf-8')
-        scale = re.search(r'\.obs-overlay__caption\s*\{[^}]*font-size: ([\d.]+)cqh', css)
-        expected = float(scale.group(1)) * 720 / 100
+        clamp = re.search(r'\.obs-overlay__caption\s*\{[^}]*font-size: clamp\('
+                          r'(\d+)px, ([\d.]+)cqw, (\d+)px\)', css)
+        floor, cqw, cap = (float(clamp.group(1)), float(clamp.group(2)), float(clamp.group(3)))
+        expected = min(max(floor, cqw * 1280 / 100), cap)
         size = float(self._computed(overlay, '.obs-overlay__caption', 'fontSize')['fontSize'][:-2])
         self.assertAlmostEqual(size, expected, places=1)
         context.close()
@@ -273,7 +263,6 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         # A panel appears: it fades and rises into its place.
         dock = self._dock(context)
         dock.locator('.entryrow').nth(2).click()          # the passage
-        dock.locator('.entryli[data-index="2"] .screenerow').first.click()
         overlay.wait_for_selector('.obs-overlay__plate')
         overlay.wait_for_timeout(400)
 
@@ -292,7 +281,6 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         context = self.browser.new_context(viewport={'width': 1280, 'height': 720})
         dock = self._dock(context)
         dock.locator('.entryrow').nth(2).click()          # the passage: verse 3 first
-        dock.locator('.entryli[data-index="2"] .screenerow').first.click()
         overlay = self._overlay(context, '.obs-overlay__plate')
         before = overlay.evaluate(
             "() => document.querySelector('.obs-overlay__plate').offsetWidth")
@@ -329,7 +317,6 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
 
         dock = self._dock(context)
         dock.locator('.entryrow').nth(1).click()        # the song
-        dock.locator('.entryli[data-index="1"] .screenerow').first.click()
         overlay.wait_for_selector('.obs-overlay__caption')
         overlay.wait_for_timeout(400)
 

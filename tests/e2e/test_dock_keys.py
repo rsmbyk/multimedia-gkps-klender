@@ -44,13 +44,11 @@ class DockKeyboardE2ETests(StaticLiveServerTestCase):
             name='Nyanyian Kidung Baru', short_name='NKB', is_hymn_book=True)
         self.song = songs.Song.objects.create(
             book=self.songbook, number=43, title='Sinar Matahari Pagi')
-        verse1 = songs.Verse.objects.create(
-            song=self.song, number=1, lyric='Sinar matahari pagi')
-        verse2 = songs.Verse.objects.create(
-            song=self.song, number=2, lyric='Bersyukurlah selalu')
+        songs.Verse.objects.create(song=self.song, number=1, lyric='Sinar matahari pagi')
+        songs.Verse.objects.create(song=self.song, number=2, lyric='Bersyukurlah selalu')
         tatib.ServiceEntry.objects.create(
             tatib=self.service, kind=tatib.ServiceEntryKind.SONG, order_number=2,
-            song=self.song, verses=[verse1.pk, verse2.pk])
+            song=self.song, verses=[1, 2])
         tatib.ServiceEntry.objects.create(
             tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=3,
             title='Doa', text='Tuhan, dengarkanlah doa kami.\n\nAmin.')
@@ -258,7 +256,6 @@ class DockKeyboardE2ETests(StaticLiveServerTestCase):
         context = self._context()
         dock = self._dock(context)
         dock.locator('.entryrow').nth(1).click()
-        dock.locator('.entryli[data-index="1"] .screenerow').first.click()
         dock.wait_for_timeout(200)
         live = self._state(dock)['screen']
         dock.reload()
@@ -378,7 +375,6 @@ class DockKeyboardE2ETests(StaticLiveServerTestCase):
         context = self._context()
         dock = self._dock(context)
         dock.locator('.entryrow').nth(2).click()
-        dock.locator('.entryli[data-index="2"] .screenerow').first.click()
         dock.wait_for_timeout(150)
         before = self._state(dock)['screen']
 
@@ -409,7 +405,6 @@ class DockKeyboardE2ETests(StaticLiveServerTestCase):
 
         # End inside the song takes the live bait's last screen — never the service's.
         dock.locator('.entryrow').nth(1).click()
-        dock.locator('.entryli[data-index="1"] .screenerow').first.click()
         dock.wait_for_timeout(150)
         song_start = self._state(dock)['screen']
         self.assertEqual(song_start, song_screens[0])
@@ -459,7 +454,6 @@ class DockKeyboardE2ETests(StaticLiveServerTestCase):
         expected_end = entry[-2]['screen'] if entry[-1]['rest'] else entry[-1]['screen']
 
         dock.locator('.entryrow').first.click()
-        dock.locator('.entryli[data-index="0"] .screenerow').first.click()
         dock.wait_for_timeout(150)
         dock.keyboard.press('Shift+End')
         dock.wait_for_timeout(150)

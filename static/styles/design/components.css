@@ -1434,17 +1434,14 @@ li:hover > .row-delete,
 .book[aria-current="true"] .book__s { color: inherit; opacity: 1; }
 /* A dated Tata Ibadah row clears its own date while its actions are revealed
    (spec 190, FR-004), and the Today badge steps aside with it (spec 195): both
-   sit on the trailing edge, exactly where the controls land. The reveal is the
-   same one the buttons use — hover, or the pencil/trash taking :focus-visible
-   — so a click that only focuses the row's link does not hide either mark
-   (spec 201). The accessible label keeps both, so nothing is lost to assistive
-   tech. Hover-capable pointers only -- a phone's sticky hover must not blink
-   either away. */
+   sit on the trailing edge, exactly where the controls land. The accessible
+   label keeps both, so nothing is lost to assistive tech. Hover-capable
+   pointers only -- a phone's sticky hover must not blink either away. */
 @media (hover: hover) {
   li[data-editor-kind]:hover .book__s,
-  li[data-editor-kind]:has(> .row-edit:focus-visible, > .row-delete:focus-visible) .book__s,
+  li[data-editor-kind]:focus-within .book__s,
   li[data-editor-kind]:hover .book__today,
-  li[data-editor-kind]:has(> .row-edit:focus-visible, > .row-delete:focus-visible) .book__today { display: none; }
+  li[data-editor-kind]:focus-within .book__today { display: none; }
 }
 /* A today row leads Upcoming, and the badge is what says why (spec 132). The action
    accent is the mark: forest green in light, royal blue in dark. Kept in step with

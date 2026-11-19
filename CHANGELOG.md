@@ -7,44 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- **The OBS dock follows the live entry only while following.** A centre control between Previous and Next
-  sits filled while the dock is following and outlined while browsing; scrolling or expanding another entry
-  drops to browsing, and the control, an item click (including the sticky Next band), or a gated 15 s idle
-  return brings following back. Re-centring is one 400 ms soft in-out motion, and opening a service already
-  on the projector and overlay follows it immediately (spec 200).
-- **An open entry header in the OBS dock wears a whisper of a tint.** While a header's block stands open
-  its whole line, chevron included, carries a flat wash of the rail mixed 4 % ink — half the generic
-  hover face, so the pointer stays the louder state and a closed header still reads as bare rail. The
-  wash rides the row's own 200 ms ease, adds no transition of its own, and the live entry's selected
-  fill always outranks it (spec 206).
-- **Entry headers in the OBS dock now expand and collapse their own block.** Each header carries a chevron
-  for its state; projection happens only when an item inside the block is clicked. The live entry stays open
-  and chevronless, breaks and empty blocks are inert, and reduced motion swaps instantly (spec 198).
-
-### Changed
-
-- **The first sidebar now rests for fifteen quiet minutes before collapsing, not sixty seconds.**
-  Activity restarts the whole wait; the narrow drawer still keeps its panel open (spec 199).
-
-### Fixed
-
-- **A service's date stays visible after its row is clicked.** A click leaves the link focused; the date
-  and Today badge no longer stay hidden once the pointer leaves, while hover and keyboard action focus
-  still clear them (spec 201).
-- **Scrolling the first sidebar's list counts as activity again.** A scrollbar-thumb drag emits
-  `scroll` at the list inside the panel, where the old listener could not see it; the panel no longer
-  collapses mid-scroll. A drag or dialog that ends now gives a full interval at that moment, rather
-  than leaving the old deadline standing (spec 199).
-- **The dock's pinned date-group header sits flush under the toolbar.** The strip above the label belongs to
-  the head, so the row above no longer paints through it, and the label keeps its height whether the list is
-  at rest or scrolled (spec 197).
-- **A dock picker's date groups are separated by more air.** A group's label sits 26px below the previous
-  group's last row, from 10px; the extra space scrolls away and never rides the pinned head (spec 197).
-- **The song caption's size follows the stage height.** It rests at 5 % of that height and shrinks to fit two
-  lines no smaller than 2 %; the words stay in proportion on any OBS source size (spec 202).
-
 ## [1.32.1] - 2026-11-15
 
 ### Fixed

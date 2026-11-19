@@ -214,22 +214,12 @@ body.obs-dock {
   padding: 4px 8px 10px;
   position: relative;                 /* rows' offsetTop is measured against this */
   overflow-anchor: none;              /* the dock owns the scroll; no browser anchoring */
-  /* The bucket head is 36.5px tall and pins from the scrollport's own top, so that
-     strip is reserved: a row scrolled into view — by the picker's cursor or by the
-     browser — never parks half-hidden underneath it. */
+  /* The month head is sticky over the list's top (32.5px tall, 36.5px from the
+     scrollport's top with the body's 4px padding): reserve that strip so a row
+     scrolled into view — by the picker's cursor or by the browser — never parks
+     half-hidden underneath it. */
   scroll-padding-top: 37px;
 }
-
-/* The picker's list starts at the scrollport's top edge, not 4px down: the head's
-   own 14px top padding is that breathing space, and it is painted by the head. The
-   runner keeps the body's 4px (its pinned entry and go-to strip compensate with
-   `top: -4px`). */
-#pickBody { padding-top: 0; }
-
-/* Air between one bucket and the next: the head's own padding is the sky above its
-   label (and what the pinned head keeps), this is the extra gap the groups get
-   between them. Carried by the section so it scrolls away and never moves the pin. */
-#pickBody section + section { padding-top: 12px; }
 
 /* The app's scrollbar (spec 087): 5px, bare, token-coloured. The standard
    properties must NOT be set here — in Blink they win over ::-webkit-scrollbar and
@@ -263,10 +253,7 @@ body.obs-dock {
   top: 0;
   z-index: 2;
   margin: 0;
-  /* 14px of sky above the label, and the label sits 14px under the divider whether
-     the head is at rest or pinned: the box starts at the scrollport's top edge
-     (`#pickBody` carries no top padding) and its own background covers the strip. */
-  padding: 14px 6px 7px;
+  padding: 10px 6px 7px;
   background: var(--rail-bg);
   font-size: 11.5px;
   font-weight: 650;
@@ -383,16 +370,6 @@ body.obs-dock {
   transition: background var(--ease);
 }
 
-/* Spec 206: an open header wears the sheet's own rail-and-ink mix, one step at
-   96 % rail — about half the generic hover face below, so the pointer stays the
-   louder state. Every rule here weighs (0,2,0); source order is the cascade:
-   base → open → pointer → live. The live row is always aria-expanded="true",
-   which is why its rule has to stay last. The wash rides the row's own
-   `background var(--ease)`; it adds no transition. */
-.entryrow[aria-expanded="true"] {
-  background: color-mix(in srgb, var(--rail-bg) 96%, var(--ink));
-}
-
 .entryrow:hover { background: var(--icon-hover-bg); }
 
 .entryli + .entryli { margin-top: 4px; }
@@ -407,39 +384,6 @@ body.obs-dock {
 .entryrow[aria-current="true"].is-stuck {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-}
-
-/* The header's painted state (spec 198, FR-001/FR-003/FR-011, research D007/D008):
-   one stroked chevron trailing the line. The row lays out on baselines and the
-   chevron carries no text, so it opts out with `align-self: center` — the owner's
-   ask (2026-11-18), probed at 0 px off the row's centre. It lives inside the row,
-   so the hover face tints it with everything else; the live row hides it and a
-   break or an empty header never got a node (FR-010). */
-.entrychev {
-  display: inline-flex;
-  align-items: center;
-  flex: none;                        /* the chevron never squeezes the title */
-  margin-left: auto;                 /* trailing end of the header line */
-  align-self: center;                /* D008: opt out of the row's baseline row */
-}
-
-.entrychev svg {
-  width: 15px;
-  height: 15px;
-  fill: none;
-  stroke: currentColor;              /* ink via the header's color (FR-003) */
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: transform var(--ease); /* the 90° state flip (FR-003) */
-}
-
-.entryrow[aria-expanded="true"] .entrychev svg { transform: rotate(90deg); }
-
-.entrychev[hidden] { display: none; } /* the live row renders none (FR-001) */
-
-@media (prefers-reduced-motion: reduce) {
-  .entrychev svg { transition: none; }
 }
 
 .entryrow__c {
@@ -767,19 +711,8 @@ body.obs-dock {
 
 /* The arrows fill while this window holds the keyboard — the dock is live and
    Space/arrows/T will act; out of focus they fall back to the quiet outline. */
-html.win-focus .navbtn:not(:disabled):not([aria-pressed]),
-html.win-focus .navbtn:not(:disabled):not([aria-pressed]):hover {
-  background: var(--active-bg);
-  border-color: var(--active-bg);
-  color: var(--active-ink);
-}
-
-/* Spec 200: the centre control shows the mode in its own face — filled while
-   following, the quiet outline while browsing, whether or not the window has focus. */
-.navbtn[aria-pressed="true"],
-.navbtn[aria-pressed="true"]:hover,
-html.win-focus .navbtn[aria-pressed="true"]:not(:disabled),
-html.win-focus .navbtn[aria-pressed="true"]:not(:disabled):hover {
+html.win-focus .navbtn:not(:disabled),
+html.win-focus .navbtn:not(:disabled):hover {
   background: var(--active-bg);
   border-color: var(--active-bg);
   color: var(--active-ink);

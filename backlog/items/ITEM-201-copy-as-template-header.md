@@ -1,6 +1,6 @@
 ---
 id: ITEM-201
-status: done
+status: in-review
 title: 'Copy as template stands in the edit modal header'
 type: fix
 priority: P1
@@ -11,10 +11,10 @@ spec: 195
 branch: fix/195-hotfix-batch
 pr: 523
 issue: 518
-closed_at: 2026-11-15
-closed_reason: merged into develop (PR #523)
-bump: patch
-release_version: 1.32.1
+closed_at:
+closed_reason:
+bump:
+release_version:
 ---
 
 # ITEM-201: Copy as template stands in the edit modal header

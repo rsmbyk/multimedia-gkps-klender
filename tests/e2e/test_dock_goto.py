@@ -263,7 +263,6 @@ class DockGotoE2ETests(StaticLiveServerTestCase):
         context = self._context()
         dock = self._dock(context)
         dock.locator('.entryrow').nth(2).click()
-        dock.locator('.entryli[data-index="2"] .screenerow').first.click()
         dock.wait_for_timeout(400)
         placed = self._state(dock)['screen']
         self._choose(dock, 'Matius 5:3')
@@ -291,7 +290,6 @@ class DockGotoE2ETests(StaticLiveServerTestCase):
         context = self._context()
         dock = self._dock(context)
         dock.locator('.entryrow').nth(1).click()
-        dock.locator('.entryli[data-index="1"] .screenerow').first.click()
         dock.wait_for_timeout(300)
         start = self._state(dock)
         self._choose(dock, 'NKB 43')
@@ -346,7 +344,6 @@ class DockGotoE2ETests(StaticLiveServerTestCase):
         context = self._context()
         dock = self._dock(context)
         dock.locator('.entryrow').first.click()
-        dock.locator('.entryli[data-index="0"] .screenerow').first.click()
         dock.wait_for_timeout(300)
         self._choose(dock, 'Matius 5:3')
         self.assertEqual(self._state(dock)['goto']['translation'], 'TB')
