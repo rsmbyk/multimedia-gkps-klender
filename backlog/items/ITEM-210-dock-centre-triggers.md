@@ -1,15 +1,15 @@
 ---
 id: ITEM-210
-status: in-progress
+status: in-review
 title: 'The dock centres its live entry only when asked'
 type: feat
 priority: P2
 effort: M
 created: 2026-11-18
-updated: 2026-11-18
+updated: 2026-11-19
 spec: specs/200-dock-centre-triggers/spec.md
 branch: feat/200-dock-centre-triggers
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/535
 issue:
 closed_at:
 closed_reason:
