@@ -1,6 +1,6 @@
 ---
 id: ITEM-209
-status: in-progress
+status: in-review
 title: 'The song caption type is bound to the stage height'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-19
 updated: 2026-11-19
 spec: 202
 branch: fix/202-overlay-caption-height-cap
-pr:
-issue:
+pr: 539
+issue: 538
 bump: patch
 release_version:
 ---
