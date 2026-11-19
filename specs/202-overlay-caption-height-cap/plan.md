@@ -16,7 +16,8 @@ No `CONSTITUTION.md` in the repo (SDD-01); nothing to check.
 ## Decisions
 
 Recorded in [research.md](./research.md): height-only rest, JS-derived floor, no 80px ceiling.
-The fit remains a 6 %-per-step decrement with a 60-iteration guard; 5 % → 2 % takes 15 steps.
+The fit takes a linear decrement of 4 % of the rest size per step with a 60-iteration guard; because the range
+5 % → 2 % is 60 % of rest, that is exactly 15 steps.
 
 ## Traceability
 

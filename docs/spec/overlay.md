@@ -61,7 +61,8 @@ an eight-way black outline that scales with the type, no fill, no border, no hea
 inset. A lyric line wider than that box SHALL break at its own edge rather than being painted past it, keeping the
 caption's centring and its balanced lines. The rest size SHALL be **5 % of the stage height** (`5cqh`), so the type
 keeps its proportion on any source size. A block that would grow past two visual rows SHALL instead shrink its
-`font-size` only, per paint, by 6 % steps, never below **2 % of that same height** — until the whole block fits two
+`font-size` only, per paint, by 4 % of the rest size per step (exactly 15 steps from 5 % to 2 %), never below
+**2 % of that same height** — until the whole block fits two
 visual lines; a screen that already fits SHALL paint at the rest size. At the floor a block that still cannot fit
 two rows SHALL stop there and land as it lands. (spec 180, carrying spec 119; wrap folded by spec 183; two-line cap
 added by spec 195; height-bound scale added by spec 202)
@@ -76,7 +77,7 @@ added by spec 195; height-bound scale added by spec 202)
 
 #### Scenario: a lyric that would wrap
 - WHEN a lyric line is long enough to wrap at the rest size
-- THEN the type shrinks in 6 % steps so the block paints at most two visual lines, never below 2 % of the stage height,
+- THEN the type shrinks by 4 % of the rest size per step so the block paints at most two visual lines, never below 2 % of the stage height,
   the look (weight, outline, inset, centring) unchanged
 
 #### Scenario: the next screen is fitted on its own
@@ -93,7 +94,7 @@ added by spec 195; height-bound scale added by spec 202)
 
 #### Scenario: a lyric with no space in it
 - WHEN a lyric carries a 66-character run and is on air at 1920×1080
-- THEN it shrinks to 24.16 px and draws 1 row inside the 1728 px box, 33.81 px tall, with no ink past the box
+- THEN it shrinks to 23.76 px and draws 1 row inside the 1728 px box, 33.27 px tall, with no ink past the box
   (2,035.20 px past it before spec 183; 5 rows at 403.19 px before spec 202)
 
 ### R3 — A passage screen paints a quotation card

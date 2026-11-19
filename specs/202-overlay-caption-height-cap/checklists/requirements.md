@@ -18,5 +18,5 @@
 - [ ] CHK009 Are the passage and liturgy plates covered as no-change rows? [Coverage, Spec SC-004]
 
 ## Consistency
-- [ ] CHK010 Does the spec leave the shrink step and the look properties unchanged? [Consistency, Spec FR-004]
+- [ ] CHK010 Does the spec state the step as 4 % of rest — exactly 15 steps from 5 % to 2 % — and leave the look properties unchanged? [Consistency, Spec FR-004 / UI/UX]
 - [ ] CHK011 Is the accepted edge expressed the same way in the capability file and the spec? [Consistency, Spec Domain rules]

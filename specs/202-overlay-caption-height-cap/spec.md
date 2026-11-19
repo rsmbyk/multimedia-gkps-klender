@@ -49,7 +49,7 @@ exceeds two rows — the text was simply too long.
 ### Scenario: a wrapping lyric shrinks but stays above the floor
 - **Given** a lyric too wide for the caption box at 54 px
 - **When** it paints at 1920×1080
-- **Then** the type shrinks in 6 % steps until the block fits two visual rows, and never reads
+- **Then** the type shrinks by 4 % of the rest size per step (15 steps to the floor) until the block fits two visual rows, and never reads
   below 21.6 px
 
 ### Scenario: a lyric the floor cannot save

@@ -33,7 +33,7 @@ two-line fit cannot pass. At the floor the block may exceed two rows — the lyr
 ## Acceptance sketch
 
 - At 1920×1080 the rest reads 54 px; at 1280×720 it reads 36 px.
-- A wrapping lyric shrinks in 6 % steps, never below 21.6 px at 1080p.
+- A wrapping lyric shrinks by 4 % of the rest size per step (15 steps to the floor), never below 21.6 px at 1080p.
 - A lyric that cannot fit two rows at the floor stops there and lands as it lands.
 
 ## Links

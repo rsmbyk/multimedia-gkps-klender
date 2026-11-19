@@ -124,6 +124,17 @@ class ObsCaptionHeightE2ETests(StaticLiveServerTestCase):
         self.assertGreaterEqual(measured['font'], 1080 * 0.02, measured)  # not past the floor
         self.assertLessEqual(measured['rows'], 2, measured)
 
+    def test_the_shrink_step_is_four_percent_of_the_rest_size(self):
+        """The type walks a linear ladder: rest minus 4 % of rest per step, 15 steps to the floor."""
+        context = self.browser.new_context(viewport={'width': 1920, 'height': 1080})
+        measured = self._measure(context, 1)
+        rest = measured['stageHeight'] * 0.05
+        step = rest * 0.04
+        steps = (rest - measured['font']) / step
+        self.assertGreater(round(steps), 0, measured)
+        self.assertAlmostEqual(steps, round(steps), delta=0.02,
+                               msg=f"font {measured['font']} is not on the linear ladder: {measured}")
+
     def test_the_fit_stops_at_two_percent_when_two_lines_cannot_fit(self):
         context = self.browser.new_context(viewport={'width': 1920, 'height': 1080})
         measured = self._measure(context, 2)

@@ -13,4 +13,4 @@ The only shape involved is the type scale:
 | --- | --- | --- |
 | Rest (1920×1080) | `clamp(11px, 3.75cqw, 80px)` = 72px | `5cqh` = 54px |
 | Floor (1920×1080) | fixed 11px | `stage.clientHeight * 0.02` = 21.6px |
-| Shrink step | 6 % (`fontSize * 0.94`) | unchanged |
+| Shrink step | 6 % of current (`fontSize * 0.94`) | 4 % of rest (`fontSize - rest * 0.04`), 15 steps to the floor |
