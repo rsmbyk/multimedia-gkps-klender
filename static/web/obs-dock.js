@@ -585,10 +585,17 @@
     }
   }
 
-  /* ---------- glide and centring (400 ms softened in-out, clamped) --------- */
+  /* ---------- glide and centring (200 ms sine in-out, clamped) -------------- */
 
   var glideFrame = null;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* Spec 205: one pace for every re-centre — glideScroll, glideRow and the
+     crossing morph's carried scroll all read it, so expand, collapse and scroll
+     stay one motion. Halved from spec 200's 400 ms: at a fast advance cadence the
+     longer glide was still easing in when the next step retargeted it, and the
+     list bobbed up and down. */
+  var CENTRE_MS = 200;
 
   var glideTarget = null;
 
@@ -616,7 +623,7 @@
          than freezing a target that was measured too early. */
       var max = runBody.scrollHeight - runBody.clientHeight;
       var to = Math.max(0, Math.min(target, max));
-      var t = Math.min(1, (now - started) / 400);
+      var t = Math.min(1, (now - started) / CENTRE_MS);
       runBody.scrollTop = from + (to - from) * ease(t);
       if (t < 1) glideFrame = window.requestAnimationFrame(frame);
       else { glideFrame = null; bandHoldUntil = performance.now() + 300; }
@@ -637,7 +644,7 @@
   }
 
   /* Spec 200: drive the row's own offset from the scrollport centre to zero on the
-     same 400 ms softened in-out. Deriving the target from the row each frame keeps a
+     shared pace (CENTRE_MS). Deriving the target from the row each frame keeps a
      crossing's block reflow or the band's hide from landing the glide short. */
   function rowOffset(node) {
     var box = runBody.getBoundingClientRect();
@@ -653,7 +660,7 @@
     function current() { return liveNode() || node; }
     function frame(now) {
       if (start === null) { start = rowOffset(current()); started = now; }
-      var t = Math.min(1, (now - started) / 400);
+      var t = Math.min(1, (now - started) / CENTRE_MS);
       var eased = ease(t);
       var want = start * (1 - eased);
       if (t < 1) {
@@ -705,14 +712,14 @@
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  /* Spec 200: every re-centre — a glide or the carried part of a crossing morph —
-     shares this softened in-out over 400 ms. Half sine, half quintic smootherstep:
-     both ends are flatter than plain sine, while the middle keeps the same pace.
-     The operator's own block toggle keeps its 230 ms ease-in-out below. */
+  /* Spec 205: every re-centre — a glide or the carried part of a crossing morph —
+     shares this sine in-out over CENTRE_MS. Spec 200 softened it further (half
+     sine, half quintic smootherstep); under fast advancing the flatter ends left
+     each retargeted glide easing in from near-zero, so the blend is dropped and
+     the plain sine kept. The operator's own block toggle keeps its 230 ms
+     ease-in-out below. */
   function ease(t) {
-    var sine = .5 - Math.cos(Math.PI * t) / 2;
-    var smoother = t * t * t * (t * (6 * t - 15) + 10);
-    return .5 * (sine + smoother);
+    return .5 - Math.cos(Math.PI * t) / 2;
   }
 
   function startMorph(outInner, inInner, node, outEffectiveOpen, carry) {
@@ -734,7 +741,7 @@
     var startY = rect.top - box.top;
     var centreY = (runBody.clientHeight - node.offsetHeight) / 2;
     var started = performance.now();
-    var duration = 400;
+    var duration = CENTRE_MS;
 
     if (!keepOutOpen) outInner.classList.add('is-morph');
     if (!inWasOpen) {

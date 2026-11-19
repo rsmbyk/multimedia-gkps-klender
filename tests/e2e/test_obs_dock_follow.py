@@ -335,6 +335,30 @@ class ObsDockFollowE2ETests(StaticLiveServerTestCase):
         self.assertLess(steps[0], 0.35 * peak, (steps, peak))
         self.assertLess(steps[-1], 0.35 * peak, (steps, peak))
 
+    def test_the_centring_glide_runs_at_the_shared_pace(self):
+        page = self._dock()
+        self._open_service(page)
+        self._place(page)
+        self._scroll_away(page)
+        out = page.evaluate(
+            """() => new Promise((done) => {
+                 const b = document.querySelector('#runBody'); const out = [];
+                 const t0 = performance.now();
+                 document.querySelector('#centreBtn').click();
+                 (function tick() {
+                   out.push([Math.round(performance.now() - t0), Math.round(b.scrollTop)]);
+                   if (performance.now() - t0 < 700) requestAnimationFrame(tick);
+                   else done(out);
+                 })();
+               })""")
+        # Spec 205: every re-centre shares one 200 ms pace. Measure the move from the
+        # first to the last frame that CHANGES scroll — comparing against frame 0 would
+        # keep the flat settle tail and report the whole window. Develop's 400 ms glide
+        # fails the 280 ms ceiling; the slice's 200 ms passes with room for rAF jitter.
+        trans = [out[i][0] for i in range(1, len(out)) if out[i][1] != out[i - 1][1]]
+        self.assertGreater(len(trans), 4, out)
+        self.assertLessEqual(trans[-1] - trans[0], 280, out)
+
     def test_opening_the_service_on_air_enters_following(self):
         page = self._dock()
         self._open_service(page)
