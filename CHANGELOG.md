@@ -39,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   group's last row, from 10px; the extra space scrolls away and never rides the pinned head (spec 197).
 - **The song caption's size follows the stage height.** It rests at 5 % of that height and shrinks to fit two
   lines no smaller than 2 %; the words stay in proportion on any OBS source size (spec 202).
+- **A long word wraps in the OBS dock's runner.** A service name with no spaces, a pasted URL or a filename
+  with no hyphens now breaks inside the box that owns it — the title, the entry header and the screen row —
+  instead of painting past it and giving the list a horizontal scrollbar. Text that already fits, the row's
+  number and chevron, and the labels that truncate are unchanged (spec 203).
 
 ## [1.32.1] - 2026-11-15
 

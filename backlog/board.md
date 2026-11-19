@@ -36,6 +36,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-213](./items/ITEM-213-dock-long-word-wrap.md) | A long word wraps in the dock runner's service title and entry headers | An unbroken run paints past its own box — the title under the head buttons, a pasted URL past the panel — and the body grows a horizontal scrollbar; a hyphenated name in the same list already wraps | fix | P1 | S | [203](../specs/203-dock-long-word-wrap/spec.md) | `fix/203-dock-long-word-wrap` | 2026-11-19 |
 
 ## In review
 
