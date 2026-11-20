@@ -2034,6 +2034,19 @@
     /* A generate slot is validated, not saved (spec 167): nothing on the page changed,
        and re-reading it would replace the modal the operator is working in. */
     if (event.detail && event.detail.slotEntry) return;
+    /* Spec 209: a newly created dated service is the destination, so open it on the stage
+       through the shell's own navigation -- one fetch, no document reload. The arriving page
+       supplies the child pane; `service` keeps the operator's panel choice as it is on a click. */
+    if (event.detail && event.detail.kind === 'tatib' && event.detail.created
+        && event.detail.record_kind === 0) {
+      navigate('/tatib/' + event.detail.id + '/', {kind: 'service', forceServer: true})
+        .then(function (ok) {
+          /* The restored focus belongs to the lists/refresh kinds only; a create opens with
+             `service`, so restore it here the same way the refresh path does (spec 025). */
+          if (ok) restoreRequestedFocus({focusKind: 'tatib', what: event.detail.id});
+        });
+      return;
+    }
     /* In-page navigation does not change location. Refresh the section that
        supplied the visible sidebar; if the reader is in another section, keep
        its stage by swapping only the lists. */

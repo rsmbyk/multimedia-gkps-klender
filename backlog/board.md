@@ -44,6 +44,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-222](./items/ITEM-222-new-service-opens-on-stage.md) | A newly created service opens on the reading stage | A saved dated service refreshes the list but leaves the stage put; the stage should show it in place, with no reload, while Template creates and edits keep their paths | fix | P1 | S | [209](../specs/209-open-created-service/spec.md) | [#554](https://github.com/rsmbyk/multimedia-gkps-klender/pull/554) | 2026-11-21 |
 
 ## Done
 

@@ -641,13 +641,127 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('[name="first_title"], [name="first_text"], [name="is_active"]')).to_have_count(0)
         self._save(page, name='Ibadah Baru', date='2026-11-01')
         expect(page.locator('#panelBody .book').filter(has_text='Ibadah Baru')).to_be_visible()
-        page.get_by_text('Ibadah Baru', exact=True).click()
+        row = page.locator(f'#panelBody a.book[href^="/tatib/"][data-name]').filter(
+            has_text='Ibadah Baru').first
+        row.click()
         expect(page.locator('.entry__empty')).to_be_visible()
         expect(page.locator('[data-entry-open="scripture"]')).to_be_visible()
         self._close_browser()
         service = tatib.TataIbadah.objects.get(name='Ibadah Baru')
         self.assertTrue(service.is_active)
         self.assertEqual(service.tataibadahitem_set.count(), 0)
+
+    # --- spec 209: a created service opens on the stage -------------------------
+
+    def _stage(self, page):
+        return page.evaluate("""() => ({
+          url: location.pathname,
+          name: document.getElementById('readName')?.textContent || '',
+          current: document.querySelector('#panelBody a.book[aria-current="true"]')
+            ?.getAttribute('data-name') || null,
+          nav: document.documentElement.dataset.nav,
+          ch: document.documentElement.dataset.ch,
+          marker: window.__gkps209 || null,
+          timeOrigin: performance.timeOrigin,
+          empty: !!document.querySelector('.entry__empty-title')
+        })""")
+
+    def _create_from_sidebar(self, page, name, date_value='2026-11-22'):
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent input[name="name"]')
+        self._save(page, name=name, date=date_value)
+        page.wait_for_timeout(800)
+        return page.locator('#panelBody a.book').filter(has_text=name).first.get_attribute('href')
+
+    def test_a_created_service_opens_on_the_stage(self):
+        page = self._page(reverse('web-tatib'))
+        page.evaluate("() => { window.__gkps209 = 'alive'; }")
+        href = self._create_from_sidebar(page, 'Ibadah Baru 209')
+        state = self._stage(page)
+        created_id = href.rstrip('/').split('/')[-1]
+        assert state['url'] == href, state
+        assert state['name'] == 'Ibadah Baru 209', state
+        assert state['current'] == created_id, state
+        assert state['empty'] is True, state
+        self._close_browser()
+        self.assertTrue(tatib.TataIbadah.objects.filter(name='Ibadah Baru 209').exists())
+
+    def test_an_open_from_create_does_not_reload_the_document(self):
+        page = self._page(reverse('web-tatib'))
+        page.evaluate("() => { window.__gkps209 = 'alive'; }")
+        before = self._stage(page)
+        self._create_from_sidebar(page, 'Ibadah Baru 209 No Reload')
+        after = self._stage(page)
+        assert after['marker'] == 'alive', after
+        assert after['timeOrigin'] == before['timeOrigin'], (before, after)
+        assert after['nav'] == before['nav'], (before, after)
+
+    def test_a_created_service_opens_its_contents_pane(self):
+        page = self._page(reverse('web-tatib'))
+        self._create_from_sidebar(page, 'Ibadah Baru 209 Contents')
+        state = self._stage(page)
+        assert state['ch'] == 'open', state
+
+    def test_an_open_from_create_keeps_the_panel_state(self):
+        page = self._page(reverse('web-tatib'))
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent input[name="name"]')
+        page.evaluate("() => { document.documentElement.dataset.nav = 'mini'; }")
+        self._save(page, name='Ibadah Baru 209 Mini', date='2026-11-22')
+        page.wait_for_timeout(800)
+        state = self._stage(page)
+        assert state['nav'] == 'mini', state
+
+    def test_a_template_create_keeps_the_stage(self):
+        page = self._page(reverse('web-tatib'))
+        page.click('#panelAdd')
+        page.click('#editorContent [data-tatib-kind="1"]')
+        self._save(page, name='Skeleton 209')
+        page.wait_for_timeout(800)
+        state = self._stage(page)
+        assert state['url'] == '/tatib/', state
+        self._close_browser()
+        created = tatib.TataIbadah.objects.get(name='Skeleton 209')
+        self.assertEqual(created.kind, tatib.TataIbadahKind.TEMPLATE)
+
+    def test_an_edit_keeps_the_stage(self):
+        page = self._page(reverse('web-tatib'))
+        row = page.locator(f'li:has(.book[data-name="{self.service.pk}"])')
+        row.hover()
+        row.locator('.row-edit').click()
+        self._save(page, name='Ibadah Minggu III Edited')
+        page.wait_for_timeout(800)
+        state = self._stage(page)
+        assert state['url'] == '/tatib/', state
+        self._close_browser()
+        self.service.refresh_from_db()
+        self.assertEqual(self.service.name, 'Ibadah Minggu III Edited')
+
+    def test_a_refused_create_keeps_the_stage(self):
+        page = self._page(reverse('web-tatib'))
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent input[name="name"]')
+        page.fill('#editorContent input[name="name"]', 'Ibadah Baru 209 Invalid')
+        page.evaluate("() => { document.querySelector('#editorContent input[name=date]').value = ''; }")
+        page.click('#editorContent .editor__save')
+        page.wait_for_timeout(600)
+        state = self._stage(page)
+        assert state['url'] == '/tatib/', state
+        assert state['name'] == '', state
+        assert page.locator('dialog[open]').count() == 1, state
+
+    def test_a_failed_create_keeps_the_stage(self):
+        page = self._page(reverse('web-tatib'))
+        page.route('**/editor/tatib/new/save/',
+                   lambda route: route.fulfill(status=500, body='boom'))
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent input[name="name"]')
+        page.fill('#editorContent input[name="name"]', 'Ibadah Baru 209 Failed')
+        page.click('#editorContent .editor__save')
+        page.wait_for_timeout(600)
+        state = self._stage(page)
+        assert state['url'] == '/tatib/', state
+        assert state['name'] == '', state
 
     # --- editing ---
 

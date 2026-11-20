@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A newly created Tata Ibadah now opens on the reading stage right after save.** The saved service's
+  URL, name and empty order appear in place—no second click and no document reload—while Template
+  creates, edits and refused saves keep their current behaviour (spec 209).
+
 ## [1.35.0] - 2026-11-20
 
 ### Added
