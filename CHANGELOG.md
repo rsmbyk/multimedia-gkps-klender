@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The live entry's header pins to the bottom of the OBS dock's runner too.** When the header's bottom
+  reaches the Next band, a faithful copy of the header takes over directly above the band, with the same
+  flat edge as the top pin; clicking it re-centres the live row. The Next band is now always shown and
+  pinned flush at the edge, even when every entry fits the window — no duplicate row, no dangling band
+  (spec 208).
 - **The OBS dock follows the live entry only while following.** A centre control between Previous and Next
   sits filled while the dock is following and outlined while browsing; scrolling or expanding another entry
   drops to browsing, and the control, an item click (including the sticky Next band), or a gated 15 s idle
@@ -30,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The live entry header's top corners now follow whether it is actually pinned.** A pinned header used
+  to keep its round top, and a header at rest in flow could wear the flat face — the flat-state toggle sat
+  behind the Next band's motion guard and never re-ran after a glide, a crossing or a hand-opened block.
+  The corners now reconcile on every frame that moves the list, including reduced motion (spec 208).
 - **Opening a service in the OBS dock starts its entry blocks shut.** A block opened by hand no longer
   reappears at the same position in the next service opened — or in the same service opened again. The live
   entry keeps its open block, and a crossing or a re-read still keeps what the operator opened (spec 204).

@@ -311,6 +311,27 @@
   nextBand.appendChild(el('span', 'nextband__cap', 'Next'));
   var nextBandLabel = el('span', 'nextband__label', '');
   nextBand.appendChild(nextBandLabel);
+  /* Spec 208: the NEXT band is a list-level slot like the bottom pin. Inside the
+     live li it can only pin while that li straddles the view — the band is caged
+     off-screen with its block when the block is wholly below, and the old yield
+     rule hid it when the block's end was in view. The slot's containing block is
+     the whole list, so it holds the bottom edge at every scroll position. */
+  var nextBandSlot = el('li', 'nextband-slot');
+  nextBandSlot.hidden = true;
+  nextBandSlot.appendChild(nextBand);
+
+  /* Spec 208 (US4): the live entry's bottom pin — the header itself pinned at
+     the bottom, mirroring the top pin. The header cannot sticky-bottom-pin (it
+     is its block's first child, and sticky never leaves its containing block),
+     so the slot holds a faithful CLONE of the live header, shown only while the
+     header is fully off below — never alongside a partly-visible one, so the
+     live entry is never doubled. List-level on purpose: inside the live li it
+     would share the band's cage and could not pin while the whole block is below
+     the view. The slot (the li) is the sticky element; the cloned header is the
+     control. */
+  var liveBandSlot = el('li', 'liveband-slot');
+  liveBandSlot.hidden = true;
+  var liveBandSrcRow = null;   /* the header node the slot's copy was cloned from */
 
   function bandText(entry) {
     var parts = entry.type === 'song' ? songParts(entry) : null;
@@ -349,6 +370,10 @@
       }
       entryList.appendChild(item);
     });
+    /* The two pinned slots live at the list's end, after every entry (spec 208):
+       the NEXT band at the edge, the live header's pin directly above it. */
+    entryList.appendChild(nextBandSlot);
+    entryList.appendChild(liveBandSlot);
     runNote.hidden = dock.entries.length > 0;
     if (!dock.entries.length) runNote.textContent = 'This Tata Ibadah has no entries yet.';
   }
@@ -612,7 +637,7 @@
     if (glideFrame && glideTarget !== null && Math.abs(target - glideTarget) < 2) return;
     if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
     glideTarget = target;
-    if (reduceMotion.matches) { runBody.scrollTop = target; return; }
+    if (reduceMotion.matches) { runBody.scrollTop = target; updatePins(); return; }
     /* `from` is read on the first frame, not here: closing a block can shrink the
        scroll range for a moment and the browser clamps scrollTop, so the position
        this glide actually starts from may differ from the one at call time. */
@@ -631,6 +656,7 @@
       var to = Math.max(0, Math.min(target, max));
       var t = Math.min(1, (now - started) / CENTRE_MS);
       runBody.scrollTop = from + (to - from) * ease(t);
+      updatePins();
       if (t < 1) glideFrame = window.requestAnimationFrame(frame);
       else { glideFrame = null; bandHoldUntil = performance.now() + 300; }
     }
@@ -660,7 +686,7 @@
 
   function glideRow(node) {
     if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
-    if (reduceMotion.matches) { runBody.scrollTop += rowOffset(node); return; }
+    if (reduceMotion.matches) { runBody.scrollTop += rowOffset(node); updatePins(); return; }
     var start = null;
     var started = performance.now();
     function current() { return liveNode() || node; }
@@ -671,9 +697,11 @@
       var want = start * (1 - eased);
       if (t < 1) {
         runBody.scrollTop += rowOffset(current()) - want;
+        updatePins();
         glideFrame = window.requestAnimationFrame(frame);
       } else {
         runBody.scrollTop += rowOffset(current());   /* land exactly on the centre */
+        updatePins();
         glideFrame = null;
         bandHoldUntil = performance.now() + 300;
       }
@@ -777,6 +805,7 @@
         var rowTop = node.getBoundingClientRect().top - runBody.getBoundingClientRect().top;
         runBody.scrollTop += rowTop - centreY;
       }
+      updatePins();
       if (t < 1) morphFrame = window.requestAnimationFrame(frame);
       else finishMorph();
     }
@@ -806,6 +835,7 @@
     /* Only the instant (reduced-motion) path ran no frames; a carried morph already
        placed its row, and a browsing morph must never move the list. */
     if (node && carry && !moved) centerRow(node);
+    updatePins();
   }
 
   /* A hand toggle morphs its one block the way the crossing morphs its pair:
@@ -841,6 +871,11 @@
     function frame(now) {
       var t = Math.min(1, (now - started) / duration);
       var e = easeInOut(t);
+      /* Spec 208: read the pin geometry BEFORE this frame's height write — at
+         frame start layout is clean, so the corners track the morph without a
+         forced mid-frame flush (which would perturb the frame timing of clicks
+         landing on the moving rows). The write's own change is caught next frame. */
+      updatePins();
       inner.style.gridTemplateRows = Math.max(0, from + (to - from) * e) + 'px';
       if (t < 1) toggleMorphs.set(inner, window.requestAnimationFrame(frame));
       else finishToggleMorph(inner, open);
@@ -853,6 +888,7 @@
     inner.classList.remove('is-morph');
     inner.style.gridTemplateRows = '';
     paintEntry(inner, open);
+    updatePins();
   }
 
   /* The header's one job (FR-002/FR-005): flip this entry's block, nothing else.
@@ -887,39 +923,100 @@
 
   /* ---------- the pinned row and the NEXT band ------------------------------ */
 
-  function updateBand() {
-    /* A centring owns the layout while it runs: moving the band between entries
-       mid-glide shifts the very row it is trying to place. The next scroll settles it. */
-    if (glideFrame || morphFrame || performance.now() < bandHoldUntil) return;
+  /* The header's corners follow its pin state (spec 208). A paint-only class:
+     it moves no layout, so it reads the geometry on every path that moves the
+     list and never waits behind the band's motion guard below. Pinned means
+     the header's top sits at the scrollport's edge AND its block still reaches
+     below that edge — a row scrolled out above the list is not pinned. */
+  function updateStuck() {
     var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
-    if (!liveEntry) {
-      nextBand.hidden = true;
-      return;
-    }
-    var index = Number(liveEntry.dataset.index);
-    if (nextBand.parentElement !== liveEntry) liveEntry.appendChild(nextBand);
+    var row = liveEntry && liveEntry.querySelector('.entryrow');
+    if (!row) return;
     var box = runBody.getBoundingClientRect();
-    var row = liveEntry.querySelector('.entryrow');
-    if (row) row.classList.toggle('is-stuck', row.getBoundingClientRect().top - box.top <= 0.5);
+    var stuck = row.getBoundingClientRect().top - box.top <= 0.5 &&
+      liveEntry.getBoundingClientRect().bottom > box.top + 0.5;
+    row.classList.toggle('is-stuck', stuck);
+  }
+
+  /* Spec 208 (US4): the strip stands while the live header is not fully visible
+     at the bottom edge — partially cut or fully below (owner ruling). Its
+     writes sit below every row the motions place, so it tracks per frame
+     outside the band's guard. The stack ruling: the NEXT band keeps the edge
+     while the live block straddles it; the strip pins directly above the band
+     then, and takes the edge itself when the band is hidden or scrolled out
+     with its block. Inset arithmetic matches the band's own: the pinned edge
+     is the content edge plus the inset (bottom: -10 lands flush). */
+  function updateLiveBand() {
+    var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
+    var row = liveEntry && liveEntry.querySelector('.entryrow');
+    if (!row) { liveBandSlot.hidden = true; return; }
+    var box = runBody.getBoundingClientRect();
+    /* Clip exactly when the header's bottom TOUCHES the NEXT band (owner: "only
+       clip right when the bottom part of the entry headers is touching the next
+       band"). The band's top is the boundary: before it the header is fully clear
+       and the pin would add a second header-height of chrome — too tall. At the
+       boundary the clone sits exactly over the real header (its bottom at the
+       band's top, one header-height tall), so it takes over with no added height. */
+    var bandRect = nextBand.hidden ? null : nextBand.getBoundingClientRect();
+    var clipEdge = bandRect ? bandRect.top : box.bottom;
+    var rowRect = row.getBoundingClientRect();
+    var show = rowRect.bottom > clipEdge - 0.5;
+    liveBandSlot.hidden = !show;
+    if (!show) return;
+    /* A faithful copy of the live header (number + name + verses + chevron),
+       re-cloned only when the source header node changes (a crossing or a
+       re-read rebuild), not on every frame. It is not a second "current" row
+       and not a toggle — clicking it re-centres the live row. */
+    if (liveBandSrcRow !== row) {
+      var clone = row.cloneNode(true);
+      clone.setAttribute('aria-current', 'false');
+      clone.removeAttribute('aria-controls');
+      liveBandSlot.replaceChildren(clone);
+      liveBandSrcRow = row;
+    }
+    /* Stack directly above the NEXT band's MEASURED top. The body has no bottom
+       padding now, so the inset is exactly the distance from the scrollport edge
+       to the band's top; measuring keeps them abutted in every state. */
+    liveBandSlot.style.bottom = (bandRect ? box.bottom - bandRect.top : 0) + 'px';
+  }
+
+  /* The two pin states read together on every geometry path (FR-002/FR-008). */
+  function updatePins() { updateStuck(); updateLiveBand(); }
+
+  function updateBand() {
+    var box = runBody.getBoundingClientRect();
+    var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
     var next = null;
-    for (var i = index + 1; i < dock.entries.length; i++) {
-      if (!isDivider(dock.entries[i])) { next = dock.entries[i]; break; }
+    if (liveEntry) {
+      var index = Number(liveEntry.dataset.index);
+      for (var i = index + 1; i < dock.entries.length; i++) {
+        if (!isDivider(dock.entries[i])) { next = dock.entries[i]; break; }
+      }
     }
     if (!next) {
       nextBand.hidden = true;
+      nextBandSlot.hidden = true;
       return;
     }
+    /* Always sticky: the band holds the edge at every scroll position while a
+       next entry exists — no yield on the live block's end (owner ruling). The
+       label settles outside a motion guard; the band's presence never waits. */
     nextBand.dataset.screen = String(next.start);
-    nextBandLabel.textContent = bandText(next);
-    /* The band yields the moment the entry's own end is in view. */
-    nextBand.hidden = liveEntry.getBoundingClientRect().bottom <= box.bottom + 6;
+    if (!glideFrame && !morphFrame && performance.now() >= bandHoldUntil) {
+      nextBandLabel.textContent = bandText(next);
+    }
+    /* Always shown while a next entry exists — regardless of whether the next
+       row is on screen (owner). The list fills the scrollport (#entryList
+       min-height: 100%), so the slot pins at the edge even when all entries fit. */
+    nextBand.hidden = false;
+    nextBandSlot.hidden = false;
   }
 
   var scrollScheduled = false;
   runBody.addEventListener('scroll', function () {
     if (scrollScheduled) return;
     scrollScheduled = true;
-    window.requestAnimationFrame(function () { scrollScheduled = false; updateBand(); });
+    window.requestAnimationFrame(function () { scrollScheduled = false; updatePins(); updateBand(); });
   }, {passive: true});
 
   /* ---------- edition chip and bait strip ------------------------------------ */
@@ -1345,7 +1442,9 @@
       /* The service's rows are not drawn, so none of them is marked as on air (FR-017). */
       entryList.querySelectorAll('[aria-current="true"]').forEach(function (row) {
         row.setAttribute('aria-current', 'false');
+        row.classList.remove('is-stuck');
       });
+      liveBandSlot.hidden = true;
       runNote.hidden = true;
       return;
     }
@@ -1383,6 +1482,11 @@
       var row = li.querySelector('.entryrow');
       if (row) {
         row.setAttribute('aria-current', current ? 'true' : 'false');
+        /* Spec 208: only the live header wears the stuck state — a row losing
+           liveness loses it in the same paint, never inheriting it back later. */
+        if (!current) row.classList.remove('is-stuck');
+        /* The bottom pin is a clone of this header (spec 208, US4); updateLiveBand
+           re-clones it when the source node changes, so nothing to paint here. */
         if (row.hasAttribute('aria-controls')) {
           row.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
@@ -1421,6 +1525,7 @@
 
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
+    updatePins();
     updateBand();
     if (morphing) startMorph(departingInner, arrivingInner, arrivingRow, outEffectiveOpen, following);
 
@@ -1454,6 +1559,17 @@
     if (band) {
       setFollowing(true);                      /* the sticky band re-enters following */
       projectScreen(Number(band.dataset.screen));
+      focusPanel();
+      return;
+    }
+    var liveStrip = event.target.closest('.liveband-slot');
+    if (liveStrip) {
+      /* The strip's click is the centre control's own act (spec 208, owner
+         ruling): back to the live row, the current screen kept, following
+         returned — it never projects a different screen. */
+      setFollowing(true);
+      var stripNode = liveNode();
+      if (stripNode) centerRow(stripNode);
       focusPanel();
       return;
     }
@@ -1558,7 +1674,7 @@
     refreshFind();
     try { findInput.focus({preventScroll: true}); } catch (e) { findInput.focus(); }
   });
-  window.addEventListener('resize', measureBand);
+  window.addEventListener('resize', function () { measureBand(); updatePins(); });
 
   transChip.addEventListener('click', function () { if (gotoBusy) return; flipEdition(); focusPanel(); });
   prevBtn.addEventListener('click', function () { if (gotoBusy) return; step(-1); focusPanel(); });
