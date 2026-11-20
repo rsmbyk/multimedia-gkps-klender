@@ -266,6 +266,20 @@ body.obs-dock {
   margin: 0;
   padding: 0;
 }
+/* Spec 208: the runner list fills the scrollport so its pinned slots (NEXT band,
+   live-header pin) can hold the bottom edge even when the entries do not fill the
+   view. Without this the slots rest after the last row — a duplicate band with a
+   gap below that never pins (owner: "the next entry ... still does not pin"). */
+#runBody { padding-bottom: 0; }          /* pinned slots land flush at the edge */
+#entryList {
+  min-height: 100%;                       /* fill the scrollport so slots can pin */
+  display: flex;
+  flex-direction: column;
+}
+/* The pinned slots sit at the list's flow bottom: with no scroll there is no sticky
+   engagement, so margin-top:auto is what holds them at the edge; with scroll the
+   same position is where sticky bottom:0 pins. Both land flush (bandBottom 0). */
+.nextband-slot { margin-top: auto; bottom: 0; }
 
 /* ---------- picker ---------------------------------------------------------- */
 
@@ -623,10 +637,18 @@ body.obs-dock {
 
 /* ---------- the next entry, pinned under the current block ------------------ */
 
-.nextband {
+/* Spec 208: the NEXT band's own list-level slot. Its containing block is the whole
+   list, so it holds the bottom edge at every scroll position — no yield on the live
+   block's end, no cage when the block is wholly below the view. The live header's
+   pin (below) sits directly above this slot's measured top. */
+.nextband-slot {
   position: sticky;
-  bottom: -10px;
   z-index: 3;
+}
+.nextband-slot[hidden] { display: none; }
+.nextband-slot .nextband { margin: 0; }
+
+.nextband {
   display: flex;
   align-items: baseline;
   gap: 10px;
@@ -660,6 +682,38 @@ body.obs-dock {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--head-ink);
+}
+
+/* ---------- the live entry, pinned above the next band (spec 208, US4) ------- */
+
+/* The header cannot bottom-pin (its block's first child); this list-level slot
+   is its pinned representation while the header is cut at the bottom edge or
+   fully below it. The slot is the sticky element — its containing block is the
+   whole list, so it pins even while the live block is entirely below the view.
+   JS holds the inset (the edge itself; the band is caged with its block while
+   the header is fully off). The slot holds a faithful clone of the live header,
+   shown only then — never alongside a partly-visible header, so the entry is
+   never doubled. Only ever shown pinned: bottom corners flat, top corners the
+   row's 9px, the live header's own selected face — mirroring the top pin. */
+.liveband-slot {
+  position: sticky;
+  bottom: 0;                              /* fallback when no NEXT band exists */
+  z-index: 3;
+  margin: 6px 0 0;
+}
+.liveband-slot[hidden] { display: none; }
+
+/* The slot holds a faithful clone of the live header (spec 208, revised): the
+   header's own face pinned at the bottom, mirroring the top pin. The selected
+   fill, flat bottom corners, the row's 9px on top. Shown only while the header
+   is fully off below, so the live entry is never doubled. */
+.liveband-slot .entryrow {
+  position: static;
+  background: var(--sidebar-selected-bg);
+  border-radius: 9px 9px 0 0;
+}
+.liveband-slot .entryrow:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
 }
 
 /* ---------- hover feedback on the states that own a fill -------------------- */

@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-19
-**slices**: `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-20
+**slices**: `208-dock-stuck-corner`, `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -447,3 +447,86 @@ to the picker. (spec 203)
 - WHEN the Next band names an entry whose label is wider than the band
 - THEN the label stays one line ending `…`, and the picker's service name still wraps as it did
 
+
+### R17 — The live header's top corners follow its pin state
+
+The runner's live entry header SHALL wear square top corners (the `.is-stuck` face, painted top radius
+0 px) **if and only if** it is pinned: its top at the scrollport's top edge within 0.5 px and its block
+still reaching below that edge. A header scrolled out of view above the list is not pinned; a header at
+rest in flow keeps its 9 px top radius. Only the live header wears the class, and a header that loses
+liveness loses the class in the same paint.
+
+The corner state SHALL be re-evaluated on every path that moves or resizes the list — scroll frames,
+state sync, each frame of a centring glide, a crossing morph and a hand block-toggle morph, their
+landings, and window resize. The NEXT band's motion guard SHALL NOT suppress it. Under reduced motion
+the reconciled state SHALL paint in the same frame. The top pin's own geometry (sticky `top: -4px`,
+flush at the edge, z-index), the open-header wash (R14) and a go to's `.offstrip` are unchanged.
+
+#### Scenario: a pinned header wears a flat top after advancing
+- GIVEN a live entry deep in a long song with its header pinned at the top edge
+- WHEN a screen advance lands and the list rests without a hand scroll
+- THEN the header carries `.is-stuck` with 0 px top radius
+
+#### Scenario: a crossing lands an in-flow header with round corners
+- WHEN a crossing makes the live header rest in flow below the top edge
+- THEN it has no `.is-stuck` class and keeps its 9 px top radius
+
+#### Scenario: a hand toggle above the header reconciles without a scroll
+- WHEN an operator opens a block above the pinned live header, with no scroll event
+- THEN the corners match the header's new geometry on that paint
+
+#### Scenario: the corners track the pin line during a glide
+- WHEN the list glides to re-centre the live row
+- THEN on every sampled frame the class matches the geometry — pinned means flat, in flow means round
+
+#### Scenario: only the live header is flat
+- WHEN liveness crosses to another entry
+- THEN the old live row loses the flat class on the crossing paint and the new live row's own state governs
+
+### R18 — The live header pins at the bottom edge too
+
+The runner's live entry header SHALL also have a bottom-pinned representation. When its bottom reaches
+the NEXT band's top edge (`row.bottom > bandRect.top`), a faithful clone of the header — number, name,
+verse subtitle, chevron, in the selected face — SHALL stand with flat bottom corners (0 px) and round
+top corners (9 px), directly above the band, abutting its measured top with no gap or overlap. At that
+boundary the clone covers the real header (one header-height tall, bottom at the band's top), so it
+takes over without adding a second band's height. Before that boundary the header is clear and no pin
+shows. With no NEXT entry the pin takes the edge itself. A go to's `.offstrip` has no bottom pin.
+
+The NEXT band SHALL be always visible while a next entry exists, regardless of that row's position,
+through a list-level slot that is never caged by its live block. To pin even when all entries fit the
+viewport, the runner list fills the scrollport (`min-height: 100%`, flex column, slots at the flow
+bottom) and its body has no bottom padding, so the band lands flush at the edge in scroll and no-scroll
+states alike. Its click and label are unchanged (R15).
+
+The strip's state SHALL be tracked per frame on the same paths as the top state; scrolling the header
+back into full view removes the strip on that same frame, and reduced motion paints it instantly.
+Clicking the strip SHALL re-centre the live row, keep the current screen and return to following — the
+centre control's act (R15) — and SHALL NOT write a different screen to the display state.
+
+#### Scenario: the pin clips at the band, not a row early
+- GIVEN a live header above the NEXT band with its bottom still clear of it
+- WHEN the list scrolls until the header's bottom touches the band's top
+- THEN the faithful clone stands over the real header, abutting the band, with no added height
+
+#### Scenario: one visible header, never a second band
+- GIVEN the bottom pin is up
+- THEN it covers the departing header — one visible header, never a separate band above it
+
+#### Scenario: the pin stacks above an always-visible NEXT band
+- GIVEN a next entry exists, whether or not its row is on screen
+- WHEN the list rests or scrolls, including when all entries fit the viewport
+- THEN the NEXT band is shown and pinned flush at the edge, and the pin abuts its top with no gap
+
+#### Scenario: scrolling back removes the pin on the same frame
+- WHEN the header returns fully into view
+- THEN the strip is gone on that frame without a hand scroll
+
+#### Scenario: clicking the pin is the centre act
+- WHEN the operator clicks the pinned strip
+- THEN the live row glides back to centre, the screen on air is unchanged, and following returns
+
+#### Scenario: reduced motion paints the pin instantly
+- GIVEN `prefers-reduced-motion: reduce`
+- WHEN the header's bottom reaches the band
+- THEN the pin lands in that paint with no stale frame (spec 208)
