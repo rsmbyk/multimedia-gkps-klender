@@ -117,10 +117,21 @@ body.obs-dock {
   flex: 1;
 }
 
+/* The runner's text wraps at its own box (spec 203). An unbroken run — a service name
+   with no spaces, a pasted URL, a filename with no hyphens — breaks inside the box that
+   owns it instead of painting past it and giving the body a horizontal scrollbar. A run
+   that already carries break opportunities (a hyphenated filename) wrapped before this
+   rule and wraps identically after it. The picker's name has held this since spec 119
+   (`.servicerow__n`); the runner's three text surfaces take the same declaration.
+   `anywhere`, not the reading page's `break-word` (spec 137): every box here is a block
+   in a `min-width: 0` column or a flex item with `min-width: 0`, so the min-content
+   collapse that moved the reading page's language toggle cannot move a control here —
+   the number column and every chevron measure identical with and without the rule. */
 .serviceline {
   font-size: 15px;
   font-weight: 650;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .servicedate {
@@ -214,12 +225,22 @@ body.obs-dock {
   padding: 4px 8px 10px;
   position: relative;                 /* rows' offsetTop is measured against this */
   overflow-anchor: none;              /* the dock owns the scroll; no browser anchoring */
-  /* The month head is sticky over the list's top (32.5px tall, 36.5px from the
-     scrollport's top with the body's 4px padding): reserve that strip so a row
-     scrolled into view — by the picker's cursor or by the browser — never parks
-     half-hidden underneath it. */
+  /* The bucket head is 36.5px tall and pins from the scrollport's own top, so that
+     strip is reserved: a row scrolled into view — by the picker's cursor or by the
+     browser — never parks half-hidden underneath it. */
   scroll-padding-top: 37px;
 }
+
+/* The picker's list starts at the scrollport's top edge, not 4px down: the head's
+   own 14px top padding is that breathing space, and it is painted by the head. The
+   runner keeps the body's 4px (its pinned entry and go-to strip compensate with
+   `top: -4px`). */
+#pickBody { padding-top: 0; }
+
+/* Air between one bucket and the next: the head's own padding is the sky above its
+   label (and what the pinned head keeps), this is the extra gap the groups get
+   between them. Carried by the section so it scrolls away and never moves the pin. */
+#pickBody section + section { padding-top: 12px; }
 
 /* The app's scrollbar (spec 087): 5px, bare, token-coloured. The standard
    properties must NOT be set here — in Blink they win over ::-webkit-scrollbar and
@@ -245,6 +266,20 @@ body.obs-dock {
   margin: 0;
   padding: 0;
 }
+/* Spec 208: the runner list fills the scrollport so its pinned slots (NEXT band,
+   live-header pin) can hold the bottom edge even when the entries do not fill the
+   view. Without this the slots rest after the last row — a duplicate band with a
+   gap below that never pins (owner: "the next entry ... still does not pin"). */
+#runBody { padding-bottom: 0; }          /* pinned slots land flush at the edge */
+#entryList {
+  min-height: 100%;                       /* fill the scrollport so slots can pin */
+  display: flex;
+  flex-direction: column;
+}
+/* The pinned slots sit at the list's flow bottom: with no scroll there is no sticky
+   engagement, so margin-top:auto is what holds them at the edge; with scroll the
+   same position is where sticky bottom:0 pins. Both land flush (bandBottom 0). */
+.nextband-slot { margin-top: auto; bottom: 0; }
 
 /* ---------- picker ---------------------------------------------------------- */
 
@@ -253,7 +288,10 @@ body.obs-dock {
   top: 0;
   z-index: 2;
   margin: 0;
-  padding: 10px 6px 7px;
+  /* 14px of sky above the label, and the label sits 14px under the divider whether
+     the head is at rest or pinned: the box starts at the scrollport's top edge
+     (`#pickBody` carries no top padding) and its own background covers the strip. */
+  padding: 14px 6px 7px;
   background: var(--rail-bg);
   font-size: 11.5px;
   font-weight: 650;
@@ -370,6 +408,16 @@ body.obs-dock {
   transition: background var(--ease);
 }
 
+/* Spec 206: an open header wears the sheet's own rail-and-ink mix, one step at
+   96 % rail — about half the generic hover face below, so the pointer stays the
+   louder state. Every rule here weighs (0,2,0); source order is the cascade:
+   base → open → pointer → live. The live row is always aria-expanded="true",
+   which is why its rule has to stay last. The wash rides the row's own
+   `background var(--ease)`; it adds no transition. */
+.entryrow[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--rail-bg) 96%, var(--ink));
+}
+
 .entryrow:hover { background: var(--icon-hover-bg); }
 
 .entryli + .entryli { margin-top: 4px; }
@@ -386,6 +434,39 @@ body.obs-dock {
   border-top-right-radius: 0;
 }
 
+/* The header's painted state (spec 198, FR-001/FR-003/FR-011, research D007/D008):
+   one stroked chevron trailing the line. The row lays out on baselines and the
+   chevron carries no text, so it opts out with `align-self: center` — the owner's
+   ask (2026-11-18), probed at 0 px off the row's centre. It lives inside the row,
+   so the hover face tints it with everything else; the live row hides it and a
+   break or an empty header never got a node (FR-010). */
+.entrychev {
+  display: inline-flex;
+  align-items: center;
+  flex: none;                        /* the chevron never squeezes the title */
+  margin-left: auto;                 /* trailing end of the header line */
+  align-self: center;                /* D008: opt out of the row's baseline row */
+}
+
+.entrychev svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;              /* ink via the header's color (FR-003) */
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--ease); /* the 90° state flip (FR-003) */
+}
+
+.entryrow[aria-expanded="true"] .entrychev svg { transform: rotate(90deg); }
+
+.entrychev[hidden] { display: none; } /* the live row renders none (FR-001) */
+
+@media (prefers-reduced-motion: reduce) {
+  .entrychev svg { transition: none; }
+}
+
 .entryrow__c {
   flex: none;
   min-width: 2.1rem;
@@ -393,7 +474,10 @@ body.obs-dock {
   font-variant-numeric: tabular-nums;
 }
 
-.entryrow__t { min-width: 0; }
+/* The header's text box: a media filename, an untitled entry's quiet lines, a song's
+   reference and title. `min-width: 0` lets it shrink; the wrap (spec 203) breaks the run
+   inside it, inherited by every span it holds. */
+.entryrow__t { min-width: 0; overflow-wrap: anywhere; }
 
 .entryrow__t--song {
   flex: 1;
@@ -483,6 +567,10 @@ body.obs-dock {
   text-transform: uppercase;
 }
 
+/* A screen row inside an open block wraps its own line (spec 203) — the same URL the
+   header shows, drawn again here, breaks inside the row rather than past it. The labels
+   that declare their own cut (`.nextband__label`, `.offstrip__label`) keep it: a
+   `nowrap` line cannot wrap, whatever it inherits. */
 .screenerow {
   display: block;
   width: 100%;
@@ -495,6 +583,7 @@ body.obs-dock {
   font: 400 13px/1.45 var(--font-sans);
   text-align: left;
   cursor: pointer;
+  overflow-wrap: anywhere;
   transition: background var(--ease);
 }
 
@@ -548,10 +637,18 @@ body.obs-dock {
 
 /* ---------- the next entry, pinned under the current block ------------------ */
 
-.nextband {
+/* Spec 208: the NEXT band's own list-level slot. Its containing block is the whole
+   list, so it holds the bottom edge at every scroll position — no yield on the live
+   block's end, no cage when the block is wholly below the view. The live header's
+   pin (below) sits directly above this slot's measured top. */
+.nextband-slot {
   position: sticky;
-  bottom: -10px;
   z-index: 3;
+}
+.nextband-slot[hidden] { display: none; }
+.nextband-slot .nextband { margin: 0; }
+
+.nextband {
   display: flex;
   align-items: baseline;
   gap: 10px;
@@ -585,6 +682,38 @@ body.obs-dock {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--head-ink);
+}
+
+/* ---------- the live entry, pinned above the next band (spec 208, US4) ------- */
+
+/* The header cannot bottom-pin (its block's first child); this list-level slot
+   is its pinned representation while the header is cut at the bottom edge or
+   fully below it. The slot is the sticky element — its containing block is the
+   whole list, so it pins even while the live block is entirely below the view.
+   JS holds the inset (the edge itself; the band is caged with its block while
+   the header is fully off). The slot holds a faithful clone of the live header,
+   shown only then — never alongside a partly-visible header, so the entry is
+   never doubled. Only ever shown pinned: bottom corners flat, top corners the
+   row's 9px, the live header's own selected face — mirroring the top pin. */
+.liveband-slot {
+  position: sticky;
+  bottom: 0;                              /* fallback when no NEXT band exists */
+  z-index: 3;
+  margin: 6px 0 0;
+}
+.liveband-slot[hidden] { display: none; }
+
+/* The slot holds a faithful clone of the live header (spec 208, revised): the
+   header's own face pinned at the bottom, mirroring the top pin. The selected
+   fill, flat bottom corners, the row's 9px on top. Shown only while the header
+   is fully off below, so the live entry is never doubled. */
+.liveband-slot .entryrow {
+  position: static;
+  background: var(--sidebar-selected-bg);
+  border-radius: 9px 9px 0 0;
+}
+.liveband-slot .entryrow:hover {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 84%, var(--ink));
 }
 
 /* ---------- hover feedback on the states that own a fill -------------------- */
@@ -711,8 +840,19 @@ body.obs-dock {
 
 /* The arrows fill while this window holds the keyboard — the dock is live and
    Space/arrows/T will act; out of focus they fall back to the quiet outline. */
-html.win-focus .navbtn:not(:disabled),
-html.win-focus .navbtn:not(:disabled):hover {
+html.win-focus .navbtn:not(:disabled):not([aria-pressed]),
+html.win-focus .navbtn:not(:disabled):not([aria-pressed]):hover {
+  background: var(--active-bg);
+  border-color: var(--active-bg);
+  color: var(--active-ink);
+}
+
+/* Spec 200: the centre control shows the mode in its own face — filled while
+   following, the quiet outline while browsing, whether or not the window has focus. */
+.navbtn[aria-pressed="true"],
+.navbtn[aria-pressed="true"]:hover,
+html.win-focus .navbtn[aria-pressed="true"]:not(:disabled),
+html.win-focus .navbtn[aria-pressed="true"]:not(:disabled):hover {
   background: var(--active-bg);
   border-color: var(--active-bg);
   color: var(--active-ink);

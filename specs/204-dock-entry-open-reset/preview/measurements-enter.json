@@ -1,0 +1,23 @@
+{
+ "url": "http://127.0.0.1:8899/index.html",
+ "results": [
+  {
+   "behaviour": "drafted",
+   "marked_first": "155",
+   "open_after_expand": [
+    3
+   ],
+   "open_after_enter_on_149": []
+  },
+  {
+   "behaviour": "today",
+   "marked_first": "155",
+   "open_after_expand": [
+    3
+   ],
+   "open_after_enter_on_149": [
+    3
+   ]
+  }
+ ]
+}

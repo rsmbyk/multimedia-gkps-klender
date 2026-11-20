@@ -1,8 +1,8 @@
 # dock
 
 **capability**: `dock`
-**last folded**: 2026-11-15
-**slices**: `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
+**last folded**: 2026-11-20
+**slices**: `208-dock-stuck-corner`, `204-dock-entry-open-reset`, `205-dock-centre-pace`, `203-dock-long-word-wrap`, `200-dock-centre-triggers`, `198-dock-entry-toggle`, `195-hotfix-batch`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`
 
 The OBS dock — the operator's surface for running a Tata Ibadah from inside OBS. Its earlier
 behaviour (spec 119's runner and picker, spec 132's buckets, spec 164's fluid width) is recorded in
@@ -297,3 +297,236 @@ where the operator already is (R11's rule). (spec 195)
 #### Scenario: a background tab
 - WHEN the dock's page is hidden
 - THEN the timer does not fetch; OBS paints its docks continuously, so the guard rests while the dock shows
+
+### R14 — An entry header expands its block; only an item jumps
+
+The entry list's headers are disclosure controls, never projection controls. A header click SHALL toggle only
+its own block — morphing its height over 230 ms on the shared ease — and SHALL NOT write the display state,
+move the selection, scroll the list or select a screen; an item inside the block remains the only projection
+path from the list. Every header with a block to open SHALL carry one stroked chevron at its trailing end,
+centred vertically on the line: right-pointing at rest, rotated 90° down when open. The live entry's header
+SHALL render no chevron and SHALL NOT collapse; a section break or an entry whose block is empty SHALL render
+no chevron and its click SHALL be a no-op. Hand-opened blocks SHALL survive a live-entry crossing and a
+re-read of the open service, but SHALL NOT survive an explicit open of a service — a picker row's click,
+`Enter` on the marked picker row, or the on-load resume of the service on air — nor a reload. An open SHALL
+start every block shut except the live entry's, whose block stays open because liveness is read from the
+display state rather than from the override; the reset SHALL write no display state, broadcast nothing and
+animate nothing. Under reduced motion every swap SHALL be instant, with no morph or transition. A
+hovered header SHALL tint its whole line, chevron included, while the live row keeps its selected family of
+fill (never the generic hover face). An open header SHALL wear one flat wash of its rail mixed 4 % ink —
+`color-mix(in srgb, var(--rail-bg) 96%, var(--ink))` — for as long as its block stands open, a step softer
+than the hover face so the pointer stays the louder state; the wash rides the row's own 200 ms background
+ease and adds none of its own, and the live row's selected fill always outranks it (specs 198, 204, 206).
+
+#### Scenario: a header expands without projecting
+- WHEN the operator clicks a non-live entry's header
+- THEN only that block opens and its chevron turns down, while the display state, the selected screen and the scroll position stay as they were
+
+#### Scenario: an open header wears the wash
+- WHEN a non-live header's block stands open
+- THEN its whole line, chevron included, carries the 4 % rail-and-ink wash — softer than the hover face, which replaces it under the pointer — and closing the block returns it to bare rail
+
+#### Scenario: an item inside the block jumps
+- WHEN the operator clicks a screen row inside an open block
+- THEN exactly that screen goes on air — the header click never does
+
+#### Scenario: the live header stays locked open
+- WHEN the live entry's header is clicked
+- THEN nothing changes: its block stays open, the row shows no chevron, and its selected fill holds
+
+#### Scenario: a service is opened after a hand-open
+- WHEN the operator opens another service from the picker, or the same one again, after opening blocks by hand
+- THEN every block in the opened service is shut except a live entry's, and nothing on air changes
+
+#### Scenario: the on-air service is opened
+- WHEN the operator opens the service that is on air
+- THEN its live entry's block is open and every other block is shut
+
+#### Scenario: a hand-opened block forgets the reload
+- WHEN the page reloads after the operator opened several blocks by hand
+- THEN no override survives; only the live entry's block is open
+
+### R15 — The dock follows the live entry while following, and only re-centres on named acts
+
+The dock has two modes. It **begins following** on load: an advance of the service — forward or
+backward, within an entry or across one — keeps the live row centred, with other entries open and
+with the words hidden, provided the dock shows the service that is on air on the projector and
+overlay. A go to on air suspends following. **Scrolling the list or expanding another entry** ends
+following; in that browsing state the same advances change what is on air but leave the list where
+the operator put it, and the transport's Next and Back buttons never change the mode.
+
+Four acts bring following back: a new centre control in the transport between Previous and Next;
+a click on an item inside an entry — which includes the sticky **Next** band, whose screen belongs
+to the **next** entry, so that click also moves the live pointer and marks that entry's first row;
+a successful 15 s idle re-centre; and nothing else. The centre control is disabled with no live row
+and centres the go to's marked row when a go to is up. The idle clock is restarted by a scroll, a
+click or a press held down — a drag included — and by a key press, never by plain pointer movement;
+while a press is held the count is suspended until release. When the clock fires it centres only if
+the runner shows the service on air with words up and no go to, no layer is open, no other entry's
+block is open, and the live row lies entirely outside the scrollport; the conditions are read at
+that moment. A centring is one 200 ms sine in-out motion (half-cosine ease, `½ − cos(πt)/2`), shared
+by the glide and the crossing morph's carried scroll so expand, collapse and scroll remain one
+motion. Clamped at the list's ends, instant under reduced motion, and cancelled by a hand on the
+list; the operator's hand block-toggle keeps its own 230 ms ease-in-out (R14). (spec 200; pace and
+curve modified by spec 205)
+
+#### Scenario: a service runs undisturbed
+- WHEN the service advances forward or backward, including across an entry
+- THEN the live row stays centred, even with other entries open or the words hidden
+
+#### Scenario: the operator takes the list over
+- WHEN the operator scrolls the list or expands another entry's block
+- THEN following ends, and later advances change the screen but leave the list still
+
+#### Scenario: the centre control returns following
+- GIVEN the dock is browsing
+- WHEN the operator presses the new control between Previous and Next
+- THEN the list glides the live row to the middle and the next advance follows without another press
+
+#### Scenario: the Next band is an item
+- GIVEN the dock is browsing
+- WHEN the sticky Next band is clicked
+- THEN the live pointer moves to the next entry, its first row is marked, that row is centred and following returns
+
+#### Scenario: the transport buttons are mode-neutral
+- WHEN the operator presses the transport's Next or Back button in either mode
+- THEN the mode is unchanged — they centre only when already following
+
+#### Scenario: the idle return
+- GIVEN the words are up, this service is on air, nothing is open, no other block is expanded and the live row is entirely off screen
+- WHEN 15 s pass with no scroll, click, held press or key
+- THEN the list centres the live row and following returns
+
+#### Scenario: a held press is not idleness
+- WHEN a button is held down past the 15 s with the live row off screen
+- THEN the count is suspended until release and nothing moves
+
+#### Scenario: opening the service on air
+- GIVEN the dock is browsing a different service while another service is on the projector and overlay
+- WHEN that on-air service is opened from the picker
+- THEN following returns and the list centres that service's live entry as part of the open
+
+### R16 — The runner's text wraps at its own box
+
+A run of text wider than the box that owns it SHALL wrap at that box's edge in the dock's runner — the
+service title, every entry header shape (a media filename, an untitled entry's quiet lines, a song's
+reference and title) and a screen row inside an open block — and SHALL NOT be painted past it. The runner
+body SHALL NOT scroll horizontally because of text.
+
+Wrapping SHALL NOT change the layout's own measuring: a run that already fits keeps its line count, height
+and width; the number column keeps its width and its place; every chevron keeps its trailing offset and its
+vertical centre on the row. A run that already carries break opportunities — a hyphenated filename — wraps
+exactly as it did before. No line clamp is added: a header grows to as many lines as its run needs, and the
+live row pins at its own taller height.
+
+A label that declares its own cut SHALL keep truncating: the Next band's label and the off-strip's label stay
+one line ending `…`. The picker's service name keeps the wrap it already had; this requirement adds nothing
+to the picker. (spec 203)
+
+#### Scenario: an unbroken service name
+- WHEN a service whose name is 64 characters with no spaces is opened in the runner at a 320, 456 or 900px panel
+- THEN the title wraps inside its own column, no part of it is painted past that column, and the head's buttons keep their place beside it
+
+#### Scenario: a pasted URL as an entry and as a screen
+- WHEN an untitled Text entry's body is a URL wider than the header's text box
+- THEN the header's quiet line wraps inside the header, and the same URL drawn as a screen row inside the open block wraps inside that row
+
+#### Scenario: a filename with no break opportunity
+- WHEN a media entry's filename is an unbroken run wider than the header's text box
+- THEN it wraps inside the header rather than running past it, and the runner body does not scroll sideways
+
+#### Scenario: text that fits
+- WHEN a name, filename or title already fits its box
+- THEN it keeps the same line count, height and width, and the row's number column and chevron keep their geometry
+
+#### Scenario: a wide panel
+- WHEN the panel is wide enough that the whole service name fits
+- THEN the title stays on one line at the same height and width; a run wider than the panel itself still wraps
+
+#### Scenario: a label that truncates
+- WHEN the Next band names an entry whose label is wider than the band
+- THEN the label stays one line ending `…`, and the picker's service name still wraps as it did
+
+
+### R17 — The live header's top corners follow its pin state
+
+The runner's live entry header SHALL wear square top corners (the `.is-stuck` face, painted top radius
+0 px) **if and only if** it is pinned: its top at the scrollport's top edge within 0.5 px and its block
+still reaching below that edge. A header scrolled out of view above the list is not pinned; a header at
+rest in flow keeps its 9 px top radius. Only the live header wears the class, and a header that loses
+liveness loses the class in the same paint.
+
+The corner state SHALL be re-evaluated on every path that moves or resizes the list — scroll frames,
+state sync, each frame of a centring glide, a crossing morph and a hand block-toggle morph, their
+landings, and window resize. The NEXT band's motion guard SHALL NOT suppress it. Under reduced motion
+the reconciled state SHALL paint in the same frame. The top pin's own geometry (sticky `top: -4px`,
+flush at the edge, z-index), the open-header wash (R14) and a go to's `.offstrip` are unchanged.
+
+#### Scenario: a pinned header wears a flat top after advancing
+- GIVEN a live entry deep in a long song with its header pinned at the top edge
+- WHEN a screen advance lands and the list rests without a hand scroll
+- THEN the header carries `.is-stuck` with 0 px top radius
+
+#### Scenario: a crossing lands an in-flow header with round corners
+- WHEN a crossing makes the live header rest in flow below the top edge
+- THEN it has no `.is-stuck` class and keeps its 9 px top radius
+
+#### Scenario: a hand toggle above the header reconciles without a scroll
+- WHEN an operator opens a block above the pinned live header, with no scroll event
+- THEN the corners match the header's new geometry on that paint
+
+#### Scenario: the corners track the pin line during a glide
+- WHEN the list glides to re-centre the live row
+- THEN on every sampled frame the class matches the geometry — pinned means flat, in flow means round
+
+#### Scenario: only the live header is flat
+- WHEN liveness crosses to another entry
+- THEN the old live row loses the flat class on the crossing paint and the new live row's own state governs
+
+### R18 — The live header pins at the bottom edge too
+
+The runner's live entry header SHALL also have a bottom-pinned representation. When its bottom reaches
+the NEXT band's top edge (`row.bottom > bandRect.top`), a faithful clone of the header — number, name,
+verse subtitle, chevron, in the selected face — SHALL stand with flat bottom corners (0 px) and round
+top corners (9 px), directly above the band, abutting its measured top with no gap or overlap. At that
+boundary the clone covers the real header (one header-height tall, bottom at the band's top), so it
+takes over without adding a second band's height. Before that boundary the header is clear and no pin
+shows. With no NEXT entry the pin takes the edge itself. A go to's `.offstrip` has no bottom pin.
+
+The NEXT band SHALL be always visible while a next entry exists, regardless of that row's position,
+through a list-level slot that is never caged by its live block. To pin even when all entries fit the
+viewport, the runner list fills the scrollport (`min-height: 100%`, flex column, slots at the flow
+bottom) and its body has no bottom padding, so the band lands flush at the edge in scroll and no-scroll
+states alike. Its click and label are unchanged (R15).
+
+The strip's state SHALL be tracked per frame on the same paths as the top state; scrolling the header
+back into full view removes the strip on that same frame, and reduced motion paints it instantly.
+Clicking the strip SHALL re-centre the live row, keep the current screen and return to following — the
+centre control's act (R15) — and SHALL NOT write a different screen to the display state.
+
+#### Scenario: the pin clips at the band, not a row early
+- GIVEN a live header above the NEXT band with its bottom still clear of it
+- WHEN the list scrolls until the header's bottom touches the band's top
+- THEN the faithful clone stands over the real header, abutting the band, with no added height
+
+#### Scenario: one visible header, never a second band
+- GIVEN the bottom pin is up
+- THEN it covers the departing header — one visible header, never a separate band above it
+
+#### Scenario: the pin stacks above an always-visible NEXT band
+- GIVEN a next entry exists, whether or not its row is on screen
+- WHEN the list rests or scrolls, including when all entries fit the viewport
+- THEN the NEXT band is shown and pinned flush at the edge, and the pin abuts its top with no gap
+
+#### Scenario: scrolling back removes the pin on the same frame
+- WHEN the header returns fully into view
+- THEN the strip is gone on that frame without a hand scroll
+
+#### Scenario: clicking the pin is the centre act
+- WHEN the operator clicks the pinned strip
+- THEN the live row glides back to centre, the screen on air is unchanged, and following returns
+
+#### Scenario: reduced motion paints the pin instantly
+- GIVEN `prefers-reduced-motion: reduce`
+- WHEN the header's bottom reaches the band
+- THEN the pin lands in that paint with no stale frame (spec 208)

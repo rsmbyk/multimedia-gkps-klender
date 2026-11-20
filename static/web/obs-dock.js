@@ -44,6 +44,7 @@
   var runNote = document.getElementById('runNote');
   var blankBtn = document.getElementById('blankBtn');
   var prevBtn = document.getElementById('prevBtn');
+  var centreBtn = document.getElementById('centreBtn');
   var nextBtn = document.getElementById('nextBtn');
   var transChip = document.getElementById('transChip');
   var baitStrip = document.getElementById('baitStrip');
@@ -67,6 +68,24 @@
   var root = document.documentElement;
 
   var cache = {};                 /* service id -> {entries, screens} */
+  /* The 10 s re-read must not rebuild an unchanged list under the operator's
+     pointer — that drops hover and repaints the whole dock (spec 195). */
+  var lastLoad = {id: null, json: null};
+
+  /* Spec 200: whether advances keep the live row centred. Page memory only —
+     the mode is this dock's relationship with its list, never display state. */
+  var following = true;
+  var centreOnOpen = false;       /* re-centre once, after an on-air service is painted */
+  function setFollowing(value) {
+    following = !!value;
+    if (centreBtn) centreBtn.setAttribute('aria-pressed', following ? 'true' : 'false');
+  }
+  var lastNotice = null;          /* previous {service, screen, goto} */
+  var IDLE_MS = 15000;
+  var idleLastActivity = performance.now();
+  var idleHolding = false;
+  var bandHoldUntil = 0;          /* keep the band still until a centring has settled */
+
   var dock = {
     service: null, name: '', date: '',
     entries: [], screens: [], stops: [],
@@ -74,6 +93,12 @@
     on: false, screen: 0, translation: null,
     lastEntry: null,
   };
+
+  /* Which entry blocks stand open, apart from the live one: page memory only
+     (FR-006). A header's toggle records here; nothing is ever stored, so a reload
+     starts every block shut. The live entry never consults this — its block is
+     open and locked. */
+  var entryOverrides = new Map();
 
   function el(tag, cls, text) {
     var node = document.createElement(tag);
@@ -247,9 +272,10 @@
     return row;
   }
 
-  function buildInner(entry) {
+  function buildInner(entry, index) {
     if (isDivider(entry)) return null;             /* a hairline has nothing to open */
     var inner = el('div', 'entryinner');
+    inner.id = 'entryinner-' + index;              /* aria-controls' referent (FR-008) */
     inner.setAttribute('aria-hidden', 'true');
     if ('inert' in inner) inner.inert = true;
     var clip = el('div', 'entryinner__clip');
@@ -285,6 +311,27 @@
   nextBand.appendChild(el('span', 'nextband__cap', 'Next'));
   var nextBandLabel = el('span', 'nextband__label', '');
   nextBand.appendChild(nextBandLabel);
+  /* Spec 208: the NEXT band is a list-level slot like the bottom pin. Inside the
+     live li it can only pin while that li straddles the view — the band is caged
+     off-screen with its block when the block is wholly below, and the old yield
+     rule hid it when the block's end was in view. The slot's containing block is
+     the whole list, so it holds the bottom edge at every scroll position. */
+  var nextBandSlot = el('li', 'nextband-slot');
+  nextBandSlot.hidden = true;
+  nextBandSlot.appendChild(nextBand);
+
+  /* Spec 208 (US4): the live entry's bottom pin — the header itself pinned at
+     the bottom, mirroring the top pin. The header cannot sticky-bottom-pin (it
+     is its block's first child, and sticky never leaves its containing block),
+     so the slot holds a faithful CLONE of the live header, shown only while the
+     header is fully off below — never alongside a partly-visible one, so the
+     live entry is never doubled. List-level on purpose: inside the live li it
+     would share the band's cage and could not pin while the whole block is below
+     the view. The slot (the li) is the sticky element; the cloned header is the
+     control. */
+  var liveBandSlot = el('li', 'liveband-slot');
+  liveBandSlot.hidden = true;
+  var liveBandSrcRow = null;   /* the header node the slot's copy was cloned from */
 
   function bandText(entry) {
     var parts = entry.type === 'song' ? songParts(entry) : null;
@@ -298,10 +345,35 @@
       var item = el('li', 'entryli');
       item.dataset.index = String(index);
       item.appendChild(entryRowContent(entry, index));
-      var inner = buildInner(entry);
-      if (inner) item.appendChild(inner);
+      var inner = buildInner(entry, index);
+      if (inner) {
+        item.appendChild(inner);
+        /* The header names its block (FR-008). An entry with no inner — a break,
+           an empty block — never gets the pair: there is nothing to expand. */
+        var row = item.querySelector('.entryrow');
+        if (row) {
+          row.setAttribute('aria-controls', inner.id);
+          /* ...and shows its state (FR-001, research D007): one stroked chevron,
+             trailing in the header line, aria-hidden because the row's own name
+             carries the entry. Only a header that got an inner gets one — a
+             break or an empty block renders nothing to point with (FR-010). */
+          var chev = el('span', 'entrychev');
+          chev.setAttribute('aria-hidden', 'true');
+          var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 20 20');
+          var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+          poly.setAttribute('points', '7 4 13 10 7 16');
+          svg.appendChild(poly);
+          chev.appendChild(svg);
+          row.appendChild(chev);
+        }
+      }
       entryList.appendChild(item);
     });
+    /* The two pinned slots live at the list's end, after every entry (spec 208):
+       the NEXT band at the edge, the live header's pin directly above it. */
+    entryList.appendChild(nextBandSlot);
+    entryList.appendChild(liveBandSlot);
     runNote.hidden = dock.entries.length > 0;
     if (!dock.entries.length) runNote.textContent = 'This Tata Ibadah has no entries yet.';
   }
@@ -369,6 +441,19 @@
   }
 
   function openService(id, name, date) {
+    /* Spec 204: an explicit open starts every block shut. The overrides are keyed by
+       entry index alone, so keeping them would open the same POSITION of the next
+       service — including this one opened again. The live entry needs no exception
+       here: effectiveOpen() asks liveEntry() first, which reads the display state.
+       A crossing and a re-read are not opens and keep what the operator opened. */
+    entryOverrides.clear();
+    /* Spec 200: opening the service that is already on air is a deliberate return
+       to the live show — re-enter following before its rows are painted, so sync
+       centres the live entry as part of this same open. Only an explicit open does
+       this: the 10 s re-read and a display echo must never drag a browsing hand. */
+    var onAir = gkpsDisplay.read();
+    centreOnOpen = !!(onAir && onAir.service === id && onAir.on === true && !onAir.goto);
+    if (centreOnOpen) setFollowing(true);
     dock.service = id;
     dock.name = name;
     dock.date = date;
@@ -385,7 +470,7 @@
   }
 
   /* The one load path: fetch (or read from cache), rebuild the list, repaint in place. */
-  function loadServiceData(id) {
+  function loadServiceData(id, quietIfSame) {
     var wanted = id;
     fetchService(id).then(function (data) {
       if (dock.service !== wanted) return;
@@ -394,11 +479,20 @@
         runNote.textContent = 'The service could not be loaded.';
         return;
       }
+      var json = JSON.stringify(data);
+      if (quietIfSame && lastLoad.id === wanted && lastLoad.json === json) return;
+      lastLoad = {id: wanted, json: json};
       dock.entries = data.entries;
       dock.screens = data.screens;
       buildStops();
       renderList();
       sync(gkpsDisplay.read());
+      /* Opening the on-air service is a return to the live show: centre once,
+         after its rows are painted, as part of this same open. */
+      if (centreOnOpen) {
+        centreOnOpen = false;
+        scheduleCenter();
+      }
     });
   }
 
@@ -409,7 +503,7 @@
   function refreshService() {
     if (dock.service == null) return;
     delete cache[dock.service];
-    loadServiceData(dock.service);
+    loadServiceData(dock.service, true);
   }
 
   /* ---------- projection (the state's verbs) -------------------------------- */
@@ -475,10 +569,64 @@
     });
   }
 
-  /* ---------- glide and centring (190 ms ease-out, clamped) ------------------ */
+  /* Which entry of this dock's service is on air right now (-1: none) — the
+     liveness fact every effective-state question starts from. */
+  function liveEntry() {
+    var state = gkpsDisplay.read();
+    if (state && state.service != null && state.service === dock.service) {
+      return entryOfScreen(state.screen);
+    }
+    return -1;
+  }
+
+  /* The one question every painter asks (FR-006): does this entry's block stand
+     open? The live entry's does — locked open while its service is on air — and
+     any other answers the page-memory override its header's toggle recorded
+     (absent = closed). Nothing here is persisted: a reload forgets every
+     override. */
+  function effectiveOpen(index) {
+    if (liveEntry() === index) return true;
+    return entryOverrides.get(index) === true;
+  }
+
+  /* The same question asked of a block element — finishMorph only holds the node.
+     Its id carries the index; an unparseable one never closes a block by accident. */
+  function effectiveOpenFor(inner) {
+    var n = Number(String(inner.id || '').replace('entryinner-', ''));
+    if (isNaN(n)) return true;
+    return effectiveOpen(n);
+  }
+
+  /* The painters of a block's state (D003): one input everywhere — crossing,
+     repaint and hand toggle can never disagree about the same block. */
+  function paintInner(inner, open) {
+    inner.classList.toggle('is-open', open);
+    inner.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if ('inert' in inner) inner.inert = !open;
+  }
+
+  /* The header mirrors the same state (FR-008) — and only a header that names a
+     block carries the pair; a break or an empty entry never got aria-controls. */
+  function paintEntry(inner, open) {
+    paintInner(inner, open);
+    var li = inner.closest('.entryli');
+    var row = li && li.querySelector('.entryrow');
+    if (row && row.hasAttribute('aria-controls')) {
+      row.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+  }
+
+  /* ---------- glide and centring (200 ms sine in-out, clamped) -------------- */
 
   var glideFrame = null;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* Spec 205: one pace for every re-centre — glideScroll, glideRow and the
+     crossing morph's carried scroll all read it, so expand, collapse and scroll
+     stay one motion. Halved from spec 200's 400 ms: at a fast advance cadence the
+     longer glide was still easing in when the next step retargeted it, and the
+     list bobbed up and down. */
+  var CENTRE_MS = 200;
 
   var glideTarget = null;
 
@@ -489,7 +637,7 @@
     if (glideFrame && glideTarget !== null && Math.abs(target - glideTarget) < 2) return;
     if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
     glideTarget = target;
-    if (reduceMotion.matches) { runBody.scrollTop = target; return; }
+    if (reduceMotion.matches) { runBody.scrollTop = target; updatePins(); return; }
     /* `from` is read on the first frame, not here: closing a block can shrink the
        scroll range for a moment and the browser clamps scrollTop, so the position
        this glide actually starts from may differ from the one at call time. */
@@ -506,9 +654,11 @@
          than freezing a target that was measured too early. */
       var max = runBody.scrollHeight - runBody.clientHeight;
       var to = Math.max(0, Math.min(target, max));
-      var t = Math.min(1, (now - started) / 190);
-      runBody.scrollTop = from + (to - from) * (1 - Math.pow(1 - t, 3));
-      glideFrame = t < 1 ? window.requestAnimationFrame(frame) : null;
+      var t = Math.min(1, (now - started) / CENTRE_MS);
+      runBody.scrollTop = from + (to - from) * ease(t);
+      updatePins();
+      if (t < 1) glideFrame = window.requestAnimationFrame(frame);
+      else { glideFrame = null; bandHoldUntil = performance.now() + 300; }
     }
     glideFrame = window.requestAnimationFrame(frame);
   }
@@ -525,10 +675,43 @@
     return node.offsetTop;
   }
 
+  /* Spec 200: drive the row's own offset from the scrollport centre to zero on the
+     shared pace (CENTRE_MS). Deriving the target from the row each frame keeps a
+     crossing's block reflow or the band's hide from landing the glide short. */
+  function rowOffset(node) {
+    var box = runBody.getBoundingClientRect();
+    var r = node.getBoundingClientRect();
+    return ((r.top + r.bottom) / 2) - ((box.top + box.bottom) / 2);
+  }
+
+  function glideRow(node) {
+    if (glideFrame) { window.cancelAnimationFrame(glideFrame); glideFrame = null; }
+    if (reduceMotion.matches) { runBody.scrollTop += rowOffset(node); updatePins(); return; }
+    var start = null;
+    var started = performance.now();
+    function current() { return liveNode() || node; }
+    function frame(now) {
+      if (start === null) { start = rowOffset(current()); started = now; }
+      var t = Math.min(1, (now - started) / CENTRE_MS);
+      var eased = ease(t);
+      var want = start * (1 - eased);
+      if (t < 1) {
+        runBody.scrollTop += rowOffset(current()) - want;
+        updatePins();
+        glideFrame = window.requestAnimationFrame(frame);
+      } else {
+        runBody.scrollTop += rowOffset(current());   /* land exactly on the centre */
+        updatePins();
+        glideFrame = null;
+        bandHoldUntil = performance.now() + 300;
+      }
+    }
+    glideFrame = window.requestAnimationFrame(frame);
+  }
+
   function centerRow(node) {
     if (!node) return;
-    var target = layoutTop(node) - (runBody.clientHeight - node.offsetHeight) / 2;
-    glideScroll(target);
+    glideRow(node);
   }
 
   /* The centring target is always the live INNER row (the current screen, or a
@@ -536,7 +719,8 @@
      has no row of its own. */
   function liveNode() {
     return entryList.querySelector('.screenerow[aria-current="true"]') ||
-           entryList.querySelector('.entryrow[aria-current="true"]');
+           entryList.querySelector('.entryrow[aria-current="true"]') ||
+           offBody.querySelector('.offrow[aria-current="true"]');
   }
 
   /* One centring per frame, whatever number of state notices arrived. */
@@ -562,41 +746,66 @@
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  function startMorph(outInner, inInner, node) {
+  /* Spec 205: every re-centre — a glide or the carried part of a crossing morph —
+     shares this sine in-out over CENTRE_MS. Spec 200 softened it further (half
+     sine, half quintic smootherstep); under fast advancing the flatter ends left
+     each retargeted glide easing in from near-zero, so the blend is dropped and
+     the plain sine kept. The operator's own block toggle keeps its 230 ms
+     ease-in-out below. */
+  function ease(t) {
+    return .5 - Math.cos(Math.PI * t) / 2;
+  }
+
+  function startMorph(outInner, inInner, node, outEffectiveOpen, carry) {
     cancelPendingCenter();
+    cancelToggleMorph(outInner);
+    cancelToggleMorph(inInner);
     if (morphState) finishMorph();
     var outBody = outInner.querySelector('.entryinner__body');
     var inBody = inInner.querySelector('.entryinner__body');
     var hOut = outBody ? outBody.offsetHeight : outInner.offsetHeight;
     var hIn = inBody ? inBody.offsetHeight : 0;
+    /* A hand-opened override (SC-005) keeps the departing block open: the crossing
+       does not collapse it. An arriving block already peeked open keeps its height:
+       only a closed block is opened by the morph. */
+    var keepOutOpen = !!outEffectiveOpen;
+    var inWasOpen = inInner.classList.contains('is-open');
     var box = runBody.getBoundingClientRect();
     var rect = node.getBoundingClientRect();
     var startY = rect.top - box.top;
     var centreY = (runBody.clientHeight - node.offsetHeight) / 2;
     var started = performance.now();
-    var duration = 230;
+    var duration = CENTRE_MS;
 
-    outInner.classList.add('is-morph');
-    inInner.classList.add('is-morph');
-    inInner.classList.add('is-open');              /* pointer events; height is inline */
-    /* sync() skips both inners while the morph runs, so the arriving block's
-       inert/aria-hidden must be cleared HERE — otherwise the block opens visible
-       but unclickable. */
-    inInner.setAttribute('aria-hidden', 'false');
-    if ('inert' in inInner) inInner.inert = false;
-    morphState = {out: outInner, inn: inInner, node: node};
+    if (!keepOutOpen) outInner.classList.add('is-morph');
+    if (!inWasOpen) {
+      inInner.classList.add('is-morph');
+      inInner.classList.add('is-open');              /* pointer events; height is inline */
+      /* sync() skips both inners while the morph runs, so the arriving block's
+         inert/aria-hidden must be cleared HERE — otherwise the block opens visible
+         but unclickable. */
+      inInner.setAttribute('aria-hidden', 'false');
+      if ('inert' in inInner) inInner.inert = false;
+    }
+    morphState = {out: outInner, inn: inInner, node: node,
+                  carry: carry !== false, moved: false};
     if (reduceMotion.matches) { finishMorph(); return; }
 
     function frame(now) {
+      morphState.moved = true;
       var t = Math.min(1, (now - started) / duration);
-      var e = easeInOut(t);
-      outInner.style.gridTemplateRows = Math.max(0, hOut * (1 - e)) + 'px';
-      inInner.style.gridTemplateRows = Math.max(0, hIn * e) + 'px';
-      /* The row's layout position already includes both height changes, so this
-         puts it exactly where the curve says it should be on screen. */
-      var desired = startY + (centreY - startY) * e;
-      var max = runBody.scrollHeight - runBody.clientHeight;
-      runBody.scrollTop = Math.max(0, Math.min(layoutTop(node) - desired, max));
+      var e = ease(t);
+      if (!keepOutOpen) outInner.style.gridTemplateRows = Math.max(0, hOut * (1 - e)) + 'px';
+      if (!inWasOpen) inInner.style.gridTemplateRows = Math.max(0, hIn * e) + 'px';
+      /* Spec 200: in browsing the morph animates the two block heights only —
+         no second motion may drag the list after the operator's hand. */
+      if (morphState.carry) {
+        /* Drive the row's live viewport position to the centre on this same curve:
+           no offsetTop/rect coordinate mismatch, and no second glide at the end. */
+        var rowTop = node.getBoundingClientRect().top - runBody.getBoundingClientRect().top;
+        runBody.scrollTop += rowTop - centreY;
+      }
+      updatePins();
       if (t < 1) morphFrame = window.requestAnimationFrame(frame);
       else finishMorph();
     }
@@ -605,22 +814,99 @@
 
   function finishMorph() {
     if (morphFrame) { window.cancelAnimationFrame(morphFrame); morphFrame = 0; }
+    bandHoldUntil = performance.now() + 300;
     if (!morphState) return;
     var out = morphState.out;
     var inn = morphState.inn;
     var node = morphState.node;
+    var carry = morphState.carry;
+    var moved = morphState.moved;
     morphState = null;
     out.classList.remove('is-morph');
     inn.classList.remove('is-morph');
-    out.classList.remove('is-open');
-    inn.classList.add('is-open');
-    out.setAttribute('aria-hidden', 'true');
-    if ('inert' in out) out.inert = true;
-    inn.setAttribute('aria-hidden', 'false');
-    if ('inert' in inn) inn.inert = false;
     out.style.gridTemplateRows = '';
     inn.style.gridTemplateRows = '';
-    if (node) centerRow(node);
+    /* Both blocks land in their effective state (D010): a departing block the
+       operator opened by hand stays open, and a mid-crossing toggle's recorded
+       request lands exactly here — at the end of a crossing this settle paint is
+       the single writer. */
+    paintEntry(out, effectiveOpenFor(out));
+    paintEntry(inn, effectiveOpenFor(inn));
+    /* Only the instant (reduced-motion) path ran no frames; a carried morph already
+       placed its row, and a browsing morph must never move the list. */
+    if (node && carry && !moved) centerRow(node);
+    updatePins();
+  }
+
+  /* A hand toggle morphs its one block the way the crossing morphs its pair:
+     measured pixels on grid-template-rows over 230 ms of the same easeInOut(t),
+     .is-morph suppressing the CSS transition. Several blocks may be mid-flight at
+     once, so each animation is tracked by its inner element. No scroll, no glide,
+     no centring is touched — expanding is peeking (FR-007/A4). */
+  var toggleMorphs = new Map();          /* inner element -> frame handle */
+
+  function cancelToggleMorph(inner) {
+    var frame = toggleMorphs.get(inner);
+    if (frame) { window.cancelAnimationFrame(frame); toggleMorphs.delete(inner); }
+  }
+
+  function startToggleMorph(inner, open) {
+    var body = inner.querySelector('.entryinner__body');
+    var full = body ? body.offsetHeight : 0;
+    /* Where the height stands right now: mid-morph (a second click flips the
+       target), open, or shut. */
+    var from = inner.classList.contains('is-morph') && inner.style.gridTemplateRows
+      ? parseFloat(inner.style.gridTemplateRows)
+      : (inner.classList.contains('is-open') ? full : 0);
+    var to = open ? full : 0;
+    cancelToggleMorph(inner);
+    inner.classList.add('is-morph');
+    inner.classList.add('is-open');       /* pointer events; height is inline */
+    inner.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if ('inert' in inner) inner.inert = !open;
+    var started = performance.now();
+    var duration = 230;
+    if (from === to) { finishToggleMorph(inner, open); return; }
+
+    function frame(now) {
+      var t = Math.min(1, (now - started) / duration);
+      var e = easeInOut(t);
+      /* Spec 208: read the pin geometry BEFORE this frame's height write — at
+         frame start layout is clean, so the corners track the morph without a
+         forced mid-frame flush (which would perturb the frame timing of clicks
+         landing on the moving rows). The write's own change is caught next frame. */
+      updatePins();
+      inner.style.gridTemplateRows = Math.max(0, from + (to - from) * e) + 'px';
+      if (t < 1) toggleMorphs.set(inner, window.requestAnimationFrame(frame));
+      else finishToggleMorph(inner, open);
+    }
+    toggleMorphs.set(inner, window.requestAnimationFrame(frame));
+  }
+
+  function finishToggleMorph(inner, open) {
+    cancelToggleMorph(inner);
+    inner.classList.remove('is-morph');
+    inner.style.gridTemplateRows = '';
+    paintEntry(inner, open);
+    updatePins();
+  }
+
+  /* The header's one job (FR-002/FR-005): flip this entry's block, nothing else.
+     The override is page memory only (A2); the live entry is locked open and a
+     crossing's morph owns its block until it settles — the recorded request lands
+     in the settle paint (D005). */
+  function toggleBlock(index) {
+    if (liveEntry() === index) return;              /* live = locked open (FR-006) */
+    var inner = document.getElementById('entryinner-' + index);
+    if (!inner) return;                             /* a break or an empty block */
+    var next = !effectiveOpen(index);
+    entryOverrides.set(index, next);
+    if (next) setFollowing(false);              /* opening another entry browses */
+    if (morphState && (morphState.out === inner || morphState.inn === inner)) return;
+    /* FR-005's reduce half (US3/AC5): the swap paints at once — the same finish
+       path a morph lands on, without ever requesting a frame. */
+    if (reduceMotion.matches) { finishToggleMorph(inner, next); return; }
+    startToggleMorph(inner, next);
   }
 
   function cancelPendingCenter() {
@@ -632,39 +918,105 @@
   /* A hand on the list wins over any pending centring or glide. */
   runBody.addEventListener('wheel', cancelPendingCenter, {passive: true});
   runBody.addEventListener('pointerdown', cancelPendingCenter);
+  /* The same hand that wins a glide also hands the list back to the operator. */
+  runBody.addEventListener('wheel', function () { setFollowing(false); }, {passive: true});
 
   /* ---------- the pinned row and the NEXT band ------------------------------ */
 
-  function updateBand() {
+  /* The header's corners follow its pin state (spec 208). A paint-only class:
+     it moves no layout, so it reads the geometry on every path that moves the
+     list and never waits behind the band's motion guard below. Pinned means
+     the header's top sits at the scrollport's edge AND its block still reaches
+     below that edge — a row scrolled out above the list is not pinned. */
+  function updateStuck() {
     var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
-    if (!liveEntry) {
-      nextBand.hidden = true;
-      return;
-    }
-    var index = Number(liveEntry.dataset.index);
-    if (nextBand.parentElement !== liveEntry) liveEntry.appendChild(nextBand);
+    var row = liveEntry && liveEntry.querySelector('.entryrow');
+    if (!row) return;
     var box = runBody.getBoundingClientRect();
-    var row = liveEntry.querySelector('.entryrow');
-    if (row) row.classList.toggle('is-stuck', row.getBoundingClientRect().top - box.top <= 0.5);
+    var stuck = row.getBoundingClientRect().top - box.top <= 0.5 &&
+      liveEntry.getBoundingClientRect().bottom > box.top + 0.5;
+    row.classList.toggle('is-stuck', stuck);
+  }
+
+  /* Spec 208 (US4): the strip stands while the live header is not fully visible
+     at the bottom edge — partially cut or fully below (owner ruling). Its
+     writes sit below every row the motions place, so it tracks per frame
+     outside the band's guard. The stack ruling: the NEXT band keeps the edge
+     while the live block straddles it; the strip pins directly above the band
+     then, and takes the edge itself when the band is hidden or scrolled out
+     with its block. Inset arithmetic matches the band's own: the pinned edge
+     is the content edge plus the inset (bottom: -10 lands flush). */
+  function updateLiveBand() {
+    var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
+    var row = liveEntry && liveEntry.querySelector('.entryrow');
+    if (!row) { liveBandSlot.hidden = true; return; }
+    var box = runBody.getBoundingClientRect();
+    /* Clip exactly when the header's bottom TOUCHES the NEXT band (owner: "only
+       clip right when the bottom part of the entry headers is touching the next
+       band"). The band's top is the boundary: before it the header is fully clear
+       and the pin would add a second header-height of chrome — too tall. At the
+       boundary the clone sits exactly over the real header (its bottom at the
+       band's top, one header-height tall), so it takes over with no added height. */
+    var bandRect = nextBand.hidden ? null : nextBand.getBoundingClientRect();
+    var clipEdge = bandRect ? bandRect.top : box.bottom;
+    var rowRect = row.getBoundingClientRect();
+    var show = rowRect.bottom > clipEdge - 0.5;
+    liveBandSlot.hidden = !show;
+    if (!show) return;
+    /* A faithful copy of the live header (number + name + verses + chevron),
+       re-cloned only when the source header node changes (a crossing or a
+       re-read rebuild), not on every frame. It is not a second "current" row
+       and not a toggle — clicking it re-centres the live row. */
+    if (liveBandSrcRow !== row) {
+      var clone = row.cloneNode(true);
+      clone.setAttribute('aria-current', 'false');
+      clone.removeAttribute('aria-controls');
+      liveBandSlot.replaceChildren(clone);
+      liveBandSrcRow = row;
+    }
+    /* Stack directly above the NEXT band's MEASURED top. The body has no bottom
+       padding now, so the inset is exactly the distance from the scrollport edge
+       to the band's top; measuring keeps them abutted in every state. */
+    liveBandSlot.style.bottom = (bandRect ? box.bottom - bandRect.top : 0) + 'px';
+  }
+
+  /* The two pin states read together on every geometry path (FR-002/FR-008). */
+  function updatePins() { updateStuck(); updateLiveBand(); }
+
+  function updateBand() {
+    var box = runBody.getBoundingClientRect();
+    var liveEntry = entryList.querySelector('.entryli[data-live="true"]');
     var next = null;
-    for (var i = index + 1; i < dock.entries.length; i++) {
-      if (!isDivider(dock.entries[i])) { next = dock.entries[i]; break; }
+    if (liveEntry) {
+      var index = Number(liveEntry.dataset.index);
+      for (var i = index + 1; i < dock.entries.length; i++) {
+        if (!isDivider(dock.entries[i])) { next = dock.entries[i]; break; }
+      }
     }
     if (!next) {
       nextBand.hidden = true;
+      nextBandSlot.hidden = true;
       return;
     }
+    /* Always sticky: the band holds the edge at every scroll position while a
+       next entry exists — no yield on the live block's end (owner ruling). The
+       label settles outside a motion guard; the band's presence never waits. */
     nextBand.dataset.screen = String(next.start);
-    nextBandLabel.textContent = bandText(next);
-    /* The band yields the moment the entry's own end is in view. */
-    nextBand.hidden = liveEntry.getBoundingClientRect().bottom <= box.bottom + 6;
+    if (!glideFrame && !morphFrame && performance.now() >= bandHoldUntil) {
+      nextBandLabel.textContent = bandText(next);
+    }
+    /* Always shown while a next entry exists — regardless of whether the next
+       row is on screen (owner). The list fills the scrollport (#entryList
+       min-height: 100%), so the slot pins at the edge even when all entries fit. */
+    nextBand.hidden = false;
+    nextBandSlot.hidden = false;
   }
 
   var scrollScheduled = false;
   runBody.addEventListener('scroll', function () {
     if (scrollScheduled) return;
     scrollScheduled = true;
-    window.requestAnimationFrame(function () { scrollScheduled = false; updateBand(); });
+    window.requestAnimationFrame(function () { scrollScheduled = false; updatePins(); updateBand(); });
   }, {passive: true});
 
   /* ---------- edition chip and bait strip ------------------------------------ */
@@ -1090,7 +1442,9 @@
       /* The service's rows are not drawn, so none of them is marked as on air (FR-017). */
       entryList.querySelectorAll('[aria-current="true"]').forEach(function (row) {
         row.setAttribute('aria-current', 'false');
+        row.classList.remove('is-stuck');
       });
+      liveBandSlot.hidden = true;
       runNote.hidden = true;
       return;
     }
@@ -1113,20 +1467,40 @@
       : null;
     var morphing = !!(departingInner && arrivingInner && arrivingInner !== departingInner &&
                       arrivingRow && departingInner.classList.contains('is-open'));
-    if (morphing) startMorph(departingInner, arrivingInner, arrivingRow);
+    /* A hand-opened override keeps the departing block open through the hand-off
+       (SC-005): the crossing animates only what the effective state says closes. */
+    var outEffectiveOpen = departingLi
+      ? effectiveOpen(Number(departingLi.dataset.index)) : false;
+    /* The morph starts after the repaint and the band move (below): its target must
+       be measured against the layout the arriving row will actually have. */
 
     entryList.querySelectorAll('.entryli').forEach(function (li) {
       var index = Number(li.dataset.index);
       var current = live && index === activeEntry;
       li.dataset.live = current ? 'true' : 'false';
+      var open = effectiveOpen(index);
       var row = li.querySelector('.entryrow');
-      if (row) row.setAttribute('aria-current', current ? 'true' : 'false');
-      var inner = li.querySelector('.entryinner');
-      if (inner && !(morphing && (inner === departingInner || inner === arrivingInner))) {
-        inner.classList.toggle('is-open', current);
-        inner.setAttribute('aria-hidden', current ? 'false' : 'true');
-        if ('inert' in inner) inner.inert = !current;
+      if (row) {
+        row.setAttribute('aria-current', current ? 'true' : 'false');
+        /* Spec 208: only the live header wears the stuck state — a row losing
+           liveness loses it in the same paint, never inheriting it back later. */
+        if (!current) row.classList.remove('is-stuck');
+        /* The bottom pin is a clone of this header (spec 208, US4); updateLiveBand
+           re-clones it when the source node changes, so nothing to paint here. */
+        if (row.hasAttribute('aria-controls')) {
+          row.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
       }
+      var inner = li.querySelector('.entryinner');
+      /* A morphing block's classes belong to the animation that owns it — the
+         settle paint is its single writer (D010). Everything else paints from
+         the effective state here. */
+      if (inner && !inner.classList.contains('is-morph') &&
+          !(morphing && (inner === departingInner || inner === arrivingInner))) {
+        paintInner(inner, open);
+      }
+      var chev = li.querySelector('.entrychev');
+      if (chev) chev.hidden = current;              /* the live row has no chevron */
       li.querySelectorAll('.screenerow').forEach(function (screenRow) {
         screenRow.setAttribute('aria-current',
           current && Number(screenRow.dataset.screen) === state.screen ? 'true' : 'false');
@@ -1151,8 +1525,22 @@
 
     updateChip(live, activeEntry);
     renderBaits(live, activeEntry);
+    updatePins();
     updateBand();
-    if (live && !morphing) scheduleCenter();       /* the morph brings its own curve */
+    if (morphing) startMorph(departingInner, arrivingInner, arrivingRow, outEffectiveOpen, following);
+
+    /* Spec 200: an advance is a notice for the same service, no go to, and a moved
+       screen. Display flips, re-reads, reloads, service changes and go to rows all
+       fail this test, so the list stays exactly where the operator left it. */
+    var notice = {service: state.service, screen: state.screen,
+                  goto: state.goto ? JSON.stringify(state.goto) : null};
+    var advance = !!lastNotice && !state.goto &&
+                  lastNotice.goto === null &&
+                  lastNotice.service === state.service &&
+                  lastNotice.screen !== state.screen;
+    lastNotice = notice;
+    if (centreBtn) centreBtn.disabled = !liveNode();
+    if (live && following && advance && !morphing) scheduleCenter();
     dock.lastEntry = live ? activeEntry : null;
   }
 
@@ -1169,21 +1557,37 @@
     if (gotoBusy) return;                    /* nothing changes what is on air */
     var band = event.target.closest('.nextband');
     if (band) {
+      setFollowing(true);                      /* the sticky band re-enters following */
       projectScreen(Number(band.dataset.screen));
+      focusPanel();
+      return;
+    }
+    var liveStrip = event.target.closest('.liveband-slot');
+    if (liveStrip) {
+      /* The strip's click is the centre control's own act (spec 208, owner
+         ruling): back to the live row, the current screen kept, following
+         returned — it never projects a different screen. */
+      setFollowing(true);
+      var stripNode = liveNode();
+      if (stripNode) centerRow(stripNode);
       focusPanel();
       return;
     }
     var screenRow = event.target.closest('.screenerow');
     if (screenRow) {
+      setFollowing(true);                      /* an item click re-enters following */
       projectScreen(Number(screenRow.dataset.screen));
       focusPanel();
       return;
     }
     var row = event.target.closest('.entryrow');
     if (!row) return;
-    var entry = dock.entries[Number(row.dataset.index)];
-    if (!entry || isDivider(entry)) return;
-    projectScreen(entry.start);
+    /* No block, no action: a break or an empty entry's header is inert — no
+       toggle, no projection, no write (FR-010). Every other header flips its
+       own block and hands the keyboard back to the panel; it never projects —
+       the items inside are the jump targets (FR-002, US2). */
+    if (!row.hasAttribute('aria-controls')) return;
+    toggleBlock(Number(row.dataset.index));
     focusPanel();
   });
 
@@ -1270,10 +1674,17 @@
     refreshFind();
     try { findInput.focus({preventScroll: true}); } catch (e) { findInput.focus(); }
   });
-  window.addEventListener('resize', measureBand);
+  window.addEventListener('resize', function () { measureBand(); updatePins(); });
 
   transChip.addEventListener('click', function () { if (gotoBusy) return; flipEdition(); focusPanel(); });
   prevBtn.addEventListener('click', function () { if (gotoBusy) return; step(-1); focusPanel(); });
+  centreBtn.addEventListener('click', function () {
+    if (gotoBusy || centreBtn.disabled) return;
+    setFollowing(true);
+    var node = liveNode();                   /* includes the go to's marked row */
+    if (node) centerRow(node);
+    focusPanel();
+  });
   nextBtn.addEventListener('click', function () { if (gotoBusy) return; step(1); focusPanel(); });
   switchBtn.addEventListener('click', function () { setView('pick', true); });
   reloadBtn.addEventListener('click', function () { window.location.reload(); });
@@ -1663,8 +2074,52 @@
   /* ---------- boot ----------------------------------------------------------- */
 
   applyTheme(root.dataset.themeMode || 'dark', false);
+  setFollowing(true);
   gkpsDisplay.subscribe(sync);
   if (pickRows().length) setPickCursor(0, false);
+
+  /* ---------- the 15 s idle return (spec 200) ------------------------------- */
+
+  /* Scrolls, presses and keys mark activity; a moving pointer with no button down
+     does not. A press still held suspends the count until it is released. */
+  ['wheel', 'pointerdown', 'pointerup', 'pointercancel', 'keydown'].forEach(function (name) {
+    document.addEventListener(name, function (event) {
+      if (event.type === 'pointerdown') idleHolding = true;
+      if (event.type === 'pointerup' || event.type === 'pointercancel') idleHolding = false;
+      idleLastActivity = performance.now();
+    }, {passive: true});
+  });
+
+  function offScreen(node) {
+    var box = runBody.getBoundingClientRect();
+    var r = node.getBoundingClientRect();
+    return r.bottom <= box.top || r.top >= box.bottom;
+  }
+
+  window.setInterval(function () {
+    var now = performance.now();
+    if (idleHolding) idleLastActivity = now;
+    if (now - idleLastActivity < IDLE_MS) return;
+    /* FR-008: read every condition here, at the moment the clock fires. */
+    var state = gkpsDisplay.read();
+    var quiet = panel.dataset.view === 'run' && dock.service != null &&
+                state.service === dock.service && state.on === true && !state.goto &&
+                !find.open && !keysOpen && !document.hidden;
+    var node = quiet ? liveNode() : null;
+    if (quiet) {
+      var otherOpen = false;
+      entryList.querySelectorAll('.entryinner.is-open').forEach(function (inner) {
+        var li = inner.closest('.entryli');
+        if (li && li.dataset.live !== 'true') otherOpen = true;
+      });
+      quiet = !otherOpen && !!node && offScreen(node);
+    }
+    if (quiet) {
+      setFollowing(true);                       /* the idle return is a re-entry */
+      centerRow(node);
+    }
+    idleLastActivity = now;                    /* one glide per idle stretch */
+  }, 100);
 
   /* ---------- the re-read (spec 195 US6) -------------------------------------- */
 
@@ -1687,7 +2142,7 @@
     window.setInterval(function () {
       if (document.hidden || dock.service == null) return;
       delete cache[dock.service];
-      loadServiceData(dock.service);
+      loadServiceData(dock.service, true);
     }, 10000);
   })();
 

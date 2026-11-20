@@ -1,0 +1,52 @@
+<aside class="rail" id="rail" aria-label="Preview controls">
+  <h1>Entry blocks reset when a service opens</h1>
+  <p class="rail__sub">spec 204 · the panel on the left is the product's own rendered markup,
+    <code>obs-dock.css</code> and <code>obs-dock.js</code>. Only the network is stubbed: the
+    entry/screen islands are the ones <code>/projector?service=N</code> really serves.</p>
+
+  <h2>Behaviour</h2>
+  <div class="switch" id="behaviourSwitch">
+    <label>
+      <input type="radio" name="behaviour" value="drafted" checked>
+      <span><b>Drafted — reset on open</b>
+      <span>an explicit open starts every block shut; the live entry keeps its open block</span></span>
+    </label>
+    <label>
+      <input type="radio" name="behaviour" value="today">
+      <span><b>Today — develop {{BASE_SHA}}</b>
+      <span>the override map survives the open, keyed by position</span></span>
+    </label>
+  </div>
+  <p>Switching reloads the page, because page memory is exactly what a reload forgets.</p>
+
+  <h2>Drive it</h2>
+  <p>Click the dock's own picker rows and entry headers, or step the reported sequence:</p>
+  <div class="steps" id="steps">
+    <button type="button" data-run="1">Run the reported sequence</button>
+    {{SERVICE_BUTTONS}}
+    <button type="button" data-step="expand4">Expand position 4</button>
+    <button type="button" data-step="project4">Project position 4</button>
+    <button type="button" data-step="picker">Back to picker</button>
+    <button type="button" data-step="reread">Re-read now</button>
+    <button type="button" data-step="reload">Reload</button>
+  </div>
+
+  <h2>What is painted</h2>
+  <div class="verdict" id="verdict" hidden></div>
+  <table class="readout">
+    <thead>
+      <tr><th>#</th><th>entry</th><th>aria-expanded</th><th>is-open</th><th>height</th></tr>
+    </thead>
+    <tbody id="readout"></tbody>
+  </table>
+  <div class="state" id="stateLine"></div>
+
+  <h2>Trail</h2>
+  <ol class="log" id="log"></ol>
+
+  <h2>Not exercised here</h2>
+  <p>The Go To band and its index fetch, media bytes from the local companion, the projector and
+    overlay surfaces, and the real 10&nbsp;s timer — <em>Re-read now</em> sends the same
+    <code>update</code> channel message the timer's re-read follows. Reduced motion is exercised by
+    <code>probe.py</code> (<code>reduced_motion="reduce"</code>); this slice adds no motion of its own.</p>
+</aside>

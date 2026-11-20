@@ -231,12 +231,21 @@
   /* ---------- the two-line lyric (spec 195 US5) -------------------------------- */
 
   /* A song screen is a two-line object: a line that would wrap shrinks the type until
-     the whole block fits two visual rows, floored at the stylesheet's own clamp floor.
-     A screen that already fits is left exactly as the accepted numbers drew it; the fit
-     changes font-size and nothing else. */
+     the whole block fits two visual rows. The rest is 5 % of the stage height
+     (obs-overlay.css: font-size: 5cqh); the floor is 2 % of that same height. Both
+     follow the stage, so the type keeps its proportion on any source size. Each step
+     takes 4 % of the REST size, not of the current size, so the ladder is linear:
+     0.6 × rest / 0.04 × rest = exactly 15 steps from 5 % to 2 %. A screen that already
+     fits keeps the rest size; the fit changes font-size and nothing else. At the floor
+     the block may exceed two rows — the accepted edge (spec 202). */
   var CAPTION_LINES = 2;
-  var CAPTION_FLOOR = 11;         /* obs-overlay.css clamps the caption at 11px */
+  var CAPTION_FLOOR_RATIO = 0.02;  /* 2cqh, measured against the stage each paint */
+  var CAPTION_STEP_RATIO = 0.04;   /* 4 % of the rest size per step */
   var CAPTION_LINE_HEIGHT = 1.4;  /* obs-overlay.css sets line-height: 1.4 */
+
+  function captionFloor() {
+    return stage.clientHeight * CAPTION_FLOOR_RATIO;
+  }
 
   function visualLines(node) {
     var fontSize = parseFloat(getComputedStyle(node).fontSize);
@@ -246,11 +255,15 @@
 
   function fitCaption(node) {
     node.style.fontSize = '';                     /* measure the sheet's size, not a stale fit */
+    var rest = parseFloat(getComputedStyle(node).fontSize);
+    if (!rest) return;
+    var floor = captionFloor();                   /* 2 % of the stage this paint */
+    var step = rest * CAPTION_STEP_RATIO;         /* 4 % of rest, so 15 steps to the floor */
     var guard = 0;
     while (visualLines(node) > CAPTION_LINES + 0.02 && guard < 60) {
       var fontSize = parseFloat(getComputedStyle(node).fontSize);
-      var next = Math.max(CAPTION_FLOOR, fontSize * 0.94);
-      if (next >= fontSize) break;                /* at the floor: the accepted edge (US5) */
+      var next = Math.max(floor, fontSize - step);
+      if (next >= fontSize) break;                /* at the floor: the accepted edge */
       node.style.fontSize = next + 'px';
       guard += 1;
     }
