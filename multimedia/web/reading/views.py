@@ -182,7 +182,10 @@ def editor_save(request, kind, pk=None):
         return render(request, 'reading/_editor_form.html',
                       _editor_fragment_context(kind, form, pk, target), status=400)
     saved = editors.save_form(kind, form, target)
-    return JsonResponse({'ok': True, 'id': saved.pk, 'kind': kind})
+    data = {'ok': True, 'id': saved.pk, 'kind': kind, 'created': pk is None}
+    if kind == 'tatib':
+        data['record_kind'] = int(saved.kind)
+    return JsonResponse(data)
 
 
 # Sidebar record deletes (spec 190). The guard set mirrors the editors: the
