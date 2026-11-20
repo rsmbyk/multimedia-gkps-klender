@@ -14,7 +14,7 @@ issue: 540
 closed_at: 2026-11-19
 closed_reason: merged into develop (PR #541)
 bump: patch
-release_version:
+release_version: 1.35.0
 ---
 
 # ITEM-213: A long word wraps in the dock runner's service title and entry headers

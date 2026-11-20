@@ -38,7 +38,7 @@ make pass). The code change already landed as preview work; Implement proves it 
 
 - [X] T009 [P] Run `preview/probe.py` before/after; confirm the UI/UX numbers (single-move steps,
   rapid mean_off / max_step) and record raw frames in `preview/shots/`.
-- [ ] T010 Delivery: bump `VERSION` 1.34.2 → 1.34.3, append the `## [Unreleased]` changelog line,
+- [X] T010 Delivery: bump `VERSION` 1.34.2 → 1.34.3, append the `## [Unreleased]` changelog line,
   set card `bump: patch`, move the card to Done before the merge and the board row to
   `develop via [#PR]` — `VERSION`, `CHANGELOG.md`, `backlog/items/ITEM-214-dock-centre-pace.md`,
   `backlog/board.md`. *(Runs at the pre-merge commit, after the owner's push/merge word.)*

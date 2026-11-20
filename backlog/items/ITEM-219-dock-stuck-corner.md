@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-20
 closed_reason: merged into develop (PR #551)
 bump: minor
-release_version:
+release_version: 1.35.0
 ---
 
 # ITEM-219: The live entry header's corners follow its pin state

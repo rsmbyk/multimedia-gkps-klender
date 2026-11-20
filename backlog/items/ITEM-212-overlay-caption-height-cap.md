@@ -14,7 +14,7 @@ issue: 538
 closed_at: 2026-11-19
 closed_reason: merged into develop (PR #539)
 bump: patch
-release_version:
+release_version: 1.35.0
 ---
 
 # ITEM-212: The song caption type is bound to the stage height

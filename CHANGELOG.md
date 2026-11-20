@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.35.0] - 2026-11-20
+
 ### Added
 
 - **The live entry's header pins to the bottom of the OBS dock's runner too.** When the header's bottom

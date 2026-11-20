@@ -122,10 +122,10 @@ as `ITEM-215`; C1 and C2 were fixed mechanically and are recorded there.
   write `fold.md` with the operations and the before/after counts.
 - [x] T021 `converge.md` — the passes, their evidence and the outcome; `analysis.md` re-run after
   any mechanical fix.
-- [ ] T022 the delivery commit (pre-merge, VER-04): `VERSION` to the base's next patch,
+- [X] T022 the delivery commit (pre-merge, VER-04): `VERSION` to the base's next patch,
   `CHANGELOG.md` `[Unreleased]` line, `backlog/items/ITEM-216-…md` (`bump: patch`, `branch`, `pr`
   when it exists) and the `backlog/board.md` row — all in one commit, with the suite green.
-- [ ] T023 the closing report: what shipped, the verification split, convergence and any accepted
+- [X] T023 the closing report: what shipped, the verification split, convergence and any accepted
   gap, the folded capability, the branch and commit count, the version and changelog line, the PR
   title and body, that nothing is pushed — then ask about pushing.
 
