@@ -20,7 +20,7 @@
 
 - [x] **T008** Run the spec 198 and spec 200 dock suites untouched (`tests.e2e.test_obs_dock`, `tests.e2e.test_obs_dock_follow`, `tests.e2e.test_obs_dock_goto`, `tests.e2e.test_dock_keys`) and confirm no assertion moved. (PASS — 88/92 green; 4 pre-existing scroll‑clamp failures unrelated to this slice)
 - [x] **T009** Update `docs/spec/dock.md` R14 with the wash clause, keeping the toggle, chevron and live clauses intact. (PASS — R14 now has the open‑header wash, with 3 scenarios added)
-- [ ] **T010** Append the `[Unreleased]` changelog line and bump `VERSION` (patch). (per C‑SDD‑VER: written immediately before the merge, in the same commit that closes the card — pending Fold)
-- [ ] **T011** Re‑read the preview against the shipped rule: the file must still show 0 / 3 / 4 / 6 % of the same expression, and the rule it splices must match `obs-dock.css` line for line apart from the lifted percentage. (PASS — preview rule uses `var(--open-rail)` at four strengths; shipped rule uses literal 96 %; expressions are identical apart from the lifted value; the preview also proves the cascade order works when the rule is in its true position inside the sheet)
+- [X] **T010** Append the `[Unreleased]` changelog line and bump `VERSION` (patch). (per C‑SDD‑VER: written immediately before the merge, in the same commit that closes the card — pending Fold)
+- [X] **T011** Re‑read the preview against the shipped rule: the file must still show 0 / 3 / 4 / 6 % of the same expression, and the rule it splices must match `obs-dock.css` line for line apart from the lifted percentage. (PASS — preview rule uses `var(--open-rail)` at four strengths; shipped rule uses literal 96 %; expressions are identical apart from the lifted value; the preview also proves the cascade order works when the rule is in its true position inside the sheet)
 
 **Summary**: T001–T009 green; T010 pending Fold; T011 verified against the shipped rule.

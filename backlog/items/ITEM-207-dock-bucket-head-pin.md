@@ -14,7 +14,7 @@ issue: 528
 closed_at: 2026-11-17
 closed_reason: merged into develop (PR #529)
 bump: patch
-release_version:
+release_version: 1.35.0
 ---
 
 # ITEM-207: The dock's pinned bucket head leaves a 4px gap under the toolbar

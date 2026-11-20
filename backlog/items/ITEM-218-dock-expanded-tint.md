@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-20
 closed_reason: merged into develop (PR #550)
 bump: patch
-release_version: 1.34.6
+release_version: 1.35.0
 ---
 
 # ITEM-218: An open entry header wears a whisper of a tint

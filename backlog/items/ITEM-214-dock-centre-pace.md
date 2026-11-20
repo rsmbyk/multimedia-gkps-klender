@@ -14,7 +14,7 @@ issue: 542
 closed_at: 2026-11-19
 closed_reason: merged into develop (PR #544)
 bump: patch
-release_version: —
+release_version: 1.35.0
 ---
 
 # ITEM-214: The dock's re-centring keeps pace with fast advancing

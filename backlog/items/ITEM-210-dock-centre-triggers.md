@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-19
 closed_reason: merged into develop (PR #535)
 bump: minor
-release_version:
+release_version: 1.35.0
 ---
 
 # ITEM-210: The dock centres its live entry only when asked

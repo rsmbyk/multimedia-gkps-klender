@@ -14,7 +14,7 @@ issue: 531
 closed_at: 2026-11-18
 closed_reason: merged into develop (PR #532)
 bump: minor
-release_version:
+release_version: 1.35.0
 ---
 
 # ITEM-208: Dock entry headers expand and collapse their block; items do the jumping

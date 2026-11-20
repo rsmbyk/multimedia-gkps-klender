@@ -39,18 +39,18 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-218](./items/ITEM-218-dock-expanded-tint.md) | An open entry header wears a whisper of a tint | 4 % ink over the rail on `aria-expanded="true"` — half the hover face, so the pointer still outranks the state; the live row keeps its selected fill | feat | P2 | S | [206](../specs/206-dock-expanded-tint/spec.md) | develop via [#550](https://github.com/rsmbyk/multimedia-gkps-klender/pull/550) | 2026-11-19 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-211](./items/ITEM-211-sidebar-date-focus.md) | A clicked service keeps its sidebar date | A click leaves the row link focused, so `li:focus-within` keeps the date hidden after the pointer leaves | fix | P1 | S | [201](../specs/201-sidebar-date-focus/spec.md) | [#537](https://github.com/rsmbyk/multimedia-gkps-klender/pull/537) | 2026-11-19 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-218](./items/ITEM-218-dock-expanded-tint.md) | An open entry header wears a whisper of a tint | 4 % ink over the rail on `aria-expanded="true"` — half the hover face, so the pointer still outranks the state; the live row keeps its selected fill | feat | P2 | S | [206](../specs/206-dock-expanded-tint/spec.md) | develop via [#550](https://github.com/rsmbyk/multimedia-gkps-klender/pull/550) | 2026-11-20 |
+| [ITEM-211](./items/ITEM-211-sidebar-date-focus.md) | A clicked service keeps its sidebar date | A click leaves the row link focused, so `li:focus-within` keeps the date hidden after the pointer leaves | fix | P1 | S | [201](../specs/201-sidebar-date-focus/spec.md) | develop via [#537](https://github.com/rsmbyk/multimedia-gkps-klender/pull/537) | 2026-11-19 |
 | [ITEM-219](./items/ITEM-219-dock-stuck-corner.md) | The live entry header's corners follow its pin state | Pinned but rounded, or in flow but flat: the `.is-stuck` toggle sits behind the NEXT band's motion guard and never re-runs after a glide, a crossing or a hand toggle | fix | P1 | S | [208](../specs/208-dock-stuck-corner/spec.md) | develop via [#551](https://github.com/rsmbyk/multimedia-gkps-klender/pull/551) | 2026-11-20 |
 | [ITEM-221](./items/ITEM-221-live-header-bottom-pin.md) | The live entry header pins to the bottom when it would be cut off | The live label stays fully visible at the bottom edge with flat bottom corners while pinned — a bottom-pinned strip (the header node itself cannot bottom-pin as the block's first child), folded into 208 as US4 | feat | P2 | M | [208](../specs/208-dock-stuck-corner/spec.md) | develop via [#551](https://github.com/rsmbyk/multimedia-gkps-klender/pull/551) | 2026-11-20 |
 | [ITEM-216](./items/ITEM-216-dock-entry-open-reset.md) | Opening a service starts its entry blocks shut | A hand-opened block leaks to the same position in the next service opened, including the same one again; the live entry keeps its open block | fix | P1 | S | [204](../specs/204-dock-entry-open-reset/spec.md) | develop via [#548](https://github.com/rsmbyk/multimedia-gkps-klender/pull/548) | 2026-11-19 |
