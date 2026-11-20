@@ -1,6 +1,6 @@
 ---
 id: ITEM-221
-status: speccing
+status: in review
 title: 'The live entry header pins to the bottom when it would be cut off'
 type: feat
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-20
 updated: 2026-11-20
 spec: specs/208-dock-stuck-corner/spec.md
 branch: fix/208-dock-stuck-corner
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/551
 issue:
 closed_at:
 closed_reason:

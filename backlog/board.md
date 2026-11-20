@@ -23,6 +23,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-217](./items/ITEM-217-unit-lane-known-red.md) | Eight unit-lane tests are red on develop | The legacy tatib payload, image/video projection contracts, rendered voices, three slot endpoints and the shortcuts sheet fail identically on `4b25e796` with the slice's change reverted; 543 tests, 8 failures after collectstatic | fix | P1 | M | — | 2026-11-19 |
 | [ITEM-175](./items/ITEM-175-section-break-divider-box.md) | The section-break divider measures 8px where its test expects 0px | `test_the_divider_takes_the_same_box_as_the_entries` reads `['8px', '8px']` against `['0px', '0px']`; identical on `3e005688^` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-185](./items/ITEM-185-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
+| [ITEM-220](./items/ITEM-220-chevron-e2e-pointer-race.md) | The chevron-eligibility E2E races the pointer on this machine | After the moving screen-row click the pointer can land on the live header, whose live-hover tone never equals the pure selected token the wait demands; base fails 4/5 alone, CI green through 206 | fix | P2 | S | — | 2026-11-20 |
 
 ## Speccing
 
@@ -44,6 +45,8 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-219](./items/ITEM-219-dock-stuck-corner.md) | The live entry header's corners follow its pin state | Pinned but rounded, or in flow but flat: the `.is-stuck` toggle sits behind the NEXT band's motion guard and never re-runs after a glide, a crossing or a hand toggle | fix | P1 | S | [208](../specs/208-dock-stuck-corner/spec.md) | [#551](https://github.com/rsmbyk/multimedia-gkps-klender/pull/551) | 2026-11-20 |
+| [ITEM-221](./items/ITEM-221-live-header-bottom-pin.md) | The live entry header pins to the bottom when it would be cut off | The live label stays fully visible at the bottom edge with flat bottom corners while pinned — a bottom-pinned strip (the header node itself cannot bottom-pin as the block's first child), folded into 208 as US4 | feat | P2 | M | [208](../specs/208-dock-stuck-corner/spec.md) | [#551](https://github.com/rsmbyk/multimedia-gkps-klender/pull/551) | 2026-11-20 |
 | [ITEM-211](./items/ITEM-211-sidebar-date-focus.md) | A clicked service keeps its sidebar date | A click leaves the row link focused, so `li:focus-within` keeps the date hidden after the pointer leaves | fix | P1 | S | [201](../specs/201-sidebar-date-focus/spec.md) | [#537](https://github.com/rsmbyk/multimedia-gkps-klender/pull/537) | 2026-11-19 |
 
 ## Done

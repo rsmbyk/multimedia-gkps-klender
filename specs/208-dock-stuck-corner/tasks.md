@@ -45,7 +45,7 @@
 - [x] **T011** Fold `dock/R17` and `dock/R18` into `docs/spec/dock.md` and write `fold.md`.
   (PASS — 16 → 18 rules, one header update.)
 - [x] **T012** Update `CHANGELOG.md` and bump `VERSION` to 1.35.0 (minor, declared at Plan);
-  mark ITEM-219 and ITEM-221 in review with the PR link. (PASS — see PR.)
+  mark ITEM-219 and ITEM-221 in review with the PR link (#551). (PASS — see PR #551.)
 - [x] **T013** Re-read the preview states against the shipped code and keep the screenshots under
   `preview/shots/`. (PASS — full-fit and staged/band-contact states verified.)
 
