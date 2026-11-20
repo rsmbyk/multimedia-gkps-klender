@@ -1,6 +1,6 @@
 ---
 id: ITEM-222
-status: backlog
+status: in-review
 title: 'A newly created service opens on the reading stage'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-21
 updated: 2026-11-21
 spec: specs/209-open-created-service/spec.md
 branch: feat/209-open-created-service
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/554
 issue:
 closed_at:
 closed_reason:
