@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-21
-**slices**: `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `212-copy-confirm-layer`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1465,3 +1465,31 @@ template-generate and copy-as-template flows SHALL continue to land on the recor
 #### Scenario: a refused create
 - WHEN validation or the request refuses the create
 - THEN no stage opens and the existing error handling stays in place
+
+### R47 — The Copy as template confirmation covers the form it asks about
+
+Pressing **Copy as template** in the edit modal SHALL put its confirmation in a layer over the dialog —
+a scrim across the dialog's whole box and a card centred on it — so the modal's own height does not
+change when it opens and the form beneath it is inert: a click at the form's Save SHALL resolve to the
+confirmation, never to the button. The layer SHALL keep the dialog's rounded silhouette. The card SHALL
+carry `min(468px, 100%)` inside the layer's 16px padding, 22px padding of its own, a 12px radius, the
+canvas fill and the dialog's shadow, an 18px/650 heading over a 13.5px body, and its two answers right
+aligned 8px apart on the card's right edge. The answers SHALL stay the editor's own buttons, its Cancel
+SHALL restore the form as it does today, and the layer SHALL still be hidden by its `hidden` attribute
+when closed. The generate page's own confirmation SHALL keep its present card. (spec 212)
+
+#### Scenario: the confirmation opens
+- WHEN Copy as template is pressed in a Tata Ibadah's edit modal
+- THEN one card appears over a dimmed form, the dialog's height is unchanged, and the form's Save is no longer reachable
+
+#### Scenario: the card's proportions
+- WHEN the confirmation's card is measured in a 480px dialog
+- THEN it is 448 wide with 22px padding, a 12px radius, an 18px/650 heading and a 13.5px body, and its answers end 22px inside its right edge, 8px apart
+
+#### Scenario: closing it
+- WHEN Cancel is pressed in the confirmation
+- THEN the layer hides, the form is visible and operable again, and the dialog's own radius is intact
+
+#### Scenario: the narrow dialog
+- WHEN the dialog is narrowed to the viewport
+- THEN the card shrinks with it inside the layer's padding and never overflows

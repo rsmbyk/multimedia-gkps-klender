@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The Copy as template confirmation now sits over the edit modal instead of stacking under its
+  form.** Pressing the header button dims the form and centres one card on it — the dialog keeps its
+  height, the form's own Save is no longer reachable, and the two answers sit on the card's right edge —
+  where the confirmation used to paint as a second, left-aligned Save row below the first (spec 212).
+
 ## [1.35.2] - 2026-11-21
 
 ### Fixed

@@ -24,6 +24,44 @@ except ImportError:  # pragma: no cover - depends on environment
     HAS_PLAYWRIGHT = False
 
 
+# The confirmation's computed layout, read in one round trip (spec 212). Every number the
+# spec's `## UI/UX` states is here, plus what the form's own Save button resolves to under
+# the layer: `elementFromPoint` at its centre must land inside the confirmation.
+CONFIRMATION_LAYOUT = """
+() => {
+  const box = el => { const b = el.getBoundingClientRect();
+    return {x: b.x, y: b.y, w: b.width, h: b.height, right: b.right, bottom: b.bottom}; };
+  const style = (el, ...props) => Object.fromEntries(
+    props.map(p => [p, getComputedStyle(el).getPropertyValue(p)]));
+  const modal = document.getElementById('editorModal');
+  const layer = modal.querySelector('[data-copy-confirm]');
+  const card = layer.querySelector('.editor__confirm');
+  const heading = card.querySelector('h3');
+  const body = card.querySelector('p');
+  const actions = card.querySelector('.editor__confirm-actions');
+  const save = modal.querySelector('.editor__actions .editor__save');
+  const saveBox = save.getBoundingClientRect();
+  const hit = document.elementFromPoint(saveBox.x + saveBox.width / 2,
+                                        saveBox.y + saveBox.height / 2);
+  return {
+    modal: box(modal), layer: box(layer), card: box(card),
+    heading: box(heading), body: box(body), actions: box(actions), save: box(save),
+    layerStyle: style(layer, 'position', 'display', 'background-color',
+                      'border-top-left-radius'),
+    cardStyle: style(card, 'width', 'padding-top', 'padding-left', 'padding-right',
+                     'border-top-left-radius', 'background-color', 'box-shadow'),
+    headingStyle: style(heading, 'font-size', 'font-weight', 'line-height'),
+    bodyStyle: style(body, 'font-size', 'line-height'),
+    actionsStyle: style(actions, 'display', 'justify-content', 'gap'),
+    buttons: [...actions.querySelectorAll('button')].map(b => ({
+      label: b.textContent.trim(), ...box(b), h: getComputedStyle(b).height})),
+    hit: hit ? hit.className : null,
+    hitInsideLayer: !!(hit && hit.closest('[data-copy-confirm]')),
+  };
+}
+"""
+
+
 @tag('e2e')
 @unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -844,6 +882,98 @@ class TataIbadahTemplateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(copy.kind, tatib.TataIbadahKind.TEMPLATE)
         self.assertIsNone(copy.date)
         self.assertEqual(copy.service_entries.count(), 1)
+
+    # ---- the confirmation is a layer of the modal (spec 212) --------------------
+
+    def open_template_editor(self):
+        """The Edit modal of a template, opened from the sidebar's own row button.
+
+        The copy test above opens a service's; this one needs a template so the title
+        reads `Edit template` and the header button is the only Copy as template on
+        screen before the confirmation opens.
+        """
+        self.open_template()
+        self.page.eval_on_selector(
+            '[data-editor-open="tatib"][data-editor-id="%d"]' % self.template.pk,
+            'el => el.click()')
+        expect(self.page.locator('#editorContent [data-copy-open]')).to_be_visible()
+
+    def test_the_copy_confirmation_covers_the_form(self):
+        """FR-001, FR-002, FR-005, SC-001, SC-002.
+
+        The layer's box is the dialog's box, the dialog's height does not change when it
+        opens, a click at the form's own Save lands on the confirmation instead of the
+        button, the scrim keeps the dialog's 14px silhouette, and `hidden` still hides it
+        once the layer carries a `display` of its own.
+        """
+        self.open_template_editor()
+        before = self.page.evaluate(
+            "() => document.getElementById('editorModal').getBoundingClientRect().height")
+        self.page.click('#editorContent [data-copy-open]')
+        expect(self.page.locator('[data-copy-confirm]')).to_be_visible()
+        layout = self.page.evaluate(CONFIRMATION_LAYOUT)
+
+        self.assertAlmostEqual(layout['modal']['h'], before, delta=0.1,
+                               msg='the dialog must not grow when the confirmation opens')
+        self.assertAlmostEqual(layout['layer']['x'], layout['modal']['x'], delta=0.5)
+        self.assertAlmostEqual(layout['layer']['y'], layout['modal']['y'], delta=0.5)
+        self.assertAlmostEqual(layout['layer']['w'], layout['modal']['w'], delta=0.5)
+        self.assertAlmostEqual(layout['layer']['h'], layout['modal']['h'], delta=0.5)
+        self.assertEqual(layout['layerStyle']['position'], 'absolute')
+        self.assertEqual(layout['layerStyle']['display'], 'grid')
+        self.assertEqual(layout['layerStyle']['border-top-left-radius'], '14px')
+        self.assertNotEqual(layout['layerStyle']['background-color'], 'rgba(0, 0, 0, 0)')
+        self.assertTrue(layout['hitInsideLayer'],
+                        'the form is still live under the confirmation: a click at Save '
+                        'landed on %r' % (layout['hit'],))
+
+        self.page.click('[data-copy-cancel]')
+        self.page.wait_for_timeout(100)
+        self.assertTrue(self.page.locator('[data-copy-confirm]').evaluate(
+            "el => el.hasAttribute('hidden') && getComputedStyle(el).display === 'none'"))
+        self.stop_browser()
+
+    def test_the_copy_confirmation_card_matches_the_preview(self):
+        """FR-003, FR-004, SC-003, SC-004.
+
+        The card carries spec 167's accepted numbers: min(468px, 100%) inside the layer's
+        16px padding — 448px in a 480px dialog — 22px padding, a 12px radius, the canvas
+        fill and the dialog shadow, an 18px/650 heading over a 13.5px body, and its two
+        answers right-aligned 8px apart, 22px inside the card's right edge.
+        """
+        self.open_template_editor()
+        self.page.click('#editorContent [data-copy-open]')
+        expect(self.page.locator('[data-copy-confirm]')).to_be_visible()
+        layout = self.page.evaluate(CONFIRMATION_LAYOUT)
+        card = layout['card']
+
+        self.assertAlmostEqual(card['w'], 448, delta=0.5)
+        # 176.3px holds across the sans faces a machine resolves `ui-sans-serif` to —
+        # measured in the preview at 176.3 for the system face, DejaVu, Liberation and
+        # Noto, and 197.3 only when the body wraps to a third line in a monospace face.
+        self.assertAlmostEqual(card['h'], 176.3, delta=1)
+        self.assertEqual(layout['cardStyle']['padding-top'], '22px')
+        self.assertEqual(layout['cardStyle']['padding-left'], '22px')
+        self.assertEqual(layout['cardStyle']['border-top-left-radius'], '12px')
+        self.assertNotEqual(layout['cardStyle']['background-color'], 'rgba(0, 0, 0, 0)')
+        self.assertNotEqual(layout['cardStyle']['box-shadow'], 'none')
+
+        self.assertEqual(layout['headingStyle']['font-size'], '18px')
+        self.assertEqual(layout['headingStyle']['font-weight'], '650')
+        self.assertEqual(layout['bodyStyle']['font-size'], '13.5px')
+
+        self.assertEqual(layout['actionsStyle']['display'], 'flex')
+        self.assertEqual(layout['actionsStyle']['justify-content'], 'flex-end')
+        self.assertEqual(layout['actionsStyle']['gap'], '8px')
+
+        cancel, accept = layout['buttons']
+        self.assertEqual(accept['label'], 'Copy as template')
+        self.assertAlmostEqual(card['right'] - accept['right'], 22, delta=0.5)
+        self.assertAlmostEqual(accept['x'] - cancel['right'], 8, delta=0.5)
+        self.assertEqual(cancel['h'], '38px')
+        self.assertEqual(accept['h'], '38px')
+        self.stop_browser()
+
 
 
 @tag('e2e')
