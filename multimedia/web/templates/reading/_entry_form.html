@@ -1,6 +1,6 @@
 {% comment %}One kind's fields (spec 006, slice 2). The modal posts this fragment back.{% endcomment %}
 <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
-<form class="editor__form" data-entry-form="{{ kind }}"{% if kind == 'text' or kind == 'media' and not entry %} data-editor-size="large"{% endif %}{% if kind == 'media' and not entry %} data-media-create data-media-register-url="{% url 'web-media-register' %}"{% endif %} action="{{ save_url }}" method="post">
+<form class="editor__form" data-entry-form="{{ kind }}" data-entry-mode="{% if entry %}edit{% else %}new{% endif %}"{% if kind == 'text' or kind == 'media' and not entry %} data-editor-size="large"{% endif %}{% if kind == 'media' and not entry %} data-media-create data-media-register-url="{% url 'web-media-register' %}"{% endif %} action="{{ save_url }}" method="post">
   {% csrf_token %}
   {% if not entry and after %}<input type="hidden" name="after" value="{{ after }}">{% endif %}
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}
@@ -183,32 +183,33 @@
 
   {% elif kind == 'song' %}
   <div class="editor__field{% if form.song.errors %} is-invalid{% endif %}">
-    <label id="entry-song-label" for="entry-song-trigger">Song</label>
+    <label id="entry-song-label" for="entry-song-search">Song</label>
     <div class="editor__picker" data-entry-picker="song">
-      <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
-              data-picker-trigger aria-label="Song" aria-haspopup="listbox" aria-expanded="false"
-              aria-controls="entry-song-menu"{% if form.song.errors %} aria-invalid="true"{% endif %}>
-        <span data-picker-label>{% if song %}{{ song_label }}{% else %}Choose a song{% endif %}</span>
-      </button>
+      <input type="search" id="entry-song-search" class="editor__songsearch" data-menu-anchor
+             placeholder="Search songs..." aria-label="Search songs" autocomplete="off"
+             aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-song-menu"
+             value="{% if song %}{{ song_label }}{% endif %}"{% if form.song.errors %} aria-invalid="true"{% endif %}>
       <div class="editor__picker-menu" id="entry-song-menu" hidden>
-        <input type="search" id="entry-song-search" placeholder="Search songs..."
-               aria-label="Search songs" autocomplete="off">
         <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
       </div>
       <input type="hidden" name="song" id="id_song" value="{{ form.song.value|default:'' }}">
     </div>
     {% for error in form.song.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}
   </div>
-  <div class="editor__field{% if form.verses.errors %} is-invalid{% endif %}">
-    <label id="entry-verses-label" for="entry-verses-trigger">Verses</label>
-    <div class="editor__picker" data-entry-picker="verses">
-      <button type="button" class="editor__picker-trigger" id="entry-verses-trigger"
-              data-verses-trigger aria-haspopup="true" aria-expanded="false"
-              aria-controls="entry-verses-menu"{% if form.verses.errors %} aria-invalid="true"{% endif %}>
-        <span data-verses-summary>{% if form.song_has_no_verses %}This song has no verses{% else %}Pick a song first{% endif %}</span>
-      </button>
-      <div class="editor__picker-menu" id="entry-verses-menu" hidden>
-        <div class="editor__verses" id="entry-verses" data-verses>{{ form.verses }}</div>
+  <div class="editor__field{% if form.verses.errors %} is-invalid{% endif %}" data-verse-field>
+    <label id="entry-verses-label">Verses</label>
+    <div class="editor__verse-panel" data-entry-picker="verses" data-verse-panel{% if not form.song.value or form.song_has_no_verses %} hidden{% else %} data-settled="true"{% endif %}>
+      <div class="editor__verse-panel-inner">
+        <p class="editor__verse-summary" data-verses-summary{% if form.verses.errors %} data-invalid="true"{% endif %}>{% if form.song_has_no_verses %}This song has no verses{% else %}Pick a song first{% endif %}</p>
+        <div class="editor__verse-quick">
+          <span class="editor__verse-hint">Click to tick · hold and drag across tiles to extend</span>
+          <span class="editor__verse-actions">
+            <button type="button" data-verse-all>All</button>
+            <button type="button" data-verse-clear>Clear</button>
+          </span>
+        </div>
+        <div class="editor__verses" id="entry-verses" data-verses data-verse-tiles>{{ form.verses }}</div>
+        <p class="editor__verse-readout sr" data-verse-readout aria-live="polite"></p>
       </div>
     </div>
     {% for error in form.verses.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}

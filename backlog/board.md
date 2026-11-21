@@ -30,7 +30,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-
 ## Ready
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
@@ -51,6 +50,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-227](./items/ITEM-227-song-entry-pickers.md) | Revamp the song entry pickers | Live song search from the first frame, focused-and-selected search text, and an inline bordered verse grid whose summary states `Bait` ranges; a click ticks one verse, a held drag previews a range before release | feat | P1 | M | [210](../specs/210-song-verse-picker/spec.md) | develop via [#561](https://github.com/rsmbyk/multimedia-gkps-klender/pull/561) | 2026-11-21 |
 | [ITEM-218](./items/ITEM-218-dock-expanded-tint.md) | An open entry header wears a whisper of a tint | 4 % ink over the rail on `aria-expanded="true"` — half the hover face, so the pointer still outranks the state; the live row keeps its selected fill | feat | P2 | S | [206](../specs/206-dock-expanded-tint/spec.md) | develop via [#550](https://github.com/rsmbyk/multimedia-gkps-klender/pull/550) | 2026-11-20 |
 | [ITEM-211](./items/ITEM-211-sidebar-date-focus.md) | A clicked service keeps its sidebar date | A click leaves the row link focused, so `li:focus-within` keeps the date hidden after the pointer leaves | fix | P1 | S | [201](../specs/201-sidebar-date-focus/spec.md) | develop via [#537](https://github.com/rsmbyk/multimedia-gkps-klender/pull/537) | 2026-11-19 |
 | [ITEM-219](./items/ITEM-219-dock-stuck-corner.md) | The live entry header's corners follow its pin state | Pinned but rounded, or in flow but flat: the `.is-stuck` toggle sits behind the NEXT band's motion guard and never re-runs after a glide, a crossing or a hand toggle | fix | P1 | S | [208](../specs/208-dock-stuck-corner/spec.md) | develop via [#551](https://github.com/rsmbyk/multimedia-gkps-klender/pull/551) | 2026-11-20 |

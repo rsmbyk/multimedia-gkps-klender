@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The song entry's pickers now work from the first frame.** The Song search takes focus as the Add
+  form opens, selects its text whenever it gains focus, and its results can run past the dialog without
+  resizing it; an Edit form no longer pulls focus into the field. The Verses field is an inline,
+  bordered section of five-across tiles where a click ticks one verse, a held drag previews a range
+  until release, and its summary states the choice as `Bait 1–2` — a form now shared by the entry's
+  `Bait` lines, generate rows and option previews, which collapse a pair too. Songs with no verses hide
+  the section and its label, a one-verse song mutes it, and a server-rendered checklist comes back as the
+  same tile grid after an error. Verse IDs and the existing song search rules stay unchanged (spec 210).
+
 ### Fixed
 
 - **The Copy as template confirmation now sits over the edit modal instead of stacking under its

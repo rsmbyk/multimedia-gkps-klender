@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Song entry — verse picker options</title>
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<link rel="stylesheet" href="preview.css">
+</head>
+<body class="pv-body">
+<header class="pv-bar">
+  <div class="pv-bar__title">
+    <strong>Song entry · verse picker</strong>
+    <span>four interaction models, the real modal chrome</span>
+  </div>
+  <nav class="pv-tabs" aria-label="Picker option">
+    <button type="button" data-option="tiles" aria-selected="true">1 · Tiles</button>
+    <button type="button" data-option="chips" aria-selected="false">2 · From / To</button>
+    <button type="button" data-option="typed" aria-selected="false">3 · Typed range</button>
+    <button type="button" data-option="checkboxes" aria-selected="false">4 · Checkboxes +</button>
+    <button type="button" data-option="song" aria-selected="false">5 · Song search</button>
+    <button type="button" data-option="soft" aria-selected="false">6 · Soft trigger</button>
+  </nav>
+  <div class="pv-bar__tools">
+    <button type="button" id="pvPrev" aria-label="Previous option">←</button>
+    <button type="button" id="pvNext" aria-label="Next option">→</button>
+    <button type="button" id="pvSlow">Slow</button>
+    <button type="button" id="pvTheme">Light</button>
+  </div>
+</header>
+
+<main class="pv-main">
+  <section class="pv-note" aria-live="polite">
+    <h1 id="pvOptionTitle">1 · Number tiles</h1>
+    <p id="pvOptionText"></p>
+    <p class="pv-keys">Keys <kbd>1</kbd>–<kbd>6</kbd> switch option · <kbd>←</kbd>/<kbd>→</kbd> step · <kbd>S</kbd> slow · <kbd>T</kbd> theme Deep link by hash: <code>#tiles</code>, <code>#chips</code>, <code>#typed</code>, <code>#checkboxes</code>, <code>#song</code>, <code>#soft</code>.</p>
+  </section>
+
+  <div class="pv-workbench">
+    <div class="pv-stage">
+      <div class="pv-states" role="group" aria-label="Selection presets">
+        <span class="pv-states__label">State</span>
+        <button type="button" data-preset="all">All</button>
+        <button type="button" data-preset="ranges">1–3, 5, 8–10</button>
+        <button type="button" data-preset="one">One verse</button>
+        <button type="button" data-preset="none">None (invalid)</button>
+        <button type="button" data-preset="long">Long song · 24</button>
+      </div>
+      <div class="pv-states pv-songstates" role="group" aria-label="Song state">
+        <span class="pv-states__label">Song</span>
+        <button type="button" data-song="picked">Picked</button>
+        <button type="button" data-song="none">No song</button>
+        <button type="button" data-song="empty">No verses</button>
+        <button type="button" data-song="single">One verse</button>
+      </div>
+
+      <!-- The real editor dialog markup; only the Verses control is swapped. -->
+      <dialog class="editor pv-dialog" id="editorModal" open aria-labelledby="editorTitle">
+        <div class="editor__content" id="editorContent">
+          <div class="editor__body" data-kind="song">
+            <h2 class="editor__title" id="editorTitle">Add song</h2>
+            <form class="editor__form" data-entry-form="song" id="pvForm">
+              <div class="editor__field" id="pvSongField">
+                <label id="entry-song-label" for="entry-song-trigger">Song</label>
+                <div class="editor__picker" data-entry-picker="song">
+                  <button type="button" class="editor__picker-trigger" id="entry-song-trigger"
+                          data-picker-trigger aria-label="Song" aria-haspopup="listbox"
+                          aria-expanded="false" aria-controls="entry-song-menu">
+                    <span data-picker-label>KJ 152 — Kasih setia Tuhan</span>
+                  </button>
+                  <input type="hidden" name="song" id="id_song" value="152">
+                </div>
+              </div>
+              <div class="pv-verse-slot" data-verse-slot>
+                <div class="pv-verse-slot__inner">
+              <div class="editor__field" id="pvVersesField">
+                <label id="entry-verses-label">Verses</label>
+                <div id="pvControl" class="pv-inline-panel">
+                  <button type="button" class="pv-inline-summary" id="entry-verses-trigger" data-verses-summary>Verses 1</button>
+                  <div id="pvTilesRoot"></div>
+                </div>
+              </div>
+                </div>
+              </div>
+              <div class="editor__actions">
+                <button class="editor__save" type="submit">Save</button>
+                <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+    </div>
+
+    <aside class="pv-side">
+      <h2>What this option does</h2>
+      <div id="pvDescription"></div>
+      <h2>Live readout</h2>
+      <p class="pv-readout" id="pvReadout" role="status"></p>
+      <p class="pv-height" id="pvHeight"></p>
+      <div class="pv-submitted">
+        <span>Form values (<code>name="verses"</code>)</span>
+        <output id="pvValues"></output>
+      </div>
+      <h2>Shared rules</h2>
+      <ul class="pv-rules">
+        <li>All verses start selected, as in the shipped modal.</li>
+        <li>None selected is invalid: <em>No verses: keep at least one</em>.</li>
+        <li>A song with no verses keeps <em>This song has no verses</em>; no song keeps <em>Pick a song first</em>.</li>
+        <li>The hidden checkboxes remain the form-value carrier.</li>
+      </ul>
+    </aside>
+  </div>
+</main>
+<script src="preview.js"></script>
+</body>
+</html>

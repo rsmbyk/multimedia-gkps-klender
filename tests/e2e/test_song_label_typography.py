@@ -61,7 +61,7 @@ class SongLabelTypographyE2ETests(StaticLiveServerTestCase):
         row = self.row(0)
         expect(row.locator('.songrow__reference')).to_have_text('HAL 1')
         expect(row.locator('.songrow__title')).to_have_text('Jahowa Sihol Pujionku')
-        expect(row.locator('.songrow__verses')).to_have_text('Bait 1-7')
+        expect(row.locator('.songrow__verses')).to_have_text('Bait 1–7')
         expect(row.locator('.songrow__reference')).to_have_css('font-weight', '600')
         expect(row.locator('.songrow__reference')).to_have_css('font-size', '12px')
         expect(row.locator('.songrow__title')).to_have_css('font-size', '14px')
