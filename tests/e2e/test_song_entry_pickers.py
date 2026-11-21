@@ -138,9 +138,12 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         page = self._page()
         self._open_song(page)
         panel = page.locator('[data-verse-panel]')
+        # nothing picked: the whole section, label included, is collapsed
         self.assertAlmostEqual(panel.bounding_box()['height'], 0, delta=1)
+        expect(page.locator('#entry-verses-label')).to_be_hidden()
         self._pick(page, 'Kosong')
         self.assertAlmostEqual(panel.bounding_box()['height'], 0, delta=1)
+        expect(page.locator('#entry-verses-label')).to_be_hidden()
         page.locator('#entry-song-search').fill('Bait Tunggal')
         page.locator('#entry-song-options [data-song]').first.click()
         expect(panel).to_be_visible()

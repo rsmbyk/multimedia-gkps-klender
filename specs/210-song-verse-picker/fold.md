@@ -8,7 +8,7 @@
 
 | Requirement | Operation | Detail |
 | --- | --- | --- |
-| `reading/R30` | `modified` | Complete replacement block; the Verses section is hidden for no song and for a no-verses song instead of keeping a disabled trigger. The superseded wording is kept inline as a retraction. All seven original scenarios are retained with their outcomes updated. |
+| `reading/R30` | `modified` | Complete replacement block; the Verses section, label included, is hidden for no song and for a no-verses song instead of keeping a disabled trigger. The superseded wording is kept inline as a retraction. All seven original scenarios are retained with their outcomes updated. |
 | `reading/R43` | `modified` | The summary now collapses consecutive numbers into ranges. IDs, `{id, number}` payload and the refusal are unchanged; the old comma-list wording is kept inline as superseded. |
 | `reading/R47` | `added` | New block: live song search from the first frame, viewport-capped overlay that may pass the dialog edge, inline Verses section with five equal-width tiles and the helper/All/Clear row above the grid, drag preview in the summary line with commit on release, All/Clear end states, one-verse muting and the single reduced-motion-aware reveal. Four scenarios. |
 

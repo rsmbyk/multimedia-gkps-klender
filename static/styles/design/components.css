@@ -2645,6 +2645,8 @@ kbd {
 .editor__verse-panel[hidden] {
   display: grid; grid-template-rows: 0fr; opacity: 0; pointer-events: none;
 }
+/* the label belongs to the section: no song or no verses hides it too */
+[data-verse-field]:has([data-verse-panel][hidden]) > #entry-verses-label { display: none; }
 .editor__verse-summary {
   display: block; width: 100%; margin: 0 0 8px; padding: 0 0 8px;
   border: 0; border-bottom: 1px solid var(--divider); background: none;

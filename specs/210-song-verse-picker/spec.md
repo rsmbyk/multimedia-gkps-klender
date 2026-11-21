@@ -142,7 +142,7 @@ Verses panel, has a 1px rule beneath it, and clicking it collapses only the tile
 | FR-011 | The hidden checkboxes SHALL keep submitting verse IDs, and the fetch SHALL keep returning `{id, number}` pairs. | `reading/R43` (unchanged) |
 | FR-012 | The summary SHALL list verse numbers as collapsed ranges (`Verses 1–3, 5, 8–10`) and keep `All verses` when all are ticked. | `reading/R43` (modified) |
 | FR-013 | All SHALL be disabled when every verse is ticked; Clear SHALL be disabled when none is ticked. | `reading/R47` |
-| FR-014 | With no song, or a song with no live verses, the whole Verses section SHALL be hidden — server-side for the first paint — while the existing save refusals stay in force. | `reading/R30` (modified) |
+| FR-014 | With no song, or a song with no live verses, the whole Verses section — its label included — SHALL be hidden, server-side for the first paint, while the existing save refusals stay in force. | `reading/R30` (modified) |
 | FR-015 | A one-verse song SHALL show one inert tile in a muted section. | `reading/R47` |
 | FR-016 | The section reveal SHALL last 200 ms on the product's existing ease curve and SHALL be instant under reduced motion. | `reading/R47` |
 

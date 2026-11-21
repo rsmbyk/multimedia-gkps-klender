@@ -993,7 +993,7 @@ SHALL NOT change.
 ### R30 — A song entry hides its Verses section when there is nothing to choose
 
 The song entry's Verses section SHALL be hidden when no song is picked, and when the picked song carries no
-live verses. Its summary line SHALL read `Pick a song first` or `This song has no verses` respectively in the
+live verses; its label SHALL be hidden with it, so the field leaves no empty title behind. Its summary line SHALL read `Pick a song first` or `This song has no verses` respectively in the
 server-rendered fragment before any script runs; the collapsed section SHALL measure 0 px and SHALL offer no
 checkbox or menu. A song whose live verses exist SHALL keep the section visible, starting at verse 1 on a
 fresh pick and at the saved verse IDs on an edit. The other lines SHALL stay as they are: `All verses` when
