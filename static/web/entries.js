@@ -297,7 +297,7 @@
      reads what is still included. */
 
   function pickerOf(scope, name) {
-    return scope.querySelector('.editor__picker[data-entry-picker="' + name + '"]');
+    return scope.querySelector('[data-entry-picker="' + name + '"]');
   }
 
   function triggers(scope) {
@@ -321,18 +321,17 @@
   function placeMenu(menu) {
     if (!menu || menu.hidden) return;
     var picker = menu.closest('.editor__picker');
-    var trigger = picker && picker.querySelector('[data-picker-trigger], [data-verses-trigger]');
+    var trigger = picker && picker.querySelector('[data-picker-trigger], [data-verses-trigger], [data-menu-anchor]');
     if (!trigger) return;
     var box = trigger.getBoundingClientRect();
     var gap = 6;
     var edge = 8;
-    var cap = 268;
     var below = window.innerHeight - box.bottom - gap - edge;
     var above = box.top - gap - edge;
-    var flip = below < Math.min(cap, 150) && above > below;
+    var flip = below < 150 && above > below;
     menu.style.left = box.left + 'px';
     menu.style.width = box.width + 'px';
-    menu.style.maxHeight = Math.max(84, Math.min(cap, flip ? above : below)) + 'px';
+    menu.style.maxHeight = Math.max(84, flip ? above : below) + 'px';
     if (flip) {
       menu.setAttribute('data-flip', 'up');
       menu.style.top = 'auto';
@@ -683,10 +682,25 @@
 
   /* ---------- the song pick and its verse checklist ------------------------- */
 
+  function collapsedNumbers(numbers) {
+    var ranges = [];
+    numbers.forEach(function (number) {
+      var last = ranges[ranges.length - 1];
+      if (last && number === last.end + 1) last.end = number;
+      else ranges.push({ start: number, end: number });
+    });
+    return ranges.map(function (range) {
+      return range.start === range.end ? String(range.start)
+        : range.start + '\u2013' + range.end;
+    });
+  }
+
   function verseSummary(picker, box, songPicked) {
     if (!picker) return;
-    var trigger = picker.querySelector('[data-verses-trigger]');
     var summary = picker.querySelector('[data-verses-summary]');
+    var readout = picker.querySelector('[data-verse-readout]');
+    var field = picker.closest('[data-verse-field]');
+    var panel = field && field.querySelector('[data-verse-panel]');
     var boxes = box ? [].slice.call(box.querySelectorAll('input[type=checkbox]')) : [];
     var checked = boxes.filter(function (input) { return input.checked; })
       .map(function (input) {
@@ -694,47 +708,71 @@
         return Number(input.dataset.number != null ? input.dataset.number : input.value);
       })
       .sort(function (a, b) { return a - b; });
-    if (!trigger || !summary) return;
-    if (!boxes.length) {
-      /* No boxes is two states: nothing picked, and a song with nothing in it (spec 162). */
-      summary.textContent = songPicked ? 'This song has no verses' : 'Pick a song first';
-      trigger.disabled = true;
-    } else if (checked.length === boxes.length) {
-      summary.textContent = 'All verses';
-      trigger.disabled = boxes.length === 1;      /* one verse: nothing to choose */
-    } else if (!checked.length) {
-      summary.textContent = 'No verses: keep at least one';
-      trigger.disabled = false;
-    } else {
-      summary.textContent = 'Verses ' + checked.join(', ');
-      trigger.disabled = false;
+    if (summary) {
+      if (!boxes.length) {
+        /* No boxes is two states: nothing picked, and a song with nothing in it (spec 162). */
+        summary.textContent = songPicked ? 'This song has no verses' : 'Pick a song first';
+      } else if (checked.length === boxes.length) {
+        summary.textContent = 'All verses';
+      } else if (!checked.length) {
+        summary.textContent = 'No verses: keep at least one';
+      } else {
+        summary.textContent = 'Verses ' + collapsedNumbers(checked).join(', ');
+      }
     }
+    if (readout) {
+      readout.textContent = checked.length
+        ? checked.length + ' of ' + boxes.length + ' verses · ' + collapsedNumbers(checked).join(', ')
+        : '';
+    }
+    var form = picker.closest('form');
+    var all = form && form.querySelector('[data-verse-all]');
+    var clear = form && form.querySelector('[data-verse-clear]');
+    if (all) all.disabled = !boxes.length || checked.length === boxes.length;
+    if (clear) clear.disabled = !checked.length;
+    if (panel) panel.hidden = !songPicked || !boxes.length;
   }
 
   function renderVerses(box, verses, chosenIds) {
     /* The picker speaks IDs (spec 189's storage): the checkbox value is the verse's
        ID, its label is the number, and `data-number` carries that number so the
-       summary can read either render. A new pick starts with all of them. */
-    var wanted = chosenIds || verses.map(function (verse) { return verse.id; });
+       summary can read either render. A fresh pick starts at verse 1 (spec 210). */
+    var wanted = chosenIds || (verses.length ? [verses[0].id] : []);
     box.innerHTML = verses.map(function (verse) {
       var on = wanted.indexOf(verse.id) !== -1 ? ' checked' : '';
-      return '<div><label class="editor__verse"><input type="checkbox" name="verses" value="' + verse.id
-        + '" data-number="' + verse.number + '"' + on + '> <span>' + verse.number + '</span></label></div>';
+      return '<div><label class="editor__verse-tile"><input type="checkbox" name="verses" value="'
+        + verse.id + '" data-number="' + verse.number + '"' + on + '> <span>'
+        + verse.number + '</span></label></div>';
     }).join('');
+    box.dataset.muted = verses.length === 1 ? 'true' : 'false';
   }
 
   function wireSongPicker(scope) {
     var picker = pickerOf(scope, 'song');
     if (!picker) return;
     var versesPicker = pickerOf(scope, 'verses');
-    var trigger = picker.querySelector('[data-picker-trigger]');
     var hidden = scope.querySelector('#id_song');
     var search = scope.querySelector('#entry-song-search');
+    var menu = scope.querySelector('#entry-song-menu');
     var list = scope.querySelector('#entry-song-options');
-    var label = picker.querySelector('[data-picker-label]');
     var box = scope.querySelector('#entry-verses');
-    if (!hidden || !search || !list || !box) return;
+    if (!hidden || !search || !menu || !list || !box) return;
+    var options = [], active = -1, drag = null, suppressClick = false;
 
+    function markActive() {
+      options.forEach(function (option, index) {
+        option.classList.toggle('is-active', index === active);
+      });
+    }
+    function showMenu() {
+      menu.hidden = false;
+      search.setAttribute('aria-expanded', 'true');
+      placeMenu(menu);
+    }
+    function hideMenu() {
+      menu.hidden = true;
+      search.setAttribute('aria-expanded', 'false');
+    }
     function find(query) {
       return fetch((modal.dataset.entrySongsUrl || '/editor/entry/songs/')
                    + '?q=' + encodeURIComponent(query), { credentials: 'same-origin' })
@@ -743,15 +781,27 @@
           return response.text();
         })
         .then(function (html) {
-          /* A slow answer must not overwrite a newer one: the preload that runs
-             when the menu opens can land after what the person has typed. */
+          /* A slow answer must not overwrite a newer one. */
           if (query !== (search.value || '').trim()) return;
           list.innerHTML = html;
-          placeMenu(list.closest('.editor__picker-menu'));
+          options = [].slice.call(list.querySelectorAll('[data-song]'));
+          active = options.length ? 0 : -1;
+          markActive();
+          showMenu();
         }).catch(function () {
           if (feedback) feedback.showFailure('Could not load songs',
             'Song options could not be loaded. Try again.');
         });
+    }
+    function choose(option) {
+      if (!option) return;
+      hidden.value = option.dataset.song;
+      search.value = option.dataset.songLabel || option.dataset.songTitle || option.textContent.trim();
+      list.innerHTML = '';
+      options = [];
+      active = -1;
+      hideMenu();
+      loadVerses(option.dataset.song);
     }
     function loadVerses(songId) {
       var pattern = modal.dataset.entrySongVersesUrl || '/editor/entry/song/0/verses/';
@@ -762,43 +812,130 @@
         })
         .then(function (data) {
           if (!data || !Array.isArray(data.verses)) throw new Error('unexpected');
-          return data;
-        })
-        .then(function (data) {
           renderVerses(box, data.verses || []);
-          verseSummary(versesPicker, box, !!hidden.value);
-          placeMenu(box.closest('.editor__picker-menu'));
+          verseSummary(versesPicker, box, true);
+          return data;
         })
         .catch(function () {
           if (feedback) feedback.showFailure('Could not load song verses',
             'The selected song’s verses could not be loaded. Try again.');
         });
     }
+    function allInputs() {
+      return [].slice.call(box.querySelectorAll('input[type=checkbox]'));
+    }
+    function syncVerse() { verseSummary(versesPicker, box, !!hidden.value); }
 
+    search.addEventListener('focus', function () {
+      if (!list.innerHTML.trim()) find(search.value.trim());
+      else showMenu();
+    });
     search.addEventListener('input', function () {
       window.clearTimeout(search.dataset.timer);
       search.dataset.timer = window.setTimeout(function () { find(search.value.trim()); }, 140);
     });
-    /* an empty menu is a dead end: offer the first songs when it opens */
-    if (trigger) {
-      trigger.addEventListener('click', function () {
-        if (!list.innerHTML.trim()) find('');
-      });
-    }
+    search.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (menu.hidden) { showMenu(); return; }
+        event.preventDefault();
+        active = Math.max(0, Math.min(options.length - 1,
+          active + (event.key === 'ArrowDown' ? 1 : -1)));
+        markActive();
+      } else if (event.key === 'Enter' && !menu.hidden && active >= 0) {
+        event.preventDefault();
+        choose(options[active]);
+      } else if (event.key === 'Escape' && !menu.hidden) {
+        event.stopPropagation();
+        hideMenu();
+      }
+    });
     list.addEventListener('click', function (event) {
       var option = event.target.closest('[data-song]');
-      if (!option) return;
-      event.preventDefault();
-      hidden.value = option.dataset.song;
-      label.textContent = option.dataset.songLabel
-        || option.dataset.songTitle || option.textContent.trim();
-      search.value = '';
-      list.innerHTML = '';
-      closeMenus(scope);
-      loadVerses(option.dataset.song);
+      if (option) choose(option);
     });
-    box.addEventListener('change', function () { verseSummary(versesPicker, box, !!hidden.value); });
-    verseSummary(versesPicker, box, !!hidden.value);   /* editing: the boxes are already there */
+
+    /* Verse tiles: native checkboxes stay the value carrier; a drag only previews. */
+    box.addEventListener('change', syncVerse);
+    box.addEventListener('click', function (event) {
+      if (!suppressClick) return;
+      event.preventDefault();
+      event.stopPropagation();
+    }, true);
+    box.addEventListener('pointerdown', function (event) {
+      var tile = event.target.closest('.editor__verse-tile');
+      if (!tile || event.button !== 0) return;
+      var input = tile.querySelector('input[type=checkbox]');
+      if (!input || input.disabled) return;
+      var number = Number(input.dataset.number != null ? input.dataset.number : input.value);
+      drag = { start: number, current: number, moved: false };
+      document.addEventListener('pointermove', onDragMove);
+      document.addEventListener('pointerup', onDragEnd);
+      document.addEventListener('pointercancel', onDragEnd);
+    });
+    function onDragMove(event) {
+      if (!drag) return;
+      var hit = document.elementFromPoint(event.clientX, event.clientY);
+      var tile = hit && hit.closest ? hit.closest('.editor__verse-tile') : null;
+      if (!tile) return;
+      var input = tile.querySelector('input[type=checkbox]');
+      if (!input) return;
+      var number = Number(input.dataset.number != null ? input.dataset.number : input.value);
+      if (number === drag.current) return;
+      drag.current = number;
+      drag.moved = true;
+      var lo = Math.min(drag.start, number), hi = Math.max(drag.start, number);
+      [].forEach.call(box.querySelectorAll('.editor__verse-tile'), function (item) {
+        var inputInside = item.querySelector('input[type=checkbox]');
+        var n = Number(inputInside.dataset.number != null ? inputInside.dataset.number : inputInside.value);
+        item.classList.toggle('is-preview', n >= lo && n <= hi);
+      });
+      var readout = scope.querySelector('[data-verse-readout]');
+      if (readout) {
+        readout.textContent = 'Preview: verses ' + lo + (hi === lo ? '' : '\u2013' + hi)
+          + ' \u00b7 release to keep';
+      }
+    }
+    function onDragEnd() {
+      if (!drag) return;
+      var finished = drag;
+      drag = null;
+      document.removeEventListener('pointermove', onDragMove);
+      document.removeEventListener('pointerup', onDragEnd);
+      document.removeEventListener('pointercancel', onDragEnd);
+      var lo = Math.min(finished.start, finished.current);
+      var hi = Math.max(finished.start, finished.current);
+      if (finished.moved) {
+        suppressClick = true;
+        window.setTimeout(function () { suppressClick = false; }, 0);
+        allInputs().forEach(function (input) {
+          var n = Number(input.dataset.number != null ? input.dataset.number : input.value);
+          if (n >= lo && n <= hi) input.checked = true;
+        });
+      }
+      [].forEach.call(box.querySelectorAll('.editor__verse-tile'), function (item) {
+        item.classList.remove('is-preview');
+      });
+      syncVerse();
+    }
+
+    var allButton = scope.querySelector('[data-verse-all]');
+    var clearButton = scope.querySelector('[data-verse-clear]');
+    if (allButton) allButton.addEventListener('click', function () {
+      allInputs().forEach(function (input) { input.checked = true; });
+      syncVerse();
+    });
+    if (clearButton) clearButton.addEventListener('click', function () {
+      allInputs().forEach(function (input) { input.checked = false; });
+      syncVerse();
+    });
+    var toggle = versesPicker && versesPicker.querySelector('[data-verses-toggle]');
+    if (toggle) toggle.addEventListener('click', function () {
+      var panel = scope.querySelector('[data-verse-panel]');
+      if (panel) panel.dataset.closed = panel.dataset.closed === 'true' ? 'false' : 'true';
+    });
+
+    syncVerse();                       /* editing: the boxes are already there */
+    window.setTimeout(function () { search.focus(); }, 0);
   }
 
   /* ---------- the text form's Save guard ------------------------------------ */

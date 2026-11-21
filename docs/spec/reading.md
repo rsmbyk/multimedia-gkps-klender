@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-21
-**slices**: `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -990,35 +990,37 @@ SHALL NOT change.
 - WHEN the theme changes
 - THEN every mark repaints with its own element's ink and needs no repaint of its own
 
-### R30 — A song entry names a song that has no verses
+### R30 — A song entry hides its Verses section when there is nothing to choose
 
-The song entry's Verses field SHALL tell a picked song that carries no verses apart from no song picked at
-all: with no song picked the field reads `Pick a song first`, and with a song picked whose live verses are
-empty it reads `This song has no verses`. The second line SHALL be in the server's own form fragment, not
-only written by the page's script, and the field SHALL stay disabled there — an empty verse menu is not
-offered — because there is nothing to choose.
+The song entry's Verses section SHALL be hidden when no song is picked, and when the picked song carries no
+live verses. Its summary line SHALL read `Pick a song first` or `This song has no verses` respectively in the
+server-rendered fragment before any script runs; the collapsed section SHALL measure 0 px and SHALL offer no
+checkbox or menu. A song whose live verses exist SHALL keep the section visible, starting at verse 1 on a
+fresh pick and at the saved verse IDs on an edit. The other lines SHALL stay as they are: `All verses` when
+every verse is included, a collapsed range list when some are, and `No verses: keep at least one` when a
+song's boxes were all cleared. A refusal caused by a verse-less song SHALL name the song —
+`This song has no verses: pick another song.` — while clearing every box of a song with verses SHALL keep
+`Keep at least one verse in the service.` (spec 210; modifies the earlier disabled-trigger rule.)
 
-The other lines SHALL stay as they are: `All verses` when every verse is included, `Verses n, …` when some
-are, and `No verses: keep at least one` when a song's boxes were all cleared. A refusal caused by the
-chosen song carrying no verses SHALL name the song — `This song has no verses: pick another song.` — while
-a refusal caused by clearing every box of a song that has verses SHALL keep
-`Keep at least one verse in the service.`
+**Superseded (spec 210):** the earlier requirement kept the section visible with a disabled trigger reading
+`This song has no verses` and no checkbox drawn. That surface is replaced by a hidden section; the two
+refusal messages and the stale-verse survival rule are unchanged.
 
 #### Scenario: a song with no verses is picked
 - WHEN a song whose live verses are empty is picked in the song entry
-- THEN the Verses field reads `This song has no verses`, its trigger is disabled, and no checkbox is drawn
+- THEN the Verses section collapses to 0 px, no checkbox is drawn, and the refusal still names the song
 
 #### Scenario: nothing is picked
 - WHEN the song entry opens with no song chosen
-- THEN the Verses field reads `Pick a song first`
+- THEN the Verses section is hidden and its summary reads `Pick a song first`
 
 #### Scenario: the first paint of an edit
 - WHEN the server renders the form of a stored song entry whose song has no live verses
-- THEN its markup carries `This song has no verses` before any script runs
+- THEN the section is hidden in the fragment before any script runs
 
 #### Scenario: the stored verses survive
 - WHEN an entry stores verse numbers the song no longer carries
-- THEN those numbers remain choices, the field is not in the no-verses state, and the entry stays saveable
+- THEN those numbers remain choices, the section is visible, and the entry stays saveable
 
 #### Scenario: saving a verse-less song
 - WHEN Save is pressed with a song that carries no verses chosen
@@ -1030,7 +1032,8 @@ a refusal caused by clearing every box of a song that has verses SHALL keep
 
 #### Scenario: the verses cannot be loaded
 - WHEN the verses request fails for a picked song
-- THEN the failure notice is shown and the field keeps the line it had
+- THEN the failure notice is shown and the section keeps the state it had
+
 
 ### R31 — A preview's play shortcut leaves no focus ring on the dialog
 
@@ -1368,23 +1371,28 @@ reset or re-fetched by the control: the detour keeps its place, and the window a
 ### R43 — A song entry's verse checklist speaks verse IDs and names numbers
 
 The song entry's verse checklist SHALL submit verse IDs — the storage contract since the checklist was
-rebuilt (spec 189) — and SHALL show each verse's number as its label, with that number carried on the
-box (`data-number`) so the summary can name numbers from the script-rendered and the server-rendered
-checklist alike. The picker's fetch SHALL answer `{id, number}` pairs, never bare numbers, and the
-verses summary SHALL read `Verses 1, 3` — numbers, never IDs — whichever render produced the boxes.
-The stored list SHALL stay a list of verse IDs. (spec 195)
+rebuilt (spec 189) — and SHALL show each verse's number as its tile label, with that number carried on the
+box (`data-number`) so the summary can read either render. The picker's fetch SHALL answer `{id, number}`
+pairs, never bare numbers, and the summary SHALL collapse consecutive numbers into ranges
+(`Verses 1–3, 5, 8–10`) — numbers, never IDs — whichever render produced the boxes; `All verses` stays the
+line when every verse is ticked. The stored list SHALL stay a list of verse IDs. (spec 195; summary wording
+modified by spec 210.)
+
+**Superseded (spec 210):** the earlier summary read `Verses 1, 3` with a comma for every number. The storage
+and payload contracts are unchanged.
 
 #### Scenario: a fresh pick saves
-- WHEN a song is picked, its verses checked and the entry saved
+- WHEN a song is picked, its verses chosen and the entry saved
 - THEN the entry is created with those verse IDs, and the stage names the picked verse numbers
 
 #### Scenario: the re-rendered checklist reads like the fresh one
 - WHEN the form is re-rendered by the server — after a refusal, or when editing a stored entry
-- THEN each box carries its verse's ID as the value and its number beside it, and the summary names numbers
+- THEN each box carries its verse's ID as the value and its number beside it, and the summary collapses numbers into ranges
 
 #### Scenario: the refusal stands
 - WHEN every box is cleared and the entry is saved
 - THEN the refusal is `Keep at least one verse in the service.`, as before
+
 
 ### R44 — The first sidebar rests for fifteen quiet minutes
 
@@ -1465,3 +1473,39 @@ template-generate and copy-as-template flows SHALL continue to land on the recor
 #### Scenario: a refused create
 - WHEN validation or the request refuses the create
 - THEN no stage opens and the existing error handling stays in place
+
+
+### R47 — The song entry's two pickers work from the first frame
+
+The song entry's Song field SHALL be a live search input focused on the first frame of the Add or Edit
+form; typing SHALL narrow the existing grouped results without a preceding trigger click. Results SHALL
+render in the product's fixed, viewport-capped menu anchored to the search field, MAY extend past the
+dialog's bottom edge, and SHALL NOT resize the dialog. The existing query grammar, hymn-first order,
+short-reference labels and 200-result cap are unchanged (specs 042/050/051). Arrow keys move the result
+highlight, Enter picks it, Escape closes the list and keeps the text, and a tap picks on touch.
+
+The Verses section SHALL be part of the form's flow: its summary line lives inside it with a 1px separator
+below, the tile grid uses five 40px tiles per row with 7px gaps at the 480px dialog width, and no dropdown
+chevron or floating verse menu SHALL be drawn. A plain click ticks or unticks one tile. A held press and
+drag SHALL preview the whole stretch — tinting the tiles and naming it in the readout — while the hidden
+`name="verses"` inputs keep their pre-drag values, and SHALL commit the IDs only on release with no anchor
+mark left behind. `All` SHALL be disabled at all-ticked and `Clear` at none-ticked. A one-verse song SHALL
+show one inert tile in a muted section. The section's reveal SHALL last 200 ms on the product's existing
+ease curve and SHALL be instant under `prefers-reduced-motion`. (spec 210)
+
+#### Scenario: search from the first frame
+- WHEN the Add song form opens and the operator types without clicking
+- THEN the focused search input narrows the grouped results, and Enter or a tap fills the hidden song ID
+
+#### Scenario: a result list past the dialog edge
+- WHEN the result list grows from one match to many
+- THEN it may run past the dialog's bottom edge, stays inside the window, and the dialog height does not change
+
+#### Scenario: a drag is previewed before it is kept
+- WHEN a tile is held and the pointer is dragged across a stretch
+- THEN the stretch is tinted and previewed in the readout while every hidden verse value stays unchanged, and the IDs are written on release
+
+#### Scenario: a section that reads as part of the form
+- WHEN the Verses section renders
+- THEN the summary is inside it, a 1px rule separates it from the controls, and the soft summary collapses only the tiles
+
