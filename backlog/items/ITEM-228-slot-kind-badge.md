@@ -1,6 +1,6 @@
 ---
 id: ITEM-228
-status: in-review
+status: done
 title: 'A fill-in and a choice state the kind they resolve to'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: 213
 branch: feat/213-slot-kind-badge
 pr: 563
 issue: 562
-closed_at:
-closed_reason:
+closed_at: 2026-11-21
+closed_reason: merged into develop (PR #563)
 bump: patch
 release_version:
 ---
