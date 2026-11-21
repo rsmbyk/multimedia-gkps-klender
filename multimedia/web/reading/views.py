@@ -1452,7 +1452,8 @@ def _tatib_stage(service):
                 label_lines = [f'Section {text_count}']
             toc.append({'eos': False, 'anchor': anchor, 'n': text_count,
                         'label': ' '.join(label_lines), 'label_lines': label_lines,
-                        'titled': bool(row.title), 'txt': f'{row.title} {row.text}'})
+                        'titled': bool(row.title), 'txt': f'{row.title} {row.text}',
+                        'mark': 'text'})
             continue
 
         anchor = f'e{row.pk}'
@@ -1534,7 +1535,8 @@ def _tatib_stage(service):
             toc.append({'eos': False, 'anchor': anchor, 'n': text_count,
                         'label': title or label, 'label_lines': [title or label],
                         'titled': bool(title), 'pk': row.pk, 'entry': True,
-                        'txt': f'{label} {title}'})
+                        'txt': f'{label} {title}',
+                        'mark': kind_key, 'mark_kind': slot_kind})
             continue
         if kind_key == 'section_break':
             # One divider for both shapes: a section_break entry draws the same rule as
@@ -1616,7 +1618,7 @@ def _tatib_stage(service):
                         'pk': row.pk, 'entry': True,
                         'song_label': song_label, 'song_reference': song_reference,
                         'song_title': song_title, 'verse_line': verse_line,
-                        'txt': filter_text})
+                        'txt': filter_text, 'mark': kind_key})
     # "+ Add option" belongs under the last option of its choice, not under the choice's
     # title: an option is its own row, so only the final one knows that it is last. A choice
     # with no options yet has no such row, so the choice itself carries the control --

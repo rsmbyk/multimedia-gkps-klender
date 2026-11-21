@@ -1700,6 +1700,33 @@ li:hover > .row-delete,
   min-width: 3.4rem;
 }
 .songrow[aria-current="true"] .songrow__c { color: var(--ink); }
+/* spec 214: a contents row states its entry's kind in a column after the number.
+   The number box narrows to 24px (it grows past three digits rather than clip),
+   the gap tightens to 8px, and the 16px mark takes the seat the label lost.
+   Scoped to #chList: the songbook sidebar keeps its 3.4rem number and 10px gap. */
+#chList .songrow { gap: 8px; }
+#chList .songrow__c { min-width: 24px; }
+.songrow__mark {
+  flex: none; width: 16px; height: 16px; display: block;
+  color: var(--head-ink); pointer-events: none;
+}
+.songrow__mark svg { width: 100%; height: 100%; display: block; }
+.songrow__mark--slot { position: relative; }
+/* The kind modifier: spec 213's badge resized from a 20px mark to this 16px one.
+   The disc paints the row's own face so it never reads as a hole on the hover fill. */
+.songrow__mark .slot__badge {
+  position: absolute; right: -3px; bottom: -2px;
+  width: 11px; height: 11px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--canvas); color: var(--head-ink);
+}
+.songrow__mark .slot__badge svg { width: 8px; height: 8px; stroke-width: 1.6; }
+#chList li:hover > .songrow .songrow__mark .slot__badge,
+.songrow[aria-current="true"] .songrow__mark .slot__badge {
+  background-image: linear-gradient(var(--icon-hover-bg), var(--icon-hover-bg));
+}
+.songrow[aria-current="true"] .songrow__mark,
+.songrow[aria-current="true"] .songrow__mark .slot__badge { color: var(--ink); }
 /* A contents row is three lines of its own text, whatever it holds (spec 135): the box
    clamps at three line boxes, and a line too wide for the pane wraps inside it instead
    of running past it. */

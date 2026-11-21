@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A service entry's row in the contents sidebar now carries that entry's kind mark.** After the
+  order number a 16px mark names the entry at a glance: an open book for a passage, a beamed note for a
+  song, a framed play mark for media and three rules for text; a legacy text row is marked as text.
+  Fill-ins and choices keep their dashed slot mark and gain the corner badge naming the kind they will
+  become, as on the stage. Section-break dividers keep their rule and stay unmarked. The number box
+  narrows to 24px so the label column moves only 8.39px, and both themes and the hover and selected
+  fills keep the mark legible (spec 214).
 - **The copy of a Tata Ibadah is now named where it is asked for.** **Copy as template** opens a
   confirmation of its own — a second dialog over the edit modal, its card centred on the window while
   the modal stays open and dimmed behind it — carrying a Name field that starts as the source's name
