@@ -34,6 +34,13 @@ COPY . .
 # A monospaced fallback is a silent re-wrap of every slide, so the build refuses one.
 RUN python -m multimedia.slide_fonts
 
+# Git for Windows checks text files out with CRLF by default, and nothing here pinned the shell
+# scripts, so a Windows clone built an image whose `docker/entrypoint.sh` began `set -e\r`: `/bin/sh`
+# refused it at line 2, the container exited 2, and `restart: unless-stopped` turned that into a loop
+# (spec 216). The strip is here rather than in a launcher because the launcher is optional — plain
+# `docker compose up` must start too — and it is a no-op on a file that already has no CR.
+RUN sed -i 's/\r$//' docker/entrypoint.sh
+
 RUN chmod +x docker/entrypoint.sh
 
 EXPOSE 8000

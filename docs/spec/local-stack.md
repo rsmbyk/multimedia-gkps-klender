@@ -1,8 +1,8 @@
 # local-stack
 
 **capability**: `local-stack`
-**last folded**: 2026-11-14
-**slices**: `191-compose-restart`, `182-host-font-detection`
+**last folded**: 2026-11-21
+**slices**: `216-windows-checkout-start`, `191-compose-restart`, `182-host-font-detection`
 
 The local Docker Compose stack on an operator's computer: what it needs from the machine it runs on,
 and how it reaches the fonts that machine already has. Created by spec 182 — before it, the stack's
@@ -70,3 +70,41 @@ operator stopped on purpose stays stopped across daemon restarts. (spec 191)
 - **Given** the web service starts while the database is still initialising after a restart,
   **When** its entrypoint fails, **Then** the policy retries with backoff and the stack converges
   to healthy with no manual step.
+
+### R4 — The stack starts from a checkout made on any platform
+
+The stack SHALL start from a checkout made on any platform it supports, whatever line endings that
+checkout's git produced: the image SHALL make its own entrypoint runnable under `/bin/sh` rather than
+depend on the build context, and the repository SHALL pin its shell scripts to LF so a platform that
+rewrites text files on checkout does not produce a CRLF copy. The pin SHALL cover `*.sh` only — a
+PowerShell script keeps CRLF. Because the strip lives in the image, a plain `docker compose up` SHALL
+start as the launcher does, and a checkout made before the pin existed SHALL start without being
+re-cloned. (spec 216)
+
+**Scenarios**
+
+- **Given** a checkout whose `docker/entrypoint.sh` carries CRLF line endings, **When** the image is
+  built and the stack started, **Then** the entrypoint reaches its `exec "$@"` and the web and media
+  services stay up rather than restarting.
+- **Given** a checkout made with `core.autocrlf=true`, **When** the shell scripts are inspected,
+  **Then** they hold LF, and `docker/up.ps1` does not.
+- **Given** a checkout that predates the pin, **When** the stack is started, **Then** it starts
+  anyway — the strip is a build step, not a repository state.
+
+### R5 — A launcher start reports what it could not inspect
+
+The launchers' post-start font check SHALL report, never abort: when the check cannot run — the
+companion is not running — the launcher SHALL print one line naming the companion as not running and
+pointing at `docker compose logs media`, and SHALL NOT print the empty-mount message instead. The
+check SHALL NOT change the exit status of the start it follows, and a start that failed SHALL run no
+check at all. Both launchers SHALL behave identically. (spec 216)
+
+**Scenarios**
+
+- **Given** a start that succeeded and a companion that is restarting, **When** the check runs,
+  **Then** one line names the companion and `docker compose logs media`, and the launcher exits with
+  the status the start returned.
+- **Given** a start that succeeded and a running companion that sees no mounted font, **When** the
+  check runs, **Then** the File-Sharing message is printed, unchanged.
+- **Given** a start that failed, **When** the launcher finishes, **Then** no check runs and the
+  failing status is what it exits with.

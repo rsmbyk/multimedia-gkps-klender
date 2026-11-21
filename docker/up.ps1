@@ -69,10 +69,22 @@ $status = $LASTEXITCODE
 
 # A shared path Docker cannot read mounts as an empty directory without an error, so the start is
 # followed by one look inside: nothing visible means the operator is told instead of quietly drawing
-# with the image's faces.
+# with the image's faces. The count is asked for through a command that always succeeds, so a non-zero
+# status from `exec` can only mean the container — not a grep that matched nothing. PowerShell 5.1
+# turns a native command's stderr into a terminating error under 'Stop', which is why the block runs
+# under 'Continue': a companion that is not running is reported, never thrown, and the start's own
+# status is what the script exits with.
 if ($status -eq 0 -and $count -gt 0 -and $rest[0] -eq 'up') {
-    $seen = (& docker compose @composeArgs exec -T media sh -c 'fc-list 2>/dev/null | grep -c "/usr/share/fonts/host/"') 2>$null
-    if (-not $seen -or [int]$seen -eq 0) {
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $seen = (& docker compose @composeArgs exec -T media sh -c 'n=$(fc-list 2>/dev/null | grep -c "/usr/share/fonts/host/"); printf "%s" "$n"; exit 0' 2>$null)
+    $checked = $LASTEXITCODE
+    $ErrorActionPreference = $previousPreference
+    $counted = "$seen".Trim()
+    if ($checked -ne 0 -or $counted -notmatch '^\d+$') {
+        Write-Output 'gkps: the media companion is not running — the font mounts were not checked; see docker compose logs media'
+    }
+    elseif ([int]$counted -eq 0) {
         Write-Output 'gkps: the mounted font directories showed no font to the companion'
         Write-Output 'gkps: check Docker > Settings > Resources > File Sharing for the paths above'
     }

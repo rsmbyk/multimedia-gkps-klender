@@ -1,0 +1,9 @@
+# A shell script in this repository is LF, whatever the computer's git does.
+#
+# Git for Windows defaults to core.autocrlf=true, which rewrites text files on checkout. The scripts
+# under docker/ are read by /bin/sh inside a Linux container, where a CRLF `set -e` is
+# `set -e\r` — "Illegal option" — and the container exits before it starts the app (spec 216).
+#
+# Only *.sh is pinned. Pinning the whole tree would rewrite every file in an existing Windows
+# checkout, and *.ps1 is the one consumer that wants CRLF.
+*.sh text eol=lf
