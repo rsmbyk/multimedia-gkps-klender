@@ -84,6 +84,45 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         tatib.ServiceEntry.objects.create(
             tatib=self.service, order_number=3, kind=tatib.ServiceEntryKind.SCRIPTURE,
             book_translation=matius, chapter=5, verse_start=3, verse_end=4)
+        # 4 — a leader's turn continuing on an unmarked line (spec 211).
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, order_number=4, kind=tatib.ServiceEntryKind.TEXT,
+            title='Pengakuan Iman',
+            text=('L. Aku percaya kepada Allah\n'
+                  'Bapa yang mahakuasa, Khalik langit dan bumi.'))
+        # 5 — the same turn with a new voice after it, held on one screen.
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, order_number=5, kind=tatib.ServiceEntryKind.TEXT,
+            title='Pengakuan Iman', default_screen_mode=tatib.TextScreenMode.SINGLE_SCREEN,
+            text=('L. Aku percaya kepada Allah\n'
+                  'Bapa yang mahakuasa, Khalik langit dan bumi.\n'
+                  'J. Amin.'))
+        # 6 — a continuation long enough to wrap inside the plate.
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, order_number=6, kind=tatib.ServiceEntryKind.TEXT,
+            title='Pengakuan Iman',
+            text=('L. Aku percaya kepada Allah\n'
+                  'Bapa yang mahakuasa, Khalik langit dan bumi, dan kepada Yesus Kristus, '
+                  'Anak-Nya yang tunggal, Tuhan kita, yang dikandung daripada Roh Kudus, '
+                  'lahir dari anak dara Maria, yang menderita di bawah pemerintahan '
+                  'Pontius Pilatus, disalibkan, mati dan dikuburkan.'))
+        # 7 — two screens: the second begins mid-turn and paints no mark.
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, order_number=7, kind=tatib.ServiceEntryKind.TEXT,
+            title='Pengakuan Iman',
+            text=('L. Di dalam nama Allah Bapa\n'
+                  'dan Tuhan Yesus Kristus\n'
+                  'dan Roh Kudus, Pencipta langit dan bumi\n'
+                  'yang telah memanggil kita ke dalam persekutuan.'))
+        # 8 — a cue resets the voice; a later body has no speaker at all.
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, order_number=8, kind=tatib.ServiceEntryKind.TEXT,
+            title='Nyanyian',
+            text=('Nyanyian: Kidung Jemaat 152\n'
+                  'Tuhan, kasihanilah kami\n'
+                  '\n'
+                  'Hari ini kita berdoa bersama\n'
+                  'Tuhan, dengarkanlah kami.'))
 
         self._playwright = sync_playwright().start()
         try:
@@ -125,6 +164,16 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
             " return s && s.service === service && s.on === true; }", arg=self.service.pk)
         return dock
 
+    def _project_screen(self, context, entry_index, screen_index):
+        """Project a chosen screen of an entry, for bodies whose turn spans screens."""
+        dock = self._dock(context)
+        dock.locator('.entryrow').nth(entry_index).click()
+        dock.locator(f'.entryli[data-index="{entry_index}"] .screenerow').nth(screen_index).click()
+        dock.wait_for_function(
+            "service => { const s = JSON.parse(localStorage.getItem('gkps-display') || 'null');"
+            " return s && s.service === service && s.on === true; }", arg=self.service.pk)
+        return dock
+
     def _overlay(self, context, selector):
         overlay = context.new_page()
         overlay.goto(self.live_server_url + '/obs/source/overlay')
@@ -141,6 +190,28 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
             arg=selector)
         overlay.evaluate("() => document.fonts.ready")
         return overlay
+
+    def _flush_geometry(self, overlay):
+        """The lines' glyph x against the plate's content edge (spec 211's no-indent case)."""
+        return overlay.evaluate("""() => {
+            const plate = document.querySelector('.obs-overlay__plate');
+            const sheet = getComputedStyle(plate);
+            const contentLeft = plate.getBoundingClientRect().left
+                + parseFloat(sheet.paddingLeft) + parseFloat(sheet.borderLeftWidth);
+            const lines = [...document.querySelectorAll('.obs-overlay__line')];
+            const firstX = node => {
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              return [...range.getClientRects()].filter(r => r.width > 0)[0].left;
+            };
+            return {
+              text: lines.map(line => line.textContent),
+              lefts: lines.map(firstX),
+              contentLeft: contentLeft,
+              marks: document.querySelectorAll('.obs-overlay__speaker').length,
+              continued: document.querySelectorAll('.obs-overlay__line.is-continuation').length
+            };
+        }""")
 
     def _computed(self, page, selector, *properties):
         return page.evaluate("""([selector, properties]) => {
@@ -379,6 +450,137 @@ class ObsOverlayE2ETests(StaticLiveServerTestCase):
         self.assertIsNotNone(answer_left, 'the answer line has no words span')
         self.assertLessEqual(abs(answer_left - measured['lefts'][0]), 1,
                              f'answer words at {answer_left}, leader at {measured["lefts"][0]}')
+        context.close()
+
+    # ---------- a speaker's turn (spec 211) ------------------------------------
+
+    def test_a_continuation_hangs_at_the_marked_words(self):
+        context = self.browser.new_context(viewport={'width': 1280, 'height': 720})
+        self._project(context, 3)
+        overlay = self._overlay(context, '.obs-overlay__plate')
+        measured = overlay.evaluate("""() => {
+            const lines = [...document.querySelectorAll('.obs-overlay__line')];
+            const marked = document.querySelector('.obs-overlay__line.has-mark');
+            const words = marked.querySelector('.obs-overlay__words');
+            const cont = lines.find(line => line !== marked);
+            const firstX = node => {
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              return [...range.getClientRects()].filter(r => r.width > 0)[0].left;
+            };
+            return {
+              lines: lines.length,
+              mark: marked.querySelector('.obs-overlay__speaker').textContent,
+              wordsX: firstX(words),
+              contX: firstX(cont),
+              contText: cont.textContent,
+              contClass: cont.className,
+              hasSpeakerSpan: !!cont.querySelector('.obs-overlay__speaker'),
+              wordsColor: getComputedStyle(words).color,
+              contColor: getComputedStyle(cont).color
+            };
+        }""")
+        self.assertEqual(measured['lines'], 2, measured)
+        self.assertEqual(measured['mark'], 'L.', measured)
+        self.assertTrue(measured['contText'].startswith('Bapa'), measured)
+        self.assertLessEqual(abs(measured['contX'] - measured['wordsX']), 1, measured)
+        self.assertIn('is-continuation', measured['contClass'], measured)
+        self.assertIn('is-leader', measured['contClass'], measured)
+        self.assertFalse(measured['hasSpeakerSpan'], measured)
+        self.assertEqual(measured['contColor'], measured['wordsColor'], measured)
+        context.close()
+
+    def test_the_widest_mark_sets_the_continuation_column(self):
+        context = self.browser.new_context(viewport={'width': 1280, 'height': 720})
+        self._project(context, 4)
+        overlay = self._overlay(context, '.obs-overlay__plate')
+        measured = overlay.evaluate("""() => {
+            const firstX = node => {
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              return [...range.getClientRects()].filter(r => r.width > 0)[0].left;
+            };
+            const cont = document.querySelector('.obs-overlay__line.is-continuation');
+            return {
+              lines: document.querySelectorAll('.obs-overlay__line').length,
+              marks: [...document.querySelectorAll('.obs-overlay__speaker')].map(m => m.textContent),
+              words: [...document.querySelectorAll('.obs-overlay__words')].map(firstX),
+              contX: cont ? firstX(cont) : null
+            };
+        }""")
+        self.assertEqual(measured['lines'], 3, measured)
+        self.assertEqual(measured['marks'], ['L.', 'J.'], measured)
+        self.assertLessEqual(max(measured['words']) - min(measured['words']), 1, measured)
+        self.assertIsNotNone(measured['contX'], measured)
+        self.assertLessEqual(abs(measured['contX'] - measured['words'][0]), 1, measured)
+        context.close()
+
+    def test_a_wrapped_continuation_keeps_every_row_at_the_words_column(self):
+        context = self.browser.new_context(viewport={'width': 1280, 'height': 720})
+        self._project(context, 5)
+        overlay = self._overlay(context, '.obs-overlay__plate')
+        measured = overlay.evaluate("""() => {
+            const cont = document.querySelector('.obs-overlay__line.is-continuation');
+            if (!cont) return {cont: false};
+            const firstX = node => {
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              return [...range.getClientRects()].filter(r => r.width > 0)[0].left;
+            };
+            const range = document.createRange();
+            range.selectNodeContents(cont);
+            const rects = [...range.getClientRects()].filter(r => r.width > 0);
+            const plate = document.querySelector('.obs-overlay__plate');
+            const sheet = getComputedStyle(plate);
+            return {
+              cont: true,
+              words: firstX(document.querySelector('.obs-overlay__words')),
+              lefts: rects.map(rect => rect.left),
+              inkRight: Math.max(...rects.map(rect => rect.right)),
+              contentRight: plate.getBoundingClientRect().right
+                  - parseFloat(sheet.paddingRight) - parseFloat(sheet.borderRightWidth)
+            };
+        }""")
+        self.assertTrue(measured['cont'], measured)
+        self.assertGreaterEqual(len(measured['lefts']), 2, measured)
+        self.assertLessEqual(max(measured['lefts']) - min(measured['lefts']), 1, measured)
+        self.assertLessEqual(abs(measured['lefts'][0] - measured['words']), 1, measured)
+        self.assertLessEqual(measured['inkRight'], measured['contentRight'] + 1, measured)
+        context.close()
+
+    def test_a_no_mark_screen_keeps_its_continuations_flush(self):
+        context = self.browser.new_context(viewport={'width': 1280, 'height': 720})
+        self._project_screen(context, 6, 1)
+        overlay = self._overlay(context, '.obs-overlay__plate')
+        measured = self._flush_geometry(overlay)
+        self.assertEqual(len(measured['text']), 2, measured)
+        self.assertTrue(measured['text'][0].startswith('dan Roh'), measured)
+        self.assertEqual(measured['marks'], 0, measured)
+        self.assertEqual(measured['continued'], 0, measured)
+        for left in measured['lefts']:
+            self.assertLessEqual(abs(left - measured['contentLeft']), 1, measured)
+        context.close()
+
+    def test_a_cue_and_an_ordinary_body_stay_flush(self):
+        context = self.browser.new_context(viewport={'width': 1280, 'height': 720})
+        dock = self._project_screen(context, 7, 0)
+        overlay = self._overlay(context, '.obs-overlay__plate')
+        cue = self._flush_geometry(overlay)
+        self.assertEqual(len(cue['text']), 2, cue)
+        self.assertTrue(cue['text'][0].startswith('Nyanyian:'), cue)
+        self.assertEqual(cue['continued'], 0, cue)
+        for left in cue['lefts']:
+            self.assertLessEqual(abs(left - cue['contentLeft']), 1, cue)
+
+        dock.locator('.entryli[data-index="7"] .screenerow').nth(1).click()
+        overlay.wait_for_function(
+            "() => document.querySelector('.obs-overlay__body').textContent.includes('Hari ini')")
+        body = self._flush_geometry(overlay)
+        self.assertEqual(len(body['text']), 2, body)
+        self.assertEqual(body['marks'], 0, body)
+        self.assertEqual(body['continued'], 0, body)
+        for left in body['lefts']:
+            self.assertLessEqual(abs(left - body['contentLeft']), 1, body)
         context.close()
 
     def test_the_translation_flip_repaints_the_plate_heading(self):
