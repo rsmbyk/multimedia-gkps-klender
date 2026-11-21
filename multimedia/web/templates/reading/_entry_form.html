@@ -1,6 +1,6 @@
 {% comment %}One kind's fields (spec 006, slice 2). The modal posts this fragment back.{% endcomment %}
 <h2 class="editor__title" id="editorTitle">{{ title }}</h2>
-<form class="editor__form" data-entry-form="{{ kind }}"{% if kind == 'text' or kind == 'media' and not entry %} data-editor-size="large"{% endif %}{% if kind == 'media' and not entry %} data-media-create data-media-register-url="{% url 'web-media-register' %}"{% endif %} action="{{ save_url }}" method="post">
+<form class="editor__form" data-entry-form="{{ kind }}" data-entry-mode="{% if entry %}edit{% else %}new{% endif %}"{% if kind == 'text' or kind == 'media' and not entry %} data-editor-size="large"{% endif %}{% if kind == 'media' and not entry %} data-media-create data-media-register-url="{% url 'web-media-register' %}"{% endif %} action="{{ save_url }}" method="post">
   {% csrf_token %}
   {% if not entry and after %}<input type="hidden" name="after" value="{{ after }}">{% endif %}
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}

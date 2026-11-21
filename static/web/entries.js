@@ -941,7 +941,10 @@
       syncVerse();
     });
     syncVerse();                       /* editing: the boxes are already there */
-    window.setTimeout(function () { search.focus(); }, 0);
+    /* Add opens ready to type; Edit opens on the entry, not on the picker — focusing
+       it there would pop the results list the operator did not ask for (spec 210). */
+    var mode = search.form && search.form.dataset.entryMode;
+    if (mode !== 'edit') window.setTimeout(function () { search.focus(); }, 0);
   }
 
   /* ---------- the text form's Save guard ------------------------------------ */

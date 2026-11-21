@@ -39,6 +39,14 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         for number in range(10, 22):
             songs.Song.objects.create(book=self.book, number=number, title=f'Song {number}')
 
+        # the Edit probe needs one stored song entry to open
+        if self._testMethodName == 'test_edit_does_not_grab_the_song_search':
+            self.stored_verses = list(
+                self.song.verse_set.order_by('number').values_list('pk', flat=True)[:3])
+            tatib.ServiceEntry.objects.create(
+                tatib=self.service, order_number=1, kind=tatib.ServiceEntryKind.SONG,
+                song=self.song, verses=self.stored_verses)
+
         self._playwright = sync_playwright().start()
         try:
             self.browser = self._playwright.chromium.launch()
@@ -189,6 +197,32 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(state['summary'], 'No verses: keep at least one')
         self.assertLessEqual(state['cut'], 0.5)
         self.assertEqual(state['errors'], 1)
+
+    def test_edit_does_not_grab_the_song_search(self):
+        """An opened Edit form leaves focus alone: no caret in the search field and
+        no results list the operator did not ask for."""
+        page = self._page()
+        row = page.locator('.tatib__item--entry').first
+        row.hover()
+        row.locator('[data-entry-edit]').click()
+        page.wait_for_selector('dialog[open] #entry-song-search')
+        page.wait_for_timeout(250)
+        state = page.evaluate("""() => ({
+          active: document.activeElement ? (document.activeElement.id
+            || document.activeElement.className || document.activeElement.tagName) : null,
+          menuHidden: document.querySelector('#entry-song-menu').hidden,
+          song: document.querySelector('#id_song').value,
+          tiles: document.querySelectorAll('dialog[open] #entry-verses .editor__verse-tile').length,
+          checked: [...document.querySelectorAll('dialog[open] #entry-verses input')]
+            .filter(i => i.checked).length,
+          formMode: document.querySelector('dialog[open] .editor__form').dataset.entryMode,
+        })""")
+        self.assertNotEqual(state['active'], 'entry-song-search')
+        self.assertTrue(state['menuHidden'])
+        self.assertEqual(state['song'], str(self.song.pk))
+        self.assertEqual(state['tiles'], 12)
+        self.assertEqual(state['checked'], 3)
+        self.assertEqual(state['formMode'], 'edit')
 
     def test_tile_grid_geometry_and_helper_position(self):
         page = self._page()

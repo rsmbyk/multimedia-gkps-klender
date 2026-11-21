@@ -1477,8 +1477,9 @@ template-generate and copy-as-template flows SHALL continue to land on the recor
 
 ### R47 — The song entry's two pickers work from the first frame
 
-The song entry's Song field SHALL be a live search input focused on the first frame of the Add or Edit
-form; typing SHALL narrow the existing grouped results without a preceding trigger click. Results SHALL
+The song entry's Song field SHALL be a live search input focused on the first frame of the Add form;
+typing SHALL narrow the existing grouped results without a preceding trigger click. The Edit form SHALL NOT
+take focus into that field — it opens on the entry, and the results list stays shut until asked for. Results SHALL
 render in the product's fixed, viewport-capped menu anchored to the search field, MAY extend past the
 dialog's bottom edge, and SHALL NOT resize the dialog. The existing query grammar, hymn-first order,
 short-reference labels and 200-result cap are unchanged (specs 042/050/051). Arrow keys move the result

@@ -129,7 +129,7 @@ Verses panel, has a 1px rule beneath it, and clicking it collapses only the tile
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | The Song search input SHALL hold focus when the Add/Edit song form first renders, without a preceding trigger click. | `new: reading/R47` |
+| FR-001 | The Song search input SHALL hold focus when the Add song form first renders, without a preceding trigger click; the Edit form SHALL NOT take focus into the Song field. | `new: reading/R47` |
 | FR-002 | Song results SHALL render in a fixed overlay anchored under the search input, capped only by the window edge, and SHALL be allowed to extend past the dialog's bottom edge. | `reading/R47` |
 | FR-003 | The query grammar, hymn-first ordering, short-reference labels and 200-result cap SHALL stay as they are; no backend endpoint or schema changes in this slice. | `reading/R47` |
 | FR-004 | Arrow keys SHALL move the result highlight, Enter SHALL pick it, Escape SHALL close the list and keep the text, and a tap SHALL pick on touch. | `reading/R47` |

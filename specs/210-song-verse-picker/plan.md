@@ -40,7 +40,7 @@ See `research.md`. **Unknowns remaining: 0.**
 
 | Requirement | Component / file | Verified by | Notes |
 | --- | --- | --- | --- |
-| FR-001 | `static/web/entries.js` `wireSongPicker` + `_entry_form.html` | `test` → `tests/e2e/test_song_entry_pickers.py::test_search_is_focused_on_open` | focus on first paint |
+| FR-001 | `static/web/entries.js` `wireSongPicker` + `_entry_form.html` `data-entry-mode` | `test` → `tests/e2e/test_song_entry_pickers.py::test_search_is_focused_on_open`, `::test_edit_does_not_grab_the_song_search` | focus on the Add form's first paint only |
 | FR-002 | `static/web/entries.js` `placeMenu` + `components.css` `.editor__picker-menu` | `test` → `tests/e2e/test_song_entry_pickers.py::test_results_overlay_may_pass_dialog_bottom` | geometry at 960×900 |
 | FR-003 | `multimedia/web/reading/views.py` `entry_song_options` | `inspection` — diff contains no query/order/cap change | guard FR |
 | FR-004 | `static/web/entries.js` song results handlers | `test` → `tests/e2e/test_song_entry_pickers.py::test_keyboard_and_touch_pick` | arrows, Enter, Escape, tap |
