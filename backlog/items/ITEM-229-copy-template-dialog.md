@@ -1,6 +1,6 @@
 ---
 id: ITEM-229
-status: in-review
+status: done
 title: 'The copy confirmation is a dialog of its own, and the copy is named there'
 type: feat
 priority: P1
@@ -11,8 +11,8 @@ spec: specs/215-copy-template-dialog/spec.md
 branch: feat/215-copy-template-dialog
 pr: 567
 issue: 566
-closed_at:
-closed_reason:
+closed_at: 2026-11-21
+closed_reason: merged into develop (PR #567)
 bump: minor
 release_version:
 ---
@@ -23,7 +23,7 @@ release_version:
 
 Spec 212 put the Copy as template confirmation inside the edit dialog's own box, so it reads as a
 panel covering the form. It should be a second dialog drawn over the Edit Tata Ibadah dialog — which
-stays open, dimmed and legible behind it — and it should let the person name the template before it
+stays open as a dimmed silhouette behind it — and it should let the person name the template before it
 exists, defaulting to the source's name plus ` (Copy)`, with a click on the field selecting the whole
 value so a new name can be typed straight over it.
 
