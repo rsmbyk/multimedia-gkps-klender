@@ -124,7 +124,16 @@ class ScriptureEntryForm(ServiceEntryForm):
 class VerseNumberCheckboxSelect(forms.CheckboxSelectMultiple):
     """The verse checklist (spec 189's storage): the value is the verse's ID and
     `data-number` carries the number its label shows, so the picker's summary can
-    name numbers from either render — the client-built one and this one."""
+    name numbers from either render — the client-built one and this one.
+
+    The templates drop Django's extra wrapper and label, so a server-rendered
+    checklist is already the tile grid the client builds (spec 210): the same
+    `div > label.editor__verse-tile` markup, laid out five across by the field's
+    own grid. Without them, an error re-render (or the Edit form) nested the
+    tiles inside `#id_verses` and stacked them down the panel."""
+
+    template_name = 'reading/widgets/verse_checkboxes.html'
+    option_template_name = 'reading/widgets/verse_checkbox_option.html'
 
     def __init__(self, *args, verse_numbers=None, **kwargs):
         super().__init__(*args, **kwargs)

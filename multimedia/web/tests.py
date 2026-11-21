@@ -1527,6 +1527,17 @@ class ServiceEntryViewTests(TestCase):
         self.assertRegex(html, 'name="verses" value="%d"[^>]*data-number="2"' % verses[1].pk)
         self.assertRegex(html, 'name="verses" value="%d"[^>]*data-number="1"' % verses[0].pk)
 
+    def test_a_server_rendered_verses_list_is_already_the_tile_grid(self):
+        """The widget drops Django's wrapper and label, so the server render matches
+        the client-built grid (spec 210): Edit and an error re-render would otherwise
+        nest the tiles inside `#id_verses` and stack them down the panel."""
+        offset, verses = self._offset_song()
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=offset, verses=[verses[1].pk])
+        html = self.client.get(reverse('web-entry-edit', args=[entry.pk])).content.decode()
+        self.assertIn('<label class="editor__verse-tile" for="id_verses_0">', html)
+        self.assertIn('<span>1</span>', html)
+        self.assertNotIn('id="id_verses"', html)
+
     def test_a_section_break_cannot_be_created_any_more(self):
         """Spec 131 retired the kind; the write path refuses it and writes nothing."""
         response = self.client.post(self.save_new_url(),

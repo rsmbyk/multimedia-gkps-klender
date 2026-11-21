@@ -50,7 +50,7 @@ See `research.md`. **Unknowns remaining: 0.**
 | FR-008 | `entries.js` `renderVerses` + `SongEntryForm` | `test` → `tests/e2e/test_song_entry_pickers.py::test_fresh_pick_and_edit_state` | |
 | FR-009 | `entries.js` tile click handler | `test` → `tests/e2e/test_song_entry_pickers.py::test_click_ticks_one_verse` | |
 | FR-010 | `entries.js` drag preview/commit | `test` → `tests/e2e/test_song_entry_pickers.py::test_drag_previews_until_release` | values unchanged while held |
-| FR-011 | `entries.js` carrier + `multimedia/web/reading/entries.py` `SongEntryForm` | `inspection` — IDs still submitted, `{id, number}` payload unchanged | unchanged contract |
+| FR-011 | `entries.js` carrier + `multimedia/web/reading/entries.py` `SongEntryForm` + `reading/widgets/verse_checkbox*.html` | `test` → `tests/e2e/test_song_entry_pickers.py::test_a_failed_save_keeps_the_tile_grid`, `multimedia/web/tests.py::ServiceEntryViewTests::test_a_server_rendered_verses_list_is_already_the_tile_grid` | IDs still submitted, `{id, number}` payload unchanged |
 | FR-012 | `entries.js` `verseSummary` | `test` → `tests/e2e/test_song_entry_pickers.py::test_summary_collapses_ranges` | |
 | FR-013 | `entries.js` quick actions | `test` → `tests/e2e/test_song_entry_pickers.py::test_all_and_clear_disable_at_ends` | |
 | FR-014 | `_entry_form.html` + `components.css` + `entries.js` | `test` → `multimedia/web/tests.py::test_no_song_and_no_verses_hide_field` | server fragment first |

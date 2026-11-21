@@ -152,6 +152,44 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
             page.evaluate("getComputedStyle(document.querySelector('[data-verse-tiles]')).opacity"),
             '0.45')
 
+    def test_a_failed_save_keeps_the_tile_grid(self):
+        """Save with nothing ticked re-renders the form server-side; the checklist
+        must come back as the same five-across tile grid, not a stacked list."""
+        page = self._page()
+        self._open_song(page)
+        self._pick(page, 'KJ 152')
+        page.locator('[data-verse-clear]').click()
+        page.get_by_role('button', name='Save', exact=True).click()
+        page.wait_for_selector('dialog[open] .editor__verse-tile')
+        page.wait_for_timeout(350)
+        state = page.evaluate("""() => {
+          const boxes = [...document.querySelectorAll('.editor__verse-tile')];
+          const inner = document.querySelector('.editor__verse-panel-inner');
+          const first = boxes.slice(0, 5).map(b => Math.round(b.getBoundingClientRect().top));
+          const last = boxes[boxes.length - 1].getBoundingClientRect();
+          return {
+            count: boxes.length,
+            width: Math.round(boxes[0].getBoundingClientRect().width),
+            firstRowTops: [...new Set(first)].length,
+            gridChildren: document.querySelector('#entry-verses').children.length,
+            wrapper: !!document.querySelector('#entry-verses #id_verses'),
+            checked: boxes.filter(b => b.querySelector('input:checked')).length,
+            summary: document.querySelector('[data-verses-summary]').textContent,
+            cut: Math.round((last.bottom - inner.getBoundingClientRect().bottom) * 10) / 10,
+            errors: [...document.querySelectorAll('dialog[open] .editor__error')].length,
+          };
+        }""")
+        self.assertEqual(state['count'], 12)
+        self.assertGreaterEqual(state['width'], 74)
+        self.assertLessEqual(state['width'], 82)
+        self.assertEqual(state['firstRowTops'], 1, 'five tiles share the first row')
+        self.assertEqual(state['gridChildren'], 12)
+        self.assertFalse(state['wrapper'], 'no extra wrapper around the tiles')
+        self.assertEqual(state['checked'], 0)
+        self.assertEqual(state['summary'], 'No verses: keep at least one')
+        self.assertLessEqual(state['cut'], 0.5)
+        self.assertEqual(state['errors'], 1)
+
     def test_tile_grid_geometry_and_helper_position(self):
         page = self._page()
         self._open_song(page)

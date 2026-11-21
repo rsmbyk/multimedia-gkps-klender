@@ -1492,7 +1492,10 @@ ticks or unticks one tile and SHALL leave no ring behind — the tile's focus ri
 only. A held press and
 drag SHALL preview the whole stretch — tinting the tiles and naming it in the summary line, with an sr-only live region — while the hidden
 `name="verses"` inputs keep their pre-drag values, and SHALL commit the IDs only on release with no anchor
-mark left behind. `All` SHALL be disabled at all-ticked and `Clear` at none-ticked. A one-verse song SHALL
+mark left behind. A server-rendered checklist — the Edit form, or an Add form returned by a refused save —
+SHALL already be that same five-across grid: the widget renders `div > label.editor__verse-tile` directly,
+with `<span>` numbers and no extra wrapper of its own. `All` SHALL be disabled at all-ticked and `Clear` at
+none-ticked. A one-verse song SHALL
 show one inert tile in a muted section. The section's reveal SHALL last 200 ms on the product's existing
 ease curve, SHALL settle back to block layout so no tile is ever cut, and SHALL be instant under
 `prefers-reduced-motion`. (spec 210)
