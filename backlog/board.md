@@ -40,6 +40,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-231](./items/ITEM-231-windows-checkout-start.md) | The stack never starts from a checkout made on Windows | Git for Windows writes a CRLF `docker/entrypoint.sh`, `sh` refuses it at `set -e`, and both services restart-loop; a build-time strip, an LF pin and an advisory post-start check | fix | P1 | S | [216](../specs/216-windows-checkout-start/spec.md) | `fix/216-windows-checkout-start` | 2026-11-21 |
 
 ## In review
 
