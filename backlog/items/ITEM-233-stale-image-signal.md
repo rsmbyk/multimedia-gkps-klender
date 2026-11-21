@@ -1,6 +1,6 @@
 ---
 id: ITEM-233
-status: in-progress
+status: in-review
 title: 'A launcher start that cannot reach the companion says nothing about why'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-21
 updated: 2026-11-21
 spec: 218
 branch: fix/218-restart-log
-pr:
+pr: 575
 issue: 573
 closed_at:
 closed_reason:

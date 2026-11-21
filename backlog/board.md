@@ -39,12 +39,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-233](./items/ITEM-233-stale-image-signal.md) | A launcher start that cannot reach the companion says nothing about why | "Container … is restarting" names nothing: the not-running report now carries the companion's own last log line and names `docker compose build`, since an image older than the checkout reproduces the old failure exactly | fix | P2 | S | [218](../specs/218-restart-log/spec.md) | `fix/218-restart-log` | 2026-11-21 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-233](./items/ITEM-233-stale-image-signal.md) | A launcher start that cannot reach the companion says nothing about why | "Container … is restarting" names nothing: the not-running report now carries the companion's own last log line and names `docker compose build`, since an image older than the checkout reproduces the old failure exactly | fix | P2 | S | [218](../specs/218-restart-log/spec.md) | [#575](https://github.com/rsmbyk/multimedia-gkps-klender/pull/575) | 2026-11-21 |
 | [ITEM-226](./items/ITEM-226-copy-confirm-layer.md) | The Copy as template confirmation paints inline under the edit form | No product CSS carries the layer, card or right-aligned actions spec 167's preview drew, so the confirmation stacks under Save/Cancel and grows the modal | fix | P1 | S | [212](../specs/212-copy-confirm-layer/spec.md) | [#560](https://github.com/rsmbyk/multimedia-gkps-klender/pull/560) | 2026-11-21 |
 
 ## Done
