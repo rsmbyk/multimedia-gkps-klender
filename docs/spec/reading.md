@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-21
-**slices**: `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1163,6 +1163,24 @@ choice's own row as an indented child row, its mark in the gutter and its title 
 the row SHALL state how many options it holds — `No options yet` when it holds none, the row then carrying
 `+ Add option` itself so the first one can be created. A choice may hold no
 options: the template is allowed to be unfinished, and such a choice cannot be settled at generation.
+
+A fill-in's and a choice's mark in the gutter SHALL also state the kind the slot resolves to, as a badge at
+the mark's bottom-right corner: a 13px disc overhanging the mark by 4px right and 3px bottom, carrying a
+10px glyph drawn on a 12-unit grid at 1.6 stroke — a beamed note (song), an open book (passage), a framed
+play mark (media) and three rules (text). The badge SHALL NOT replace the mark's own frame or its `+` / `◎`,
+SHALL be `aria-hidden` so the row's accessible name is unchanged, SHALL add no height and move no title, and
+SHALL paint the row's own `--icon-hover-bg` over its canvas in every fill state so it never reads as a hole
+punched in the row. A slot whose stored kind is unreadable SHALL draw the mark alone, never an empty disc.
+(spec 213)
+
+#### Scenario: a slot states its kind
+- WHEN a template's page is drawn
+- THEN each fill-in and choice row carries a badge naming its kind, the four kinds are told apart without
+  reading the row's `Fill-in · Song` line, and no row's height or title moves
+
+#### Scenario: an unfinished choice is still badged
+- WHEN a choice holds no options
+- THEN its row carries its kind badge and still reads `No options yet`
 
 #### Scenario: adding an option
 - WHEN a choice row's `+ Add option` is pressed

@@ -211,7 +211,31 @@
   width: 20px; height: 20px; display: grid; place-items: center;
   color: color-mix(in srgb, var(--focus) 78%, var(--head-ink)); pointer-events: none;
 }
-#read .slot__mark svg { width: 100%; height: 100%; }
+#read .slot__mark > svg { width: 100%; height: 100%; }
+/* The kind a slot resolves to, at the mark's bottom-right corner (spec 213). The disc is the
+   canvas so the dashed frame does not run through the glyph -- and on a pointed-at row it
+   repaints that same canvas with the row's own hover tint laid over it, because a disc of
+   plain canvas on a tinted row reads as a hole punched in the row. The tint is the same
+   `--icon-hover-bg` the row itself uses, so the two composite to the same value by
+   construction rather than by a second hand-matched colour. */
+#read .slot__mark .slot__badge {
+  position: absolute; right: -4px; bottom: -3px;
+  width: 13px; height: 13px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--canvas); color: var(--head-ink);
+}
+#read .tatib__item--slot:hover .slot__mark .slot__badge,
+#read .tatib__item--slot.is-modal-origin .slot__mark .slot__badge,
+#read .tatib__item--slot:focus:not(.focus-restore-quiet) .slot__mark .slot__badge,
+#read .tatib__item--slot:has(:focus:not(.focus-restore-quiet)) .slot__mark .slot__badge {
+  background-image: linear-gradient(var(--icon-hover-bg), var(--icon-hover-bg));
+}
+/* A 10px glyph on a 12-unit grid. The seat's own marks are 24-unit at 20px, so a glyph
+   drawn at that grid scaled into this box would stroke under a pixel; the 12-unit grid
+   keeps the stroke at 1.6px of the box it is drawn in. The paint is declared on the
+   template's own `<svg>` (`fill="none" stroke="currentColor"`), like `_slot_mark.html`'s
+   frame, so the glyph cannot fall back to a black fill if a stylesheet rule is lost. */
+#read .slot__mark .slot__badge svg { width: 10px; height: 10px; stroke-width: 1.6; }
 #read .tatib__item--choice { padding-left: 64px; padding-bottom: 8px; }
 
 /* The preview's own frame: a slot is a place to fill, drawn as a dashed edge rather than a

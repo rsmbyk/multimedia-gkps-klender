@@ -1102,3 +1102,198 @@ class EmptyChoiceE2ETests(StaticLiveServerTestCase):
         # the option is created through the same per-kind form, and lands under the choice
         self.assertIn(f'parent={self.choice.pk}', form.get_attribute('action'))
         self.assertIn(f'tatib={self.template.pk}', form.get_attribute('action'))
+
+
+# What the badge's page reports, read in one round trip (spec 213). Every number the spec's
+# `## UI/UX` states is here: the badge's box, its glyph's paint, the mark's own frame, and
+# the geometry that must not move.
+SLOT_BADGES = """
+() => {
+  const box = el => { const b = el.getBoundingClientRect();
+    return {x: +b.x.toFixed(1), y: +b.y.toFixed(1), w: +b.width.toFixed(1),
+            h: +b.height.toFixed(1)}; };
+  const rows = [...document.querySelectorAll('#read .tatib__item--slot')];
+  return {
+    scrollHeight: document.documentElement.scrollHeight,
+    rows: rows.map(row => {
+      const mark = row.querySelector('.slot__mark');
+      const frame = mark.querySelector(':scope > svg');
+      const badge = row.querySelector('.slot__badge');
+      const glyph = badge && badge.querySelector('svg');
+      const title = row.querySelector(':scope > .read__sec');
+      const bcs = badge && getComputedStyle(badge);
+      return {
+        anchor: row.dataset.anchor,
+        slotKind: row.dataset.slotKind,
+        label: row.querySelector('.slot__kind').textContent.trim(),
+        state: row.querySelector('.slot__state')
+          ? row.querySelector('.slot__state').textContent.trim() : null,
+        row: box(row),
+        titleX: title ? +title.getBoundingClientRect().x.toFixed(1) : null,
+        mark: box(mark),
+        // the dash lives on the frame's own <rect>, as a presentation attribute
+        frameDash: frame.querySelector('rect')
+          ? getComputedStyle(frame.querySelector('rect')).strokeDasharray : null,
+        frameShapes: [...frame.querySelectorAll('path, rect, circle')]
+          .map(n => n.getAttribute('d') || n.getAttribute('cx') + ',' + n.getAttribute('cy')
+                     + ',' + n.getAttribute('r')).join('|'),
+        badge: badge ? box(badge) : null,
+        badgeKind: badge ? badge.dataset.kindBadge : null,
+        badgeHidden: badge ? badge.getAttribute('aria-hidden') : null,
+        badgeText: badge ? badge.textContent.trim() : null,
+        badgeTransition: bcs ? bcs.transitionDuration : null,
+        badgeImage: bcs ? bcs.backgroundImage : null,
+        glyph: glyph ? box(glyph) : null,
+        glyphFill: glyph ? getComputedStyle(glyph).fill : null,
+        glyphStroke: glyph ? getComputedStyle(glyph).stroke : null,
+        glyphStrokeWidth: glyph ? getComputedStyle(glyph).strokeWidth : null,
+        glyphPaths: glyph ? [...glyph.querySelectorAll('path, rect, circle')]
+          .map(n => n.getAttribute('d') || n.tagName).join('|') : null,
+        ink: bcs ? bcs.color : null,
+        disc: bcs ? bcs.backgroundColor : null,
+      };
+    }),
+  };
+}
+"""
+
+
+@tag('e2e')
+@unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class SlotKindBadgeE2ETests(StaticLiveServerTestCase):
+    """A fill-in and a choice state the kind they resolve to (spec 213).
+
+    The mark's own frame and inner glyph say *which of the two* a slot is; the badge at its
+    corner says which kind it will become. Everything that was true of the mark before this
+    slice has to stay true, so the assertions below check the new mark and the old one
+    together.
+    """
+
+    def setUp(self):
+        self.template = tatib.TataIbadah.objects.create(name='Four kinds', is_active=True)
+        # One slot per kind, then a choice with no options: the badge states the kind, never
+        # the row's readiness, so an unfinished choice is badged like any other.
+        for order, (kind, fill_kind, title) in enumerate((
+            (tatib.ServiceEntryKind.FILL_IN, tatib.SlotKind.SONG, 'Lagu Pembuka'),
+            (tatib.ServiceEntryKind.FILL_IN, tatib.SlotKind.SCRIPTURE, 'Bacaan Pertama'),
+            (tatib.ServiceEntryKind.FILL_IN, tatib.SlotKind.MEDIA, 'Multimedia'),
+            (tatib.ServiceEntryKind.FILL_IN, tatib.SlotKind.TEXT, 'Doa Syafaat'),
+            (tatib.ServiceEntryKind.CHOICE, tatib.SlotKind.SONG, 'Pujian Tambahan'),
+        ), start=1):
+            tatib.ServiceEntry.objects.create(tatib=self.template, kind=kind,
+                                              fill_kind=fill_kind, title=title,
+                                              order_number=order)
+        # A dated service: it carries no slot, so its page carries no badge.
+        self.service = tatib.TataIbadah.objects.create(
+            name='Ibadah Minggu', date=date(2026, 11, 1), is_active=True)
+        tatib.ServiceEntry.objects.create(
+            tatib=self.service, kind=tatib.ServiceEntryKind.TEXT, order_number=1,
+            title='Votum', text='Pertolongan kita adalah dalam nama Tuhan.')
+
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.chromium.launch()
+        self.page = self.browser.new_page(viewport={'width': 1440, 'height': 900},
+                                          color_scheme='dark')
+
+    def tearDown(self):
+        self.page.close()
+        self.browser.close()
+        self.playwright.stop()
+        super().tearDown()
+
+    def open_template(self):
+        self.page.goto(self.live_server_url + reverse('web-tatib-service',
+                                                      args=[self.template.pk]))
+        self.page.wait_for_timeout(400)
+
+    def read(self):
+        return self.page.evaluate(SLOT_BADGES)
+
+    def suppress_badges(self):
+        self.page.add_style_tag(content='#read .slot__mark .slot__badge{display:none !important}')
+        self.page.wait_for_timeout(150)
+
+    def test_a_slot_row_carries_the_kind_it_resolves_to(self):
+        self.open_template()
+
+        # --- the node exists at all: the assertion a pre-change tree fails on -------------
+        self.assertEqual(self.page.locator('#read .slot__badge').count(), 5,
+                         'a slot row does not carry a kind badge')
+        badges = self.read()['rows']
+        self.assertEqual([r['badgeKind'] for r in badges],
+                         ['song', 'scripture', 'media', 'text', 'song'])
+        self.assertEqual([r['slotKind'] for r in badges], ['fill_in'] * 4 + ['choice'])
+
+        # --- FR-002: the four kinds are told apart ---------------------------------------
+        glyphs = {r['badgeKind']: r['glyphPaths'] for r in badges}
+        four = [glyphs[k] for k in ('song', 'scripture', 'media', 'text')]
+        self.assertEqual(len(set(four)), 4, f'two kinds share a glyph: {glyphs}')
+
+        # --- FR-003 / SC-003: the mark keeps its own identity -----------------------------
+        for row in badges:
+            self.assertEqual(row['frameDash'], '2.8px, 2.4px', 'the dashed frame changed')
+        fill_in_shape = badges[0]['frameShapes']
+        self.assertIn('M10 6.8v6.4M6.8 10h6.4', fill_in_shape,
+                      'the fill-in mark lost its own glyph')
+        choice_shape = badges[-1]['frameShapes']
+        self.assertNotEqual(choice_shape, fill_in_shape,
+                            'a choice no longer reads differently from a fill-in')
+
+        # --- D006: the glyph is stroked, not filled --------------------------------------
+        for row in badges:
+            self.assertEqual(row['glyphFill'], 'none',
+                             'the badge glyph is filled: it paints as a blob')
+            self.assertEqual(row['glyphStroke'], row['ink'],
+                             'the badge glyph does not take the mark\'s ink')
+
+        # --- FR-004 / SC-005: decorative, and it says nothing in text ---------------------
+        for row in badges:
+            self.assertEqual(row['badgeHidden'], 'true')
+            self.assertEqual(row['badgeText'], '')
+
+        # --- FR-005 / SC-004: nothing moves ----------------------------------------------
+        before = self.read()
+        self.suppress_badges()
+        after = self.read()
+        self.assertEqual(before['scrollHeight'], after['scrollHeight'],
+                         'the page grew by the badge')
+        for with_badge, without in zip(before['rows'], after['rows']):
+            self.assertEqual(with_badge['row'], without['row'],
+                             f"{with_badge['anchor']} moved")
+            self.assertEqual(with_badge['titleX'], without['titleX'],
+                             f"{with_badge['anchor']}'s title moved")
+            self.assertEqual(with_badge['mark'], without['mark'],
+                             f"{with_badge['anchor']}'s mark moved")
+        self.page.reload()
+        self.page.wait_for_timeout(400)
+
+        # --- US3: no motion (a duration of 0s; the property defaults to `all`) ------------
+        self.assertEqual({r['badgeTransition'] for r in self.read()['rows']}, {'0s'},
+                         'the badge declares a transition')
+
+        # --- the unfinished choice is badged, and still says it is unfinished -------------
+        empty = [r for r in self.read()['rows'] if r['state']]
+        self.assertEqual(len(empty), 1, 'the no-options choice is not the only stateful row')
+        self.assertEqual(empty[0]['state'], 'No options yet')
+        self.assertEqual(empty[0]['badgeKind'], 'song')
+
+        # --- US2/AC2: on a filled row the disc takes the row's own tint -------------------
+        self.page.evaluate("""() => document.querySelector('#read .tatib__item--slot')
+            .classList.add('is-modal-origin')""")
+        self.page.wait_for_timeout(150)
+        tinted = self.read()['rows'][0]
+        self.assertNotEqual(tinted['badgeImage'], 'none',
+                            "the disc paints plain canvas on the row's fill: a hole")
+
+        # --- the badge stays inside the row, clear of its label ---------------------------
+        row = self.read()['rows'][0]
+        self.assertLessEqual(row['badge']['x'] + row['badge']['w'],
+                             row['row']['x'] + row['row']['w'])
+
+        # --- a dated service carries none -------------------------------------------------
+        self.page.goto(self.live_server_url + reverse('web-tatib-service',
+                                                      args=[self.service.pk]))
+        self.page.wait_for_timeout(400)
+        self.assertEqual(self.page.locator('#read .slot__badge').count(), 0,
+                         'a dated service drew a kind badge')
