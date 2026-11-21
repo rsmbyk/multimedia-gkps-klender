@@ -1,8 +1,8 @@
 # projector
 
 **capability**: `projector`
-**last folded**: 2026-11-14
-**slices**: `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**last folded**: 2026-11-22
+**slices**: `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -369,3 +369,43 @@ the page inert, so the browser keeps its own shortcut — `⌘+T` flips nothing,
 #### Scenario: a browser chord
 - WHEN `⌘` is pressed with any other key
 - THEN the page does not take the key and the browser's own action runs
+
+### R14 — A screen of words is fitted where it rests, and before it is asked for
+
+A screen's words SHALL be fitted at the geometry they come to rest in, so the size a screen shows does
+not depend on how it was reached: an advance and a resize SHALL agree on every screen. The fitting
+SHALL measure the screen before the arrival morph puts a transform on it.
+
+The fitting SHALL find the largest size that fits by walking the sizes from the top down, one at a
+time, because a refusal is not monotone in the size — a larger size re-wraps the same words onto more,
+narrower lines and can fit where a smaller one did not.
+
+The screens either side of the one showing SHALL be fitted in idle time, and a screen already fitted
+for its stage and its body SHALL NOT be fitted again on arrival; a screen that has not been fitted
+ahead of time SHALL still be fitted on arrival, so nothing depends on the idle work having run. Every
+remembered fit SHALL be discarded when the bundled display faces arrive. A Go To detour SHALL leave
+the service's own screens unfitted while it is on the stage.
+
+A single-screen body too long for any size SHALL have its rows dropped and its last row trimmed by
+halving, keeping the same rows and the same characters as a cut made one row and one character at a
+time. (spec 219)
+
+#### Scenario: a screen arrives
+- WHEN the operator advances into a screen of words
+- THEN the screen was fitted ahead of time and the arrival costs one layout read (the stage's height)
+
+#### Scenario: nothing was fitted ahead of time
+- WHEN an advance, a jump or a resize reaches a screen that has not been fitted
+- THEN it is fitted on arrival and shows the largest size that fits
+
+#### Scenario: an advance and a resize
+- WHEN a screen is fitted by an advance and again by a resize
+- THEN both settle on the same size
+
+#### Scenario: the bundled faces arrive late
+- WHEN the display faces finish loading after first paint
+- THEN every remembered fit is discarded and the screen showing is fitted again
+
+#### Scenario: a single-screen body too long for any size
+- WHEN the whole body cannot fit at 2px
+- THEN the rows and characters kept are those a one-at-a-time cut would keep

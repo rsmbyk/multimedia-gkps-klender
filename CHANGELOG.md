@@ -46,6 +46,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A text screen now arrives as fast as the entries beside it.** The projector fits a screen's words
+  by walking the font size down from 200px a pixel at a time, asking after each step whether the words
+  still fit; every question lays the page out, and the page holds every screen of the service at once.
+  An advance into a screen of words therefore spent 130–280 layout reads between the key and the frame
+  that paints it, and the body decided how many — a short lyric settled high, a text entry came down
+  furthest — which is why the text entries, the ones the operator reads from, were the slow ones
+  (16.4 ms median, 66.9 ms worst on a 171-screen service). The screens either side of the one showing
+  are now fitted in idle time, so an advance on the operator's beat costs one read and paints in
+  3.7 ms (worst 7.4 ms), and a screen nothing has fitted yet is still fitted on arrival exactly as
+  before. The fitting also measured the arriving screen 14px below where it comes to rest, because it
+  ran after the arrival morph had started: the same screen was fitted to 131px on an advance and 135px
+  on a resize, 53 of 126 screens disagreeing with themselves. It now runs before the morph, so every
+  screen shows the size its own at-rest fit gives, and the arrival animation is no longer stalled
+  while the words are measured. A single-screen text too long for any size is cut by halving instead
+  of one character at a time — 81.5 ms for a 400-row body instead of 2 992 ms, keeping the same rows
+  and characters (spec 219).
+
 - **A launcher start that cannot reach the media companion now says why.** `Container … is restarting`
   names nothing; the launcher now prints the companion's own last log line — the one that reads
   `set: Illegal option -` — and names `docker compose build`, because an image older than the checkout
