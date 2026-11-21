@@ -23,7 +23,8 @@ release_version:
 
 The owner's report, 2026-11-22: "in projector, when you are advancing to a text entry, or a screen of
 the same text entry, there is a delay of the text showing. you can clearly feel it as it is not as
-fast as the other entries/screens."
+fast as the other entries/screens." A second report followed with a screenshot of three overlapping
+texts: "then screen goes weird when you hold down left/right keys."
 
 The projector fits a screen's words by walking the font size down from 200 px one pixel at a time,
 asking after each whether the words still fit; every question forces a layout of the page, which
@@ -35,6 +36,10 @@ started, so it measures the words 14 px lower than they come to rest — the sam
 it plays.
 
 ## Notes
+
+- Held keys: each move starts a 240 ms crossfade and a repeat arrives every ~35 ms, so the crossfades
+  stack — measured 7 screens painted at once on `develop`, 64 frames of 122 carrying an overlap. A
+  move that arrives mid-morph now cuts, leaving 1 screen painted and 1 overlapping frame.
 
 - Measured on the local service **Ibadah Minggu** (171 screens, 126 carrying words) at 1440 × 900:
   a word-bearing screen costs 14.5 ms median and 59 ms worst on `develop`, a blank one 1.0–1.8 ms.
@@ -49,6 +54,7 @@ it plays.
 - The fit measures the screen at rest, so an advance and a resize agree on every screen.
 - The largest fitting size is unchanged, and the single-screen cut keeps the same rows and characters.
 - A screen that was not fitted ahead of time is still fitted correctly on arrival.
+- A held arrow key paints one screen at a time, and a single move still crossfades.
 
 ## Links
 

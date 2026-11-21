@@ -70,9 +70,12 @@ rejected (D006), the bump (D007).
 | SC-004 (arrival size = at-rest size) | `render()` ordering | `manual` — `preview/verify_sizes.py`: 53 mismatches on develop, 0 on the slice | |
 | SC-005 (existing fitting contracts) | `tests/e2e/test_projector.py` | `test` → the four fitting tests | |
 | SC-006 (the cut) | `truncateText()` | `manual` — 2 992 → 81.5 ms, same rows and characters | |
-| US1/AC1–3, US2/AC1–3, US3/AC1, the edge cases | as above | as above | |
+| FR-007 (a held key cuts) | `static/web/projector.js` `render()` (`morphing`, `startMorphWindow()`), `static/styles/design/projector.css` (`.screen.is-quiet`) | `test` → `test_a_held_arrow_key_cuts_instead_of_stacking_screens` | `manual` — `preview/hold_probe.py`: 7 → 1 screens painted at once |
+| FR-008 (a single move still morphs) | the same | `test` → `test_a_single_move_still_morphs`, `test_moving_and_toggling_morph_rather_than_jump` | |
+| SC-007, SC-008 | as above | as above | |
+| US1/AC1–3, US2/AC1–3, US3/AC1, US4/AC1–3, the edge cases | as above | as above | |
 
-**Verification split**: `4 test · 1 inspection · 5 manual`.
+**Verification split**: `6 test · 1 inspection · 6 manual`.
 
 ## Complexity Tracking
 

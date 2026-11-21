@@ -627,6 +627,21 @@
 
   /* ---------- showing ------------------------------------------------------- */
 
+  /* A move starts a 240 ms crossfade; a held key sends a move every ~35 ms. A move that
+     arrives while a morph is still running therefore cannot morph again -- it would stack
+     the half-faded screens on top of each other, and seven of them were measured painted
+     at once, their words reading as one garbled block. Such a move CUTS instead: the
+     screen leaving is settled at once, the screen arriving is painted whole, and the
+     morph comes back as soon as the moves stop. */
+  var morphing = false;
+  var morphTimer = 0;
+
+  function startMorphWindow() {
+    morphing = true;
+    window.clearTimeout(morphTimer);
+    morphTimer = window.setTimeout(function () { morphing = false; }, 260);
+  }
+
   function render(silent) {
     var all = screens();
     if (current < 0) current = 0;
@@ -634,6 +649,7 @@
     var active = all[current] || null;
     var previous = all[previousIndex] || null;
     var moved = previous && previous !== active;
+    var quick = moved && morphing;
 
     all.forEach(function (each) {
       var on = each === active && !detour;
@@ -643,6 +659,11 @@
          leaving animation is the one that would win. */
       each.classList.remove('is-in');
       each.classList.remove('is-out');
+      /* A screen with no part in this move is painted by nothing but its own class: the
+         "quiet" one takes away its transition so a screen that left a moment ago cannot
+         still be fading behind the new one. */
+      if (on || (!quick && each === previous)) each.classList.remove('is-quiet');
+      else each.classList.add('is-quiet');
       each.setAttribute('aria-hidden', on ? 'false' : 'true');
     });
 
@@ -665,8 +686,11 @@
     }
 
     if (moved) {
-      /* A quiet morph: the one that goes fades out the way the new one came from. */
       stage.dataset.move = direction >= 0 ? 'next' : 'prev';
+      startMorphWindow();
+    }
+    if (moved && !quick) {
+      /* A quiet morph: the one that goes fades out the way the new one came from. */
       previous.classList.add('is-out');
       if (active) active.classList.add('is-in');
       window.setTimeout(function () { previous.classList.remove('is-out'); }, 260);

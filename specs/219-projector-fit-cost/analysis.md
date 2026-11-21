@@ -3,7 +3,7 @@
 **Date**: 2026-11-22
 **Read**: `spec.md` @ `91ff3d13b506`, `plan.md` @ `5ab4f35b6378`, `research.md`, `tasks.md`,
 `checklists/requirements.md` (15 items, 0 ticked — reviewer-owned)
-**Metrics**: 6 FR · 6 SC · 13 tasks · 15 checklist items · 0 CRITICAL · coverage 100%
+**Metrics**: 8 FR · 8 SC · 16 tasks · 15 checklist items · 0 CRITICAL · coverage 100%
 
 ## Findings
 
@@ -14,7 +14,8 @@
 | F003 | LOW | `SC-003` (the rapid advance) reports a median that improves while its worst case does not (70.4 → 67 ms). The spec says so in the table; a reader skimming the criterion alone could read it as an improvement across the board. | reported, not fixed — the spec's §Assumptions already says the rapid run is the floor, and the table carries both numbers |
 | F004 | LOW | `SC-006` and FR-005 are verified `manual` while a test could pin the cut's output (the existing single-screen test asserts the whole body fits but not the row and character count of a body too long for any size). | reported; the existing test already fails if the cut changes shape enough to matter, and a synthetic 400-row body in the suite would cost seconds |
 | F005 | — | `checklists/requirements.md` is generated and unticked, as gate 2 expects. | none needed |
-| F006 | — | No requirement in the spec contradicts the capability tree: `projector/R14` is new, and nothing in R1–R13 speaks to when a screen is fitted. | none needed |
+| F006 | — | No requirement in the spec contradicts the capability tree: `projector/R14` and `R15` are new, and nothing in R1–R13 speaks to when a screen is fitted or what a move does when another interrupts it. | none needed |
+| F007 | LOW | US4 arrived after the first pass (the owner's second report), so its two requirements were added to an already-written spec. The re-check found no contradiction with US1–US3, but the spec's `## Input` now carries two reports and its first paragraph still opens on the fitting. | reported, not fixed — the sequencing is genuine history, and folding the two reports into one narrative would hide that the second was found after the first was implemented |
 
 ## Mechanical fixes applied
 
@@ -32,3 +33,4 @@
 ## History
 
 - 2026-11-22 — first run: 0 CRITICAL, 0 HIGH, 2 LOW (F003, F004), coverage 100%.
+- 2026-11-22 — second run, after US4: 0 CRITICAL, 0 HIGH, 3 LOW (F003, F004, F007), coverage 100%.

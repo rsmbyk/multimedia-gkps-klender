@@ -409,3 +409,24 @@ time. (spec 219)
 #### Scenario: a single-screen body too long for any size
 - WHEN the whole body cannot fit at 2px
 - THEN the rows and characters kept are those a one-at-a-time cut would keep
+
+### R15 — A move that arrives while another is still in flight cuts
+
+A move SHALL morph — the arriving screen rising, the one it replaces fading out — only when no morph
+is still running. A move that arrives inside that window (260 ms, the length of the morph it follows)
+SHALL cut: the screen leaving SHALL be settled at once and the screen arriving SHALL be painted whole,
+so exactly one screen is painted at any moment and two screens' words never overlap. A held arrow key
+SHALL therefore cut through the service one screen at a time, and the crossfade SHALL return as soon
+as the moves stop. (spec 219)
+
+#### Scenario: the key is held
+- WHEN ArrowRight or ArrowLeft is held down
+- THEN each move cuts, one screen painted at a time, with no overlapping words
+
+#### Scenario: a single move
+- WHEN a move arrives after the morph window has passed
+- THEN it crossfades as before, the arriving screen rising over 240 ms
+
+#### Scenario: two moves in quick succession
+- WHEN a second move arrives before the first has finished morphing
+- THEN the second cuts, and the first screen it replaced is not left part-faded behind it

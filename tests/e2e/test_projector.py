@@ -489,6 +489,9 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertGreater(started['entering'], 0, 'the arriving screen must animate in')
         self.assertTrue(started['leaving'], 'and the one it replaces must animate out')
 
+        # a move that arrives while this morph is still running is a held key, and cuts
+        # instead of stacking (spec 219); wait for the morph to finish before going back
+        page.wait_for_timeout(300)
         page.keyboard.press('ArrowLeft')
         page.wait_for_timeout(60)
         self.assertEqual(page.get_attribute('#projectorScreens', 'data-move'), 'prev')
@@ -1556,6 +1559,41 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertGreater(measured['fitted'], 10, measured)  # the screens carry words
         self.assertTrue(measured['allFit'], measured)       # every fitted screen still fits
         self.assertTrue(measured['allMaximal'], measured)   # and is as large as it can be
+
+    def test_a_held_arrow_key_cuts_instead_of_stacking_screens(self):
+        """Holding the key paints one screen at a time, never a pile of half-faded ones.
+
+        Each move starts a 240 ms crossfade and a held key sends a move every ~35 ms, so
+        every move after the first arrives while the last one is still running. Morphing
+        again would leave the part-faded screens stacked behind the new one -- seven were
+        measured painted at once -- and their words read as one garbled block. A move that
+        arrives mid-morph cuts instead, so exactly one screen is painted.
+        """
+        page = self._page(self._projector_url())
+        page.keyboard.press('ArrowRight')       # turn the display on
+        page.wait_for_timeout(300)              # let that move settle
+        page.keyboard.press('ArrowRight')       # this one morphs
+        for _ in range(6):                      # ... and the key is held
+            page.wait_for_timeout(40)
+            page.keyboard.press('ArrowRight')
+        page.wait_for_timeout(40)
+        painted = page.evaluate("""() => [...document.querySelectorAll('.screen[data-screen]')]
+          .filter(el => parseFloat(getComputedStyle(el).opacity) > 0.02).length""")
+        page.close()
+        self.assertEqual(painted, 1, 'a held key must leave one screen painted, not a stack')
+
+    def test_a_single_move_still_morphs(self):
+        """The cut is for a held key only: one move after a quiet moment keeps its morph."""
+        page = self._page(self._projector_url())
+        page.keyboard.press('ArrowRight')
+        page.wait_for_timeout(300)
+        page.keyboard.press('ArrowRight')
+        started = page.evaluate("""() => ({
+          entering: document.querySelector('.screen.is-active').getAnimations().length,
+          leaving: !!document.querySelector('.screen.is-out')})""")
+        page.close()
+        self.assertGreater(started['entering'], 0, started)
+        self.assertTrue(started['leaving'], started)
 
     # --- the button, its two states, and the lock across tabs ----------------
 

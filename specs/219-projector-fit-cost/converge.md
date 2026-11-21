@@ -28,3 +28,23 @@ HUD popups, the keyboard jumps and the service-list picker). No failure names th
 **Findings**: none — `missing` 0 · `partial` 0 · `contradicts` 0 · `unrequested` 0.
 
 **Outcome**: converged on pass 1.
+
+## Pass 2 — 2026-11-22 (after US4 was added)
+
+**Checked**: the two new requirements against their rows, and the whole table again for anything the
+held-key change could have moved.
+
+| Requirement | Result | Evidence |
+| --- | --- | --- |
+| FR-007 (a held key cuts) | met | `test_a_held_arrow_key_cuts_instead_of_stacking_screens` passes; `preview/hold_probe.py` reports 1 screen painted at once (develop: 7) and 1 overlapping frame (develop: 64) |
+| FR-008 (a single move still morphs) | met | `test_a_single_move_still_morphs` passes; `test_moving_and_toggling_morph_rather_than_jump` passes with a 300 ms wait before its second press — its two presses used to arrive 30–50 ms apart, which is a held key |
+| FR-001…FR-006, SC-001…SC-006 | still met | re-run after the cut landed: the four fitting tests and the model-derived sizes are unchanged by it |
+| SC-007, SC-008 | met | as FR-007 and FR-008 |
+
+**Note on the numbers**: US4's "7 painted at once" and "64 frames" are measured with real key repeats
+(`Input.dispatchKeyEvent` with `autoRepeat`, 34 events at 35 ms); Playwright's `keyboard.down()` sends a
+single keydown and reproduces nothing, which is why `preview/hold_probe.py` drives the repeats itself.
+
+**Findings**: none — `missing` 0 · `partial` 0 · `contradicts` 0 · `unrequested` 0.
+
+**Outcome**: converged on pass 2.

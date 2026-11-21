@@ -38,6 +38,18 @@ in parallel.
 - [X] T009 Confirm the cut keeps the same rows and characters on a 400-row body (116 rows, 10 711
   characters, 2 px) in 81.5 ms against 2 992 ms.
 
+## Phase 4b — US4: holding the arrow key cuts instead of piling screens up
+
+- [X] T013a Cut a move that arrives while a morph is still running: settle the screen leaving, paint
+  the arriving screen whole, and bring the crossfade back after the 260 ms window.
+  `static/web/projector.js` (`morphing`, `startMorphWindow()`), `static/styles/design/projector.css`
+  (`.screen.is-quiet`)
+- [X] T013b Test: a held key leaves one screen painted, and a single move still morphs.
+  `tests/e2e/test_projector.py` (`test_a_held_arrow_key_cuts_instead_of_stacking_screens`,
+  `test_a_single_move_still_morphs`); `test_moving_and_toggling_morph_rather_than_jump` now waits for
+  the morph window before its second press, which is a held key by the old test's own timing
+- [X] T013c Measure: `preview/hold_probe.py` — 7 → 1 screens painted at once, 64 → 1 overlapping frames
+
 ## Phase 5 — Polish
 
 - [X] T010 Run the fitting tests and the whole projector browser module against the slice.
@@ -46,4 +58,4 @@ in parallel.
   `docs/spec/projector.md`
 - [X] T012 Card and board: `ITEM-234` at in-review. `backlog/items/ITEM-234-projector-fit-cost.md`,
   `backlog/board.md`
-- [X] T013 Delivery: `VERSION` 1.36.4 → 1.36.5 and one `CHANGELOG.md` line. `VERSION`, `CHANGELOG.md`
+- [X] T014 Delivery: `VERSION` 1.36.4 → 1.36.5 and one `CHANGELOG.md` line. `VERSION`, `CHANGELOG.md`

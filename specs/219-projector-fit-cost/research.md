@@ -111,6 +111,27 @@ A CSS containment change that buys nothing is risk without a reason.
 
 **Provenance**: `preview/probe.py` with the rule injected and removed, same page.
 
+## D008 — A move that arrives mid-morph cuts
+
+**Decision**: `render()` tracks a 260 ms morph window. A move inside that window settles the screen
+leaving at once (no transition, no animation) and paints the arriving screen whole; a move after it
+morphs as before.
+
+**Rationale**: each move starts a 240 ms crossfade and a held key sends one every ~35 ms, so a
+crossfade is always still running when the next move arrives. Restarting it stacks the part-faded
+screens: measured **7 painted at once** and **64 frames of 122** carrying more than one screen on
+develop. Cutting is what a held key should do — the operator is running down a list, not watching a
+transition.
+
+**Alternatives rejected**:
+- *Shorten the crossfade when moves come fast*: the screens still overlap, just less.
+- *Queue the moves and play them one at a time*: the display would lag behind the key by seconds.
+- *Keep the crossfade and let it finish before the next move*: same lag, and a held key would feel
+  stuck.
+
+**Provenance**: `preview/hold_probe.py` — 34 repeats at 35 ms, sampled every frame: 7 → 1 screens
+painted at once, 64 → 1 frames with an overlap.
+
 ## D007 — The bump is a patch
 
 **Decision**: `patch` — 1.36.4 → 1.36.5.

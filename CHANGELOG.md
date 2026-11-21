@@ -46,6 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Holding an arrow key now cuts through the screens instead of piling them up.** Every move started
+  a 240 ms crossfade and a held key sends a move every ~35 ms, so each move restarted a crossfade the
+  previous one had not finished; the part-faded screens stacked behind the new one — up to seven were
+  painted at once, and their words read as one garbled block. A move that arrives while a morph is
+  still running now cuts: the screen it leaves is gone at once and the screen it lands on is painted
+  whole, so a held key shows one screen at a time (7 → 1 screens painted, 64 → 1 frames of overlap).
+  A single move, after a quiet moment, still crossfades exactly as before (spec 219).
 - **A text screen now arrives as fast as the entries beside it.** The projector fits a screen's words
   by walking the font size down from 200px a pixel at a time, asking after each step whether the words
   still fit; every question lays the page out, and the page holds every screen of the service at once.
