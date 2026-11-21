@@ -137,7 +137,7 @@ Verses panel, has a 1px rule beneath it, and clicking it collapses only the tile
 | FR-006 | The Verses section SHALL be part of the form's flow inside a 1px-bordered, 10px-padded panel on the rail surface, with its summary line inside the section and a 1px separator between that line and the controls below; no dropdown chevron or floating verse menu SHALL be drawn. | `reading/R47` |
 | FR-007 | The verse control SHALL draw five equal tiles per row, each 40px high and filling its column (81px at the 480px dialog), with 7px gaps and the helper/All/Clear row above the grid. | `reading/R47` |
 | FR-008 | A fresh song pick SHALL start with verse 1 ticked; editing a stored entry SHALL preserve its saved verse set. | `reading/R47` |
-| FR-009 | A click without drag SHALL tick or untick exactly one verse. | `reading/R47` |
+| FR-009 | A click without drag SHALL tick or untick exactly one verse, and SHALL leave no ring behind (the ring is keyboard-only). | `reading/R47` |
 | FR-010 | A held press-and-drag SHALL preview the whole stretch in the summary line until release (with an sr-only live region), write no form values during the preview, commit on release, and leave no persistent mark. | `reading/R47` |
 | FR-011 | The hidden checkboxes SHALL keep submitting verse IDs, and the fetch SHALL keep returning `{id, number}` pairs. | `reading/R43` (unchanged) |
 | FR-012 | The summary SHALL list verse numbers as collapsed ranges (`Verses 1–3, 5, 8–10`) and keep `All verses` when all are ticked. | `reading/R43` (modified) |

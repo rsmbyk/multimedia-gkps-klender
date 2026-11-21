@@ -194,6 +194,25 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         }""")
         self.assertEqual(clip['overflow'], 'visible')
         self.assertLessEqual(clip['cut'], 0.5)
+        # a mouse click leaves no ring; only keyboard focus draws one
+        tiles = page.locator('.editor__verse-tile')
+        tiles.nth(2).click()
+        ring = page.evaluate("""() => getComputedStyle(
+          document.querySelectorAll('.editor__verse-tile')[2]).outlineWidth""")
+        self.assertEqual(ring, '0px')
+        # keyboard focus does draw one, so a sighted keyboard user can see where they are
+        page.locator('#entry-song-search').focus()
+        landed = False
+        for _ in range(60):
+            page.keyboard.press('Tab')
+            landed = page.evaluate("""() => !!document.activeElement &&
+              document.activeElement.type === 'checkbox' &&
+              !!document.activeElement.closest('.editor__verse-tile')""")
+            if landed:
+                break
+        self.assertTrue(landed, 'keyboard never reached a verse tile')
+        self.assertEqual(page.evaluate("""() => getComputedStyle(
+          document.activeElement.closest('.editor__verse-tile')).outlineWidth"""), '2px')
 
     def test_summary_inside_section_and_quick_states(self):
         page = self._page()

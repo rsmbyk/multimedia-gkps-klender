@@ -2674,7 +2674,9 @@ kbd {
   transition: background var(--ease), border-color var(--ease), color var(--ease);
 }
 .editor__verses label:hover { border-color: var(--focus); }
-.editor__verses label:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* `:focus-within` rang the tile after a mouse click, because the hidden checkbox keeps
+   focus; the ring is keyboard-only so a clicked tile shows no leftover mark. */
+.editor__verses label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
 .editor__verses label:has(input:checked) {
   background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
 }
