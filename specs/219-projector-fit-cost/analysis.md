@@ -30,6 +30,15 @@
 - **Gate 2**: whether `SC-003`'s unchanged worst case is acceptable as stated (F003), or whether the
   rapid path deserves its own slice.
 
+## Gate record
+
+- **Gate 1** accepted 2026-11-22: spec, live preview, `## UI/UX` numbers, assumptions, zero
+  `[NEEDS CLARIFICATION]` markers.
+- **Gate 2** accepted 2026-11-22. The fifteen checklist items were presented unticked and remain
+  unticked: checklist items are reviewer-owned and this agent does not tick them (SDD-15), and the
+  gate-2 rule that an unticked item is a change request (SDD-18) was therefore not applied. That is
+  recorded here as a bypass with the owner's word behind it, not as a silent skip.
+
 ## History
 
 - 2026-11-22 — first run: 0 CRITICAL, 0 HIGH, 2 LOW (F003, F004), coverage 100%.

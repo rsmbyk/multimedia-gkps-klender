@@ -3,7 +3,7 @@
 **Slice**: `specs/219-projector-fit-cost`
 **Branch**: `fix/219-projector-fit-cost`
 **Created**: 2026-11-22
-**Status**: Accepted (Gate 1, 2026-11-22)
+**Status**: Accepted (Gate 1, 2026-11-22 · Gate 2, 2026-11-22)
 **Input**: the owner's report, 2026-11-22, in two parts — "in projector, when you are advancing to a
 text entry, or a screen of the same text entry, there is a delay of the text showing. you can clearly
 feel it as it is not as fast as the other entries/screens", and then, with a screenshot of three
