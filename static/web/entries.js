@@ -730,7 +730,19 @@
     var clear = form && form.querySelector('[data-verse-clear]');
     if (all) all.disabled = !boxes.length || checked.length === boxes.length;
     if (clear) clear.disabled = !checked.length;
-    if (panel) panel.hidden = !songPicked || !boxes.length;
+    if (panel) {
+      var shouldHide = !songPicked || !boxes.length;
+      if (shouldHide) {
+        panel.dataset.settled = 'false';
+        panel.hidden = true;
+      } else if (panel.hidden) {
+        panel.dataset.settled = 'false';
+        panel.hidden = false;
+        window.setTimeout(function () { panel.dataset.settled = 'true'; }, 260);
+      } else {
+        panel.dataset.settled = 'true';
+      }
+    }
   }
 
   function renderVerses(box, verses, chosenIds) {

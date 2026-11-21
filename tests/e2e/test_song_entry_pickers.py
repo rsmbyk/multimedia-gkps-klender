@@ -175,6 +175,17 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         self.assertEqual(grid['height'], 40)
         self.assertGreaterEqual(grid['row'], 420)
         self.assertTrue(grid['quickAbove'])
+        # the reveal clip is dropped once settled: no tile may be cut at rest
+        page.wait_for_timeout(350)
+        clip = page.evaluate("""() => {
+          const inner = document.querySelector('.editor__verse-panel-inner');
+          const tiles = [...document.querySelectorAll('.editor__verse-tile')];
+          const last = tiles[tiles.length - 1].getBoundingClientRect();
+          return { overflow: getComputedStyle(inner).overflow,
+                   cut: Math.round((last.bottom - inner.getBoundingClientRect().bottom) * 10) / 10 };
+        }""")
+        self.assertEqual(clip['overflow'], 'visible')
+        self.assertLessEqual(clip['cut'], 0.5)
 
     def test_summary_inside_section_and_quick_states(self):
         page = self._page()

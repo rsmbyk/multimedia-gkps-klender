@@ -2645,6 +2645,10 @@ kbd {
 .editor__verse-panel[hidden] {
   display: grid; grid-template-rows: 0fr; opacity: 0; pointer-events: none;
 }
+/* once the reveal has settled the panel returns to block layout, so its height is its
+   content and the tile row can never be cut by the row track */
+.editor__verse-panel[data-settled="true"] { display: block; }
+.editor__verse-panel[data-settled="true"] .editor__verse-panel-inner { overflow: visible; }
 /* the label belongs to the section: no song or no verses hides it too */
 [data-verse-field]:has([data-verse-panel][hidden]) > #entry-verses-label { display: none; }
 .editor__verse-summary {

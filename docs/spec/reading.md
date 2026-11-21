@@ -1491,7 +1491,8 @@ drag SHALL preview the whole stretch — tinting the tiles and naming it in the 
 `name="verses"` inputs keep their pre-drag values, and SHALL commit the IDs only on release with no anchor
 mark left behind. `All` SHALL be disabled at all-ticked and `Clear` at none-ticked. A one-verse song SHALL
 show one inert tile in a muted section. The section's reveal SHALL last 200 ms on the product's existing
-ease curve and SHALL be instant under `prefers-reduced-motion`. (spec 210)
+ease curve, SHALL settle back to block layout so no tile is ever cut, and SHALL be instant under
+`prefers-reduced-motion`. (spec 210)
 
 #### Scenario: search from the first frame
 - WHEN the Add song form opens and the operator types without clicking
