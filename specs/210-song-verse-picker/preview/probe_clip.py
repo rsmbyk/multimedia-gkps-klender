@@ -42,6 +42,10 @@ def main():
             tileH: Math.round(tiles[0].getBoundingClientRect().height),
             panelH: Math.round(panel.getBoundingClientRect().height),
             innerH: Math.round(inner.getBoundingClientRect().height),
+            quickRule: getComputedStyle(document.querySelector('.editor__verse-quick')).borderBottomWidth,
+            quickToGrid: Math.round((document.querySelector('[data-verse-tiles]')
+              .getBoundingClientRect().top -
+              document.querySelector('.editor__verse-quick').getBoundingClientRect().bottom) * 10) / 10,
           };
         }""")
         print(json.dumps(result))

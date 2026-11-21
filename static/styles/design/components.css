@@ -2686,9 +2686,12 @@ kbd {
   border-color: var(--focus);
 }
 [data-verse-tiles][data-muted="true"] { opacity: .45; pointer-events: none; }
+/* the helper/All-Clear row carries its own rule, the way the summary does, so the
+   tile grid reads as the row's content below it */
 .editor__verse-quick {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 8px; margin: 8px 0;
+  gap: 8px; margin: 0 0 8px; padding: 2px 2px 8px;
+  border-bottom: 1px solid var(--divider);
 }
 .editor__verse-hint { color: var(--head-ink); font-size: 12px; }
 .editor__verse-actions { display: inline-flex; gap: 6px; }

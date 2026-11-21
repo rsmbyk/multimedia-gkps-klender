@@ -272,6 +272,19 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         page.locator('[data-verse-all]').click()
         expect(all_button).to_be_disabled()
         expect(summary).to_have_text('All verses')
+        # the helper/All-Clear row is separated from the tiles by its own rule
+        quick = page.locator('.editor__verse-quick')
+        self.assertEqual(
+            quick.evaluate("el => getComputedStyle(el).borderBottomWidth"), '1px')
+        self.assertEqual(
+            quick.evaluate("el => getComputedStyle(el).marginBottom"), '8px')
+        gap = page.evaluate("""() => {
+          const quick = document.querySelector('.editor__verse-quick');
+          const grid = document.querySelector('[data-verse-tiles]');
+          return Math.round((grid.getBoundingClientRect().top -
+            quick.getBoundingClientRect().bottom) * 10) / 10;
+        }""")
+        self.assertEqual(gap, 8)
         page.locator('[data-verse-clear]').click()
         expect(clear).to_be_disabled()
         expect(summary).to_have_text('No verses: keep at least one')
