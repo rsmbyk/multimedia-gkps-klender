@@ -2639,11 +2639,14 @@ kbd {
    anchor is the live search field and the cap is the window, not the dialog. */
 .editor__verse-panel {
   display: grid; grid-template-rows: 1fr; opacity: 1;
+  padding: 10px; border: 1px solid var(--divider); border-radius: 10px;
+  background: var(--rail-bg);
   transition: grid-template-rows var(--ease), opacity var(--ease);
 }
 .editor__verse-panel-inner { min-height: 0; overflow: hidden; }
 .editor__verse-panel[hidden] {
   display: grid; grid-template-rows: 0fr; opacity: 0; pointer-events: none;
+  padding: 0; border-width: 0;
 }
 /* once the reveal has settled the panel returns to block layout, so its height is its
    content and the tile row can never be cut by the row track */

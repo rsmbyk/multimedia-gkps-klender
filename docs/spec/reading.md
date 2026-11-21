@@ -1484,8 +1484,8 @@ dialog's bottom edge, and SHALL NOT resize the dialog. The existing query gramma
 short-reference labels and 200-result cap are unchanged (specs 042/050/051). Arrow keys move the result
 highlight, Enter picks it, Escape closes the list and keeps the text, and a tap picks on touch.
 
-The Verses section SHALL be part of the form's flow: its summary line lives inside it with a 1px separator
-below, the tile grid uses five 40px tiles per row with 7px gaps at the 480px dialog width, and no dropdown
+The Verses section SHALL be part of the form's flow inside a 1px-bordered, 10px-padded panel on the rail
+surface: its summary line lives inside it with a 1px separator below, the tile grid uses five 40px tiles per row with 7px gaps at the 480px dialog width, and no dropdown
 chevron or floating verse menu SHALL be drawn. A plain click ticks or unticks one tile. A held press and
 drag SHALL preview the whole stretch — tinting the tiles and naming it in the summary line, with an sr-only live region — while the hidden
 `name="verses"` inputs keep their pre-drag values, and SHALL commit the IDs only on release with no anchor

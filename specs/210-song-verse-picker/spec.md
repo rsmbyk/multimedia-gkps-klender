@@ -134,7 +134,7 @@ Verses panel, has a 1px rule beneath it, and clicking it collapses only the tile
 | FR-003 | The query grammar, hymn-first ordering, short-reference labels and 200-result cap SHALL stay as they are; no backend endpoint or schema changes in this slice. | `reading/R47` |
 | FR-004 | Arrow keys SHALL move the result highlight, Enter SHALL pick it, Escape SHALL close the list and keep the text, and a tap SHALL pick on touch. | `reading/R47` |
 | FR-005 | Picking a song SHALL write its ID to the hidden song input and show its reference-and-title label in the field. | `reading/R47` |
-| FR-006 | The Verses section SHALL be part of the form's flow, with its summary line inside the section and a 1px separator between that line and the controls below; no dropdown chevron or floating verse menu SHALL be drawn. | `reading/R47` |
+| FR-006 | The Verses section SHALL be part of the form's flow inside a 1px-bordered, 10px-padded panel on the rail surface, with its summary line inside the section and a 1px separator between that line and the controls below; no dropdown chevron or floating verse menu SHALL be drawn. | `reading/R47` |
 | FR-007 | The verse control SHALL draw five equal tiles per row, each 40px high and filling its column (81px at the 480px dialog), with 7px gaps and the helper/All/Clear row above the grid. | `reading/R47` |
 | FR-008 | A fresh song pick SHALL start with verse 1 ticked; editing a stored entry SHALL preserve its saved verse set. | `reading/R47` |
 | FR-009 | A click without drag SHALL tick or untick exactly one verse. | `reading/R47` |

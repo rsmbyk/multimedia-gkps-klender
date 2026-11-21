@@ -170,10 +170,18 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
           };
         }""")
         self.assertEqual(grid['columns'], 5)
-        self.assertGreaterEqual(grid['width'], 78)
-        self.assertLessEqual(grid['width'], 86)
+        panel_style = page.evaluate("""() => {
+          const p = document.querySelector('[data-verse-panel]');
+          const s = getComputedStyle(p);
+          return { border: s.borderTopWidth, padding: s.paddingTop, radius: s.borderTopLeftRadius };
+        }""")
+        self.assertEqual(panel_style['border'], '1px')
+        self.assertEqual(panel_style['padding'], '10px')
+        self.assertEqual(panel_style['radius'], '10px')
+        self.assertGreaterEqual(grid['width'], 74)
+        self.assertLessEqual(grid['width'], 82)
         self.assertEqual(grid['height'], 40)
-        self.assertGreaterEqual(grid['row'], 420)
+        self.assertGreaterEqual(grid['row'], 400)
         self.assertTrue(grid['quickAbove'])
         # the reveal clip is dropped once settled: no tile may be cut at rest
         page.wait_for_timeout(350)
