@@ -24,7 +24,7 @@
 
 - `VERSION`, `CHANGELOG.md` and the board card are delivery bookkeeping (task T021), not capability
   facts: `VERSION` 1.35.4 (1.35.3 was taken by spec 212 before this branch merged `develop`), the
-  changelog entry under `[Unreleased]`, and card `ITEM-227` at in-review (renumbered from ITEM-225,
+  changelog entry under `[Unreleased]`, and card `ITEM-227` closed in the same PR (renumbered from ITEM-225,
   which sat below `develop`'s highest card).
 - The preview's sample songs, the `Slow` review control and tabs 2–4 are comparison artifacts; they
   describe no product behavior and are not folded.

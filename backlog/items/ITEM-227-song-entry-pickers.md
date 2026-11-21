@@ -1,6 +1,6 @@
 ---
 id: ITEM-227
-status: in-review
+status: done
 title: 'Revamp the song entry pickers'
 type: feat
 priority: P1
@@ -11,6 +11,8 @@ spec: specs/210-song-verse-picker/spec.md
 branch: feat/210-song-verse-picker
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/561
 issue:
+closed_at: 2026-11-21
+closed_reason: merged into develop (PR #561)
 bump: patch
 release_version:
 ---
