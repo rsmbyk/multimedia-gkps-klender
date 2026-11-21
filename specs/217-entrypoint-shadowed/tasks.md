@@ -30,6 +30,6 @@ means order-independent, not concurrent.
   outside the mounted tree — with `fold.md` (capabilities, operations, counts).
 - [x] T012 [Polish] First commit at Fold: `Dockerfile`, both test modules, spec pack, card `ITEM-232`
   and its board row, `ITEM-233` filed in Backlog.
-- [ ] T013 [Polish] Delivery: PR as a draft, then ready; card `In review` with `pr:` in a commit after
+- [x] T013 [Polish] Delivery: PR as a draft, then ready; card `In review` with `pr:` in a commit after
   the number exists; `VERSION` → `1.36.3` and the `CHANGELOG.md` Fixed line in the pre-merge commit;
   card `Done` and the board row with it, in the same PR.

@@ -45,13 +45,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-232](./items/ITEM-232-entrypoint-shadowed.md) | The web service still runs the checkout's CRLF entrypoint | `docker-compose.yml` mounts the checkout over `/app`, so the image's stripped entrypoint is replaced by the host's; the runtime copy must live outside the mount | fix | P0 | S | [217](../specs/217-entrypoint-shadowed/spec.md) | 2026-11-21 |
 | [ITEM-226](./items/ITEM-226-copy-confirm-layer.md) | The Copy as template confirmation paints inline under the edit form | No product CSS carries the layer, card or right-aligned actions spec 167's preview drew, so the confirmation stacks under Save/Cancel and grows the modal | fix | P1 | S | [212](../specs/212-copy-confirm-layer/spec.md) | [#560](https://github.com/rsmbyk/multimedia-gkps-klender/pull/560) | 2026-11-21 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-232](./items/ITEM-232-entrypoint-shadowed.md) | The web service still runs the checkout's CRLF entrypoint | `docker-compose.yml` mounts the checkout over `/app`, so the image's stripped entrypoint is replaced by the host's; the runtime copy must live outside the mount | fix | P0 | S | [217](../specs/217-entrypoint-shadowed/spec.md) | 2026-11-21 |
 | [ITEM-231](./items/ITEM-231-windows-checkout-start.md) | The stack never starts from a checkout made on Windows | Git for Windows writes a CRLF `docker/entrypoint.sh`, `sh` refuses it at `set -e`, and both services restart-loop; a build-time strip, an LF pin and an advisory post-start check | fix | P1 | S | [216](../specs/216-windows-checkout-start/spec.md) | develop via [#571](https://github.com/rsmbyk/multimedia-gkps-klender/pull/571) | 2026-11-21 |
 | [ITEM-230](./items/ITEM-230-sidebar-entry-kind-marks.md) | A service entry's sidebar row marks its kind | The contents list after the order number carries each entry's mark; slots keep the spec 213 kind modifier | feat | P2 | S | [214](../specs/214-sidebar-entry-kind-marks/spec.md) | develop via [#569](https://github.com/rsmbyk/multimedia-gkps-klender/pull/569) | 2026-11-21 |
 | [ITEM-229](./items/ITEM-229-copy-template-dialog.md) | The copy confirmation is a dialog of its own, and the copy is named there | A second dialog over the Edit modal, its card centred on the window, with a Name field defaulting to `<source> (Copy)` that selects all on click; the endpoint takes the name instead of reusing the source's | feat | P1 | M | [215](../specs/215-copy-template-dialog/spec.md) | develop via [#567](https://github.com/rsmbyk/multimedia-gkps-klender/pull/567) | 2026-11-21 |

@@ -1,6 +1,6 @@
 ---
 id: ITEM-232
-status: in-review
+status: done
 title: 'The web service still runs the checkout’s CRLF entrypoint, because the bind mount replaces the image’s'
 type: fix
 priority: P0
@@ -11,8 +11,8 @@ spec: 217
 branch: fix/217-entrypoint-shadowed
 pr: 574
 issue: 572
-closed_at:
-closed_reason:
+closed_at: 2026-11-21
+closed_reason: merged into develop (PR #574)
 bump: patch
 release_version:
 ---
