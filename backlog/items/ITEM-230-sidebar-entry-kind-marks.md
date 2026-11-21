@@ -1,6 +1,6 @@
 ---
 id: ITEM-230
-status: in_review
+status: done
 title: 'A service entry''s sidebar row marks its kind'
 type: feat
 priority: P2
@@ -11,9 +11,9 @@ spec: 214
 branch: feat/214-sidebar-entry-kind-marks
 pr: 569
 issue: 565
-closed_at:
-closed_reason:
-bump:
+closed_at: 2026-11-21
+closed_reason: merged into develop (PR #569)
+bump: patch
 release_version:
 ---
 
