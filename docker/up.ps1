@@ -79,10 +79,18 @@ if ($status -eq 0 -and $count -gt 0 -and $rest[0] -eq 'up') {
     $ErrorActionPreference = 'Continue'
     $seen = (& docker compose @composeArgs exec -T media sh -c 'n=$(fc-list 2>/dev/null | grep -c "/usr/share/fonts/host/"); printf "%s" "$n"; exit 0' 2>$null)
     $checked = $LASTEXITCODE
-    $ErrorActionPreference = $previousPreference
     $counted = "$seen".Trim()
+    $detail = ''
     if ($checked -ne 0 -or $counted -notmatch '^\d+$') {
-        Write-Output 'gkps: the media companion is not running — the font mounts were not checked; see docker compose logs media'
+        $detail = (& docker compose @composeArgs logs --no-color --tail 1 media 2>$null | Select-Object -Last 1)
+    }
+    $ErrorActionPreference = $previousPreference
+    if ($checked -ne 0 -or $counted -notmatch '^\d+$') {
+        # "container is restarting" names nothing; the companion's own line names the cause, and a
+        # start that follows a pull without a rebuild is the common one (spec 218).
+        Write-Output 'gkps: the media companion is not running — the font mounts were not checked'
+        if ($detail) { Write-Output "gkps: its last line: $detail" }
+        Write-Output 'gkps: see docker compose logs media; if the image predates your checkout, docker compose build'
     }
     elseif ([int]$counted -eq 0) {
         Write-Output 'gkps: the mounted font directories showed no font to the companion'

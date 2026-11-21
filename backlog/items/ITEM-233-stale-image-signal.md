@@ -1,23 +1,23 @@
 ---
 id: ITEM-233
-status: backlog
-title: 'A start from an image older than the Dockerfile says nothing'
+status: in-progress
+title: 'A launcher start that cannot reach the companion says nothing about why'
 type: fix
 priority: P2
 effort: S
 created: 2026-11-21
 updated: 2026-11-21
-spec:
-branch:
+spec: 218
+branch: fix/218-restart-log
 pr:
 issue: 573
 closed_at:
 closed_reason:
-bump: none
+bump: patch
 release_version:
 ---
 
-# ITEM-233: A start from an image older than the Dockerfile says nothing
+# ITEM-233: A launcher start that cannot reach the companion says nothing about why
 
 ## Summary
 
@@ -29,14 +29,16 @@ signal that a rebuild was needed — which is exactly what happened right after 
 
 - Observed 2026-11-21: the fix was correct and merged, and the machine still failed because the image
   predated it. The operator had no way to tell from the launcher's output.
-- A warning is cheap only if the comparison is cheap: the `Dockerfile`'s modification time against the
-  image's creation time, read through `docker image inspect`, with `docker compose build` named.
-- It must not change the start's exit status, and must not run when the start failed.
+- An image-age comparison (Dockerfile mtime against `docker image inspect`) was rejected at Specify:
+  the format and timezone differ per shell, and GNU `date -d` is absent on macOS. The companion's own
+  last log line is exact evidence and covers every cause, not only a stale image.
+- Still advisory: it must not change the start's exit status, and must not run when the start failed.
 
 ## Acceptance sketch
 
-- A start whose image predates the `Dockerfile` prints one line naming `docker compose build`.
-- A start from a freshly built image prints nothing.
+- A start whose companion is not running prints the companion's own last line and names
+  `docker compose build`.
+- A healthy companion is asked for no log.
 - The exit status is the start's, on both paths.
 
 ## Links
