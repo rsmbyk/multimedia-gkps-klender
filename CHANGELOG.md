@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The song entry's pickers now work from the first frame.** The Song search is focused as the modal opens and its results can run past the dialog without resizing it; the Verses field is an inline section of five-across tiles where a click ticks one verse and a held drag previews a range until release. Songs with no verses hide the section, a one-verse song mutes it, and verse IDs and the existing song search rules stay unchanged (spec 210).
+
 ### Fixed
 
 - **A newly created Tata Ibadah now opens on the reading stage right after save.** The saved service's

@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-225](./items/ITEM-225-song-entry-pickers.md) | Revamp the song entry pickers | Live song search from the first frame and an inline verse grid where a click ticks one verse and a held drag previews a range before release | feat | P1 | M | [210](../specs/210-song-verse-picker/spec.md) | 2026-11-21 |
 
 ## Ready
 

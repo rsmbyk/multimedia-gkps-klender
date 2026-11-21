@@ -14,7 +14,7 @@
 
 ## Counts
 
-- Rules before: 45 (`R1`–`R45`).
+- Rules before: 46 (`R1`–`R46`, including spec 209 folded after this slice was cut).
 - Rules after: 47 (`R1`–`R47`); no number reused or renumbered.
 - Scenarios: R30 7 → 7, R43 3 → 3, R47 0 → 4.
 - Header: `last folded` 2026-11-19 → 2026-11-21; slice list prepended with `210-song-verse-picker`.
