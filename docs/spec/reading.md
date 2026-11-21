@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-21
-**slices**: `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1589,4 +1589,38 @@ ease curve, SHALL settle back to block layout so no tile is ever cut, and SHALL 
 #### Scenario: a section that reads as part of the form
 - WHEN the Verses section renders
 - THEN the summary is inside it, a 1px rule separates it from the controls, and the soft summary collapses only the tiles
+
+### R49 — A contents row states its entry's kind in a column after the number
+
+The Tata Ibadah contents list SHALL paint one decorative kind mark per numbered row, in a dedicated
+column immediately after the order number and before the label. The mark SHALL differ per kind: an open
+book for a passage, a beamed note for a song, a framed play mark for media, three rules for text, and a
+diamond only if a section break is marked — a break row SHALL keep its rule and carries no mark, because
+it paints no visible order number. A legacy text row SHALL be marked as text; a deleted target SHALL keep
+its kind mark. A fill-in or a choice SHALL carry the slot mark with spec 213's corner kind modifier, so
+the dashed frame and its `+` / `◎` stay and the badge names the resolved kind; a slot whose stored kind
+cannot be read SHALL draw the frame without a badge.
+
+The number SHALL keep its left edge and vertical centring in a 24px box that grows past three digits;
+the mark SHALL be 16px; the label SHALL keep its three-line clamp, its `…` and its wrap at the pane edge.
+The mark SHALL be server-rendered, `aria-hidden`, take no pointer and add no focusable element, so the
+row's accessible name is unchanged. It SHALL be legible in both themes and on the hover and selected
+fills. The OBS dock's entry list SHALL carry no marks: the contents list is the only surface in scope.
+(spec 214)
+
+#### Scenario: one rail of kinds
+- WHEN a service holds a passage, a song, a media file, a text entry and a section break
+- THEN each numbered row paints its own mark in the column after its number, and the break's divider stays unmarked
+
+#### Scenario: a slot
+- WHEN a fill-in resolving to song and a choice resolving to passage are listed
+- THEN each carries the dashed slot mark with a corner badge naming that kind, and the two badges differ
+
+#### Scenario: no second control
+- WHEN a row is read by assistive technology, pointed at or tabbed through
+- THEN its name is the label it had before, and focus never lands on the mark
+
+#### Scenario: geometry
+- WHEN the mark is drawn at a 404px pane, in either theme
+- THEN the number starts 10px from the row edge in a 24px box, the mark at 42px and the label at 66px, with no row moving
 

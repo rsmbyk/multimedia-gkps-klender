@@ -40,6 +40,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-230](./items/ITEM-230-sidebar-entry-kind-marks.md) | A service entry's sidebar row marks its kind | The contents list after the order number carries each entry's mark; slots keep the spec 213 kind modifier | feat | P2 | S | [214](../specs/214-sidebar-entry-kind-marks/spec.md) | `feat/214-sidebar-entry-kind-marks` | 2026-11-21 |
 
 ## In review
 

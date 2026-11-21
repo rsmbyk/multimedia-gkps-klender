@@ -2446,6 +2446,86 @@ class ServiceEntryViewTests(TestCase):
         self.assertEqual(row['verse_line'], '')
         self.assertFalse(row['song_label'])
 
+    # --- spec 214: the contents row's kind mark -------------------------------
+
+    def test_every_numbered_row_has_one_mark(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Prayer', order_number=1)
+        self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song,
+                  verses=[self.song.verse_set.get(number=n).pk for n in [1, 2]], order_number=2)
+        html = self.html()
+        rows = len(re.findall(r'<a class="songrow', html))
+        marks = len(re.findall(r'<span class="songrow__mark', html))
+        self.assertEqual(marks, rows)
+        self.assertEqual(rows, 2)
+
+    def test_mark_set_covers_every_kind(self):
+        kinds = [
+            (tatib.ServiceEntryKind.TEXT, 'text'),
+            (tatib.ServiceEntryKind.SCRIPTURE, 'scripture'),
+            (tatib.ServiceEntryKind.SONG, 'song'),
+            (tatib.ServiceEntryKind.MEDIA, 'media'),
+            (tatib.ServiceEntryKind.FILL_IN, 'fill_in'),
+            (tatib.ServiceEntryKind.CHOICE, 'choice'),
+        ]
+        for number, (kind, _) in enumerate(kinds, 1):
+            self.make(kind=kind, order_number=number,
+                      **({'book_translation': self.matius, 'chapter': 5, 'verse_start': 1,
+                          'verse_end': 2} if kind == tatib.ServiceEntryKind.SCRIPTURE else
+                         {'song': self.song, 'verses': [1]} if kind == tatib.ServiceEntryKind.SONG else
+                         {'fill_kind': tatib.SlotKind.SONG} if kind == tatib.ServiceEntryKind.FILL_IN else {}))
+        html = self.html()
+        for _, expected in kinds:
+            self.assertIn(f'data-mark="{expected}"', html)
+
+    def test_mark_set_is_pairwise_distinct(self):
+        self.test_mark_set_covers_every_kind()
+        marks = set(re.findall(r'data-mark="([^"]+)"', self.html()))
+        self.assertEqual(len(marks), 6)
+        self.assertEqual(marks, {'text', 'scripture', 'song', 'media', 'fill_in', 'choice'})
+
+    def test_deleted_target_keeps_its_mark(self):
+        entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song,
+                          verses=[self.song.verse_set.get(number=n).pk for n in [1]])
+        self.song.delete()
+        self.assertIn('data-mark="song"', self.html())
+
+    def test_divider_row_has_no_mark(self):
+        self.make(kind=tatib.ServiceEntryKind.SECTION_BREAK, order_number=1)
+        tatib.TataIbadahItem.objects.create(
+            tatib=self.tatib, item_type=tatib.TataIbadahItemType.END_OF_SECTION,
+            order_number=2, text='')
+        html = self.html()
+        for block in re.findall(r'<li class="toc__eos".*?</li>', html):
+            self.assertNotIn('songrow__mark', block)
+
+    def test_slot_with_no_kind_draws_no_badge(self):
+        self.make(kind=tatib.ServiceEntryKind.FILL_IN, fill_kind=None, order_number=1)
+        html = self.html()
+        self.assertIn('data-mark="fill_in"', html)
+        self.assertNotIn('data-kind-badge', html)
+
+    def test_slot_keeps_the_kind_modifier(self):
+        self.make(kind=tatib.ServiceEntryKind.FILL_IN,
+                  fill_kind=tatib.SlotKind.SONG, order_number=1)
+        self.make(kind=tatib.ServiceEntryKind.CHOICE,
+                  fill_kind=tatib.SlotKind.SCRIPTURE, order_number=2)
+        html = self.html()
+        self.assertIn('data-kind-badge="song"', html)
+        self.assertIn('data-kind-badge="scripture"', html)
+
+    def test_marks_are_aria_hidden_and_carry_no_control(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Prayer', order_number=1)
+        html = self.html()
+        for block in re.findall(r'<span class="songrow__mark[^"]*".*?</span>', html):
+            self.assertIn('aria-hidden="true"', block)
+            self.assertNotIn('<button', block)
+            self.assertNotIn('<a ', block)
+
+    def test_marks_survive_a_second_render(self):
+        self.make(kind=tatib.ServiceEntryKind.TEXT, title='Prayer', order_number=1)
+        self.assertIn('data-mark="text"', self.html())
+        self.assertIn('data-mark="text"', self.html())
+
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class ServiceEntryKindRetirementTests(TestCase):
@@ -3646,9 +3726,12 @@ class SlotKindBadgeTests(TestCase):
                 tatib=self.template, kind=tatib.ServiceEntryKind.FILL_IN, order_number=order,
                 fill_kind=fill_kind, title=f'Slot {order}')
         html = self.page()
+        # spec 214 adds the same modifier to the contents sidebar; this test is the
+        # stage's contract, so count badges inside the stage article only.
+        stage = html.split('<article class="read"', 1)[1].split('</article>', 1)[0]
         for name in ('text', 'scripture', 'song', 'media'):
-            self.assertIn(f'data-kind-badge="{name}"', html, f'{name} has no badge')
-        self.assertEqual(html.count('class="slot__badge"'), 4)
+            self.assertIn(f'data-kind-badge="{name}"', stage, f'{name} has no badge')
+        self.assertEqual(stage.count('class="slot__badge"'), 4)
 
     def test_a_dated_service_never_carries_one(self):
         dated = tatib.TataIbadah.objects.create(name='Ibadah', date=date(2026, 11, 1))

@@ -1,0 +1,35 @@
+{% comment %}The contents row's kind mark (spec 214). A decorative glyph in the column after the
+order number; the row's own words are its name, so the mark is hidden from assistive technology,
+takes no pointer and holds no control. The paths are the product's own marks, drawn on their own
+grids; the slot's corner modifier is spec 213's badge partial, resized for this 16px seat.{% endcomment %}
+<span class="songrow__mark{% if mark == 'fill_in' or mark == 'choice' %} songrow__mark--slot{% endif %}"
+      aria-hidden="true" data-mark="{{ mark }}">{% if mark == 'scripture' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M12 9.6c-1.6-1.3-3.8-1.9-6.9-1.7v10.4c3.1-.2 5.3.4 6.9 1.7 1.6-1.3 3.8-1.9 6.9-1.7V7.9c-3.1-.2-5.3.4-6.9 1.7z"/>
+    <path d="M12 9.6v10.4"/><path d="M12 2.6v4.6M10.1 4.5h3.8"/>
+  </svg>{% elif mark == 'song' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M9 17.4V5.6l10.2-2v11.6"/>
+    <circle cx="6.7" cy="17.4" r="2.4"/><circle cx="16.9" cy="15.2" r="2.4"/>
+  </svg>{% elif mark == 'media' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <rect x="3" y="4.5" width="18" height="15" rx="2.4"/><path d="M10 9v6l5-3z"/>
+  </svg>{% elif mark == 'text' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M3 4.5h14M3 8h14M3 11.5h9"/>
+  </svg>{% elif mark == 'fill_in' %}
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <rect x="2.6" y="2.6" width="14.8" height="14.8" rx="3.6" stroke-dasharray="2.8 2.4"/>
+    <path d="M10 6.8v6.4M6.8 10h6.4"/>
+  </svg>{% if mark_kind %}{% include 'reading/_slot_kind_badge.html' with kind=mark_kind %}{% endif %}{% elif mark == 'choice' %}
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <rect x="2.6" y="2.6" width="14.8" height="14.8" rx="3.6" stroke-dasharray="2.8 2.4"/>
+    <circle cx="10" cy="10" r="3.6"/><circle cx="10" cy="10" r="1.5" fill="currentColor" stroke="none"/>
+  </svg>{% if mark_kind %}{% include 'reading/_slot_kind_badge.html' with kind=mark_kind %}{% endif %}{% endif %}
+</span>
