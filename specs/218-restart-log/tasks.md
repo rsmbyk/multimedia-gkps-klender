@@ -19,5 +19,5 @@
 
 - [x] T007 [Polish] Fold: modify `local-stack/R5` — the report now shows the companion's own last line
   and names the rebuild.
-- [ ] T008 [Polish] Delivery: PR, card `In review`, `VERSION` → `1.36.4` with the changelog line, card
+- [x] T008 [Polish] Delivery: PR, card `In review`, `VERSION` → `1.36.4` with the changelog line, card
   `Done`.
