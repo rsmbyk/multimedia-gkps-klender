@@ -224,6 +224,11 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         self.assertTrue(inside)
         self.assertEqual(
             summary.evaluate("el => getComputedStyle(el).borderBottomWidth"), '1px')
+        # the summary is display text, not a control
+        self.assertEqual(summary.evaluate('el => el.tagName'), 'P')
+        self.assertEqual(summary.evaluate("el => getComputedStyle(el).cursor"), 'auto')
+        summary.click()
+        expect(page.locator('[data-verse-tiles]')).to_be_visible()
         all_button = page.locator('[data-verse-all]')
         clear = page.locator('[data-verse-clear]')
         page.locator('[data-verse-all]').click()

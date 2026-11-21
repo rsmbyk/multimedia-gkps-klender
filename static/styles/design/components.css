@@ -2658,11 +2658,9 @@ kbd {
   display: block; width: 100%; margin: 0 0 8px; padding: 0 0 8px;
   border: 0; border-bottom: 1px solid var(--divider); background: none;
   text-align: left; font: 600 13px/1.3 ui-sans-serif, system-ui, sans-serif;
-  color: var(--ink); cursor: pointer;
+  color: var(--ink);
 }
-.editor__verse-summary:hover { color: var(--focus); }
-.editor__verse-summary[aria-invalid="true"] { color: var(--danger); }
-.editor__verse-panel[data-closed="true"] .editor__verses { display: none; }
+.editor__verse-summary[data-invalid="true"] { color: var(--danger); }
 .editor__verses { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
 .editor__verses > div { display: flex; min-width: 0; }
 .editor__verses label {

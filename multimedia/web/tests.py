@@ -1347,8 +1347,8 @@ class ServiceEntryViewTests(TestCase):
         response = self.client.get(self.new_url('song'))
         self.assertContains(response, 'data-entry-picker="song"')
         self.assertContains(response, 'placeholder="Search songs..."')
-        self.assertContains(response, 'data-verses-trigger')
         self.assertContains(response, 'data-verses-summary')
+        self.assertNotContains(response, 'data-verses-toggle')
 
     def _verse_less_song(self):
         return songs.Song.objects.create(book=self.songbook, number=901, title='Kosong')

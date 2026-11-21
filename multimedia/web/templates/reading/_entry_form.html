@@ -200,9 +200,7 @@
     <label id="entry-verses-label">Verses</label>
     <div class="editor__verse-panel" data-entry-picker="verses" data-verse-panel{% if not form.song.value or form.song_has_no_verses %} hidden{% else %} data-settled="true"{% endif %}>
       <div class="editor__verse-panel-inner">
-        <button type="button" class="editor__verse-summary" id="entry-verses-trigger"
-                data-verses-trigger data-verses-summary data-verses-toggle
-                {% if form.verses.errors %}aria-invalid="true"{% endif %}>{% if form.song_has_no_verses %}This song has no verses{% else %}Pick a song first{% endif %}</button>
+        <p class="editor__verse-summary" data-verses-summary{% if form.verses.errors %} data-invalid="true"{% endif %}>{% if form.song_has_no_verses %}This song has no verses{% else %}Pick a song first{% endif %}</p>
         <div class="editor__verse-quick">
           <span class="editor__verse-hint">Click to tick · hold and drag across tiles to extend</span>
           <span class="editor__verse-actions">

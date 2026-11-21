@@ -1485,7 +1485,8 @@ short-reference labels and 200-result cap are unchanged (specs 042/050/051). Arr
 highlight, Enter picks it, Escape closes the list and keeps the text, and a tap picks on touch.
 
 The Verses section SHALL be part of the form's flow inside a 1px-bordered, 10px-padded panel on the rail
-surface: its summary line lives inside it with a 1px separator below, the tile grid uses five equal 40px-high
+surface: its summary line is display text, not a control, lives inside it with a 1px separator below, and the
+tile grid uses five equal 40px-high
 tiles per row with 7px gaps, and no dropdown chevron or floating verse menu SHALL be drawn. A plain click
 ticks or unticks one tile and SHALL leave no ring behind — the tile's focus ring is drawn for keyboard focus
 only. A held press and

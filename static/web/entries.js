@@ -301,7 +301,7 @@
   }
 
   function triggers(scope) {
-    return [].slice.call(scope.querySelectorAll('[data-picker-trigger], [data-verses-trigger]'));
+    return [].slice.call(scope.querySelectorAll('[data-picker-trigger]'));
   }
 
   function closeMenus(scope) {
@@ -321,7 +321,7 @@
   function placeMenu(menu) {
     if (!menu || menu.hidden) return;
     var picker = menu.closest('.editor__picker');
-    var trigger = picker && picker.querySelector('[data-picker-trigger], [data-verses-trigger], [data-menu-anchor]');
+    var trigger = picker && picker.querySelector('[data-picker-trigger], [data-menu-anchor]');
     if (!trigger) return;
     var box = trigger.getBoundingClientRect();
     var gap = 6;
@@ -351,7 +351,7 @@
 
   function wirePickerMenus(scope) {
     [].slice.call(scope.querySelectorAll('.editor__picker')).forEach(function (picker) {
-      var trigger = picker.querySelector('[data-picker-trigger], [data-verses-trigger]');
+      var trigger = picker.querySelector('[data-picker-trigger]');
       var menu = picker.querySelector('.editor__picker-menu');
       if (!trigger || !menu) return;
       trigger.addEventListener('click', function (event) {
@@ -940,12 +940,6 @@
       allInputs().forEach(function (input) { input.checked = false; });
       syncVerse();
     });
-    var toggle = versesPicker && versesPicker.querySelector('[data-verses-toggle]');
-    if (toggle) toggle.addEventListener('click', function () {
-      var panel = scope.querySelector('[data-verse-panel]');
-      if (panel) panel.dataset.closed = panel.dataset.closed === 'true' ? 'false' : 'true';
-    });
-
     syncVerse();                       /* editing: the boxes are already there */
     window.setTimeout(function () { search.focus(); }, 0);
   }

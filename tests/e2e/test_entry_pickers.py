@@ -183,7 +183,7 @@ class EntryPickerE2ETests(StaticLiveServerTestCase):
     def _menu_geometry(self, page, picker):
         return page.evaluate("""pickerName => {
           const menu = document.querySelector(`[data-entry-picker="${pickerName}"] .editor__picker-menu`);
-          const trigger = document.querySelector(`[data-entry-picker="${pickerName}"] [data-picker-trigger], [data-entry-picker="${pickerName}"] [data-verses-trigger]`);
+          const trigger = document.querySelector(`[data-entry-picker="${pickerName}"] [data-picker-trigger]`);
           const m = menu.getBoundingClientRect(), t = trigger.getBoundingClientRect();
           const content = document.getElementById('editorContent').getBoundingClientRect();
           return {position: getComputedStyle(menu).position, gap: m.top - t.bottom,

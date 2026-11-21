@@ -268,10 +268,10 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         filtered_songs.first.click()
         expect(page.locator('#entry-verses input[type=checkbox]')).to_have_count(3)
         expect(page.locator('[data-verses-summary]')).to_have_text('Verses 1')
-        # the summary is a soft trigger: it collapses only the tile block
-        page.locator('[data-verses-toggle]').click()
-        expect(page.locator('[data-verse-tiles]')).to_be_hidden()
-        page.locator('[data-verses-toggle]').click()
+        # the summary is display text, not a control: clicking it changes nothing
+        summary = page.locator('[data-verses-summary]')
+        self.assertEqual(summary.evaluate('el => el.tagName'), 'P')
+        summary.click()
         expect(page.locator('[data-verse-tiles]')).to_be_visible()
         page.locator('#entry-verses .editor__verse-tile').nth(1).click()
         expect(page.locator('[data-verses-summary]')).to_have_text('Verses 1\u20132')
