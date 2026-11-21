@@ -149,6 +149,30 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
             page.evaluate("getComputedStyle(document.querySelector('[data-verse-tiles]')).opacity"),
             '0.45')
 
+    def test_tile_grid_geometry_and_helper_position(self):
+        page = self._page()
+        self._open_song(page)
+        self._pick(page, 'KJ 152')
+        expect(page.locator('#entry-verses input[type=checkbox]')).to_have_count(12)
+        grid = page.evaluate("""() => {
+          const box = document.querySelector('#entry-verses');
+          const tiles = [...box.querySelectorAll('.editor__verse-tile')];
+          const quick = document.querySelector('.editor__verse-quick');
+          return {
+            columns: getComputedStyle(box).gridTemplateColumns.split(' ').length,
+            width: Math.round(tiles[0].getBoundingClientRect().width),
+            height: Math.round(tiles[0].getBoundingClientRect().height),
+            row: Math.round(box.getBoundingClientRect().width),
+            quickAbove: quick.getBoundingClientRect().top < box.getBoundingClientRect().top,
+          };
+        }""")
+        self.assertEqual(grid['columns'], 5)
+        self.assertGreaterEqual(grid['width'], 78)
+        self.assertLessEqual(grid['width'], 86)
+        self.assertEqual(grid['height'], 40)
+        self.assertGreaterEqual(grid['row'], 420)
+        self.assertTrue(grid['quickAbove'])
+
     def test_summary_inside_section_and_quick_states(self):
         page = self._page()
         self._open_song(page)

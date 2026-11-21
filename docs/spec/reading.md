@@ -1487,7 +1487,7 @@ highlight, Enter picks it, Escape closes the list and keeps the text, and a tap 
 The Verses section SHALL be part of the form's flow: its summary line lives inside it with a 1px separator
 below, the tile grid uses five 40px tiles per row with 7px gaps at the 480px dialog width, and no dropdown
 chevron or floating verse menu SHALL be drawn. A plain click ticks or unticks one tile. A held press and
-drag SHALL preview the whole stretch — tinting the tiles and naming it in the readout — while the hidden
+drag SHALL preview the whole stretch — tinting the tiles and naming it in the summary line, with an sr-only live region — while the hidden
 `name="verses"` inputs keep their pre-drag values, and SHALL commit the IDs only on release with no anchor
 mark left behind. `All` SHALL be disabled at all-ticked and `Clear` at none-ticked. A one-verse song SHALL
 show one inert tile in a muted section. The section's reveal SHALL last 200 ms on the product's existing

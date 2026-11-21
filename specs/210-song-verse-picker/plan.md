@@ -46,7 +46,7 @@ See `research.md`. **Unknowns remaining: 0.**
 | FR-004 | `static/web/entries.js` song results handlers | `test` → `tests/e2e/test_song_entry_pickers.py::test_keyboard_and_touch_pick` | arrows, Enter, Escape, tap |
 | FR-005 | `_entry_form.html` hidden `song`; `entries.js` `wireSongPicker` | `test` → `tests/e2e/test_song_entry_pickers.py::test_pick_writes_hidden_id_and_label` | |
 | FR-006 | `_entry_form.html` Verses field + `components.css` | `test` → `tests/e2e/test_song_entry_pickers.py::test_summary_lives_inside_section` | no chevron/menu |
-| FR-007 | `components.css` tile grid | `test` → `tests/e2e/test_song_entry_pickers.py::test_five_40px_tiles_per_row` | computed geometry |
+| FR-007 | `components.css` tile grid | `test` → `tests/e2e/test_song_entry_pickers.py::test_tile_grid_geometry_and_helper_position` | computed geometry, equal columns |
 | FR-008 | `entries.js` `renderVerses` + `SongEntryForm` | `test` → `tests/e2e/test_song_entry_pickers.py::test_fresh_pick_and_edit_state` | |
 | FR-009 | `entries.js` tile click handler | `test` → `tests/e2e/test_song_entry_pickers.py::test_click_ticks_one_verse` | |
 | FR-010 | `entries.js` drag preview/commit | `test` → `tests/e2e/test_song_entry_pickers.py::test_drag_previews_until_release` | values unchanged while held |

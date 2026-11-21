@@ -203,7 +203,6 @@
         <button type="button" class="editor__verse-summary" id="entry-verses-trigger"
                 data-verses-trigger data-verses-summary data-verses-toggle
                 {% if form.verses.errors %}aria-invalid="true"{% endif %}>{% if form.song_has_no_verses %}This song has no verses{% else %}Pick a song first{% endif %}</button>
-        <div class="editor__verses" id="entry-verses" data-verses data-verse-tiles>{{ form.verses }}</div>
         <div class="editor__verse-quick">
           <span class="editor__verse-hint">Click to tick · hold and drag across tiles to extend</span>
           <span class="editor__verse-actions">
@@ -211,7 +210,8 @@
             <button type="button" data-verse-clear>Clear</button>
           </span>
         </div>
-        <p class="editor__verse-readout" data-verse-readout aria-live="polite"></p>
+        <div class="editor__verses" id="entry-verses" data-verses data-verse-tiles>{{ form.verses }}</div>
+        <p class="editor__verse-readout sr" data-verse-readout aria-live="polite"></p>
       </div>
     </div>
     {% for error in form.verses.errors %}<p class="editor__error" role="alert">{{ error }}</p>{% endfor %}

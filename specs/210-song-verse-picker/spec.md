@@ -135,10 +135,10 @@ Verses panel, has a 1px rule beneath it, and clicking it collapses only the tile
 | FR-004 | Arrow keys SHALL move the result highlight, Enter SHALL pick it, Escape SHALL close the list and keep the text, and a tap SHALL pick on touch. | `reading/R47` |
 | FR-005 | Picking a song SHALL write its ID to the hidden song input and show its reference-and-title label in the field. | `reading/R47` |
 | FR-006 | The Verses section SHALL be part of the form's flow, with its summary line inside the section and a 1px separator between that line and the controls below; no dropdown chevron or floating verse menu SHALL be drawn. | `reading/R47` |
-| FR-007 | The verse control SHALL draw five 40px tiles per row at the 480px dialog width, with 7px gaps. | `reading/R47` |
+| FR-007 | The verse control SHALL draw five equal tiles per row, each 40px high and filling its column (81px at the 480px dialog), with 7px gaps and the helper/All/Clear row above the grid. | `reading/R47` |
 | FR-008 | A fresh song pick SHALL start with verse 1 ticked; editing a stored entry SHALL preserve its saved verse set. | `reading/R47` |
 | FR-009 | A click without drag SHALL tick or untick exactly one verse. | `reading/R47` |
-| FR-010 | A held press-and-drag SHALL preview the whole stretch until release, write no form values during the preview, commit on release, and leave no persistent mark. | `reading/R47` |
+| FR-010 | A held press-and-drag SHALL preview the whole stretch in the summary line until release (with an sr-only live region), write no form values during the preview, commit on release, and leave no persistent mark. | `reading/R47` |
 | FR-011 | The hidden checkboxes SHALL keep submitting verse IDs, and the fetch SHALL keep returning `{id, number}` pairs. | `reading/R43` (unchanged) |
 | FR-012 | The summary SHALL list verse numbers as collapsed ranges (`Verses 1–3, 5, 8–10`) and keep `All verses` when all are ticked. | `reading/R43` (modified) |
 | FR-013 | All SHALL be disabled when every verse is ticked; Clear SHALL be disabled when none is ticked. | `reading/R47` |
@@ -175,9 +175,9 @@ tabs 2–4 are earlier comparison models and are not part of this slice's design
   results in a fixed overlay anchored 6px below the input, with an 8px window edge and flip-up
   when the space below is under 150px. At 960×900 with all 11 sample results the overlay ends
   at y=892 while the dialog ends at y=885; the dialog stays 516px tall.
-- **Size / spacing**: tiles 40px high, 77px wide at the dialog width, 7px gaps; quick actions
-  28px high; summary 13px/1.3, 1px rule beneath it with 8px to the controls; Verses panel
-  10px padding and 1px border in the visible-panel variant; soft-trigger variant has no box.
+- **Size / spacing**: tiles 40px high and 81px wide (five equal columns of the 431px content row),
+  7px gaps; quick actions 28px high and placed above the grid; summary 13px/1.3 with a 1px rule
+  beneath it and 8px to the controls; soft-trigger variant has no box and no visible readout line.
 - **Colour / typography**: product tokens only — `--ink`, `--head-ink`, `--rail-bg`,
   `--divider`, `--active-bg` (`#1C5C3C` light, `#7C9CF0` dark), `--active-ink`, `--danger`,
   `--focus`; tile ticks use the active pair, muted sections sit at 0.45 opacity.

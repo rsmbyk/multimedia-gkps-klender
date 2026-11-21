@@ -889,11 +889,11 @@
         var n = Number(inputInside.dataset.number != null ? inputInside.dataset.number : inputInside.value);
         item.classList.toggle('is-preview', n >= lo && n <= hi);
       });
+      var preview = 'Preview: verses ' + lo + (hi === lo ? '' : '\u2013' + hi) + ' \u00b7 release to keep';
       var readout = scope.querySelector('[data-verse-readout]');
-      if (readout) {
-        readout.textContent = 'Preview: verses ' + lo + (hi === lo ? '' : '\u2013' + hi)
-          + ' \u00b7 release to keep';
-      }
+      if (readout) readout.textContent = preview;
+      var summary = versesPicker && versesPicker.querySelector('[data-verses-summary]');
+      if (summary) summary.textContent = preview;
     }
     function onDragEnd() {
       if (!drag) return;
