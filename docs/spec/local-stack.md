@@ -2,7 +2,7 @@
 
 **capability**: `local-stack`
 **last folded**: 2026-11-21
-**slices**: `216-windows-checkout-start`, `191-compose-restart`, `182-host-font-detection`
+**slices**: `217-entrypoint-shadowed`, `216-windows-checkout-start`, `191-compose-restart`, `182-host-font-detection`
 
 The local Docker Compose stack on an operator's computer: what it needs from the machine it runs on,
 and how it reaches the fonts that machine already has. Created by spec 182 — before it, the stack's
@@ -74,18 +74,22 @@ operator stopped on purpose stays stopped across daemon restarts. (spec 191)
 ### R4 — The stack starts from a checkout made on any platform
 
 The stack SHALL start from a checkout made on any platform it supports, whatever line endings that
-checkout's git produced: the image SHALL make its own entrypoint runnable under `/bin/sh` rather than
-depend on the build context, and the repository SHALL pin its shell scripts to LF so a platform that
-rewrites text files on checkout does not produce a CRLF copy. The pin SHALL cover `*.sh` only — a
-PowerShell script keeps CRLF. Because the strip lives in the image, a plain `docker compose up` SHALL
-start as the launcher does, and a checkout made before the pin existed SHALL start without being
-re-cloned. (spec 216)
+checkout's git produced, and whatever the stack mounts over the working directory: the repository
+SHALL pin its shell scripts to LF, the image SHALL strip `\r` from the entrypoint it runs, and that
+entrypoint SHALL live outside the directory the local stack bind-mounts from the host, so a mounted
+checkout cannot replace the copy the build prepared. The pin SHALL cover `*.sh` only — a PowerShell
+script keeps CRLF. Because none of this depends on a launcher, a plain `docker compose up` SHALL start
+as the launcher does, and a checkout made before the pin existed SHALL start without being re-cloned.
+(spec 216, revised by spec 217)
 
 **Scenarios**
 
 - **Given** a checkout whose `docker/entrypoint.sh` carries CRLF line endings, **When** the image is
   built and the stack started, **Then** the entrypoint reaches its `exec "$@"` and the web and media
   services stay up rather than restarting.
+- **Given** the `web` service, which mounts the checkout over its working directory, **When** the
+  container starts, **Then** it runs the image's own entrypoint, not the mounted file, and an LF and a
+  CRLF checkout behave identically.
 - **Given** a checkout made with `core.autocrlf=true`, **When** the shell scripts are inspected,
   **Then** they hold LF, and `docker/up.ps1` does not.
 - **Given** a checkout that predates the pin, **When** the stack is started, **Then** it starts
