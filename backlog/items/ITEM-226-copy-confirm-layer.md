@@ -1,6 +1,6 @@
 ---
 id: ITEM-226
-status: in-progress
+status: in-review
 title: 'The Copy as template confirmation paints inline under the edit form'
 type: fix
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-21
 updated: 2026-11-21
 spec: 212
 branch: fix/212-copy-confirm-layer
-pr:
+pr: 560
 issue:
 closed_at:
 closed_reason:
