@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #554)
 bump: patch
-release_version:
+release_version: 1.35.2
 ---
 
 # ITEM-222: A newly created service opens on the reading stage
