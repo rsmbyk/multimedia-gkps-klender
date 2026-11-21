@@ -90,6 +90,22 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         expect(options).to_have_count(1)
         expect(options.first).to_have_attribute('data-song', str(self.song.pk))
 
+    def test_focusing_the_search_selects_its_text(self):
+        """Gaining focus selects the whole query, so typing starts a new search."""
+        page = self._page()
+        self._open_song(page)
+        self._pick(page, 'KJ 152')
+        search = page.locator('#entry-song-search')
+        page.locator('#editorTitle').click()          # take focus off the field
+        expect(search).not_to_be_focused()
+        search.click()
+        page.wait_for_timeout(120)
+        state = search.evaluate(
+            "el => ({start: el.selectionStart, end: el.selectionEnd, len: el.value.length})")
+        self.assertEqual((state['start'], state['end']), (0, state['len']))
+        page.keyboard.type('HAL 4')
+        self.assertEqual(search.input_value(), 'HAL 4')
+
     def test_results_overlay_may_pass_dialog_bottom_without_resizing(self):
         page = self._page()
         self._open_song(page)

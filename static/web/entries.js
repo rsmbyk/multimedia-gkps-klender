@@ -837,6 +837,11 @@
     function syncVerse() { verseSummary(versesPicker, box, !!hidden.value); }
 
     search.addEventListener('focus', function () {
+      /* gaining focus selects the whole query, so typing starts a new search
+         instead of appending to the stored song's label */
+      window.setTimeout(function () {
+        if (document.activeElement === search) search.select();
+      }, 0);
       if (!list.innerHTML.trim()) find(search.value.trim());
       else showMenu();
     });
