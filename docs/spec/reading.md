@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-21
-**slices**: `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1219,10 +1219,18 @@ stage swap alike. (spec 167; swap-path binding added by spec 195)
 
 The Edit modal SHALL offer **Copy as template** for a Normal service and a template alike, after a
 confirmation that names the consequence. The button SHALL stand in the modal's header, right of the
-title — one row under a hairline rule, the button 34px tall. The copy SHALL keep the name and every entry in order as ordinary
-editable entries — nothing is converted to a fill-in or a choice — and a template source SHALL also bring
-its fill-ins, choices and options. The copy SHALL have no date and SHALL be a template, and the app SHALL
-land on it with the panel on Templates. (spec 167; header placement folded by spec 195)
+title — one row under a hairline rule, the button 34px tall. The confirmation SHALL carry a Name field
+for the record it creates, holding the source's name followed by ` (Copy)`, with the source's name
+trimmed to 57 characters first so the default never exceeds the 64 the field allows; a click on the
+field SHALL select its whole value and a later click SHALL place a caret, and **Copy as template**
+SHALL be disabled while the name is empty or spaces-only. The copy SHALL be created under the name the
+field holds when it is accepted — the endpoint SHALL read a `name` from the request, refuse an empty
+or over-64-character one, and name a nameless request `<source> (Copy)` — and the source SHALL keep its
+own name. The copy SHALL keep every entry in order as ordinary editable entries — nothing is converted
+to a fill-in or a choice — and a template source SHALL also bring its fill-ins, choices and options.
+The copy SHALL have no date and SHALL be a template, and the app SHALL land on it with the panel on
+Templates. (spec 167; header placement folded by spec 195; the name folded by spec 215, which
+supersedes 167's rule that a copy keeps the name)
 
 #### Scenario: copying a service
 - WHEN a dated service is copied as a template
@@ -1231,6 +1239,14 @@ land on it with the panel on Templates. (spec 167; header placement folded by sp
 #### Scenario: the button's place
 - WHEN the Edit modal renders for a Tata Ibadah
 - THEN the title and the button share the header row, the button right-aligned and 34px tall
+
+#### Scenario: naming the copy
+- WHEN the confirmation opens for a service named `9 Agustus 2026`
+- THEN its Name field reads `9 Agustus 2026 (Copy)`, a click selects all of it, and typing replaces it
+
+#### Scenario: a name that cannot be used
+- WHEN the Name field is emptied, or a request posts a blank or 65-character name
+- THEN the accept button is disabled, and the endpoint refuses the request without creating a record
 
 ### R38 — A template never reaches a screen, and its media is kept but not fetched
 
@@ -1498,33 +1514,38 @@ template-generate and copy-as-template flows SHALL continue to land on the recor
 - WHEN validation or the request refuses the create
 - THEN no stage opens and the existing error handling stays in place
 
-### R47 — The Copy as template confirmation covers the form it asks about
+### R47 — The Copy as template confirmation is a dialog of its own
 
-Pressing **Copy as template** in the edit modal SHALL put its confirmation in a layer over the dialog —
-a scrim across the dialog's whole box and a card centred on it — so the modal's own height does not
-change when it opens and the form beneath it is inert: a click at the form's Save SHALL resolve to the
-confirmation, never to the button. The layer SHALL keep the dialog's rounded silhouette. The card SHALL
-carry `min(468px, 100%)` inside the layer's 16px padding, 22px padding of its own, a 12px radius, the
-canvas fill and the dialog's shadow, an 18px/650 heading over a 13.5px body, and its two answers right
-aligned 8px apart on the card's right edge. The answers SHALL stay the editor's own buttons, its Cancel
-SHALL restore the form as it does today, and the layer SHALL still be hidden by its `hidden` attribute
-when closed. The generate page's own confirmation SHALL keep its present card. (spec 212)
+Pressing **Copy as template** in the edit modal SHALL put its confirmation in a layer that covers the
+**window**, with its card centred on the window rather than on the dialog — so the modal's own height
+does not change when it opens or closes, and the form beneath it is inert: a click at the form's Save
+SHALL resolve to the confirmation, never to the button. The edit dialog SHALL stay open behind the
+layer, visible as a dimmed silhouette under a scrim light enough to leave its shell and edges readable;
+its own text SHALL NOT be expected to show, because the card is taller than the dialog it covers. The
+card SHALL carry `min(448px, 100%)`, 22px padding, a 14px radius, the canvas fill, the dialog's
+hairline and its shadow, an 18px/650 heading over a 13.5px lead, then the copy's description, the Name
+field, the three facts and the answers, in that order, with the answers right-aligned 8px apart on the
+card's right edge. The answers SHALL stay the editor's own buttons; Cancel and a click on the scrim
+SHALL both dismiss the confirmation and leave the edit dialog exactly as it was, Escape SHALL dismiss
+the confirmation without closing the edit dialog, and the layer SHALL still be hidden by its `hidden`
+attribute when closed. The generate page's own confirmation SHALL keep its present card. (spec 212;
+window-wide layer, the Name field, the scrim dismissal and the Escape rule folded by spec 215)
 
 #### Scenario: the confirmation opens
 - WHEN Copy as template is pressed in a Tata Ibadah's edit modal
-- THEN one card appears over a dimmed form, the dialog's height is unchanged, and the form's Save is no longer reachable
+- THEN one card appears centred on the window, the dialog's height is unchanged, and the form's Save is no longer reachable
 
 #### Scenario: the card's proportions
-- WHEN the confirmation's card is measured in a 480px dialog
-- THEN it is 448 wide with 22px padding, a 12px radius, an 18px/650 heading and a 13.5px body, and its answers end 22px inside its right edge, 8px apart
+- WHEN the confirmation's card is measured
+- THEN it is 448 wide with 22px padding, a 14px radius, an 18px/650 heading and a 13.5px lead, and its answers end 22px inside its right edge, 8px apart
 
 #### Scenario: closing it
-- WHEN Cancel is pressed in the confirmation
-- THEN the layer hides, the form is visible and operable again, and the dialog's own radius is intact
+- WHEN Cancel, the scrim or Escape is used with the confirmation open
+- THEN the layer hides, the edit dialog stays open, and its own radius and height are intact
 
-#### Scenario: the narrow dialog
-- WHEN the dialog is narrowed to the viewport
-- THEN the card shrinks with it inside the layer's padding and never overflows
+#### Scenario: the narrow window
+- WHEN the window is narrower than the card plus the layer's padding
+- THEN the card shrinks inside that padding and never overflows
 
 ### R48 — The song entry's two pickers work from the first frame
 

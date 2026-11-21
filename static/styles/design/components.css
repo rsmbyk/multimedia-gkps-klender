@@ -2710,44 +2710,72 @@ kbd {
 .editor__confirm-title {
   margin: 0; font: 600 17px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
 }
-/* The Copy as template confirmation is a layer of the editor modal (spec 167, FR-020):
-   a scrim over the form and a card of its own, with the answers right aligned. Spec 167's
-   preview drew it and the product sheet never received the rules, so the confirmation
-   painted in the modal's own flow -- a second Save row under the first (spec 212).
-   Every selector is scoped to the layer: .editor__confirm is shared with the generate
-   page, whose own cards generate.css sizes differently. */
+/* The Copy as template confirmation is a dialog of its own (spec 167 FR-020, spec 215): its
+   layer covers the WINDOW and its card is centred on the window, so the edit dialog it asks
+   about stays open, dimmed and legible behind it. Spec 212 had the layer inside the dialog's
+   box, where it read as a panel covering the form rather than a question being asked.
+   Every selector is scoped to the layer: .editor__confirm is shared with the generate page,
+   whose own cards generate.css sizes differently. */
 .editor__confirm-layer {
-  position: absolute; inset: 0; z-index: 4;
+  /* fixed, not absolute: the layer's containing block is the viewport. No ancestor of the
+     dialog is transformed, filtered or contained, so a fixed child of a top-layer <dialog>
+     still resolves against the window and paints above the dialog's own ::backdrop. */
+  position: fixed; inset: 0; z-index: 4;
   display: grid; place-items: center;
-  padding: 16px;
-  /* .editor's own radius, restated: `inherit` would take .editor__body's (none), and a
-     square scrim squares off the dialog's corner while it is up. */
-  border-radius: 14px;
-  background: var(--backdrop);
+  padding: 24px;
+  /* The dialog's own ::backdrop is already a full-strength --backdrop, so this scrim only has
+     to say "the dialog is inert". At --backdrop's strength the two stack to ~77% and erase
+     the dialog completely, which is the opposite of leaving it open (spec 215, research D002:
+     the dialog's surface measured rgb(11,10,8) on a rgb(3,3,2) page at .38, and rgb(20,19,15)
+     at .26). Named here rather than added as a token: one surface needs it. */
+  background: rgba(0, 0, 0, .26);
 }
+:root[data-theme="light"] .editor__confirm-layer { background: rgba(20, 20, 18, .26); }
 /* An author display rule beats the UA's rule for [hidden], as .editor:not([open]) says
    for the dialog itself -- without this the confirmation would paint on every open. */
 .editor__confirm-layer[hidden] { display: none; }
 .editor__confirm-layer .editor__confirm {
   box-sizing: border-box;
   display: block;
-  width: min(468px, 100%);
-  padding: 22px;
-  border-radius: 12px;
+  width: min(448px, 100%);
+  padding: 22px 22px 20px;
+  /* the dialog's own radius: this card stands alone over it rather than sitting in it */
+  border-radius: 14px;
   background: var(--canvas); color: var(--ink);
-  box-shadow: var(--shadow);
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
 }
 .editor__confirm-layer .editor__confirm h3 {
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   font: 650 18px/1.25 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -.005em;
 }
-.editor__confirm-layer .editor__confirm p {
-  margin: 0 0 20px;
-  color: var(--ink);
+.editor__confirm-layer .confirm__lead {
+  margin: 0 0 16px;
+  color: var(--head-ink);
   font: 400 13.5px/1.55 ui-sans-serif, system-ui, sans-serif;
 }
+/* The name the copy is saved under: the editor's own field, so it carries the 38px height,
+   the rail fill, the radius and the focus ring the rest of the dialog already uses. */
+.editor__confirm-layer .editor__field { margin: 0 0 16px; }
+.editor__confirm-layer .confirm__facts {
+  margin: 0 0 16px;
+  padding: 13px 0 0;
+  border-top: 1px solid var(--divider);
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.editor__confirm-layer .confirm__facts li {
+  font: 400 12.5px/1.55 ui-sans-serif, system-ui, sans-serif;
+  color: var(--head-ink);
+}
+.editor__confirm-layer .confirm__facts strong { font-weight: 600; color: var(--ink); }
 .editor__confirm-layer .editor__confirm-actions {
   display: flex; justify-content: flex-end; gap: 8px;
+}
+/* A blank name cannot be accepted; the disabled face is the editor's own. */
+.editor__confirm-layer .editor__save[disabled] {
+  background: var(--divider); color: var(--head-ink); cursor: not-allowed;
 }
 
 /* ---------- reordering (spec 006, slice 3; spec 026) ------------------------ */

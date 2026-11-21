@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The copy of a Tata Ibadah is now named where it is asked for.** **Copy as template** opens a
+  confirmation of its own — a second dialog over the edit modal, its card centred on the window while
+  the modal stays open and dimmed behind it — carrying a Name field that starts as the source's name
+  plus ` (Copy)`. A click on the field selects all of it, so typing replaces the name in one go, and
+  the copy is created under whatever it holds; the source keeps its own name, and a blank or
+  over-long name cannot be accepted. The dialog states the three consequences as three statements
+  rather than one sentence, Cancel, Escape and a click on the scrim all close it without closing the
+  modal, and the edit modal's height never changes (spec 215).
+
 - **A fill-in and a choice now say which kind of entry they will become.** On a template's page each
   slot's mark in the gutter carries a 13px badge at its bottom-right corner — a beamed note for a song,
   an open book for a passage, a framed play mark for media and three rules for text — so the four kinds
