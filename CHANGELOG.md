@@ -46,6 +46,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The stack now starts from a checkout made on Windows.** Git for Windows writes text files out
+  with CRLF by default and the repository pinned nothing, so a Windows clone built an image whose
+  entrypoint began `set -e\r` — `/bin/sh` refused it on the second line, both the app and the media
+  companion exited, and the restart policy turned that into a loop that no start could escape. The
+  image now strips the carriage returns before it makes the entrypoint executable, so an existing
+  checkout starts without being re-cloned, and the shell scripts are pinned to LF so a Windows
+  checkout does not produce them in the first place (the PowerShell launcher keeps its own line
+  endings). The launchers' post-start font check also stops aborting the whole script when it cannot
+  reach the companion: it names the companion and points at `docker compose logs media`, and the
+  start's own exit status is what the launcher returns (spec 216).
+
 - **The Copy as template confirmation now sits over the edit modal instead of stacking under its
   form.** Pressing the header button dims the form and centres one card on it — the dialog keeps its
   height, the form's own Save is no longer reachable, and the two answers sit on the card's right edge —

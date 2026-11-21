@@ -1,6 +1,6 @@
 ---
 id: ITEM-231
-status: in-progress
+status: in-review
 title: 'The stack never starts from a checkout made on Windows'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-21
 updated: 2026-11-21
 spec: 216
 branch: fix/216-windows-checkout-start
-pr:
-issue:
+pr: 571
+issue: 570
 closed_at:
 closed_reason:
 bump: patch
