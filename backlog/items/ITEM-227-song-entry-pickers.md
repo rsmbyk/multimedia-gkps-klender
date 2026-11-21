@@ -9,7 +9,7 @@ created: 2026-11-21
 updated: 2026-11-21
 spec: specs/210-song-verse-picker/spec.md
 branch: feat/210-song-verse-picker
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/561
 issue:
 bump: patch
 release_version:

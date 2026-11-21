@@ -44,7 +44,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-227](./items/ITEM-227-song-entry-pickers.md) | Revamp the song entry pickers | Live song search from the first frame, focused-and-selected search text, and an inline bordered verse grid whose summary states `Bait` ranges; a click ticks one verse, a held drag previews a range before release | feat | P1 | M | [210](../specs/210-song-verse-picker/spec.md) |  | 2026-11-21 |
+| [ITEM-227](./items/ITEM-227-song-entry-pickers.md) | Revamp the song entry pickers | Live song search from the first frame, focused-and-selected search text, and an inline bordered verse grid whose summary states `Bait` ranges; a click ticks one verse, a held drag previews a range before release | feat | P1 | M | [210](../specs/210-song-verse-picker/spec.md) | [#561](https://github.com/rsmbyk/multimedia-gkps-klender/pull/561) | 2026-11-21 |
 | [ITEM-226](./items/ITEM-226-copy-confirm-layer.md) | The Copy as template confirmation paints inline under the edit form | No product CSS carries the layer, card or right-aligned actions spec 167's preview drew, so the confirmation stacks under Save/Cancel and grows the modal | fix | P1 | S | [212](../specs/212-copy-confirm-layer/spec.md) | [#560](https://github.com/rsmbyk/multimedia-gkps-klender/pull/560) | 2026-11-21 |
 
 ## Done

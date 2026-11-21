@@ -85,7 +85,8 @@ See `research.md`. **Unknowns remaining: 0.**
 | Edge: same-tile drag | drag handler | `test` → `test_click_ticks_one_verse` | treated as click |
 | Edge: no result | result renderer | `test` → `tests/e2e/test_song_entry_pickers.py::test_no_match_keeps_dialog_height` | |
 
-**Verification split**: 40 test · 4 inspection · 0 manual. Dark/light review at 1× remains a
+**Verification split**: 41 test · 3 inspection · 0 manual (FR-011 moved from inspection to test when
+the server-rendered tile grid gained its pins). Dark/light review at 1× remains a
 manual owner check after implementation, but no requirement depends on it alone.
 
 ## Complexity Tracking
