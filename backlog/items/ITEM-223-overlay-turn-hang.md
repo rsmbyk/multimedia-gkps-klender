@@ -1,6 +1,6 @@
 ---
 id: ITEM-223
-status: speccing
+status: in-review
 title: 'A speaker''s continuing line hangs under the words, not under the mark'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-21
 updated: 2026-11-21
 spec: specs/211-overlay-turn-hang/spec.md
 branch: feat/211-overlay-turn-hang
-pr:
+pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/556
 issue:
 closed_at:
 closed_reason:
@@ -48,4 +48,5 @@ hang at the same words column the marked line uses.
 ## Links
 
 - Spec: [specs/211-overlay-turn-hang/spec.md](../../specs/211-overlay-turn-hang/spec.md)
+- PR: [#556](https://github.com/rsmbyk/multimedia-gkps-klender/pull/556) (draft)
 - Related items: [ITEM-061](./ITEM-061-speaker-colors.md) (spec 059), [ITEM-224](./ITEM-224-token-only-line.md)

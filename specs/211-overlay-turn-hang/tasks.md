@@ -81,14 +81,14 @@ line stays at the plate's content edge with no continuation class.
 
 ## Phase 6 — Delivery (after Converge)
 
-- [ ] T017 Commit at Fold — spec pack, code, E2E changes, capability delta and board row together,
+- [X] T017 Commit at Fold — spec pack, code, E2E changes, capability delta and board row together,
   only with the focused suite green (GIT-06).
-- [ ] T018 Stamp `VERSION` 1.35.1 → 1.35.2 and add the `## [Unreleased]` `### Fixed` line; keep
+- [X] T018 Stamp `VERSION` 1.35.1 → 1.35.2 and add the `## [Unreleased]` `### Fixed` line; keep
   ITEM-224 on the board as the separate token-alone fix (VER-04/07).
-- [ ] T019 Promote ITEM-223 in-review with the PR number and move its board row **only on the
+- [X] T019 Promote ITEM-223 in-review with the PR number and move its board row **only on the
   owner's word**; open the PR as a draft. Do not push, mark ready or close the card without that
   word (GIT-07).
-- [ ] T020 Report what shipped, the verification split, convergence and gaps, the folded
+- [X] T020 Report what shipped, the verification split, convergence and gaps, the folded
   capability, branch and commit count, version/changelog line, PR title and body, and that nothing
   is pushed — then ask about pushing (SDD-27).
 

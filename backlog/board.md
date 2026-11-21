@@ -30,7 +30,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-223](./items/ITEM-223-overlay-turn-hang.md) | A speaker's continuing line hangs under the words, not under the mark | The continuation carries the leader's voice but starts under the mark; hang it at the screen's words column when one exists | fix | P2 | S | [211](../specs/211-overlay-turn-hang/spec.md) | 2026-11-21 |
 
 ## Ready
 
@@ -46,6 +45,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-223](./items/ITEM-223-overlay-turn-hang.md) | A speaker's continuing line hangs under the words, not under the mark | The continuation carries the leader's voice but starts under the mark; hang it at the screen's words column when one exists | fix | P2 | S | [211](../specs/211-overlay-turn-hang/spec.md) | [#556](https://github.com/rsmbyk/multimedia-gkps-klender/pull/556) | 2026-11-21 |
 
 ## Done
 
