@@ -40,12 +40,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-230](./items/ITEM-230-sidebar-entry-kind-marks.md) | A service entry's sidebar row marks its kind | The contents list after the order number carries each entry's mark; slots keep the spec 213 kind modifier | feat | P2 | S | [214](../specs/214-sidebar-entry-kind-marks/spec.md) | `feat/214-sidebar-entry-kind-marks` | 2026-11-21 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-230](./items/ITEM-230-sidebar-entry-kind-marks.md) | A service entry's sidebar row marks its kind | The contents list after the order number carries each entry's mark; slots keep the spec 213 kind modifier | feat | P2 | S | [214](../specs/214-sidebar-entry-kind-marks/spec.md) | [#569](https://github.com/rsmbyk/multimedia-gkps-klender/pull/569) | 2026-11-21 |
 | [ITEM-226](./items/ITEM-226-copy-confirm-layer.md) | The Copy as template confirmation paints inline under the edit form | No product CSS carries the layer, card or right-aligned actions spec 167's preview drew, so the confirmation stacks under Save/Cancel and grows the modal | fix | P1 | S | [212](../specs/212-copy-confirm-layer/spec.md) | [#560](https://github.com/rsmbyk/multimedia-gkps-klender/pull/560) | 2026-11-21 |
 
 ## Done
