@@ -24,6 +24,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-175](./items/ITEM-175-section-break-divider-box.md) | The section-break divider measures 8px where its test expects 0px | `test_the_divider_takes_the_same_box_as_the_entries` reads `['8px', '8px']` against `['0px', '0px']`; identical on `3e005688^` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-185](./items/ITEM-185-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-220](./items/ITEM-220-chevron-e2e-pointer-race.md) | The chevron-eligibility E2E races the pointer on this machine | After the moving screen-row click the pointer can land on the live header, whose live-hover tone never equals the pure selected token the wait demands; base fails 4/5 alone, CI green through 206 | fix | P2 | S | — | 2026-11-20 |
+| [ITEM-224](./items/ITEM-224-token-only-line.md) | A speaker token alone on its line is not read as a speaker | `Paragenda:` / `P:` / `Bapa:` on one line is treated as ordinary text, so the line and its words lose the voice; 23 lines in the local snapshot use this shape | fix | P2 | S | — | 2026-11-21 |
 
 ## Speccing
 
@@ -44,6 +45,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-223](./items/ITEM-223-overlay-turn-hang.md) | A speaker's continuing line hangs under the words, not under the mark | The continuation carries the leader's voice but starts under the mark; hang it at the screen's words column when one exists | fix | P2 | S | [211](../specs/211-overlay-turn-hang/spec.md) | [#556](https://github.com/rsmbyk/multimedia-gkps-klender/pull/556) | 2026-11-21 |
 
 ## Done
 
