@@ -12,7 +12,7 @@ held press-and-drag that previews until release; the monologue line ("Bait 1", "
 "This song has no verses") lives inside the Verses section with a separator below it.
 **Preview**: static preview at `specs/210-song-verse-picker/preview/index.html`, portable
 single file at `preview/song-verse-picker-preview.html`, accepted at gate 1 on 2026-11-21.
-**Capability**: modifies `reading/R30` and `reading/R43`; adds `reading/R47`.
+**Capability**: modifies `reading/R30` and `reading/R43`; adds `reading/R48`.
 
 The song entry currently opens with a closed Song dropdown whose search box is only reachable
 after a second click, and a Verses dropdown holding one native checkbox per verse, all ticked
@@ -129,22 +129,22 @@ Verses panel, has a 1px rule beneath it, and clicking it collapses only the tile
 
 | ID | Requirement | Capability |
 | --- | --- | --- |
-| FR-001 | The Song search input SHALL hold focus when the Add song form first renders, without a preceding trigger click; the Edit form SHALL NOT take focus into the Song field. Whenever the field gains focus its whole text SHALL be selected, so typing starts a new query. | `new: reading/R47` |
-| FR-002 | Song results SHALL render in a fixed overlay anchored under the search input, capped only by the window edge, and SHALL be allowed to extend past the dialog's bottom edge. | `reading/R47` |
-| FR-003 | The query grammar, hymn-first ordering, short-reference labels and 200-result cap SHALL stay as they are; no backend endpoint or schema changes in this slice. | `reading/R47` |
-| FR-004 | Arrow keys SHALL move the result highlight, Enter SHALL pick it, Escape SHALL close the list and keep the text, and a tap SHALL pick on touch. | `reading/R47` |
-| FR-005 | Picking a song SHALL write its ID to the hidden song input and show its reference-and-title label in the field. | `reading/R47` |
-| FR-006 | The Verses section SHALL be part of the form's flow inside a 1px-bordered, 10px-padded panel on the rail surface, with its summary line inside the section as display text — not a control — and a 1px rule beneath both that line and the helper/All-Clear row, each with 8px to what follows; no dropdown chevron or floating verse menu SHALL be drawn. | `reading/R47` |
-| FR-007 | The verse control SHALL draw five equal tiles per row, each 40px high and filling its column (81px at the 480px dialog), with 7px gaps and the helper/All/Clear row above the grid. | `reading/R47` |
-| FR-008 | A fresh song pick SHALL start with verse 1 ticked; editing a stored entry SHALL preserve its saved verse set. | `reading/R47` |
-| FR-009 | A click without drag SHALL tick or untick exactly one verse, and SHALL leave no ring behind (the ring is keyboard-only). | `reading/R47` |
-| FR-010 | A held press-and-drag SHALL preview the whole stretch in the summary line until release (with an sr-only live region), write no form values during the preview, commit on release, and leave no persistent mark. | `reading/R47` |
+| FR-001 | The Song search input SHALL hold focus when the Add song form first renders, without a preceding trigger click; the Edit form SHALL NOT take focus into the Song field. Whenever the field gains focus its whole text SHALL be selected, so typing starts a new query. | `new: reading/R48` |
+| FR-002 | Song results SHALL render in a fixed overlay anchored under the search input, capped only by the window edge, and SHALL be allowed to extend past the dialog's bottom edge. | `reading/R48` |
+| FR-003 | The query grammar, hymn-first ordering, short-reference labels and 200-result cap SHALL stay as they are; no backend endpoint or schema changes in this slice. | `reading/R48` |
+| FR-004 | Arrow keys SHALL move the result highlight, Enter SHALL pick it, Escape SHALL close the list and keep the text, and a tap SHALL pick on touch. | `reading/R48` |
+| FR-005 | Picking a song SHALL write its ID to the hidden song input and show its reference-and-title label in the field. | `reading/R48` |
+| FR-006 | The Verses section SHALL be part of the form's flow inside a 1px-bordered, 10px-padded panel on the rail surface, with its summary line inside the section as display text — not a control — and a 1px rule beneath both that line and the helper/All-Clear row, each with 8px to what follows; no dropdown chevron or floating verse menu SHALL be drawn. | `reading/R48` |
+| FR-007 | The verse control SHALL draw five equal tiles per row, each 40px high and filling its column (81px at the 480px dialog), with 7px gaps and the helper/All/Clear row above the grid. | `reading/R48` |
+| FR-008 | A fresh song pick SHALL start with verse 1 ticked; editing a stored entry SHALL preserve its saved verse set. | `reading/R48` |
+| FR-009 | A click without drag SHALL tick or untick exactly one verse, and SHALL leave no ring behind (the ring is keyboard-only). | `reading/R48` |
+| FR-010 | A held press-and-drag SHALL preview the whole stretch in the summary line until release (with an sr-only live region), write no form values during the preview, commit on release, and leave no persistent mark. | `reading/R48` |
 | FR-011 | The hidden checkboxes SHALL keep submitting verse IDs, and the fetch SHALL keep returning `{id, number}` pairs. A server-rendered checklist — the Edit form, or an Add form returned by a refused save — SHALL already be the same five-across tile grid, without Django's own wrapper around it. | `reading/R43` (unchanged) |
 | FR-012 | The summary SHALL state the chosen verses as `Bait` plus collapsed ranges (`Bait 1–3, 5, 8–10`), collapsing a pair too (`1–2`), and SHALL state the whole set rather than an `All verses` line when every verse is ticked. | `reading/R43` (modified) |
-| FR-013 | All SHALL be disabled when every verse is ticked; Clear SHALL be disabled when none is ticked. | `reading/R47` |
+| FR-013 | All SHALL be disabled when every verse is ticked; Clear SHALL be disabled when none is ticked. | `reading/R48` |
 | FR-014 | With no song, or a song with no live verses, the whole Verses section — its label included — SHALL be hidden, server-side for the first paint, while the existing save refusals stay in force. | `reading/R30` (modified) |
-| FR-015 | A one-verse song SHALL show one inert tile in a muted section. | `reading/R47` |
-| FR-016 | The section reveal SHALL last 200 ms on the product's existing ease curve, SHALL drop its clip and return to block layout once settled so no tile is ever cut, and SHALL be instant under reduced motion. | `reading/R47` |
+| FR-015 | A one-verse song SHALL show one inert tile in a muted section. | `reading/R48` |
+| FR-016 | The section reveal SHALL last 200 ms on the product's existing ease curve, SHALL drop its clip and return to block layout once settled so no tile is ever cut, and SHALL be instant under reduced motion. | `reading/R48` |
 
 ### Key Entities
 

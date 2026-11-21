@@ -9,13 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **The song entry's pickers now work from the first frame.** The Song search is focused as the modal opens and its results can run past the dialog without resizing it; the Verses field is an inline section of five-across tiles where a click ticks one verse and a held drag previews a range until release. Songs with no verses hide the section, a one-verse song mutes it, and verse IDs and the existing song search rules stay unchanged (spec 210).
+- **The song entry's pickers now work from the first frame.** The Song search takes focus as the Add
+  form opens, selects its text whenever it gains focus, and its results can run past the dialog without
+  resizing it; an Edit form no longer pulls focus into the field. The Verses field is an inline,
+  bordered section of five-across tiles where a click ticks one verse, a held drag previews a range
+  until release, and its summary states the choice as `Bait 1–2` — a form now shared by the entry's
+  `Bait` lines, generate rows and option previews, which collapse a pair too. Songs with no verses hide
+  the section and its label, a one-verse song mutes it, and a server-rendered checklist comes back as the
+  same tile grid after an error. Verse IDs and the existing song search rules stay unchanged (spec 210).
+
+### Fixed
+
+- **The Copy as template confirmation now sits over the edit modal instead of stacking under its
+  form.** Pressing the header button dims the form and centres one card on it — the dialog keeps its
+  height, the form's own Save is no longer reachable, and the two answers sit on the card's right edge —
+  where the confirmation used to paint as a second, left-aligned Save row below the first (spec 212).
+
+## [1.35.2] - 2026-11-21
 
 ### Fixed
 
 - **A newly created Tata Ibadah now opens on the reading stage right after save.** The saved service's
   URL, name and empty order appear in place—no second click and no document reload—while Template
   creates, edits and refused saves keep their current behaviour (spec 209).
+- **A speaker's continuing line now hangs under the marked line's words in the OBS overlay.** An
+  unmarked line that carries the previous speaker's voice is indented by the screen's shared mark
+  column and gap, so a turn reads as one block instead of a ragged stack; a screen with no mark, a
+  cue and ordinary text stay flush (spec 211).
 
 ## [1.35.0] - 2026-11-20
 

@@ -7,7 +7,7 @@
 ## Phase 1 — Setup
 
 - [x] T001 Confirm the `feat/210-song-verse-picker` worktree is based on current `develop`;
-  re-check that spec 210, `reading/R47` and a board card ID are still free across all worktrees.
+  re-check that spec 210, `reading/R48` and a board card ID are still free across all worktrees.
 - [x] T002 Create `tests/e2e/test_song_entry_pickers.py` with a throwaway `gkps210` database
   helper that inherits `DATABASE_URL` from the compose web container at run time; no credential
   value is written into the file.
@@ -81,7 +81,7 @@ bottom border is 1px with an 8px gap, and tapping it leaves the summary visible.
   measured geometry and motion in the spec's `## UI/UX`; regenerate the portable preview only
   if the preview itself changed.
 - [x] T019 Fold `reading/R30` (modified: hidden, not disabled), `reading/R43` (modified:
-  collapsed ranges, IDs unchanged) and `reading/R47` (new) into `docs/spec/reading.md`, and
+  collapsed ranges, IDs unchanged) and `reading/R48` (new) into `docs/spec/reading.md`, and
   write `fold.md`.
 - [x] T020 Converge against the plan's traceability table, appending `converge.md` per pass.
 - [ ] T021 Delivery commit: apply `VERSION` 1.35.2 and the `CHANGELOG.md` patch line, attach a

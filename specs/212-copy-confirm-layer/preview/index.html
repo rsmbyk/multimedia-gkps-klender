@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-theme-mode="system">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec 212 — the Copy as template confirmation, as a layer</title>
+<!-- the product's own sheets, from this worktree; nothing is retyped -->
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<link rel="stylesheet" href="candidate.css" id="candidate">
+<style>
+  /* Preview chrome only. The product's body is a flex shell, which would turn
+     these sections into one row — reset it here, after the product sheets. The
+     product's own body font (16px, components.css:79) is deliberately kept: the
+     dialog inherits it, and overriding it here once made the unstyled control
+     state measure 51px shorter than production. */
+  body { display: block; margin: 0; min-height: 100vh; background: var(--canvas); color: var(--ink); }
+  .pbox__bar, .pbox__note { font: 400 13px/1.5 ui-sans-serif, system-ui, sans-serif; }
+  .pbox__bar {
+    position: fixed; inset: 0 0 auto 0; z-index: 20;
+    display: flex; align-items: center; gap: 10px;
+    height: 48px; padding: 0 16px;
+    border-bottom: 1px solid var(--divider); background: var(--canvas); color: var(--ink);
+  }
+  .pbox__bar h1 { margin: 0 auto 0 0; font: 600 13px/1.3 ui-sans-serif, system-ui, sans-serif; }
+  .pbox__bar button {
+    height: 30px; padding: 0 12px; border: 1px solid var(--divider); border-radius: 8px;
+    background: none; color: var(--ink); cursor: pointer;
+    font: 560 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+  }
+  .pbox__bar button[aria-pressed="true"] { border-color: var(--focus); color: var(--focus); }
+  .pbox__note {
+    max-width: 640px; margin: 76px auto 0; padding: 0 16px;
+    color: var(--head-ink);
+  }
+</style>
+</head>
+<body class="pbox">
+
+<header class="pbox__bar">
+  <h1>Spec 212 — Edit template → Copy as template</h1>
+  <button type="button" id="toggle" aria-pressed="true">Proposed CSS</button>
+  <button type="button" id="theme">Dark</button>
+</header>
+
+<p class="pbox__note" id="note">
+  The real editor modal, with the real form markup the server sends for a template
+  (<code>Model C Indonesia</code>) and the real <code>_copy_confirm.html</code> block,
+  its <code>hidden</code> attribute removed. <strong>Proposed CSS</strong> toggles
+  <code>candidate.css</code> off, which is the state production is in today.
+</p>
+
+<!-- The modal every sidebar editor opens (_editor_modal.html), open. -->
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle">
+  <div class="editor__content" id="editorContent" aria-live="polite">
+
+    <!-- _editor_form.html, as the server renders it for a template -->
+    <div class="editor__body" data-kind="tatib" data-target="312">
+      <div class="editor__head">
+        <h2 class="editor__title" id="editorTitle">Edit template</h2>
+        <button class="editor__copy-btn" type="button" data-copy-open>Copy as template</button>
+      </div>
+      <form class="editor__form" method="post" onsubmit="return false">
+        <div class="editor__field">
+          <label for="id_name">Name</label>
+          <input type="text" name="name" value="Model C Indonesia" maxlength="64" required id="id_name">
+        </div>
+        <div class="editor__actions">
+          <button class="editor__save" type="submit">Save</button>
+          <button class="editor__cancel" type="button" data-editor-close>Cancel</button>
+        </div>
+      </form>
+
+      <!-- _copy_confirm.html, open -->
+      <div class="editor__confirm-layer" data-copy-confirm>
+        <div class="editor__confirm" role="alertdialog" aria-modal="true"
+             aria-labelledby="copyConfirmTitle" aria-describedby="copyConfirmMessage">
+          <h3 id="copyConfirmTitle">Copy as template?</h3>
+          <p id="copyConfirmMessage">The copy has no date, can never become a normal Tata Ibadah, and keeps
+            every entry as it is. A template can be copied again.</p>
+          <div class="editor__confirm-actions">
+            <button type="button" class="editor__cancel" data-copy-cancel>Cancel</button>
+            <button type="button" class="editor__save" data-copy-accept>Copy as template</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+</dialog>
+
+<script>
+  var modal = document.getElementById('editorModal');
+  modal.showModal();
+
+  var candidate = document.getElementById('candidate');
+  var toggle = document.getElementById('toggle');
+  toggle.addEventListener('click', function () {
+    candidate.disabled = !candidate.disabled;
+    toggle.setAttribute('aria-pressed', candidate.disabled ? 'false' : 'true');
+    toggle.textContent = candidate.disabled ? 'Current CSS (production)' : 'Proposed CSS';
+  });
+
+  var theme = document.getElementById('theme');
+  theme.addEventListener('click', function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme !== 'dark';
+    root.dataset.theme = dark ? 'dark' : 'light';
+    theme.textContent = dark ? 'Light' : 'Dark';
+  });
+</script>
+</body>
+</html>

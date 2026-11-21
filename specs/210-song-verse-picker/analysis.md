@@ -39,7 +39,7 @@
 
 - Corrected the traceability split to 40 `test` · 4 `inspection` · 0 `manual` after counting
   the table rows, so the plan and `tasks.md` agree.
-- Confirmed spec 210 and `reading/R47` were free across branches and worktrees; R46 belongs to
+- Confirmed spec 210 and `reading/R48` were free across branches and worktrees; R46 belongs to
   slice 209 and was not reused.
 - Confirmed no `[NEEDS CLARIFICATION]` markers and no personal names in any repo artifact.
 

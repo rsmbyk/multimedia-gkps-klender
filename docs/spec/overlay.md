@@ -1,8 +1,8 @@
 # overlay
 
 **capability**: `overlay`
-**last folded**: 2026-11-15
-**slices**: `195-hotfix-batch`, `187-keyboard-parity`, `185-dock-goto`, `183-overlay-text-wrap`, `180-overlay-text-styles`
+**last folded**: 2026-11-21
+**slices**: `211-overlay-turn-hang`, `195-hotfix-batch`, `187-keyboard-parity`, `185-dock-goto`, `183-overlay-text-wrap`, `180-overlay-text-styles`
 
 The OBS browser source: what the stream shows the congregation while a service runs. It is a listen-only page — the
 dock drives it and the projector shows the room the same screens — so everything here is what the page *paints* from a
@@ -155,7 +155,10 @@ break at that box's edge instead of being painted past it, and the panel grows t
 A liturgy line that carries a speaker mark SHALL paint the mark in its own column and the words beside it, and the
 marked lines of one screen SHALL share one column sized by the widest of them, so every wrapped row and every line
 begins at the same x — whatever the mark's width, `L.` or `Pelayan :`. The screen data SHALL carry the mark and the
-words beside the full line the projector paints. (spec 180)
+words beside the full line the projector paints. An unmarked line with a non-empty voice on that screen SHALL begin
+its words at the same column and gap, painting no mark and keeping the voice and colour it already carries; a
+wrapped continuation SHALL keep every row at that x and its ink inside the plate. On a screen with no marked line
+it SHALL stay flush at the plate's content edge. (spec 180, 211)
 
 #### Scenario: a long turn wraps
 - WHEN a leader line longer than the panel wraps to three rows
@@ -164,6 +167,13 @@ words beside the full line the projector paints. (spec 180)
 #### Scenario: two marks of different widths
 - WHEN one screen carries `P:` and `P + K:`
 - THEN both lines' words begin at the same x, the column sized by `P + K:`
+
+#### Scenario: the turn continues on an unmarked line
+- WHEN a marked leader line is followed by a line with no mark that carries the leader's voice
+- THEN the second line's words begin at the marked line's words x, with no mark painted, and its voice
+  and colour are unchanged
+- AND a wrapped continuation keeps every row at that x, while a screen with no mark keeps such lines
+  flush at the plate's content edge
 
 ### R6 — Blank, media, break and released screens paint nothing
 

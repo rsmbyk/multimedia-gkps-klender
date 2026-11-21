@@ -54,7 +54,7 @@
 ## D005 — Numbering
 
 - **Decision**: spec 210 / branch `feat/210-song-verse-picker`; capability requirement
-  `reading/R47`; `reading/R30` and `reading/R43` are modified, not duplicated.
+  `reading/R48`; `reading/R30` and `reading/R43` are modified, not duplicated.
 - **Rationale**: branch names, worktree spec folders and every `docs/spec/reading.md` were
   checked; 209 holds R46 and 210 was free across all worktrees and branches.
 - **Alternatives considered**: reusing 209 or an unclaimed 211 — rejected because 209 belongs
