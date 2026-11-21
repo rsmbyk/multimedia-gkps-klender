@@ -1,0 +1,402 @@
+<!doctype html>
+<!-- Spec 211 — the overlay's continuing speaker line, before and after.
+     A static review page: the real obs-overlay.css and bundled faces, the plate's real
+     classes and markup, laid out at 1280×720 (container units resolve at the real size)
+     and only the paint is scaled. "Before" is today's row; "After" adds the one rule this
+     slice proposes. The no-mark case is a control: the rule adds nothing there. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A speaker's turn hangs under its words — spec 211</title>
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/obs-overlay.css">
+<style>
+  * { box-sizing: border-box; }
+  /* The real sheet is a browser source: it puts `overflow: hidden` on `html` so OBS never
+     paints a scrollbar. This review page reuses the sheet, so it hands the document its
+     scroll back; the frame keeps its own `overflow: hidden` in .shot__box. */
+  html { overflow: auto; }
+  html, body.review {
+    margin: 0;
+    background: #0B0D10;
+    color: #E8EAED;
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  body.review { padding: 34px 24px 64px; }
+  main { max-width: 1160px; margin: 0 auto; }
+  .eyebrow {
+    margin: 0 0 10px;
+    color: rgba(232, 234, 237, .46);
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.2; font-weight: 680; letter-spacing: -.01em; }
+  .lede { margin: 0; max-width: 76ch; color: rgba(232, 234, 237, .68); }
+  .lede code, .rule code { color: #F0C478; font: 500 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .segmented {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    width: fit-content;
+    margin: 26px 0 18px;
+    padding: 3px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .025);
+  }
+  .segmented button {
+    appearance: none;
+    border: 0;
+    border-radius: 6px;
+    padding: 7px 13px;
+    background: transparent;
+    color: rgba(232, 234, 237, .58);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 550;
+    cursor: pointer;
+  }
+  .segmented button:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+  .segmented button[aria-selected="true"] { background: #E8EAED; color: #0B0D10; }
+
+  .case[hidden] { display: none; }
+  .case__note { margin: 0 0 14px; max-width: 82ch; color: rgba(232, 234, 237, .66); font-size: 13.5px; }
+
+  .pair { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+  .shot { margin: 0; }
+  .shot__head { display: flex; align-items: baseline; gap: 8px; margin: 0 0 7px; }
+  .shot__head h2 { margin: 0; font-size: 12px; font-weight: 680; letter-spacing: .1em; text-transform: uppercase; }
+  .shot--before .shot__head h2 { color: #E08A8A; }
+  .shot--after .shot__head h2 { color: #7CC6A0; }
+  .shot__head span { color: rgba(232, 234, 237, .4); font-size: 12px; }
+
+  .shot__box {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 7px;
+    outline: 1px solid rgba(255, 255, 255, .1);
+    background:
+      radial-gradient(110% 80% at 18% 18%, rgba(66, 92, 86, .55), transparent 58%),
+      radial-gradient(90% 70% at 86% 26%, rgba(78, 64, 46, .5), transparent 62%),
+      linear-gradient(150deg, #1D2A2F 0%, #0C1114 58%, #1B1712 100%);
+  }
+  .shot__frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1280px;
+    height: 720px;
+    transform-origin: 0 0;
+  }
+  .shot__frame .obs-overlay__stage { position: absolute; inset: 0; }
+
+  /* The proposed rule. In the slice it loses the .shot--after scope and lives in
+     obs-overlay.css beside .has-mark. The marked rows are a grid of column + gap;
+     the continuation is indented by exactly that pair, so its first glyph lands on
+     the same x without changing its text node. */
+  .shot--after .obs-overlay__line.is-continuation {
+    padding-left: calc(var(--speaker-col, 0px) + .45em);
+  }
+
+  .readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, .025);
+    color: rgba(232, 234, 237, .6);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .readout b { color: #E8EAED; font-weight: 620; }
+  .readout .ok { color: #7CC6A0; }
+  .readout .bad { color: #E08A8A; }
+
+  .rule { margin: 34px 0 0; padding: 20px 0 0; border-top: 1px solid rgba(255, 255, 255, .09); }
+  .rule h2 { margin: 0 0 8px; font-size: 14px; font-weight: 650; }
+  .rule p { margin: 0 0 12px; max-width: 82ch; color: rgba(232, 234, 237, .66); }
+  .rule ul { margin: 0; padding: 0 0 0 19px; color: rgba(232, 234, 237, .66); }
+  .rule li { margin: 0 0 5px; }
+  .rule li b { color: #E8EAED; font-weight: 600; }
+</style>
+</head>
+<body class="review">
+<main>
+  <header>
+    <p class="eyebrow">Spec 211 · OBS overlay · static preview</p>
+    <h1>A speaker's turn hangs under its words</h1>
+    <p class="lede">The continuing line already carries the leader's voice. It is the layout that
+      breaks the turn: today it starts at the plate's leading edge, under the mark. The proposed rule
+      indents it by exactly the marked rows' column and gap, so its first glyph lands on the words x
+      and the turn reads as one block. Pick a state; the before/after pair is measured live.</p>
+  </header>
+
+  <div class="segmented" role="tablist" aria-label="State">
+    <button type="button" role="tab" aria-selected="true" data-case="short">The owner's case</button>
+    <button type="button" role="tab" aria-selected="false" data-case="wrapped">A turn that wraps</button>
+    <button type="button" role="tab" aria-selected="false" data-case="nomark">No mark on the screen</button>
+  </div>
+
+  <section class="case" data-case="short">
+    <p class="case__note">`L:` marks the leader's line; `Bapa…` is the same turn continuing. Today
+      it begins under `L:`. The answer is a new voice, so its `J:` line keeps the shared column.</p>
+    <div class="pair">
+      <article class="shot shot--before">
+        <div class="shot__head"><h2>Before</h2><span>flush at the plate's edge</span></div>
+        <div class="shot__box">
+          <div class="shot__frame">
+            <div class="obs-overlay__stage">
+              <div class="obs-overlay__plate" data-kind="liturgy">
+                <p class="obs-overlay__kicker">Pengakuan Iman</p>
+                <span class="obs-overlay__rule"></span>
+                <div class="obs-overlay__body">
+                  <p class="obs-overlay__line has-mark is-leader"><span class="obs-overlay__speaker">L:</span><span class="obs-overlay__words">Aku percaya kepada Allah</span></p>
+                  <p class="obs-overlay__line is-leader">Bapa yang mahakuasa, Khalik langit dan bumi.</p>
+                  <p class="obs-overlay__line has-mark is-assembly"><span class="obs-overlay__speaker">J:</span><span class="obs-overlay__words">Amin.</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+      <article class="shot shot--after">
+        <div class="shot__head"><h2>After</h2><span>in the words column</span></div>
+        <div class="shot__box">
+          <div class="shot__frame">
+            <div class="obs-overlay__stage">
+              <div class="obs-overlay__plate" data-kind="liturgy">
+                <p class="obs-overlay__kicker">Pengakuan Iman</p>
+                <span class="obs-overlay__rule"></span>
+                <div class="obs-overlay__body">
+                  <p class="obs-overlay__line has-mark is-leader"><span class="obs-overlay__speaker">L:</span><span class="obs-overlay__words">Aku percaya kepada Allah</span></p>
+                  <p class="obs-overlay__line is-leader is-continuation">Bapa yang mahakuasa, Khalik langit dan bumi.</p>
+                  <p class="obs-overlay__line has-mark is-assembly"><span class="obs-overlay__speaker">J:</span><span class="obs-overlay__words">Amin.</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+    <p class="readout" data-readout></p>
+  </section>
+
+  <section class="case" data-case="wrapped" hidden>
+    <p class="case__note">A continuation long enough to wrap: every visual row stays at the words
+      column, and the ink stays inside the plate. The mark still owns the first column.</p>
+    <div class="pair">
+      <article class="shot shot--before">
+        <div class="shot__head"><h2>Before</h2><span>rows at the plate's edge</span></div>
+        <div class="shot__box">
+          <div class="shot__frame">
+            <div class="obs-overlay__stage">
+              <div class="obs-overlay__plate" data-kind="liturgy">
+                <p class="obs-overlay__kicker">Pengakuan Iman</p>
+                <span class="obs-overlay__rule"></span>
+                <div class="obs-overlay__body">
+                  <p class="obs-overlay__line has-mark is-leader"><span class="obs-overlay__speaker">L:</span><span class="obs-overlay__words">Aku percaya kepada Allah</span></p>
+                  <p class="obs-overlay__line is-leader">Bapa yang mahakuasa, Khalik langit dan bumi, dan kepada Yesus Kristus, Anak-Nya yang tunggal, Tuhan kita, yang dikandung daripada Roh Kudus, lahir dari anak dara Maria, yang menderita di bawah pemerintahan Pontius Pilatus, disalibkan, mati dan dikuburkan.</p>
+                  <p class="obs-overlay__line has-mark is-assembly"><span class="obs-overlay__speaker">J:</span><span class="obs-overlay__words">Amin.</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+      <article class="shot shot--after">
+        <div class="shot__head"><h2>After</h2><span>every row in the column</span></div>
+        <div class="shot__box">
+          <div class="shot__frame">
+            <div class="obs-overlay__stage">
+              <div class="obs-overlay__plate" data-kind="liturgy">
+                <p class="obs-overlay__kicker">Pengakuan Iman</p>
+                <span class="obs-overlay__rule"></span>
+                <div class="obs-overlay__body">
+                  <p class="obs-overlay__line has-mark is-leader"><span class="obs-overlay__speaker">L:</span><span class="obs-overlay__words">Aku percaya kepada Allah</span></p>
+                  <p class="obs-overlay__line is-leader is-continuation">Bapa yang mahakuasa, Khalik langit dan bumi, dan kepada Yesus Kristus, Anak-Nya yang tunggal, Tuhan kita, yang dikandung daripada Roh Kudus, lahir dari anak dara Maria, yang menderita di bawah pemerintahan Pontius Pilatus, disalibkan, mati dan dikuburkan.</p>
+                  <p class="obs-overlay__line has-mark is-assembly"><span class="obs-overlay__speaker">J:</span><span class="obs-overlay__words">Amin.</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+    <p class="readout" data-readout></p>
+  </section>
+
+  <section class="case" data-case="nomark" hidden>
+    <p class="case__note">A screen that begins mid-turn and carries no mark. There is no speaker
+      column on this plate, so there is nothing to align to: both frames are identical, and the
+      lines stay at the plate's content edge.</p>
+    <div class="pair">
+      <article class="shot shot--before">
+        <div class="shot__head"><h2>Before</h2><span>no mark on the screen</span></div>
+        <div class="shot__box">
+          <div class="shot__frame">
+            <div class="obs-overlay__stage">
+              <div class="obs-overlay__plate" data-kind="liturgy">
+                <p class="obs-overlay__kicker">Pengakuan Iman</p>
+                <span class="obs-overlay__rule"></span>
+                <div class="obs-overlay__body">
+                  <p class="obs-overlay__line is-leader">Bapa yang mahakuasa, Khalik langit dan bumi.</p>
+                  <p class="obs-overlay__line is-leader">Dan kepada Yesus Kristus, Anak-Nya yang tunggal, Tuhan kita.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+      <article class="shot shot--after">
+        <div class="shot__head"><h2>After</h2><span>unchanged</span></div>
+        <div class="shot__box">
+          <div class="shot__frame">
+            <div class="obs-overlay__stage">
+              <div class="obs-overlay__plate" data-kind="liturgy">
+                <p class="obs-overlay__kicker">Pengakuan Iman</p>
+                <span class="obs-overlay__rule"></span>
+                <div class="obs-overlay__body">
+                  <p class="obs-overlay__line is-leader">Bapa yang mahakuasa, Khalik langit dan bumi.</p>
+                  <p class="obs-overlay__line is-leader">Dan kepada Yesus Kristus, Anak-Nya yang tunggal, Tuhan kita.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+    <p class="readout" data-readout></p>
+  </section>
+
+  <section class="rule">
+    <h2>What the slice changes</h2>
+    <p>The continuation row is indented by exactly the marked row's column and gap —
+      <code>var(--speaker-col)</code> plus <code>.45em</code> — so its first glyph lands on the
+      words x. The voice class and its colour are untouched; the panel's type and motion are
+      untouched. The plate hugs its widest row, so a continuation that is that row may widen the
+      panel by the indent, inside the 90 % cap; the marked words and the continuation still share
+      one x.</p>
+    <ul>
+      <li><b>A screen with a mark</b> — the continuation hangs at that screen's words column.</li>
+      <li><b>A screen with no mark</b> — no column exists, so no indent is added.</li>
+      <li><b>A cue or ordinary line</b> — empty voice, unchanged.</li>
+      <li><b>A wrapped continuation</b> — every row stays at the column and inside the plate.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var FRAME_W = 1280;
+
+  function setSpeakerColumn(body) {
+    var widest = 0;
+    body.querySelectorAll('.obs-overlay__speaker').forEach(function (mark) {
+      widest = Math.max(widest, mark.offsetWidth);
+    });
+    if (widest) body.style.setProperty('--speaker-col', widest + 'px');
+  }
+
+  function scale() {
+    document.querySelectorAll('.case:not([hidden]) .shot__box').forEach(function (box) {
+      var frame = box.querySelector('.shot__frame');
+      if (!frame) return;
+      frame.style.transform = 'scale(' + (box.clientWidth / FRAME_W) + ')';
+    });
+  }
+
+  function layoutX(frame, node) {
+    var frameRect = frame.getBoundingClientRect();
+    if (!frameRect.width) return null;
+    var range = document.createRange();
+    range.selectNodeContents(node);
+    var rect = range.getClientRects()[0];
+    if (!rect) return null;
+    return (rect.left - frameRect.left) / (frameRect.width / FRAME_W);
+  }
+
+  function boxX(frame, node) {
+    var frameRect = frame.getBoundingClientRect();
+    if (!frameRect.width) return null;
+    return (node.getBoundingClientRect().left - frameRect.left) / (frameRect.width / FRAME_W);
+  }
+
+  function report(frame, before) {
+    var marked = frame.querySelector('.obs-overlay__line.has-mark .obs-overlay__words');
+    if (!marked) return null;
+    var markedX = layoutX(frame, marked);
+    var continuation = before
+      ? frame.querySelector('.obs-overlay__line.is-leader:not(.has-mark)')
+      : frame.querySelector('.obs-overlay__line.is-continuation');
+    if (!continuation) return null;
+    return {marked: markedX, continuation: layoutX(frame, continuation)};
+  }
+
+  function readout() {
+    document.querySelectorAll('.case:not([hidden])').forEach(function (block) {
+      var out = block.querySelector('[data-readout]');
+      var beforeFrame = block.querySelector('.shot--before .shot__frame');
+      var afterFrame = block.querySelector('.shot--after .shot__frame');
+      if (!out || !beforeFrame || !afterFrame) return;
+      var b = report(beforeFrame, true);
+      var a = report(afterFrame, false);
+      if (!b || !a) {
+        /* The no-mark control: no column exists, so there is nothing to compare. */
+        out.innerHTML = '<span><b>No mark on this screen</b> — no speaker column, so both ' +
+                        'frames keep the lines at the plate\'s content edge.</span>';
+        return;
+      }
+      var bDelta = b.continuation - b.marked;
+      var aDelta = a.continuation - a.marked;
+      out.innerHTML =
+        '<span><b>Before</b> words <b>' + b.marked.toFixed(1) + 'px</b>, continuation <b>' +
+        b.continuation.toFixed(1) + 'px</b> — <span class="bad">' + bDelta.toFixed(1) +
+        'px out</span></span>' +
+        '<span><b>After</b> words <b>' + a.marked.toFixed(1) + 'px</b>, continuation <b>' +
+        a.continuation.toFixed(1) + 'px</b> — <span class="ok">' + aDelta.toFixed(1) +
+        'px out</span></span>';
+    });
+  }
+
+  function settle() {
+    document.querySelectorAll('.shot__frame').forEach(function (frame) {
+      var body = frame.querySelector('.obs-overlay__body');
+      if (body) setSpeakerColumn(body);
+    });
+    scale();
+    readout();
+  }
+
+  document.querySelectorAll('.segmented button').forEach(function (button) {
+    button.addEventListener('click', function () {
+      document.querySelectorAll('.segmented button').forEach(function (other) {
+        other.setAttribute('aria-selected', other === button ? 'true' : 'false');
+      });
+      document.querySelectorAll('.case').forEach(function (block) {
+        block.hidden = block.dataset.case !== button.dataset.case;
+      });
+      settle();
+    });
+  });
+
+  window.addEventListener('resize', settle);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(settle);
+  } else {
+    settle();
+  }
+})();
+</script>
+</body>
+</html>

@@ -115,6 +115,11 @@
     }
     var body = document.createElement('div');
     body.className = 'obs-overlay__body';
+    /* A screen's marks share one column. A line with no mark and a non-empty voice is the
+       previous speaker still talking (spec 059), so it hangs at the same words x — but only
+       when this screen actually paints a mark; otherwise there is no column to hang from
+       (spec 211). The decision is made here, once, before any row is built. */
+    var hasPaintMark = model.lines.some(function (line) { return line.mark && line.words; });
     model.lines.forEach(function (line) {
       var row = document.createElement('p');
       row.className = 'obs-overlay__line' + (line.voice ? ' is-' + line.voice : '');
@@ -131,6 +136,7 @@
         row.appendChild(speaker);
         row.appendChild(words);
       } else {
+        if (!line.mark && line.voice && hasPaintMark) row.className += ' is-continuation';
         row.textContent = line.text;
       }
       body.appendChild(row);

@@ -210,6 +210,13 @@ html, body.obs-overlay {
   text-align: left;
 }
 
+/* The markless line of a speaker's turn keeps its own words, but begins them at the same x
+   as the marked rows: the same column and gap, no second grid and no empty mark span (spec 211).
+   With no measured column the fallback is 0, so a screen with no mark stays flush. */
+.obs-overlay__line.is-continuation {
+  padding-left: calc(var(--speaker-col, 0px) + .45em);
+}
+
 .obs-overlay__speaker { white-space: nowrap; }
 .obs-overlay__words { text-wrap: pretty; }
 
