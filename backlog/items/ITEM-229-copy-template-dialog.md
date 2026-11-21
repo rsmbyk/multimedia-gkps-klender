@@ -1,6 +1,6 @@
 ---
 id: ITEM-229
-status: in-progress
+status: in-review
 title: 'The copy confirmation is a dialog of its own, and the copy is named there'
 type: feat
 priority: P1
@@ -9,7 +9,7 @@ created: 2026-11-21
 updated: 2026-11-21
 spec: specs/215-copy-template-dialog/spec.md
 branch: feat/215-copy-template-dialog
-pr:
+pr: 567
 issue: 566
 closed_at:
 closed_reason:

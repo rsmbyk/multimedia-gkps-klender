@@ -40,12 +40,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-229](./items/ITEM-229-copy-template-dialog.md) | The copy confirmation is a dialog of its own, and the copy is named there | A second dialog over the Edit modal, its card centred on the window, with a Name field defaulting to `<source> (Copy)` that selects all on click; the endpoint takes the name instead of reusing the source's | feat | P1 | M | [215](../specs/215-copy-template-dialog/spec.md) | `feat/215-copy-template-dialog` | 2026-11-21 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-229](./items/ITEM-229-copy-template-dialog.md) | The copy confirmation is a dialog of its own, and the copy is named there | A second dialog over the Edit modal, its card centred on the window, with a Name field defaulting to `<source> (Copy)` that selects all on click; the endpoint takes the name instead of reusing the source's | feat | P1 | M | [215](../specs/215-copy-template-dialog/spec.md) | [#567](https://github.com/rsmbyk/multimedia-gkps-klender/pull/567) | 2026-11-21 |
 | [ITEM-226](./items/ITEM-226-copy-confirm-layer.md) | The Copy as template confirmation paints inline under the edit form | No product CSS carries the layer, card or right-aligned actions spec 167's preview drew, so the confirmation stacks under Save/Cancel and grows the modal | fix | P1 | S | [212](../specs/212-copy-confirm-layer/spec.md) | [#560](https://github.com/rsmbyk/multimedia-gkps-klender/pull/560) | 2026-11-21 |
 
 ## Done
