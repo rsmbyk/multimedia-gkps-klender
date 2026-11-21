@@ -1,6 +1,6 @@
 ---
 id: ITEM-223
-status: in-review
+status: done
 title: 'A speaker''s continuing line hangs under the words, not under the mark'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/211-overlay-turn-hang/spec.md
 branch: feat/211-overlay-turn-hang
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/556
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-21
+closed_reason: merged into develop (PR #556)
 bump: patch
 release_version:
 ---
