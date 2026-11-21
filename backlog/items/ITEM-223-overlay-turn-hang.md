@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #556)
 bump: patch
-release_version:
+release_version: 1.35.2
 ---
 
 # ITEM-223: A speaker's continuing line hangs under the words, not under the mark

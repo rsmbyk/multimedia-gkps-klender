@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.35.2] - 2026-11-21
+
 ### Fixed
 
 - **A newly created Tata Ibadah now opens on the reading stage right after save.** The saved service's
