@@ -116,7 +116,7 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         checked = page.evaluate(
             "[...document.querySelectorAll('#entry-verses input')].filter(i => i.checked).length")
         self.assertEqual(checked, 1)
-        expect(page.locator('[data-verses-summary]')).to_have_text('Verses 1')
+        expect(page.locator('[data-verses-summary]')).to_have_text('Bait 1')
         self.assertEqual(page.locator('#entry-verses input[type=checkbox]').count(), 12)
 
     def test_click_and_drag_preview_commit(self):
@@ -305,7 +305,7 @@ class SongEntryPickerE2ETests(StaticLiveServerTestCase):
         clear = page.locator('[data-verse-clear]')
         page.locator('[data-verse-all]').click()
         expect(all_button).to_be_disabled()
-        expect(summary).to_have_text('All verses')
+        expect(summary).to_have_text('Bait 1–12')
         # the helper/All-Clear row is separated from the tiles by its own rule
         quick = page.locator('.editor__verse-quick')
         self.assertEqual(

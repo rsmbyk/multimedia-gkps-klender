@@ -111,8 +111,7 @@
     if (state.song === 'empty') return 'This song has no verses';
     var list = numbers();
     if (!list.length) return 'No verses: keep at least one';
-    if (displayCount() && list.length === displayCount()) return 'All verses';
-    return 'Verses ' + fmtList(list);
+    return 'Bait ' + fmtList(list);
   }
   function syncField() {
     var trigger = $('#entry-verses-trigger');
@@ -501,7 +500,7 @@
       tile.classList.toggle('is-preview', n >= lo && n <= hi);
       tile.classList.toggle('is-dragover', n === state.drag.current);
     });
-    $('#pvReadout').textContent = 'Preview: verses ' + lo + (hi === lo ? '' : '–' + hi) +
+    $('#pvReadout').textContent = 'Preview: Bait ' + lo + (hi === lo ? '' : '–' + hi) +
       ' · release to keep';
   }
   function onTileDragEnd() {

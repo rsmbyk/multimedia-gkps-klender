@@ -30,7 +30,7 @@ the combined direction being carried into the Draft.
 - Press and drag across tiles to extend a range: the range is previewed while the button is
   held and committed on release; no mark stays on the tiles afterwards.
 - The Verses field is inline in the modal — no dropdown trigger or floating menu — with the
-  tile grid, with the summary line (`Verses 1`, `All verses`, ...) inside the same section and
+  tile grid, with the summary line (`Bait 1`, `Bait 1–2`, ...) inside the same section and
   a hairline between that line and the controls below it.
   It is hidden while no song is picked; a one-verse song mutes it.
 - `All` disables at all-ticked, `Clear` at none-ticked.

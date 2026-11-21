@@ -291,7 +291,7 @@ class SlotEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         value = response.json()['value']
         self.assertIn('NKB 12', value['line'])
-        self.assertIn('Bait 1, 2', value['meta'])
+        self.assertIn('Bait 1–2', value['meta'])
         # the echo keeps every value of every field, as lists: a song's verses arrive as
         # repeated keys, and the create request re-binds this data verbatim
         echoed = response.json()['data']

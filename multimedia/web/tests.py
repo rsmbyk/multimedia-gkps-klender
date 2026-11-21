@@ -1921,7 +1921,7 @@ class ServiceEntryViewTests(TestCase):
         entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         row = self._toc_row(entry.pk)
         self.assertEqual(row['label_lines'], [f'{self.song.book_number} {self.song.title}'])
-        self.assertEqual(row['verse_line'], 'Bait 1-3')
+        self.assertEqual(row['verse_line'], 'Bait 1–3')
         self.assertTrue(row['song_label'])
         self.assertNotIn('two_line_label', row)
 
@@ -2105,7 +2105,7 @@ class ServiceEntryViewTests(TestCase):
         self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
         pane = self.pane()
         self.assertIn('class="read__sub"', pane)
-        self.assertIn('Bait 1-3', pane)
+        self.assertIn('Bait 1–3', pane)
 
     def test_a_reference_free_single_verse_song_shows_its_verse(self):
         book = songs.Book.objects.create(name='Lagu lain', is_hymn_book=False)
@@ -2121,9 +2121,9 @@ class ServiceEntryViewTests(TestCase):
         self.make(kind=tatib.ServiceEntryKind.SONG, song=song, verses=[song.verse_set.get(number=n).pk for n in [1, 2, 3, 5, 6, 8, 9, 10]])
         response = self.client.get(reverse('web-tatib-service', args=[self.tatib.pk]))
         item = next(item for item in response.context['toc_items'] if item.get('entry'))
-        self.assertEqual(item['verse_line'], 'Bait 1-3, 5, 6, 8-10')
+        self.assertEqual(item['verse_line'], 'Bait 1–3, 5–6, 8–10')
         pane = response.content.decode().split('id="readBody"')[1]
-        self.assertIn('<p class="read__sub">Bait 1-3, 5, 6, 8-10</p>', pane)
+        self.assertIn('<p class="read__sub">Bait 1–3, 5–6, 8–10</p>', pane)
 
     def test_a_non_hymn_song_with_a_partial_selection_shows_its_numbers(self):
         book = songs.Book.objects.create(name='Kidung Eksperimen', short_name='KE')
@@ -2144,9 +2144,9 @@ class ServiceEntryViewTests(TestCase):
 
     def test_a_verse_added_after_preparing_keeps_the_entrys_own_line(self):
         self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2, 3]])
-        self.assertIn('<p class="read__sub">Bait 1-3</p>', self.pane())
+        self.assertIn('<p class="read__sub">Bait 1–3</p>', self.pane())
         songs.Verse.objects.create(song=self.song, number=4, lyric='bait 4')
-        self.assertIn('<p class="read__sub">Bait 1-3</p>', self.pane())
+        self.assertIn('<p class="read__sub">Bait 1–3</p>', self.pane())
 
     # --- the sidebar's song label (spec 039) --------------------------------
 
@@ -2437,7 +2437,7 @@ class ServiceEntryViewTests(TestCase):
         row = self._toc_row(entry.pk)
         self.assertTrue(row['song_label'])
         self.assertEqual(row['label_lines'], [f'{self.song.book_number} {self.song.title}'])
-        self.assertEqual(row['verse_line'], 'Bait 1-3')
+        self.assertEqual(row['verse_line'], 'Bait 1–3')
 
     def test_a_deleted_song_target_shows_no_sidebar_verse_line(self):
         entry = self.make(kind=tatib.ServiceEntryKind.SONG, song=self.song, verses=[self.song.verse_set.get(number=n).pk for n in [1, 2]])
@@ -3477,20 +3477,23 @@ class LegacyTatibItemEditorTests(TestCase):
 
 
 class FormatVersesTests(TestCase):
-    """Spec 057: a song's verse numbers as runs -- ranges for three or more in a row."""
+    """Spec 057 / 210: a song's verse numbers as runs -- any two in a row collapse."""
 
     def fmt(self, numbers):
         from multimedia.web.reading.formatting import format_verses
         return format_verses(numbers)
 
     def test_mixed_runs_collapse_into_ranges(self):
-        self.assertEqual(self.fmt([1, 2, 3, 5, 6, 8, 9, 10]), '1-3, 5, 6, 8-10')
+        self.assertEqual(self.fmt([1, 2, 3, 5, 6, 8, 9, 10]), '1–3, 5–6, 8–10')
 
-    def test_one_run_of_three_or_more_is_a_range(self):
-        self.assertEqual(self.fmt([1, 2, 3]), '1-3')
+    def test_a_run_of_three_or_more_is_a_range(self):
+        self.assertEqual(self.fmt([1, 2, 3]), '1–3')
 
-    def test_a_pair_stays_comma_separated(self):
-        self.assertEqual(self.fmt([5, 6]), '5, 6')
+    def test_a_pair_collapses_too(self):
+        self.assertEqual(self.fmt([5, 6]), '5–6')
+
+    def test_a_pair_beside_a_pair_reads_as_two_ranges(self):
+        self.assertEqual(self.fmt([1, 2, 4, 5]), '1–2, 4–5')
 
     def test_a_single_number(self):
         self.assertEqual(self.fmt([4]), '4')
@@ -3498,11 +3501,11 @@ class FormatVersesTests(TestCase):
     def test_no_numbers_gives_an_empty_string(self):
         self.assertEqual(self.fmt([]), '')
 
-    def test_a_gap_keeps_the_pair_separate(self):
-        self.assertEqual(self.fmt([1, 2, 4]), '1, 2, 4')
+    def test_a_gap_keeps_the_numbers_separate(self):
+        self.assertEqual(self.fmt([1, 2, 4]), '1–2, 4')
 
     def test_unsorted_and_duplicate_input_is_normalised(self):
-        self.assertEqual(self.fmt([10, 3, 1, 2, 2, 9, 8]), '1-3, 8-10')
+        self.assertEqual(self.fmt([10, 3, 1, 2, 2, 9, 8]), '1–3, 8–10')
 
 
 class ProjectorGotoPayloadTests(TestCase):

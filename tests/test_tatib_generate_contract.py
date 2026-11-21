@@ -55,7 +55,7 @@ class GenerateContractTests(TestCase):
     def test_a_songs_verses_survive_the_round_trip(self):
         settled = self.settle()
         self.assertEqual(sorted(settled['data']['verses']), ['1', '2'], settled['data'])
-        self.assertIn('Bait 1, 2', settled['value']['meta'], settled['value'])
+        self.assertIn('Bait 1–2', settled['value']['meta'], settled['value'])
 
         response = self.generate(settled['data'])
         self.assertEqual(response.status_code, 201, response.content[:400])

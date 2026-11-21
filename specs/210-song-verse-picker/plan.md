@@ -51,8 +51,8 @@ See `research.md`. **Unknowns remaining: 0.**
 | FR-009 | `entries.js` tile click handler | `test` → `tests/e2e/test_song_entry_pickers.py::test_click_ticks_one_verse` | |
 | FR-010 | `entries.js` drag preview/commit | `test` → `tests/e2e/test_song_entry_pickers.py::test_drag_previews_until_release` | values unchanged while held |
 | FR-011 | `entries.js` carrier + `multimedia/web/reading/entries.py` `SongEntryForm` + `reading/widgets/verse_checkbox*.html` | `test` → `tests/e2e/test_song_entry_pickers.py::test_a_failed_save_keeps_the_tile_grid`, `multimedia/web/tests.py::ServiceEntryViewTests::test_a_server_rendered_verses_list_is_already_the_tile_grid` | IDs still submitted, `{id, number}` payload unchanged |
-| FR-012 | `entries.js` `verseSummary` | `test` → `tests/e2e/test_song_entry_pickers.py::test_summary_collapses_ranges` | |
-| FR-013 | `entries.js` quick actions | `test` → `tests/e2e/test_song_entry_pickers.py::test_all_and_clear_disable_at_ends` | |
+| FR-012 | `entries.js` `verseSummary` + `reading/formatting.py` `format_verses` | `test` → `tests/e2e/test_song_entry_pickers.py::test_summary_inside_section_and_quick_states`, `multimedia/web/tests.py::FormatVersesTests`, `::ServiceEntryViewTests::test_the_stage_and_sidebar_verse_lines_agree` | one `Bait …` form everywhere |
+| FR-013 | `entries.js` quick actions | `test` → `tests/e2e/test_song_entry_pickers.py::test_summary_inside_section_and_quick_states` | |
 | FR-014 | `_entry_form.html` + `components.css` + `entries.js` | `test` → `multimedia/web/tests.py::test_no_song_and_no_verses_hide_field` | server fragment first |
 | FR-015 | `entries.js` + `components.css` | `test` → `tests/e2e/test_song_entry_pickers.py::test_single_verse_section_is_muted` | |
 | FR-016 | `components.css` reveal rule | `test` → `tests/e2e/test_song_entry_pickers.py::test_reveal_is_one_reduced_motion_curve` | emulated reduced motion |

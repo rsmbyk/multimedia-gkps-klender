@@ -267,14 +267,14 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         expect(filtered_songs.first).to_have_attribute('data-song-title', self.song.title)
         filtered_songs.first.click()
         expect(page.locator('#entry-verses input[type=checkbox]')).to_have_count(3)
-        expect(page.locator('[data-verses-summary]')).to_have_text('Verses 1')
+        expect(page.locator('[data-verses-summary]')).to_have_text('Bait 1')
         # the summary is display text, not a control: clicking it changes nothing
         summary = page.locator('[data-verses-summary]')
         self.assertEqual(summary.evaluate('el => el.tagName'), 'P')
         summary.click()
         expect(page.locator('[data-verse-tiles]')).to_be_visible()
         page.locator('#entry-verses .editor__verse-tile').nth(1).click()
-        expect(page.locator('[data-verses-summary]')).to_have_text('Verses 1\u20132')
+        expect(page.locator('[data-verses-summary]')).to_have_text('Bait 1–2')
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
 
@@ -298,7 +298,7 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page.wait_for_selector('#entry-song-options [data-song]')
         page.locator('#entry-song-options [data-song]').first.click()
         # one verse is no choice: it stays ticked and the section is muted
-        expect(page.locator('[data-verses-summary]')).to_have_text('All verses')
+        expect(page.locator('[data-verses-summary]')).to_have_text('Bait 1')
         expect(page.locator('[data-verse-tiles]')).to_have_css('opacity', '0.45')
         self.assertEqual(
             page.evaluate("[...document.querySelectorAll('#entry-verses input')].filter(i => i.checked).length"), 1)

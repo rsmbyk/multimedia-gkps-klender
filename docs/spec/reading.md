@@ -996,11 +996,14 @@ The song entry's Verses section SHALL be hidden when no song is picked, and when
 live verses; its label SHALL be hidden with it, so the field leaves no empty title behind. Its summary line SHALL read `Pick a song first` or `This song has no verses` respectively in the
 server-rendered fragment before any script runs; the collapsed section SHALL measure 0 px and SHALL offer no
 checkbox or menu. A song whose live verses exist SHALL keep the section visible, starting at verse 1 on a
-fresh pick and at the saved verse IDs on an edit. The other lines SHALL stay as they are: `All verses` when
-every verse is included, a collapsed range list when some are, and `No verses: keep at least one` when a
-song's boxes were all cleared. A refusal caused by a verse-less song SHALL name the song —
+fresh pick and at the saved verse IDs on an edit. Its other lines SHALL read `Bait` plus a collapsed range
+list (`Bait 1–2`), whatever the size of the selection, and `No verses: keep at least one` when a song's
+boxes were all cleared. A refusal caused by a verse-less song SHALL name the song —
 `This song has no verses: pick another song.` — while clearing every box of a song with verses SHALL keep
 `Keep at least one verse in the service.` (spec 210; modifies the earlier disabled-trigger rule.)
+
+**Superseded (spec 210):** the summary drew `All verses` when every box was ticked; the whole set is now
+stated as a range list, so that line is gone.
 
 **Superseded (spec 210):** the earlier requirement kept the section visible with a disabled trigger reading
 `This song has no verses` and no checkbox drawn. That surface is replaced by a hidden section; the two
@@ -1373,13 +1376,16 @@ reset or re-fetched by the control: the detour keeps its place, and the window a
 The song entry's verse checklist SHALL submit verse IDs — the storage contract since the checklist was
 rebuilt (spec 189) — and SHALL show each verse's number as its tile label, with that number carried on the
 box (`data-number`) so the summary can read either render. The picker's fetch SHALL answer `{id, number}`
-pairs, never bare numbers, and the summary SHALL collapse consecutive numbers into ranges
-(`Verses 1–3, 5, 8–10`) — numbers, never IDs — whichever render produced the boxes; `All verses` stays the
-line when every verse is ticked. The stored list SHALL stay a list of verse IDs. (spec 195; summary wording
-modified by spec 210.)
+pairs, never bare numbers, and the summary SHALL state the chosen numbers as `Bait` plus collapsed ranges
+(`Bait 1–3, 5–6, 8–10`) — numbers, never IDs — whichever render produced the boxes. A run of two consecutive
+numbers SHALL collapse as well, so `1, 2, 4, 5` reads `1–2, 4–5`, and an en dash joins a run's ends. Every
+other printed verse reference — the entry's `Bait ...` line on the stage and in the contents, a generate
+row's meta, an option's preview — SHALL use that same form and the same `Bait` word. The stored list SHALL
+stay a list of verse IDs. (spec 195; wording modified by spec 210.)
 
-**Superseded (spec 210):** the earlier summary read `Verses 1, 3` with a comma for every number. The storage
-and payload contracts are unchanged.
+**Superseded (spec 210):** the summary read `Verses 1, 3` with a comma for every number, collapsed only runs
+of three or more, joined them with a hyphen, and drew `All verses` when every box was ticked. The whole set is
+now stated as ranges, so that line is gone. The storage and payload contracts are unchanged.
 
 #### Scenario: a fresh pick saves
 - WHEN a song is picked, its verses chosen and the entry saved

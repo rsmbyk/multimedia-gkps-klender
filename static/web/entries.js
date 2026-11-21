@@ -712,12 +712,10 @@
       if (!boxes.length) {
         /* No boxes is two states: nothing picked, and a song with nothing in it (spec 162). */
         summary.textContent = songPicked ? 'This song has no verses' : 'Pick a song first';
-      } else if (checked.length === boxes.length) {
-        summary.textContent = 'All verses';
       } else if (!checked.length) {
         summary.textContent = 'No verses: keep at least one';
       } else {
-        summary.textContent = 'Verses ' + collapsedNumbers(checked).join(', ');
+        summary.textContent = 'Bait ' + collapsedNumbers(checked).join(', ');
       }
     }
     if (readout) {
@@ -901,7 +899,7 @@
         var n = Number(inputInside.dataset.number != null ? inputInside.dataset.number : inputInside.value);
         item.classList.toggle('is-preview', n >= lo && n <= hi);
       });
-      var preview = 'Preview: verses ' + lo + (hi === lo ? '' : '\u2013' + hi) + ' \u00b7 release to keep';
+      var preview = 'Preview: Bait ' + lo + (hi === lo ? '' : '\u2013' + hi) + ' \u00b7 release to keep';
       var readout = scope.querySelector('[data-verse-readout]');
       if (readout) readout.textContent = preview;
       var summary = versesPicker && versesPicker.querySelector('[data-verses-summary]');
