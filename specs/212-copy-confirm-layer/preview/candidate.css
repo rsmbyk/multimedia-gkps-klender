@@ -1,0 +1,44 @@
+/* The candidate rules — the exact block this slice proposes for components.css.
+ *
+ * The Copy as template confirmation is a layer of the editor modal (spec 167,
+ * FR-020): a scrim over the form and a card of its own, with the answers right
+ * aligned. The shape is spec 167's accepted preview; the generate page's twin
+ * dialogs carry the same layer in generate.css, scoped to their own class, which
+ * is why the editor's version shipped without one (spec 212).
+ */
+.editor__confirm-layer {
+  position: absolute; inset: 0; z-index: 4;
+  display: grid; place-items: center;
+  padding: 16px;
+  /* .editor's own radius, restated: `inherit` would take .editor__body's (none),
+     and a square scrim squares off the dialog's corner while it is up. */
+  border-radius: 14px;
+  background: var(--backdrop);
+}
+/* An author display rule beats the UA's rule for [hidden]: the layer has to say
+   it again for itself, as .editor does for a closed dialog. */
+.editor__confirm-layer[hidden] { display: none; }
+/* Scoped to the layer, not the bare class: .editor__confirm's own grid + gap is
+   what the generate page's cards are built on (generate.css), and its spacing
+   comes from that gap rather than from the heading's margins. */
+.editor__confirm-layer .editor__confirm {
+  box-sizing: border-box;
+  display: block;
+  width: min(468px, 100%);
+  padding: 22px;
+  border-radius: 12px;
+  background: var(--canvas); color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.editor__confirm-layer .editor__confirm h3 {
+  margin: 0 0 10px;
+  font: 650 18px/1.25 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__confirm-layer .editor__confirm p {
+  margin: 0 0 20px;
+  color: var(--ink);
+  font: 400 13.5px/1.55 ui-sans-serif, system-ui, sans-serif;
+}
+.editor__confirm-layer .editor__confirm-actions {
+  display: flex; justify-content: flex-end; gap: 8px;
+}
