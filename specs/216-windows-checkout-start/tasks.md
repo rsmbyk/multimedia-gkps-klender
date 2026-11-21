@@ -44,7 +44,7 @@ exit 0.
 
 - [x] T015 [Polish] Fold: add `R4` and `R5` to `docs/spec/local-stack.md` as typed `added` deltas with their scenarios; write `fold.md` (capabilities touched, operations, before/after counts).
 - [x] T016 [Polish] First commit at Fold — spec pack, `.gitattributes`, `Dockerfile`, both launchers, both test modules, card and board row together, targeted suite green (`tests.test_entrypoint_line_endings tests.test_launcher_fonts`; the full suite runs before the push per the owner's standing practice).
-- [ ] T017 [Polish] Delivery: PR opened as a draft with the owner's word to deliver (push is GIT-07's, not assumed); card to `In review` in a commit after the PR number exists; `VERSION` → `1.36.2` and the `CHANGELOG.md` Fixed line in the pre-merge commit; `bump: patch` on the card.
+- [x] T017 [Polish] Delivery: PR opened as a draft with the owner's word to deliver (push is GIT-07's, not assumed); card to `In review` in a commit after the PR number exists; `VERSION` → `1.36.2` and the `CHANGELOG.md` Fixed line in the pre-merge commit; `bump: patch` on the card.
 
 ## Convergence
 
