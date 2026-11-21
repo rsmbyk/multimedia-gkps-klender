@@ -10,7 +10,7 @@ updated: 2026-11-21
 spec:
 branch:
 pr:
-issue:
+issue: 573
 closed_at:
 closed_reason:
 bump: none

@@ -35,7 +35,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-232](./items/ITEM-232-entrypoint-shadowed.md) | The web service still runs the checkout's CRLF entrypoint | `docker-compose.yml` mounts the checkout over `/app`, so the image's stripped entrypoint is replaced by the host's; the runtime copy must live outside the mount | fix | P0 | S | [217](../specs/217-entrypoint-shadowed/spec.md) | 2026-11-21 |
 
 ## In progress
 
@@ -46,6 +45,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-232](./items/ITEM-232-entrypoint-shadowed.md) | The web service still runs the checkout's CRLF entrypoint | `docker-compose.yml` mounts the checkout over `/app`, so the image's stripped entrypoint is replaced by the host's; the runtime copy must live outside the mount | fix | P0 | S | [217](../specs/217-entrypoint-shadowed/spec.md) | 2026-11-21 |
 | [ITEM-226](./items/ITEM-226-copy-confirm-layer.md) | The Copy as template confirmation paints inline under the edit form | No product CSS carries the layer, card or right-aligned actions spec 167's preview drew, so the confirmation stacks under Save/Cancel and grows the modal | fix | P1 | S | [212](../specs/212-copy-confirm-layer/spec.md) | [#560](https://github.com/rsmbyk/multimedia-gkps-klender/pull/560) | 2026-11-21 |
 
 ## Done
