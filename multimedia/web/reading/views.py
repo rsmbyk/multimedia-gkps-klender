@@ -131,6 +131,20 @@ def _shell(section, nav, ch, read_on, home_state, ch_mode='chapter'):
 # and saves, answering JSON on success and the re-rendered form on error. Both are
 # server-authoritative: the rules hold even when the modal is bypassed.
 
+COPY_NAME_SUFFIX = ' (Copy)'
+
+
+def copy_default_name(name):
+    """The name a copy starts with: the source's, trimmed to leave room for the suffix.
+
+    A Tata Ibadah's name holds 64 characters, so a longer source loses its tail rather than
+    pushing the default over the limit the confirmation's own field enforces (spec 215,
+    FR-003). One function so the field's default and a nameless request's default cannot
+    drift apart.
+    """
+    room = tatib_models.TataIbadah._meta.get_field('name').max_length - len(COPY_NAME_SUFFIX)
+    return (name or '')[:room] + COPY_NAME_SUFFIX
+
 
 def _editor_fragment_context(kind, form, pk, target=None):
     kwargs = {'kind': kind, 'pk': pk} if pk else {'kind': kind}
@@ -145,6 +159,9 @@ def _editor_fragment_context(kind, form, pk, target=None):
         'hide_date_clear': getattr(form, 'hide_date_clear', False),
         'copy_url': (reverse('web-tatib-copy', args=[pk])
                      if kind == 'tatib' and pk else ''),
+        # The name the confirmation offers for the copy (spec 215, FR-003).
+        'copy_name': (copy_default_name(form.instance.name)
+                      if kind == 'tatib' and pk else ''),
     }
     if kind == 'verse' and pk and target is not None:
         verse = target
@@ -919,15 +936,58 @@ def tatib_generate(request, service_id):
                          'url': reverse('web-tatib-service', args=[service.pk])}, status=201)
 
 
+ABSENT = object()
+
+
+def _copy_name_from(request, source):
+    """The name a copy is created under, and the reason when the request is refused.
+
+    A request that posts no name is not a malformed one: the endpoint answered nameless
+    posts before the confirmation carried a field, and the two tests that prove a copy
+    converts nothing still post that way (spec 215, research D004). Such a request gets the
+    same default the field offers, so the two cannot disagree. The name is read from a JSON
+    body (what the confirmation sends) or from form data, so a plain POST works too.
+    """
+    if request.content_type == 'application/json':
+        try:
+            payload = json.loads(request.body.decode('utf-8') or '{}')
+        except (UnicodeDecodeError, ValueError):
+            return None, 'Malformed request.'
+        if not isinstance(payload, dict):
+            return None, 'Malformed request.'
+        name = payload.get('name', ABSENT)
+    else:
+        name = request.POST.get('name', ABSENT)
+    if name is ABSENT:
+        return copy_default_name(source.name), None
+    if not isinstance(name, str):
+        return None, 'Malformed request.'
+    name = name.strip()
+    if not name:
+        return None, 'A name is required.'
+    if len(name) > tatib_models.TataIbadah._meta.get_field('name').max_length:
+        return None, 'A name can be at most 64 characters.'
+    return name, None
+
+
 def tatib_copy_as_template(request, service_id):
-    """Clone a Tata Ibadah into a template, converting nothing (spec 167, FR-021)."""
+    """Clone a Tata Ibadah into a template, converting nothing (spec 167, FR-021).
+
+    The copy is named where it is asked for (spec 215): the confirmation posts the name the
+    person typed, and a request with no name keeps spec 167's rule and is named after its
+    source. Either way the copy is a template with no date, brings the source's entries in
+    order, and leaves the source untouched.
+    """
     if not editors.editors_allowed(request):
         return HttpResponseForbidden('Editing is restricted.')
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
     source = get_object_or_404(tatib_models.TataIbadah, pk=service_id)
+    name, refusal = _copy_name_from(request, source)
+    if refusal:
+        return JsonResponse({'ok': False, 'error': refusal}, status=400)
     with transaction.atomic():
-        copy = tatib_models.TataIbadah.objects.create(name=source.name)
+        copy = tatib_models.TataIbadah.objects.create(name=name)
         order = 0
         for row_kind, row in _ordered_service_rows(source):
             if row_kind != 'legacy' and row.parent_id:

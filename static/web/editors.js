@@ -477,30 +477,86 @@
     }
   });
 
-  /* ---------- Copy as template (spec 167) ------------------------------------ */
+  /* ---------- Copy as template (spec 167, spec 215) -------------------------- */
+
+  /* The confirmation is a dialog of its own: its layer covers the window and the edit
+     dialog stays open, dimmed, behind it. Everything below is delegated, because the
+     layer is re-rendered with the rest of the fragment on every editor open. */
+  function copyLayer() { return modal.querySelector('[data-copy-confirm]'); }
+
+  function copyField(node) {
+    return node && node.closest ? node.closest('[data-copy-name]') : null;
+  }
+
+  /* Clicking the name selects all of it, so the first click is immediately replaceable.
+     The mouseup that follows would collapse the selection again, hence the guard; a later
+     click inside the field places a caret as usual (FR-004). */
+  var copySelectOnFocus = false;
+
+  modal.addEventListener('focusin', function (event) {
+    var field = copyField(event.target);
+    if (field && copySelectOnFocus) field.select();
+  });
+  modal.addEventListener('mouseup', function (event) {
+    if (!copyField(event.target) || !copySelectOnFocus) return;
+    event.preventDefault();
+    copySelectOnFocus = false;
+  });
+  modal.addEventListener('focusout', function (event) {
+    if (copyField(event.target)) copySelectOnFocus = false;
+  });
+  /* A blank name cannot be accepted (FR-006); the endpoint refuses it too. */
+  modal.addEventListener('input', function (event) {
+    if (!copyField(event.target)) return;
+    var accept = modal.querySelector('[data-copy-accept]');
+    if (accept) accept.disabled = event.target.value.trim() === '';
+  });
+
+  /* Escape closes the confirmation, never the dialog it asks about: `cancel` is cancelable,
+     so the dialog stays open and only the layer goes away (FR-009). */
+  modal.addEventListener('cancel', function (event) {
+    var layer = copyLayer();
+    if (!layer || layer.hidden) return;
+    event.preventDefault();
+    layer.hidden = true;
+  });
+
   modal.addEventListener('click', function (event) {
     var openCopy = event.target.closest('[data-copy-open]');
     if (openCopy) {
-      var layer = modal.querySelector('[data-copy-confirm]');
+      var layer = copyLayer();
       if (!layer) return;
       layer.hidden = false;
+      copySelectOnFocus = true;
+      var field = layer.querySelector('[data-copy-name]');
       var accept = layer.querySelector('[data-copy-accept]');
-      if (accept) accept.focus();
+      if (accept) accept.disabled = !field || field.value.trim() === '';
+      /* the field is an option, not the point: the caret does not go into it on open */
+      if (accept && !accept.disabled) accept.focus();
       return;
     }
-    if (event.target.closest('[data-copy-cancel]')) {
-      var confirm = modal.querySelector('[data-copy-confirm]');
+    var cancelCopy = event.target.closest('[data-copy-cancel]');
+    if (cancelCopy) {
+      var confirm = copyLayer();
       if (confirm) confirm.hidden = true;
       return;
     }
+    /* a click on the scrim dismisses it, as Cancel does (FR-011) */
+    var current = copyLayer();
+    if (current && event.target === current) { current.hidden = true; return; }
     var acceptCopy = event.target.closest('[data-copy-accept]');
     if (!acceptCopy) return;
     var triggerOpen = modal.querySelector('[data-copy-open]');
     if (!triggerOpen) return;
+    var nameField = current && current.querySelector('[data-copy-name]');
+    var name = nameField ? nameField.value.trim() : '';
+    if (!name) return;
     acceptCopy.disabled = true;
     fetch(triggerOpen.dataset.copyUrl, {
       method: 'POST', credentials: 'same-origin',
-      headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrfToken() }
+      headers: { 'X-Requested-With': 'fetch', 'X-CSRFToken': csrfToken(),
+                 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name })
     }).then(function (response) {
       return response.json().then(function (data) { return { ok: response.ok, data: data }; });
     }).then(function (result) {

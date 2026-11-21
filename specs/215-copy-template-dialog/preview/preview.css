@@ -1,0 +1,140 @@
+/* The harness only. `tokens.css` and `components.css` are copies of the product's own
+   stylesheets, and they now carry every rule this slice changes — the layer, the card, the
+   Name field, the facts. Nothing here may size or colour the confirmation: if it did, the
+   page would measure itself instead of the product. */
+
+* { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--foreground, #1f1f1d);
+}
+
+body { font: 400 13px/1.45 ui-sans-serif, system-ui, sans-serif; }
+
+.pv { flex: 1 1 100%; min-width: 0; }
+
+/* ---------- harness ---------- */
+
+.pv__bar {
+  position: relative;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 0 10px;
+}
+
+.pv__tabs { display: flex; gap: 4px; }
+.pv__right { display: flex; gap: 6px; }
+
+.pv__tabs button,
+.pv__size,
+.pv__theme {
+  font: 500 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+  padding: 7px 11px;
+  border-radius: 7px;
+  border: 1px solid var(--border, #d9d6cd);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pv__tabs button[aria-selected="true"] {
+  background: var(--accent, #1c5c3c);
+  border-color: transparent;
+  color: #fff;
+}
+
+.pv__tabs button:focus-visible,
+.pv__size:focus-visible,
+.pv__theme:focus-visible { outline: 2px solid var(--accent, #1c5c3c); outline-offset: 2px; }
+
+.pv__note {
+  position: relative;
+  z-index: 60;
+  max-width: 74ch;
+  margin: 0 0 12px;
+  color: var(--muted-foreground, #646357);
+  font-size: 12.5px;
+  /* two lines' worth, so switching state never shifts the stage under the card
+     and a measurement taken before and after is comparable */
+  min-height: 36px;
+}
+
+.pv__hint {
+  position: relative;
+  z-index: 60;
+  margin: 10px 0 0;
+  color: var(--muted-foreground, #646357);
+  font-size: 11.5px;
+}
+
+.pv__hint kbd {
+  font: inherit;
+  padding: 1px 5px;
+  border: 1px solid var(--border, #d9d6cd);
+  border-radius: 4px;
+}
+
+/* ---------- the stage stands in for the app window ---------- */
+
+.pv__stage {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--border, #d9d6cd);
+  background: var(--canvas, #f7f5f1);
+  /* `contain: layout` makes the stage the containing block for fixed descendants, so the
+     confirmation's window-wide layer resolves to the stage here instead of to the real
+     viewport — which would cover the harness bar too. The product's own `position: fixed;
+     inset: 0` is untouched; only what "the window" means changes on this page. */
+  contain: layout;
+}
+
+.pv__page {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 64px 300px 1fr;
+}
+
+.pv__rail { background: var(--rail-bg, #edeae3); }
+
+.pv__list {
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-right: 1px solid var(--divider, #d9d6cd);
+}
+
+.pv__row {
+  height: 34px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--ink, #1f1f1d) 7%, transparent);
+}
+
+.pv__row--sel { background: var(--sidebar-selected-bg, #b9d7c9); }
+
+.pv__canvas { background: var(--canvas, #f7f5f1); }
+
+.pv__scrim { position: absolute; inset: 0; background: var(--backdrop, rgba(20,20,18,.52)); }
+
+/* the dialog sits in the stage rather than in the viewport; no transform, because a
+   transformed ancestor would take over the layer's containing block on its own terms */
+.pv__dialog {
+  position: relative;
+  margin: 0;
+  max-height: none;
+  z-index: 3;
+}

@@ -30,6 +30,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+
 ## Ready
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
@@ -39,6 +40,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-229](./items/ITEM-229-copy-template-dialog.md) | The copy confirmation is a dialog of its own, and the copy is named there | A second dialog over the Edit modal, its card centred on the window, with a Name field defaulting to `<source> (Copy)` that selects all on click; the endpoint takes the name instead of reusing the source's | feat | P1 | M | [215](../specs/215-copy-template-dialog/spec.md) | `feat/215-copy-template-dialog` | 2026-11-21 |
 
 ## In review
 

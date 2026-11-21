@@ -428,6 +428,65 @@ class SlotEndpointTests(TestCase):
         self.assertEqual(copied_choice.options.count(), 2)
         self.assertEqual(copied_choice.options.first().parent_id, copied_choice.pk)
 
+    # ---- the copy is named in the confirmation (spec 215) ------------------------
+
+    def test_the_confirmation_offers_the_source_name_plus_copy(self):
+        """FR-003, SC-005, US2/AC1."""
+        service = make_service(name='Ibadah Minggu')
+        html = self.client.get(reverse('web-editor-edit', args=['tatib', service.pk])).content.decode()
+        self.assertIn('value="Ibadah Minggu (Copy)"', html)
+
+    def test_a_long_source_name_is_trimmed_to_fit_the_copy_name(self):
+        """FR-003, SC-009: the default never exceeds the 64 characters the field allows."""
+        service = make_service(name='x' * 64)
+        html = self.client.get(reverse('web-editor-edit', args=['tatib', service.pk])).content.decode()
+        self.assertIn('value="%s (Copy)"' % ('x' * 57), html)
+        self.assertNotIn('value="%s (Copy)"' % ('x' * 58), html)
+
+    def test_a_copy_takes_the_posted_name(self):
+        """FR-005, SC-007, US2/AC4: the copy is named as typed, and the source keeps its own."""
+        service = make_service(name='9 Agustus 2026')
+        add_text(service)
+        response = self.client.post(reverse('web-tatib-copy', args=[service.pk]),
+                                    data=json.dumps({'name': 'Model Minggu'}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        copy = TataIbadah.objects.get(pk=response.json()['id'])
+        self.assertEqual(copy.name, 'Model Minggu')
+        self.assertEqual(copy.service_entries.count(), 1)
+        service.refresh_from_db()
+        self.assertEqual(service.name, '9 Agustus 2026')
+
+    def test_a_copy_with_no_name_is_named_after_its_source(self):
+        """FR-003: a request that posts no name still gets the confirmation's default."""
+        service = make_service(name='Ibadah Minggu')
+        response = self.client.post(reverse('web-tatib-copy', args=[service.pk]))
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(TataIbadah.objects.get(pk=response.json()['id']).name,
+                         'Ibadah Minggu (Copy)')
+
+    def test_a_copy_refuses_a_blank_name(self):
+        """FR-007, SC-008: the field's guard holds on the server too."""
+        service = make_service()
+        before = TataIbadah.objects.count()
+        response = self.client.post(reverse('web-tatib-copy', args=[service.pk]),
+                                    data=json.dumps({'name': '   '}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['error'], 'A name is required.')
+        self.assertEqual(TataIbadah.objects.count(), before)
+
+    def test_a_copy_refuses_a_name_over_64_characters(self):
+        """FR-007: the field caps the name, and so does the endpoint."""
+        service = make_service()
+        before = TataIbadah.objects.count()
+        response = self.client.post(reverse('web-tatib-copy', args=[service.pk]),
+                                    data=json.dumps({'name': 'y' * 65}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['error'], 'A name can be at most 64 characters.')
+        self.assertEqual(TataIbadah.objects.count(), before)
+
     def test_a_choice_moves_with_its_options(self):
         template = make_template()
         first = add_text(template, title='First', order=1)
