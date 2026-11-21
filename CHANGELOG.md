@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A launcher start that cannot reach the media companion now says why.** `Container … is restarting`
+  names nothing; the launcher now prints the companion's own last log line — the one that reads
+  `set: Illegal option -` — and names `docker compose build`, because an image older than the checkout
+  reproduces the previous failure exactly. A healthy companion is asked for no log, and the start's
+  exit status is still what the launcher returns (spec 218).
+
 - **The web service now starts from a checkout made on Windows.** The last fix cleaned the entrypoint
   inside the image, but the local stack mounts your checkout over `/app`, so the file that actually ran
   was the one on disk — still CRLF — and `/bin/sh` refused it at `set -e` while the app and the

@@ -126,7 +126,15 @@ if [ "$status" -eq 0 ] && [ "$1" = "up" ] && [ "$count" -gt 0 ]; then
     fi
     case "$seen" in
     '' | *[!0-9]*)
-        printf 'gkps: the media companion is not running — the font mounts were not checked; see docker compose logs media\n' >&2
+        # "container is restarting" names nothing; the companion's own line names the cause, and a
+        # start that follows a pull without a rebuild is the common one (spec 218).
+        printf 'gkps: the media companion is not running — the font mounts were not checked\n' >&2
+        detail=$(docker compose -f docker-compose.yml -f "$override" logs --no-color --tail 1 media \
+            2>/dev/null | tail -n 1) || detail=
+        if [ -n "$detail" ]; then
+            printf 'gkps: its last line: %s\n' "$detail" >&2
+        fi
+        printf 'gkps: see docker compose logs media; if the image predates your checkout, docker compose build\n' >&2
         ;;
     0)
         printf 'gkps: the mounted font directories showed no font to the companion\n' >&2

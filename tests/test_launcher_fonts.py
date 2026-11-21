@@ -20,6 +20,7 @@ printf '%s\\n' "CALL $*" >> "{log}"
 if [ "${{1:-}}" = "info" ]; then printf '%s' "{info}"; exit 0; fi
 case " $* " in
   *" exec "*) printf '%s' "{exec_out}"; exit {exec_status} ;;
+  *" logs "*) printf '%s\\n' "{logs_out}"; exit 0 ;;
 esac
 exit {up_status}
 """
@@ -38,10 +39,10 @@ class LauncherTestCase(unittest.TestCase):
         self.log = Path(self.temp.name) / 'docker-calls.log'
         self.write_stub()
 
-    def write_stub(self, info='', exec_out='0', exec_status=0, up_status=0):
+    def write_stub(self, info='', exec_out='0', exec_status=0, up_status=0, logs_out=''):
         self.stub.write_text(DOCKER_STUB.format(
             log=self.log, info=info, exec_out=exec_out,
-            exec_status=exec_status, up_status=up_status))
+            exec_status=exec_status, up_status=up_status, logs_out=logs_out))
         self.stub.chmod(0o755)
 
     def run_launcher(self, *arguments, home=None):
@@ -134,3 +135,18 @@ class LauncherPostStartCheckTests(LauncherTestCase):
         self.assertEqual(process.returncode, 1, process.stderr)
         self.assertFalse([call for call in self.calls() if ' exec ' in call],
                          'the check ran after a start that failed')
+
+    def test_a_companion_that_is_not_running_shows_its_own_last_line(self):
+        """`container is restarting` says nothing; the companion's own first line says everything."""
+        self.write_stub(exec_status=125, exec_out='',
+                        logs_out='docker/entrypoint.sh: 2: set: Illegal option -')
+        process = self.run_launcher()
+        self.assertIn('docker/entrypoint.sh: 2: set: Illegal option -', process.stderr)
+        self.assertIn('docker compose build', process.stderr)
+
+    def test_a_running_companion_is_not_asked_for_its_log(self):
+        self.write_stub(exec_status=0, exec_out='42', logs_out='should not be read')
+        process = self.run_launcher()
+        self.assertNotIn('should not be read', process.stderr)
+        self.assertFalse([call for call in self.calls() if ' logs ' in call],
+                         'the launcher asked a healthy companion for its log')

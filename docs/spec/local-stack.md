@@ -2,7 +2,7 @@
 
 **capability**: `local-stack`
 **last folded**: 2026-11-21
-**slices**: `217-entrypoint-shadowed`, `216-windows-checkout-start`, `191-compose-restart`, `182-host-font-detection`
+**slices**: `218-restart-log`, `217-entrypoint-shadowed`, `216-windows-checkout-start`, `191-compose-restart`, `182-host-font-detection`
 
 The local Docker Compose stack on an operator's computer: what it needs from the machine it runs on,
 and how it reaches the fonts that machine already has. Created by spec 182 — before it, the stack's
@@ -98,16 +98,22 @@ as the launcher does, and a checkout made before the pin existed SHALL start wit
 ### R5 — A launcher start reports what it could not inspect
 
 The launchers' post-start font check SHALL report, never abort: when the check cannot run — the
-companion is not running — the launcher SHALL print one line naming the companion as not running and
-pointing at `docker compose logs media`, and SHALL NOT print the empty-mount message instead. The
-check SHALL NOT change the exit status of the start it follows, and a start that failed SHALL run no
-check at all. Both launchers SHALL behave identically. (spec 216)
+companion is not running — the launcher SHALL print one line naming the companion as not running, the
+companion's own last log line when it has one, and a line naming `docker compose logs media` and
+`docker compose build` as the next step, and SHALL NOT print the empty-mount message instead. The
+check SHALL NOT change the exit status of the start it follows, a start that failed SHALL run no check
+at all, and no log SHALL be requested unless the companion could not be reached. Both launchers SHALL
+behave identically. (spec 216, revised by spec 218)
 
 **Scenarios**
 
 - **Given** a start that succeeded and a companion that is restarting, **When** the check runs,
-  **Then** one line names the companion and `docker compose logs media`, and the launcher exits with
-  the status the start returned.
+  **Then** one line names the companion, its own last line follows, `docker compose build` is named,
+  and the launcher exits with the status the start returned.
+- **Given** a companion that never started and has no log, **When** the check runs, **Then** the log
+  line is omitted and the other lines are printed.
+- **Given** a companion that answers the check, **When** the launcher finishes, **Then** it requests no
+  log and prints nothing extra.
 - **Given** a start that succeeded and a running companion that sees no mounted font, **When** the
   check runs, **Then** the File-Sharing message is printed, unchanged.
 - **Given** a start that failed, **When** the launcher finishes, **Then** no check runs and the
