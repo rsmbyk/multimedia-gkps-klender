@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A fill-in and a choice now say which kind of entry they will become.** On a template's page each
+  slot's mark in the gutter carries a 13px badge at its bottom-right corner — a beamed note for a song,
+  an open book for a passage, a framed play mark for media and three rules for text — so the four kinds
+  are told apart without reading the `Fill-in · Song` line beside them. The mark's own dashed frame and
+  its `+` / `◎` are unchanged, the badge takes no pointer and states nothing to assistive technology,
+  and no row moves: every entry's box, every title's column and the page's height are exactly as they
+  were. A slot whose stored kind cannot be read draws the mark alone (spec 213).
+
 ### Changed
 
 - **The song entry's pickers now work from the first frame.** The Song search takes focus as the Add

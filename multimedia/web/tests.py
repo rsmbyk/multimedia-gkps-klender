@@ -3613,3 +3613,47 @@ class ProjectorGotoPayloadTests(TestCase):
                      f'/offline/chunk/bible/{self.mat_tb.pk}/', '/offline/projector-shell/'):
             self.assertEqual(self.client.get(path).status_code, 404, path)
 
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class SlotKindBadgeTests(TestCase):
+    """A slot's kind badge, where the browser suite cannot reach (spec 213).
+
+    A fill-in or a choice always carries a kind in this app's own data, so the state that
+    matters here is the one no fixture produces: a stored slot whose kind is unreadable. It
+    draws the mark it always drew and no badge — never an empty disc, which would read as a
+    fifth kind.
+    """
+
+    def setUp(self):
+        self.template = tatib.TataIbadah.objects.create(name='Kinds')
+
+    def page(self):
+        return self.client.get(reverse('web-tatib-service', args=[self.template.pk])).content.decode()
+
+    def test_a_slot_with_no_kind_draws_no_badge(self):
+        tatib.ServiceEntry.objects.create(
+            tatib=self.template, kind=tatib.ServiceEntryKind.FILL_IN, order_number=1,
+            fill_kind=None, title='Tanpa jenis')
+        html = self.page()
+        self.assertIn('class="slot__mark"', html, 'the mark went with the badge')
+        self.assertNotIn('class="slot__badge"', html)
+
+    def test_every_readable_kind_carries_its_own_badge(self):
+        for order, fill_kind in enumerate((tatib.SlotKind.TEXT, tatib.SlotKind.SCRIPTURE,
+                                           tatib.SlotKind.SONG, tatib.SlotKind.MEDIA), start=1):
+            tatib.ServiceEntry.objects.create(
+                tatib=self.template, kind=tatib.ServiceEntryKind.FILL_IN, order_number=order,
+                fill_kind=fill_kind, title=f'Slot {order}')
+        html = self.page()
+        for name in ('text', 'scripture', 'song', 'media'):
+            self.assertIn(f'data-kind-badge="{name}"', html, f'{name} has no badge')
+        self.assertEqual(html.count('class="slot__badge"'), 4)
+
+    def test_a_dated_service_never_carries_one(self):
+        dated = tatib.TataIbadah.objects.create(name='Ibadah', date=date(2026, 11, 1))
+        tatib.ServiceEntry.objects.create(
+            tatib=dated, kind=tatib.ServiceEntryKind.TEXT, order_number=1,
+            title='Votum', text='Pertolongan kita')
+        html = self.client.get(reverse('web-tatib-service', args=[dated.pk])).content.decode()
+        self.assertNotIn('class="slot__badge"', html)

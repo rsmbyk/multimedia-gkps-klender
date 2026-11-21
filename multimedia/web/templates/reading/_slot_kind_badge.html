@@ -1,0 +1,21 @@
+{% comment %}The kind a slot resolves to, at the slot mark's corner (spec 213).
+
+A fill-in and a choice say what they are in the mark's own glyph; what they will become is
+stated only in the words beside them. This badge carries it in the mark's language: the
+same glyphs the page already uses for the kind -- the note, the open book, the frame, the
+lines -- at the size the 20px seat leaves for them.
+
+Drawn on a 12-unit grid rather than the 24 the seat's own marks use, because a 24-unit glyph
+scaled into this 10px box strokes at about 0.75 device px — under a pixel. The book drops the
+cross it carries at full size: at this size it is a blob, and the two panels are what make a
+book.{% endcomment %}
+<span class="slot__badge" aria-hidden="true" data-kind-badge="{{ kind }}">
+  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-linecap="round"
+       stroke-linejoin="round" aria-hidden="true" focusable="false">
+    {% if kind == 'scripture' %}<path d="M6 4.8c-.8-.65-1.9-.95-3.45-.85v5.2c1.55-.1 2.65.2 3.45.85.8-.65 1.9-.95 3.45-.85V3.95c-1.55-.1-2.65.2-3.45.85z"/><path d="M6 4.8v5.2"/>
+    {% elif kind == 'song' %}<path d="M4.5 8.7V2.8l5.1-1v5.8"/><circle cx="3.35" cy="8.7" r="1.2"/><circle cx="8.45" cy="7.6" r="1.2"/>
+    {% elif kind == 'media' %}<rect x="1.6" y="2.6" width="8.8" height="6.8" rx="1.2"/><path d="M5.1 4.7v2.6l2.2-1.3z"/>
+    {% else %}<path d="M2.4 3.4h7.2M2.4 6h7.2M2.4 8.6h4.3"/>
+    {% endif %}
+  </svg>
+</span>

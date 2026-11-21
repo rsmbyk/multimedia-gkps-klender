@@ -34,6 +34,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-228](./items/ITEM-228-slot-kind-badge.md) | A fill-in and a choice state the kind they resolve to | A template's slot mark says which of the two the row is but never which kind it will be, while a song or passage row shows its own glyph in the same 20px seat; a corner badge on the mark names the kind | feat | P2 | S | [213](../specs/213-slot-kind-badge/spec.md) | 2026-11-21 |
 
 ## In progress
 
