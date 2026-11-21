@@ -1,6 +1,6 @@
 # Implementation Plan: a text screen arrives as fast as the entries beside it
 
-**Spec**: `specs/219-projector-fit-cost/spec.md` (Draft, Gate 1 pending)
+**Spec**: `specs/219-projector-fit-cost/spec.md` (Accepted, Gate 1 2026-11-22)
 **Branch**: `fix/219-projector-fit-cost`
 **Bump**: `patch` (D007; shown at Gate 2)
 **Preview**: `live preview at http://127.0.0.1:8791/projector?service=144` — the real projector
