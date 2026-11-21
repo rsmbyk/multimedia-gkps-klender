@@ -25,7 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-185](./items/ITEM-185-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-220](./items/ITEM-220-chevron-e2e-pointer-race.md) | The chevron-eligibility E2E races the pointer on this machine | After the moving screen-row click the pointer can land on the live header, whose live-hover tone never equals the pure selected token the wait demands; base fails 4/5 alone, CI green through 206 | fix | P2 | S | — | 2026-11-20 |
 | [ITEM-224](./items/ITEM-224-token-only-line.md) | A speaker token alone on its line is not read as a speaker | `Paragenda:` / `P:` / `Bapa:` on one line is treated as ordinary text, so the line and its words lose the voice; 23 lines in the local snapshot use this shape | fix | P2 | S | — | 2026-11-21 |
-
+| [ITEM-233](./items/ITEM-233-stale-image-signal.md) | A start from an image older than the Dockerfile says nothing | `up -d` reuses the existing image, so a pulled `Dockerfile` change is silently not applied; one advisory line naming `docker compose build` | fix | P2 | S | — | 2026-11-21 |
 ## Speccing
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
@@ -51,6 +51,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-232](./items/ITEM-232-entrypoint-shadowed.md) | The web service still runs the checkout's CRLF entrypoint | `docker-compose.yml` mounts the checkout over `/app`, so the image's stripped entrypoint is replaced by the host's; the runtime copy must live outside the mount | fix | P0 | S | [217](../specs/217-entrypoint-shadowed/spec.md) | 2026-11-21 |
 | [ITEM-231](./items/ITEM-231-windows-checkout-start.md) | The stack never starts from a checkout made on Windows | Git for Windows writes a CRLF `docker/entrypoint.sh`, `sh` refuses it at `set -e`, and both services restart-loop; a build-time strip, an LF pin and an advisory post-start check | fix | P1 | S | [216](../specs/216-windows-checkout-start/spec.md) | develop via [#571](https://github.com/rsmbyk/multimedia-gkps-klender/pull/571) | 2026-11-21 |
 | [ITEM-230](./items/ITEM-230-sidebar-entry-kind-marks.md) | A service entry's sidebar row marks its kind | The contents list after the order number carries each entry's mark; slots keep the spec 213 kind modifier | feat | P2 | S | [214](../specs/214-sidebar-entry-kind-marks/spec.md) | develop via [#569](https://github.com/rsmbyk/multimedia-gkps-klender/pull/569) | 2026-11-21 |
 | [ITEM-229](./items/ITEM-229-copy-template-dialog.md) | The copy confirmation is a dialog of its own, and the copy is named there | A second dialog over the Edit modal, its card centred on the window, with a Name field defaulting to `<source> (Copy)` that selects all on click; the endpoint takes the name instead of reusing the source's | feat | P1 | M | [215](../specs/215-copy-template-dialog/spec.md) | develop via [#567](https://github.com/rsmbyk/multimedia-gkps-klender/pull/567) | 2026-11-21 |

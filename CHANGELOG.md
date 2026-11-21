@@ -46,6 +46,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The web service now starts from a checkout made on Windows.** The last fix cleaned the entrypoint
+  inside the image, but the local stack mounts your checkout over `/app`, so the file that actually ran
+  was the one on disk — still CRLF — and `/bin/sh` refused it at `set -e` while the app and the
+  companion restarted in a loop. The container now runs the image's own copy, at `/usr/local/bin`,
+  outside anything the stack mounts; whether your checkout is CRLF or LF no longer matters, and the
+  commands that copy runs are unchanged. Rebuild once (`docker compose build`) — the path is baked into
+  the image (spec 217).
+
 - **The stack now starts from a checkout made on Windows.** Git for Windows writes text files out
   with CRLF by default and the repository pinned nothing, so a Windows clone built an image whose
   entrypoint began `set -e\r` — `/bin/sh` refused it on the second line, both the app and the media
