@@ -39,6 +39,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-236](./items/ITEM-236-deleted-record-empty-stage.md) | Deleting the open song or service falls back to the search page | Keep the reading stage with a centred nothing-open message when the open record is deleted | fix | P2 | S | [221](../specs/221-empty-reading-stage/spec.md) |fix/221-empty-reading-stage| 2026-11-22 |
 
 ## In review
 

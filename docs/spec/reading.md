@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-22
-**slices**: `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `221-empty-reading-stage`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1344,8 +1344,14 @@ shared editor modal on a confirm state fetched from the server — naming the re
 record's delete endpoint with the CSRF token. Hymn songbooks, their songs, a song of an already-deleted
 songbook, and a record named through the wrong kind SHALL be refused by the endpoints. A deleted song
 or songbook soft-deletes; a deleted service or template leaves the lists by its active flag. On success
-the row leaves its sidebar and a neighbour takes focus; when the deleted record was the one on stage,
-the shell swaps to the parent list with the history entry replaced, so Back never revisits the removal.
+the row leaves its sidebar and a neighbour takes focus. When the deleted record was the one on stage,
+the shell SHALL keep reading mode and paint the parent list with a nothing-open stage: a generic
+empty-screen icon above the heading "Nothing open." and the subtitle "Choose a song or service from the
+list.", centred on both axes of the stage, with no verses, actions, search landing or search results.
+The two side panels stay on the deleted record's parent list, including the template mode. The state
+SHALL be carried by an explicit `stage=empty` flag on that list's URL so a reload paints the same
+view, and the history entry SHALL be replaced, so Back never revisits the removal. A delete of a row
+that was not on stage SHALL leave the stage and its URL untouched (spec 221).
 
 #### Scenario: revealing the delete control
 - WHEN an eligible row is hovered or one of its action buttons is keyboard-focused (on a touch screen, drawn outright)
@@ -1359,7 +1365,13 @@ the shell swaps to the parent list with the history entry replaced, so Back neve
 
 #### Scenario: a confirmed delete lands
 - WHEN the confirm submits and the server answers ok
-- THEN the row leaves its sidebar and a neighbour takes focus; if the record was on stage the shell returns to the parent list with the history entry replaced
+- THEN the row leaves its sidebar and a neighbour takes focus; if the record was on stage the shell keeps the reading view with the nothing-open stage and replaces the history entry
+
+#### Scenario: the deleted record was on stage
+- WHEN a song, songbook, service or template that is currently on stage is deleted
+- THEN the parent list stays in the side panels, the stage centres the empty-screen icon, "Nothing open." and the subtitle, and no search field appears in it
+- WHEN the resulting URL is reloaded
+- THEN the same nothing-open stage is painted, and Back does not return to the deleted record's URL
 
 #### Scenario: refused and restricted records
 - WHEN the row is a hymn songbook or a hymn song, the songbook is already deleted, editing is restricted, or the kind does not match the record

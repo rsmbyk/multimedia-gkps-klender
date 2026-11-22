@@ -126,6 +126,16 @@ def _shell(section, nav, ch, read_on, home_state, ch_mode='chapter'):
     }
 
 
+def _empty_stage(request):
+    """The parent list reached by deleting the record that was on stage (spec 221)."""
+    return request.GET.get('stage') == 'empty'
+
+
+def _empty_stage_context(empty):
+    """The nothing-open stage's copy; no stored state or model is involved."""
+    return {'read_name': '', 'read_hint': 'Choose a song or service from the list.'} if empty else {}
+
+
 # ---------- sidebar editors (spec 005) ----------
 # GET renders the modal's form (empty, or prefilled when editing); POST validates
 # and saves, answering JSON on success and the re-rendered form on error. Both are
@@ -2354,7 +2364,10 @@ class BookIndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(_shell('kidung', 'open', 'closed', False, 'landing', ch_mode='song'))
+        empty = _empty_stage(self.request)
+        context.update(_shell('kidung', 'open', 'closed', empty,
+                              'reading' if empty else 'landing', ch_mode='song'))
+        context.update(_empty_stage_context(empty))
         context.update({
             'page_title': 'Kidung — Multimedia GKPS Klender',
             'songbook_groups': _songbook_groups(),
@@ -2372,7 +2385,10 @@ class BookDetailView(TemplateView):
         context = super().get_context_data(**kwargs)
         book = get_object_or_404(
             song_models.Book.objects.active(), pk=self.kwargs['book_id'])
-        context.update(_shell('kidung', 'open', 'open', False, 'landing', ch_mode='song'))
+        empty = _empty_stage(self.request)
+        context.update(_shell('kidung', 'open', 'open', empty,
+                              'reading' if empty else 'landing', ch_mode='song'))
+        context.update(_empty_stage_context(empty))
         context.update({
             'page_title': f'{book.name} — Multimedia GKPS Klender',
             'songbook_groups': _songbook_groups(book.pk),
@@ -2457,6 +2473,7 @@ class TatibView(TemplateView):
         service = None
         if service_id is not None:
             service = get_object_or_404(tatib_models.TataIbadah, pk=service_id, is_active=True)
+        empty = _empty_stage(self.request) and service is None
         override = self.request.GET.get('mode', '')
         if override in ('dated', 'template'):
             mode = override
@@ -2470,8 +2487,9 @@ class TatibView(TemplateView):
             items, toc = _tatib_stage(service)
         other_mode = 'dated' if mode == 'template' else 'template'
         context.update(_shell('tatib', 'open', 'open' if service else 'closed',
-                              service is not None, 'reading' if service else 'landing',
-                              ch_mode='song'))
+                              service is not None or empty,
+                              'reading' if service or empty else 'landing', ch_mode='song'))
+        context.update(_empty_stage_context(empty))
         context.update({
             'page_title': f'{service.name} — Multimedia GKPS Klender' if service else 'Tata Ibadah — Multimedia GKPS Klender',
             'tatib_groups': _tatib_groups(mode, service),

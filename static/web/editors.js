@@ -359,8 +359,11 @@
       if (action) action.success();
       if (onStage && window.gkpsNavigate) {
         /* The stage was showing what was just deleted: swap to the parent list
-           and replace the history entry, so Back never revisits the removal. */
-        window.gkpsNavigate(parentListUrl(kind), { kind: 'refresh', replaceUrl: true });
+           with the nothing-open state, and replace the history entry so Back
+           never revisits the removal (spec 221). */
+        var listUrl = parentListUrl(kind);
+        listUrl += (listUrl.indexOf('?') === -1 ? '?' : '&') + 'stage=empty';
+        window.gkpsNavigate(listUrl, { kind: 'refresh', replaceUrl: true });
       }
     }).catch(function (error) {
       announce('');

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Deleting the song or service you are reading no longer drops you on the search page.** The reading
+  stage stays up with a centred empty-screen icon, "Nothing open." and a short hint, while the parent
+  list stays in the side panels. The state lives in the URL, so a reload keeps it and Back never
+  revisits the removed record (spec 221).
+
 ## [1.36.6] - 2026-11-22
 
 ### Added
