@@ -44,13 +44,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-236](./items/ITEM-236-deleted-record-empty-stage.md) | Deleting the open song or service falls back to the search page | Keep the reading stage with a centred nothing-open message when the open record is deleted | fix | P2 | S | [221](../specs/221-empty-reading-stage/spec.md) | [#585](https://github.com/rsmbyk/multimedia-gkps-klender/pull/585) | 2026-11-22 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-236](./items/ITEM-236-deleted-record-empty-stage.md) | Deleting the open song or service falls back to the search page | Keep the reading stage with a centred nothing-open message when the open record is deleted | fix | P2 | S | [221](../specs/221-empty-reading-stage/spec.md) | develop via [#585](https://github.com/rsmbyk/multimedia-gkps-klender/pull/585) | 2026-11-22 |
 | [ITEM-235](./items/ITEM-235-search-landing-focus.md) | The search landing opens without its input focused | Focus only the empty search landing; keep the results-state field out of automatic focus | fix | P2 | S | [220](../specs/220-initial-search-focus/spec.md) |develop via [#579](https://github.com/rsmbyk/multimedia-gkps-klender/pull/579)| 2026-11-22 |
 | [ITEM-226](./items/ITEM-226-copy-confirm-layer.md) | The Copy as template confirmation paints inline under the edit form | No product CSS carries the layer, card or right-aligned actions spec 167's preview drew, so the confirmation stacks under Save/Cancel and grows the modal | fix | P1 | S | [212](../specs/212-copy-confirm-layer/spec.md) |develop via [#560](https://github.com/rsmbyk/multimedia-gkps-klender/pull/560)| 2026-11-21 |
 | [ITEM-234](./items/ITEM-234-projector-fit-cost.md) | A text screen arrives late while the entries beside it arrive at once | The fitting walked the font size down a pixel at a time, one layout per step, after the arrival morph had started — so a text entry cost 130–280 layout reads before it could paint and was fitted against a box 14 px below its rest; and a held arrow key stacked seven crossfading screens on top of each other | fix | P1 | S | [219](../specs/219-projector-fit-cost/spec.md) | develop via [#576](https://github.com/rsmbyk/multimedia-gkps-klender/pull/576) | 2026-11-22 |
