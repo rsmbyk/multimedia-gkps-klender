@@ -3,7 +3,7 @@
 **Slice**: `specs/221-empty-reading-stage`
 **Branch**: `fix/221-empty-reading-stage`
 **Created**: 2026-11-22
-**Status**: Draft
+**Status**: Accepted (Gate 1, 2026-11-22 · Gate 2, 2026-11-22)
 **Input**: "when you delete a song or service, and that song or service is being opened in reading page, it should not display the search page in reading page. instead, display an empty reading view"
 **Demand**: `ITEM-236`
 **Capability**: modifies `reading/R41` (the on-stage delete landing clause)

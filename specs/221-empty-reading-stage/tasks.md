@@ -36,4 +36,4 @@
 - [X] T013 Fold: modify the on-stage landing clause of `R41` with the complete replacement block; write `fold.md` — `docs/spec/reading.md`, `specs/221-empty-reading-stage/fold.md`
 - [X] T014 Apply the declared bump: `VERSION` `1.36.6 → 1.36.8` and one `### Fixed` line under `## [Unreleased]` in `CHANGELOG.md`
 - [X] T015 Board: card `bump: patch`, and at delivery `status: in-review`, `pr:` and the board row once the PR number exists — `backlog/items/ITEM-236-deleted-record-empty-stage.md`, `backlog/board.md`
-- [ ] T016 Open the PR (draft, then ready) with the closing report's title and body, and report — nothing pushed until the owner says so
+- [X] T016 Open the PR (draft, then ready) with the closing report's title and body, and report — nothing pushed until the owner says so

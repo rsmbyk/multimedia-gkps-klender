@@ -1,6 +1,6 @@
 ---
 id: ITEM-236
-status: in-review
+status: done
 title: 'Deleting the open song or service falls back to the search page'
 type: fix
 priority: P2
@@ -11,9 +11,9 @@ spec: 221-empty-reading-stage
 branch: fix/221-empty-reading-stage
 pr: 585
 issue:
-closed_at:
-closed_reason:
-bump:
+closed_at: 2026-11-22
+closed_reason: merged into develop (PR #585)
+bump: patch
 release_version:
 ---
 
