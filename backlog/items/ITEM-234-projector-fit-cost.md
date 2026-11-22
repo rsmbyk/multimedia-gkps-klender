@@ -9,7 +9,7 @@ created: 2026-11-22
 updated: 2026-11-22
 spec: 219
 branch: fix/219-projector-fit-cost
-pr:
+pr: 576
 issue:
 closed_at:
 closed_reason:
