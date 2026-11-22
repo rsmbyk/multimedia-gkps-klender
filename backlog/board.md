@@ -45,6 +45,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-226](./items/ITEM-226-copy-confirm-layer.md) | The Copy as template confirmation paints inline under the edit form | No product CSS carries the layer, card or right-aligned actions spec 167's preview drew, so the confirmation stacks under Save/Cancel and grows the modal | fix | P1 | S | [212](../specs/212-copy-confirm-layer/spec.md) | [#560](https://github.com/rsmbyk/multimedia-gkps-klender/pull/560) | 2026-11-21 |
+| [ITEM-235](./items/ITEM-235-search-landing-focus.md) | The search landing opens without its input focused | Focus only the empty search landing; keep the results-state field out of automatic focus | fix | P2 | S | [220](../specs/220-initial-search-focus/spec.md) | [#579](https://github.com/rsmbyk/multimedia-gkps-klender/pull/579) | 2026-11-22 |
 
 ## Done
 
