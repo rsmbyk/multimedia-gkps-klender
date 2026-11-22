@@ -69,7 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   while the words are measured. A single-screen text too long for any size is cut by halving instead
   of one character at a time — 81.5 ms for a 400-row body instead of 2 992 ms, keeping the same rows
   and characters (spec 219).
-
+- **The search landing is ready for typing.** Opening the public site — the root, `/search`, or any of
+  the three section indexes — puts the caret in the search field, so a query starts without a click.
+  Focus changes neither the field's value nor the page's scroll, and the landing stays one window tall.
+  Search results never take the focus by themselves: a submission from the landing hands it back with
+  the query left in the compact bar, and a results URL opened directly leaves focus where it was.
+  Reading pages are untouched (spec 220).
 - **A launcher start that cannot reach the media companion now says why.** `Container … is restarting`
   names nothing; the launcher now prints the companion's own last log line — the one that reads
   `set: Illegal option -` — and names `docker compose build`, because an image older than the checkout

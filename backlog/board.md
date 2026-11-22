@@ -29,6 +29,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-235](./items/ITEM-235-search-landing-focus.md) | The search landing opens without its input focused | Focus only the empty search landing; keep the results-state field out of automatic focus | fix | P2 | S | [220](../specs/220-initial-search-focus/spec.md) | 2026-11-22 |
 
 ## Ready
 

@@ -1439,6 +1439,29 @@
     window.scrollTo({top: snapshot.scroll || 0, behavior: 'auto'});
     return true;
   }
+
+  /* ---------- spec 220: only the empty search landing takes focus ---------- */
+  /* The landing is a state, not a route: `/`, `/search` and the three section
+     indexes paint the same stage, and a reading page paints none of it. Keying on
+     the state keeps the surface consistent whichever rail section is selected. */
+  function onLanding() {
+    return root.dataset.home === 'landing' && root.dataset.read !== 'on';
+  }
+  function focusLandingSearch() {
+    if (!onLanding()) return;
+    var input = document.getElementById('searchQuery');
+    if (!input) return;
+    /* preventScroll: the landing is exactly one window tall (R15) and the field is
+       already centred, so focus must not nudge the page. */
+    input.focus({preventScroll: true});
+  }
+  /* The search form is reconciled through the stage swap rather than replaced, so
+     the field keeps the focus a submission gave it; results have to hand it back. */
+  function handFocusBackFromLanding() {
+    var input = document.getElementById('searchQuery');
+    if (!input || document.activeElement !== input) return;
+    input.blur();
+  }
   document.addEventListener('input', function (event) {
     if (event.target.id === 'searchQuery') saveSearchSnapshot();
   });
@@ -1556,6 +1579,9 @@
   function applyPage(doc, url, opts) {
     opts = opts || {};
     var fresh = doc.documentElement.dataset;
+    /* spec 220: the state being left. The landing taking focus, and handing it back
+       when results open, are both transitions rather than destinations. */
+    var previousHome = root.dataset.home;
     var freshMediaLibrary = doc.getElementById('railMediaLibrary');
     if (railMediaLibrary && freshMediaLibrary) {
       if (freshMediaLibrary.getAttribute('aria-current') === 'page') {
@@ -1812,6 +1838,13 @@
     markRailTile();
     syncState();
     updateChInds();
+    /* spec 220: the landing takes focus wherever it is painted, and hands it back as
+       soon as results open. A background refresh is left alone: the operator may be
+       typing into a sidebar filter, and a save must not take the caret from them. */
+    if (!opts.backgroundRefresh) {
+      if (fresh.home === 'landing' && previousHome !== 'landing') focusLandingSearch();
+      else if (fresh.home === 'results' && previousHome === 'landing') handFocusBackFromLanding();
+    }
     window.requestAnimationFrame(updateChInds);
 
     if (fresh.home === 'results') railSearch.setAttribute('href', url);
@@ -2136,6 +2169,8 @@
      with no visible rows shows the empty view (spec 128, FR-008). */
   applyFilter('');
   revealCurrent(stageAnchor() || anchorFromUrl(window.location.hash));
+  /* spec 220: a full document load of the landing is ready for typing. */
+  focusLandingSearch();
   updateChInds();
   window.requestAnimationFrame(updateChInds);
   var visibleBlock = null;

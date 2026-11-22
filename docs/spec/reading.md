@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-21
-**slices**: `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-22
+**slices**: `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1623,4 +1623,36 @@ fills. The OBS dock's entry list SHALL carry no marks: the contents list is the 
 #### Scenario: geometry
 - WHEN the mark is drawn at a 404px pane, in either theme
 - THEN the number starts 10px from the row edge in a 24px box, the mark at 42px and the label at 66px, with no row moving
+
+### R50 — The empty search landing is ready for typing
+
+The public search landing SHALL take keyboard focus into its search field as soon as the landing is
+painted, so a reader types without reaching for the pointer. The landing is a state, not a route: the
+root `/`, `/search` when no valid query renders results, and the section indexes `/bible/`, `/songs/`
+and `/tatib/` paint the same stage and SHALL behave alike whichever rail section is selected.
+
+Taking focus SHALL NOT change the field's value, select its text, or scroll the page; the landing SHALL
+stay exactly one window tall with its field centred as `R15` requires. The focus indicator SHALL be the
+product's existing `:focus-visible` ring — no new ring, colour or token.
+
+A page that is not the landing SHALL NOT take automatic focus into the search field: a results page, a
+Bible chapter, a song and a service page each keep the focus the reader gave them. A submission from
+the focused landing SHALL hand the focus back as the results open, leaving the query in the compact
+bar. (spec 220)
+
+#### Scenario: a full load of any landing route
+- WHEN `/`, `/search`, `/bible/`, `/songs/` or `/tatib/` is opened
+- THEN the search field holds focus and typing reaches it, with the page unscrolled and still one window tall
+
+#### Scenario: arriving in place
+- WHEN a reading page's Search destination or the site's logo opens the empty landing
+- THEN the field takes focus once the landing is painted
+
+#### Scenario: a submission
+- WHEN a query is submitted from the focused landing
+- THEN the results open with the query in the compact bar and the field no longer holding focus
+
+#### Scenario: a page that is not the landing
+- WHEN a results URL is opened directly, or a Bible chapter, a song or a service page is shown
+- THEN no search field takes automatic focus
 

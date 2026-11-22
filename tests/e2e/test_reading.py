@@ -407,6 +407,95 @@ class ReadingE2ETests(StaticLiveServerTestCase):
         expect(page.locator('html')).to_have_attribute('data-nav', 'closed')
         expect(page.locator('#railSearch[aria-current="page"]')).to_have_count(1)
 
+    # --- spec 220: only the empty search landing takes focus ---
+
+    LANDING_ROUTES = ('web-index', 'web-search', 'web-bible', 'web-books', 'web-tatib')
+
+    def test_the_empty_search_landing_takes_focus(self):
+        """SC-001: every route that paints the landing is ready for typing.
+
+        `/`, `/search`, and the three section indexes paint the same stage
+        (`#searchHome` is byte-identical on all five), so a reader who lands on
+        any of them types without reaching for the mouse.
+        """
+        for name in self.LANDING_ROUTES:
+            with self.subTest(route=name):
+                page = self._page()
+                page.goto(self.live_server_url + reverse(name))
+                expect(page.locator('html')).to_have_attribute('data-home', 'landing')
+                expect(page.locator('#searchQuery')).to_be_focused()
+                # Typed straight in: no click, no locator.fill() to focus it for us.
+                page.keyboard.type('garam')
+                expect(page.locator('#searchQuery')).to_have_value('garam')
+                self.assertEqual(page.evaluate('window.scrollY'), 0)
+                page.close()
+
+    def test_the_search_rail_opens_a_focused_landing(self):
+        """SC-002: an in-page arrival focuses too, not only a full document load."""
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-bible-chapter', args=[self.mat.id, 5]))
+        expect(page.locator('html')).to_have_attribute('data-read', 'on')
+        page.locator('.rail__logo').click()
+        expect(page.locator('html')).to_have_attribute('data-home', 'landing')
+        expect(page.locator('#searchQuery')).to_be_focused()
+        page.keyboard.type('terang')
+        expect(page.locator('#searchQuery')).to_have_value('terang')
+
+    def test_focusing_the_landing_keeps_the_page_still(self):
+        """SC-004: focusing changes neither the value, the selection nor the scroll."""
+        page = self._page(width=390, height=844)
+        page.goto(self.live_server_url + reverse('web-index'))
+        expect(page.locator('#searchQuery')).to_be_focused()
+        state = page.evaluate("""() => {
+            const q = document.getElementById('searchQuery');
+            return {scrollY: window.scrollY, value: q.value,
+                    start: q.selectionStart, end: q.selectionEnd,
+                    docHeight: document.documentElement.scrollHeight,
+                    docWidth: document.documentElement.scrollWidth,
+                    innerHeight: window.innerHeight, innerWidth: window.innerWidth};
+        }""")
+        self.assertEqual(state['scrollY'], 0)
+        self.assertEqual(state['value'], '')
+        self.assertEqual(state['start'], 0)      # not selected for overtyping
+        self.assertEqual(state['end'], 0)
+        self.assertEqual(state['docHeight'], state['innerHeight'])   # still one window tall
+        self.assertEqual(state['docWidth'], state['innerWidth'])     # and no sideways scroll
+
+    def test_the_landing_hands_focus_over_when_results_open(self):
+        """SC-003: results never hold automatic focus, whether submitted or restored.
+
+        The search form survives the stage swap — `applyPage()` reconciles the same
+        `#searchQuery` node into the results state — so nothing removes the focus by
+        itself; the field has to be handed back.
+        """
+        page = self._page()
+        page.goto(self.live_server_url + reverse('web-search') + '?q=garam')
+        expect(page.locator('html')).to_have_attribute('data-home', 'results')
+        expect(page.locator('#searchQuery')).to_have_value('garam')
+        self.assertNotEqual(page.evaluate('document.activeElement.id'), 'searchQuery')
+
+        # A submission from the focused landing leaves the compact field too.
+        page.locator('.rail__logo').click()
+        expect(page.locator('#searchQuery')).to_be_focused()
+        page.keyboard.type('waktu pagi')
+        page.keyboard.press('Enter')
+        expect(page.locator('html')).to_have_attribute('data-home', 'results')
+        expect(page.get_by_role('link', name='NKB 12')).to_be_visible()
+        self.assertNotEqual(page.evaluate('document.activeElement.id'), 'searchQuery')
+        expect(page.locator('#searchQuery')).to_have_value('waktu pagi')
+
+    def test_reading_routes_never_take_search_focus(self):
+        """SC-005: a reading page paints no landing, so nothing focuses its field."""
+        for name, args in (('web-bible-chapter', [self.mat.id, 5]),
+                           ('web-song', [self.song.id]),
+                           ('web-tatib-service', [self.service.id])):
+            with self.subTest(route=name):
+                page = self._page()
+                page.goto(self.live_server_url + reverse(name, args=args))
+                expect(page.locator('html')).to_have_attribute('data-read', 'on')
+                self.assertNotEqual(page.evaluate('document.activeElement.id'), 'searchQuery')
+                page.close()
+
     def test_reader_can_browse_and_read_a_song(self):
         page = self._page()
         page.goto(self.live_server_url + reverse('web-books'))
