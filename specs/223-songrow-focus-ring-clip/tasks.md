@@ -58,3 +58,8 @@ Written and run **before** `components.css` is touched, so each case fails for i
 - [X] T015 Delivery, after the report and on the owner's word: open the PR as a draft against
   `develop`, read `ITEM-238`'s state, set `in-review`, write `pr:`, move the board row, push that
   commit, mark the PR ready. The card is closed in its own later `chore/board-238` branch.
+
+## Closing note
+
+Merged into `develop` on 2026-11-22 as squash `e4d69cd1` via PR #588. The card was closed in its own
+`chore/board-238` PR; the anchor issue stays open as the card's pointer.

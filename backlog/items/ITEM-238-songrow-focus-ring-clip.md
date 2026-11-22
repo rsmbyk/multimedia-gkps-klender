@@ -1,6 +1,6 @@
 ---
 id: ITEM-238
-status: in-review
+status: done
 title: 'The song-row focus ring is clipped at the top of the list'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: 223-songrow-focus-ring-clip
 branch: fix/223-songrow-focus-ring-clip
 pr: 588
 issue: 587
-closed_at:
-closed_reason:
+closed_at: 2026-11-22
+closed_reason: merged into develop (#588)
 bump: patch
 release_version:
 ---
