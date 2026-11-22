@@ -20,6 +20,7 @@ inside a hidden row is a row nobody can reach.{% endcomment %}
 <li data-num="{{ item.n }}"{% if item.entry %} data-move-row{% endif %}><a class="songrow{% if not item.titled %} songrow--cont{% endif %}" href="#ti-{{ item.anchor }}"{% if item.entry %} draggable="false"{% endif %}
        data-i="{{ item.anchor }}" data-num="{{ item.n }}" data-txt="{{ item.txt|lower }}">
   <span class="songrow__c">{{ item.n }}</span>
+  {% if item.mark %}{% include 'reading/_toc_mark.html' with mark=item.mark mark_kind=item.mark_kind %}{% endif %}
   {% if item.song_label %}<span class="songrow__t songrow__t--song">
     <span class="songrow__heading">{% if item.song_reference %}<span class="songrow__reference">{{ item.song_reference }}</span>{% endif %}{% if item.song_title %}{% if item.song_reference %} {% endif %}<span class="songrow__title">{{ item.song_title }}</span>{% endif %}</span>
     {% if item.verse_line %}<span class="songrow__verses">{{ item.verse_line }}</span>{% endif %}

@@ -1,8 +1,8 @@
 # reading
 
 **capability**: `reading`
-**last folded**: 2026-11-21
-**slices**: `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**last folded**: 2026-11-22
+**slices**: `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -990,35 +990,40 @@ SHALL NOT change.
 - WHEN the theme changes
 - THEN every mark repaints with its own element's ink and needs no repaint of its own
 
-### R30 — A song entry names a song that has no verses
+### R30 — A song entry hides its Verses section when there is nothing to choose
 
-The song entry's Verses field SHALL tell a picked song that carries no verses apart from no song picked at
-all: with no song picked the field reads `Pick a song first`, and with a song picked whose live verses are
-empty it reads `This song has no verses`. The second line SHALL be in the server's own form fragment, not
-only written by the page's script, and the field SHALL stay disabled there — an empty verse menu is not
-offered — because there is nothing to choose.
+The song entry's Verses section SHALL be hidden when no song is picked, and when the picked song carries no
+live verses; its label SHALL be hidden with it, so the field leaves no empty title behind. Its summary line SHALL read `Pick a song first` or `This song has no verses` respectively in the
+server-rendered fragment before any script runs; the collapsed section SHALL measure 0 px and SHALL offer no
+checkbox or menu. A song whose live verses exist SHALL keep the section visible, starting at verse 1 on a
+fresh pick and at the saved verse IDs on an edit. Its other lines SHALL read `Bait` plus a collapsed range
+list (`Bait 1–2`), whatever the size of the selection, and `No verses: keep at least one` when a song's
+boxes were all cleared. A refusal caused by a verse-less song SHALL name the song —
+`This song has no verses: pick another song.` — while clearing every box of a song with verses SHALL keep
+`Keep at least one verse in the service.` (spec 210; modifies the earlier disabled-trigger rule.)
 
-The other lines SHALL stay as they are: `All verses` when every verse is included, `Verses n, …` when some
-are, and `No verses: keep at least one` when a song's boxes were all cleared. A refusal caused by the
-chosen song carrying no verses SHALL name the song — `This song has no verses: pick another song.` — while
-a refusal caused by clearing every box of a song that has verses SHALL keep
-`Keep at least one verse in the service.`
+**Superseded (spec 210):** the summary drew `All verses` when every box was ticked; the whole set is now
+stated as a range list, so that line is gone.
+
+**Superseded (spec 210):** the earlier requirement kept the section visible with a disabled trigger reading
+`This song has no verses` and no checkbox drawn. That surface is replaced by a hidden section; the two
+refusal messages and the stale-verse survival rule are unchanged.
 
 #### Scenario: a song with no verses is picked
 - WHEN a song whose live verses are empty is picked in the song entry
-- THEN the Verses field reads `This song has no verses`, its trigger is disabled, and no checkbox is drawn
+- THEN the Verses section collapses to 0 px, no checkbox is drawn, and the refusal still names the song
 
 #### Scenario: nothing is picked
 - WHEN the song entry opens with no song chosen
-- THEN the Verses field reads `Pick a song first`
+- THEN the Verses section is hidden and its summary reads `Pick a song first`
 
 #### Scenario: the first paint of an edit
 - WHEN the server renders the form of a stored song entry whose song has no live verses
-- THEN its markup carries `This song has no verses` before any script runs
+- THEN the section is hidden in the fragment before any script runs
 
 #### Scenario: the stored verses survive
 - WHEN an entry stores verse numbers the song no longer carries
-- THEN those numbers remain choices, the field is not in the no-verses state, and the entry stays saveable
+- THEN those numbers remain choices, the section is visible, and the entry stays saveable
 
 #### Scenario: saving a verse-less song
 - WHEN Save is pressed with a song that carries no verses chosen
@@ -1030,7 +1035,8 @@ a refusal caused by clearing every box of a song that has verses SHALL keep
 
 #### Scenario: the verses cannot be loaded
 - WHEN the verses request fails for a picked song
-- THEN the failure notice is shown and the field keeps the line it had
+- THEN the failure notice is shown and the section keeps the state it had
+
 
 ### R31 — A preview's play shortcut leaves no focus ring on the dialog
 
@@ -1158,6 +1164,24 @@ the row SHALL state how many options it holds — `No options yet` when it holds
 `+ Add option` itself so the first one can be created. A choice may hold no
 options: the template is allowed to be unfinished, and such a choice cannot be settled at generation.
 
+A fill-in's and a choice's mark in the gutter SHALL also state the kind the slot resolves to, as a badge at
+the mark's bottom-right corner: a 13px disc overhanging the mark by 4px right and 3px bottom, carrying a
+10px glyph drawn on a 12-unit grid at 1.6 stroke — a beamed note (song), an open book (passage), a framed
+play mark (media) and three rules (text). The badge SHALL NOT replace the mark's own frame or its `+` / `◎`,
+SHALL be `aria-hidden` so the row's accessible name is unchanged, SHALL add no height and move no title, and
+SHALL paint the row's own `--icon-hover-bg` over its canvas in every fill state so it never reads as a hole
+punched in the row. A slot whose stored kind is unreadable SHALL draw the mark alone, never an empty disc.
+(spec 213)
+
+#### Scenario: a slot states its kind
+- WHEN a template's page is drawn
+- THEN each fill-in and choice row carries a badge naming its kind, the four kinds are told apart without
+  reading the row's `Fill-in · Song` line, and no row's height or title moves
+
+#### Scenario: an unfinished choice is still badged
+- WHEN a choice holds no options
+- THEN its row carries its kind badge and still reads `No options yet`
+
 #### Scenario: adding an option
 - WHEN a choice row's `+ Add option` is pressed
 - THEN that kind's New modal opens, and the saved entry appears under the choice in its own order
@@ -1195,10 +1219,18 @@ stage swap alike. (spec 167; swap-path binding added by spec 195)
 
 The Edit modal SHALL offer **Copy as template** for a Normal service and a template alike, after a
 confirmation that names the consequence. The button SHALL stand in the modal's header, right of the
-title — one row under a hairline rule, the button 34px tall. The copy SHALL keep the name and every entry in order as ordinary
-editable entries — nothing is converted to a fill-in or a choice — and a template source SHALL also bring
-its fill-ins, choices and options. The copy SHALL have no date and SHALL be a template, and the app SHALL
-land on it with the panel on Templates. (spec 167; header placement folded by spec 195)
+title — one row under a hairline rule, the button 34px tall. The confirmation SHALL carry a Name field
+for the record it creates, holding the source's name followed by ` (Copy)`, with the source's name
+trimmed to 57 characters first so the default never exceeds the 64 the field allows; a click on the
+field SHALL select its whole value and a later click SHALL place a caret, and **Copy as template**
+SHALL be disabled while the name is empty or spaces-only. The copy SHALL be created under the name the
+field holds when it is accepted — the endpoint SHALL read a `name` from the request, refuse an empty
+or over-64-character one, and name a nameless request `<source> (Copy)` — and the source SHALL keep its
+own name. The copy SHALL keep every entry in order as ordinary editable entries — nothing is converted
+to a fill-in or a choice — and a template source SHALL also bring its fill-ins, choices and options.
+The copy SHALL have no date and SHALL be a template, and the app SHALL land on it with the panel on
+Templates. (spec 167; header placement folded by spec 195; the name folded by spec 215, which
+supersedes 167's rule that a copy keeps the name)
 
 #### Scenario: copying a service
 - WHEN a dated service is copied as a template
@@ -1207,6 +1239,14 @@ land on it with the panel on Templates. (spec 167; header placement folded by sp
 #### Scenario: the button's place
 - WHEN the Edit modal renders for a Tata Ibadah
 - THEN the title and the button share the header row, the button right-aligned and 34px tall
+
+#### Scenario: naming the copy
+- WHEN the confirmation opens for a service named `9 Agustus 2026`
+- THEN its Name field reads `9 Agustus 2026 (Copy)`, a click selects all of it, and typing replaces it
+
+#### Scenario: a name that cannot be used
+- WHEN the Name field is emptied, or a request posts a blank or 65-character name
+- THEN the accept button is disabled, and the endpoint refuses the request without creating a record
 
 ### R38 — A template never reaches a screen, and its media is kept but not fetched
 
@@ -1368,23 +1408,31 @@ reset or re-fetched by the control: the detour keeps its place, and the window a
 ### R43 — A song entry's verse checklist speaks verse IDs and names numbers
 
 The song entry's verse checklist SHALL submit verse IDs — the storage contract since the checklist was
-rebuilt (spec 189) — and SHALL show each verse's number as its label, with that number carried on the
-box (`data-number`) so the summary can name numbers from the script-rendered and the server-rendered
-checklist alike. The picker's fetch SHALL answer `{id, number}` pairs, never bare numbers, and the
-verses summary SHALL read `Verses 1, 3` — numbers, never IDs — whichever render produced the boxes.
-The stored list SHALL stay a list of verse IDs. (spec 195)
+rebuilt (spec 189) — and SHALL show each verse's number as its tile label, with that number carried on the
+box (`data-number`) so the summary can read either render. The picker's fetch SHALL answer `{id, number}`
+pairs, never bare numbers, and the summary SHALL state the chosen numbers as `Bait` plus collapsed ranges
+(`Bait 1–3, 5–6, 8–10`) — numbers, never IDs — whichever render produced the boxes. A run of two consecutive
+numbers SHALL collapse as well, so `1, 2, 4, 5` reads `1–2, 4–5`, and an en dash joins a run's ends. Every
+other printed verse reference — the entry's `Bait ...` line on the stage and in the contents, a generate
+row's meta, an option's preview — SHALL use that same form and the same `Bait` word. The stored list SHALL
+stay a list of verse IDs. (spec 195; wording modified by spec 210.)
+
+**Superseded (spec 210):** the summary read `Verses 1, 3` with a comma for every number, collapsed only runs
+of three or more, joined them with a hyphen, and drew `All verses` when every box was ticked. The whole set is
+now stated as ranges, so that line is gone. The storage and payload contracts are unchanged.
 
 #### Scenario: a fresh pick saves
-- WHEN a song is picked, its verses checked and the entry saved
+- WHEN a song is picked, its verses chosen and the entry saved
 - THEN the entry is created with those verse IDs, and the stage names the picked verse numbers
 
 #### Scenario: the re-rendered checklist reads like the fresh one
 - WHEN the form is re-rendered by the server — after a refusal, or when editing a stored entry
-- THEN each box carries its verse's ID as the value and its number beside it, and the summary names numbers
+- THEN each box carries its verse's ID as the value and its number beside it, and the summary collapses numbers into ranges
 
 #### Scenario: the refusal stands
 - WHEN every box is cleared and the entry is saved
 - THEN the refusal is `Keep at least one verse in the service.`, as before
+
 
 ### R44 — The first sidebar rests for fifteen quiet minutes
 
@@ -1465,3 +1513,146 @@ template-generate and copy-as-template flows SHALL continue to land on the recor
 #### Scenario: a refused create
 - WHEN validation or the request refuses the create
 - THEN no stage opens and the existing error handling stays in place
+
+### R47 — The Copy as template confirmation is a dialog of its own
+
+Pressing **Copy as template** in the edit modal SHALL put its confirmation in a layer that covers the
+**window**, with its card centred on the window rather than on the dialog — so the modal's own height
+does not change when it opens or closes, and the form beneath it is inert: a click at the form's Save
+SHALL resolve to the confirmation, never to the button. The edit dialog SHALL stay open behind the
+layer, visible as a dimmed silhouette under a scrim light enough to leave its shell and edges readable;
+its own text SHALL NOT be expected to show, because the card is taller than the dialog it covers. The
+card SHALL carry `min(448px, 100%)`, 22px padding, a 14px radius, the canvas fill, the dialog's
+hairline and its shadow, an 18px/650 heading over a 13.5px lead, then the copy's description, the Name
+field, the three facts and the answers, in that order, with the answers right-aligned 8px apart on the
+card's right edge. The answers SHALL stay the editor's own buttons; Cancel and a click on the scrim
+SHALL both dismiss the confirmation and leave the edit dialog exactly as it was, Escape SHALL dismiss
+the confirmation without closing the edit dialog, and the layer SHALL still be hidden by its `hidden`
+attribute when closed. The generate page's own confirmation SHALL keep its present card. (spec 212;
+window-wide layer, the Name field, the scrim dismissal and the Escape rule folded by spec 215)
+
+#### Scenario: the confirmation opens
+- WHEN Copy as template is pressed in a Tata Ibadah's edit modal
+- THEN one card appears centred on the window, the dialog's height is unchanged, and the form's Save is no longer reachable
+
+#### Scenario: the card's proportions
+- WHEN the confirmation's card is measured
+- THEN it is 448 wide with 22px padding, a 14px radius, an 18px/650 heading and a 13.5px lead, and its answers end 22px inside its right edge, 8px apart
+
+#### Scenario: closing it
+- WHEN Cancel, the scrim or Escape is used with the confirmation open
+- THEN the layer hides, the edit dialog stays open, and its own radius and height are intact
+
+#### Scenario: the narrow window
+- WHEN the window is narrower than the card plus the layer's padding
+- THEN the card shrinks inside that padding and never overflows
+
+### R48 — The song entry's two pickers work from the first frame
+
+The song entry's Song field SHALL be a live search input focused on the first frame of the Add form;
+typing SHALL narrow the existing grouped results without a preceding trigger click. Whenever the field gains
+focus its whole text SHALL be selected, so typing replaces the stored song's label instead of appending to it. The Edit form SHALL NOT
+take focus into that field — it opens on the entry, and the results list stays shut until asked for. Results SHALL
+render in the product's fixed, viewport-capped menu anchored to the search field, MAY extend past the
+dialog's bottom edge, and SHALL NOT resize the dialog. The existing query grammar, hymn-first order,
+short-reference labels and 200-result cap are unchanged (specs 042/050/051). Arrow keys move the result
+highlight, Enter picks it, Escape closes the list and keeps the text, and a tap picks on touch.
+
+The Verses section SHALL be part of the form's flow inside a 1px-bordered, 10px-padded panel on the rail
+surface: its summary line is display text, not a control, lives inside it with a 1px rule below, the
+helper/All-Clear row under it carries its own 1px rule with 8px to the grid, and the tile grid uses five equal 40px-high
+tiles per row with 7px gaps, and no dropdown chevron or floating verse menu SHALL be drawn. A plain click
+ticks or unticks one tile and SHALL leave no ring behind — the tile's focus ring is drawn for keyboard focus
+only. A held press and
+drag SHALL preview the whole stretch — tinting the tiles and naming it in the summary line, with an sr-only live region — while the hidden
+`name="verses"` inputs keep their pre-drag values, and SHALL commit the IDs only on release with no anchor
+mark left behind. A server-rendered checklist — the Edit form, or an Add form returned by a refused save —
+SHALL already be that same five-across grid: the widget renders `div > label.editor__verse-tile` directly,
+with `<span>` numbers and no extra wrapper of its own. `All` SHALL be disabled at all-ticked and `Clear` at
+none-ticked. A one-verse song SHALL
+show one inert tile in a muted section. The section's reveal SHALL last 200 ms on the product's existing
+ease curve, SHALL settle back to block layout so no tile is ever cut, and SHALL be instant under
+`prefers-reduced-motion`. (spec 210)
+
+#### Scenario: search from the first frame
+- WHEN the Add song form opens and the operator types without clicking
+- THEN the focused search input narrows the grouped results, and Enter or a tap fills the hidden song ID
+
+#### Scenario: a result list past the dialog edge
+- WHEN the result list grows from one match to many
+- THEN it may run past the dialog's bottom edge, stays inside the window, and the dialog height does not change
+
+#### Scenario: a drag is previewed before it is kept
+- WHEN a tile is held and the pointer is dragged across a stretch
+- THEN the stretch is tinted and previewed in the readout while every hidden verse value stays unchanged, and the IDs are written on release
+
+#### Scenario: a section that reads as part of the form
+- WHEN the Verses section renders
+- THEN the summary is inside it, a 1px rule separates it from the controls, and the soft summary collapses only the tiles
+
+### R49 — A contents row states its entry's kind in a column after the number
+
+The Tata Ibadah contents list SHALL paint one decorative kind mark per numbered row, in a dedicated
+column immediately after the order number and before the label. The mark SHALL differ per kind: an open
+book for a passage, a beamed note for a song, a framed play mark for media, three rules for text, and a
+diamond only if a section break is marked — a break row SHALL keep its rule and carries no mark, because
+it paints no visible order number. A legacy text row SHALL be marked as text; a deleted target SHALL keep
+its kind mark. A fill-in or a choice SHALL carry the slot mark with spec 213's corner kind modifier, so
+the dashed frame and its `+` / `◎` stay and the badge names the resolved kind; a slot whose stored kind
+cannot be read SHALL draw the frame without a badge.
+
+The number SHALL keep its left edge and vertical centring in a 24px box that grows past three digits;
+the mark SHALL be 16px; the label SHALL keep its three-line clamp, its `…` and its wrap at the pane edge.
+The mark SHALL be server-rendered, `aria-hidden`, take no pointer and add no focusable element, so the
+row's accessible name is unchanged. It SHALL be legible in both themes and on the hover and selected
+fills. The OBS dock's entry list SHALL carry no marks: the contents list is the only surface in scope.
+(spec 214)
+
+#### Scenario: one rail of kinds
+- WHEN a service holds a passage, a song, a media file, a text entry and a section break
+- THEN each numbered row paints its own mark in the column after its number, and the break's divider stays unmarked
+
+#### Scenario: a slot
+- WHEN a fill-in resolving to song and a choice resolving to passage are listed
+- THEN each carries the dashed slot mark with a corner badge naming that kind, and the two badges differ
+
+#### Scenario: no second control
+- WHEN a row is read by assistive technology, pointed at or tabbed through
+- THEN its name is the label it had before, and focus never lands on the mark
+
+#### Scenario: geometry
+- WHEN the mark is drawn at a 404px pane, in either theme
+- THEN the number starts 10px from the row edge in a 24px box, the mark at 42px and the label at 66px, with no row moving
+
+### R50 — The empty search landing is ready for typing
+
+The public search landing SHALL take keyboard focus into its search field as soon as the landing is
+painted, so a reader types without reaching for the pointer. The landing is a state, not a route: the
+root `/`, `/search` when no valid query renders results, and the section indexes `/bible/`, `/songs/`
+and `/tatib/` paint the same stage and SHALL behave alike whichever rail section is selected.
+
+Taking focus SHALL NOT change the field's value, select its text, or scroll the page; the landing SHALL
+stay exactly one window tall with its field centred as `R15` requires. The focus indicator SHALL be the
+product's existing `:focus-visible` ring — no new ring, colour or token.
+
+A page that is not the landing SHALL NOT take automatic focus into the search field: a results page, a
+Bible chapter, a song and a service page each keep the focus the reader gave them. A submission from
+the focused landing SHALL hand the focus back as the results open, leaving the query in the compact
+bar. (spec 220)
+
+#### Scenario: a full load of any landing route
+- WHEN `/`, `/search`, `/bible/`, `/songs/` or `/tatib/` is opened
+- THEN the search field holds focus and typing reaches it, with the page unscrolled and still one window tall
+
+#### Scenario: arriving in place
+- WHEN a reading page's Search destination or the site's logo opens the empty landing
+- THEN the field takes focus once the landing is painted
+
+#### Scenario: a submission
+- WHEN a query is submitted from the focused landing
+- THEN the results open with the query in the compact bar and the field no longer holding focus
+
+#### Scenario: a page that is not the landing
+- WHEN a results URL is opened directly, or a Bible chapter, a song or a service page is shown
+- THEN no search field takes automatic focus
+

@@ -44,6 +44,38 @@ except ImportError:  # pragma: no cover - depends on environment
     HAS_PLAYWRIGHT = False
 
 
+# Counting the layout reads a step spends: every height read is a layout of the page.
+COUNTER_START = """() => {
+  const proto = Element.prototype;
+  window.__reads = 0;
+  window.__height = {s: Object.getOwnPropertyDescriptor(proto, 'scrollHeight'),
+                     c: Object.getOwnPropertyDescriptor(proto, 'clientHeight')};
+  Object.defineProperty(proto, 'scrollHeight', {configurable: true,
+    get() { window.__reads += 1; return window.__height.s.get.call(this); }});
+  Object.defineProperty(proto, 'clientHeight', {configurable: true,
+    get() { window.__reads += 1; return window.__height.c.get.call(this); }});
+  return 'counting';
+}"""
+
+COUNTER_STEP = """() => {
+  const screens = [...document.querySelectorAll('#projectorScreens .screen[data-screen]')];
+  const before = Number(document.body.dataset.currentScreen);
+  if (!screens[before + 1]) return null;
+  window.__reads = 0;
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true}));
+  const index = Number(document.body.dataset.currentScreen);
+  return {screen: index, reads: window.__reads,
+          lines: Boolean(screens[index].querySelector('.screen__lines'))};
+}"""
+
+COUNTER_STOP = """() => {
+  const proto = Element.prototype;
+  Object.defineProperty(proto, 'scrollHeight', window.__height.s);
+  Object.defineProperty(proto, 'clientHeight', window.__height.c);
+  return 'stopped';
+}"""
+
+
 @tag('e2e')
 @unittest.skipUnless(HAS_PLAYWRIGHT, 'playwright is not installed')
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -201,6 +233,17 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             tatib.ServiceEntry.objects.create(
                 tatib=self.untitled_service, order_number=order,
                 kind=tatib.ServiceEntryKind.TEXT, title='', text=self.untitled_text_line)
+
+        if self._testMethodName == 'test_a_text_screen_arrives_without_being_fitted':
+            # twenty screens of text: long bodies, so the fitting has far to walk down
+            self.text_service = tatib.TataIbadah.objects.create(
+                name='Ibadah Teks Panjang', date=date(2026, 9, 20), is_active=True)
+            tatib.ServiceEntry.objects.create(
+                tatib=self.text_service, order_number=1, kind=tatib.ServiceEntryKind.TEXT,
+                title='Renungan',
+                text='\n\n'.join(
+                    'Baris %d %s' % (n, 'Tuhan adalah gembalaku, takkan kekurangan aku.')
+                    for n in range(1, 21)))
 
         if self._testMethodName == 'test_missing_pdf_shows_quiet_icon_then_text_resumes':
             media = tatib.MediaIdentity.objects.create(
@@ -446,6 +489,9 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertGreater(started['entering'], 0, 'the arriving screen must animate in')
         self.assertTrue(started['leaving'], 'and the one it replaces must animate out')
 
+        # a move that arrives while this morph is still running is a held key, and cuts
+        # instead of stacking (spec 219); wait for the morph to finish before going back
+        page.wait_for_timeout(300)
         page.keyboard.press('ArrowLeft')
         page.wait_for_timeout(60)
         self.assertEqual(page.get_attribute('#projectorScreens', 'data-move'), 'prev')
@@ -1450,6 +1496,104 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
         self.assertIn('Baris 1 ', measured['text'])
         self.assertIn('Baris 29 ', measured['text'])           # nothing dropped while it fits
         self.assertTrue(measured['inside'], measured)
+
+    def test_a_text_screen_arrives_without_being_fitted(self):
+        """A screen of words is fitted before it is asked for, not while it arrives.
+
+        The fitting walks the font size down from 200px, asking after each step whether the
+        words still fit; every question lays the page out, so an arrival that fitted its own
+        screen cost ~130 layout reads before anything could be painted -- and the body
+        decided how many: a short lyric settled high, a text entry came down furthest. The
+        screens either side of the one showing are fitted in idle time now, so an advance on
+        the operator's beat costs one read (the stage's height) and paints at once.
+        """
+        page = self._page(f'/projector?service={self.text_service.pk}')
+        page.wait_for_selector('.screen.is-active')
+        page.evaluate(COUNTER_START)
+        page.evaluate("() => document.dispatchEvent("
+                      "new KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true}))")
+        steps = []
+        while True:
+            step = page.evaluate(COUNTER_STEP)
+            if step is None:
+                break
+            steps.append(step)
+            page.wait_for_timeout(250)          # the operator's own beat, and idle time
+        page.evaluate(COUNTER_STOP)
+        page.wait_for_timeout(300)             # let the last arrival's morph settle
+        measured = page.evaluate("""() => {
+          const stage = document.getElementById('projectorScreens');
+          const screens = [...stage.querySelectorAll('.screen[data-screen]')];
+          const fits = (lines) => {
+            if (lines.scrollHeight > lines.clientHeight + 1) return false;
+            const range = document.createRange();
+            range.selectNodeContents(lines);
+            const ink = range.getBoundingClientRect();
+            const box = lines.getBoundingClientRect();
+            const frame = stage.getBoundingClientRect();
+            return !(ink.left < box.left - 1 || ink.right > box.right + 1
+              || ink.top < box.top - 2 || ink.bottom > box.bottom + 2
+              || ink.top < frame.top - 1 || ink.bottom > frame.bottom + 1);
+          };
+          const fitted = [];
+          screens.forEach((screen) => {
+            const lines = screen.querySelector('.screen__lines');
+            if (!lines || !lines.style.fontSize) return;
+            const chosen = parseFloat(getComputedStyle(lines).fontSize);
+            const fitsChosen = fits(lines);
+            lines.style.fontSize = (chosen + 1) + 'px';
+            const fitsLarger = fits(lines);
+            lines.style.fontSize = chosen + 'px';
+            fitted.push({size: chosen, fitsChosen: fitsChosen, fitsLarger: fitsLarger});
+          });
+          return {fitted: fitted.length,
+                  allFit: fitted.every(f => f.fitsChosen),
+                  allMaximal: fitted.every(f => !f.fitsLarger)};
+        }""")
+        page.close()
+        with_words = [step for step in steps if step['lines']]
+        self.assertGreater(len(with_words), 10, steps)      # enough text to fill screens
+        # the first press after a load may land on a screen nothing has fitted yet; every
+        # one after it is fitted ahead of time and costs the stage read and nothing more
+        self.assertEqual(max(step['reads'] for step in with_words[1:]), 1, with_words)
+        self.assertGreater(measured['fitted'], 10, measured)  # the screens carry words
+        self.assertTrue(measured['allFit'], measured)       # every fitted screen still fits
+        self.assertTrue(measured['allMaximal'], measured)   # and is as large as it can be
+
+    def test_a_held_arrow_key_cuts_instead_of_stacking_screens(self):
+        """Holding the key paints one screen at a time, never a pile of half-faded ones.
+
+        Each move starts a 240 ms crossfade and a held key sends a move every ~35 ms, so
+        every move after the first arrives while the last one is still running. Morphing
+        again would leave the part-faded screens stacked behind the new one -- seven were
+        measured painted at once -- and their words read as one garbled block. A move that
+        arrives mid-morph cuts instead, so exactly one screen is painted.
+        """
+        page = self._page(self._projector_url())
+        page.keyboard.press('ArrowRight')       # turn the display on
+        page.wait_for_timeout(300)              # let that move settle
+        page.keyboard.press('ArrowRight')       # this one morphs
+        for _ in range(6):                      # ... and the key is held
+            page.wait_for_timeout(40)
+            page.keyboard.press('ArrowRight')
+        page.wait_for_timeout(40)
+        painted = page.evaluate("""() => [...document.querySelectorAll('.screen[data-screen]')]
+          .filter(el => parseFloat(getComputedStyle(el).opacity) > 0.02).length""")
+        page.close()
+        self.assertEqual(painted, 1, 'a held key must leave one screen painted, not a stack')
+
+    def test_a_single_move_still_morphs(self):
+        """The cut is for a held key only: one move after a quiet moment keeps its morph."""
+        page = self._page(self._projector_url())
+        page.keyboard.press('ArrowRight')
+        page.wait_for_timeout(300)
+        page.keyboard.press('ArrowRight')
+        started = page.evaluate("""() => ({
+          entering: document.querySelector('.screen.is-active').getAnimations().length,
+          leaving: !!document.querySelector('.screen.is-out')})""")
+        page.close()
+        self.assertGreater(started['entering'], 0, started)
+        self.assertTrue(started['leaving'], started)
 
     # --- the button, its two states, and the lock across tabs ----------------
 

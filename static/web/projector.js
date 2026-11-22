@@ -496,48 +496,151 @@
 
   /* ---------- fitting the words to the accepted projector stage ------------ */
   var GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
+  var MAX_FIT_SIZE = 200;    /* the largest size a screen is ever shown at */
+  var MIN_FIT_SIZE = 2;      /* ...and the floor a body longer than any screen comes to */
 
-  function overflows(head, lines) {
-    if (head && (head.scrollWidth > stage.clientWidth + 1
-                 || head.getBoundingClientRect().bottom > stage.getBoundingClientRect().bottom)) return true;
+  /* One read of the stage per fit: its box cannot move while the fitting changes font
+     sizes inside a screen, and re-reading it on every trial was a forced layout each
+     time. */
+  function stageBox() {
+    var box = stage.getBoundingClientRect();
+    return {width: stage.clientWidth, left: box.left, right: box.right,
+            top: box.top, bottom: box.bottom};
+  }
+
+  /* A size is refused for one of two reasons, and they behave differently as the size
+     grows: the words get taller (monotone -- one more pixel is taller still), or they
+     get wider than the box, which is not monotone at all, because a larger size wraps the
+     same words onto more lines and each line is then narrower (measured on a real screen:
+     refused at 101-105px, fitting again from 106px to 137px). A search that halved its
+     range would therefore be wrong on such a screen, so the fitting still walks the sizes
+     from the top down, one at a time -- the answer is the largest size that fits, always.
+     What changed is when it runs: the walk is done for the screens either side of the one
+     showing, before they are asked for (see `fitNeighbours` below), so an advance usually
+     finds its screen already fitted. */
+  function overflow(head, lines, box) {
+    if (head && (head.scrollWidth > box.width + 1
+                 || head.getBoundingClientRect().bottom > box.bottom)) return true;
     if (!lines) return false;
     if (lines.scrollHeight > lines.clientHeight + 1) return true;
     var range = document.createRange();
     range.selectNodeContents(lines);
     var ink = range.getBoundingClientRect();
-    var box = lines.getBoundingClientRect();
-    var stageBox = stage.getBoundingClientRect();
-    return ink.left < box.left - 1 || ink.right > box.right + 1
-      || ink.top < box.top - 2 || ink.bottom > box.bottom + 2
-      || ink.top < stageBox.top - 1 || ink.bottom > stageBox.bottom + 1;
+    var inkBox = lines.getBoundingClientRect();
+    return ink.left < inkBox.left - 1 || ink.right > inkBox.right + 1
+      || ink.top < inkBox.top - 2 || ink.bottom > inkBox.bottom + 2
+      || ink.top < box.top - 1 || ink.bottom > box.bottom + 1;
   }
 
-  function truncateText(head, lines) {
-    if (!lines || !overflows(head, lines)) return;
+  function setSize(head, lines, size) {
+    lines.style.fontSize = size + 'px';
+    if (head) head.style.fontSize = (size / GOLDEN_RATIO) + 'px';
+  }
+
+  function fitSize(head, lines, box) {
+    for (var size = MAX_FIT_SIZE; size >= MIN_FIT_SIZE; size -= 1) {
+      setSize(head, lines, size);
+      if (!overflow(head, lines, box)) return size;
+    }
+    return MIN_FIT_SIZE;
+  }
+
+  /* What a single screen keeps when the whole body must show at once: rows are dropped
+     in halves and the last row's words are trimmed in halves, rather than one row and
+     one character at a time -- the same cut, at a fraction of the layout. */
+  function truncateText(head, lines, box) {
+    if (!lines || !overflow(head, lines, box)) return;
     var rows = [].slice.call(lines.querySelectorAll('.screen__line'));
-    while (rows.length > 1 && overflows(head, lines)) rows.pop().remove();
+    if (rows.length > 1) {
+      var low = 1, high = rows.length, keep = 1;
+      while (low <= high) {
+        var trial = Math.floor((low + high) / 2);
+        rows.forEach(function (row, index) { row.hidden = index >= trial; });
+        if (!overflow(head, lines, box)) { keep = trial; low = trial + 1; }
+        else high = trial - 1;
+      }
+      rows.forEach(function (row, index) { row.hidden = index >= keep; });
+      rows.slice(keep).forEach(function (row) { row.remove(); });
+    }
     var last = lines.querySelector('.screen__line:last-child');
     if (!last) return;
-    while (last.textContent.length && overflows(head, lines)) {
-      last.textContent = last.textContent.slice(0, -1);
+    var text = last.textContent;
+    var floor = 0, ceiling = text.length, fits = 0;
+    while (floor <= ceiling) {
+      var chars = Math.floor((floor + ceiling) / 2);
+      last.textContent = text.slice(0, chars);
+      if (!overflow(head, lines, box)) { fits = chars; floor = chars + 1; }
+      else ceiling = chars - 1;
     }
-    last.textContent = last.textContent.replace(/\s+$/, '') + '\u2026';
+    last.textContent = text.slice(0, fits).replace(/\s+$/, '') + '\u2026';
   }
 
-  function fit(active) {
+  /* A screen is fitted once for a given stage and a given body, and remembered by that
+     pair, so the arrival of a screen that was fitted ahead of time costs nothing. */
+  function fitKey(head, lines) {
+    return stage.clientWidth + 'x' + stage.clientHeight + '|'
+      + (head ? head.textContent : '') + '|'
+      + lines.childElementCount + '|' + lines.textContent.length;
+  }
+
+  function fit(active, force) {
     if (!active) return;
     var head = active.querySelector('.screen__head');
     var lines = active.querySelector('.screen__lines');
     if (!lines) return;
-    for (var size = 200; size >= 2; size -= 1) {
-      lines.style.fontSize = size + 'px';
-      if (head) head.style.fontSize = (size / GOLDEN_RATIO) + 'px';
-      if (!overflows(head, lines)) break;
-    }
-    if (active.dataset.fit === 'single') truncateText(head, lines);
+    var key = fitKey(head, lines);
+    if (!force && active.dataset.fitted === key) return;
+    var box = stageBox();
+    fitSize(head, lines, box);
+    if (active.dataset.fit === 'single') truncateText(head, lines, box);
+    active.dataset.fitted = key;
+  }
+
+  /* ---------- fitting the neighbours before they are asked for ---------------
+     The fit is the only part of an advance that depends on what a screen holds: a screen
+     of words is measured while it is shown, a section break is not. Doing it when the
+     screen arrives puts that work between the operator's key and the frame that paints
+     it -- measured at 6.5ms for a screen of words against 1.5ms for one without, which is
+     the delay the operator feels on a text entry and not on the entries beside it. So the
+     screens either side of the one showing are fitted ahead of time, in idle time, and an
+     advance usually finds its screen already fitted and costs nothing. A screen that has
+     not been fitted yet -- the first press after a load, a jump, a resize, a font that
+     arrived late -- is fitted on arrival exactly as before, so nothing depends on this
+     having run. */
+  var neighbourFit = 0;
+
+  function fitNeighbours() {
+    var idle = window.requestIdleCallback
+      || function (run) { return window.setTimeout(run, 60); };
+    if (neighbourFit && window.cancelIdleCallback) window.cancelIdleCallback(neighbourFit);
+    neighbourFit = idle(function () {
+      neighbourFit = 0;
+      if (detour) return;
+      var all = screens();
+      [current - 1, current + 1].forEach(function (index) {
+        var each = all[index];
+        if (!each || !each.querySelector('.screen__lines')) return;
+        fit(each);
+      });
+    }, {timeout: 400});
   }
 
   /* ---------- showing ------------------------------------------------------- */
+
+  /* A move starts a 240 ms crossfade; a held key sends a move every ~35 ms. A move that
+     arrives while a morph is still running therefore cannot morph again -- it would stack
+     the half-faded screens on top of each other, and seven of them were measured painted
+     at once, their words reading as one garbled block. Such a move CUTS instead: the
+     screen leaving is settled at once, the screen arriving is painted whole, and the
+     morph comes back as soon as the moves stop. */
+  var morphing = false;
+  var morphTimer = 0;
+
+  function startMorphWindow() {
+    morphing = true;
+    window.clearTimeout(morphTimer);
+    morphTimer = window.setTimeout(function () { morphing = false; }, 260);
+  }
 
   function render(silent) {
     var all = screens();
@@ -546,6 +649,7 @@
     var active = all[current] || null;
     var previous = all[previousIndex] || null;
     var moved = previous && previous !== active;
+    var quick = moved && morphing;
 
     all.forEach(function (each) {
       var on = each === active && !detour;
@@ -555,16 +659,13 @@
          leaving animation is the one that would win. */
       each.classList.remove('is-in');
       each.classList.remove('is-out');
+      /* A screen with no part in this move is painted by nothing but its own class: the
+         "quiet" one takes away its transition so a screen that left a moment ago cannot
+         still be fading behind the new one. */
+      if (on || (!quick && each === previous)) each.classList.remove('is-quiet');
+      else each.classList.add('is-quiet');
       each.setAttribute('aria-hidden', on ? 'false' : 'true');
     });
-
-    if (moved) {
-      /* A quiet morph: the one that goes fades out the way the new one came from. */
-      stage.dataset.move = direction >= 0 ? 'next' : 'prev';
-      previous.classList.add('is-out');
-      if (active) active.classList.add('is-in');
-      window.setTimeout(function () { previous.classList.remove('is-out'); }, 260);
-    }
 
     previousIndex = current;
     body.dataset.currentScreen = String(current);
@@ -575,13 +676,32 @@
     syncEmptyNotice();
     if (active && !detour) {
       applyPassageTranslation(active);
+      /* The fit measures the screen where it comes to REST, so it runs before the morph
+         below puts a transform on it. Fitted while the arrival is still rising, the words
+         were measured 14px lower than they end up: the answer depended on how far into
+         the 240ms morph the fit happened to be, so the same screen could be fitted to a
+         different size on an advance than on a resize, and a slow fit was punished twice
+         -- once for taking the time, once for measuring a box that had moved. */
       fit(active);
     }
+
+    if (moved) {
+      stage.dataset.move = direction >= 0 ? 'next' : 'prev';
+      startMorphWindow();
+    }
+    if (moved && !quick) {
+      /* A quiet morph: the one that goes fades out the way the new one came from. */
+      previous.classList.add('is-out');
+      if (active) active.classList.add('is-in');
+      window.setTimeout(function () { previous.classList.remove('is-out'); }, 260);
+    }
+
     renderImageScreen(active);
     renderAudioScreen(active);
     renderVideoScreen(active);
     renderPDFScreen(active);
     renderCue();
+    fitNeighbours();
     if (!silent) {
       write({service: service, screen: current, on: showing,
              translation: translation || null, at: Date.now()});
@@ -1913,12 +2033,15 @@
   /* The fit is measured in the face that is on screen. The bundled display faces
      arrive a frame or two after first paint, and their metrics differ from the
      fallback's, so a screen fitted against the fallback can overflow the frame once
-     the real face lands (measured 10px past its bottom edge). Re-fit when the fonts
-     are ready. */
+     the real face lands (measured 10px past its bottom edge). Every remembered fit is
+     thrown away and the screen showing is re-fitted when the fonts are ready. */
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function () {
+      screens().forEach(function (each) { delete each.dataset.fitted; });
+      delete detourNode.dataset.fitted;
       var active = screens()[current];
-      if (active) fit(active);
+      if (active) fit(active, true);
+      fitNeighbours();
     });
   }
   /* The session may have ended while this page stayed open (spec 186): re-read, and paint

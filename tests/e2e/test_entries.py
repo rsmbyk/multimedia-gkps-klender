@@ -261,47 +261,45 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
         page.locator('.entry__empty-btn', has_text='Add Song').first.click()
         page.wait_for_selector('dialog[open]')
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
-        page.fill('#entry-song-search', 'kuasa')
+        page.locator('#entry-song-search').fill('kuasa')
         filtered_songs = page.locator('#entry-song-options [data-song]')
         expect(filtered_songs).to_have_count(1)
         expect(filtered_songs.first).to_have_attribute('data-song-title', self.song.title)
         filtered_songs.first.click()
         expect(page.locator('#entry-verses input[type=checkbox]')).to_have_count(3)
-        expect(page.locator('[data-verses-trigger]')).to_have_text('All verses')
-        expect(page.locator('[data-verses-trigger]')).to_be_enabled()
-        page.locator('[data-verses-trigger]').click()
-        expect(page.locator('#entry-verses input[type=checkbox]')).to_have_count(3)
-        self.assertEqual(
-            page.evaluate("[...document.querySelectorAll('#entry-verses input')].filter(i => i.checked).length"), 3)
-        page.locator('#entry-verses input[value="2"]').uncheck()
-        expect(page.locator('[data-verses-trigger]')).to_have_text('Verses 1, 3')
-        page.keyboard.press('Escape')       # the open menu overlaps the Save button (spec 040)
+        expect(page.locator('[data-verses-summary]')).to_have_text('Bait 1')
+        # the summary is display text, not a control: clicking it changes nothing
+        summary = page.locator('[data-verses-summary]')
+        self.assertEqual(summary.evaluate('el => el.tagName'), 'P')
+        summary.click()
+        expect(page.locator('[data-verse-tiles]')).to_be_visible()
+        page.locator('#entry-verses .editor__verse-tile').nth(1).click()
+        expect(page.locator('[data-verses-summary]')).to_have_text('Bait 1–2')
         page.click('.editor__save')
         page.wait_for_function("!document.querySelector('dialog[open]')")
 
         self._close_browser()
         saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
-        self.assertEqual(saved.verses, [1, 3])
+        expected = list(songs.Verse.objects.filter(
+            song=self.song, number__in=[1, 2]).values_list('id', flat=True))
+        self.assertEqual(saved.verses, sorted(expected))
 
     def test_editing_a_hymn_song_shows_its_reference(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
         self._reveal(page)
         page.locator('[data-entry-edit]').first.click()
         page.wait_for_selector('dialog[open]')
-        label = page.locator('[data-entry-picker="song"] [data-picker-label]')
-        self.assertEqual(label.inner_text(), 'KJ 152 Ada Kuasa')
+        self.assertEqual(page.locator('#entry-song-search').input_value(), 'KJ 152 Ada Kuasa')
 
     def test_single_verse_song_keeps_checked_verse_and_disables_picker(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
         page.locator('.entry__empty-btn', has_text='Add Song').click()
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
         page.fill('#entry-song-search', 'tunggal')
         page.wait_for_selector('#entry-song-options [data-song]')
         page.locator('#entry-song-options [data-song]').first.click()
-        # one verse is no choice: it stays checked, and the dropdown stays shut
-        expect(page.locator('[data-verses-trigger]')).to_be_disabled()
-        expect(page.locator('[data-verses-trigger]')).to_have_text('All verses')
+        # one verse is no choice: it stays ticked and the section is muted
+        expect(page.locator('[data-verses-summary]')).to_have_text('Bait 1')
+        expect(page.locator('[data-verse-tiles]')).to_have_css('opacity', '0.45')
         self.assertEqual(
             page.evaluate("[...document.querySelectorAll('#entry-verses input')].filter(i => i.checked).length"), 1)
         page.click('.editor__save')
@@ -309,28 +307,21 @@ class EntryModalE2ETests(StaticLiveServerTestCase):
 
         self._close_browser()
         saved = tatib.ServiceEntry.objects.get(tatib=self.service, kind=tatib.ServiceEntryKind.SONG)
-        self.assertEqual(saved.verses, [1])
+        self.assertEqual(saved.verses, [self.solo.verse_set.get(number=1).pk])
 
     def test_a_song_with_no_verses_is_named_and_cannot_be_saved(self):
         page = self._page(reverse('web-tatib-service', args=[self.service.pk]))
         page.locator('.entry__empty-btn', has_text='Add Song').click()
         page.wait_for_selector('dialog[open]')
-        trigger = page.locator('[data-verses-trigger]')
-        # nothing picked yet: the neutral line, unchanged
-        expect(trigger).to_have_text('Pick a song first')
-        page.locator('[data-entry-picker="song"] [data-picker-trigger]').click()
+        panel = page.locator('[data-verse-panel]')
+        # nothing picked yet: the whole section is collapsed
+        self.assertAlmostEqual(panel.bounding_box()['height'], 0, delta=1)
         page.fill('#entry-song-search', 'kosong')
         page.wait_for_selector('#entry-song-options [data-song]')
         page.locator('#entry-song-options [data-song]').first.click()
-        # the song carries no verse: the field says which nothing this is, and offers no menu
-        expect(trigger).to_have_text('This song has no verses')
-        expect(trigger).to_be_disabled()
+        # a song with no verses keeps the section hidden and offers no menu
+        self.assertAlmostEqual(panel.bounding_box()['height'], 0, delta=1)
         self.assertEqual(page.locator('#entry-verses input[type=checkbox]').count(), 0)
-        # disabled means no empty menu either, however the click arrives
-        page.evaluate("document.querySelector('[data-verses-trigger]').click()")
-        expect(page.locator('#entry-verses-menu')).to_be_hidden()
-        self.assertEqual(round(trigger.bounding_box()['height']), 38)
-        self.assertLess(page.locator('[data-verses-summary]').bounding_box()['height'], 19.5)
         # saving anyway names the song, not the missing checks
         page.click('.editor__save')
         error = page.locator('dialog[open] .editor__error')

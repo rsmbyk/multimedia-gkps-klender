@@ -71,6 +71,15 @@ body.projector {
               visibility 0s;
 }
 
+/* A screen with no part in the move now under way: no transition, so a screen that left a
+   moment ago cannot still be fading behind the new one. A held arrow key sends a move
+   every ~35 ms and each morph lasts 240 ms, so without this the part-faded screens stack
+   and their words read as one garbled block (seven were measured painted at once). */
+.screen.is-quiet {
+  transition: none; animation: none;
+  opacity: 0; visibility: hidden;
+}
+
 /* A section break shows nothing at all -- it is the operator's own note. */
 .screen.is-blank.is-active { opacity: 1; visibility: visible; }
 /* A media screen fitted to the stage (spec 158) carries its own px size, so the caps

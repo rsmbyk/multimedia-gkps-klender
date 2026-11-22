@@ -1,6 +1,6 @@
 ---
 id: ITEM-193
-status: in-review
+status: done
 title: 'An ordinary song''s verses are added, edited, removed and reordered on its own page'
 type: feat
 priority: P2
@@ -11,8 +11,8 @@ spec: specs/189-song-verse-editing/spec.md
 branch: feat/189-song-verse-editing
 pr: https://github.com/rsmbyk/multimedia-gkps-klender/pull/499
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-09
+closed_reason: merged into develop (PR #499)
 bump: minor
 release_version:
 ---

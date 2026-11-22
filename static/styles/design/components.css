@@ -1700,6 +1700,33 @@ li:hover > .row-delete,
   min-width: 3.4rem;
 }
 .songrow[aria-current="true"] .songrow__c { color: var(--ink); }
+/* spec 214: a contents row states its entry's kind in a column after the number.
+   The number box narrows to 24px (it grows past three digits rather than clip),
+   the gap tightens to 8px, and the 16px mark takes the seat the label lost.
+   Scoped to #chList: the songbook sidebar keeps its 3.4rem number and 10px gap. */
+#chList .songrow { gap: 8px; }
+#chList .songrow__c { min-width: 24px; }
+.songrow__mark {
+  flex: none; width: 16px; height: 16px; display: block;
+  color: var(--head-ink); pointer-events: none;
+}
+.songrow__mark svg { width: 100%; height: 100%; display: block; }
+.songrow__mark--slot { position: relative; }
+/* The kind modifier: spec 213's badge resized from a 20px mark to this 16px one.
+   The disc paints the row's own face so it never reads as a hole on the hover fill. */
+.songrow__mark .slot__badge {
+  position: absolute; right: -3px; bottom: -2px;
+  width: 11px; height: 11px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--canvas); color: var(--head-ink);
+}
+.songrow__mark .slot__badge svg { width: 8px; height: 8px; stroke-width: 1.6; }
+#chList li:hover > .songrow .songrow__mark .slot__badge,
+.songrow[aria-current="true"] .songrow__mark .slot__badge {
+  background-image: linear-gradient(var(--icon-hover-bg), var(--icon-hover-bg));
+}
+.songrow[aria-current="true"] .songrow__mark,
+.songrow[aria-current="true"] .songrow__mark .slot__badge { color: var(--ink); }
 /* A contents row is three lines of its own text, whatever it holds (spec 135): the box
    clamps at three line boxes, and a line too wide for the pane wraps inside it instead
    of running past it. */
@@ -2634,20 +2661,148 @@ kbd {
 .editor__songoption:hover, .editor__songoption:focus-visible {
   background: var(--icon-hover-bg); outline: none;
 }
-.editor__verses {
-  display: flex; flex-wrap: wrap; gap: 10px 18px;
-  padding: 8px 10px;
+.editor__songsearch { width: 100%; }
+/* The song results keep the product's fixed, viewport-capped menu (spec 040), but the
+   anchor is the live search field and the cap is the window, not the dialog. */
+.editor__verse-panel {
+  display: grid; grid-template-rows: 1fr; opacity: 1;
+  padding: 10px; border: 1px solid var(--divider); border-radius: 10px;
+  background: var(--rail-bg);
+  transition: grid-template-rows var(--ease), opacity var(--ease);
 }
-.editor__picker-menu .editor__verses { border: 0; }        /* the menu is the box */
-.editor__verses > div { display: inline-flex; }
-.editor__verses label, .editor__verse {
-  display: inline-flex; align-items: center; gap: 7px;
-  font: 400 14px/1.2 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+.editor__verse-panel-inner { min-height: 0; overflow: hidden; }
+.editor__verse-panel[hidden] {
+  display: grid; grid-template-rows: 0fr; opacity: 0; pointer-events: none;
+  padding: 0; border-width: 0;
+}
+/* once the reveal has settled the panel returns to block layout, so its height is its
+   content and the tile row can never be cut by the row track */
+.editor__verse-panel[data-settled="true"] { display: block; }
+.editor__verse-panel[data-settled="true"] .editor__verse-panel-inner { overflow: visible; }
+/* the label belongs to the section: no song or no verses hides it too */
+[data-verse-field]:has([data-verse-panel][hidden]) > #entry-verses-label { display: none; }
+.editor__verse-summary {
+  display: block; width: 100%; margin: 0 0 8px; padding: 0 0 8px;
+  border: 0; border-bottom: 1px solid var(--divider); background: none;
+  text-align: left; font: 600 13px/1.3 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+}
+.editor__verse-summary[data-invalid="true"] { color: var(--danger); }
+.editor__verses { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
+.editor__verses > div { display: flex; min-width: 0; }
+.editor__verses label {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-width: 0; height: 40px; padding: 0 8px;
+  border: 1px solid var(--divider); border-radius: 9px; background: var(--rail-bg);
+  font: 600 14px/1.2 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+  cursor: pointer; touch-action: none; user-select: none;
+  transition: background var(--ease), border-color var(--ease), color var(--ease);
+}
+.editor__verses label:hover { border-color: var(--focus); }
+/* `:focus-within` rang the tile after a mouse click, because the hidden checkbox keeps
+   focus; the ring is keyboard-only so a clicked tile shows no leftover mark. */
+.editor__verses label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.editor__verses label:has(input:checked) {
+  background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink);
+}
+.editor__verses label input {
+  position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; pointer-events: none;
+}
+.editor__verses label.is-preview {
+  background: color-mix(in srgb, var(--focus) 30%, var(--rail-bg));
+  border-color: var(--focus);
+}
+[data-verse-tiles][data-muted="true"] { opacity: .45; pointer-events: none; }
+/* the helper/All-Clear row carries its own rule, the way the summary does, so the
+   tile grid reads as the row's content below it */
+.editor__verse-quick {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin: 0 0 8px; padding: 2px 2px 8px;
+  border-bottom: 1px solid var(--divider);
+}
+.editor__verse-hint { color: var(--head-ink); font-size: 12px; }
+.editor__verse-actions { display: inline-flex; gap: 6px; }
+.editor__verse-actions button {
+  min-height: 28px; padding: 3px 10px; border: 1px solid var(--divider); border-radius: 7px;
+  background: transparent; color: var(--ink); font: 600 12px/1.2 ui-sans-serif, system-ui, sans-serif;
   cursor: pointer;
+}
+.editor__verse-actions button:hover:not(:disabled) { border-color: var(--focus); }
+.editor__verse-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.editor__verse-readout { margin: 8px 0 0; color: var(--head-ink); font-size: 12px; min-height: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .editor__verse-panel { transition: none; }
 }
 .editor__confirm { display: grid; gap: 10px; padding: 4px 2px; }
 .editor__confirm-title {
   margin: 0; font: 600 17px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+}
+/* The Copy as template confirmation is a dialog of its own (spec 167 FR-020, spec 215): its
+   layer covers the WINDOW and its card is centred on the window, so the edit dialog it asks
+   about stays open, dimmed and legible behind it. Spec 212 had the layer inside the dialog's
+   box, where it read as a panel covering the form rather than a question being asked.
+   Every selector is scoped to the layer: .editor__confirm is shared with the generate page,
+   whose own cards generate.css sizes differently. */
+.editor__confirm-layer {
+  /* fixed, not absolute: the layer's containing block is the viewport. No ancestor of the
+     dialog is transformed, filtered or contained, so a fixed child of a top-layer <dialog>
+     still resolves against the window and paints above the dialog's own ::backdrop. */
+  position: fixed; inset: 0; z-index: 4;
+  display: grid; place-items: center;
+  padding: 24px;
+  /* The dialog's own ::backdrop is already a full-strength --backdrop, so this scrim only has
+     to say "the dialog is inert". At --backdrop's strength the two stack to ~77% and erase
+     the dialog completely, which is the opposite of leaving it open (spec 215, research D002:
+     the dialog's surface measured rgb(11,10,8) on a rgb(3,3,2) page at .38, and rgb(20,19,15)
+     at .26). Named here rather than added as a token: one surface needs it. */
+  background: rgba(0, 0, 0, .26);
+}
+:root[data-theme="light"] .editor__confirm-layer { background: rgba(20, 20, 18, .26); }
+/* An author display rule beats the UA's rule for [hidden], as .editor:not([open]) says
+   for the dialog itself -- without this the confirmation would paint on every open. */
+.editor__confirm-layer[hidden] { display: none; }
+.editor__confirm-layer .editor__confirm {
+  box-sizing: border-box;
+  display: block;
+  width: min(448px, 100%);
+  padding: 22px 22px 20px;
+  /* the dialog's own radius: this card stands alone over it rather than sitting in it */
+  border-radius: 14px;
+  background: var(--canvas); color: var(--ink);
+  box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
+}
+.editor__confirm-layer .editor__confirm h3 {
+  margin: 0 0 6px;
+  font: 650 18px/1.25 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -.005em;
+}
+.editor__confirm-layer .confirm__lead {
+  margin: 0 0 16px;
+  color: var(--head-ink);
+  font: 400 13.5px/1.55 ui-sans-serif, system-ui, sans-serif;
+}
+/* The name the copy is saved under: the editor's own field, so it carries the 38px height,
+   the rail fill, the radius and the focus ring the rest of the dialog already uses. */
+.editor__confirm-layer .editor__field { margin: 0 0 16px; }
+.editor__confirm-layer .confirm__facts {
+  margin: 0 0 16px;
+  padding: 13px 0 0;
+  border-top: 1px solid var(--divider);
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.editor__confirm-layer .confirm__facts li {
+  font: 400 12.5px/1.55 ui-sans-serif, system-ui, sans-serif;
+  color: var(--head-ink);
+}
+.editor__confirm-layer .confirm__facts strong { font-weight: 600; color: var(--ink); }
+.editor__confirm-layer .editor__confirm-actions {
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+/* A blank name cannot be accepted; the disabled face is the editor's own. */
+.editor__confirm-layer .editor__save[disabled] {
+  background: var(--divider); color: var(--head-ink); cursor: not-allowed;
 }
 
 /* ---------- reordering (spec 006, slice 3; spec 026) ------------------------ */

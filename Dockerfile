@@ -34,10 +34,16 @@ COPY . .
 # A monospaced fallback is a silent re-wrap of every slide, so the build refuses one.
 RUN python -m multimedia.slide_fonts
 
-RUN chmod +x docker/entrypoint.sh
+# The runtime entrypoint is copied OUTSIDE /app, because the local stack bind-mounts the checkout over
+# /app (docker-compose.yml): anything left there at run time is whatever the host's checkout holds, so
+# spec 216's strip of /app/docker/entrypoint.sh was replaced by the host's CRLF file the moment `web`
+# started, and `/bin/sh` refused it at line 2 again (spec 217). The copy below is what the container
+# runs; the strip makes it LF whatever the build context carried, and chmod keeps it executable.
+COPY docker/entrypoint.sh /usr/local/bin/gkps-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/gkps-entrypoint.sh && chmod +x /usr/local/bin/gkps-entrypoint.sh
 
 EXPOSE 8000
 EXPOSE 63174
 
-ENTRYPOINT ["/bin/sh", "docker/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/usr/local/bin/gkps-entrypoint.sh"]
 CMD ["gunicorn", "multimedia.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]

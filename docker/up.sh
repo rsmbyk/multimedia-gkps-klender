@@ -115,14 +115,32 @@ status=$?
 
 # A shared path Docker cannot read mounts as an empty directory without an error, so the start is
 # followed by one look inside: nothing visible means the operator is told instead of quietly drawing
-# with the image's faces.
+# with the image's faces. The count is asked for through a command that always succeeds, so a non-zero
+# status from `exec` can only mean the container — not a grep that matched nothing — and a companion
+# that is not running is reported as such instead of as an empty mount.
 if [ "$status" -eq 0 ] && [ "$1" = "up" ] && [ "$count" -gt 0 ]; then
-    seen=$(docker compose -f docker-compose.yml -f "$override" exec -T media sh -c \
-        'fc-list 2>/dev/null | grep -c "/usr/share/fonts/host/"' 2>/dev/null || printf '0')
-    if [ "${seen:-0}" -eq 0 ]; then
+    if ! seen=$(docker compose -f docker-compose.yml -f "$override" exec -T media sh -c \
+        'n=$(fc-list 2>/dev/null | grep -c "/usr/share/fonts/host/"); printf "%s" "$n"; exit 0' \
+        2>/dev/null); then
+        seen=
+    fi
+    case "$seen" in
+    '' | *[!0-9]*)
+        # "container is restarting" names nothing; the companion's own line names the cause, and a
+        # start that follows a pull without a rebuild is the common one (spec 218).
+        printf 'gkps: the media companion is not running — the font mounts were not checked\n' >&2
+        detail=$(docker compose -f docker-compose.yml -f "$override" logs --no-color --tail 1 media \
+            2>/dev/null | tail -n 1) || detail=
+        if [ -n "$detail" ]; then
+            printf 'gkps: its last line: %s\n' "$detail" >&2
+        fi
+        printf 'gkps: see docker compose logs media; if the image predates your checkout, docker compose build\n' >&2
+        ;;
+    0)
         printf 'gkps: the mounted font directories showed no font to the companion\n' >&2
         printf 'gkps: check Docker > Settings > Resources > File Sharing for the paths above\n' >&2
-    fi
+        ;;
+    esac
 fi
 
 exit "$status"

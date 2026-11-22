@@ -7,6 +7,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.36.6] - 2026-11-22
+
+### Added
+
+- **A service entry's row in the contents sidebar now carries that entry's kind mark.** After the
+  order number a 16px mark names the entry at a glance: an open book for a passage, a beamed note for a
+  song, a framed play mark for media and three rules for text; a legacy text row is marked as text.
+  Fill-ins and choices keep their dashed slot mark and gain the corner badge naming the kind they will
+  become, as on the stage. Section-break dividers keep their rule and stay unmarked. The number box
+  narrows to 24px so the label column moves only 8.39px, and both themes and the hover and selected
+  fills keep the mark legible (spec 214).
+- **The copy of a Tata Ibadah is now named where it is asked for.** **Copy as template** opens a
+  confirmation of its own — a second dialog over the edit modal, its card centred on the window while
+  the modal stays open and dimmed behind it — carrying a Name field that starts as the source's name
+  plus ` (Copy)`. A click on the field selects all of it, so typing replaces the name in one go, and
+  the copy is created under whatever it holds; the source keeps its own name, and a blank or
+  over-long name cannot be accepted. The dialog states the three consequences as three statements
+  rather than one sentence, Cancel, Escape and a click on the scrim all close it without closing the
+  modal, and the edit modal's height never changes (spec 215).
+
+- **A fill-in and a choice now say which kind of entry they will become.** On a template's page each
+  slot's mark in the gutter carries a 13px badge at its bottom-right corner — a beamed note for a song,
+  an open book for a passage, a framed play mark for media and three rules for text — so the four kinds
+  are told apart without reading the `Fill-in · Song` line beside them. The mark's own dashed frame and
+  its `+` / `◎` are unchanged, the badge takes no pointer and states nothing to assistive technology,
+  and no row moves: every entry's box, every title's column and the page's height are exactly as they
+  were. A slot whose stored kind cannot be read draws the mark alone (spec 213).
+
+### Changed
+
+- **The song entry's pickers now work from the first frame.** The Song search takes focus as the Add
+  form opens, selects its text whenever it gains focus, and its results can run past the dialog without
+  resizing it; an Edit form no longer pulls focus into the field. The Verses field is an inline,
+  bordered section of five-across tiles where a click ticks one verse, a held drag previews a range
+  until release, and its summary states the choice as `Bait 1–2` — a form now shared by the entry's
+  `Bait` lines, generate rows and option previews, which collapse a pair too. Songs with no verses hide
+  the section and its label, a one-verse song mutes it, and a server-rendered checklist comes back as the
+  same tile grid after an error. Verse IDs and the existing song search rules stay unchanged (spec 210).
+
+### Fixed
+
+- **Holding an arrow key now cuts through the screens instead of piling them up.** Every move started
+  a 240 ms crossfade and a held key sends a move every ~35 ms, so each move restarted a crossfade the
+  previous one had not finished; the part-faded screens stacked behind the new one — up to seven were
+  painted at once, and their words read as one garbled block. A move that arrives while a morph is
+  still running now cuts: the screen it leaves is gone at once and the screen it lands on is painted
+  whole, so a held key shows one screen at a time (7 → 1 screens painted, 64 → 1 frames of overlap).
+  A single move, after a quiet moment, still crossfades exactly as before (spec 219).
+- **A text screen now arrives as fast as the entries beside it.** The projector fits a screen's words
+  by walking the font size down from 200px a pixel at a time, asking after each step whether the words
+  still fit; every question lays the page out, and the page holds every screen of the service at once.
+  An advance into a screen of words therefore spent 130–280 layout reads between the key and the frame
+  that paints it, and the body decided how many — a short lyric settled high, a text entry came down
+  furthest — which is why the text entries, the ones the operator reads from, were the slow ones
+  (16.4 ms median, 66.9 ms worst on a 171-screen service). The screens either side of the one showing
+  are now fitted in idle time, so an advance on the operator's beat costs one read and paints in
+  3.7 ms (worst 7.4 ms), and a screen nothing has fitted yet is still fitted on arrival exactly as
+  before. The fitting also measured the arriving screen 14px below where it comes to rest, because it
+  ran after the arrival morph had started: the same screen was fitted to 131px on an advance and 135px
+  on a resize, 53 of 126 screens disagreeing with themselves. It now runs before the morph, so every
+  screen shows the size its own at-rest fit gives, and the arrival animation is no longer stalled
+  while the words are measured. A single-screen text too long for any size is cut by halving instead
+  of one character at a time — 81.5 ms for a 400-row body instead of 2 992 ms, keeping the same rows
+  and characters (spec 219).
+- **The search landing is ready for typing.** Opening the public site — the root, `/search`, or any of
+  the three section indexes — puts the caret in the search field, so a query starts without a click.
+  Focus changes neither the field's value nor the page's scroll, and the landing stays one window tall.
+  Search results never take the focus by themselves: a submission from the landing hands it back with
+  the query left in the compact bar, and a results URL opened directly leaves focus where it was.
+  Reading pages are untouched (spec 220).
+- **A launcher start that cannot reach the media companion now says why.** `Container … is restarting`
+  names nothing; the launcher now prints the companion's own last log line — the one that reads
+  `set: Illegal option -` — and names `docker compose build`, because an image older than the checkout
+  reproduces the previous failure exactly. A healthy companion is asked for no log, and the start's
+  exit status is still what the launcher returns (spec 218).
+
+- **The web service now starts from a checkout made on Windows.** The last fix cleaned the entrypoint
+  inside the image, but the local stack mounts your checkout over `/app`, so the file that actually ran
+  was the one on disk — still CRLF — and `/bin/sh` refused it at `set -e` while the app and the
+  companion restarted in a loop. The container now runs the image's own copy, at `/usr/local/bin`,
+  outside anything the stack mounts; whether your checkout is CRLF or LF no longer matters, and the
+  commands that copy runs are unchanged. Rebuild once (`docker compose build`) — the path is baked into
+  the image (spec 217).
+
+- **The stack now starts from a checkout made on Windows.** Git for Windows writes text files out
+  with CRLF by default and the repository pinned nothing, so a Windows clone built an image whose
+  entrypoint began `set -e\r` — `/bin/sh` refused it on the second line, both the app and the media
+  companion exited, and the restart policy turned that into a loop that no start could escape. The
+  image now strips the carriage returns before it makes the entrypoint executable, so an existing
+  checkout starts without being re-cloned, and the shell scripts are pinned to LF so a Windows
+  checkout does not produce them in the first place (the PowerShell launcher keeps its own line
+  endings). The launchers' post-start font check also stops aborting the whole script when it cannot
+  reach the companion: it names the companion and points at `docker compose logs media`, and the
+  start's own exit status is what the launcher returns (spec 216).
+
+- **The Copy as template confirmation now sits over the edit modal instead of stacking under its
+  form.** Pressing the header button dims the form and centres one card on it — the dialog keeps its
+  height, the form's own Save is no longer reachable, and the two answers sit on the card's right edge —
+  where the confirmation used to paint as a second, left-aligned Save row below the first (spec 212).
+
 ## [1.35.2] - 2026-11-21
 
 ### Fixed

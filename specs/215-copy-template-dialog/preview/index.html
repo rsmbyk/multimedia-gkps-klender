@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copy as template — a dialog of its own</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<link rel="stylesheet" href="preview.css">
+</head>
+<body>
+<div class="pv">
+  <header class="pv__bar">
+    <div class="pv__tabs" role="tablist" aria-label="State">
+      <button role="tab" data-state="edit" aria-selected="true">Edit modal</button>
+      <button role="tab" data-state="confirm" aria-selected="false">Copy as template</button>
+    </div>
+    <div class="pv__right">
+      <button class="pv__size" type="button" data-size-toggle>Service dialog</button>
+      <button class="pv__theme" type="button" data-theme-toggle>Dark</button>
+    </div>
+  </header>
+
+  <p class="pv__note" data-note></p>
+
+  <div class="pv__stage">
+    <div class="pv__page">
+      <div class="pv__rail"></div>
+      <div class="pv__list">
+        <div class="pv__row"></div><div class="pv__row pv__row--sel"></div>
+        <div class="pv__row"></div><div class="pv__row"></div><div class="pv__row"></div>
+      </div>
+      <div class="pv__canvas"></div>
+    </div>
+    <div class="pv__scrim"></div>
+
+    <dialog class="editor pv__dialog" open>
+      <div class="editor__content" id="editorContent">
+        <div data-fragment="service">
+<div class="editor__body" data-kind="tatib" data-target="304">
+  <div class="editor__head">
+    <h2 class="editor__title" id="editorTitle">Edit Tata Ibadah</h2>
+    <button class="editor__copy-btn" type="button" data-copy-open="" data-copy-url="/tatib/304/copy-as-template/">Copy as template</button>
+  </div>
+  <form class="editor__form" data-preview-form>
+    <input type="hidden" name="csrfmiddlewaretoken" value="PREVIEW">
+    
+    
+    
+    
+    <div class="editor__field">
+      <label for="id_name">Name</label>
+      <input type="text" name="name" value="9 Agustus 2026" maxlength="64" required="" id="id_name">
+      
+      
+    </div>
+    
+    
+    
+    <div class="editor__field editor__date-field">
+      <label for="id_date_trigger">Date</label>
+      <input type="hidden" name="date" value="2026-08-09" data-date-picker-value="" id="id_date">
+      <div class="editor__date-picker" data-date-picker="" data-date-picker-default-sunday="false" data-date-picker-ready="true">
+        <div class="editor__date-controls">
+          <button class="editor__date-trigger" id="id_date_trigger" type="button" data-date-picker-trigger="" aria-haspopup="dialog" aria-expanded="false" aria-controls="id_date_calendar">
+            <span data-date-picker-label="">9 Agustus 2026</span>
+          </button>
+          
+          <div class="editor__date-calendar" data-date-picker-calendar="" popover="manual" role="dialog" aria-label="Choose a date" hidden="" id="id_date_calendar">
+            <div class="editor__date-nav">
+              <button type="button" data-date-picker-prev="" aria-label="Previous month">‹</button>
+              <h3 data-date-picker-month="" aria-live="polite">Agustus 2026</h3>
+              <button type="button" data-date-picker-next="" aria-label="Next month">›</button>
+            </div>
+            <div class="editor__date-weekdays" aria-hidden="true">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
+              <span>Fri</span><span>Sat</span><span data-date-sunday="">Sun</span>
+            </div>
+            <div class="editor__date-grid" data-date-picker-grid="" role="grid" aria-label="Choose a date in Agustus 2026"><div class="editor__date-row" role="row"><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><button type="button" class="editor__date-day" role="gridcell" aria-label="Sabtu, 1 Agustus 2026" aria-selected="false" data-date="2026-08-01" tabindex="-1">1</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Minggu, 2 Agustus 2026" aria-selected="false" data-date="2026-08-02" data-date-sunday="" tabindex="-1">2</button></div><div class="editor__date-row" role="row"><button type="button" class="editor__date-day" role="gridcell" aria-label="Senin, 3 Agustus 2026" aria-selected="false" data-date="2026-08-03" tabindex="-1">3</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Selasa, 4 Agustus 2026" aria-selected="false" data-date="2026-08-04" tabindex="-1">4</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Rabu, 5 Agustus 2026" aria-selected="false" data-date="2026-08-05" tabindex="-1">5</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Kamis, 6 Agustus 2026" aria-selected="false" data-date="2026-08-06" tabindex="-1">6</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Jumat, 7 Agustus 2026" aria-selected="false" data-date="2026-08-07" tabindex="-1">7</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Sabtu, 8 Agustus 2026" aria-selected="false" data-date="2026-08-08" tabindex="-1">8</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Minggu, 9 Agustus 2026" aria-selected="true" data-date="2026-08-09" data-date-sunday="" tabindex="0">9</button></div><div class="editor__date-row" role="row"><button type="button" class="editor__date-day" role="gridcell" aria-label="Senin, 10 Agustus 2026" aria-selected="false" data-date="2026-08-10" tabindex="-1">10</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Selasa, 11 Agustus 2026" aria-selected="false" data-date="2026-08-11" tabindex="-1">11</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Rabu, 12 Agustus 2026" aria-selected="false" data-date="2026-08-12" tabindex="-1">12</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Kamis, 13 Agustus 2026" aria-selected="false" data-date="2026-08-13" tabindex="-1">13</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Jumat, 14 Agustus 2026" aria-selected="false" data-date="2026-08-14" tabindex="-1">14</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Sabtu, 15 Agustus 2026" aria-selected="false" data-date="2026-08-15" tabindex="-1">15</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Minggu, 16 Agustus 2026" aria-selected="false" data-date="2026-08-16" data-date-sunday="" tabindex="-1">16</button></div><div class="editor__date-row" role="row"><button type="button" class="editor__date-day" role="gridcell" aria-label="Senin, 17 Agustus 2026" aria-selected="false" data-date="2026-08-17" tabindex="-1">17</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Selasa, 18 Agustus 2026" aria-selected="false" data-date="2026-08-18" tabindex="-1">18</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Rabu, 19 Agustus 2026" aria-selected="false" data-date="2026-08-19" tabindex="-1">19</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Kamis, 20 Agustus 2026" aria-selected="false" data-date="2026-08-20" tabindex="-1">20</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Jumat, 21 Agustus 2026" aria-selected="false" data-date="2026-08-21" tabindex="-1">21</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Sabtu, 22 Agustus 2026" aria-selected="false" data-date="2026-08-22" tabindex="-1">22</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Minggu, 23 Agustus 2026" aria-selected="false" data-date="2026-08-23" data-date-sunday="" tabindex="-1">23</button></div><div class="editor__date-row" role="row"><button type="button" class="editor__date-day" role="gridcell" aria-label="Senin, 24 Agustus 2026" aria-selected="false" data-date="2026-08-24" tabindex="-1">24</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Selasa, 25 Agustus 2026" aria-selected="false" data-date="2026-08-25" tabindex="-1">25</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Rabu, 26 Agustus 2026" aria-selected="false" data-date="2026-08-26" tabindex="-1">26</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Kamis, 27 Agustus 2026" aria-selected="false" data-date="2026-08-27" tabindex="-1">27</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Jumat, 28 Agustus 2026" aria-selected="false" data-date="2026-08-28" tabindex="-1">28</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Sabtu, 29 Agustus 2026" aria-selected="false" data-date="2026-08-29" tabindex="-1">29</button><button type="button" class="editor__date-day" role="gridcell" aria-label="Minggu, 30 Agustus 2026" aria-selected="false" data-date="2026-08-30" data-date-sunday="" tabindex="-1">30</button></div><div class="editor__date-row" role="row"><button type="button" class="editor__date-day" role="gridcell" aria-label="Senin, 31 Agustus 2026" aria-selected="false" data-date="2026-08-31" tabindex="-1">31</button><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span><span class="editor__date-empty" role="presentation" aria-hidden="true"></span></div></div>
+          </div>
+        </div>
+      </div>
+      
+      
+    </div>
+    
+    
+    
+    <div class="editor__actions">
+      
+      <button class="editor__save" type="submit">Save</button>
+      <button class="editor__cancel" type="button" data-editor-close="">Cancel</button>
+    </div>
+    
+  </form>
+</div>
+</div>
+        <div data-fragment="template" hidden>
+<div class="editor__body" data-kind="tatib" data-target="151">
+  <div class="editor__head">
+    <h2 class="editor__title" id="editorTitle">Edit template</h2>
+    <button class="editor__copy-btn" type="button" data-copy-open="" data-copy-url="/tatib/151/copy-as-template/">Copy as template</button>
+  </div>
+  <form class="editor__form" data-preview-form>
+    <input type="hidden" name="csrfmiddlewaretoken" value="PREVIEW">
+    
+    
+    
+    
+    <div class="editor__field">
+      <label for="id_name">Name</label>
+      <input type="text" name="name" value="111ojo" maxlength="64" required="" id="id_name">
+      
+      
+    </div>
+    
+    
+    
+    <div class="editor__actions">
+      
+      <button class="editor__save" type="submit">Save</button>
+      <button class="editor__cancel" type="button" data-editor-close="">Cancel</button>
+    </div>
+    
+  </form>
+</div>
+</div>
+
+      <!-- The slice's one new component. The product includes this inside
+           .editor__body (reading/_editor_form.html); it is position: fixed, so
+           where it sits in the tree changes nothing on screen. -->
+      <div class="editor__confirm-layer" data-copy-confirm hidden>
+        <div class="editor__confirm confirm--dialog" role="alertdialog" aria-modal="true"
+             aria-labelledby="copyConfirmTitle" aria-describedby="copyConfirmLead">
+          <h3 id="copyConfirmTitle">Copy as template?</h3>
+          <p class="confirm__lead" id="copyConfirmLead">A new template from this Tata Ibadah —
+            same entries, in the same order. The one you are editing does not change.</p>
+
+          <div class="editor__field">
+            <label for="copyName">Name</label>
+            <input id="copyName" type="text" maxlength="64" autocomplete="off"
+                   value="9 Agustus 2026 (Copy)" data-copy-name>
+          </div>
+
+          <ul class="confirm__facts">
+            <li><strong>No service date.</strong> A template is not tied to a day.</li>
+            <li><strong>Stays a template.</strong> It can never become a normal Tata Ibadah.</li>
+            <li><strong>Can be copied again.</strong> Copying does not use it up.</li>
+          </ul>
+
+          <div class="editor__confirm-actions">
+            <button type="button" class="editor__cancel" data-copy-cancel>Cancel</button>
+            <button type="button" class="editor__save" data-copy-accept>Copy as template</button>
+          </div>
+        </div>
+      </div>
+
+      </div>
+    </dialog>
+  </div>
+
+  <p class="pv__hint">1 edit modal · 2 copy dialog · <kbd>s</kbd> service/template dialog · <kbd>t</kbd> theme · <kbd>Esc</kbd> closes the copy dialog</p>
+</div>
+<script src="preview.js"></script>
+</body>
+</html>

@@ -2,10 +2,12 @@
 
 
 def format_verses(numbers):
-    """A song's verse numbers as runs: ``[1, 2, 3, 5, 6, 8, 9, 10]`` -> ``1-3, 5, 6, 8-10``.
+    """A song's verse numbers as runs: ``[1, 2, 4, 5]`` -> ``1–2, 4–5``.
 
-    Input is sorted and de-duplicated first. A run of three or more consecutive numbers
-    becomes ``a-b``; a run of one or two stays as separate numbers.
+    Input is sorted and de-duplicated first. Any run of two or more consecutive
+    numbers becomes ``a–b`` with an en dash, so a pair collapses too — the same
+    reading the song entry's own summary gives (spec 210), which keeps every verse
+    reference on the page in one shape.
     """
     values = sorted({int(number) for number in numbers or []})
     runs = []
@@ -16,8 +18,5 @@ def format_verses(numbers):
             runs.append([number, number])
     parts = []
     for start, end in runs:
-        if end - start >= 2:
-            parts.append(f'{start}-{end}')
-        else:
-            parts.extend(str(n) for n in range(start, end + 1))
+        parts.append(f'{start}–{end}' if end > start else str(start))
     return ', '.join(parts)

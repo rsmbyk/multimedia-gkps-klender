@@ -248,7 +248,7 @@ class EntryPreviewE2ETests(StaticLiveServerTestCase):
         page = self._page()
         item = page.locator('.tatib__item').nth(1)           # the song entry
         self.assertEqual(item.locator('.read__sec').inner_text(), 'KJ 152 — Ada Kuasa')
-        self.assertEqual(item.locator('.read__sub').inner_text(), 'Bait 1, 2')
+        self.assertEqual(item.locator('.read__sub').inner_text(), 'Bait 1–2')
 
     def test_the_overlay_closes_the_preview(self):
         page = self._page()
