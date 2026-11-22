@@ -460,7 +460,10 @@ body {
 .editor-add[disabled] { opacity: .45; cursor: not-allowed; }
 .editor-add[hidden] { display: none; }   /* author display beats UA [hidden] */
 .ch__tools .editor-add { margin: 8px 0 0; }
-[data-nav="mini"] .editor-add, [data-nav="closed"] .editor-add { display: none; }
+/* only the first sidebar's controls follow its mini/closed state; the song list's
+   add control belongs to .chapters and stays with the list that is still open */
+[data-nav="mini"] .panel .editor-add,
+[data-nav="closed"] .panel .editor-add { display: none; }
 
 /* the song list's add button: full width, right below the toolbar (spec 005) */
 .ch__add { flex: none; padding: 0 12px 12px; }

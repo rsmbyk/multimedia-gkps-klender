@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stage stays up with a centred empty-screen icon, "Nothing open." and a short hint, while the parent
   list stays in the side panels. The state lives in the URL, so a reload keeps it and Back never
   revisits the removed record (spec 221).
+- **The Add song button stays where the songs list is.** Collapsing only the songbooks sidebar no
+  longer hides the button for the open songbook; it keeps its 38px box and opens the same editor
+  (spec 222).
 
 ## [1.36.6] - 2026-11-22
 

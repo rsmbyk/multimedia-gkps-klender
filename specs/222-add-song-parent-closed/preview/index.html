@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en" data-nav="open" data-ch="open" data-ch-mode="song" data-section="kidung">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add song with the songbooks sidebar closed</title>
+<link rel="stylesheet" href="../../../static/styles/design/tokens.css">
+<link rel="stylesheet" href="../../../static/styles/design/fonts.css">
+<link rel="stylesheet" href="../../../static/styles/design/components.css">
+<style>
+  /* preview-only: neutralise the shipped hide rule for the second sidebar, which
+     is what scoping that rule to .panel in components.css achieves */
+  [data-nav="mini"] .panel .editor-add,
+  [data-nav="closed"] .panel .editor-add { display: none; }
+  [data-nav="mini"] .ch__add .editor-add,
+  [data-nav="closed"] .ch__add .editor-add { display: flex; }
+  /* preview-only: restore the shipped selector so the bug can be compared in place */
+  html.current-css[data-nav="mini"] .editor-add,
+  html.current-css[data-nav="closed"] .editor-add { display: none !important; }
+  /* preview-only controls, outside the product shell */
+  .probe { position: fixed; z-index: 90; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap;
+           gap: 6px; align-items: center; max-width: calc(100vw - 24px); padding: 10px 12px;
+           border-radius: 10px; background: #1f1f1d; color: #fff; font: 12px/1.4 system-ui, sans-serif; }
+  .probe button { border: 1px solid #888; border-radius: 6px; padding: 5px 8px; background: #333;
+                  color: #fff; font: inherit; cursor: pointer; }
+  .probe button[aria-pressed="true"] { background: #b9d7c9; color: #1f1f1d; }
+  .probe output { white-space: pre; font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<aside class="rail" id="rail" aria-label="Sections">
+  <ul class="rail__list">
+    <li><button class="rail__btn" type="button" aria-label="Kidung">Kidung</button></li>
+  </ul>
+</aside>
+
+<aside class="panel" id="panel" role="region" aria-labelledby="panelTitle">
+  <h2 class="sr" id="panelTitle">Songbooks</h2>
+  <div class="panel__filter">
+    <div class="filter-box">
+      <label class="sr" for="bookFilter">Filter songbooks</label>
+      <input id="bookFilter" type="search" placeholder="Filter songbooks..." autocomplete="off">
+    </div>
+    <button class="ch__collapse" type="button" id="panelCollapse" aria-controls="panel"
+            aria-expanded="true" aria-label="Collapse Alkitab panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"/><path d="m18 5.5-6.5 6.5 6.5 6.5"/>
+      </svg>
+    </button>
+  </div>
+  <button class="editor-add" type="button" id="panelAdd"
+          data-editor-open="songbook" data-editor-label="Add songbook">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9"
+         stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+    <span class="editor-add__label">Add songbook</span>
+  </button>
+  <div class="panel__scrollwrap"><div class="panel__body" id="panelBody" tabindex="0">
+    <ul><li><button class="book" type="button" aria-current="true">Lagu</button></li></ul>
+  </div></div>
+</aside>
+
+<aside class="chapters" id="chapters" role="region" aria-labelledby="chTitle">
+  <h2 class="sr" id="chTitle">Songs</h2>
+  <div class="ch__top">
+    <div class="ch__tools">
+      <div class="ch__search">
+        <div class="filter-box">
+          <label class="sr" for="songFilter">Filter songs</label>
+          <input id="songFilter" type="search" placeholder="Filter songs..." autocomplete="off">
+        </div>
+      </div>
+    </div>
+    <button class="ch__collapse" type="button" id="chCollapse" aria-controls="chapters"
+            aria-expanded="true" aria-label="Close chapter list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m11.5 5.5-6.5 6.5 6.5 6.5"/><path d="m18 5.5-6.5 6.5 6.5 6.5"/>
+      </svg>
+    </button>
+  </div>
+  <div class="ch__add">
+    <button class="editor-add" type="button" id="songAdd"
+            data-editor-open="song" data-editor-book="7" data-editor-label="Add song">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+      <span class="editor-add__label">Add song</span>
+    </button>
+  </div>
+  <div class="ch__wrap"><div class="ch__body" id="chBody" tabindex="0">
+    <ul id="chList"><li><button class="songrow" type="button">1 · Lagu pertama</button></li></ul>
+  </div></div>
+</aside>
+
+<main class="stage" id="stage"><h1>Kidung — Lagu</h1></main>
+
+<div class="probe" role="group" aria-label="Preview controls">
+  <button type="button" id="both">Both open</button>
+  <button type="button" id="collapse">Close songbooks only</button>
+  <button type="button" id="mini">Mini parent</button>
+  <button type="button" id="closeSongs">Close songs</button>
+  <button type="button" id="noBook">No songbook</button>
+  <button type="button" id="cssMode" aria-pressed="false">Current CSS</button>
+  <output id="readout"></output>
+</div>
+
+<script>
+  var root = document.documentElement;
+  var songAdd = document.getElementById('songAdd');
+  var panelAdd = document.getElementById('panelAdd');
+  var readout = document.getElementById('readout');
+  function measure() {
+    var s = getComputedStyle(songAdd), r = songAdd.getBoundingClientRect();
+    var p = getComputedStyle(panelAdd);
+    readout.textContent = 'nav=' + root.dataset.nav + ' ch=' + root.dataset.ch
+      + ' | #songAdd ' + s.display + ' ' + Math.round(r.height) + 'px'
+      + ' | #panelAdd ' + p.display;
+  }
+  function set(nav, ch) { root.dataset.nav = nav; root.dataset.ch = ch; measure(); }
+  document.getElementById('both').addEventListener('click', function () { set('open', 'open'); });
+  document.getElementById('collapse').addEventListener('click', function () { set('closed', 'open'); });
+  document.getElementById('mini').addEventListener('click', function () { set('mini', 'open'); });
+  document.getElementById('closeSongs').addEventListener('click', function () { set('closed', 'closed'); });
+  document.getElementById('noBook').addEventListener('click', function () {
+    songAdd.disabled = !songAdd.disabled;
+    songAdd.setAttribute('aria-disabled', String(songAdd.disabled));
+    measure();
+  });
+  document.getElementById('cssMode').addEventListener('click', function (event) {
+    var on = !root.classList.contains('current-css');
+    root.classList.toggle('current-css', on);
+    event.currentTarget.setAttribute('aria-pressed', String(on));
+    measure();
+  });
+  document.getElementById('panelCollapse').addEventListener('click', function () { set('closed', 'open'); });
+  document.getElementById('chCollapse').addEventListener('click', function () { set(root.dataset.nav, 'closed'); });
+  window.addEventListener('resize', measure);
+  measure();
+</script>
+</body>
+</html>
