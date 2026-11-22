@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The Add song button stays where the songs list is.** Collapsing only the songbooks sidebar no
   longer hides the button for the open songbook; it keeps its 38px box and opens the same editor
   (spec 222).
+- **The focus ring on the first song row is drawn in full.** The list reserves 3px above its first
+  row, so the browser's outline is no longer cut off by the edge of the scrollport (spec 223).
 
 ## [1.36.6] - 2026-11-22
 

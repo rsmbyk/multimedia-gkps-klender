@@ -53,8 +53,8 @@ Written and run **before** `components.css` is touched, so each case fails for i
 
 ## Phase 5 — Delivery
 
-- [ ] T014 `VERSION` 1.36.8 → 1.36.9 and one `### Fixed` line under `## [Unreleased]` in
+- [X] T014 `VERSION` 1.36.8 → 1.36.9 and one `### Fixed` line under `## [Unreleased]` in
   `CHANGELOG.md`, applied immediately before the merge and re-checked against `origin/develop`.
-- [ ] T015 Delivery, after the report and on the owner's word: open the PR as a draft against
+- [X] T015 Delivery, after the report and on the owner's word: open the PR as a draft against
   `develop`, read `ITEM-238`'s state, set `in-review`, write `pr:`, move the board row, push that
   commit, mark the PR ready. The card is closed in its own later `chore/board-238` branch.

@@ -39,13 +39,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-238](./items/ITEM-238-songrow-focus-ring-clip.md) | The song-row focus ring is clipped at the top of the list | The first focused row sits flush with `#chBody`, so the browser's outline is cut at the scrollport edge; the list itself is not scrolled | fix | P2 | S | [223](../specs/223-songrow-focus-ring-clip/spec.md) | `fix/223-songrow-focus-ring-clip` | 2026-11-22 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
+| [ITEM-238](./items/ITEM-238-songrow-focus-ring-clip.md) | The song-row focus ring is clipped at the top of the list | The first focused row sat flush with `#chBody`, so the browser's outline was cut at the scrollport edge; the list itself was not scrolled | fix | P2 | S | [223](../specs/223-songrow-focus-ring-clip/spec.md) | [#588](https://github.com/rsmbyk/multimedia-gkps-klender/pull/588) | 2026-11-22 |
 
 ## Done
 
