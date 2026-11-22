@@ -39,6 +39,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-238](./items/ITEM-238-songrow-focus-ring-clip.md) | The song-row focus ring is clipped at the top of the list | The first focused row sits flush with `#chBody`, so the browser's outline is cut at the scrollport edge; the list itself is not scrolled | fix | P2 | S | [223](../specs/223-songrow-focus-ring-clip/spec.md) | `fix/223-songrow-focus-ring-clip` | 2026-11-22 |
 
 ## In review
 

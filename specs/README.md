@@ -114,3 +114,4 @@ the templates are in [`_templates/`](./_templates/).
 | [203](203-dock-long-word-wrap/spec.md) | A long word wraps in the dock runner's service title and entry headers | Accepted |
 | [208](208-dock-stuck-corner/spec.md) | The live entry header's corners follow its pin state | Accepted |
 | [220](220-initial-search-focus/spec.md) | Only the empty search landing takes focus | Accepted |
+| [223](223-songrow-focus-ring-clip/spec.md) | The song-row focus ring is clipped at the list top | Accepted |
