@@ -1,6 +1,6 @@
 ---
 id: ITEM-237
-status: speccing
+status: in-review
 title: 'Add song disappears when the songbooks sidebar is closed'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-22
 updated: 2026-11-22
 spec: 222-add-song-parent-closed
 branch: fix/222-add-song-parent-closed
-pr:
-issue:
+pr: 584
+issue: 583
 closed_at:
 closed_reason:
 bump: patch

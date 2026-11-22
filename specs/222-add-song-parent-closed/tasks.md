@@ -28,7 +28,7 @@
 
 ## Phase 5 — Delivery
 
-- [ ] T008 Fold `reading/R51` into `docs/spec/reading.md`, stamp the patch bump and changelog line in the delivery commit, and leave the card for its separate close PR.
+- [X] T008 Fold `reading/R51` into `docs/spec/reading.md`, stamp the patch bump and changelog line in the delivery commit, and leave the card for its separate close PR.
 
 ## Phase 6 — Convergence
 
