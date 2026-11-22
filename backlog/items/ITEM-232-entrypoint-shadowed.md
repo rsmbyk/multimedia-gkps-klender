@@ -14,7 +14,7 @@ issue: 572
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #574)
 bump: patch
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-232: The web service still runs the checkout's CRLF entrypoint, because the bind mount replaces the image's

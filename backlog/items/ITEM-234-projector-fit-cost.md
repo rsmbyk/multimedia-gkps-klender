@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-22
 closed_reason: merged into develop (PR #576)
 bump: patch
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-234: A text screen arrives late while the entries beside it arrive at once

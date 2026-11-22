@@ -14,7 +14,7 @@ issue: 573
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #575)
 bump: patch
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-233: A launcher start that cannot reach the companion says nothing about why
