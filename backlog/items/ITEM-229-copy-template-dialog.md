@@ -14,7 +14,7 @@ issue: 566
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #567)
 bump: minor
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-229: The copy confirmation is a dialog of its own, and the copy is named there

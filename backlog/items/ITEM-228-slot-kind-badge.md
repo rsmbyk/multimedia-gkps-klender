@@ -14,7 +14,7 @@ issue: 562
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #563)
 bump: patch
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-228: A fill-in and a choice state the kind they resolve to

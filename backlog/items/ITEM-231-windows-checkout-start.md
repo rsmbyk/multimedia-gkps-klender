@@ -14,7 +14,7 @@ issue: 570
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #571)
 bump: patch
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-231: The stack never starts from a checkout made on Windows

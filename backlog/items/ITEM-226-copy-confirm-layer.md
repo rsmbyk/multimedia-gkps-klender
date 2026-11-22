@@ -14,7 +14,7 @@ issue:
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #560)
 bump: patch
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-226: The Copy as template confirmation paints inline under the edit form

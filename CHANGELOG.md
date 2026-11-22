@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.36.6] - 2026-11-22
+
 ### Added
 
 - **A service entry's row in the contents sidebar now carries that entry's kind mark.** After the

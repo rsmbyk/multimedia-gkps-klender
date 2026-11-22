@@ -14,7 +14,7 @@ issue: 565
 closed_at: 2026-11-21
 closed_reason: merged into develop (PR #569)
 bump: patch
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-230: A service entry's sidebar row marks its kind

@@ -14,7 +14,7 @@ issue: 578
 closed_at: 2026-11-22
 closed_reason: merged into develop (PR #579)
 bump: patch
-release_version:
+release_version: 1.36.6
 ---
 
 # ITEM-235: The search landing opens without its input focused
