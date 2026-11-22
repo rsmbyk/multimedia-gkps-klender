@@ -2484,6 +2484,14 @@ kbd {
   padding: 0 16px;
   text-align: center;
 }
+/* spec 221: the nothing-open stage centres the block in the whole stage, not
+   just in the reading column, so its padding and the body's own gaps go away
+   for this one state. */
+.stage:has(.read[data-kind="empty"]) { padding: 0; display: grid; place-items: center; }
+.read[data-kind="empty"] { width: 100%; }
+.read[data-kind="empty"] .read__body { margin-top: 0; padding-bottom: 0; }
+.entry__empty-icon { display: block; color: var(--head-ink); }
+.entry__empty-icon svg { display: block; width: 38px; height: 38px; }
 /* the article takes the stage's height and the body takes the rest of it, so
    the empty block has somewhere to sit that is not the top of the column (the
    header is furniture, not part of the invitation). Its centre lands a quarter

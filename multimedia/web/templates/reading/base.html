@@ -434,8 +434,8 @@
    {% block search_results %}{% endblock %}
  </section>
 
- <article class="read" id="read" lang="{{ read_lang|default:'id' }}" tabindex="-1"{% if read_kind %} data-kind="{{ read_kind }}"{% endif %}>
-  <header class="read__head">
+ <article class="read" id="read" lang="{{ read_lang|default:'id' }}" tabindex="-1"{% if read_hint %} data-kind="empty"{% elif read_kind %} data-kind="{{ read_kind }}"{% endif %}>
+ {% if not read_hint %}<header class="read__head">
    <div class="read__head-top">
     <p class="read__eyebrow" id="readEyebrow"{% if not read_eyebrow %} hidden{% endif %}>{{ read_eyebrow|default:'' }}</p>
     {% block read_actions %}{% endblock %}
@@ -451,8 +451,16 @@
     {% endif %}
 {% block read_row_actions %}{% endblock %}
    </div>
-  </header>
-  <div class="read__body" id="readBody">{% block read_body %}{% endblock %}</div>
+  </header>{% endif %}
+  <div class="read__body" id="readBody">{% block read_body %}{% endblock %}{% if read_hint %}<div class="entry__empty">
+  <span class="entry__empty-icon" aria-hidden="true">
+   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3.4" y="4.4" width="17.2" height="12" rx="2"/><path d="M9.2 10.4h5.6M9 20h6M12 16.4V20"/>
+   </svg>
+  </span>
+  <p class="entry__empty-title">Nothing open.</p>
+  <p class="entry__empty-hint">{{ read_hint }}</p>
+ </div>{% endif %}</div>
  </article>
 </main>
 

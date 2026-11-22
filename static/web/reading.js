@@ -2109,9 +2109,9 @@
     if (event.detail) event.detail.viewUpdate = viewUpdate;
   });
 
-  /* Sidebar deletes (spec 190): the editor flow asks the shell where the stage
-     is and, when the deleted record was the one on stage, swaps to the parent
-     list with the history entry replaced instead of appended. */
+  /* Sidebar deletes (spec 190, 221): the editor flow asks the shell where the
+     stage is and, when the deleted record was the one on stage, swaps to the
+     parent list in the nothing-open state, replacing the history entry. */
   window.gkpsStage = function () {
     return { section: stageSection(), tile: stageInfo.tile,
              song: stageInfo.song, url: stageInfo.url };
