@@ -1666,7 +1666,9 @@ li:hover > .row-delete,
   overflow-y: auto;
   overscroll-behavior: contain;
   overflow-anchor: none;
-  padding: 0 0 8px;
+  /* spec 223: reserve room for the browser's outline above the first row —
+     a 1px ring at a 1px offset needs 2px outside the row's box */
+  padding: 3px 0 8px;
   scrollbar-width: none;
 }
 .ch__body::-webkit-scrollbar { display: none; }
