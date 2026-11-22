@@ -210,6 +210,71 @@ class EditorE2ETests(StaticLiveServerTestCase):
         expect(page.locator('#panelAdd')).to_have_count(0)          # and gone again
         self._close_browser()
 
+    def test_add_song_stays_when_the_songbooks_sidebar_is_closed(self):
+        """A collapsed first sidebar must not hide the second sidebar's add control (spec 222).
+
+        The reported path uses the real collapse control. The mini state is set directly
+        because Kidung has no mini control — only Alkitab's collapse produces that state.
+        """
+        page = self._page(reverse('web-index'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        expect(page.locator('#panelAdd')).to_be_visible()
+        page.get_by_text(self.book.name, exact=True).first.click()
+        page.wait_for_function("document.documentElement.dataset.ch === 'open'")
+        page.wait_for_timeout(300)                      # let the drawer travel finish
+        add = page.locator('#songAdd')
+        expect(add).to_be_visible()
+        before = add.evaluate("""el => ({
+            display: getComputedStyle(el).display,
+            height: el.getBoundingClientRect().height })""")
+        self.assertEqual(before, {'display': 'flex', 'height': 38})
+
+        page.click('#panelCollapse')
+        page.wait_for_function("document.documentElement.dataset.nav === 'closed'")
+        state = page.evaluate("""() => {
+            const s = document.getElementById('songAdd');
+            const p = document.getElementById('panelAdd');
+            return {
+              nav: document.documentElement.dataset.nav,
+              ch: document.documentElement.dataset.ch,
+              chapters: getComputedStyle(document.getElementById('chapters')).visibility,
+              song: getComputedStyle(s).display,
+              height: s.getBoundingClientRect().height,
+              panel: getComputedStyle(p).display }; }""")
+        self.assertEqual((state['nav'], state['ch'], state['chapters']),
+                         ('closed', 'open', 'visible'))
+        self.assertEqual((state['song'], state['height']), ('flex', 38))
+        self.assertEqual(state['panel'], 'none')
+
+        # the same shared rule covers the mini state
+        page.evaluate("document.documentElement.dataset.nav = 'mini'")
+        self.assertEqual(add.evaluate("el => getComputedStyle(el).display"), 'flex')
+        page.evaluate("document.documentElement.dataset.nav = 'closed'")
+
+        # the restored control still opens the same editor for the open songbook
+        add.click()
+        page.wait_for_selector('dialog[open]')
+        expect(page.locator('#editorTitle')).to_have_text('New song')
+        page.keyboard.press('Escape')
+        page.wait_for_function("!document.querySelector('dialog[open]')")
+
+        # closing the songs list itself leaves no add control visible
+        page.click('#chCollapse')
+        page.wait_for_function("document.documentElement.dataset.ch === 'closed'")
+        # the chapter column keeps visibility for 200ms while it wipes out
+        page.wait_for_function(
+            "getComputedStyle(document.getElementById('chapters')).visibility === 'hidden'")
+        self.assertEqual(page.locator('.editor-add:visible').count(), 0)
+
+        # the rule holds through the drawer and phone breakpoints
+        for width in (1000, 390):
+            page.set_viewport_size({'width': width, 'height': 800})
+            page.evaluate("""() => {
+                document.documentElement.dataset.nav = 'closed';
+                document.documentElement.dataset.ch = 'open'; }""")
+            expect(add).to_be_visible()
+        self._close_browser()
+
     def test_escape_inside_the_modal_does_not_also_close_the_sidebar(self):
         """The modal is the innermost layer: Esc must stop there (review report)."""
         page = self._page(reverse('web-index'))
