@@ -70,7 +70,7 @@
 - [X] T017 Run the full verification: T006 plus `test_stage_kind_marks`, `test_tatib_preview_parity`,
   `test_entries`, `multimedia.web.tests`, and `probe_adopted.py` + `probe_glyphs.py`; record the
   numbers in `converge.md`
-- [ ] T018 Delivery: `VERSION` 1.35.4 → 1.35.5 and one `CHANGELOG.md` line under `## [Unreleased]` →
+- [X] T018 Delivery: `VERSION` 1.35.4 → 1.35.5 and one `CHANGELOG.md` line under `## [Unreleased]` →
   `### Added` and `docs/spec/reading.md` R35 folded are **in this slice's first commit**; the card to
   `in-review` with its `pr:` and the board row moved wait for the push to return a PR number, and the
   push waits for the owner's word

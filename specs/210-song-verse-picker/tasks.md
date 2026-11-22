@@ -84,7 +84,7 @@ bottom border is 1px with an 8px gap, and tapping it leaves the summary visible.
   collapsed ranges, IDs unchanged) and `reading/R48` (new) into `docs/spec/reading.md`, and
   write `fold.md`.
 - [x] T020 Converge against the plan's traceability table, appending `converge.md` per pass.
-- [ ] T021 Delivery commit: apply `VERSION` 1.35.2 and the `CHANGELOG.md` patch line, attach a
+- [X] T021 Delivery commit: apply `VERSION` 1.35.3 and the `CHANGELOG.md` patch line, attach a
   card to the slice with `In review` and the PR reference; open the PR as a draft. Do not push
   until the owner says so.
 
