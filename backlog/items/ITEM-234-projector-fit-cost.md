@@ -1,6 +1,6 @@
 ---
 id: ITEM-234
-status: in-review
+status: done
 title: 'A text screen arrives late while the entries beside it arrive at once'
 type: fix
 priority: P1
@@ -11,8 +11,8 @@ spec: 219
 branch: fix/219-projector-fit-cost
 pr: 576
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-22
+closed_reason: merged into develop (PR #576)
 bump: patch
 release_version:
 ---
