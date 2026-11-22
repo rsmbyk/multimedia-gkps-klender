@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The Add song button stays where the songs list is.** Collapsing only the songbooks sidebar no
+  longer hides the button for the open songbook; it keeps its 38px box and opens the same editor
+  (spec 222).
+
 ## [1.36.6] - 2026-11-22
 
 ### Added
