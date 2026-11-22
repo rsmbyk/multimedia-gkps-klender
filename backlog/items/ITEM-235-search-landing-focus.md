@@ -1,6 +1,6 @@
 ---
 id: ITEM-235
-status: in-review
+status: done
 title: 'The search landing opens without its input focused'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: 220-initial-search-focus
 branch: fix/220-initial-search-focus
 pr: 579
 issue: 578
-closed_at:
-closed_reason:
+closed_at: 2026-11-22
+closed_reason: merged into develop (PR #579)
 bump: patch
 release_version:
 ---
