@@ -2,7 +2,7 @@
 
 **Spec**: `specs/235-empty-song-verse-summary/spec.md`
 **Branch**: `fix/235-empty-song-verse-summary`
-**Bump**: `patch` (1.36.19 → 1.36.20)
+**Bump**: `patch` (1.36.19 → 1.36.21; spec 234 took 1.36.20 on develop while this slice was open)
 **Preview**: `specs/235-empty-song-verse-summary/preview/` — accepted at Gate 1 2026-11-24
 
 ## Technical Context

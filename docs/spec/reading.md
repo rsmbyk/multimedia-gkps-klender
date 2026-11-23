@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-24
-**slices**: `235-empty-song-verse-summary`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `234-open-created-template`, `233-song-sort-retained`, `232-verse-reference-notice`, `231-add-verse-in-header`, `230-song-verse-script-boot`, `226-verse-modal-header-rule`, `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1525,29 +1525,41 @@ expiry SHALL NOT leave the old deadline standing. (spec 199; completes spec 072'
 - WHEN a browser has no state observer
 - THEN the 1 s re-check still defers while the condition holds and gives a full interval when it clears
 
-### R46 — A newly created service opens on the reading stage
+### R46 — A newly created Tata Ibadah opens on the reading stage
 
 A successful create of a Normal (dated) Tata Ibadah SHALL open the saved service on the reading stage
 in place: the URL becomes `/tatib/<id>/`, the stage heading names the saved service, its sidebar row
 carries `aria-current="true"`, its order view (including the empty-service invitation) is shown, and
-the child pane opens on its contents. The open SHALL use the shell's existing in-place navigation, so
-no document reload occurs and the operator's `data-nav` choice and other list selections are
-unchanged. Quiet focus SHALL return to the new service's row as it does after any other sidebar save.
-Creating a Template, editing a service, and saving any other record kind SHALL keep their present
-list-refresh behaviour and SHALL NOT open a stage. A refused create SHALL NOT open a stage. The
-template-generate and copy-as-template flows SHALL continue to land on the record they create.
-(spec 209)
+the child pane opens on its contents. A successful create of a Template SHALL open the saved template
+the same way at `/tatib/<id>/?mode=template`, with the template list and mode button in template mode.
+Both opens SHALL use the shell's existing in-place navigation, so no document reload occurs and the
+operator's `data-nav` choice and other list selections are unchanged. Quiet focus SHALL return to the
+new record's row as it does after any other sidebar save. Creating from the dated list or the
+template list SHALL land on the same template stage. Editing a service or a template, and saving any
+other record kind SHALL keep their present list-refresh behaviour and SHALL NOT open a stage. A refused
+create SHALL NOT open a stage. The template-generate and copy-as-template flows SHALL continue to land
+on the record they create. (spec 209, 234; modified 2026-11-23)
+
+**Superseded (kept visible):** the clause "Creating a Template, editing a service, and saving any other
+record kind SHALL keep their present list-refresh behaviour and SHALL NOT open a stage" — only its
+Template half was replaced on 2026-11-23; the edit and other-record halves stand. Its scenario read
+"WHEN a Template is created or an existing service is edited THEN the stage and URL stay where they
+were and the list refreshes as before."
 
 #### Scenario: creating a service from the sidebar
 - WHEN a Normal service is saved from the Tata Ibadah list
 - THEN the stage shows that service, its row is current, its add actions are present, and no second click is needed
 
-#### Scenario: no reload and no panel change
-- WHEN the create response arrives
-- THEN the in-page marker and `performance.timeOrigin` are unchanged, `data-nav` keeps its value, and only the new service becomes current
+#### Scenario: creating a template from either list
+- WHEN a Template is saved from the dated list or from `?mode=template`
+- THEN the stage shows that template at `/tatib/<id>/?mode=template`, its row is current, its add actions are present, and the mode button stays pressed
 
-#### Scenario: a Template or an edit
-- WHEN a Template is created or an existing service is edited
+#### Scenario: no reload and no panel change
+- WHEN the create response arrives for either kind
+- THEN the in-page marker and `performance.timeOrigin` are unchanged, `data-nav` keeps its value, and only the new record becomes current
+
+#### Scenario: an edit or another record kind
+- WHEN an existing service or template is edited, or any other record kind is saved
 - THEN the stage and URL stay where they were and the list refreshes as before
 
 #### Scenario: a refused create

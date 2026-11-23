@@ -20,3 +20,7 @@
 ## Not folded
 
 None. Every converged requirement was folded; no accepted gaps exist.
+
+## Merge-time note
+
+- Spec 234 landed on `develop` while this slice was open and took patch 1.36.20; VERSION on this branch was re-taken to **1.36.21** before the merge. No card or spec number collided (ITEM-250 and spec 235 stayed free).
