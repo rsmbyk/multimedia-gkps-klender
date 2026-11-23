@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A passage cue now shows where it stands in the passage.** The projector prints a `current/end`
+  verse counter after the reference, before the TB/SIM flip: a service passage counts its own verses
+  and a chapter Go To counts against the chapter it loaded (spec 229).
+
 ### Fixed
 
 - **Back clears the Go To from the projector cue when nothing is underneath it.** With no service,

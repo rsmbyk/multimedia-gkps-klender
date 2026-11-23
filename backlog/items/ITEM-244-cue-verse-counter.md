@@ -10,7 +10,7 @@ updated: 2026-11-23
 spec: 229-cue-verse-counter
 branch: feat/229-cue-verse-counter
 pr:
-issue:
+issue: 599
 closed_at:
 closed_reason:
 bump: patch
