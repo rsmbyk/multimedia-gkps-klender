@@ -523,6 +523,10 @@ li:hover > .row-delete,
   box-shadow: 0 0 0 1px var(--divider), var(--shadow-dialog);
   display: flex; flex-direction: column;
   max-height: min(86vh, 46rem);
+  /* the UA's auto overflow makes the DIALOG a second scrollport: a collapsed verse
+     panel leaves a few clipped pixels past the box and paints a scrollbar on its
+     rounded edge. .editor__content owns scrolling; clip here only hides overflow. */
+  overflow: clip;
 }
 /* An author display rule beats the UA's rule for a CLOSED dialog, so the dialog
    has to say it again for itself -- otherwise it lays out inside the page and

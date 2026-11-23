@@ -1,0 +1,53 @@
+<dialog class="editor" id="editorModal" aria-labelledby="editorTitle" data-editor-new="/editor/KIND/new/" data-editor-edit="/editor/KIND/0/" data-editor-delete-confirm="/editor/KIND/0/delete/confirm/" data-editor-delete-url="/editor/KIND/0/delete/" data-entry-new-url="/editor/entry/new/" data-entry-save-new-url="/editor/entry/new/save/" data-entry-validate-url="/editor/entry/validate/" data-entry-edit-url="/editor/entry/0/edit/" data-entry-delete-url="/editor/entry/0/delete/" data-entry-songs-url="/editor/entry/songs/" data-entry-song-verses-url="/editor/entry/song/0/verses/" data-entry-chapter-url="/editor/entry/chapter/0/0/" data-old-item-edit-url="/editor/item/0/edit/" data-old-item-delete-url="/editor/item/0/delete/" data-feedback-guarded="true" open="">
+  <div class="editor__content" id="editorContent" aria-live="polite">
+<h2 class="editor__title" id="editorTitle">New song</h2>
+<form class="editor__form" data-entry-form="song" data-entry-mode="new" action="/editor/entry/new/save/?tatib=315" method="post">
+  <input type="hidden" name="csrfmiddlewaretoken" value="1pXlgrIk5c8pDJp7Zgm08pMm88XD0btJN7LoWhdrCwgShy1k9E02XcHuWBDPEJ6t">
+  <input type="hidden" name="after" value="start">
+  <input type="hidden" name="kind" value="2" id="id_kind">
+
+  
+
+  
+  <div class="editor__field">
+    <label id="entry-song-label" for="entry-song-search">Song</label>
+    <div class="editor__picker" data-entry-picker="song">
+      <input type="search" id="entry-song-search" class="editor__songsearch" data-menu-anchor="" placeholder="Search songs..." aria-label="Search songs" autocomplete="off" aria-haspopup="listbox" aria-expanded="false" aria-controls="entry-song-menu" value="">
+      <div class="editor__picker-menu" id="entry-song-menu" hidden="">
+        <div class="editor__picker-options" id="entry-song-options" role="listbox" aria-label="Songs"></div>
+      </div>
+      <input type="hidden" name="song" id="id_song" value="">
+    </div>
+    
+  </div>
+  <div class="editor__field" data-verse-field="">
+    <label id="entry-verses-label">Verses</label>
+    <div class="editor__verse-panel" data-entry-picker="verses" data-verse-panel="" hidden="" data-settled="false">
+      <div class="editor__verse-panel-inner">
+        <p class="editor__verse-summary" data-verses-summary="">Pick a song first</p>
+        <div class="editor__verse-quick">
+          <span class="editor__verse-hint">Click to tick · hold and drag across tiles to extend</span>
+          <span class="editor__verse-actions">
+            <button type="button" data-verse-all="" disabled="">All</button>
+            <button type="button" data-verse-clear="" disabled="">Clear</button>
+          </span>
+        </div>
+        <div class="editor__verses" id="entry-verses" data-verses="" data-verse-tiles=""></div>
+        <p class="editor__verse-readout sr" data-verse-readout="" aria-live="polite"></p>
+      </div>
+    </div>
+    
+  </div>
+
+  
+
+  
+
+  <div class="editor__actions">
+    <button class="editor__save" type="submit">Save</button>
+    <button class="editor__cancel" type="button" data-editor-close="">Cancel</button>
+  </div>
+</form>
+</div>
+  <p class="editor__status sr" id="editorStatus" role="status"></p>
+<div class="edit-toasts" id="editToastHost" popover="manual" aria-live="polite" aria-relevant="additions text" aria-atomic="false" role="region" aria-label="Edit request feedback"></div></dialog>
