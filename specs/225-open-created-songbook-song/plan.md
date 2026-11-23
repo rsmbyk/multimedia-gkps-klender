@@ -2,7 +2,7 @@
 
 **Spec**: `specs/225-open-created-songbook-song/spec.md`
 **Branch**: `feat/225-open-created-songbook-song`
-**Bump**: `patch` (1.36.9 → 1.36.10)
+**Bump**: `patch` (1.36.10 → 1.36.11)
 **Preview**: n/a — no new look; gate-1 material is the live reproduction in `reproduce.py`/`probe_click.py`
 
 ## Technical Context

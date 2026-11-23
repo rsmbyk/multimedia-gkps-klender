@@ -1,6 +1,6 @@
 ---
 id: ITEM-240
-status: in-review
+status: done
 title: 'A newly created songbook or song does not open'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: 225-open-created-songbook-song
 branch: feat/225-open-created-songbook-song
 pr: 592
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-23
+closed_reason: merged into develop (PR #592)
 bump: patch
 release_version:
 ---

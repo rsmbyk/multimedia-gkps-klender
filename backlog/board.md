@@ -45,13 +45,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-240](./items/ITEM-240-created-songbook-song-opens.md) | A newly created songbook or song does not open | Save adds the row but no selection or stage change; open the new record as its row click would | fix | P2 | S | [225](../specs/225-open-created-songbook-song/spec.md) | [#592](https://github.com/rsmbyk/multimedia-gkps-klender/pull/592) | 2026-11-23 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-240](./items/ITEM-240-created-songbook-song-opens.md) | A newly created songbook or song does not open | Save adds the row but no selection or stage change; open the new record as its row click would | fix | P2 | S | [225](../specs/225-open-created-songbook-song/spec.md) | develop via [#592](https://github.com/rsmbyk/multimedia-gkps-klender/pull/592) | 2026-11-23 |
 | [ITEM-239](./items/ITEM-239-empty-song-add-verse-row.md) | An empty song paints Add verse twice | The after-the-last-verse row is drawn with no verse to follow, above the invitation that already offers the same control; gate it on `verse_rows` | fix | P2 | S | [224](../specs/224-empty-song-add-verse-row/spec.md) | develop via [#591](https://github.com/rsmbyk/multimedia-gkps-klender/pull/591) | 2026-11-23 |
 | [ITEM-238](./items/ITEM-238-songrow-focus-ring-clip.md) | The song-row focus ring is clipped at the top of the list | The first focused row sat flush with `#chBody`, so the browser's outline was cut at the scrollport edge; the list itself was not scrolled | fix | P2 | S | [223](../specs/223-songrow-focus-ring-clip/spec.md) | develop via [#588](https://github.com/rsmbyk/multimedia-gkps-klender/pull/588) | 2026-11-22 |
 | [ITEM-236](./items/ITEM-236-deleted-record-empty-stage.md) | Deleting the open song or service falls back to the search page | Keep the reading stage with a centred nothing-open message when the open record is deleted | fix | P2 | S | [221](../specs/221-empty-reading-stage/spec.md) | develop via [#585](https://github.com/rsmbyk/multimedia-gkps-klender/pull/585) | 2026-11-22 |

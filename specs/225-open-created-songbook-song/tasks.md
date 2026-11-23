@@ -32,7 +32,7 @@
 ## Phase 4 — Fold and release record
 
 - [x] T011 Fold `new: reading/R53` into `docs/spec/reading.md` (four scenarios, header, index).
-- [x] T012 Bump `VERSION` 1.36.9 → 1.36.10 and add a `CHANGELOG.md` entry under `[Unreleased]`.
+- [x] T012 Bump `VERSION` 1.36.10 → 1.36.11 and add a `CHANGELOG.md` entry under `[Unreleased]`.
 - [x] T013 Update `specs/README.md` index and move the board card/row to In progress. The In review
       and pre-merge Done moves wait for a PR number and the owner's push authorisation.
 

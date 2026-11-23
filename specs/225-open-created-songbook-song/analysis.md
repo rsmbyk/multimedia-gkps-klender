@@ -10,11 +10,11 @@
 | Artifact | Digest |
 | --- | --- |
 | `spec.md` | `3cfdc86be68e` |
-| `plan.md` | `205bf20c150a` |
+| `plan.md` | `303dda78211d` |
 | `research.md` | `7ffc4e88b598` |
 | `data-model.md` | `a1c4137c419f` |
 | `quickstart.md` | `0a7d611e27f1` |
-| `tasks.md` | `ffd9b2daacd8` |
+| `tasks.md` | `32c39fa05d3e` |
 | `checklists/requirements.md` | `b1f91b53c163` |
 | `fold.md` | `169fb1e7ed3a` |
 | `converge.md` | `25b60dd530f7` |
@@ -73,3 +73,6 @@
 ## History
 - 2026-11-23 — delivery re-read: digests above, 0 CRITICAL, 100% coverage, one MED finding fixed in
   implementation; gate 2 had been accepted earlier without a separate analysis run (A3).
+- 2026-11-23 — develop advanced with spec 224 before the merge; the declared patch bump was restated
+  to 1.36.10 → 1.36.11, the capability/spec indexes were merged with 224, and the focused set plus
+  the 224 placement tests ran green on the merged tree (12 tests).
