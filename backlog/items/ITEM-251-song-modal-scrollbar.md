@@ -1,6 +1,6 @@
 ---
 id: ITEM-251
-status: speccing
+status: done
 title: 'The new/edit song entry modal paints a scrollbar on its own edge'
 type: fix
 priority: P2
@@ -11,8 +11,8 @@ spec: 236-song-modal-scrollbar
 branch: fix/236-song-modal-scrollbar
 pr: 614
 issue:
-closed_at:
-closed_reason:
+closed_at: 2026-11-24
+closed_reason: merged into develop (PR #614)
 bump: patch
 release_version:
 ---

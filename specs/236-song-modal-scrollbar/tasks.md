@@ -73,9 +73,9 @@ Every `test` row in the plan is a red task and a green task. Inspection rows pro
       to `backlog/board.md`. Do not promote it to `Ready` — that is the owner's gate-1 act.
 - [X] T012 Run only the targeted E2E module between pushes; leave the full browser suite to the
       push step and report the numbers.
-- [ ] T013 Re-check the next spec number, card ID, `R58` and the patch level against `develop` and
+- [X] T013 Re-check the next spec number, card ID, `R58` and the patch level against `develop` and
       every unmerged branch before delivery.
-- [ ] T014 At delivery only, after Converge: write the `VERSION` bump, the `## [Unreleased]`
+- [X] T014 At delivery only, after Converge: write the `VERSION` bump, the `## [Unreleased]`
       changelog line, the `backlog/board.md` `In review`/`Done` moves and the `reading.md` R58 fold.
 
 ## Phase 6 — Convergence

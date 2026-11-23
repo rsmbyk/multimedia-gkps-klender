@@ -45,13 +45,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-251](./items/ITEM-251-song-modal-scrollbar.md) | The new/edit song entry modal paints a scrollbar on its own edge | The dialog's UA overflow turns a few clipped pixels from the collapsed verse panel into a scrollbar inside its rounded edge | fix | P2 | S | [236](../specs/236-song-modal-scrollbar/spec.md) | [#614](https://github.com/rsmbyk/multimedia-gkps-klender/pull/614) | 2026-11-24 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-251](./items/ITEM-251-song-modal-scrollbar.md) | The new/edit song entry modal paints a scrollbar on its own edge | The dialog's UA overflow turns a few clipped pixels from the collapsed verse panel into a scrollbar inside its rounded edge | fix | P2 | S | [236](../specs/236-song-modal-scrollbar/spec.md) | develop via [#614](https://github.com/rsmbyk/multimedia-gkps-klender/pull/614) | 2026-11-24 |
 | [ITEM-250](./items/ITEM-250-empty-song-verse-summary.md) | An empty song hides the whole Verses section instead of naming itself | Show the Verses section with only the `This song has no verses` summary row when the picked song has no verses; no song still collapses it | fix | P2 | S | [235](../specs/235-empty-song-verse-summary/spec.md) | develop via [#612](https://github.com/rsmbyk/multimedia-gkps-klender/pull/612) | 2026-11-24 |
 | [ITEM-249](./items/ITEM-249-created-template-opens.md) | A newly created Template does not open on the reading stage | Creating a Template only refreshed the sidebar; the saved template now opens on the reading stage like a dated service | fix | P1 | S | [234](../specs/234-open-created-template/spec.md) | develop via [#610](https://github.com/rsmbyk/multimedia-gkps-klender/pull/610) | 2026-11-24 |
 | [ITEM-248](./items/ITEM-248-verse-reference-notice.md) | The referenced-verse notice is missed below the action row | Move the reason into the action row beside the disabled Delete, which turns neutral; wrap the note above the buttons at narrow widths | fix | P2 | S | [232](../specs/232-verse-reference-notice/spec.md) | develop via [#608](https://github.com/rsmbyk/multimedia-gkps-klender/pull/608) | 2026-11-23 |
