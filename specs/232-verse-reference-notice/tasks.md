@@ -28,4 +28,4 @@ in the order written. Every `test` row in `plan.md` is a red task and a green ta
 ## Polish
 
 - [X] T011 Re-run the targeted E2E module and inspect the diff for files outside the two source paths; report the numbers.
-- [ ] T012 At delivery only: write `VERSION` bump, changelog line, board/card moves and the capability fold after Converge.
+- [X] T012 At delivery only: write `VERSION` bump, changelog line, board/card moves and the capability fold after Converge.
