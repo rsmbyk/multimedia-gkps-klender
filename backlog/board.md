@@ -39,12 +39,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-240](./items/ITEM-240-created-songbook-song-opens.md) | A newly created songbook or song does not open | Save adds the row but no selection or stage change; open the new record as its row click would | fix | P2 | S | [225](../specs/225-open-created-songbook-song/spec.md) | `feat/225-open-created-songbook-song` | 2026-11-23 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-240](./items/ITEM-240-created-songbook-song-opens.md) | A newly created songbook or song does not open | Save adds the row but no selection or stage change; open the new record as its row click would | fix | P2 | S | [225](../specs/225-open-created-songbook-song/spec.md) | [#592](https://github.com/rsmbyk/multimedia-gkps-klender/pull/592) | 2026-11-23 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done

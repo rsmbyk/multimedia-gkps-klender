@@ -1,6 +1,6 @@
 ---
 id: ITEM-240
-status: in progress
+status: in-review
 title: 'A newly created songbook or song does not open'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-23
 updated: 2026-11-23
 spec: 225-open-created-songbook-song
 branch: feat/225-open-created-songbook-song
-pr:
+pr: 592
 issue:
 closed_at:
 closed_reason:
