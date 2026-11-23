@@ -35,7 +35,6 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-246](./items/ITEM-246-add-verse-in-song-header.md) | Add verse sits beside Project in the song header | Move the add control into the header group left of Project while verses exist; an empty song keeps only its centre invitation | fix | P2 | S | [231](../specs/231-add-verse-in-header/spec.md) | 2026-11-23 |
 
 ## In progress
 
@@ -46,6 +45,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-246](./items/ITEM-246-add-verse-in-song-header.md) | Add verse sits beside Project in the song header | Move the add control into the header group left of Project while verses exist; an empty song keeps only its centre invitation | fix | P2 | S | [231](../specs/231-add-verse-in-header/spec.md) | [#604](https://github.com/rsmbyk/multimedia-gkps-klender/pull/604) | 2026-11-23 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done

@@ -1,6 +1,6 @@
 ---
 id: ITEM-246
-status: ready
+status: in-review
 title: 'Add verse sits beside Project in the song header'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-23
 updated: 2026-11-23
 spec: 231-add-verse-in-header
 branch: fix/231-add-verse-top
-pr:
+pr: 604
 issue: 603
 closed_at:
 closed_reason:
