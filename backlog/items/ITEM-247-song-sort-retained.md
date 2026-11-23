@@ -1,6 +1,6 @@
 ---
 id: ITEM-247
-status: in-review
+status: done
 title: 'A new song resets the sidebar song order'
 type: fix
 priority: P1
@@ -11,6 +11,8 @@ spec: 233-song-sort-retained
 branch: fix/233-song-sort-retained
 pr: 606
 issue: 605
+closed_at: 2026-11-23
+closed_reason: merged into develop (PR #606)
 bump: patch
 release_version:
 ---
