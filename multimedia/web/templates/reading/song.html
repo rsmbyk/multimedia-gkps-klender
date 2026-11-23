@@ -48,5 +48,4 @@
 {% if not verse_rows and can_edit_verses %}
 <div class="entry__empty"><p class="entry__empty-title">This song has no verses yet.</p><p class="entry__empty-hint">Add the first verse to give this song its lyrics.</p><div class="entry__empty-actions"><button type="button" class="verse-add__btn" data-add-verse data-song="{{ song.pk }}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg><span>Add verse</span></button></div></div>
 {% endif %}
-<script src="/static/web/songs_verse.js"></script>
 {% endblock %}

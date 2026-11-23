@@ -40,6 +40,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-245](./items/ITEM-245-song-sidebar-add-verse.md) | Add verse is dead on a song opened from the sidebar | The song fragment owns the only verse-script include and a swapped-in script never executes; boot it from the shell instead | fix | P1 | S | [230](../specs/230-song-verse-script-boot/spec.md) | `fix/230-song-verse-script-boot` | 2026-11-23 |
 
 ## In review
 
