@@ -6,9 +6,10 @@
 
 {% block ch_rows %}{% include 'reading/_song_list.html' %}{% endblock %}
 
-{% comment %}The Project control rides with the eyebrow (spec 193): the open song goes on air as a Go To detour. It is drawn only while the song has verses to paint, and it never toggles to Stop — the projector's Back ends a detour.{% endcomment %}
+{% comment %}The header actions ride with the eyebrow: Add verse (left) and Project (right). Both are drawn only while the song has verses to paint — an empty song offers its centre invitation instead. Project never toggles to Stop — the projector's Back ends a detour.{% endcomment %}
 {% block read_actions %}{% if verse_rows %}
 <div class="read__project">
+  {% if can_edit_verses %}<button type="button" class="verse-add__btn verse-add__btn--head" data-add-verse data-song="{{ song.pk }}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg><span>Add verse</span></button>{% endif %}
   <button type="button" class="read__project-btn" data-project-goto
           data-projector-url="{% url 'web-projector' %}" data-goto-song="{{ song.pk }}"
           aria-label="Project" title="Project">
@@ -42,9 +43,7 @@
   </p>
   {% endfor %}
 {% endif %}
-{% if can_edit_verses and verse_rows %}
-<div class="verse-add"><button type="button" class="verse-add__btn" data-add-verse data-song="{{ song.pk }}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg><span>Add verse</span></button></div>
-{% endif %}
+{% comment %}The empty song's one Add verse is its centred invitation below.{% endcomment %}
 {% if not verse_rows and can_edit_verses %}
 <div class="entry__empty"><p class="entry__empty-title">This song has no verses yet.</p><p class="entry__empty-hint">Add the first verse to give this song its lyrics.</p><div class="entry__empty-actions"><button type="button" class="verse-add__btn" data-add-verse data-song="{{ song.pk }}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg><span>Add verse</span></button></div></div>
 {% endif %}

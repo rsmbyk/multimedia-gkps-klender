@@ -35,6 +35,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-246](./items/ITEM-246-add-verse-in-song-header.md) | Add verse sits beside Project in the song header | Move the add control into the header group left of Project while verses exist; an empty song keeps only its centre invitation | fix | P2 | S | [231](../specs/231-add-verse-in-header/spec.md) | 2026-11-23 |
 
 ## In progress
 
