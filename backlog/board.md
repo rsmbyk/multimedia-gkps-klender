@@ -25,6 +25,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 | [ITEM-185](./items/ITEM-185-preview-viewport-e2e.md) | Three preview E2E tests cannot hover their entry after the viewport shrinks to 900×380 | At 900×380 the chapter drawer covers the pane, so `item.hover()` retries 62 times and times out; identical on unmodified develop at `24a6d6d2` | fix | P2 | S | — | 2026-10-29 |
 | [ITEM-220](./items/ITEM-220-chevron-e2e-pointer-race.md) | The chevron-eligibility E2E races the pointer on this machine | After the moving screen-row click the pointer can land on the live header, whose live-hover tone never equals the pure selected token the wait demands; base fails 4/5 alone, CI green through 206 | fix | P2 | S | — | 2026-11-20 |
 | [ITEM-224](./items/ITEM-224-token-only-line.md) | A speaker token alone on its line is not read as a speaker | `Paragenda:` / `P:` / `Bapa:` on one line is treated as ordinary text, so the line and its words lose the voice; 23 lines in the local snapshot use this shape | fix | P2 | S | — | 2026-11-21 |
+| [ITEM-252](./items/ITEM-252-sidebar-mark-centering.md) | The service entry kind mark sits above the row centre | The contents row centres its number but the icon stays on the label's baseline, 11.5px high on a two-line song row | fix | P2 | S | [237](../specs/237-sidebar-mark-centering/spec.md) | 2026-11-24 |
 
 ## Speccing
 
