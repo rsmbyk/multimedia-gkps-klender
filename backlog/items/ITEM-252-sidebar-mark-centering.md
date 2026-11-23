@@ -1,6 +1,6 @@
 ---
 id: ITEM-252
-status: backlog
+status: in-review
 title: 'The service entry kind mark sits above the row centre'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-24
 updated: 2026-11-24
 spec: 237-sidebar-mark-centering
 branch: fix/237-sidebar-mark-centering
-pr:
+pr: 615
 issue:
 closed_at:
 closed_reason:
