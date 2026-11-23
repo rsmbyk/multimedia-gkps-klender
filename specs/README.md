@@ -117,3 +117,4 @@ the templates are in [`_templates/`](./_templates/).
 | [223](223-songrow-focus-ring-clip/spec.md) | The song-row focus ring is clipped at the list top | Accepted |
 | [225](225-open-created-songbook-song/spec.md) | A newly created songbook or song opens as its row would | Accepted |
 | [224](224-empty-song-add-verse-row/spec.md) | An empty song paints one Add verse control | Accepted |
+| [226](226-verse-modal-header-rule/spec.md) | The verse modal header paints one rule | Accepted |
