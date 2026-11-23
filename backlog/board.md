@@ -40,13 +40,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-242](./items/ITEM-242-goto-cue-empty-service.md) | A Go To with no service under it has no cue | `renderCue()` returned on an empty entry list before its detour branch, so the passage or song label, its flip or baits and Back never reached the cue | fix | P1 | S | [227](../specs/227-goto-cue-empty-service/spec.md) | fix/227-goto-cue-empty-service | 2026-11-23 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
+| [ITEM-242](./items/ITEM-242-goto-cue-empty-service.md) | A Go To with no service under it has no cue | `renderCue()` returned on an empty entry list before its detour branch, so the passage or song label, its flip or baits and Back never reached the cue | fix | P1 | S | [227](../specs/227-goto-cue-empty-service/spec.md) | [#596](https://github.com/rsmbyk/multimedia-gkps-klender/pull/596) | 2026-11-23 |
 
 ## Done
 

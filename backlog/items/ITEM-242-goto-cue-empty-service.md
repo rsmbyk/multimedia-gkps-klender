@@ -1,6 +1,6 @@
 ---
 id: ITEM-242
-status: in-progress
+status: in-review
 title: 'A Go To with no service under it has no cue'
 type: fix
 priority: P1
@@ -9,8 +9,8 @@ created: 2026-11-23
 updated: 2026-11-23
 spec: 227-goto-cue-empty-service
 branch: fix/227-goto-cue-empty-service
-pr:
-issue:
+pr: 596
+issue: 595
 closed_at:
 closed_reason:
 bump: patch
