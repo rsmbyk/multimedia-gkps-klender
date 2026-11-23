@@ -40,12 +40,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-247](./items/ITEM-247-verse-reference-notice.md) | The referenced-verse notice is missed below the action row | Move the reason into the action row beside the disabled Delete, which turns neutral; wrap the note above the buttons at narrow widths | fix | P2 | S | [232](../specs/232-verse-reference-notice/spec.md) | `feat/232-verse-reference-notice` | 2026-11-23 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-247](./items/ITEM-247-verse-reference-notice.md) | The referenced-verse notice is missed below the action row | Move the reason into the action row beside the disabled Delete, which turns neutral; wrap the note above the buttons at narrow widths | fix | P2 | S | [232](../specs/232-verse-reference-notice/spec.md) | [#608](https://github.com/rsmbyk/multimedia-gkps-klender/pull/608) | 2026-11-23 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done

@@ -1,6 +1,6 @@
 ---
 id: ITEM-247
-status: in-progress
+status: in-review
 title: 'The referenced-verse notice is missed below the action row'
 type: fix
 priority: P2
@@ -9,7 +9,7 @@ created: 2026-11-23
 updated: 2026-11-23
 spec: 232-verse-reference-notice
 branch: feat/232-verse-reference-notice
-pr:
+pr: 608
 issue: 607
 closed_at:
 closed_reason:
