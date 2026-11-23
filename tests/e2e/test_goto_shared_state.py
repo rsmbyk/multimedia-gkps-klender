@@ -564,3 +564,168 @@ class GotoSharedStateE2ETests(StaticLiveServerTestCase):
         self.assertEqual(cue['baits'], 2)
         self.assertEqual(cue['back'], 'back to service')
         context.close()
+
+    # ---------- spec 228: Back clears the cue over an empty stage ------------
+
+    def _empty_service(self):
+        def make():
+            made = tatib.TataIbadah.objects.create(
+                name='Empty service', date=date(2026, 11, 15), is_active=True)
+            django_connection.close()
+            return made
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(make).result()
+
+    def _assert_cue_clear(self, page):
+        cue = self._cue(page)
+        self.assertEqual(cue['label'], '', 'the Go To label stayed in the cue')
+        self.assertEqual(cue['flip'], '')
+        self.assertEqual(cue['baits'], 0, 'the Go To baits stayed in the cue')
+        self.assertEqual(cue['back'], '', 'the Back label stayed in the cue')
+        self.assertTrue(page.evaluate("() => document.getElementById('cue-next').hidden"))
+        self.assertEqual(page.evaluate(
+            "() => getComputedStyle(document.getElementById('cue-next')).display"), 'none')
+
+    def _back_from_projector(self, page):
+        page.evaluate("() => document.getElementById('cue-next').click()")
+        page.wait_for_function(
+            "() => !((JSON.parse(localStorage.getItem('gkps-display') || 'null') || {}).goto)")
+        page.wait_for_timeout(250)
+
+    def test_back_clears_a_passage_cue_when_no_service_is_open(self):
+        """Leaving a Go To with no service under it returns the cue to its empty
+        state; it does not keep naming the passage."""
+        context = self._context()
+        projector = context.new_page()
+        projector.set_default_timeout(6000)
+        projector.goto(self.live_server_url + '/projector')
+        projector.wait_for_function("() => window.GKPSProjectorLibrary"
+                                    " && window.GKPSProjectorLibrary.ready()")
+        self._open_goto_on(projector, 'Matius 5:3')
+        projector.wait_for_selector('.projector-detour.is-active')
+        self.assertIn('Matius 5', self._cue(projector)['label'])
+
+        self._back_from_projector(projector)
+        self._assert_cue_clear(projector)
+        context.close()
+
+    def test_back_clears_a_song_cue_when_the_service_has_no_entries(self):
+        """Leaving a Go To over a service with no entries clears the baits and the
+        song label from the cue."""
+        empty = self._empty_service()
+        context = self._context()
+        projector = context.new_page()
+        projector.set_default_timeout(6000)
+        projector.goto(self.live_server_url + '/projector?service=' + str(empty.pk))
+        projector.wait_for_function("() => window.GKPSProjectorLibrary"
+                                    " && window.GKPSProjectorLibrary.ready()")
+        self._open_goto_on(projector, 'NKB 43')
+        projector.wait_for_selector('.projector-detour.is-active')
+        self.assertEqual(self._cue(projector)['baits'], 2)
+
+        self._back_from_projector(projector)
+        self._assert_cue_clear(projector)
+        context.close()
+
+    def test_a_dock_back_clears_the_projector_cue_with_no_service(self):
+        """Back pressed on the dock clears the cue of a projector that has no
+        service, through the shared state rather than a local projector click."""
+        context = self._context()
+        dock = context.new_page()
+        dock.set_default_timeout(6000)
+        dock.goto(self.live_server_url + '/obs/dock')
+        dock.wait_for_selector('.servicerow')
+        self.assertEqual(
+            dock.evaluate("() => document.getElementById('dockPanel').dataset.view"), 'pick')
+        projector = context.new_page()
+        projector.set_default_timeout(6000)
+        projector.goto(self.live_server_url + '/projector')
+        projector.wait_for_function("() => window.GKPSProjectorLibrary"
+                                    " && window.GKPSProjectorLibrary.ready()")
+        self._choose(dock, 'Matius 5:3')
+        projector.wait_for_selector('.projector-detour.is-active')
+        self.assertIn('Matius 5', self._cue(projector)['label'])
+
+        dock.locator('#offBack').click()
+        dock.wait_for_function(
+            "() => !((JSON.parse(localStorage.getItem('gkps-display') || 'null') || {}).goto)")
+        projector.wait_for_timeout(300)
+        self._assert_cue_clear(projector)
+        context.close()
+
+    # ---------- spec 228 revision: the idle empty stage's HUD ----------------
+
+    def _idle_projector(self, context, service_id=None):
+        page = context.new_page()
+        page.set_default_timeout(6000)
+        url = self.live_server_url + '/projector'
+        if service_id is not None:
+            url += '?service=' + str(service_id)
+        page.goto(url)
+        page.wait_for_function("() => window.GKPSProjectorLibrary"
+                               " && window.GKPSProjectorLibrary.ready()")
+        return page
+
+    def test_an_idle_empty_cue_has_no_separator_and_no_next(self):
+        """With no service, and with a service with no entries, the cue shows
+        nothing at all once a Go To has ended."""
+        empty = self._empty_service()
+        for service_id in (None, empty.pk):
+            with self.subTest(service=service_id):
+                context = self._context()
+                projector = self._idle_projector(context, service_id)
+                self.assertEqual(projector.evaluate(
+                    "() => document.getElementById('corner-cue').innerText"
+                    ".replace(/\\s/g, '')"), '', 'the centre dot stayed visible in the cue')
+                self.assertEqual(projector.evaluate(
+                    "() => getComputedStyle(document.querySelector('.cue-separator')).display"),
+                    'none')
+                self.assertTrue(projector.evaluate(
+                    "() => document.getElementById('cue-next').hidden"))
+                self.assertEqual(projector.evaluate(
+                    "() => getComputedStyle(document.getElementById('cue-next')).display"),
+                    'none')
+                context.close()
+
+    def test_an_idle_empty_projector_ignores_mouse_zones_but_keeps_fullscreen(self):
+        """The edge and centre zones are inert, while a click still fullscreens
+        the window."""
+        context = self._context()
+        projector = self._idle_projector(context)
+        self.assertEqual(projector.evaluate(
+            "() => getComputedStyle(document.querySelector('.mouse-zone--next')).pointerEvents"),
+            'none')
+        showing = projector.evaluate("() => document.body.dataset.showing")
+        screen = projector.evaluate("() => document.body.dataset.currentScreen")
+        projector.mouse.click(100, 100)          # centre hide/show zone
+        projector.wait_for_function('document.fullscreenElement !== null')
+        self.assertEqual(projector.evaluate("() => document.body.dataset.showing"), showing)
+        self.assertEqual(projector.evaluate("() => document.body.dataset.currentScreen"), screen)
+        projector.evaluate('document.exitFullscreen()')
+        projector.wait_for_function('document.fullscreenElement === null')
+        projector.mouse.click(100, 100)
+        self.assertEqual(projector.evaluate("() => document.body.dataset.showing"), showing)
+        context.close()
+
+    def test_an_idle_empty_projector_keeps_the_cursor_and_its_buttons(self):
+        """The pointer never hides itself and the cue's own controls still open."""
+        context = self._context()
+        projector = self._idle_projector(context)
+        projector.mouse.move(200, 200)
+        projector.wait_for_timeout(2300)
+        self.assertFalse(projector.evaluate(
+            "() => document.body.classList.contains('cursor-hidden')"))
+        self.assertNotEqual(projector.evaluate(
+            "() => getComputedStyle(document.body).cursor"), 'none')
+
+        projector.locator('.keys').click()
+        self.assertTrue(projector.evaluate(
+            "() => document.body.classList.contains('keys-open')"))
+        projector.locator('.keys').click()
+        projector.wait_for_function("() => !document.body.classList.contains('keys-open')")
+        projector.keyboard.press('g')
+        self.assertFalse(projector.evaluate("() => document.getElementById('projectorFind').hidden"))
+        projector.keyboard.press('Escape')
+        projector.locator('#cue-service').click()
+        self.assertTrue(projector.locator('#entry-list').is_visible())
+        context.close()

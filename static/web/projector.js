@@ -461,7 +461,15 @@
   function syncEmptyNotice() {
     var notice = screen.querySelector('.projector__empty');
     if (!notice) return;
-    notice.hidden = Boolean(detour) || screens().length > 0;
+    /* One state for the stage with nothing on it: the notice, the cue's stray
+       separator and the mouse zones all follow it. A Go To detour clears it. */
+    var empty = !detour && screens().length === 0;
+    notice.hidden = !empty;
+    body.classList.toggle('empty-stage', empty);
+    if (empty) {
+      window.clearTimeout(cursorTimer);
+      body.classList.remove('cursor-hidden');
+    }
   }
   function read() {
     try {
@@ -912,7 +920,21 @@
     /* A go to has its own cue even with no service under it, or a service with no
        entries: check the detour before the empty stage can return (spec 227). */
     if (detour) { renderDetourCue(); return; }
-    if (!entries.length) return;
+    if (!entries.length) {
+      /* Back ends the shared state and the stage before it ends the cue's DOM.
+         Clear the detour's label, buttons and Back here, or they stay over an
+         empty service after the go to is gone (spec 228). */
+      cuePrefix.replaceChildren();
+      baitList.replaceChildren();
+      baitList.hidden = true;
+      cueProgress.textContent = '';
+      cueNext.hidden = true;
+      cueNext.classList.remove('on');
+      cueArrow.classList.remove('on');
+      cueNextName.textContent = '';
+      cueNext.setAttribute('aria-label', 'No next entry');
+      return;
+    }
     var entry = entryAt(current);
     if (!entry) return;
     var data = screenData[current] || {};
@@ -1101,6 +1123,7 @@
   function revealCursor() {
     body.classList.remove('cursor-hidden');
     window.clearTimeout(cursorTimer);
+    if (body.classList.contains('empty-stage')) return;
     cursorTimer = window.setTimeout(function () { body.classList.add('cursor-hidden'); }, 2000);
   }
   function revealControls() {

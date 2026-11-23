@@ -2,7 +2,7 @@
 
 **capability**: `projector`
 **last folded**: 2026-11-23
-**slices**: `227-goto-cue-empty-service`, `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
+**slices**: `228-goto-cue-back-reset`, `227-goto-cue-empty-service`, `219-projector-fit-cost`, `193-reading-project-button`, `187-keyboard-parity`, `185-dock-goto`, `160-shortcuts-audio-video-groups`, `165-media-entry-rest`, `158-projector-media-fit`, `155-audio-presentation-lock`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`, `156-audio-play-indicator`, `161-projector-empty-notice`, `157-projector-image-missing-glyph`, `136-remove-offline-library`
 
 The service projector page: what it shows the congregation, and how its operator's Go To finds and
 paints a passage or a song, and how a media screen is fitted to the stage. This file starts at spec 136 — the projector's earlier behaviour
@@ -89,7 +89,10 @@ no service open, or a service with no entries. It SHALL show the passage or song
 translation flip, a song's bait buttons, the screen progress and a Back control naming the service.
 An empty service SHALL NOT suppress these just because its entry list is empty; the check for a
 detour SHALL run before any early return caused by that empty list. Closing the Go To over an empty
-service SHALL restore the notice and leave no Go To controls in the cue.
+service SHALL restore the notice and leave no Go To controls in the cue: its label, translation flip,
+bait buttons, progress and Back SHALL all be cleared, and Back SHALL be hidden, unpressed and
+unnamed. This reset SHALL hold for every path that ends the Go To — the projector's cue, the dock's
+Back and an idle re-read — because each reaches the same cue renderer.
 
 #### Scenario: a service with items
 - WHEN the projector opens for a service
@@ -108,6 +111,29 @@ service SHALL restore the notice and leave no Go To controls in the cue.
 #### Scenario: a Go To with no service open
 - WHEN a projector that holds no service paints a Go To detour
 - THEN its cue names the passage or song and offers the same controls as over an empty service
+
+#### Scenario: Back over an empty stage
+- WHEN a Go To over a stage with no screens ends, from the projector's cue or the dock's Back
+- THEN the cue names neither the passage nor the song and carries no flip, baits, progress or Back
+- AND the empty notice returns while no service holds entries
+
+While the stage holds no screens and no Go To is up, the idle stage SHALL NOT offer phantom
+controls. The corner cue SHALL NOT display its centre-dot separator or its next button, leaving no
+visible cue text and no lone right-arrow icon. The edge and centre mouse zones SHALL take no pointer
+events, so clicks cannot step, hide or show, and their custom cursors SHALL not be drawn; the pointer
+SHALL NOT auto-hide. A click on the screen SHALL still fullscreen the window, and the service-list
+button, keys sheet and find band SHALL remain usable. While a Go To detour is up over the same stage,
+its spec 227 cue and controls SHALL be unchanged.
+
+#### Scenario: an idle empty projector
+- WHEN the projector has no service open, or a service with no entries, and no Go To is up
+- THEN the cue shows no separator, no next and no text
+- AND the mouse zones take no pointer events and the pointer stays visible
+- AND a click still fullscreens and the service list, keys and find still open
+
+#### Scenario: an idle empty projector with a Go To up
+- WHEN a Go To detour paints over the same stage
+- THEN the idle rules do not apply to its cue, which names the passage or song with its controls
 
 #### Scenario: a re-read that brings the first screens
 - WHEN the page re-reads its service and the response carries screens
