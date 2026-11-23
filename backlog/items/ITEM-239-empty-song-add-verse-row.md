@@ -1,6 +1,6 @@
 ---
 id: ITEM-239
-status: ready
+status: done
 title: 'An empty song paints Add verse twice'
 type: fix
 priority: P2
@@ -9,11 +9,11 @@ created: 2026-11-23
 updated: 2026-11-23
 spec: 224-empty-song-add-verse-row
 branch: fix/224-empty-song-add-verse-row
-pr:
+pr: 591
 issue: 590
-closed_at:
-closed_reason:
-bump:
+closed_at: 2026-11-23
+closed_reason: merged into develop (PR #591)
+bump: patch
 release_version:
 ---
 
