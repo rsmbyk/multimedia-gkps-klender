@@ -1,6 +1,6 @@
 ---
 id: ITEM-250
-status: in-progress
+status: in-review
 title: 'An empty song hides the whole Verses section instead of naming itself'
 type: fix
 priority: P2
@@ -9,8 +9,8 @@ created: 2026-11-24
 updated: 2026-11-24
 spec: 235-empty-song-verse-summary
 branch: fix/235-empty-song-verse-summary
-pr:
-issue:
+pr: 612
+issue: 611
 closed_at:
 closed_reason:
 bump: patch

@@ -40,12 +40,12 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-250](./items/ITEM-250-empty-song-verse-summary.md) | An empty song hides the whole Verses section instead of naming itself | Show the Verses section with only the `This song has no verses` summary row when the picked song has no verses; no song still collapses it | fix | P2 | S | [235](../specs/235-empty-song-verse-summary/spec.md) | fix/235-empty-song-verse-summary | 2026-11-24 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-250](./items/ITEM-250-empty-song-verse-summary.md) | An empty song hides the whole Verses section instead of naming itself | Show the Verses section with only the `This song has no verses` summary row when the picked song has no verses; no song still collapses it | fix | P2 | S | [235](../specs/235-empty-song-verse-summary/spec.md) | [#612](https://github.com/rsmbyk/multimedia-gkps-klender/pull/612) | 2026-11-24 |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
 
 ## Done

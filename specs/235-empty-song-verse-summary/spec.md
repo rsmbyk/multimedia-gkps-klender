@@ -3,7 +3,7 @@
 **Slice**: `specs/235-empty-song-verse-summary`
 **Branch**: `fix/235-empty-song-verse-summary`
 **Created**: 2026-11-24
-**Status**: Draft — Gate 1 pending
+**Status**: Accepted (Gate 1 2026-11-24; Gate 2 2026-11-24)
 **Input**: "when picking an empty song (no verses) in new/edit song entry modal, display the verse picker section, but only the summary row part that states that the song has no verses"
 **Demand**: `ITEM-250` (new card)
 **Capability**: modifies `reading/R30` and `reading/R48`

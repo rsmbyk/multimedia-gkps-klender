@@ -36,4 +36,4 @@
 - [X] T012 [P] `docs/spec/reading.md` — Fold `reading/R30` (modified: the picked-but-empty state shows the section's summary row instead of hiding it, with the previous hidden-section answer kept as superseded) and `reading/R48` (modified: the empty state collapses the body rows under `data-empty`); update the header date and slice list; write `fold.md`.
 - [X] T013 [P] `VERSION` 1.36.19 → 1.36.20 and a `CHANGELOG.md` `[Unreleased]` line for the change (bump declared in `plan.md`).
 - [X] T014 `backlog/board.md` + `backlog/items/ITEM-250-…md` — move the row to In review with the PR number once the push returns it; in the pre-merge commit set the card `status: done`, `closed_at`, `closed_reason: merged into develop (PR #N)` and move the row to Done with `develop via [#N]`. Spec and board close on the same PR.
-- [ ] T015 Write `converge.md` from the traceability table, then report the closing summary and ask before pushing. No push without the owner's word.
+- [X] T015 Write `converge.md` from the traceability table, then report the closing summary and ask before pushing. Push authorized by the owner; PR #612 opened, board moved to In review on this branch.
