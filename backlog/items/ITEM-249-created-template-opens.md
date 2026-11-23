@@ -1,19 +1,19 @@
 ---
 id: ITEM-249
-status: in-review
+status: done
 title: 'A newly created Template does not open on the reading stage'
 type: fix
 priority: P1
 effort: S
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 spec: 234-open-created-template
 branch: feat/234-open-created-template
 pr: 610
 issue: 609
-closed_at:
-closed_reason:
-bump:
+closed_at: 2026-11-24
+closed_reason: merged into develop (PR #610)
+bump: patch
 release_version:
 ---
 
