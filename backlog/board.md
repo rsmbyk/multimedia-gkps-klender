@@ -40,13 +40,13 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ITEM-243](./items/ITEM-243-goto-cue-back-reset.md) | Back leaves the Go To information in the cue over an empty stage | The empty-stage return left the detour's label, baits and Back painted; the idle stage also kept a stray centre dot and phantom mouse zones, now hidden while fullscreen and the cue's own controls stay | fix | P1 | S | [228](../specs/228-goto-cue-back-reset/spec.md) | fix/228-goto-cue-back-reset | 2026-11-23 |
 
 ## In review
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | PR | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ITEM-237](./items/ITEM-237-add-song-parent-closed.md) | Add song disappears when the songbooks sidebar is closed | Collapsing only the songbooks sidebar hid the second-level Add song button; the add-control hide rule now belongs to the first sidebar | fix | P1 | S | [222](../specs/222-add-song-parent-closed/spec.md) | [#584](https://github.com/rsmbyk/multimedia-gkps-klender/pull/584) | 2026-11-22 |
+| [ITEM-243](./items/ITEM-243-goto-cue-back-reset.md) | Back leaves the Go To information in the cue over an empty stage | The empty-stage return left the detour's label, baits and Back painted; the idle stage also kept a stray centre dot and phantom mouse zones, now hidden while fullscreen and the cue's own controls stay | fix | P1 | S | [228](../specs/228-goto-cue-back-reset/spec.md) | [#598](https://github.com/rsmbyk/multimedia-gkps-klender/pull/598) | 2026-11-23 |
 
 ## Done
 
