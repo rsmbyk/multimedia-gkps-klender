@@ -30,6 +30,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-251](./items/ITEM-251-song-modal-scrollbar.md) | The new/edit song entry modal paints a scrollbar on its own edge | The dialog's UA overflow turns a few clipped pixels from the collapsed verse panel into a scrollbar inside its rounded edge | fix | P2 | S | [236](../specs/236-song-modal-scrollbar/spec.md) | 2026-11-24 |
 
 ## Ready
 
