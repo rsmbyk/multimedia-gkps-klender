@@ -39,7 +39,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 ## In progress
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Branch | Updated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## In review
 
@@ -51,6 +51,7 @@ Other columns stay in workflow order — the row that has waited longest first.
 
 | ID | Title | Summary | Type | Priority | Effort | Spec | Merged | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ITEM-247](./items/ITEM-247-song-sort-retained.md) | A new song resets the sidebar song order | Keep the chosen sort after every in-place list refresh, not only after a create | fix | P1 | S | [233](../specs/233-song-sort-retained/spec.md) | develop via [#606](https://github.com/rsmbyk/multimedia-gkps-klender/pull/606) | 2026-11-23 |
 | [ITEM-246](./items/ITEM-246-add-verse-in-song-header.md) | Add verse sits beside Project in the song header | Move the add control into the header group left of Project while verses exist; an empty song keeps only its centred invitation | fix | P2 | S | [231](../specs/231-add-verse-in-header/spec.md) | develop via [#604](https://github.com/rsmbyk/multimedia-gkps-klender/pull/604) | 2026-11-23 |
 | [ITEM-245](./items/ITEM-245-song-sidebar-add-verse.md) | Add verse is dead on a song opened from the sidebar | The song fragment owns the only verse-script include and a swapped-in script never executes; boot it from the shell instead | fix | P1 | S | [230](../specs/230-song-verse-script-boot/spec.md) | develop via [#602](https://github.com/rsmbyk/multimedia-gkps-klender/pull/602) | 2026-11-23 |
 | [ITEM-244](./items/ITEM-244-cue-verse-counter.md) | A passage cue does not say where it stands in the passage | Add a `current/end` verse counter after the reference for a service passage and a chapter Go To | feat | P2 | S | [229](../specs/229-cue-verse-counter/spec.md) | develop via [#600](https://github.com/rsmbyk/multimedia-gkps-klender/pull/600) | 2026-11-23 |
