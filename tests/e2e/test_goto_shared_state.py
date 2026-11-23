@@ -92,6 +92,10 @@ class GotoSharedStateE2ETests(StaticLiveServerTestCase):
                                        text=text)
             bible.Verse.objects.create(book_translation=self.sim, chapter=5, verse=number,
                                        text='SIM ' + text)
+        if self._testMethodName == 'test_the_go_to_cue_counts_the_verse_and_the_chapter_length':
+            for number in (1, 2):
+                bible.Verse.objects.create(book_translation=self.tb, chapter=6, verse=number,
+                                           text=f'pasal enam ayat {number}')
 
         self._playwright = sync_playwright().start()
         try:
@@ -511,6 +515,32 @@ class GotoSharedStateE2ETests(StaticLiveServerTestCase):
           baits: document.querySelectorAll('#cue-baits .cue-bait').length,
           back: (document.querySelector('#cue-next-name') || {}).textContent || ''
         })""")
+
+    def test_the_go_to_cue_counts_the_verse_and_the_chapter_length(self):
+        """A chapter Go To's counter follows the verse and the chapter's own last
+        verse, and an edition flip leaves both numbers alone."""
+        context = self._context()
+        projector = self._projector(context)
+        self._open_goto_on(projector, 'Matius 5:1')
+        projector.locator('#projectorFind').wait_for(state='hidden')
+        projector.wait_for_selector('.cue-verse')
+        verse = projector.locator('.cue-verse')
+        self.assertEqual(verse.inner_text(), '1/3')
+        for expected in ('2/3', '3/3'):
+            projector.keyboard.press('ArrowDown')
+            self.assertEqual(verse.inner_text(), expected)
+        projector.locator('.cue-translation').click()
+        projector.wait_for_function(
+            "() => document.getElementById('cue-prefix').textContent.includes(' · 3/3 · SIM')")
+        self.assertEqual(verse.inner_text(), '3/3')
+        projector.locator('.cue-translation').click()
+        projector.wait_for_function(
+            "() => document.getElementById('cue-prefix').textContent.includes(' · 3/3 · TB')")
+        projector.keyboard.press('Shift+ArrowRight')
+        projector.wait_for_function(
+            "() => document.getElementById('cue-prefix').textContent.includes('Matius 6:1')")
+        self.assertEqual(verse.inner_text(), '1/2')
+        context.close()
 
     def test_cue_carries_a_passage_and_its_controls_with_no_service(self):
         """A projector opened with no service still names the passage in its cue and

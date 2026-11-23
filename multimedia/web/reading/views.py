@@ -1718,7 +1718,7 @@ def _scripture_screens(entry):
         reference = f'{book} {entry.chapter}:{verse.verse}'.strip()
         heading = f'{reference}\n{verse.title}' if verse.title else reference
         text = verse.text.strip()
-        screens.append({'blank': False, 'header': heading,
+        screens.append({'blank': False, 'verse': verse.verse, 'header': heading,
                         'lines': [{'text': text, 'voice': '', 'mark': '', 'words': text}]})
     return screens
 
@@ -1838,7 +1838,10 @@ def _projector_data(service):
                         'start': start, 'end': len(screens) - 1, 'baits': baits,
                         'translation': (row.book_translation.version.abbreviation.upper()
                                         if entry_type == 'passage' and row.book_translation_id
-                                        else '')})
+                                        else ''),
+                        'verse_start': (row.verse_start or 1) if entry_type == 'passage' else None,
+                        'verse_end': ((row.verse_end or row.verse_start or 1)
+                                      if entry_type == 'passage' else None)})
     return {'screens': screens, 'entries': entries}
 
 

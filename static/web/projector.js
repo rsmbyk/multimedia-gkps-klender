@@ -914,6 +914,26 @@
     active.querySelector('.screen__line').textContent = variant.line;
   }
 
+  /* A passage cue reads "reference · n/n · edition". The counter lives inside the
+     label span, so #cue-prefix keeps its two flex children and its .2em gap (spec 229). */
+  function appendVerseCounter(label, at, end, trailing) {
+    if (!(at > 0) || !(end >= at)) return false;
+    var counter = document.createElement('span');
+    counter.className = 'cue-verse';
+    counter.textContent = at + '/' + end;
+    label.appendChild(document.createTextNode(' '));
+    label.appendChild(counter);
+    label.appendChild(document.createTextNode(' ·' + (trailing ? ' ' : '')));
+    return true;
+  }
+  function detourLastVerse(currentDetour) {
+    var editions = currentDetour.editions || {};
+    var edition = editions[currentDetour.translation] || editions.TB
+      || editions[Object.keys(editions)[0]];
+    var verses = edition && edition.verses;
+    return verses && verses.length ? verses[verses.length - 1].n : null;
+  }
+
   function renderCue() {
     if (!cue) return;
     clearRunningCueLabels();
@@ -957,6 +977,7 @@
     var label = document.createElement(entry.untitled ? 'i' : 'span');
     if (entry.type === 'text' && entry.untitled) makeRunningCueLabel(label, entry.label);
     else label.textContent = entry.label + (entry.type === 'song' || entry.type === 'passage' ? ' ·' : '');
+    if (entry.type === 'passage') appendVerseCounter(label, data.verse, entry.verse_end, false);
     cuePrefix.appendChild(label);
     if (entry.type === 'passage') {
       var flip = document.createElement('button');
@@ -1716,7 +1737,11 @@
     var returnEntry = entryAt(current);
     cuePrefix.replaceChildren();
     var label = document.createElement('span');
-    label.textContent = detour.label + (detour.kind === 'passage' ? ' · ' : ' ·');
+    label.textContent = detour.label + (detour.kind === 'passage' ? ' ·' : ' ·');
+    if (detour.kind === 'passage' && !appendVerseCounter(
+        label, detour.verse, detourLastVerse(detour), true)) {
+      label.appendChild(document.createTextNode(' '));
+    }
     cuePrefix.appendChild(label);
     if (detour.kind === 'passage') {
       var flip = document.createElement('button'); flip.type = 'button';

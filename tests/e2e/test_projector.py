@@ -124,6 +124,21 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
                                        text='ayat 4')
             bible.Verse.objects.create(book_translation=matius, chapter=6, verse=1,
                                        text='ayat enam satu')
+        if self._testMethodName == 'test_the_service_passage_cue_counts_the_current_and_end_verse':
+            for verse in (4, 5):
+                bible.Verse.objects.create(book_translation=matius, chapter=5, verse=verse,
+                                           text=f'ayat {verse}')
+            self.range_service = tatib.TataIbadah.objects.create(
+                name='Ibadah Ayat 3-5', date=date(2026, 8, 30), is_active=True)
+            tatib.ServiceEntry.objects.create(
+                tatib=self.range_service, order_number=1, kind=tatib.ServiceEntryKind.SCRIPTURE,
+                book_translation=matius, chapter=5, verse_start=3, verse_end=5)
+        if self._testMethodName == 'test_a_single_verse_passage_counts_one_of_one':
+            self.single_verse_service = tatib.TataIbadah.objects.create(
+                name='Ibadah Ayat 3', date=date(2026, 8, 30), is_active=True)
+            tatib.ServiceEntry.objects.create(
+                tatib=self.single_verse_service, order_number=1, kind=tatib.ServiceEntryKind.SCRIPTURE,
+                book_translation=matius, chapter=5, verse_start=3)
         if self._testMethodName == 'test_a_previous_chapter_crossing_locks_and_paints':
             bible.Verse.objects.create(book_translation=matius, chapter=4, verse=1,
                                        text='ayat empat satu')
@@ -1318,6 +1333,48 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
             page.close()
             context.close()
 
+    def test_the_service_passage_cue_counts_the_current_and_end_verse(self):
+        page = self._page(f'/projector?service={self.range_service.pk}')
+        verse = page.locator('.cue-verse')
+        page.wait_for_selector('.cue-verse')
+        self.assertEqual(verse.inner_text(), '3/5')
+        self.assertIn('Matius 5:3-5', page.locator('#cue-prefix').inner_text())
+        self.assertEqual(page.locator('.cue-translation').inner_text(), 'TB')
+        for expected in ('4/5', '5/5'):
+            page.keyboard.press('ArrowRight')
+            self.assertEqual(verse.inner_text(), expected)
+        self.assertIn('Matius 5:3-5', page.locator('#cue-prefix').inner_text())
+        centers = page.evaluate("""() => {
+          const mid = selector => {
+            const box = document.querySelector(selector).getBoundingClientRect();
+            return box.top + box.height / 2;
+          };
+          return {cue: mid('#corner-cue'), prefix: mid('#cue-prefix'),
+                  verse: mid('.cue-verse'), flip: mid('.cue-translation')};
+        }""")
+        for part, center in centers.items():
+            self.assertAlmostEqual(center, 868, delta=0.5, msg=(part, centers))
+        page.close()
+
+    def test_a_single_verse_passage_counts_one_of_one(self):
+        page = self._page(f'/projector?service={self.single_verse_service.pk}')
+        page.wait_for_selector('.cue-verse')
+        self.assertEqual(page.locator('.cue-verse').inner_text(), '3/3')
+        self.assertEqual(page.locator('#cue-prefix > span').inner_text(), 'Matius 5:3 · 3/3 ·')
+        page.close()
+
+    def test_non_scripture_cues_carry_no_verse_counter(self):
+        page = self._page(self._projector_url())
+        page.keyboard.press('j')
+        page.locator('#entry-list-search').fill('Ada Kuasa')
+        page.keyboard.press('Enter')
+        self.assertEqual(page.locator('.cue-verse').count(), 0)
+        page.keyboard.press('j')
+        page.locator('#entry-list-search').fill('Salam')
+        page.keyboard.press('Enter')
+        self.assertEqual(page.locator('.cue-verse').count(), 0)
+        page.close()
+
     def test_every_kind_takes_the_shape_it_should_on_screen(self):
         """The running order, screen by screen: content, then a built-in blank after
         each entry and after each song verse. A stored break is still one blank."""
@@ -1470,7 +1527,7 @@ class ProjectorE2ETests(StaticLiveServerTestCase):
     def test_a_single_screen_text_fits_its_whole_body_on_one_screen(self):
         # Naming the service in the URL is an act of projection (spec 119): the
         # page boots showing screen 1, so nothing has to be switched on.
-        page = self._page(f'/projector?service={self.single_service.pk}')
+        page = self._page(f'/projector?service={self.single_verse_service.pk}')
         page.wait_for_selector('.screen.is-active')
         page.wait_for_timeout(200)
         measured = page.evaluate("""() => {
