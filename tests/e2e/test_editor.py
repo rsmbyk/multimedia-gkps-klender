@@ -1048,13 +1048,126 @@ class EditorE2ETests(StaticLiveServerTestCase):
         self._close_browser()
 
     def test_the_shell_survives_a_save(self):
+        """A save from a song page opens the new song in place (spec 225)."""
         page = self._page(reverse('web-song', args=[self.song.pk]))
         start = page.url
         page.click('#songAdd')
         page.wait_for_selector('dialog[open]')
         self._save(page, title='Lagu Kedua')
+        page.wait_for_timeout(800)
         expect(page.locator('dialog[open]')).to_have_count(0)
-        self.assertEqual(page.url, start)                      # one page, no reload
-        expect(page.locator('.read__title')).to_contain_text('Alpha')   # the stage kept reading
+        row = page.locator('#chList .songrow').filter(has_text='Lagu Kedua').first
+        created_id = (row.get_attribute('href') or '').rstrip('/').split('/')[-1]
+        self.assertEqual(page.url, self.live_server_url + '/songs/%s/' % created_id)
+        self.assertNotEqual(page.url, start)          # the new song, not a reload
+        expect(page.locator('.read__title')).to_contain_text('Lagu Kedua')
         self._close_browser()
         self.assertTrue(songs.Song.objects.filter(title='Lagu Kedua').exists())
+
+    # --- spec 225: a created songbook or song opens as its row would ------------
+
+    def _kidung_state(self, page):
+        return page.evaluate("""() => ({
+          path: location.pathname,
+          title: document.getElementById('readName')?.textContent || '',
+          currentBook: document.querySelector('#panelBody a.book[aria-current="true"]')
+            ?.getAttribute('data-name') || null,
+          currentSong: document.querySelector('#chList a.songrow[aria-current="true"]')
+            ?.getAttribute('href') || null,
+          nav: document.documentElement.dataset.nav,
+          ch: document.documentElement.dataset.ch,
+          read: document.documentElement.dataset.read,
+          marker: window.__gkps225 || null,
+          timeOrigin: performance.timeOrigin
+        })""")
+
+    def test_a_created_songbook_opens_in_the_panel(self):
+        page = self._page(reverse('web-index'))
+        page.click('.rail__btn[aria-label="Kidung"]')
+        page.evaluate("() => { window.__gkps225 = 'alive'; }")
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent input[name="name"]')
+        self._save(page, name='Kidung Baru 225')
+        page.wait_for_timeout(800)
+        state = self._kidung_state(page)
+        row = page.locator('#panelBody .book').filter(has_text='Kidung Baru 225').first
+        created_id = (row.get_attribute('href') or '').rstrip('/').split('/')[-1]
+        assert state['currentBook'] == created_id, state
+        assert state['ch'] == 'open', state
+        assert state['marker'] == 'alive', state
+        self._close_browser()
+        self.assertTrue(songs.Book.objects.filter(name='Kidung Baru 225').exists())
+
+    def test_a_created_song_opens_on_the_stage(self):
+        page = self._page(reverse('web-book', args=[self.book.pk]))
+        page.evaluate("() => { window.__gkps225 = 'alive'; }")
+        before = self._kidung_state(page)
+        page.click('#songAdd')
+        page.wait_for_selector('#editorContent input[name="title"]')
+        self._save(page, title='Lagu Baru 225')
+        page.wait_for_timeout(800)
+        state = self._kidung_state(page)
+        created_id = (page.locator('#chList .songrow').filter(has_text='Lagu Baru 225')
+                      .first.get_attribute('href') or '').rstrip('/').split('/')[-1]
+        assert created_id, state
+        assert state['path'] == '/songs/%s/' % created_id, state
+        assert state['title'] == 'Lagu Baru 225', state
+        assert state['currentSong'] == '/songs/%s/' % created_id, state
+        assert state['read'] == 'on', state
+        assert state['marker'] == 'alive', state
+        assert state['timeOrigin'] == before['timeOrigin'], state
+        self._close_browser()
+
+    def test_an_open_from_create_does_not_reload_the_document(self):
+        page = self._page(reverse('web-books'))
+        page.evaluate("() => { window.__gkps225 = 'alive'; }")
+        before = self._kidung_state(page)
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent input[name="name"]')
+        self._save(page, name='Kidung Tanpa Reload 225')
+        page.wait_for_timeout(800)
+        after = self._kidung_state(page)
+        assert after['marker'] == 'alive', after
+        assert after['timeOrigin'] == before['timeOrigin'], (before, after)
+        assert after['nav'] == before['nav'], (before, after)
+
+    def test_a_created_songbook_keeps_the_stage(self):
+        page = self._page(reverse('web-song', args=[self.song.pk]))
+        before = self._kidung_state(page)
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent input[name="name"]')
+        self._save(page, name='Kidung Lain 225')
+        page.wait_for_timeout(800)
+        after = self._kidung_state(page)
+        assert after['path'] == before['path'], (before, after)
+        assert after['title'] == before['title'], (before, after)
+        assert after['currentBook'] != before['currentBook'], (before, after)
+
+    def test_an_edited_songbook_keeps_the_selection(self):
+        page = self._page(reverse('web-book', args=[self.book.pk]))
+        before = self._kidung_state(page)
+        row = page.locator(f'li:has(.book[data-name="{self.book.pk}"])')
+        row.hover()
+        row.locator('.row-edit').click()
+        page.wait_for_selector('dialog[open]')
+        self._save(page, name='Kidung Harian Disunting')
+        page.wait_for_timeout(800)
+        after = self._kidung_state(page)
+        assert after['path'] == before['path'], (before, after)
+        assert after['currentBook'] == before['currentBook'], (before, after)
+        self._close_browser()
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.name, 'Kidung Harian Disunting')
+
+    def test_a_refused_songbook_create_keeps_the_selection(self):
+        page = self._page(reverse('web-book', args=[self.book.pk]))
+        before = self._kidung_state(page)
+        page.click('#panelAdd')
+        page.wait_for_selector('#editorContent input[name="name"]')
+        page.fill('#editorContent input[name="name"]', self.book.name)
+        page.click('#editorContent .editor__save')
+        page.wait_for_timeout(600)
+        after = self._kidung_state(page)
+        assert after['path'] == before['path'], (before, after)
+        assert after['currentBook'] == before['currentBook'], (before, after)
+        expect(page.locator('dialog[open]')).to_have_count(1)

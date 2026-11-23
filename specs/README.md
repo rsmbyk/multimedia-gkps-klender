@@ -115,4 +115,5 @@ the templates are in [`_templates/`](./_templates/).
 | [208](208-dock-stuck-corner/spec.md) | The live entry header's corners follow its pin state | Accepted |
 | [220](220-initial-search-focus/spec.md) | Only the empty search landing takes focus | Accepted |
 | [223](223-songrow-focus-ring-clip/spec.md) | The song-row focus ring is clipped at the list top | Accepted |
+| [225](225-open-created-songbook-song/spec.md) | A newly created songbook or song opens as its row would | Accepted |
 | [224](224-empty-song-add-verse-row/spec.md) | An empty song paints one Add verse control | Accepted |

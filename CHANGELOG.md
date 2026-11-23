@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A newly added songbook or song opens as soon as it is created.** The new songbook is selected
+  with its song list open; the new song opens on the reading stage with its title in the header.
+  Both happen in place, with no second click and no reload; edits and refusals are unchanged
+  (spec 225).
 - **Deleting the song or service you are reading no longer drops you on the search page.** The reading
   stage stays up with a centred empty-screen icon, "Nothing open." and a short hint, while the parent
   list stays in the side panels. The state lives in the URL, so a reload keeps it and Back never

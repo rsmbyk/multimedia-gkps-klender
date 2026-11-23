@@ -2,7 +2,7 @@
 
 **capability**: `reading`
 **last folded**: 2026-11-23
-**slices**: `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
+**slices**: `225-open-created-songbook-song`, `224-empty-song-add-verse-row`, `223-songrow-focus-ring-clip`, `221-empty-reading-stage`, `222-add-song-parent-closed`, `220-initial-search-focus`, `214-sidebar-entry-kind-marks`, `215-copy-template-dialog`, `213-slot-kind-badge`, `212-copy-confirm-layer`, `210-song-verse-picker`, `209-open-created-service`, `201-sidebar-date-focus`, `199-sidebar-activity`, `197-dock-bucket-head-pin`, `195-hotfix-batch`, `193-reading-project-button`, `190-sidebar-delete`, `189-song-verse-editing`, `188-legacy-bookmarks-to-services`, `164-dock-fluid-width`, `163-media-dialog-file-picker-cancel`, `159-preview-body-ring`, `162-song-verse-empty-state`, `151-rail-icons`, `154-audio-times-inline`, `153-preview-tabs-row`, `150-references-token-order`, `144-passage-song-icons`, `148-media-library-refresh-flicker`, `146-media-and-transfer-age-buckets`, `147-transfer-icon-column`, `145-media-size-precision`, `143-add-bar`, `142-entry-surface`, `140-stage-link-affordance`, `141-projector-window-reopen`, `139-home-search-center`, `138-sidebar-overlay-stack`, `137-reading-text-wrap`, `136-remove-offline-library`, `134-sidebar-save-freshness`, `126-songbook-short-header`, `127-site-name-tab`, `128-songbook-hymn-separator`, `129-sidebar-empty-states`, `130-empty-service-tiles`, `131-retire-break-entry`, `132-tatib-sidebar-date-buckets`, `133-text-modal-large-frame`, `135-tatib-sidebar-row-clamp`
 The public reading surfaces: the search-first shell, Alkitab, Kidung, and Tata Ibadah — what each page
 shows in its header, title, stage and sidebars. Every page is painted from its own server response; the
 saved-copy requirements this file carried until 2026-10-26 are retired.
@@ -1719,4 +1719,32 @@ existing padding keeps the last row's ring inside. (spec 223)
 #### Scenario: an unfocused or selected row
 - WHEN no key has been pressed on a row, or the row is hovered or selected
 - THEN no focus ring is newly painted and the row's existing fill and box are unchanged
+
+### R53 — A newly created songbook or song opens as its row would
+
+A successful sidebar create of a non-hymn songbook SHALL open that songbook the way its panel row
+does: the new row carries `aria-current="true"` and the child pane is open on the songbook's song
+list. A successful create of a song SHALL open that song the way its song row does: the URL becomes
+`/songs/<id>/`, the stage heading names the saved title, the row is current and the reading stage is
+on. Both opens SHALL use the shell's existing in-place navigation, without a document reload and
+without changing the first panel's `data-nav`; a songbook create leaves the stage as it was and a
+song create keeps the parent songbook selected. Edits, verse and Tata Ibadah saves, a created
+Normal service (R46), Template creates and hymn books keep their present behaviour. A refused
+create SHALL NOT open a record or change a selection. (spec 225)
+
+#### Scenario: creating a songbook
+- WHEN a new songbook is saved from the panel Add button
+- THEN its row is current, its song list is open, and the reading stage is unchanged
+
+#### Scenario: creating a song
+- WHEN a new song is saved from an open songbook's Add button
+- THEN `/songs/<id>/` opens on the stage with the saved title, in place
+
+#### Scenario: other saves and the stage
+- WHEN a record is edited, a verse or Tata Ibadah record is saved, or a Normal service is created
+- THEN each follows its own existing path and no new songbook or song is opened
+
+#### Scenario: a refused create
+- WHEN the server rejects the create form
+- THEN the dialog stays open with its error and no selection or stage changes
 

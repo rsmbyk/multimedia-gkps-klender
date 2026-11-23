@@ -2080,6 +2080,26 @@
         });
       return;
     }
+    /* Spec 225: a newly created songbook or song opens as its row would -- the
+       songbook becomes current with its song list open, the song goes on the
+       reading stage. Both use the shell's own navigation, so neither reloads. */
+    if (event.detail && event.detail.created
+        && (event.detail.kind === 'songbook' || event.detail.kind === 'song')) {
+      var bornHref = event.detail.kind === 'songbook'
+        ? '/songs/book/' + event.detail.id + '/'
+        : '/songs/' + event.detail.id + '/';
+      navigate(bornHref, {
+        kind: event.detail.kind === 'songbook' ? 'lists' : 'song',
+        forceServer: true
+      }).then(function (ok) {
+        /* The saved row keeps the quiet focus a normal save restores (spec 025);
+           a stage-opening kind does not do that on its own (as in spec 209). */
+        if (ok) restoreRequestedFocus({
+          focusKind: event.detail.kind, what: event.detail.id
+        });
+      });
+      return;
+    }
     /* In-page navigation does not change location. Refresh the section that
        supplied the visible sidebar; if the reader is in another section, keep
        its stage by swapping only the lists. */
