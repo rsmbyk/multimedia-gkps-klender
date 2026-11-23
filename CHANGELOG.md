@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Back clears the Go To from the projector cue when nothing is underneath it.** With no service,
+  or on a service with no entries, leaving a Go To no longer leaves its passage or song label, flip,
+  baits and Back painted on an idle cue (spec 228).
 - **The corner cue keeps naming a Go To when there is nothing underneath it.** A projector with no
   service, or on a service with no entries, still shows the passage or song label, its translation
   flip or bait keys, and Back while the Go To is on air (spec 227).
